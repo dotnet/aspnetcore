@@ -93,7 +93,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         }
 
         /// <summary>
-        /// OIDCH_0027: converted 401 to 403.
+        /// OIDCH_0027: Converted 401 to 403.
         /// </summary>
         internal static string OIDCH_0027_401_ConvertedTo_403
         {
@@ -117,7 +117,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         }
 
         /// <summary>
-        /// OIDCH_0030: using properties.RedirectUri for 'local redirect' post authentication: '{0}'.
+        /// OIDCH_0030: Using properties.RedirectUri for 'local redirect' post authentication: '{0}'.
         /// </summary>
         internal static string OIDCH_0030_Using_Properties_RedirectUri
         {
@@ -125,7 +125,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         }
 
         /// <summary>
-        /// OIDCH_0031: using Options.RedirectUri for 'redirect_uri': '{0}'.
+        /// OIDCH_0031: Using Options.RedirectUri for 'redirect_uri': '{0}'.
         /// </summary>
         internal static string OIDCH_0031_Using_Options_RedirectUri
         {
@@ -133,7 +133,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         }
 
         /// <summary>
-        /// OIDCH_0032: using the CurrentUri for 'local redirect' post authentication: '{0}'.
+        /// OIDCH_0032: Using the CurrentUri for 'local redirect' post authentication: '{0}'.
         /// </summary>
         internal static string OIDCH_0032_UsingCurrentUriRedirectUri
         {
@@ -145,11 +145,11 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         /// </summary>
         internal static string OIDCH_0033_NonceAlreadyExists
         {
-            get { return ResourceManager.GetString("OIDCH_0033_NonceAlreadyExists"); }
+             get { return ResourceManager.GetString("OIDCH_0033_NonceAlreadyExists"); }
         }
 
         /// <summary>
-        /// OIDCH_0034: redirectToIdentityProviderNotification.HandledResponse
+        /// OIDCH_0034: RedirectToIdentityProviderNotification.HandledResponse
         /// </summary>
         internal static string OIDCH_0034_RedirectToIdentityProviderNotificationHandledResponse
         {
@@ -157,7 +157,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         }
 
         /// <summary>
-        /// OIDCH_0035: redirectToIdentityProviderNotification.Skipped
+        /// OIDCH_0035: RedirectToIdentityProviderNotification.Skipped
         /// </summary>
         internal static string OIDCH_0035_RedirectToIdentityProviderNotificationSkipped
         {
@@ -165,11 +165,19 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         }
 
         /// <summary>
-        /// OIDCH_0036: Uri.IsWellFormedUriString(redirectUri, UriKind.Absolute) returned 'false', redirectUri is: {0}", (redirectUri ?? "null"))
+        /// OIDCH_0036: Uri.IsWellFormedUriString(redirectUri, UriKind.Absolute) returned 'false', redirectUri is: {0}'.)
         /// </summary>
         internal static string OIDCH_0036_UriIsNotWellFormed
         {
             get { return ResourceManager.GetString("OIDCH_0036_UriIsNotWellFormed"); }
+        }
+
+        /// <summary>
+        /// OIDCH_0036: RedirectUri is: '{0}'.
+        /// </summary>
+        internal static string OIDCH_0037_RedirectUri
+        {
+            get { return ResourceManager.GetString("OIDCH_0037_RedirectUri"); }
         }
 
         /// <summary>
@@ -197,7 +205,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         }
 
         /// <summary>
-        /// OIDCH_0002: messageReceivedNotification.HandledResponse
+        /// OIDCH_0002: MessageReceivedNotification.HandledResponse
         /// </summary>
         internal static string OIDCH_0002_MessageReceivedNotificationHandledResponse
         {
@@ -205,7 +213,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         }
 
         /// <summary>
-        /// OIDCH_0003: messageReceivedNotification.Skipped
+        /// OIDCH_0003: MessageReceivedNotification.Skipped
         /// </summary>
         internal static string OIDCH_0003_MessageReceivedNotificationSkipped
         {
@@ -213,15 +221,15 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         }
 
         /// <summary>
-        /// OIDCH_0004:  OpenIdConnectAuthenticationHandler: message.State is null or whitespace. State is required to process the message.
+        /// OIDCH_0004: OpenIdConnectAuthenticationHandler: message.State is null or empty.
         /// </summary>
-        internal static string OIDCH_0004_MessageStateIsNullOrWhiteSpace
+        internal static string OIDCH_0004_MessageStateIsNullOrEmpty
         {
-            get { return ResourceManager.GetString("OIDCH_0004_MessageStateIsNullOrWhiteSpace"); }
+            get { return ResourceManager.GetString("OIDCH_0004_MessageStateIsNullOrEmpty"); }
         }
 
         /// <summary>
-        /// OIDCH_0005: unable to unprotect the message.State
+        /// OIDCH_0005: Unable to unprotect the message.State
         /// </summary>
         internal static string OIDCH_0005_MessageStateIsInvalid
         {
@@ -229,15 +237,15 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         }
 
         /// <summary>
-        /// OIDCH_0006_MessageErrorNotNull: '{0}'.
+        /// OIDCH_0006: Message contains error: '{0}', error_description: '{1}', error_uri: '{2}'.
         /// </summary>
-        internal static string OIDCH_0006_MessageErrorNotNull
+        internal static string OIDCH_0006_MessageContainsError
         {
-            get { return ResourceManager.GetString("OIDCH_0006_MessageErrorNotNull"); }
+            get { return ResourceManager.GetString("OIDCH_0006_MessageContainsError"); }
         }
 
         /// <summary>
-        /// OIDCH_0007: updating configuration
+        /// OIDCH_0007: Updating configuration
         /// </summary>
         internal static string OIDCH_0007_UpdatingConfiguration
         {
@@ -245,7 +253,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         }
 
         /// <summary>
-        /// OIDCH_0008: securityTokenReceivedNotification.HandledResponse
+        /// OIDCH_0008: SecurityTokenReceivedNotification.HandledResponse
         /// </summary>
         internal static string OIDCH_0008_SecurityTokenReceivedNotificationHandledResponse
         {
@@ -253,7 +261,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         }
 
         /// <summary>
-        /// OIDCH_0009: securityTokenReceivedNotification.Skipped
+        /// OIDCH_0009: SecurityTokenReceivedNotification.Skipped
         /// </summary>
         internal static string OIDCH_0009_SecurityTokenReceivedNotificationSkipped
         {
@@ -269,7 +277,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         }
 
         /// <summary>
-        /// OIDCH_0011: Unable to validate the 'id_token', no suitable ISecurityTokenValidator was found for: {0}."
+        /// OIDCH_0011: Unable to validate the 'id_token', no suitable ISecurityTokenValidator was found for: '{0}'.
         /// </summary>
         internal static string OIDCH_0011_UnableToValidateToken
         {
@@ -277,7 +285,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         }
 
         /// <summary>
-        /// OIDCH_0012: securityTokenValidatedNotification.HandledResponse
+        /// OIDCH_0012: SecurityTokenValidatedNotification.HandledResponse
         /// </summary>
         internal static string OIDCH_0012_SecurityTokenValidatedNotificationHandledResponse
         {
@@ -285,7 +293,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         }
 
         /// <summary>
-        /// OIDCH_0013: securityTokenValidatedNotification.Skipped
+        /// OIDCH_0013: SecurityTokenValidatedNotification.Skipped
         /// </summary>
         internal static string OIDCH_0013_SecurityTokenValidatedNotificationSkipped
         {
@@ -293,31 +301,31 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         }
 
         /// <summary>
-        /// OIDCH_0014: 'code' received: '{0}'
+        /// OIDCH_0014: AuthorizationCode received: '{0}'
         /// </summary>
-        internal static string OIDCH_0014_CodeReceived
+        internal static string OIDCH_0014_AuthorizationCodeReceived
         {
-            get { return ResourceManager.GetString("OIDCH_0014_CodeReceived"); }
+            get { return ResourceManager.GetString("OIDCH_0014_AuthorizationCodeReceived"); }
         }
 
         /// <summary>
-        /// OIDCH_0015: codeReceivedNotification.HandledResponse")
+        /// OIDCH_0015: AuthorizationCodeReceivedNotification.HandledResponse
         /// </summary>
-        internal static string OIDCH_0015_CodeReceivedNotificationHandledResponse
+        internal static string OIDCH_0015_AuthorizationCodeReceivedNotificationHandledResponse
         {
-            get { return ResourceManager.GetString("OIDCH_0015_CodeReceivedNotificationHandledResponse"); }
+            get { return ResourceManager.GetString("OIDCH_0015_AuthorizationCodeReceivedNotificationHandledResponse"); }
         }
 
         /// <summary>
         /// OIDCH_0016: codeReceivedNotification.Skipped
         /// </summary>
-        internal static string OIDCH_0016_CodeReceivedNotificationSkipped
+        internal static string OIDCH_0016_AuthorizationCodeReceivedNotificationSkipped
         {
-            get { return ResourceManager.GetString("OIDCH_0016_CodeReceivedNotificationSkipped"); }
+            get { return ResourceManager.GetString("OIDCH_0016_AuthorizationCodeReceivedNotificationSkipped"); }
         }
 
         /// <summary>
-        /// OIDCH_0017: Exception occurred while processing message
+        /// OIDCH_0017: Exception occurred while processing message.
         /// </summary>
         internal static string OIDCH_0017_ExceptionOccurredWhileProcessingMessage
         {
@@ -341,11 +349,20 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         }
 
         /// <summary>
-        /// OIDCH_0020: 'id_token' received: '{0}'
+        /// OIDCH_0020: 'id_token' received: '{0}'.
         /// </summary>
         internal static string OIDCH_0020_IdTokenReceived
         {
             get { return ResourceManager.GetString("OIDCH_0020_IdTokenReceived"); }
         }
+
+        /// <summary>
+        /// OIDCH_0021: exception of type 'SecurityTokenSignatureKeyNotFoundException' thrown, Options.ConfigurationManager.RequestRefresh() called.
+        /// </summary>
+        internal static string OIDCH_0021_AutomaticConfigurationRefresh
+        {
+            get { return ResourceManager.GetString("OIDCH_0021_AutomaticConfigurationRefresh"); }
+        }
+
     }
 }

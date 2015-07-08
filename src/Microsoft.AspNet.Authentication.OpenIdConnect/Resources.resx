@@ -130,7 +130,7 @@
     <value>OIDCH_0026: Entering: '{0}'</value>
   </data>
   <data name="OIDCH_0027_401_ConvertedTo_403" xml:space="preserve">
-    <value>OIDCH_0027: converted 401 to 403.</value>
+    <value>OIDCH_0027: Converted 401 to 403.</value>
   </data>
   <data name="OIDCH_0028_StatusCodeNot401" xml:space="preserve">
     <value>OIDCH_0028: Response.StatusCode != 401, StatusCode: '{0}'.</value>
@@ -139,10 +139,10 @@
     <value>OIDCH_0029: ChallengeContext == null AND !Options.AutomaticAuthentication</value>
   </data>
   <data name="OIDCH_0030_Using_Properties_RedirectUri" xml:space="preserve">
-    <value>OIDCH_0030: using properties.RedirectUri for 'local redirect' post authentication: '{0}'.</value>
+    <value>OIDCH_0030: Using properties.RedirectUri for 'local redirect' post authentication: '{0}'.</value>
   </data>
   <data name="OIDCH_0031_Using_Options_RedirectUri" xml:space="preserve">
-    <value>OIDCH_0031: using Options.RedirectUri for 'redirect_uri': '{0}'.</value>
+    <value>OIDCH_0031: Using Options.RedirectUri for 'redirect_uri': '{0}'.</value>
   </data>
   <data name="OIDCH_0032_UsingCurrentUriRedirectUri" xml:space="preserve">
     <value>OIDCH_0032: using the CurrentUri for 'local redirect' post authentication: '{0}'.</value>
@@ -151,13 +151,16 @@
     <value>OIDCH_0033: ProtocolValidator.RequireNonce == true. The generated nonce already exists: this usually indicates the nonce is not unique or has been used. The nonce is: '{0}'.</value>
   </data>
   <data name="OIDCH_0034_RedirectToIdentityProviderNotificationHandledResponse" xml:space="preserve">
-    <value>OIDCH_0034: redirectToIdentityProviderNotification.HandledResponse</value>
+    <value>OIDCH_0034: RedirectToIdentityProviderNotification.HandledResponse</value>
   </data>
   <data name="OIDCH_0035_RedirectToIdentityProviderNotificationSkipped" xml:space="preserve">
-    <value>OIDCH_0035: redirectToIdentityProviderNotification.Skipped</value>
+    <value>OIDCH_0035: RedirectToIdentityProviderNotification.Skipped</value>
   </data>
   <data name="OIDCH_0036_UriIsNotWellFormed" xml:space="preserve">
-    <value>OIDCH_0036: Uri.IsWellFormedUriString(redirectUri, UriKind.Absolute) returned 'false', redirectUri is: {0}", (redirectUri ?? "null"))</value>
+    <value>OIDCH_0036: Uri.IsWellFormedUriString(redirectUri, UriKind.Absolute) returned 'false', redirectUri is: '{0}'.</value>
+  </data>
+  <data name="OIDCH_0037_RedirectUri" xml:space="preserve">
+    <value>OIDCH_0037: RedirectUri is: '{0}'.</value>
   </data>
   <data name="OIDCH_0000_AuthenticateCoreAsync" xml:space="preserve">
     <value>OIDCH_0000: Entering: '{0}'.</value>
@@ -166,60 +169,63 @@
     <value>OIDCH_0001: MessageReceived: '{0}'.</value>
   </data>
   <data name="OIDCH_0002_MessageReceivedNotificationHandledResponse" xml:space="preserve">
-    <value>OIDCH_0002: messageReceivedNotification.HandledResponse</value>
+    <value>OIDCH_0002: MessageReceivedNotification.HandledResponse</value>
   </data>
   <data name="OIDCH_0003_MessageReceivedNotificationSkipped" xml:space="preserve">
-    <value>OIDCH_0003: messageReceivedNotification.Skipped</value>
+    <value>OIDCH_0003: MessageReceivedNotification.Skipped</value>
   </data>
-  <data name="OIDCH_0004_MessageStateIsNullOrWhiteSpace" xml:space="preserve">
-    <value>OIDCH_0004:  OpenIdConnectAuthenticationHandler: message.State is null or whitespace. State is required to process the message.</value>
+  <data name="OIDCH_0004_MessageStateIsNullOrEmpty" xml:space="preserve">
+    <value>OIDCH_0004: OpenIdConnectAuthenticationHandler: message.State is null or empty.</value>
   </data>
-  <data name="OIDCH_0005_MessageStateIsInValid" xml:space="preserve">
-    <value>OIDCH_0005: unable to unprotect the message.State</value>
+  <data name="OIDCH_0005_MessageStateIsInvalid" xml:space="preserve">
+    <value>OIDCH_0005: Unable to unprotect the message.State.</value>
   </data>
-  <data name="OIDCH_0006_MessageErrorNotNull" xml:space="preserve">
-    <value>OIDCH_0006_MessageErrorNotNull: '{0}'.</value>
+  <data name="OIDCH_0006_MessageContainsError" xml:space="preserve">
+    <value>OIDCH_0006: Message contains error: '{0}', error_description: '{1}', error_uri: '{2}'.</value>
   </data>
   <data name="OIDCH_0007_UpdatingConfiguration" xml:space="preserve">
-    <value>OIDCH_0007: updating configuration</value>
+    <value>OIDCH_0007: Updating configuration</value>
   </data>
   <data name="OIDCH_0008_SecurityTokenReceivedNotificationHandledResponse" xml:space="preserve">
-    <value>OIDCH_0008: securityTokenReceivedNotification.HandledResponse</value>
+    <value>OIDCH_0008: SecurityTokenReceivedNotification.HandledResponse</value>
   </data>
   <data name="OIDCH_0009_SecurityTokenReceivedNotificationSkipped:" xml:space="preserve">
-    <value>OIDCH_0009: securityTokenReceivedNotification.Skipped</value>
+    <value>OIDCH_0009: SecurityTokenReceivedNotification.Skipped</value>
   </data>
   <data name="OIDCH_0010_ValidatedSecurityTokenNotJwt" xml:space="preserve">
     <value>OIDCH_0010: Validated Security Token must be a JwtSecurityToken was: '{0}'.</value>
   </data>
   <data name="OIDCH_0011_UnableToValidateToken" xml:space="preserve">
-    <value>OIDCH_0011: Unable to validate the 'id_token', no suitable ISecurityTokenValidator was found for: {0}."</value>
+    <value>OIDCH_0011: Unable to validate the 'id_token', no suitable ISecurityTokenValidator was found for: '{0}'."</value>
   </data>
   <data name="OIDCH_0012_SecurityTokenValidatedNotificationHandledResponse" xml:space="preserve">
-    <value>OIDCH_0012: securityTokenValidatedNotification.HandledResponse</value>
+    <value>OIDCH_0012: SecurityTokenValidatedNotification.HandledResponse</value>
   </data>
   <data name="OIDCH_0013_SecurityTokenValidatedNotificationSkipped" xml:space="preserve">
-    <value>OIDCH_0013: securityTokenValidatedNotification.Skipped</value>
+    <value>OIDCH_0013: SecurityTokenValidatedNotification.Skipped</value>
   </data>
-  <data name="OIDCH_0014_CodeReceived" xml:space="preserve">
-    <value>OIDCH_0014: 'code' received: '{0}'</value>
+  <data name="OIDCH_0014_AuthorizationCodeReceived" xml:space="preserve">
+    <value>OIDCH_0014: AuthorizationCode received: '{0}'.</value>
   </data>
-  <data name="OIDCH_0015_CodeReceivedNotificationHandledResponse" xml:space="preserve">
-    <value>OIDCH_0015: codeReceivedNotification.HandledResponse</value>
+  <data name="OIDCH_0015_AuthorizationCodeReceivedNotificationHandledResponse" xml:space="preserve">
+    <value>OIDCH_0015: AuthorizationCodeReceivedNotification.HandledResponse</value>
   </data>
-  <data name="OIDCH_0016_CodeReceivedNotificationSkipped" xml:space="preserve">
-    <value>OIDCH_0016: codeReceivedNotification.Skipped</value>
+  <data name="OIDCH_0016_AuthorizationCodeReceivedNotificationSkipped" xml:space="preserve">
+    <value>OIDCH_0016: AuthorizationCodeReceivedNotification.Skipped</value>
   </data>
-  <data name="OIDCH_0017: Exception occurred while processing message" xml:space="preserve">
-    <value>OIDCH_0017: Exception occurred while processing message</value>
+  <data name="OIDCH_0017_ExceptionOccurredWhileProcessingMessage" xml:space="preserve">
+    <value>OIDCH_0017: Exception occurred while processing message.</value>
   </data>
   <data name="OIDCH_0018_AuthenticationFailedNotificationHandledResponse" xml:space="preserve">
-    <value>OIDCH_0018: authenticationFailedNotification.HandledResponse</value>
+    <value>OIDCH_0018: AuthenticationFailedNotification.HandledResponse</value>
   </data>
   <data name="OIDCH_0019_AuthenticationNotificationFailedSkipped" xml:space="preserve">
-    <value>OIDCH_0019: authenticationFailedNotification.Skipped</value>
+    <value>OIDCH_0019: AuthenticationFailedNotification.Skipped</value>
   </data>
   <data name="OIDCH_0020_IdTokenReceived" xml:space="preserve">
     <value>OIDCH_0020: 'id_token' received: '{0}'</value>
+  </data>
+  <data name="OIDCH_0021_AutomaticConfigurationRefresh" xml:space="preserve">
+    <value>OIDCH_0021: exception of type 'SecurityTokenSignatureKeyNotFoundException' thrown, Options.ConfigurationManager.RequestRefresh() called.</value>
   </data>
 </root>

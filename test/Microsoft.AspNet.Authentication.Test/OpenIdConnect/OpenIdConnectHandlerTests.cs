@@ -1,27 +1,25 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-// this controls if the logs are written to the console.
-// they can be reviewed for general content.
-//#define _Verbose
-
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IdentityModel.Tokens;
+using System.Linq;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Authentication.Notifications;
 using Microsoft.AspNet.Authentication.OpenIdConnect;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.DataProtection;
-using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
-using Microsoft.AspNet.Http.Features.Authentication;
 using Microsoft.AspNet.TestHost;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
 using Microsoft.Framework.WebEncoders;
 using Microsoft.IdentityModel.Protocols;
+using Moq;
 using Shouldly;
 using Xunit;
 
@@ -32,52 +30,9 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
     /// </summary>
     public class OpenIdConnectHandlerTests
     {
-        static List<LogEntry> CompleteLogEntries;
-        static Dictionary<string, LogLevel> LogEntries;
-
-        static OpenIdConnectHandlerTests()
-        {
-            LogEntries =
-                new Dictionary<string, LogLevel>()
-                {
-                    { "OIDCH_0000:", LogLevel.Debug },
-                    { "OIDCH_0001:", LogLevel.Debug },
-                    { "OIDCH_0002:", LogLevel.Information },
-                    { "OIDCH_0003:", LogLevel.Information },
-                    { "OIDCH_0004:", LogLevel.Error },
-                    { "OIDCH_0005:", LogLevel.Error },
-                    { "OIDCH_0006:", LogLevel.Error },
-                    { "OIDCH_0007:", LogLevel.Error },
-                    { "OIDCH_0008:", LogLevel.Debug },
-                    { "OIDCH_0009:", LogLevel.Debug },
-                    { "OIDCH_0010:", LogLevel.Error },
-                    { "OIDCH_0011:", LogLevel.Error },
-                    { "OIDCH_0012:", LogLevel.Debug },
-                    { "OIDCH_0013:", LogLevel.Debug },
-                    { "OIDCH_0014:", LogLevel.Debug },
-                    { "OIDCH_0015:", LogLevel.Debug },
-                    { "OIDCH_0016:", LogLevel.Debug },
-                    { "OIDCH_0017:", LogLevel.Error },
-                    { "OIDCH_0018:", LogLevel.Debug },
-                    { "OIDCH_0019:", LogLevel.Debug },
-                    { "OIDCH_0020:", LogLevel.Debug },
-                    { "OIDCH_0026:", LogLevel.Error },
-                };
-
-            BuildLogEntryList();
-        }
-
-        /// <summary>
-        /// Builds the complete list of log entries that are available in the runtime.
-        /// </summary>
-        private static void BuildLogEntryList()
-        {
-            CompleteLogEntries = new List<LogEntry>();
-            foreach (var entry in LogEntries)
-            {
-                CompleteLogEntries.Add(new LogEntry { State = entry.Key, Level = entry.Value });
-            }
-        }
+        private const string nonceForJwt = "abc";
+        private static SecurityToken specCompliantJwt = new JwtSecurityToken("issuer", "audience", new List<Claim> { new Claim("iat", EpochTime.GetIntDate(DateTime.UtcNow).ToString()), new Claim("nonce", nonceForJwt) }, DateTime.UtcNow, DateTime.UtcNow + TimeSpan.FromDays(1));
+        private const string ExpectedStateParameter = "expectedState";
 
         /// <summary>
         /// Sanity check that logging is filtering, hi / low water marks are checked
@@ -85,7 +40,7 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
         [Fact]
         public void LoggingLevel()
         {
-            var logger = new CustomLogger(LogLevel.Debug);
+            var logger = new InMemoryLogger(LogLevel.Debug);
             logger.IsEnabled(LogLevel.Critical).ShouldBe<bool>(true);
             logger.IsEnabled(LogLevel.Debug).ShouldBe<bool>(true);
             logger.IsEnabled(LogLevel.Error).ShouldBe<bool>(true);
@@ -93,7 +48,7 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             logger.IsEnabled(LogLevel.Verbose).ShouldBe<bool>(true);
             logger.IsEnabled(LogLevel.Warning).ShouldBe<bool>(true);
 
-            logger = new CustomLogger(LogLevel.Critical);
+            logger = new InMemoryLogger(LogLevel.Critical);
             logger.IsEnabled(LogLevel.Critical).ShouldBe<bool>(true);
             logger.IsEnabled(LogLevel.Debug).ShouldBe<bool>(false);
             logger.IsEnabled(LogLevel.Error).ShouldBe<bool>(false);
@@ -102,208 +57,190 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             logger.IsEnabled(LogLevel.Warning).ShouldBe<bool>(false);
         }
 
-        /// <summary>
-        /// Test <see cref="OpenIdConnectAuthenticationHandler.AuthenticateCoreAsync"/> produces expected logs.
-        /// Each call to 'RunVariation' is configured with an <see cref="OpenIdConnectAuthenticationOptions"/> and <see cref="OpenIdConnectMessage"/>.
-        /// The list of expected log entries is checked and any errors reported.
-        /// <see cref="CustomLoggerFactory"/> captures the logs so they can be prepared.
-        /// </summary>
-        /// <returns></returns>
-        [Fact]
-        public async Task AuthenticateCore()
+        [Theory, MemberData("AuthenticateCoreStateDataSet")]
+        public async Task AuthenticateCoreState(Action<OpenIdConnectAuthenticationOptions> action, OpenIdConnectMessage message)
         {
-            //System.Diagnostics.Debugger.Launch();
-
-            var propertiesFormatter = new AuthenticationPropertiesFormater();
-            var protectedProperties = propertiesFormatter.Protect(new AuthenticationProperties());
-            var state = OpenIdConnectAuthenticationDefaults.AuthenticationPropertiesKey + "=" + UrlEncoder.Default.UrlEncode(protectedProperties);
-            var code = Guid.NewGuid().ToString();
-            var message =
-                new OpenIdConnectMessage
-                {
-                    Code = code,
-                    State = state,
-                };
-
-            var errors = new Dictionary<string, List<Tuple<LogEntry, LogEntry>>>();
-
-            var logsEntriesExpected = new int[] { 0, 1, 7, 14, 15 };
-            await RunVariation(LogLevel.Debug, message, CodeReceivedHandledOptions, errors, logsEntriesExpected);
-
-            logsEntriesExpected = new int[] { 0, 1, 7, 14, 16 };
-            await RunVariation(LogLevel.Debug, message, CodeReceivedSkippedOptions, errors, logsEntriesExpected);
-
-            logsEntriesExpected = new int[] { 0, 1, 7, 14 };
-            await RunVariation(LogLevel.Debug, message, DefaultOptions, errors, logsEntriesExpected);
-
-            // each message below should return before processing the idtoken
-            message.IdToken = "invalid_token";
-
-            logsEntriesExpected = new int[] { 0, 1, 2 };
-            await RunVariation(LogLevel.Debug, message, MessageReceivedHandledOptions, errors, logsEntriesExpected);
-
-            logsEntriesExpected = new int[]{ 2 };
-            await RunVariation(LogLevel.Information, message, MessageReceivedHandledOptions, errors, logsEntriesExpected);
-
-            logsEntriesExpected = new int[] { 0, 1, 3 };
-            await RunVariation(LogLevel.Debug, message, MessageReceivedSkippedOptions, errors, logsEntriesExpected);
-
-            logsEntriesExpected = new int[] { 3 };
-            await RunVariation(LogLevel.Information, message, MessageReceivedSkippedOptions, errors, logsEntriesExpected);
-
-            logsEntriesExpected = new int[] {0, 1, 7, 20, 8 };
-            await RunVariation(LogLevel.Debug, message, SecurityTokenReceivedHandledOptions, errors, logsEntriesExpected);
-
-            logsEntriesExpected = new int[] {0, 1, 7, 20, 9 };
-            await RunVariation(LogLevel.Debug, message, SecurityTokenReceivedSkippedOptions, errors, logsEntriesExpected);
-
-#if _Verbose
-            Console.WriteLine("\n ===== \n");
-            DisplayErrors(errors);
-#endif
-            errors.Count.ShouldBe(0);
+            var handler = new OpenIdConnectAuthenticationHandlerForTestingAuthenticate();
+            var server = CreateServer(new ConfigureOptions<OpenIdConnectAuthenticationOptions>(action), UrlEncoder.Default, handler);
+            await server.CreateClient().PostAsync("http://localhost", new FormUrlEncodedContent(message.Parameters.Where(pair => pair.Value != null)));
         }
 
-        /// <summary>
-        /// Tests that <see cref="OpenIdConnectAuthenticationHandler"/> processes a messaage as expected.
-        /// The test runs two independant paths: Using <see cref="ConfigureOptions{TOptions}"/> and <see cref="IOptions{TOptions}"/>
-        /// </summary>
-        /// <param name="logLevel"><see cref="LogLevel"/> for this variation</param>
-        /// <param name="message">the <see cref="OpenIdConnectMessage"/> that has arrived</param>
-        /// <param name="action">the <see cref="OpenIdConnectAuthenticationOptions"/> delegate used for setting the options.</param>
-        /// <param name="errors">container for propogation of errors.</param>
-        /// <param name="logsEntriesExpected">the expected log entries</param>
-        /// <returns>a Task</returns>
-        private async Task RunVariation(LogLevel logLevel, OpenIdConnectMessage message, Action<OpenIdConnectAuthenticationOptions> action, Dictionary<string, List<Tuple<LogEntry, LogEntry>>> errors, int[] logsEntriesExpected)
+        public static TheoryData<Action<OpenIdConnectAuthenticationOptions>, OpenIdConnectMessage> AuthenticateCoreStateDataSet
         {
-            var expectedLogs = PopulateLogEntries(logsEntriesExpected);
-            string variation = action.Method.ToString().Substring(5, action.Method.ToString().IndexOf('(') - 5);
-#if _Verbose
-            Console.WriteLine(Environment.NewLine + "=====" + Environment.NewLine + "Variation: " + variation + ", LogLevel: " + logLevel.ToString() + Environment.NewLine + Environment.NewLine + "Expected Logs: ");
-            DisplayLogs(expectedLogs);
-            Console.WriteLine(Environment.NewLine + "Logs using ConfigureOptions:");
-#endif
-            var form = new FormUrlEncodedContent(message.Parameters);
-            var loggerFactory = new CustomLoggerFactory(logLevel);
-            var server = CreateServer(new CustomConfigureOptions(action), loggerFactory);
-            await server.CreateClient().PostAsync("http://localhost", form);
-            CheckLogs(variation + ":ConfigOptions", loggerFactory.Logger.Logs, expectedLogs, errors);
-
-#if _Verbose
-            Console.WriteLine(Environment.NewLine + "Logs using IOptions:");
-#endif
-            form = new FormUrlEncodedContent(message.Parameters);
-            loggerFactory = new CustomLoggerFactory(logLevel);
-            server = CreateServer(new Options(action), loggerFactory);
-            await server.CreateClient().PostAsync("http://localhost", form);
-            CheckLogs(variation + ":IOptions", loggerFactory.Logger.Logs, expectedLogs, errors);
-        }
-
-        /// <summary>
-        /// Populates a list of expected log entries for a test variation.
-        /// </summary>
-        /// <param name="items">the index for the <see cref="LogEntry"/> in CompleteLogEntries of interest.</param>
-        /// <returns>a <see cref="List{LogEntry}"/> that represents the expected entries for a test variation.</returns>
-        private List<LogEntry> PopulateLogEntries(int[] items)
-        {
-            var entries = new List<LogEntry>();
-            foreach(var item in items)
+            get
             {
-                entries.Add(CompleteLogEntries[item]);
-            }
+                var formater = new AuthenticationPropertiesFormaterKeyValue();
+                var properties = new AuthenticationProperties();
+                var dataset = new TheoryData<Action<OpenIdConnectAuthenticationOptions>, OpenIdConnectMessage>();
 
-            return entries;
-        }
+                // expected user state is added to the message.Parameters.Items[ExpectedStateParameter]
+                // Userstate == null
+                var message = new OpenIdConnectMessage();
+                message.State = UrlEncoder.Default.UrlEncode(formater.Protect(properties));
+                message.Code = Guid.NewGuid().ToString();
+                message.Parameters.Add(ExpectedStateParameter, null);
+                dataset.Add(SetStateOptions, message);
 
-        private void DisplayLogs(List<LogEntry> logs)
-        {
-            foreach (var logentry in logs)
-            {
-                Console.WriteLine(logentry.ToString());
+                // Userstate != null
+                message = new OpenIdConnectMessage();
+                properties.Items.Clear();
+                var userstate = Guid.NewGuid().ToString();
+                message.Code = Guid.NewGuid().ToString();
+                properties.Items.Add(OpenIdConnectAuthenticationDefaults.UserstatePropertiesKey, userstate);
+                message.State = UrlEncoder.Default.UrlEncode(formater.Protect(properties));
+                message.Parameters.Add(ExpectedStateParameter, userstate);
+                dataset.Add(SetStateOptions, message);
+                return dataset;
             }
         }
 
-        private void DisplayErrors(Dictionary<string, List<Tuple<LogEntry, LogEntry>>> errors)
+        // Setup a notification to check for expected state.
+        // The state gets set by the runtime after the 'MessageReceivedNotification'
+        private static void SetStateOptions(OpenIdConnectAuthenticationOptions options)
         {
-            if (errors.Count > 0)
+            options.AuthenticationScheme = "OpenIdConnectHandlerTest";
+            options.ConfigurationManager = TestUtilities.DefaultOpenIdConnectConfigurationManager;
+            options.ClientId = Guid.NewGuid().ToString();
+            options.StateDataFormat = new AuthenticationPropertiesFormaterKeyValue();
+            options.Notifications = new OpenIdConnectAuthenticationNotifications
             {
-                foreach (var error in errors)
+                AuthorizationCodeReceived = notification =>
                 {
-                    Console.WriteLine("Error in Variation: " + error.Key);
-                    foreach (var logError in error.Value)
-                    {
-                        Console.WriteLine("*Captured*, *Expected* : *" + (logError.Item1?.ToString() ?? "null") + "*, *" + (logError.Item2?.ToString() ?? "null") + "*");
-                    }
-                    Console.WriteLine(Environment.NewLine);
+                    if (notification.ProtocolMessage.State == null && !notification.ProtocolMessage.Parameters.ContainsKey(ExpectedStateParameter))
+                        return Task.FromResult<object>(null);
+
+                    if (notification.ProtocolMessage.State == null || !notification.ProtocolMessage.Parameters.ContainsKey(ExpectedStateParameter))
+                        Assert.True(false, "(notification.ProtocolMessage.State=!= null || !notification.ProtocolMessage.Parameters.ContainsKey(expectedState)");
+
+                    Assert.Equal(notification.ProtocolMessage.State, notification.ProtocolMessage.Parameters[ExpectedStateParameter]);
+                    return Task.FromResult<object>(null);
                 }
-            }
+            };
         }
 
-        /// <summary>
-        /// Adds to errors if a variation if any are found.
-        /// </summary>
-        /// <param name="variation">if this has been seen before, errors will be appended, test results are easier to understand if this is unique.</param>
-        /// <param name="capturedLogs">these are the logs the runtime generated</param>
-        /// <param name="expectedLogs">these are the errors that were expected</param>
-        /// <param name="errors">the dictionary to record any errors</param>
-        private void CheckLogs(string variation, List<LogEntry> capturedLogs, List<LogEntry> expectedLogs, Dictionary<string, List<Tuple<LogEntry, LogEntry>>> errors)
+        [Theory, MemberData("AuthenticateCoreDataSet")]
+        public async Task AuthenticateCore(LogLevel logLevel, int[] expectedLogIndexes, Action<OpenIdConnectAuthenticationOptions> action, OpenIdConnectMessage message)
         {
-            var localErrors = new List<Tuple<LogEntry, LogEntry>>();
+            var errors = new List<Tuple<LogEntry, LogEntry>>();
+            var expectedLogs = LoggingUtilities.PopulateLogEntries(expectedLogIndexes);
+            var handler = new OpenIdConnectAuthenticationHandlerForTestingAuthenticate();
+            var loggerFactory = new InMemoryLoggerFactory(logLevel);
+            var server = CreateServer(new ConfigureOptions<OpenIdConnectAuthenticationOptions>(action), UrlEncoder.Default, loggerFactory, handler);
 
-            if (capturedLogs.Count >= expectedLogs.Count)
-            {
-                for (int i = 0; i < capturedLogs.Count; i++)
-                {
-                    if (i + 1 > expectedLogs.Count)
-                    {
-                        localErrors.Add(new Tuple<LogEntry, LogEntry>(capturedLogs[i], null));
-                    }
-                    else
-                    {
-                        if (!TestUtilities.AreEqual<LogEntry>(capturedLogs[i], expectedLogs[i]))
-                        {
-                            localErrors.Add(new Tuple<LogEntry, LogEntry>(capturedLogs[i], expectedLogs[i]));
-                        }
-                    }
-                }
-            }
-            else
-            {
-                for (int i = 0; i < expectedLogs.Count; i++)
-                {
-                    if (i + 1 > capturedLogs.Count)
-                    {
-                        localErrors.Add(new Tuple<LogEntry, LogEntry>(null, expectedLogs[i]));
-                    }
-                    else
-                    {
-                        if (!TestUtilities.AreEqual<LogEntry>(expectedLogs[i], capturedLogs[i]))
-                        {
-                            localErrors.Add(new Tuple<LogEntry, LogEntry>(capturedLogs[i], expectedLogs[i]));
-                        }
-                    }
-                }
-            }
+            await server.CreateClient().PostAsync("http://localhost", new FormUrlEncodedContent(message.Parameters));
+            LoggingUtilities.CheckLogs(loggerFactory.Logger.Logs, expectedLogs, errors);
+            Debug.WriteLine(LoggingUtilities.LoggingErrors(errors));
+            Assert.True(errors.Count == 0, LoggingUtilities.LoggingErrors(errors));
+        }
 
-            if (localErrors.Count != 0)
+        public static TheoryData<LogLevel, int[], Action<OpenIdConnectAuthenticationOptions>, OpenIdConnectMessage> AuthenticateCoreDataSet
+        {
+            get
             {
-                if (errors.ContainsKey(variation))
-                {
-                    foreach (var error in localErrors)
-                    {
-                        errors[variation].Add(error);
-                    }
-                }
-                else
-                {
-                    errors[variation] = localErrors;
-                }
+                var formater = new AuthenticationPropertiesFormaterKeyValue();
+                var dataset = new TheoryData<LogLevel, int[], Action< OpenIdConnectAuthenticationOptions >, OpenIdConnectMessage>();
+                var properties = new AuthenticationProperties();
+                var message = new OpenIdConnectMessage();
+                var validState = UrlEncoder.Default.UrlEncode(formater.Protect(properties));
+                message.State = validState;
+
+                // MessageReceived - Handled / Skipped
+                dataset.Add(LogLevel.Debug, new int[] { 0, 1, 2 }, MessageReceivedHandledOptions, message);
+                dataset.Add(LogLevel.Verbose, new int[] { 2 }, MessageReceivedHandledOptions, message);
+                dataset.Add(LogLevel.Error, new int[] { }, MessageReceivedHandledOptions, message);
+
+                dataset.Add(LogLevel.Debug, new int[] { 0, 1, 3 }, MessageReceivedSkippedOptions, message);
+                dataset.Add(LogLevel.Verbose, new int[] { 3 }, MessageReceivedSkippedOptions, message);
+                dataset.Add(LogLevel.Error, new int[] { }, MessageReceivedSkippedOptions, message);
+
+                // State - null, empty string, invalid
+                message = new OpenIdConnectMessage();
+                dataset.Add(LogLevel.Debug, new int[] { 0, 1, 4, 7 }, StateNullOptions, message);
+                dataset.Add(LogLevel.Verbose, new int[] { 4, 7 }, StateNullOptions, message);
+                dataset.Add(LogLevel.Error, new int[] { }, StateNullOptions, message);
+
+                message = new OpenIdConnectMessage();
+                message.State = string.Empty;
+                dataset.Add(LogLevel.Debug, new int[] { 0, 1, 4, 7 }, StateEmptyOptions, message);
+                dataset.Add(LogLevel.Verbose, new int[] { 4, 7 }, StateEmptyOptions, message);
+                dataset.Add(LogLevel.Error, new int[] { }, StateEmptyOptions, message);
+
+                message = new OpenIdConnectMessage();
+                message.State = Guid.NewGuid().ToString();
+                dataset.Add(LogLevel.Debug, new int[] { 0, 1, 5 }, StateInvalidOptions, message);
+                dataset.Add(LogLevel.Verbose, new int[] { 5 }, StateInvalidOptions, message);
+                dataset.Add(LogLevel.Error, new int[] { 5 }, StateInvalidOptions, message);
+
+                // OpenIdConnectMessage.Error != null
+                message = new OpenIdConnectMessage();
+                message.Error = "Error";
+                dataset.Add(LogLevel.Debug, new int[] { 0, 1, 4, 6, 17, 18 }, MessageWithErrorOptions, message);
+                dataset.Add(LogLevel.Verbose, new int[] { 4, 6, 17, 18 }, MessageWithErrorOptions, message);
+                dataset.Add(LogLevel.Error, new int[] { 6, 17 }, MessageWithErrorOptions, message);
+
+                // SecurityTokenReceived - Handled / Skipped 
+                message = new OpenIdConnectMessage();
+                message.IdToken = "invalid";
+                message.State = validState;
+                dataset.Add(LogLevel.Debug, new int[] { 0, 1, 7, 20, 8 }, SecurityTokenReceivedHandledOptions, message);
+                dataset.Add(LogLevel.Verbose, new int[] { 7, 8 }, SecurityTokenReceivedHandledOptions, message);
+                dataset.Add(LogLevel.Error, new int[] { }, SecurityTokenReceivedHandledOptions, message);
+
+                dataset.Add(LogLevel.Debug, new int[] { 0, 1, 7, 20, 9 }, SecurityTokenReceivedSkippedOptions, message);
+                dataset.Add(LogLevel.Verbose, new int[] { 7, 9 }, SecurityTokenReceivedSkippedOptions, message);
+                dataset.Add(LogLevel.Error, new int[] { }, SecurityTokenReceivedSkippedOptions, message);
+
+                // SecurityTokenValidation - ReturnsNull, Throws, Validates
+                dataset.Add(LogLevel.Debug, new int[] { 0, 1, 7, 20, 11, 17, 18 }, SecurityTokenValidatorCannotReadToken, message);
+                dataset.Add(LogLevel.Verbose, new int[] { 7, 11, 17, 18 }, SecurityTokenValidatorCannotReadToken, message);
+                dataset.Add(LogLevel.Error, new int[] { 11, 17 }, SecurityTokenValidatorCannotReadToken, message);
+
+                dataset.Add(LogLevel.Debug, new int[] { 0, 1, 7, 20, 17, 21, 18 }, SecurityTokenValidatorThrows, message);
+                dataset.Add(LogLevel.Verbose, new int[] { 7, 17, 21, 18 }, SecurityTokenValidatorThrows, message);
+                dataset.Add(LogLevel.Error, new int[] { 17 }, SecurityTokenValidatorThrows, message);
+
+                message.Nonce = nonceForJwt;
+                dataset.Add(LogLevel.Debug, new int[] { 0, 1, 7, 20 }, SecurityTokenValidatorValidatesAllTokens, message);
+                dataset.Add(LogLevel.Verbose, new int[] { 7 }, SecurityTokenValidatorValidatesAllTokens, message);
+                dataset.Add(LogLevel.Error, new int[] { }, SecurityTokenValidatorValidatesAllTokens, message);
+
+                // SecurityTokenValidation - Handled / Skipped
+                dataset.Add(LogLevel.Debug, new int[] { 0, 1, 7, 20, 12 }, SecurityTokenValidatedHandledOptions, message);
+                dataset.Add(LogLevel.Verbose, new int[] { 7, 12 }, SecurityTokenValidatedHandledOptions, message);
+                dataset.Add(LogLevel.Error, new int[] { }, SecurityTokenValidatedHandledOptions, message);
+
+                dataset.Add(LogLevel.Debug, new int[] { 0, 1, 7, 20, 13 }, SecurityTokenValidatedSkippedOptions, message);
+                dataset.Add(LogLevel.Verbose, new int[] { 7, 13 }, SecurityTokenValidatedSkippedOptions, message);
+                dataset.Add(LogLevel.Error, new int[] { }, SecurityTokenValidatedSkippedOptions, message);
+
+                // AuthenticationCodeReceived - Handled / Skipped 
+                message = new OpenIdConnectMessage();
+                message.Code = Guid.NewGuid().ToString();
+                message.State = validState;
+                dataset.Add(LogLevel.Debug, new int[] { 0, 1, 7, 14, 15 }, AuthorizationCodeReceivedHandledOptions, message);
+                dataset.Add(LogLevel.Verbose, new int[] { 7, 15 }, AuthorizationCodeReceivedHandledOptions, message);
+                dataset.Add(LogLevel.Error, new int[] { }, AuthorizationCodeReceivedHandledOptions, message);
+
+                dataset.Add(LogLevel.Debug, new int[] { 0, 1, 7, 14, 16 }, AuthorizationCodeReceivedSkippedOptions, message);
+                dataset.Add(LogLevel.Verbose, new int[] { 7, 16 }, AuthorizationCodeReceivedSkippedOptions, message);
+                dataset.Add(LogLevel.Error, new int[] { }, AuthorizationCodeReceivedSkippedOptions, message);
+
+                return dataset;
             }
         }
 
-        #region Configure Options
+#region Configure Options for AuthenticateCore variations
 
-        private static void CodeReceivedHandledOptions(OpenIdConnectAuthenticationOptions options)
+        private static void DefaultOptions(OpenIdConnectAuthenticationOptions options)
+        {
+            options.AuthenticationScheme = "OpenIdConnectHandlerTest";
+            options.SignInScheme = "OpenIdConnectHandlerTest";
+            options.ConfigurationManager = TestUtilities.DefaultOpenIdConnectConfigurationManager;
+            options.ClientId = Guid.NewGuid().ToString();
+            options.StateDataFormat = new AuthenticationPropertiesFormaterKeyValue();
+        }
+
+        private static void AuthorizationCodeReceivedHandledOptions(OpenIdConnectAuthenticationOptions options)
         {
             DefaultOptions(options);
             options.Notifications =
@@ -317,7 +254,7 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
                 };
         }
 
-        private static void CodeReceivedSkippedOptions(OpenIdConnectAuthenticationOptions options)
+        private static void AuthorizationCodeReceivedSkippedOptions(OpenIdConnectAuthenticationOptions options)
         {
             DefaultOptions(options);
             options.Notifications =
@@ -331,11 +268,32 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
                 };
         }
 
-        private static void DefaultOptions(OpenIdConnectAuthenticationOptions options)
+        private static void AuthenticationErrorHandledOptions(OpenIdConnectAuthenticationOptions options)
         {
-            options.AuthenticationScheme = "OpenIdConnectHandlerTest";
-            options.ConfigurationManager = ConfigurationManager.DefaultStaticConfigurationManager;
-            options.StateDataFormat = new AuthenticationPropertiesFormater();
+            DefaultOptions(options);
+            options.Notifications =
+                new OpenIdConnectAuthenticationNotifications
+                {
+                    AuthenticationFailed = (notification) =>
+                    {
+                        notification.HandleResponse();
+                        return Task.FromResult<object>(null);
+                    }
+                };
+        }
+
+        private static void AuthenticationErrorSkippedOptions(OpenIdConnectAuthenticationOptions options)
+        {
+            DefaultOptions(options);
+            options.Notifications =
+                new OpenIdConnectAuthenticationNotifications
+                {
+                    AuthenticationFailed = (notification) =>
+                    {
+                        notification.SkipToNextMiddleware();
+                        return Task.FromResult<object>(null);
+                    }
+                };
         }
 
         private static void MessageReceivedHandledOptions(OpenIdConnectAuthenticationOptions options)
@@ -366,6 +324,11 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
                 };
         }
 
+        private static void MessageWithErrorOptions(OpenIdConnectAuthenticationOptions options)
+        {
+            AuthenticationErrorHandledOptions(options);
+        }
+
         private static void SecurityTokenReceivedHandledOptions(OpenIdConnectAuthenticationOptions options)
         {
             DefaultOptions(options);
@@ -394,9 +357,40 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
                 };
         }
 
-        private static void SecurityTokenValidatedHandledOptions(OpenIdConnectAuthenticationOptions options)
+        private static void SecurityTokenValidatorCannotReadToken(OpenIdConnectAuthenticationOptions options)
+        {
+            AuthenticationErrorHandledOptions(options);
+            var mockValidator = new Mock<ISecurityTokenValidator>();
+            SecurityToken jwt = null;
+            mockValidator.Setup(v => v.ValidateToken(It.IsAny<string>(), It.IsAny<TokenValidationParameters>(), out jwt)).Returns(new ClaimsPrincipal());
+            mockValidator.Setup(v => v.CanReadToken(It.IsAny<string>())).Returns(false);
+            options.SecurityTokenValidators = new Collection<ISecurityTokenValidator> { mockValidator.Object };
+        }
+
+        private static void SecurityTokenValidatorThrows(OpenIdConnectAuthenticationOptions options)
+        {
+            AuthenticationErrorHandledOptions(options);
+            var mockValidator = new Mock<ISecurityTokenValidator>();
+            SecurityToken jwt = null;
+            mockValidator.Setup(v => v.ValidateToken(It.IsAny<string>(), It.IsAny<TokenValidationParameters>(), out jwt)).Throws<SecurityTokenSignatureKeyNotFoundException>();
+            mockValidator.Setup(v => v.CanReadToken(It.IsAny<string>())).Returns(true);
+            options.SecurityTokenValidators = new Collection<ISecurityTokenValidator> { mockValidator.Object };
+        }
+
+        private static void SecurityTokenValidatorValidatesAllTokens(OpenIdConnectAuthenticationOptions options)
         {
             DefaultOptions(options);
+            var mockValidator = new Mock<ISecurityTokenValidator>();
+            mockValidator.Setup(v => v.ValidateToken(It.IsAny<string>(), It.IsAny<TokenValidationParameters>(), out specCompliantJwt)).Returns(new ClaimsPrincipal());
+            mockValidator.Setup(v => v.CanReadToken(It.IsAny<string>())).Returns(true);
+            options.SecurityTokenValidators = new Collection<ISecurityTokenValidator> { mockValidator.Object };
+            options.ProtocolValidator.RequireTimeStampInNonce = false;
+            options.ProtocolValidator.RequireNonce = false;
+        }
+
+        private static void SecurityTokenValidatedHandledOptions(OpenIdConnectAuthenticationOptions options)
+        {
+            SecurityTokenValidatorValidatesAllTokens(options);
             options.Notifications =
                 new OpenIdConnectAuthenticationNotifications
                 {
@@ -410,7 +404,7 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
 
         private static void SecurityTokenValidatedSkippedOptions(OpenIdConnectAuthenticationOptions options)
         {
-            DefaultOptions(options);
+            SecurityTokenValidatorValidatesAllTokens(options);
             options.Notifications =
                 new OpenIdConnectAuthenticationNotifications
                 {
@@ -422,14 +416,31 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
                 };
         }
 
-        #endregion
+        private static void StateNullOptions(OpenIdConnectAuthenticationOptions options)
+        {
+            DefaultOptions(options);
+        }
 
-        private static TestServer CreateServer(IOptions<OpenIdConnectAuthenticationOptions> options, ILoggerFactory loggerFactory)
+        private static void StateEmptyOptions(OpenIdConnectAuthenticationOptions options)
+        {
+            DefaultOptions(options);
+        }
+
+        private static void StateInvalidOptions(OpenIdConnectAuthenticationOptions options)
+        {
+            DefaultOptions(options);
+        }
+
+#endregion
+
+        private static Task EmptyTask() { return Task.FromResult(0); }
+
+        private static TestServer CreateServer(ConfigureOptions<OpenIdConnectAuthenticationOptions> options, IUrlEncoder encoder, OpenIdConnectAuthenticationHandler handler = null)
         {
             return TestServer.Create(
                 app =>
                 {
-                    app.UseCustomOpenIdConnectAuthentication(options, loggerFactory);
+                    app.UseMiddleware<OpenIdConnectAuthenticationMiddlewareForTestingAuthenticate>(options, encoder, handler);
                     app.Use(async (context, next) =>
                     {
                         await next();
@@ -437,19 +448,18 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
                 },
                 services =>
                 {
-                    services.AddAuthentication();
                     services.AddWebEncoders();
                     services.AddDataProtection();
                 }
             );
         }
 
-        private static TestServer CreateServer(CustomConfigureOptions configureOptions, ILoggerFactory loggerFactory)
+        private static TestServer CreateServer(ConfigureOptions<OpenIdConnectAuthenticationOptions> configureOptions, IUrlEncoder encoder, ILoggerFactory loggerFactory, OpenIdConnectAuthenticationHandler handler = null)
         {
             return TestServer.Create(
                 app =>
                 {
-                    app.UseCustomOpenIdConnectAuthentication(configureOptions, loggerFactory);
+                    app.UseMiddleware<OpenIdConnectAuthenticationMiddlewareForTestingAuthenticate>(configureOptions, encoder, loggerFactory, handler);
                     app.Use(async (context, next) =>
                     {
                         await next();
@@ -457,274 +467,10 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
                 },
                 services =>
                 {
-                    services.AddAuthentication();
                     services.AddWebEncoders();
                     services.AddDataProtection();
                 }
             );
-        }
-    }
-
-    /// <summary>
-    /// Extension specifies <see cref="CustomOpenIdConnectAuthenticationMiddleware"/> as the middleware.
-    /// </summary>
-    public static class OpenIdConnectAuthenticationExtensions
-    {
-        /// <summary>
-        /// Adds the <see cref="OpenIdConnectAuthenticationMiddleware"/> into the ASP.NET runtime.
-        /// </summary>
-        /// <param name="app">The application builder</param>
-        /// <param name="customConfigureOption">Options which control the processing of the OpenIdConnect protocol and token validation.</param>
-        /// <param name="loggerFactory">custom loggerFactory</param>
-        /// <returns>The application builder</returns>
-        public static IApplicationBuilder UseCustomOpenIdConnectAuthentication(this IApplicationBuilder app, CustomConfigureOptions customConfigureOption, ILoggerFactory loggerFactory)
-        {
-            return app.UseMiddleware<CustomOpenIdConnectAuthenticationMiddleware>(customConfigureOption, loggerFactory);
-        }
-
-        /// <summary>
-        /// Adds the <see cref="OpenIdConnectAuthenticationMiddleware"/> into the ASP.NET runtime.
-        /// </summary>
-        /// <param name="app">The application builder</param>
-        /// <param name="options">Options which control the processing of the OpenIdConnect protocol and token validation.</param>
-        /// <param name="loggerFactory">custom loggerFactory</param>
-        /// <returns>The application builder</returns>
-        public static IApplicationBuilder UseCustomOpenIdConnectAuthentication(this IApplicationBuilder app, IOptions<OpenIdConnectAuthenticationOptions> options, ILoggerFactory loggerFactory)
-        {
-            return app.UseMiddleware<CustomOpenIdConnectAuthenticationMiddleware>(options, loggerFactory);
-        }
-    }
-
-    /// <summary>
-    /// Provides a Facade over IOptions
-    /// </summary>
-    public class Options : IOptions<OpenIdConnectAuthenticationOptions>
-    {
-        OpenIdConnectAuthenticationOptions _options;
-
-        public Options(Action<OpenIdConnectAuthenticationOptions> action)
-        {
-            _options = new OpenIdConnectAuthenticationOptions();
-            action(_options);
-        }
-
-        OpenIdConnectAuthenticationOptions IOptions<OpenIdConnectAuthenticationOptions>.Options
-        {
-            get
-            {
-                return _options;
-            }
-        }
-
-        /// <summary>
-        /// For now returns _options
-        /// </summary>
-        /// <param name="name">configuration to return</param>
-        /// <returns></returns>
-        public OpenIdConnectAuthenticationOptions GetNamedOptions(string name)
-        {
-            return _options;
-        }
-    }
-
-    public class CustomConfigureOptions : ConfigureOptions<OpenIdConnectAuthenticationOptions>
-    {
-        public CustomConfigureOptions(Action<OpenIdConnectAuthenticationOptions> action)
-            : base(action)
-        {
-        }
-
-        public override void Configure(OpenIdConnectAuthenticationOptions options, string name = "")
-        {
-            base.Configure(options, name);
-            return;
-        }
-    }
-
-    /// <summary>
-    /// Used to control which methods are handled
-    /// </summary>
-    public class CustomOpenIdConnectAuthenticationHandler : OpenIdConnectAuthenticationHandler
-    {
-        public async Task BaseInitializeAsyncPublic(AuthenticationOptions options, HttpContext context, ILogger logger, IUrlEncoder encoder)
-        {
-            await base.BaseInitializeAsync(options, context, logger, encoder);
-        }
-
-        protected override async Task<bool> HandleUnauthorizedAsync(ChallengeContext context)
-        {
-            var redirectToIdentityProviderNotification = new RedirectToIdentityProviderNotification<OpenIdConnectMessage, OpenIdConnectAuthenticationOptions>(Context, Options)
-            {
-            };
-
-            await Options.Notifications.RedirectToIdentityProvider(redirectToIdentityProviderNotification);
-            return true;
-        }
-    }
-
-    /// <summary>
-    /// Used to set <see cref="CustomOpenIdConnectAuthenticationHandler"/> as the AuthenticationHandler
-    /// which can be configured to handle certain messages.
-    /// </summary>
-    public class CustomOpenIdConnectAuthenticationMiddleware : OpenIdConnectAuthenticationMiddleware
-    {
-        public CustomOpenIdConnectAuthenticationMiddleware(
-            RequestDelegate next,
-            IDataProtectionProvider dataProtectionProvider,
-            ILoggerFactory loggerFactory,
-            IUrlEncoder encoder,
-            IServiceProvider services,
-            IOptions<ExternalAuthenticationOptions> externalOptions,
-            IOptions<OpenIdConnectAuthenticationOptions> options,
-            ConfigureOptions<OpenIdConnectAuthenticationOptions> configureOptions = null
-            )
-        : base(next, dataProtectionProvider, loggerFactory, encoder, services, externalOptions, options, configureOptions)
-        {
-            Logger = (loggerFactory as CustomLoggerFactory).Logger;
-        }
-
-        protected override AuthenticationHandler<OpenIdConnectAuthenticationOptions> CreateHandler()
-        {
-            return new CustomOpenIdConnectAuthenticationHandler();
-        }
-    }
-
-    public class LogEntry
-    {
-        public LogEntry() { }
-
-        public int EventId { get; set; }
-
-        public Exception Exception { get; set; }
-
-        public Func<object, Exception, string> Formatter { get; set; }
-
-        public LogLevel Level { get; set; }
-
-        public object State { get; set; }
-
-        public override string ToString()
-        {
-            if (Formatter != null)
-            {
-                return Formatter(this.State, this.Exception);
-            }
-            else
-            {
-                string message = (Formatter != null ? Formatter(State, Exception) : (State?.ToString() ?? "null"));
-                message += ", LogLevel: " + Level.ToString();
-                message += ", EventId: " + EventId.ToString();
-                message += ", Exception: " + (Exception == null ? "null" : Exception.Message);
-                return message;
-            }
-        }
-    }
-    
-    public class CustomLogger : ILogger, IDisposable
-    {
-        LogLevel _logLevel = 0;
-
-        public CustomLogger(LogLevel logLevel = LogLevel.Debug)
-        {
-            _logLevel = logLevel;
-        }
-
-        List<LogEntry> logEntries = new List<LogEntry>();
-
-        public IDisposable BeginScopeImpl(object state)
-        {
-            return this;
-        }
-
-        public void Dispose()
-        {
-        }
-
-        public bool IsEnabled(LogLevel logLevel)
-        {
-            return (logLevel >= _logLevel);
-        }
-
-       public void Log(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
-        {
-            if (IsEnabled(logLevel))
-            {
-                logEntries.Add(
-                    new LogEntry
-                    {
-                        EventId = eventId,
-                        Exception = exception,
-                        Formatter = formatter,
-                        Level = logLevel,
-                        State = state,
-                    });
-
-#if _Verbose
-                Console.WriteLine(state?.ToString() ?? "state null");
-#endif
-            }
-        }
-
-        public List<LogEntry> Logs { get { return logEntries; } }
-    }
-
-    public class CustomLoggerFactory : ILoggerFactory
-    {
-        CustomLogger _logger;
-        LogLevel _logLevel = LogLevel.Debug;
-
-        public CustomLoggerFactory(LogLevel logLevel)
-        {
-            _logLevel = logLevel;
-            _logger = new CustomLogger(_logLevel);
-        }
-
-        public LogLevel MinimumLevel
-        {
-            get { return _logLevel; }
-            set {_logLevel = value; }
-        }
-
-        public void AddProvider(ILoggerProvider provider)
-        {
-        }
-
-        public ILogger CreateLogger(string categoryName)
-        {
-            return _logger;
-        }
-
-        public CustomLogger Logger {  get { return _logger; } }
-    }
-
-    /// <summary>
-    /// Processing a <see cref="OpenIdConnectMessage"/> requires 'unprotecting' the state.
-    /// This class side-steps that process.
-    /// </summary>
-    public class AuthenticationPropertiesFormater : ISecureDataFormat<AuthenticationProperties>
-    {
-        public string Protect(AuthenticationProperties data)
-        {
-            return "protectedData";
-        }
-
-        AuthenticationProperties ISecureDataFormat<AuthenticationProperties>.Unprotect(string protectedText)
-        { 
-            return new AuthenticationProperties();
-        }
-    }
-
-    /// <summary>
-    /// Used to set up different configurations of metadata for different tests
-    /// </summary>
-    public class ConfigurationManager
-    {
-        /// <summary>
-        /// Simple static empty manager.
-        /// </summary>
-        static public IConfigurationManager<OpenIdConnectConfiguration> DefaultStaticConfigurationManager
-        {
-           get { return new StaticConfigurationManager<OpenIdConnectConfiguration>(new OpenIdConnectConfiguration()); }
         }
     }
 }

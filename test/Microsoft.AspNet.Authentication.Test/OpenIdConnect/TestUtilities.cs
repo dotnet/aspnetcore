@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.IdentityModel.Protocols;
 
 namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
 {
@@ -10,6 +11,8 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
     /// </summary>
     public class TestUtilities
     {
+        public const string DefaultHost = @"http://localhost";
+
         public static bool AreEqual<T>(object obj1, object obj2, Func<object, object, bool> comparer = null) where T : class
         {
             if (obj1 == null && obj2 == null)
@@ -63,11 +66,6 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
                 return false;
             }
 
-            if (!AreEqual<Exception>(logEntry1.Exception, logEntry2.Exception))
-            {
-                return false;
-            }
-
             if (logEntry1.State == null && logEntry2.State == null)
             {
                 return true;
@@ -103,6 +101,27 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             }
 
             return AreEqual<Exception>(exception1.InnerException, exception2.InnerException);
+        }
+
+        static public IConfigurationManager<OpenIdConnectConfiguration> DefaultOpenIdConnectConfigurationManager
+        {
+            get
+            {
+                return new StaticConfigurationManager<OpenIdConnectConfiguration>(DefaultOpenIdConnectConfiguration);
+            }
+        }
+
+        static public OpenIdConnectConfiguration DefaultOpenIdConnectConfiguration
+        {
+            get
+            {
+                return new OpenIdConnectConfiguration()
+                {
+                    AuthorizationEndpoint = @"https://login.windows.net/common/oauth2/authorize",
+                    EndSessionEndpoint = @"https://login.windows.net/common/oauth2/endsessionendpoint",
+                    TokenEndpoint = @"https://login.windows.net/common/oauth2/token",
+                };
+            }
         }
     }
 }

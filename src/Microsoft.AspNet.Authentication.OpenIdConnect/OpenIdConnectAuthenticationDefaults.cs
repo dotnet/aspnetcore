@@ -9,14 +9,14 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
     public static class OpenIdConnectAuthenticationDefaults
     {
         /// <summary>
-        /// The default value used for OpenIdConnectAuthenticationOptions.AuthenticationScheme
+        /// Constant used to identify state in openIdConnect protocol message.
         /// </summary>
-        public const string AuthenticationScheme = "OpenIdConnect";
+        public const string AuthenticationPropertiesKey = "OpenIdConnect.AuthenticationProperties";
 
         /// <summary>
-        /// The prefix used to provide a default OpenIdConnectAuthenticationOptions.CookieName
+        /// The default value used for OpenIdConnectAuthenticationOptions.AuthenticationScheme.
         /// </summary>
-        public const string CookiePrefix = ".AspNet.OpenIdConnect.";
+        public const string AuthenticationScheme = "OpenIdConnect";
 
         /// <summary>
         /// The default value for OpenIdConnectAuthenticationOptions.Caption.
@@ -24,18 +24,23 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         public const string Caption = "OpenIdConnect";
 
         /// <summary>
-        /// The prefix used to for the a nonce in the cookie
+        /// The prefix used to provide a default OpenIdConnectAuthenticationOptions.CookieName.
+        /// </summary>
+        public const string CookiePrefix = ".AspNet.OpenIdConnect.";
+
+        /// <summary>
+        /// The prefix used to for the a nonce in the cookie.
         /// </summary>
         public const string CookieNoncePrefix = ".AspNet.OpenIdConnect.Nonce.";
 
         /// <summary>
-        /// The property for the RedirectUri that was used when asking for a 'authorizationCode'
+        /// The property for the RedirectUri that was used when asking for a 'authorizationCode'.
         /// </summary>
-        public const string RedirectUriUsedForCodeKey = "OpenIdConnect.Code.RedirectUri";
+        public const string RedirectUriForCodePropertiesKey = "OpenIdConnect.Code.RedirectUri";
 
         /// <summary>
-        /// Constant used to identify state in openIdConnect protocal message
+        /// Constant used to identify userstate inside AuthenticationProperties that have been serialized in the 'state' parameter.
         /// </summary>
-        public const string AuthenticationPropertiesKey = "OpenIdConnect.AuthenticationProperties";
+        public const string UserstatePropertiesKey = "OpenIdConnect.Userstate";
     }
 }

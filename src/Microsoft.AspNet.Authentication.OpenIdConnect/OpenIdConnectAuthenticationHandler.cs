@@ -28,19 +28,6 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         private const string UriSchemeDelimiter = "://";
         private OpenIdConnectConfiguration _configuration;
 
-        private string CurrentUri
-        {
-            get
-            {
-                return Request.Scheme +
-                       UriSchemeDelimiter +
-                       Request.Host +
-                       Request.PathBase +
-                       Request.Path +
-                       Request.QueryString;
-            }
-        }
-
         /// <summary>
         /// Handles Signout
         /// </summary>
@@ -54,7 +41,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                     _configuration = await Options.ConfigurationManager.GetConfigurationAsync(Context.RequestAborted);
                 }
 
-                var openIdConnectMessage = new OpenIdConnectMessage()
+                var message = new OpenIdConnectMessage()
                 {
                     IssuerAddress = _configuration == null ? string.Empty : (_configuration.EndSessionEndpoint ?? string.Empty),
                     RequestType = OpenIdConnectRequestType.LogoutRequest,
@@ -66,30 +53,42 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 var properties = new AuthenticationProperties(signout.Properties);
                 if (!string.IsNullOrEmpty(properties.RedirectUri))
                 {
-                    openIdConnectMessage.PostLogoutRedirectUri = properties.RedirectUri;
+                    message.PostLogoutRedirectUri = properties.RedirectUri;
                 }
-                else if (!string.IsNullOrWhiteSpace(Options.PostLogoutRedirectUri))
+                else if (!string.IsNullOrEmpty(Options.PostLogoutRedirectUri))
                 {
-                    openIdConnectMessage.PostLogoutRedirectUri = Options.PostLogoutRedirectUri;
+                    message.PostLogoutRedirectUri = Options.PostLogoutRedirectUri;
                 }
 
-                var notification = new RedirectToIdentityProviderNotification<OpenIdConnectMessage, OpenIdConnectAuthenticationOptions>(Context, Options)
+                if (Options.Notifications.RedirectToIdentityProvider != null)
                 {
-                    ProtocolMessage = openIdConnectMessage
-                };
-
-                await Options.Notifications.RedirectToIdentityProvider(notification);
-
-                if (!notification.HandledResponse)
-                {
-                    var redirectUri = notification.ProtocolMessage.CreateLogoutRequestUrl();
-                    if (!Uri.IsWellFormedUriString(redirectUri, UriKind.Absolute))
+                    var redirectToIdentityProviderNotification = new RedirectToIdentityProviderNotification<OpenIdConnectMessage, OpenIdConnectAuthenticationOptions>(Context, Options)
                     {
-                        Logger.LogWarning(Resources.OIDCH_0051_RedirectUriLogoutIsNotWellFormed, redirectUri);
+                        ProtocolMessage = message
+                    };
+
+                    await Options.Notifications.RedirectToIdentityProvider(redirectToIdentityProviderNotification);
+                    if (redirectToIdentityProviderNotification.HandledResponse)
+                    {
+                        Logger.LogVerbose(Resources.OIDCH_0034_RedirectToIdentityProviderNotificationHandledResponse);
+                        return;
+                    }
+                    else if (redirectToIdentityProviderNotification.Skipped)
+                    {
+                        Logger.LogVerbose(Resources.OIDCH_0035_RedirectToIdentityProviderNotificationSkipped);
+                        return;
                     }
 
-                    Response.Redirect(redirectUri);
+                    message = redirectToIdentityProviderNotification.ProtocolMessage;
                 }
+
+                var redirectUri = message.CreateLogoutRequestUrl();
+                if (!Uri.IsWellFormedUriString(redirectUri, UriKind.Absolute))
+                {
+                    Logger.LogWarning(Resources.OIDCH_0051_RedirectUriLogoutIsNotWellFormed, redirectUri);
+                }
+
+                Response.Redirect(redirectUri);
             }
         }
 
@@ -107,7 +106,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             // 2. CurrentUri if Options.DefaultToCurrentUriOnRedirect is true)
             AuthenticationProperties properties = new AuthenticationProperties(context.Properties);
 
-            if (!string.IsNullOrWhiteSpace(properties.RedirectUri))
+            if (!string.IsNullOrEmpty(properties.RedirectUri))
             {
                 Logger.LogDebug(Resources.OIDCH_0030_Using_Properties_RedirectUri, properties.RedirectUri);
             }
@@ -117,15 +116,15 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 properties.RedirectUri = CurrentUri;
             }
 
-            if (!string.IsNullOrWhiteSpace(Options.RedirectUri))
+            if (!string.IsNullOrEmpty(Options.RedirectUri))
             {
                 Logger.LogDebug(Resources.OIDCH_0031_Using_Options_RedirectUri, Options.RedirectUri);
             }
 
             // When redeeming a 'code' for an AccessToken, this value is needed
-            if (!string.IsNullOrWhiteSpace(Options.RedirectUri))
+            if (!string.IsNullOrEmpty(Options.RedirectUri))
             {
-                properties.Items.Add(OpenIdConnectAuthenticationDefaults.RedirectUriUsedForCodeKey, Options.RedirectUri);
+                properties.Items.Add(OpenIdConnectAuthenticationDefaults.RedirectUriForCodePropertiesKey, Options.RedirectUri);
             }
 
             if (_configuration == null && Options.ConfigurationManager != null)
@@ -138,13 +137,12 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 ClientId = Options.ClientId,
                 IssuerAddress = _configuration?.AuthorizationEndpoint ?? string.Empty,
                 RedirectUri = Options.RedirectUri,
-                // [brentschmaltz] - this should be a property on RedirectToIdentityProviderNotification not on the OIDCMessage.
+                // [brentschmaltz] - #215 this should be a property on RedirectToIdentityProviderNotification not on the OIDCMessage.
                 RequestType = OpenIdConnectRequestType.AuthenticationRequest,
                 Resource = Options.Resource,
                 ResponseMode = Options.ResponseMode,
                 ResponseType = Options.ResponseType,
-                Scope = Options.Scope,
-                State = OpenIdConnectAuthenticationDefaults.AuthenticationPropertiesKey + "=" + UrlEncoder.UrlEncode(Options.StateDataFormat.Protect(properties))
+                Scope = Options.Scope
             };
 
             if (Options.ProtocolValidator.RequireNonce)
@@ -169,24 +167,37 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 }
             }
 
-            var redirectToIdentityProviderNotification = new RedirectToIdentityProviderNotification<OpenIdConnectMessage, OpenIdConnectAuthenticationOptions>(Context, Options)
+            if (Options.Notifications.RedirectToIdentityProvider != null)
             {
-                ProtocolMessage = message
-            };
+                var redirectToIdentityProviderNotification =
+                    new RedirectToIdentityProviderNotification<OpenIdConnectMessage, OpenIdConnectAuthenticationOptions>(Context, Options)
+                    {
+                        ProtocolMessage = message
+                    };
 
-            await Options.Notifications.RedirectToIdentityProvider(redirectToIdentityProviderNotification);
-            if (redirectToIdentityProviderNotification.HandledResponse)
-            {
-                Logger.LogInformation(Resources.OIDCH_0034_RedirectToIdentityProviderNotificationHandledResponse);
-                return true; // REVIEW: Make sure this should stop all other handlers
-            }
-            else if (redirectToIdentityProviderNotification.Skipped)
-            {
-                Logger.LogInformation(Resources.OIDCH_0035_RedirectToIdentityProviderNotificationSkipped);
-                return false; // REVIEW: Make sure this should not stop all other handlers
+                await Options.Notifications.RedirectToIdentityProvider(redirectToIdentityProviderNotification);
+                if (redirectToIdentityProviderNotification.HandledResponse)
+                {
+                    Logger.LogVerbose(Resources.OIDCH_0034_RedirectToIdentityProviderNotificationHandledResponse);
+                    return true;
+                }
+                else if (redirectToIdentityProviderNotification.Skipped)
+                {
+                    Logger.LogVerbose(Resources.OIDCH_0035_RedirectToIdentityProviderNotificationSkipped);
+                    return false;
+                }
+
+                if (!string.IsNullOrEmpty(redirectToIdentityProviderNotification.ProtocolMessage.State))
+                {
+                    properties.Items[OpenIdConnectAuthenticationDefaults.UserstatePropertiesKey] = redirectToIdentityProviderNotification.ProtocolMessage.State;
+                }
+
+                message = redirectToIdentityProviderNotification.ProtocolMessage;
             }
 
-            var redirectUri = redirectToIdentityProviderNotification.ProtocolMessage.CreateAuthenticationRequestUrl();
+            message.State = Options.StateDataFormat.Protect(properties);
+
+            var redirectUri = message.CreateAuthenticationRequestUrl();
             if (!Uri.IsWellFormedUriString(redirectUri, UriKind.Absolute))
             {
                 Logger.LogWarning(Resources.OIDCH_0036_UriIsNotWellFormed, redirectUri);
@@ -246,66 +257,74 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 await Options.Notifications.MessageReceived(messageReceivedNotification);
                 if (messageReceivedNotification.HandledResponse)
                 {
-                    Logger.LogInformation(Resources.OIDCH_0002_MessageReceivedNotificationHandledResponse);
+                    Logger.LogVerbose(Resources.OIDCH_0002_MessageReceivedNotificationHandledResponse);
                     return messageReceivedNotification.AuthenticationTicket;
                 }
 
                 if (messageReceivedNotification.Skipped)
                 {
-                    Logger.LogInformation(Resources.OIDCH_0003_MessageReceivedNotificationSkipped);
+                    Logger.LogVerbose(Resources.OIDCH_0003_MessageReceivedNotificationSkipped);
                     return null;
                 }
 
-                // runtime always adds state, if we don't find it OR we failed to 'unprotect' it this is not a message we should process.
-                if (string.IsNullOrWhiteSpace(message.State))
+                var properties = new AuthenticationProperties();
+
+                // if state is missing, just log it
+                if (string.IsNullOrEmpty(message.State))
                 {
-                    Logger.LogError(Resources.OIDCH_0004_MessageStateIsNullOrWhiteSpace);
-                    return null;
+                    Logger.LogWarning(Resources.OIDCH_0004_MessageStateIsNullOrEmpty);
+                }
+                else
+                {
+                    // if state exists and we failed to 'unprotect' this is not a message we should process.
+                    properties = Options.StateDataFormat.Unprotect(Uri.UnescapeDataString(message.State));
+                    if (properties == null)
+                    {
+                        Logger.LogError(Resources.OIDCH_0005_MessageStateIsInvalid);
+                        return null;
+                    }
+
+                    string userstate = null;
+                    properties.Items.TryGetValue(OpenIdConnectAuthenticationDefaults.UserstatePropertiesKey, out userstate);
+                    message.State = userstate;
                 }
 
-                var properties = GetPropertiesFromState(message.State);
-                if (properties == null)
+                // if any of the error fields are set, throw error null
+                if (!string.IsNullOrEmpty(message.Error))
                 {
-                    Logger.LogError(Resources.OIDCH_0005_MessageStateIsInvalid);
-                    return null;
+                    Logger.LogError(Resources.OIDCH_0006_MessageContainsError, message.Error, message.ErrorDescription ?? "ErrorDecription null", message.ErrorUri ?? "ErrorUri null");
+                    throw new SecurityTokenException(string.Format(CultureInfo.InvariantCulture, Resources.OIDCH_0006_MessageContainsError, message.Error, message.ErrorDescription ?? "ErrorDecription null", message.ErrorUri ?? "ErrorUri null"));
                 }
 
-                // devs will need to hook AuthenticationFailedNotification to avoid having 'raw' runtime errors displayed to users.
-                if (!string.IsNullOrWhiteSpace(message.Error))
+                if (_configuration == null && Options.ConfigurationManager != null)
                 {
-                   Logger.LogError(Resources.OIDCH_0006_MessageErrorNotNull, message.Error);
-                    throw new OpenIdConnectProtocolException(string.Format(CultureInfo.InvariantCulture, Resources.OIDCH_0006_MessageErrorNotNull, message.Error));
+                    Logger.LogVerbose(Resources.OIDCH_0007_UpdatingConfiguration);
+                    _configuration = await Options.ConfigurationManager.GetConfigurationAsync(Context.RequestAborted);
                 }
 
                 AuthenticationTicket ticket = null;
                 JwtSecurityToken jwt = null;
 
-                if (_configuration == null && Options.ConfigurationManager != null)
-                {
-                    Logger.LogDebug(Resources.OIDCH_0007_UpdatingConfiguration);
-                    _configuration = await Options.ConfigurationManager.GetConfigurationAsync(Context.RequestAborted);
-                }
-
                 // OpenIdConnect protocol allows a Code to be received without the id_token
-                if (!string.IsNullOrWhiteSpace(message.IdToken))
+                if (!string.IsNullOrEmpty(message.IdToken))
                 {
                     Logger.LogDebug(Resources.OIDCH_0020_IdTokenReceived, message.IdToken);
                     var securityTokenReceivedNotification =
                         new SecurityTokenReceivedNotification<OpenIdConnectMessage, OpenIdConnectAuthenticationOptions>(Context, Options)
                         {
-                            ProtocolMessage = message
+                            ProtocolMessage = message,
                         };
 
                     await Options.Notifications.SecurityTokenReceived(securityTokenReceivedNotification);
                     if (securityTokenReceivedNotification.HandledResponse)
                     {
-                        Logger.LogInformation(Resources.OIDCH_0008_SecurityTokenReceivedNotificationHandledResponse);
+                        Logger.LogVerbose(Resources.OIDCH_0008_SecurityTokenReceivedNotificationHandledResponse);
                         return securityTokenReceivedNotification.AuthenticationTicket;
                     }
 
                     if (securityTokenReceivedNotification.Skipped)
                     {
-                        Logger.LogInformation(Resources.OIDCH_0009_SecurityTokenReceivedNotificationSkipped);
+                        Logger.LogVerbose(Resources.OIDCH_0009_SecurityTokenReceivedNotificationSkipped);
                         return null;
                     }
 
@@ -313,11 +332,11 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                     var validationParameters = Options.TokenValidationParameters.Clone();
                     if (_configuration != null)
                     {
-                        if (string.IsNullOrWhiteSpace(validationParameters.ValidIssuer))
+                        if (string.IsNullOrEmpty(validationParameters.ValidIssuer))
                         {
                             validationParameters.ValidIssuer = _configuration.Issuer;
                         }
-                        else if (!string.IsNullOrWhiteSpace(_configuration.Issuer))
+                        else if (!string.IsNullOrEmpty(_configuration.Issuer))
                         {
                             validationParameters.ValidIssuers = validationParameters.ValidIssuers?.Concat(new[] { _configuration.Issuer }) ?? new[] { _configuration.Issuer };
                         }
@@ -336,7 +355,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                             if (jwt == null)
                             {
                                 Logger.LogError(Resources.OIDCH_0010_ValidatedSecurityTokenNotJwt, validatedToken?.GetType());
-                                throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, Resources.OIDCH_0010_ValidatedSecurityTokenNotJwt, validatedToken?.GetType()));
+                                throw new SecurityTokenException(string.Format(CultureInfo.InvariantCulture, Resources.OIDCH_0010_ValidatedSecurityTokenNotJwt, validatedToken?.GetType()));
                             }
                         }
                     }
@@ -344,16 +363,16 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                     if (validatedToken == null)
                     {
                         Logger.LogError(Resources.OIDCH_0011_UnableToValidateToken, message.IdToken);
-                        throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, Resources.OIDCH_0011_UnableToValidateToken, message.IdToken));
+                        throw new SecurityTokenException(string.Format(CultureInfo.InvariantCulture, Resources.OIDCH_0011_UnableToValidateToken, message.IdToken));
                     }
 
                     ticket = new AuthenticationTicket(principal, properties, Options.AuthenticationScheme);
-                    if (!string.IsNullOrWhiteSpace(message.SessionState))
+                    if (!string.IsNullOrEmpty(message.SessionState))
                     {
                         ticket.Properties.Items[OpenIdConnectSessionProperties.SessionState] = message.SessionState;
                     }
 
-                    if (_configuration != null && !string.IsNullOrWhiteSpace(_configuration.CheckSessionIframe))
+                    if (_configuration != null && !string.IsNullOrEmpty(_configuration.CheckSessionIframe))
                     {
                         ticket.Properties.Items[OpenIdConnectSessionProperties.CheckSessionIFrame] = _configuration.CheckSessionIframe;
                     }
@@ -384,13 +403,13 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                     await Options.Notifications.SecurityTokenValidated(securityTokenValidatedNotification);
                     if (securityTokenValidatedNotification.HandledResponse)
                     {
-                        Logger.LogInformation(Resources.OIDCH_0012_SecurityTokenValidatedNotificationHandledResponse);
+                        Logger.LogVerbose(Resources.OIDCH_0012_SecurityTokenValidatedNotificationHandledResponse);
                         return securityTokenValidatedNotification.AuthenticationTicket;
                     }
 
                     if (securityTokenValidatedNotification.Skipped)
                     {
-                        Logger.LogInformation(Resources.OIDCH_0013_SecurityTokenValidatedNotificationSkipped);
+                        Logger.LogVerbose(Resources.OIDCH_0013_SecurityTokenValidatedNotificationSkipped);
                         return null;
                     }
 
@@ -416,7 +435,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                     var protocolValidationContext = new OpenIdConnectProtocolValidationContext
                     {
                         AuthorizationCode = message.Code,
-                        Nonce = nonce, 
+                        Nonce = nonce,
                     };
 
                     Options.ProtocolValidator.Validate(jwt, protocolValidationContext);
@@ -424,7 +443,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
 
                 if (message.Code != null)
                 {
-                    Logger.LogDebug(Resources.OIDCH_0014_CodeReceived, message.Code);
+                    Logger.LogDebug(Resources.OIDCH_0014_AuthorizationCodeReceived, message.Code);
                     if (ticket == null)
                     {
                         ticket = new AuthenticationTicket(properties, Options.AuthenticationScheme);
@@ -436,20 +455,20 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                         Code = message.Code,
                         JwtSecurityToken = jwt,
                         ProtocolMessage = message,
-                        RedirectUri = ticket.Properties.Items.ContainsKey(OpenIdConnectAuthenticationDefaults.RedirectUriUsedForCodeKey) ?
-                                      ticket.Properties.Items[OpenIdConnectAuthenticationDefaults.RedirectUriUsedForCodeKey] : string.Empty,
+                        RedirectUri = ticket.Properties.Items.ContainsKey(OpenIdConnectAuthenticationDefaults.RedirectUriForCodePropertiesKey) ?
+                                      ticket.Properties.Items[OpenIdConnectAuthenticationDefaults.RedirectUriForCodePropertiesKey] : string.Empty,
                     };
 
                     await Options.Notifications.AuthorizationCodeReceived(authorizationCodeReceivedNotification);
                     if (authorizationCodeReceivedNotification.HandledResponse)
                     {
-                        Logger.LogInformation(Resources.OIDCH_0015_CodeReceivedNotificationHandledResponse);
+                        Logger.LogVerbose(Resources.OIDCH_0015_AuthorizationCodeReceivedNotificationHandledResponse);
                         return authorizationCodeReceivedNotification.AuthenticationTicket;
                     }
 
                     if (authorizationCodeReceivedNotification.Skipped)
                     {
-                        Logger.LogInformation(Resources.OIDCH_0016_CodeReceivedNotificationSkipped);
+                        Logger.LogVerbose(Resources.OIDCH_0016_AuthorizationCodeReceivedNotificationSkipped);
                         return null;
                     }
                 }
@@ -463,7 +482,11 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 // Refresh the configuration for exceptions that may be caused by key rollovers. The user can also request a refresh in the notification.
                 if (Options.RefreshOnIssuerKeyNotFound && exception.GetType().Equals(typeof(SecurityTokenSignatureKeyNotFoundException)))
                 {
-                    Options.ConfigurationManager.RequestRefresh();
+                    if (Options.ConfigurationManager != null)
+                    {
+                        Logger.LogVerbose(Resources.OIDCH_0021_AutomaticConfigurationRefresh);
+                        Options.ConfigurationManager.RequestRefresh();
+                    }
                 }
 
                 var authenticationFailedNotification =
@@ -476,13 +499,13 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 await Options.Notifications.AuthenticationFailed(authenticationFailedNotification);
                 if (authenticationFailedNotification.HandledResponse)
                 {
-                    Logger.LogInformation(Resources.OIDCH_0018_AuthenticationFailedNotificationHandledResponse);
+                    Logger.LogVerbose(Resources.OIDCH_0018_AuthenticationFailedNotificationHandledResponse);
                     return authenticationFailedNotification.AuthenticationTicket;
                 }
 
                 if (authenticationFailedNotification.Skipped)
                 {
-                    Logger.LogInformation(Resources.OIDCH_0019_AuthenticationFailedNotificationSkipped);
+                    Logger.LogVerbose(Resources.OIDCH_0019_AuthenticationFailedNotificationSkipped);
                     return null;
                 }
 
