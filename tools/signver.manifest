@@ -88,6 +88,7 @@
     <File Name="System.Runtime.Extensions.dll" Ignore="yes" />
     <File Name="System.Runtime.Handles.dll" Ignore="yes" />
     <File Name="System.Runtime.InteropServices.dll" Ignore="yes" />
+    <File Name="System.Runtime.InteropServices.RuntimeInformation.dll" Ignore="yes" />
     <File Name="System.Runtime.Loader.dll" Ignore="yes" />
     <File Name="System.Runtime.Numerics.dll" Ignore="yes" />
     <File Name="System.Runtime.Serialization.dll" Ignore="yes" />
