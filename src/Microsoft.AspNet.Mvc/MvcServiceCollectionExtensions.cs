@@ -108,22 +108,22 @@ namespace Microsoft.Framework.DependencyInjection
         /// <returns>The <see cref="IServiceCollection"/>.</returns>
         public static IServiceCollection AddMvcLocalization([NotNull] this IServiceCollection services)
         {
-            return AddMvcLocalization(services, LanguageViewLocationExpanderOption.Suffix);
+            return AddMvcLocalization(services, LanguageViewLocationExpanderFormat.Suffix);
         }
 
         /// <summary>
         ///  Adds Mvc localization to the application.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
-        /// <param name="option">The view format for localized views.</param>
+        /// <param name="format">The view format for localized views.</param>
         /// <returns>The <see cref="IServiceCollection"/>.</returns>
         public static IServiceCollection AddMvcLocalization(
             [NotNull] this IServiceCollection services,
-            LanguageViewLocationExpanderOption option)
+            LanguageViewLocationExpanderFormat format)
         {
             services.ConfigureRazorViewEngine(options =>
             {
-                options.ViewLocationExpanders.Add(new LanguageViewLocationExpander(option));
+                options.ViewLocationExpanders.Add(new LanguageViewLocationExpander(format));
             });
 
             return services;

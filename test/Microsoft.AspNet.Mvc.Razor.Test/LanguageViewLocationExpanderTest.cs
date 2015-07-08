@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
                 yield return new object[]
                 {
-                    LanguageViewLocationExpanderOption.Suffix,
+                    LanguageViewLocationExpanderFormat.Suffix,
                     new[]
                     {
                         "/Views/{1}/{0}.cshtml",
@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
                 yield return new object[]
                 {
-                    LanguageViewLocationExpanderOption.SubFolder,
+                    LanguageViewLocationExpanderFormat.SubFolder,
                     new[]
                     {
                         "/Views/{1}/{0}.cshtml",
@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
                 yield return new object[]
                 {
-                    LanguageViewLocationExpanderOption.Suffix,
+                    LanguageViewLocationExpanderFormat.Suffix,
                     new[]
                     {
                         "/Areas/{2}/Views/{1}/{0}.cshtml",
@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
                 yield return new object[]
                 {
-                    LanguageViewLocationExpanderOption.SubFolder,
+                    LanguageViewLocationExpanderFormat.SubFolder,
                     new[]
                     {
                         "/Areas/{2}/Views/{1}/{0}.cshtml",
@@ -126,13 +126,13 @@ namespace Microsoft.AspNet.Mvc.Razor
         [Theory]
         [MemberData(nameof(ViewLocationExpanderTestDataWithExpectedValues))]
         public void ExpandViewLocations_SpecificLocale(
-            LanguageViewLocationExpanderOption option,
+            LanguageViewLocationExpanderFormat format,
             IEnumerable<string> viewLocations,
             IEnumerable<string> expectedViewLocations)
         {
             // Arrange
             var viewLocationExpanderContext = new ViewLocationExpanderContext(new ActionContext(),"testView", false);
-            var languageViewLocationExpander = new LanguageViewLocationExpander(option);
+            var languageViewLocationExpander = new LanguageViewLocationExpander(format);
             viewLocationExpanderContext.Values = new Dictionary<string, string>();
             viewLocationExpanderContext.Values["language"] = "en-GB";
 

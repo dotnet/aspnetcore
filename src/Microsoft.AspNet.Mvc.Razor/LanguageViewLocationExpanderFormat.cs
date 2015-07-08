@@ -6,10 +6,10 @@ namespace Microsoft.AspNet.Mvc.Razor
     /// <summary>
     /// Specifies the localized view format for <see cref="LanguageViewLocationExpander"/>.
     /// </summary>
-    public enum LanguageViewLocationExpanderOption
+    public enum LanguageViewLocationExpanderFormat
     {
         /// <summary>
-        /// Locale is a subfolder under which the view exisits.
+        /// Locale is a subfolder under which the view exists.
         /// </summary>
         /// <example>
         /// Home/Views/en-US/Index.chtml

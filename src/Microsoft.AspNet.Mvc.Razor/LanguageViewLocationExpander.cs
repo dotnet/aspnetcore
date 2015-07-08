@@ -25,23 +25,23 @@ namespace Microsoft.AspNet.Mvc.Razor
     public class LanguageViewLocationExpander : IViewLocationExpander
     {
         private const string ValueKey = "language";
-        private LanguageViewLocationExpanderOption _option;
+        private LanguageViewLocationExpanderFormat _format;
 
         /// <summary>
         /// Instantiates a new <see cref="LanguageViewLocationExpander"/> instance.
         /// </summary>
         public LanguageViewLocationExpander()
-            : this(LanguageViewLocationExpanderOption.Suffix)
+            : this(LanguageViewLocationExpanderFormat.Suffix)
         {
         }
 
         /// <summary>
         /// Instantiates a new <see cref="DefaultTagHelperActivator"/> instance.
         /// </summary>
-        /// <param name="option">The <see cref="LanguageViewLocationExpanderOption"/>.</param>
-        public LanguageViewLocationExpander(LanguageViewLocationExpanderOption option)
+        /// <param name="format">The <see cref="LanguageViewLocationExpanderFormat"/>.</param>
+        public LanguageViewLocationExpander(LanguageViewLocationExpanderFormat format)
         {
-            _option = option;
+            _format = format;
         }
 
         /// <inheritdoc />
@@ -89,7 +89,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
                 while (temporaryCultureInfo != temporaryCultureInfo.Parent)
                 {
-                    if (_option == LanguageViewLocationExpanderOption.SubFolder)
+                    if (_format == LanguageViewLocationExpanderFormat.SubFolder)
                     {
                         yield return location.Replace("{0}", temporaryCultureInfo.Name + "/{0}");
                     }

@@ -46,7 +46,7 @@ namespace MvcSample.Web
                 options.Filters.Add(new FormatFilterAttribute());
             });
 
-            services.AddMvcLocalization(LanguageViewLocationExpanderOption.SubFolder);
+            services.AddMvcLocalization(LanguageViewLocationExpanderFormat.SubFolder);
 
 #if DNX451
             // Fully-qualify configuration path to avoid issues in functional tests. Just "config.json" would be fine
