@@ -3,8 +3,11 @@
 
 using System;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using Microsoft.AspNet.Testing;
+using Microsoft.Framework.WebEncoders;
+using Microsoft.Framework.WebEncoders.Testing;
 using Xunit;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
@@ -621,6 +624,22 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // Assert
             Assert.Equal(expected, tagHelperContent.GetContent());
+        }
+
+        [Fact]
+        public void WriteTo_WritesToATextWriter()
+        {
+            // Arrange
+            var tagHelperContent = new DefaultTagHelperContent();
+            var writer = new StringWriter();
+            tagHelperContent.SetContent("Hello ");
+            tagHelperContent.Append("World");
+
+            // Act
+            tagHelperContent.WriteTo(writer, new CommonTestEncoder());
+
+            // Assert
+            Assert.Equal("Hello World", writer.ToString());
         }
     }
 }

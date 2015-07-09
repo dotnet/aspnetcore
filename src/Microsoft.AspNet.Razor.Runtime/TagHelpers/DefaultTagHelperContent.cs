@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 {
@@ -207,6 +209,15 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // The enumerator is exposed so that SetContent(TagHelperContent) and Append(TagHelperContent)
             // can use this to iterate through the values of the buffer.
             return _buffer.GetEnumerator();
+        }
+
+        /// <inheritdoc />
+        public override void WriteTo(TextWriter writer, IHtmlEncoder encoder)
+        {
+            foreach (var entry in _buffer)
+            {
+                writer.Write(entry);
+            }
         }
     }
 }
