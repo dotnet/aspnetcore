@@ -76,24 +76,31 @@ namespace Microsoft.AspNet.Mvc.Test
         }
 
         [Fact]
-        public void WriteResponseContentHeaders_FormatterWithNoEncoding_Throws()
+        public void WriteResponseContentHeaders_NoSupportedEncodings_NoEncodingIsSet()
         {
             // Arrange
-            var testFormatter = new TestOutputFormatter();
-            var testContentType = MediaTypeHeaderValue.Parse("text/invalid");
-            var formatterContext = new OutputFormatterContext();
-            var mockHttpContext = new Mock<HttpContext>();
-            var httpRequest = new DefaultHttpContext().Request;
-            mockHttpContext.SetupGet(o => o.Request).Returns(httpRequest);
-            formatterContext.HttpContext = mockHttpContext.Object;
+            var formatter = new TestOutputFormatter();
 
-            // Act & Assert
-            var ex = Assert.Throws<InvalidOperationException>(
-                        () => testFormatter.WriteResponseHeaders(formatterContext));
-            Assert.Equal("No encoding found for output formatter " +
-                         "'Microsoft.AspNet.Mvc.Test.OutputFormatterTests+TestOutputFormatter'." +
-                         " There must be at least one supported encoding registered in order for the" +
-                         " output formatter to write content.", ex.Message);
+            var testContentType = MediaTypeHeaderValue.Parse("text/json");
+
+            formatter.SupportedEncodings.Clear();
+            formatter.SupportedMediaTypes.Clear();
+            formatter.SupportedMediaTypes.Add(testContentType);
+
+            var formatterContext = new OutputFormatterContext()
+            {
+                HttpContext = new DefaultHttpContext(),
+            };
+
+            // Act
+            formatter.WriteResponseHeaders(formatterContext);
+
+            // Assert
+            Assert.Null(formatterContext.SelectedEncoding);
+            Assert.Equal(testContentType, formatterContext.SelectedContentType);
+
+            // If we had set an encoding, it would be part of the content type header
+            Assert.Equal(testContentType, formatterContext.HttpContext.Response.GetTypedHeaders().ContentType);
         }
 
         [Fact]
