@@ -11,7 +11,7 @@ namespace ActionConstraintsWebSite
         [Consumes("text/json")]
         public Product CreateProduct([FromBody] Product_Json product)
         {
-            // should be picked if request content type is application/xml and not application/json.
+            // should be picked if request content type is text/json and not application/json.
             product.SampleString = "ConsumesAttribute_OverridesBaseController_text/json";
             return product;
         }
