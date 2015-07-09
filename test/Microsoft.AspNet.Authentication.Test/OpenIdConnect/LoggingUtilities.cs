@@ -43,6 +43,12 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
                     { "OIDCH_0020:", LogLevel.Debug },
                     { "OIDCH_0021:", LogLevel.Verbose },
                     { "OIDCH_0026:", LogLevel.Error },
+                    { "OIDCH_0038:", LogLevel.Debug },
+                    { "OIDCH_0040:", LogLevel.Debug },
+                    { "OIDCH_0042:", LogLevel.Debug },
+                    { "OIDCH_0043:", LogLevel.Verbose },
+                    { "OIDCH_0044:", LogLevel.Verbose },
+                    { "OIDCH_0045:", LogLevel.Debug }
             };
 
             BuildLogEntryList();

@@ -162,6 +162,15 @@
   <data name="OIDCH_0037_RedirectUri" xml:space="preserve">
     <value>OIDCH_0037: RedirectUri is: '{0}'.</value>
   </data>
+  <data name="OIDCH_0038_Redeeming_Auth_Code" xml:space="preserve">
+    <value>OIDCH_0038: Id Token is null. Redeeming code : {0} for tokens.</value>
+  </data>
+  <data name="OIDCH_0039_Subject_Claim_Mismatch" xml:space="preserve">
+    <value>OIDCH_0039: Subject claim received from userinfo endpoint does not match the one in the id token.</value>
+  </data>
+  <data name="OIDCH_0040_Sending_Request_UIEndpoint" xml:space="preserve">
+    <value>OIDCH_0040: Sending request to user info endpoint for retrieving claims.</value>
+  </data>
   <data name="OIDCH_0000_AuthenticateCoreAsync" xml:space="preserve">
     <value>OIDCH_0000: Entering: '{0}'.</value>
   </data>
@@ -227,5 +236,23 @@
   </data>
   <data name="OIDCH_0021_AutomaticConfigurationRefresh" xml:space="preserve">
     <value>OIDCH_0021: exception of type 'SecurityTokenSignatureKeyNotFoundException' thrown, Options.ConfigurationManager.RequestRefresh() called.</value>
+  </data>
+  <data name="OIDCH_0041_Subject_Claim_Not_Found" xml:space="preserve">
+    <value>OIDCH_0041: Subject claim not found in {0}.</value>
+  </data>
+  <data name="OIDCH_0042_AuthorizationCodeRedeemed" xml:space="preserve">
+    <value>OIDCH_0042: Authorization Code redeemed:  '{0}'</value>
+  </data>
+  <data name="OIDCH_0043_AuthorizationCodeRedeemedNotificationHandledResponse" xml:space="preserve">
+    <value>OIDCH_0043: AuthorizationCodeRedeemedNotification.HandledResponse</value>
+  </data>
+  <data name="OIDCH_0044_AuthorizationCodeRedeemedNotificationSkipped" xml:space="preserve">
+    <value>OIDCH_0044: AuthorizationCodeRedeemedNotification.Skipped</value>
+  </data>
+  <data name="OIDCH_0045_Id_Token_Code_Missing" xml:space="preserve">
+    <value>OIDCH_0045: Cannot process the message. Both id_token and code are missing.</value>
+  </data>
+  <data name="OIDCH_0046_UserInfo_Endpoint_Not_Set" xml:space="preserve">
+    <value>OIDCH_0046: UserInfo endpoint is not set. Request to retrieve claims from userinfo endpoint cannot be completed.</value>
   </data>
 </root>

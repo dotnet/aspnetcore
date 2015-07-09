@@ -181,6 +181,78 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         }
 
         /// <summary>
+        /// OIDCH_0038: Id Token is null. Redeeming code : {0} for tokens.
+        /// </summary>
+        internal static string OIDCH_0038_Redeeming_Auth_Code
+        {
+            get { return ResourceManager.GetString("OIDCH_0038_Redeeming_Auth_Code"); }
+        }
+
+        /// <summary>
+        /// OIDCH_0039: Subject claim received from userinfo endpoint does not match the one in the id token.
+        /// </summary>
+        internal static string OIDCH_0039_Subject_Claim_Mismatch
+        {
+            get { return ResourceManager.GetString("OIDCH_0039_Subject_Claim_Mismatch"); }
+        }
+
+        /// <summary>
+        /// OIDCH_0040: Sending request to user info endpoint for retrieving claims.
+        /// </summary>
+        internal static string OIDCH_0040_Sending_Request_UIEndpoint
+        {
+            get { return ResourceManager.GetString("OIDCH_0040_Sending_Request_UIEndpoint"); }
+        }
+
+        /// <summary>
+        /// OIDCH_0041: Subject claim not found in {0}.
+        /// </summary>
+        internal static string OIDCH_0041_Subject_Claim_Not_Found
+        {
+            get { return ResourceManager.GetString("OIDCH_0041_Subject_Claim_Not_Found"); }
+        }
+
+        /// <summary>
+        /// OIDCH_0042: AuthorizationCode redeemed: '{0}'
+        /// </summary>
+        internal static string OIDCH_0042_AuthorizationCodeRedeemed
+        {
+            get { return ResourceManager.GetString("OIDCH_0042_AuthorizationCodeRedeemed"); }
+        }
+
+        /// <summary>
+        /// OIDCH_0043: AuthorizationCodeRedeemedNotification.HandledResponse
+        /// </summary>
+        internal static string OIDCH_0043_AuthorizationCodeRedeemedNotificationHandledResponse
+        {
+            get { return ResourceManager.GetString("OIDCH_0043_AuthorizationCodeRedeemedNotificationHandledResponse"); }
+        }
+
+        /// <summary>
+        /// OIDCH_0044: AuthorizationCodeRedeemedNotification.Skipped
+        /// </summary>
+        internal static string OIDCH_0044_AuthorizationCodeRedeemedNotificationSkipped
+        {
+            get { return ResourceManager.GetString("OIDCH_0044_AuthorizationCodeRedeemedNotificationSkipped"); }
+        }
+
+        /// <summary>
+        /// OIDCH_0045: Cannot process the message.Both id_token and code are missing.
+        /// </summary>
+        internal static string OIDCH_0045_Id_Token_Code_Missing
+        {
+            get { return ResourceManager.GetString("OIDCH_0045_Id_Token_Code_Missing"); }
+        }
+
+        /// <summary>
+        /// OIDCH_0046: UserInfo endpoint is not set. Request to retrieve claims from userinfo endpoint cannot be completed.
+        /// </summary>
+        internal static string OIDCH_0046_UserInfo_Endpoint_Not_Set
+        {
+            get { return ResourceManager.GetString("OIDCH_0046_UserInfo_Endpoint_Not_Set"); }
+        }
+
+        /// <summary>
         /// OIDCH_0000: Entering: '{0}'.
         /// </summary>
         internal static string OIDCH_0000_AuthenticateCoreAsync

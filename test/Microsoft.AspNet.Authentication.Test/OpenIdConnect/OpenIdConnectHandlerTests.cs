@@ -104,8 +104,9 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             options.StateDataFormat = new AuthenticationPropertiesFormaterKeyValue();
             options.Notifications = new OpenIdConnectAuthenticationNotifications
             {
-                AuthorizationCodeReceived = notification =>
+                AuthorizationCodeRedeemed = notification =>
                 {
+                    notification.HandleResponse();
                     if (notification.ProtocolMessage.State == null && !notification.ProtocolMessage.Parameters.ContainsKey(ExpectedStateParameter))
                         return Task.FromResult<object>(null);
 
@@ -138,7 +139,7 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             get
             {
                 var formater = new AuthenticationPropertiesFormaterKeyValue();
-                var dataset = new TheoryData<LogLevel, int[], Action< OpenIdConnectAuthenticationOptions >, OpenIdConnectMessage>();
+                var dataset = new TheoryData<LogLevel, int[], Action<OpenIdConnectAuthenticationOptions>, OpenIdConnectMessage>();
                 var properties = new AuthenticationProperties();
                 var message = new OpenIdConnectMessage();
                 var validState = UrlEncoder.Default.UrlEncode(formater.Protect(properties));
@@ -155,13 +156,13 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
 
                 // State - null, empty string, invalid
                 message = new OpenIdConnectMessage();
-                dataset.Add(LogLevel.Debug, new int[] { 0, 1, 4, 7 }, StateNullOptions, message);
+                dataset.Add(LogLevel.Debug, new int[] { 0, 1, 4, 7, 28 }, StateNullOptions, message);
                 dataset.Add(LogLevel.Verbose, new int[] { 4, 7 }, StateNullOptions, message);
                 dataset.Add(LogLevel.Error, new int[] { }, StateNullOptions, message);
 
                 message = new OpenIdConnectMessage();
                 message.State = string.Empty;
-                dataset.Add(LogLevel.Debug, new int[] { 0, 1, 4, 7 }, StateEmptyOptions, message);
+                dataset.Add(LogLevel.Debug, new int[] { 0, 1, 4, 7, 28 }, StateEmptyOptions, message);
                 dataset.Add(LogLevel.Verbose, new int[] { 4, 7 }, StateEmptyOptions, message);
                 dataset.Add(LogLevel.Error, new int[] { }, StateEmptyOptions, message);
 
@@ -225,6 +226,34 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
                 dataset.Add(LogLevel.Verbose, new int[] { 7, 16 }, AuthorizationCodeReceivedSkippedOptions, message);
                 dataset.Add(LogLevel.Error, new int[] { }, AuthorizationCodeReceivedSkippedOptions, message);
 
+                message = new OpenIdConnectMessage();
+                message.Code = Guid.NewGuid().ToString();
+                message.State = validState;
+                message.IdToken = "test token";
+                dataset.Add(LogLevel.Debug, new int[] { 0, 1, 7, 20, 14, 15 }, AuthorizationCodeReceivedHandledOptions, message);
+                dataset.Add(LogLevel.Verbose, new int[] { 7, 15 }, AuthorizationCodeReceivedHandledOptions, message);
+                dataset.Add(LogLevel.Error, new int[] { }, AuthorizationCodeReceivedHandledOptions, message);
+
+                dataset.Add(LogLevel.Debug, new int[] { 0, 1, 7, 20, 14, 16 }, AuthorizationCodeReceivedSkippedOptions, message);
+                dataset.Add(LogLevel.Verbose, new int[] { 7, 16 }, AuthorizationCodeReceivedSkippedOptions, message);
+                dataset.Add(LogLevel.Error, new int[] { }, AuthorizationCodeReceivedSkippedOptions, message);
+
+                // CodeReceivedAndRedeemed and GetUserInformationFromUIEndpoint
+                message = new OpenIdConnectMessage();
+                message.IdToken = null;
+                message.Code = Guid.NewGuid().ToString();
+                dataset.Add(LogLevel.Debug, new int[] { 0, 1, 4, 7, 14, 23, 25, 26 }, CodeReceivedAndRedeemedHandledOptions, message);
+                dataset.Add(LogLevel.Verbose, new int[] { 4, 7, 26 }, CodeReceivedAndRedeemedHandledOptions, message);
+                dataset.Add(LogLevel.Error, new int[] { }, CodeReceivedAndRedeemedHandledOptions, message);
+
+                dataset.Add(LogLevel.Debug, new int[] { 0, 1, 4, 7, 14, 23, 25, 27 }, CodeReceivedAndRedeemedSkippedOptions, message);
+                dataset.Add(LogLevel.Verbose, new int[] { 4, 7, 27 }, CodeReceivedAndRedeemedSkippedOptions, message);
+                dataset.Add(LogLevel.Error, new int[] { }, CodeReceivedAndRedeemedSkippedOptions, message);
+
+                dataset.Add(LogLevel.Debug, new int[] { 0, 1, 4, 7, 14, 23, 25, 24, 12 }, GetUserInfoFromUIEndpoint, message);
+                dataset.Add(LogLevel.Verbose, new int[] { 4, 7, 12 }, GetUserInfoFromUIEndpoint, message);
+                dataset.Add(LogLevel.Error, new int[] { }, GetUserInfoFromUIEndpoint, message);
+
                 return dataset;
             }
         }
@@ -243,6 +272,8 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
         private static void AuthorizationCodeReceivedHandledOptions(OpenIdConnectAuthenticationOptions options)
         {
             DefaultOptions(options);
+            options.SecurityTokenValidators = new Collection<ISecurityTokenValidator> { MockSecurityTokenValidator() };
+            options.ProtocolValidator = MockProtocolValidator();
             options.Notifications =
                 new OpenIdConnectAuthenticationNotifications
                 {
@@ -257,6 +288,8 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
         private static void AuthorizationCodeReceivedSkippedOptions(OpenIdConnectAuthenticationOptions options)
         {
             DefaultOptions(options);
+            options.SecurityTokenValidators = new Collection<ISecurityTokenValidator> { MockSecurityTokenValidator() };
+            options.ProtocolValidator = MockProtocolValidator();
             options.Notifications =
                 new OpenIdConnectAuthenticationNotifications
                 {
@@ -271,6 +304,8 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
         private static void AuthenticationErrorHandledOptions(OpenIdConnectAuthenticationOptions options)
         {
             DefaultOptions(options);
+            options.SecurityTokenValidators = new Collection<ISecurityTokenValidator> { MockSecurityTokenValidator() };
+            options.ProtocolValidator = MockProtocolValidator();
             options.Notifications =
                 new OpenIdConnectAuthenticationNotifications
                 {
@@ -285,6 +320,8 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
         private static void AuthenticationErrorSkippedOptions(OpenIdConnectAuthenticationOptions options)
         {
             DefaultOptions(options);
+            options.SecurityTokenValidators = new Collection<ISecurityTokenValidator> { MockSecurityTokenValidator() };
+            options.ProtocolValidator = MockProtocolValidator();
             options.Notifications =
                 new OpenIdConnectAuthenticationNotifications
                 {
@@ -310,6 +347,57 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
                 };
         }
 
+        private static void CodeReceivedAndRedeemedHandledOptions(OpenIdConnectAuthenticationOptions options)
+        {
+            DefaultOptions(options);
+            options.ResponseType = OpenIdConnectResponseTypes.Code;
+            options.StateDataFormat = new AuthenticationPropertiesFormaterKeyValue();
+            options.Notifications =
+                new OpenIdConnectAuthenticationNotifications
+                {
+                    AuthorizationCodeRedeemed = (notification) =>
+                    {
+                        notification.HandleResponse();
+                        return Task.FromResult<object>(null);
+                    }
+                };
+        }
+
+        private static void CodeReceivedAndRedeemedSkippedOptions(OpenIdConnectAuthenticationOptions options)
+        {
+            DefaultOptions(options);
+            options.ResponseType = OpenIdConnectResponseTypes.Code;
+            options.StateDataFormat = new AuthenticationPropertiesFormaterKeyValue();
+            options.Notifications =
+                new OpenIdConnectAuthenticationNotifications
+                {
+                    AuthorizationCodeRedeemed = (notification) =>
+                    {
+                        notification.SkipToNextMiddleware();
+                        return Task.FromResult<object>(null);
+                    }
+                };
+        }
+
+        private static void GetUserInfoFromUIEndpoint(OpenIdConnectAuthenticationOptions options)
+        {
+            DefaultOptions(options);
+            options.ResponseType = OpenIdConnectResponseTypes.Code;
+            options.StateDataFormat = new AuthenticationPropertiesFormaterKeyValue();
+            options.GetClaimsFromUserInfoEndpoint = true;
+            options.SecurityTokenValidators = new Collection<ISecurityTokenValidator> { MockSecurityTokenValidator() };
+            options.Notifications =
+                new OpenIdConnectAuthenticationNotifications
+                {
+                    SecurityTokenValidated = (notification) =>
+                    {
+                        var claimValue = notification.AuthenticationTicket.Principal.FindFirst("test claim");
+                        Assert.Equal(claimValue.Value, "test value");
+                        notification.HandleResponse();
+                        return Task.FromResult<object>(null);
+                    }
+                };
+        }
         private static void MessageReceivedSkippedOptions(OpenIdConnectAuthenticationOptions options)
         {
             DefaultOptions(options);
@@ -357,6 +445,21 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
                 };
         }
 
+        private static ISecurityTokenValidator MockSecurityTokenValidator()
+        {
+            var mockValidator = new Mock<ISecurityTokenValidator>();
+            mockValidator.Setup(v => v.ValidateToken(It.IsAny<string>(), It.IsAny<TokenValidationParameters>(), out specCompliantJwt)).Returns(new ClaimsPrincipal());
+            mockValidator.Setup(v => v.CanReadToken(It.IsAny<string>())).Returns(true);
+            return mockValidator.Object;
+        }
+
+        private static OpenIdConnectProtocolValidator MockProtocolValidator()
+        {
+            var mockProtocolValidator = new Mock<OpenIdConnectProtocolValidator>();
+            mockProtocolValidator.Setup(v => v.Validate(It.IsAny<JwtSecurityToken>(), It.IsAny<OpenIdConnectProtocolValidationContext>()));
+            return mockProtocolValidator.Object;
+        }
+
         private static void SecurityTokenValidatorCannotReadToken(OpenIdConnectAuthenticationOptions options)
         {
             AuthenticationErrorHandledOptions(options);
@@ -380,10 +483,7 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
         private static void SecurityTokenValidatorValidatesAllTokens(OpenIdConnectAuthenticationOptions options)
         {
             DefaultOptions(options);
-            var mockValidator = new Mock<ISecurityTokenValidator>();
-            mockValidator.Setup(v => v.ValidateToken(It.IsAny<string>(), It.IsAny<TokenValidationParameters>(), out specCompliantJwt)).Returns(new ClaimsPrincipal());
-            mockValidator.Setup(v => v.CanReadToken(It.IsAny<string>())).Returns(true);
-            options.SecurityTokenValidators = new Collection<ISecurityTokenValidator> { mockValidator.Object };
+            options.SecurityTokenValidators = new Collection<ISecurityTokenValidator> { MockSecurityTokenValidator() };
             options.ProtocolValidator.RequireTimeStampInNonce = false;
             options.ProtocolValidator.RequireNonce = false;
         }

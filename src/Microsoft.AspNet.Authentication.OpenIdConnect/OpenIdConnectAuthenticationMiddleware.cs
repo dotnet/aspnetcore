@@ -103,6 +103,11 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 Options.TokenValidationParameters.ValidAudience = Options.ClientId;
             }
 
+            Backchannel = new HttpClient(ResolveHttpMessageHandler(Options));
+            Backchannel.DefaultRequestHeaders.UserAgent.ParseAdd("Microsoft ASP.NET OpenIdConnect middleware");
+            Backchannel.Timeout = Options.BackchannelTimeout;
+            Backchannel.MaxResponseContentBufferSize = 1024 * 1024 * 10; // 10 MB
+
             if (Options.ConfigurationManager == null)
             {
                 if (Options.Configuration != null)
@@ -122,10 +127,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                         Options.MetadataAddress += ".well-known/openid-configuration";
                     }
 
-                    var httpClient = new HttpClient(ResolveHttpMessageHandler(Options));
-                    httpClient.Timeout = Options.BackchannelTimeout;
-                    httpClient.MaxResponseContentBufferSize = 1024 * 1024 * 10; // 10 MB
-                    Options.ConfigurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(Options.MetadataAddress, httpClient);
+                    Options.ConfigurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(Options.MetadataAddress, Backchannel);
                 }
             }
 
@@ -137,13 +139,15 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             }
         }
 
+        protected HttpClient Backchannel { get; private set; }
+
         /// <summary>
         /// Provides the <see cref="AuthenticationHandler"/> object for processing authentication-related requests.
         /// </summary>
         /// <returns>An <see cref="AuthenticationHandler"/> configured with the <see cref="OpenIdConnectAuthenticationOptions"/> supplied to the constructor.</returns>
         protected override AuthenticationHandler<OpenIdConnectAuthenticationOptions> CreateHandler()
         {
-            return new OpenIdConnectAuthenticationHandler();
+            return new OpenIdConnectAuthenticationHandler(Backchannel);
         }
 
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Managed by caller")]

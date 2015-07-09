@@ -6,6 +6,8 @@ using System.Globalization;
 using System.IdentityModel.Tokens;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Authentication.Notifications;
@@ -16,6 +18,7 @@ using Microsoft.Framework.Caching.Distributed;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 using Microsoft.IdentityModel.Protocols;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.Authentication.OpenIdConnect
 {
@@ -27,6 +30,13 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         private const string NonceProperty = "N";
         private const string UriSchemeDelimiter = "://";
         private OpenIdConnectConfiguration _configuration;
+
+        protected HttpClient Backchannel { get; private set; }
+
+        public OpenIdConnectAuthenticationHandler(HttpClient backchannel)
+        {
+            Backchannel = backchannel;
+        }
 
         /// <summary>
         /// Handles Signout
@@ -116,17 +126,6 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 properties.RedirectUri = CurrentUri;
             }
 
-            if (!string.IsNullOrEmpty(Options.RedirectUri))
-            {
-                Logger.LogDebug(Resources.OIDCH_0031_Using_Options_RedirectUri, Options.RedirectUri);
-            }
-
-            // When redeeming a 'code' for an AccessToken, this value is needed
-            if (!string.IsNullOrEmpty(Options.RedirectUri))
-            {
-                properties.Items.Add(OpenIdConnectAuthenticationDefaults.RedirectUriForCodePropertiesKey, Options.RedirectUri);
-            }
-
             if (_configuration == null && Options.ConfigurationManager != null)
             {
                 _configuration = await Options.ConfigurationManager.GetConfigurationAsync(Context.RequestAborted);
@@ -195,6 +194,19 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 message = redirectToIdentityProviderNotification.ProtocolMessage;
             }
 
+            var redirectUriForCode = message.RedirectUri;
+            if (string.IsNullOrEmpty(redirectUriForCode))
+            {
+                Logger.LogDebug(Resources.OIDCH_0031_Using_Options_RedirectUri, Options.RedirectUri);
+                redirectUriForCode = Options.RedirectUri;
+            }
+
+            if (!string.IsNullOrEmpty(redirectUriForCode))
+            {
+                // When redeeming a 'code' for an AccessToken, this value is needed
+                properties.Items.Add(OpenIdConnectAuthenticationDefaults.RedirectUriForCodePropertiesKey, redirectUriForCode);
+            }
+
             message.State = Options.StateDataFormat.Protect(properties);
 
             var redirectUri = message.CreateAuthenticationRequestUrl();
@@ -243,27 +255,13 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
 
             try
             {
-                if (Logger.IsEnabled(LogLevel.Debug))
-                {
-                    Logger.LogDebug(Resources.OIDCH_0001_MessageReceived, message.BuildRedirectUrl());
-                }
-
-                var messageReceivedNotification =
-                    new MessageReceivedNotification<OpenIdConnectMessage, OpenIdConnectAuthenticationOptions>(Context, Options)
-                    {
-                        ProtocolMessage = message
-                    };
-
-                await Options.Notifications.MessageReceived(messageReceivedNotification);
+                var messageReceivedNotification = await RunMessageReceivedNotificationAsync(message);
                 if (messageReceivedNotification.HandledResponse)
                 {
-                    Logger.LogVerbose(Resources.OIDCH_0002_MessageReceivedNotificationHandledResponse);
                     return messageReceivedNotification.AuthenticationTicket;
                 }
-
-                if (messageReceivedNotification.Skipped)
+                else if (messageReceivedNotification.Skipped)
                 {
-                    Logger.LogVerbose(Resources.OIDCH_0003_MessageReceivedNotificationSkipped);
                     return null;
                 }
 
@@ -302,178 +300,19 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                     _configuration = await Options.ConfigurationManager.GetConfigurationAsync(Context.RequestAborted);
                 }
 
-                AuthenticationTicket ticket = null;
-                JwtSecurityToken jwt = null;
-
-                // OpenIdConnect protocol allows a Code to be received without the id_token
-                if (!string.IsNullOrEmpty(message.IdToken))
+                if (string.IsNullOrEmpty(message.IdToken) && !string.IsNullOrEmpty(message.Code))
                 {
-                    Logger.LogDebug(Resources.OIDCH_0020_IdTokenReceived, message.IdToken);
-                    var securityTokenReceivedNotification =
-                        new SecurityTokenReceivedNotification<OpenIdConnectMessage, OpenIdConnectAuthenticationOptions>(Context, Options)
-                        {
-                            ProtocolMessage = message,
-                        };
-
-                    await Options.Notifications.SecurityTokenReceived(securityTokenReceivedNotification);
-                    if (securityTokenReceivedNotification.HandledResponse)
-                    {
-                        Logger.LogVerbose(Resources.OIDCH_0008_SecurityTokenReceivedNotificationHandledResponse);
-                        return securityTokenReceivedNotification.AuthenticationTicket;
-                    }
-
-                    if (securityTokenReceivedNotification.Skipped)
-                    {
-                        Logger.LogVerbose(Resources.OIDCH_0009_SecurityTokenReceivedNotificationSkipped);
-                        return null;
-                    }
-
-                    // Copy and augment to avoid cross request race conditions for updated configurations.
-                    var validationParameters = Options.TokenValidationParameters.Clone();
-                    if (_configuration != null)
-                    {
-                        if (string.IsNullOrEmpty(validationParameters.ValidIssuer))
-                        {
-                            validationParameters.ValidIssuer = _configuration.Issuer;
-                        }
-                        else if (!string.IsNullOrEmpty(_configuration.Issuer))
-                        {
-                            validationParameters.ValidIssuers = validationParameters.ValidIssuers?.Concat(new[] { _configuration.Issuer }) ?? new[] { _configuration.Issuer };
-                        }
-
-                        validationParameters.IssuerSigningKeys = validationParameters.IssuerSigningKeys?.Concat(_configuration.SigningKeys) ?? _configuration.SigningKeys;
-                    }
-
-                    SecurityToken validatedToken = null;
-                    ClaimsPrincipal principal = null;
-                    foreach (var validator in Options.SecurityTokenValidators)
-                    {
-                        if (validator.CanReadToken(message.IdToken))
-                        {
-                            principal = validator.ValidateToken(message.IdToken, validationParameters, out validatedToken);
-                            jwt = validatedToken as JwtSecurityToken;
-                            if (jwt == null)
-                            {
-                                Logger.LogError(Resources.OIDCH_0010_ValidatedSecurityTokenNotJwt, validatedToken?.GetType());
-                                throw new SecurityTokenException(string.Format(CultureInfo.InvariantCulture, Resources.OIDCH_0010_ValidatedSecurityTokenNotJwt, validatedToken?.GetType()));
-                            }
-                        }
-                    }
-
-                    if (validatedToken == null)
-                    {
-                        Logger.LogError(Resources.OIDCH_0011_UnableToValidateToken, message.IdToken);
-                        throw new SecurityTokenException(string.Format(CultureInfo.InvariantCulture, Resources.OIDCH_0011_UnableToValidateToken, message.IdToken));
-                    }
-
-                    ticket = new AuthenticationTicket(principal, properties, Options.AuthenticationScheme);
-                    if (!string.IsNullOrEmpty(message.SessionState))
-                    {
-                        ticket.Properties.Items[OpenIdConnectSessionProperties.SessionState] = message.SessionState;
-                    }
-
-                    if (_configuration != null && !string.IsNullOrEmpty(_configuration.CheckSessionIframe))
-                    {
-                        ticket.Properties.Items[OpenIdConnectSessionProperties.CheckSessionIFrame] = _configuration.CheckSessionIframe;
-                    }
-
-                    // Rename?
-                    if (Options.UseTokenLifetime)
-                    {
-                        var issued = validatedToken.ValidFrom;
-                        if (issued != DateTime.MinValue)
-                        {
-                            ticket.Properties.IssuedUtc = issued;
-                        }
-
-                        var expires = validatedToken.ValidTo;
-                        if (expires != DateTime.MinValue)
-                        {
-                            ticket.Properties.ExpiresUtc = expires;
-                        }
-                    }
-
-                    var securityTokenValidatedNotification =
-                        new SecurityTokenValidatedNotification<OpenIdConnectMessage, OpenIdConnectAuthenticationOptions>(Context, Options)
-                        {
-                            AuthenticationTicket = ticket,
-                            ProtocolMessage = message
-                        };
-
-                    await Options.Notifications.SecurityTokenValidated(securityTokenValidatedNotification);
-                    if (securityTokenValidatedNotification.HandledResponse)
-                    {
-                        Logger.LogVerbose(Resources.OIDCH_0012_SecurityTokenValidatedNotificationHandledResponse);
-                        return securityTokenValidatedNotification.AuthenticationTicket;
-                    }
-
-                    if (securityTokenValidatedNotification.Skipped)
-                    {
-                        Logger.LogVerbose(Resources.OIDCH_0013_SecurityTokenValidatedNotificationSkipped);
-                        return null;
-                    }
-
-                    string nonce = jwt.Payload.Nonce;
-                    if (Options.CacheNonces)
-                    {
-                        if (await Options.NonceCache.GetAsync(nonce) != null)
-                        {
-                            await Options.NonceCache.RemoveAsync(nonce);
-                        }
-                        else
-                        {
-                            // If the nonce cannot be removed, it was
-                            // already used and MUST be rejected.
-                            nonce = null;
-                        }
-                    }
-                    else
-                    {
-                        nonce = ReadNonceCookie(nonce);
-                    }
-
-                    var protocolValidationContext = new OpenIdConnectProtocolValidationContext
-                    {
-                        AuthorizationCode = message.Code,
-                        Nonce = nonce,
-                    };
-
-                    Options.ProtocolValidator.Validate(jwt, protocolValidationContext);
+                    return await HandleCodeOnlyFlow(message, properties);
                 }
-
-                if (message.Code != null)
+                else if (!string.IsNullOrEmpty(message.IdToken))
                 {
-                    Logger.LogDebug(Resources.OIDCH_0014_AuthorizationCodeReceived, message.Code);
-                    if (ticket == null)
-                    {
-                        ticket = new AuthenticationTicket(properties, Options.AuthenticationScheme);
-                    }
-
-                    var authorizationCodeReceivedNotification = new AuthorizationCodeReceivedNotification(Context, Options)
-                    {
-                        AuthenticationTicket = ticket,
-                        Code = message.Code,
-                        JwtSecurityToken = jwt,
-                        ProtocolMessage = message,
-                        RedirectUri = ticket.Properties.Items.ContainsKey(OpenIdConnectAuthenticationDefaults.RedirectUriForCodePropertiesKey) ?
-                                      ticket.Properties.Items[OpenIdConnectAuthenticationDefaults.RedirectUriForCodePropertiesKey] : string.Empty,
-                    };
-
-                    await Options.Notifications.AuthorizationCodeReceived(authorizationCodeReceivedNotification);
-                    if (authorizationCodeReceivedNotification.HandledResponse)
-                    {
-                        Logger.LogVerbose(Resources.OIDCH_0015_AuthorizationCodeReceivedNotificationHandledResponse);
-                        return authorizationCodeReceivedNotification.AuthenticationTicket;
-                    }
-
-                    if (authorizationCodeReceivedNotification.Skipped)
-                    {
-                        Logger.LogVerbose(Resources.OIDCH_0016_AuthorizationCodeReceivedNotificationSkipped);
-                        return null;
-                    }
+                    return await HandleIdTokenFlows(message, properties);
                 }
-
-                return ticket;
+                else
+                {
+                    Logger.LogDebug(Resources.OIDCH_0045_Id_Token_Code_Missing);
+                    return null;
+                }
             }
             catch (Exception exception)
             {
@@ -489,28 +328,227 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                     }
                 }
 
-                var authenticationFailedNotification =
-                    new AuthenticationFailedNotification<OpenIdConnectMessage, OpenIdConnectAuthenticationOptions>(Context, Options)
-                    {
-                        ProtocolMessage = message,
-                        Exception = exception
-                    };
-
-                await Options.Notifications.AuthenticationFailed(authenticationFailedNotification);
+                var authenticationFailedNotification = await RunAuthenticationFailedNotificationAsync(message, exception);
                 if (authenticationFailedNotification.HandledResponse)
                 {
-                    Logger.LogVerbose(Resources.OIDCH_0018_AuthenticationFailedNotificationHandledResponse);
                     return authenticationFailedNotification.AuthenticationTicket;
                 }
-
-                if (authenticationFailedNotification.Skipped)
+                else if (authenticationFailedNotification.Skipped)
                 {
-                    Logger.LogVerbose(Resources.OIDCH_0019_AuthenticationFailedNotificationSkipped);
                     return null;
                 }
 
                 throw;
             }
+        }
+
+        private async Task<AuthenticationTicket> HandleCodeOnlyFlow(OpenIdConnectMessage message, AuthenticationProperties properties)
+        {
+            AuthenticationTicket ticket = null;
+            JwtSecurityToken jwt = null;
+
+            OpenIdConnectTokenEndpointResponse tokenEndpointResponse = null;
+            string idToken = null;
+            var authorizationCodeReceivedNotification = await RunAuthorizationCodeReceivedNotificationAsync(message, properties, ticket, jwt);
+            if (authorizationCodeReceivedNotification.HandledResponse)
+            {
+                return authorizationCodeReceivedNotification.AuthenticationTicket;
+            }
+            else if (authorizationCodeReceivedNotification.Skipped)
+            {
+                return null;
+            }
+
+            // Redeeming authorization code for tokens
+            Logger.LogDebug(Resources.OIDCH_0038_Redeeming_Auth_Code, message.Code);
+
+            tokenEndpointResponse = await RedeemAuthorizationCodeAsync(message.Code, authorizationCodeReceivedNotification.RedirectUri);
+            idToken = tokenEndpointResponse.Message.IdToken;
+
+            var authorizationCodeRedeemedNotification = await RunAuthorizationCodeRedeemedNotificationAsync(message, tokenEndpointResponse);
+            if (authorizationCodeRedeemedNotification.HandledResponse)
+            {
+                return authorizationCodeRedeemedNotification.AuthenticationTicket;
+            }
+            else if (authorizationCodeRedeemedNotification.Skipped)
+            {
+                return null;
+            }
+
+            // no need to validate signature when token is received using "code flow" as per spec [http://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation].
+            var validationParameters = Options.TokenValidationParameters.Clone();
+            validationParameters.ValidateSignature = false;
+
+            ticket = ValidateToken(idToken, message, properties, validationParameters, out jwt);
+
+            if (Options.GetClaimsFromUserInfoEndpoint)
+            {
+                Logger.LogDebug(Resources.OIDCH_0040_Sending_Request_UIEndpoint);
+                ticket = await GetUserInformationAsync(properties, tokenEndpointResponse.Message, ticket);
+            }
+
+            var securityTokenValidatedNotification = await RunSecurityTokenValidatedNotificationAsync(message, ticket);
+            if (securityTokenValidatedNotification.HandledResponse)
+            {
+                return securityTokenValidatedNotification.AuthenticationTicket;
+            }
+            else if (securityTokenValidatedNotification.Skipped)
+            {
+                return null;
+            }
+
+            // If id_token is received using code only flow, no need to validate chash.
+            await ValidateOpenIdConnectProtocolAsync(jwt, message, false);
+
+            return ticket;
+        }
+
+        private async Task<AuthenticationTicket> HandleIdTokenFlows(OpenIdConnectMessage message, AuthenticationProperties properties)
+        {
+            AuthenticationTicket ticket = null;
+            JwtSecurityToken jwt = null;
+
+            var securityTokenReceivedNotification = await RunSecurityTokenReceivedNotificationAsync(message);
+            if (securityTokenReceivedNotification.HandledResponse)
+            {
+                return securityTokenReceivedNotification.AuthenticationTicket;
+            }
+            else if (securityTokenReceivedNotification.Skipped)
+            {
+                return null;
+            }
+
+            var validationParameters = Options.TokenValidationParameters.Clone();
+            ticket = ValidateToken(message.IdToken, message, properties, validationParameters, out jwt);
+
+            var securityTokenValidatedNotification = await RunSecurityTokenValidatedNotificationAsync(message, ticket);
+            if (securityTokenValidatedNotification.HandledResponse)
+            {
+                return securityTokenValidatedNotification.AuthenticationTicket;
+            }
+            else if (securityTokenValidatedNotification.Skipped)
+            {
+                return null;
+            }
+
+            await ValidateOpenIdConnectProtocolAsync(jwt, message);
+
+            if (message.Code != null)
+            {
+                var authorizationCodeReceivedNotification = await RunAuthorizationCodeReceivedNotificationAsync(message, properties, ticket, jwt);
+                if (authorizationCodeReceivedNotification.HandledResponse)
+                {
+                    return authorizationCodeReceivedNotification.AuthenticationTicket;
+                }
+                else if (authorizationCodeReceivedNotification.Skipped)
+                {
+                    return null;
+                }
+            }
+
+            return ticket;
+        }
+
+        /// <summary>
+        /// Redeems the authorization code for tokens at the token endpoint
+        /// </summary>
+        /// <param name="authorizationCode">The authorization code to redeem.</param>
+        /// <param name="redirectUri">Uri that was passed in the request sent for the authorization code.</param>
+        /// <returns>OpenIdConnect message that has tokens inside it.</returns>
+        protected virtual async Task<OpenIdConnectTokenEndpointResponse> RedeemAuthorizationCodeAsync(string authorizationCode, string redirectUri)
+        {
+            var openIdMessage = new OpenIdConnectMessage()
+            {
+                ClientId = Options.ClientId,
+                ClientSecret = Options.ClientSecret,
+                Code = authorizationCode,
+                GrantType = "authorization_code",
+                RedirectUri = redirectUri
+            };
+
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, _configuration.TokenEndpoint);
+            requestMessage.Content = new FormUrlEncodedContent(openIdMessage.Parameters);
+            var responseMessage = await Backchannel.SendAsync(requestMessage);
+            responseMessage.EnsureSuccessStatusCode();
+            var tokenResonse = await responseMessage.Content.ReadAsStringAsync();
+            var jsonTokenResponse = JObject.Parse(tokenResonse);
+            return new OpenIdConnectTokenEndpointResponse(jsonTokenResponse);
+        }
+
+        /// <summary>
+        /// Goes to UserInfo endpoint to retrieve additional claims and add any unique claims to the given identity.
+        /// </summary>
+        /// <param name="properties">Authentication Properties</param>
+        /// <param name="message">message that is being processed</param>
+        /// <param name="ticket">authentication ticket with claims principal and identities</param>
+        /// <returns>Authentication ticket with identity with additional claims, if any.</returns>
+        protected virtual async Task<AuthenticationTicket> GetUserInformationAsync(AuthenticationProperties properties, OpenIdConnectMessage message, AuthenticationTicket ticket)
+        {
+            string userInfoEndpoint = null;
+            if (_configuration != null)
+            {
+                userInfoEndpoint = _configuration.UserInfoEndpoint;
+            }
+
+            if (string.IsNullOrEmpty(userInfoEndpoint))
+            {
+                Logger.LogWarning(Resources.OIDCH_0046_UserInfo_Endpoint_Not_Set);
+                return ticket;
+            }
+
+            var requestMessage = new HttpRequestMessage(HttpMethod.Get, userInfoEndpoint);
+            requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", message.AccessToken);
+            var responseMessage = await Backchannel.SendAsync(requestMessage);
+            responseMessage.EnsureSuccessStatusCode();
+            var userInfoResponse = await responseMessage.Content.ReadAsStringAsync();
+            var user = JObject.Parse(userInfoResponse);
+
+            var identity = (ClaimsIdentity)ticket.Principal.Identity;
+            var subjectClaimType = identity.FindFirst(ClaimTypes.NameIdentifier);
+            if (subjectClaimType == null)
+            {
+                Logger.LogError(string.Format(CultureInfo.InvariantCulture, Resources.OIDCH_0041_Subject_Claim_Not_Found, identity.ToString()));
+                return ticket;
+            }
+
+            var userInfoSubjectClaimValue = user.Value<string>(JwtRegisteredClaimNames.Sub);
+
+            // check if the sub claim matches
+            if (userInfoSubjectClaimValue == null || !string.Equals(userInfoSubjectClaimValue, subjectClaimType.Value, StringComparison.Ordinal))
+            {
+                Logger.LogError(Resources.OIDCH_0039_Subject_Claim_Mismatch);
+                return ticket;
+            }
+
+            foreach (var claim in identity.Claims)
+            {
+                // If this claimType is mapped by the JwtSeurityTokenHandler, then this property will be set
+                var shortClaimTypeName = claim.Properties.ContainsKey(JwtSecurityTokenHandler.ShortClaimTypeProperty) ?
+                    claim.Properties[JwtSecurityTokenHandler.ShortClaimTypeProperty] : string.Empty;
+
+                // checking if claim in the identity (generated from id_token) has the same type as a claim retrieved from userinfo endpoint
+                JToken value;
+                var isClaimIncluded = user.TryGetValue(claim.Type, out value) || user.TryGetValue(shortClaimTypeName, out value);
+
+                // if a same claim exists (matching both type and value) both in id_token identity and userinfo response, remove the json entry from the userinfo response
+                if (isClaimIncluded && claim.Value.Equals(value.ToString(), StringComparison.Ordinal))
+                {
+                    if (!user.Remove(claim.Type))
+                    {
+                        user.Remove(shortClaimTypeName);
+                    }
+                }
+            }
+
+            // adding remaining unique claims from userinfo endpoint to the identity
+            foreach (var pair in user)
+            {
+                JToken value;
+                var claimValue = user.TryGetValue(pair.Key, out value) ? value.ToString() : null;
+                identity.AddClaim(new Claim(pair.Key, claimValue, ClaimValueTypes.String, Options.ClaimsIssuer));
+            }
+
+            return new AuthenticationTicket(new ClaimsPrincipal(identity), ticket.Properties, ticket.AuthenticationScheme);
         }
 
         /// <summary>
@@ -607,6 +645,251 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             {
                 return Options.StateDataFormat.Unprotect(Uri.UnescapeDataString(state.Substring(authenticationIndex, endIndex).Replace('+', ' ')));
             }
+        }
+
+        private async Task<MessageReceivedNotification<OpenIdConnectMessage, OpenIdConnectAuthenticationOptions>> RunMessageReceivedNotificationAsync(OpenIdConnectMessage message)
+        {
+            Logger.LogDebug(Resources.OIDCH_0001_MessageReceived, message.BuildRedirectUrl());
+            var messageReceivedNotification =
+                new MessageReceivedNotification<OpenIdConnectMessage, OpenIdConnectAuthenticationOptions>(Context, Options)
+                {
+                    ProtocolMessage = message
+                };
+
+            await Options.Notifications.MessageReceived(messageReceivedNotification);
+            if (messageReceivedNotification.HandledResponse)
+            {
+                Logger.LogVerbose(Resources.OIDCH_0002_MessageReceivedNotificationHandledResponse);
+            }
+            else if (messageReceivedNotification.Skipped)
+            {
+                Logger.LogVerbose(Resources.OIDCH_0003_MessageReceivedNotificationSkipped);
+            }
+
+            return messageReceivedNotification;
+        }
+
+        private async Task<AuthorizationCodeReceivedNotification> RunAuthorizationCodeReceivedNotificationAsync(OpenIdConnectMessage message, AuthenticationProperties properties, AuthenticationTicket ticket, JwtSecurityToken jwt)
+        {
+            var redirectUri = properties.Items.ContainsKey(OpenIdConnectAuthenticationDefaults.RedirectUriForCodePropertiesKey) ?
+                properties.Items[OpenIdConnectAuthenticationDefaults.RedirectUriForCodePropertiesKey] : Options.RedirectUri;
+
+            Logger.LogDebug(Resources.OIDCH_0014_AuthorizationCodeReceived, message.Code);
+
+            var authorizationCodeReceivedNotification = new AuthorizationCodeReceivedNotification(Context, Options)
+            {
+                Code = message.Code,
+                ProtocolMessage = message,
+                RedirectUri = redirectUri,
+                AuthenticationTicket = ticket,
+                JwtSecurityToken = jwt
+            };
+
+            await Options.Notifications.AuthorizationCodeReceived(authorizationCodeReceivedNotification);
+            if (authorizationCodeReceivedNotification.HandledResponse)
+            {
+                Logger.LogVerbose(Resources.OIDCH_0015_AuthorizationCodeReceivedNotificationHandledResponse);
+            }
+            else if (authorizationCodeReceivedNotification.Skipped)
+            {
+                Logger.LogVerbose(Resources.OIDCH_0016_AuthorizationCodeReceivedNotificationSkipped);
+            }
+
+            return authorizationCodeReceivedNotification;
+        }
+
+        private async Task<AuthorizationCodeRedeemedNotification> RunAuthorizationCodeRedeemedNotificationAsync(OpenIdConnectMessage message, OpenIdConnectTokenEndpointResponse tokenEndpointResponse)
+        {
+            Logger.LogDebug(Resources.OIDCH_0042_AuthorizationCodeRedeemed, message.Code);
+            var authorizationCodeRedeemedNotification = new AuthorizationCodeRedeemedNotification(Context, Options)
+            {
+                Code = message.Code,
+                ProtocolMessage = message,
+                TokenEndpointResponse = tokenEndpointResponse
+            };
+
+            await Options.Notifications.AuthorizationCodeRedeemed(authorizationCodeRedeemedNotification);
+            if (authorizationCodeRedeemedNotification.HandledResponse)
+            {
+                Logger.LogVerbose(Resources.OIDCH_0043_AuthorizationCodeRedeemedNotificationHandledResponse);
+            }
+            else if (authorizationCodeRedeemedNotification.Skipped)
+            {
+                Logger.LogVerbose(Resources.OIDCH_0044_AuthorizationCodeRedeemedNotificationSkipped);
+            }
+            return authorizationCodeRedeemedNotification;
+        }
+
+        private async Task<SecurityTokenReceivedNotification<OpenIdConnectMessage, OpenIdConnectAuthenticationOptions>> RunSecurityTokenReceivedNotificationAsync(OpenIdConnectMessage message)
+        {
+            Logger.LogDebug(Resources.OIDCH_0020_IdTokenReceived, message.IdToken);
+            var securityTokenReceivedNotification =
+                new SecurityTokenReceivedNotification<OpenIdConnectMessage, OpenIdConnectAuthenticationOptions>(Context, Options)
+                {
+                    ProtocolMessage = message,
+                };
+
+            await Options.Notifications.SecurityTokenReceived(securityTokenReceivedNotification);
+            if (securityTokenReceivedNotification.HandledResponse)
+            {
+                Logger.LogVerbose(Resources.OIDCH_0008_SecurityTokenReceivedNotificationHandledResponse);
+            }
+            else if (securityTokenReceivedNotification.Skipped)
+            {
+                Logger.LogVerbose(Resources.OIDCH_0009_SecurityTokenReceivedNotificationSkipped);
+            }
+
+            return securityTokenReceivedNotification;
+        }
+
+        private async Task<SecurityTokenValidatedNotification<OpenIdConnectMessage, OpenIdConnectAuthenticationOptions>> RunSecurityTokenValidatedNotificationAsync(OpenIdConnectMessage message, AuthenticationTicket ticket)
+        {
+            var securityTokenValidatedNotification =
+                new SecurityTokenValidatedNotification<OpenIdConnectMessage, OpenIdConnectAuthenticationOptions>(Context, Options)
+                {
+                    AuthenticationTicket = ticket,
+                    ProtocolMessage = message
+                };
+
+            await Options.Notifications.SecurityTokenValidated(securityTokenValidatedNotification);
+            if (securityTokenValidatedNotification.HandledResponse)
+            {
+                Logger.LogVerbose(Resources.OIDCH_0012_SecurityTokenValidatedNotificationHandledResponse);
+            }
+            else if (securityTokenValidatedNotification.Skipped)
+            {
+                Logger.LogVerbose(Resources.OIDCH_0013_SecurityTokenValidatedNotificationSkipped);
+            }
+
+            return securityTokenValidatedNotification;
+        }
+
+        private async Task<AuthenticationFailedNotification<OpenIdConnectMessage, OpenIdConnectAuthenticationOptions>> RunAuthenticationFailedNotificationAsync(OpenIdConnectMessage message, Exception exception)
+        {
+            var authenticationFailedNotification =
+                new AuthenticationFailedNotification<OpenIdConnectMessage, OpenIdConnectAuthenticationOptions>(Context, Options)
+                {
+                    ProtocolMessage = message,
+                    Exception = exception
+                };
+
+            await Options.Notifications.AuthenticationFailed(authenticationFailedNotification);
+            if (authenticationFailedNotification.HandledResponse)
+            {
+                Logger.LogVerbose(Resources.OIDCH_0018_AuthenticationFailedNotificationHandledResponse);
+            }
+            else if (authenticationFailedNotification.Skipped)
+            {
+                Logger.LogVerbose(Resources.OIDCH_0019_AuthenticationFailedNotificationSkipped);
+            }
+
+            return authenticationFailedNotification;
+        }
+
+        private AuthenticationTicket ValidateToken(string idToken, OpenIdConnectMessage message, AuthenticationProperties properties, TokenValidationParameters validationParameters, out JwtSecurityToken jwt)
+        {
+            AuthenticationTicket ticket = null;
+            jwt = null;
+
+            if (_configuration != null)
+            {
+                if (string.IsNullOrEmpty(validationParameters.ValidIssuer))
+                {
+                    validationParameters.ValidIssuer = _configuration.Issuer;
+                }
+                else if (!string.IsNullOrEmpty(_configuration.Issuer))
+                {
+                    validationParameters.ValidIssuers = validationParameters.ValidIssuers?.Concat(new[] { _configuration.Issuer }) ?? new[] { _configuration.Issuer };
+                }
+
+                validationParameters.IssuerSigningKeys = validationParameters.IssuerSigningKeys?.Concat(_configuration.SigningKeys) ?? _configuration.SigningKeys;
+            }
+
+            SecurityToken validatedToken = null;
+            ClaimsPrincipal principal = null;
+            foreach (var validator in Options.SecurityTokenValidators)
+            {
+                if (validator.CanReadToken(idToken))
+                {
+                    principal = validator.ValidateToken(idToken, validationParameters, out validatedToken);
+                    jwt = validatedToken as JwtSecurityToken;
+                    if (jwt == null)
+                    {
+                        Logger.LogError(Resources.OIDCH_0010_ValidatedSecurityTokenNotJwt, validatedToken?.GetType());
+                        throw new SecurityTokenException(string.Format(CultureInfo.InvariantCulture, Resources.OIDCH_0010_ValidatedSecurityTokenNotJwt, validatedToken?.GetType()));
+                    }
+                }
+            }
+
+            if (validatedToken == null)
+            {
+                Logger.LogError(Resources.OIDCH_0011_UnableToValidateToken, idToken);
+                throw new SecurityTokenException(string.Format(CultureInfo.InvariantCulture, Resources.OIDCH_0011_UnableToValidateToken, idToken));
+            }
+
+            ticket = new AuthenticationTicket(principal, properties, Options.AuthenticationScheme);
+            if (!string.IsNullOrEmpty(message.SessionState))
+            {
+                ticket.Properties.Items[OpenIdConnectSessionProperties.SessionState] = message.SessionState;
+            }
+
+            if (_configuration != null && !string.IsNullOrEmpty(_configuration.CheckSessionIframe))
+            {
+                ticket.Properties.Items[OpenIdConnectSessionProperties.CheckSessionIFrame] = _configuration.CheckSessionIframe;
+            }
+
+            // Rename?
+            if (Options.UseTokenLifetime)
+            {
+                var issued = validatedToken.ValidFrom;
+                if (issued != DateTime.MinValue)
+                {
+                    ticket.Properties.IssuedUtc = issued;
+                }
+
+                var expires = validatedToken.ValidTo;
+                if (expires != DateTime.MinValue)
+                {
+                    ticket.Properties.ExpiresUtc = expires;
+                }
+            }
+
+            return ticket;
+        }
+
+        private async Task ValidateOpenIdConnectProtocolAsync(JwtSecurityToken jwt, OpenIdConnectMessage message, bool ValidateCHash = true)
+        {
+            string nonce = jwt.Payload.Nonce;
+            if (Options.CacheNonces)
+            {
+                if (await Options.NonceCache.GetAsync(nonce) != null)
+                {
+                    await Options.NonceCache.RemoveAsync(nonce);
+                }
+                else
+                {
+                    // If the nonce cannot be removed, it was
+                    // already used and MUST be rejected.
+                    nonce = null;
+                }
+            }
+            else
+            {
+                nonce = ReadNonceCookie(nonce);
+            }
+
+            var protocolValidationContext = new OpenIdConnectProtocolValidationContext
+            {
+                Nonce = nonce
+            };
+
+            // If authorization code is null, protocol validator does not validate the chash
+            if (ValidateCHash)
+            {
+                protocolValidationContext.AuthorizationCode = message.Code;
+            }
+
+            Options.ProtocolValidator.Validate(jwt, protocolValidationContext);
         }
 
         /// <summary>

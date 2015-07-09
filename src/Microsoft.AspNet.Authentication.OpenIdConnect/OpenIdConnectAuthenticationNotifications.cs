@@ -20,6 +20,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         {
             AuthenticationFailed = notification => Task.FromResult(0);
             AuthorizationCodeReceived = notification => Task.FromResult(0);
+            AuthorizationCodeRedeemed = notificaion => Task.FromResult(0);
             MessageReceived = notification => Task.FromResult(0);
             SecurityTokenReceived = notification => Task.FromResult(0);
             SecurityTokenValidated = notification => Task.FromResult(0);
@@ -35,6 +36,11 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         /// Invoked after security token validation if an authorization code is present in the protocol message.
         /// </summary>
         public Func<AuthorizationCodeReceivedNotification, Task> AuthorizationCodeReceived { get; set; }
+
+        /// <summary>
+        /// Invoked after "authorization code" is redeemed for tokens at the token endpoint.
+        /// </summary>
+        public Func<AuthorizationCodeRedeemedNotification, Task> AuthorizationCodeRedeemed { get; set; }
 
         /// <summary>
         /// Invoked when a protocol message is first received.

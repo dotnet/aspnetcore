@@ -142,10 +142,6 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             {
                 properties.Items.Add("item1", Guid.NewGuid().ToString());
             }
-            else
-            {
-                properties.Items.Add(OpenIdConnectAuthenticationDefaults.RedirectUriForCodePropertiesKey, queryValues.RedirectUri);
-            }
 
             var server = CreateServer(options =>
             {
@@ -164,6 +160,16 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
 
             var transaction = await SendAsync(server, DefaultHost + challenge);
             transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+
+            if (challenge != ChallengeWithProperties)
+            {
+                if (userState != null)
+                {
+                    properties.Items.Add(OpenIdConnectAuthenticationDefaults.UserstatePropertiesKey, userState);
+                }
+                properties.Items.Add(OpenIdConnectAuthenticationDefaults.RedirectUriForCodePropertiesKey, queryValues.RedirectUri);
+            }
+
             queryValues.State = stateDataFormat.Protect(properties);
             queryValues.CheckValues(transaction.Response.Headers.Location.AbsoluteUri, DefaultParameters(new string[] { OpenIdConnectParameterNames.State }));
         }
