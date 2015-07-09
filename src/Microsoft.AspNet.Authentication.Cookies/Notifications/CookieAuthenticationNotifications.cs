@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
             OnResponseSignIn = context => { };
             OnResponseSignedIn = context => { };
             OnResponseSignOut = context => { };
-            OnApplyRedirect = DefaultBehavior.ApplyRedirect;
+            OnApplyRedirect = context => context.Response.Redirect(context.RedirectUri);
             OnException = context => { };
         }
 

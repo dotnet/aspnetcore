@@ -533,25 +533,9 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
             clock.Add(TimeSpan.FromMinutes(4));
 
-            Transaction transaction5 = await SendAsync(server, "http://example.com/me/Cookies", transaction4.CookieNameValue);
+            var transaction5 = await SendAsync(server, "http://example.com/me/Cookies", transaction4.CookieNameValue);
             transaction5.SetCookie.ShouldBe(null);
             FindClaimValue(transaction5, ClaimTypes.Name).ShouldBe("Alice");
-        }
-
-        [Fact]
-        public async Task AjaxRedirectsAsExtraHeaderOnTwoHundred()
-        {
-            var server = CreateServer(options =>
-            {
-                options.LoginPath = new PathString("/login");
-                options.AutomaticAuthentication = true;
-            });
-
-            var transaction = await SendAsync(server, "http://example.com/protected", ajaxRequest: true);
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
-            var responded = transaction.Response.Headers.GetValues("X-Responded-JSON");
-            responded.Count().ShouldBe(1);
-            responded.Single().ShouldContain("\"location\"");
         }
 
         [Fact]
