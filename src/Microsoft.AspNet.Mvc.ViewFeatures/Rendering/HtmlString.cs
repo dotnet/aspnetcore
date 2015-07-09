@@ -2,33 +2,31 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
-using Microsoft.Framework.Internal;
+using Microsoft.AspNet.Html.Abstractions;
+using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
-    public class HtmlString
+    /// <summary>
+    /// String content which knows how to write itself.
+    /// </summary>
+    public class HtmlString : IHtmlContent
     {
         private static readonly HtmlString _empty = new HtmlString(string.Empty);
-
-        private readonly StringCollectionTextWriter _writer;
         private readonly string _input;
 
+        /// <summary>
+        /// Instantiates a new instance of <see cref="HtmlString"/>.
+        /// </summary>
+        /// <param name="input"><c>string</c>to initialize <see cref="HtmlString"/>.</param>
         public HtmlString(string input)
         {
             _input = input;
         }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="HtmlString"/> that is backed by <paramref name="writer"/>.
+        /// Returns an <see cref="HtmlString"/> with empty content.
         /// </summary>
-        /// <param name="writer">
-        /// A <see cref="StringCollectionTextWriter"/> instance to back this <see cref="HtmlString"/>.
-        /// </param>
-        public HtmlString([NotNull] StringCollectionTextWriter writer)
-        {
-            _writer = writer;
-        }
-
         public static HtmlString Empty
         {
             get
@@ -39,29 +37,18 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         /// <summary>
         /// Writes the value in this instance of <see cref="HtmlString"/> to the target
-        /// <paramref name="targetWriter"/>.
+        /// <paramref name="writer"/>.
         /// </summary>
-        /// <param name="targetWriter">The <see cref="TextWriter"/> to write contents to.</param>
-        public void WriteTo(TextWriter targetWriter)
+        /// <param name="writer">The <see cref="TextWriter"/> to write contents to.</param>
+        /// <param name="encoder">The <see cref="IHtmlEncoder"/> with which the output must be encoded.</param>
+        public void WriteTo(TextWriter writer, IHtmlEncoder encoder)
         {
-            if (_writer != null)
-            {
-                _writer.CopyTo(targetWriter);
-            }
-            else
-            {
-                targetWriter.Write(_input);
-            }
+            writer.Write(_input);
         }
 
         /// <inheritdoc />
         public override string ToString()
         {
-            if (_writer != null)
-            {
-                return _writer.ToString();
-            }
-
             return _input;
         }
     }

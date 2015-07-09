@@ -7,6 +7,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Testing;
+using Microsoft.Framework.WebEncoders.Testing;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Rendering
@@ -31,7 +32,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             writer.Write('m');
 
             // Assert
-            Assert.Equal<object>(expected, writer.Buffer.BufferEntries);
+            Assert.Equal(expected, writer.Content.Entries);
         }
 
         [Fact]
@@ -49,7 +50,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             writer.WriteLine(3L);
 
             // Assert
-            Assert.Equal(expected, writer.Buffer.BufferEntries);
+            Assert.Equal(expected, writer.Content.Entries);
         }
 
         [Fact]
@@ -67,7 +68,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             await writer.WriteLineAsync(input3.Array, input3.Offset, input3.Count);
 
             // Assert
-            var buffer = writer.Buffer.BufferEntries;
+            var buffer = writer.Content.Entries;
             Assert.Equal(4, buffer.Count);
             Assert.Equal("bcd", buffer[0]);
             Assert.Equal("ef", buffer[1]);
@@ -87,7 +88,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             await writer.WriteLineAsync();
 
             // Assert
-            var actual = writer.Buffer.BufferEntries;
+            var actual = writer.Content.Entries;
             Assert.Equal<object>(new[] { newLine, newLine }, actual);
         }
 
@@ -109,8 +110,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
             await writer.WriteLineAsync(input4);
 
             // Assert
-            var actual = writer.Buffer.BufferEntries;
-            Assert.Equal<object>(new[] { input1, input2, newLine, input3, input4, newLine }, actual);
+            var actual = writer.Content.Entries;
+            Assert.Equal(new[] { input1, input2, newLine, input3, input4, newLine }, actual);
         }
 
         [Fact]
@@ -123,13 +124,15 @@ namespace Microsoft.AspNet.Mvc.Rendering
             // Act
             source.Write("Hello world");
             source.Write(new char[1], 0, 1);
-            source.CopyTo(target);
+            source.CopyTo(target, new CommonTestEncoder());
 
             // Assert
             // Make sure content was written to the source.
-            Assert.Equal(2, source.Buffer.BufferEntries.Count);
-            Assert.Equal(1, target.Buffer.BufferEntries.Count);
-            Assert.Same(source.Buffer.BufferEntries, target.Buffer.BufferEntries[0]);
+            Assert.Equal(2, source.Content.Entries.Count);
+            Assert.Equal(1, target.Content.Entries.Count);
+            var result = Assert.Single(target.Content.Entries);
+            var bufferedHtmlContent = Assert.IsType<BufferedHtmlContent>(result);
+            Assert.Same(source.Content.Entries, bufferedHtmlContent.Entries);
         }
 
         [Fact]
@@ -143,7 +146,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             // Act
             source.WriteLine("Hello world");
             source.Write(new[] { 'x', 'a', 'b', 'c' }, 1, 3);
-            source.CopyTo(target);
+            source.CopyTo(target, new CommonTestEncoder());
 
             // Assert
             Assert.Equal(expected, target.ToString());

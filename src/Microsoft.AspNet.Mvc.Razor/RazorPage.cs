@@ -9,6 +9,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Antiforgery;
+using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Razor.Internal;
 using Microsoft.AspNet.Mvc.Rendering;
@@ -275,7 +276,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 var stringCollectionTextWriter = writer as StringCollectionTextWriter;
                 if (stringCollectionTextWriter != null)
                 {
-                    stringCollectionTextWriter.CopyTo(tagHelperContentWrapperTextWriter);
+                    stringCollectionTextWriter.CopyTo(tagHelperContentWrapperTextWriter, HtmlEncoder);
                 }
                 else
                 {
@@ -315,7 +316,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var tagHelperOutput = tagHelperExecutionContext.Output;
             var isTagNameNullOrWhitespace = string.IsNullOrWhiteSpace(tagHelperOutput.TagName);
 
-            WriteTagHelperContentTo(writer, tagHelperOutput.PreElement);
+            WriteTo(writer, tagHelperOutput.PreElement);
 
             if (!isTagNameNullOrWhitespace)
             {
@@ -345,22 +346,22 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             if (isTagNameNullOrWhitespace || !tagHelperOutput.SelfClosing)
             {
-                WriteTagHelperContentTo(writer, tagHelperOutput.PreContent);
+                WriteTo(writer, tagHelperOutput.PreContent);
                 if (tagHelperOutput.IsContentModified)
                 {
-                    WriteTagHelperContentTo(writer, tagHelperOutput.Content);
+                    WriteTo(writer, tagHelperOutput.Content);
                 }
                 else if (tagHelperExecutionContext.ChildContentRetrieved)
                 {
                     var childContent = await tagHelperExecutionContext.GetChildContentAsync();
-                    WriteTagHelperContentTo(writer, childContent);
+                    WriteTo(writer, childContent);
                 }
                 else
                 {
                     await tagHelperExecutionContext.ExecuteChildContentAsync();
                 }
 
-                WriteTagHelperContentTo(writer, tagHelperOutput.PostContent);
+                WriteTo(writer, tagHelperOutput.PostContent);
             }
 
             if (!isTagNameNullOrWhitespace && !tagHelperOutput.SelfClosing)
@@ -368,15 +369,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 writer.Write(string.Format(CultureInfo.InvariantCulture, "</{0}>", tagHelperOutput.TagName));
             }
 
-            WriteTagHelperContentTo(writer, tagHelperOutput.PostElement);
-        }
-
-        private void WriteTagHelperContentTo(TextWriter writer, TagHelperContent content)
-        {
-            foreach (var entry in content)
-            {
-                writer.Write(entry);
-            }
+            WriteTo(writer, tagHelperOutput.PostElement);
         }
 
         /// <summary>
@@ -394,8 +387,8 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <param name="writer">The <see cref="TextWriter"/> instance to write to.</param>
         /// <param name="value">The <see cref="object"/> to write.</param>
         /// <remarks>
-        /// <paramref name="value"/>s of type <see cref="HtmlString"/> are written without encoding and the
-        /// <see cref="HelperResult.WriteTo(TextWriter)"/> is invoked for <see cref="HelperResult"/> types.
+        /// <paramref name="value"/>s of type <see cref="IHtmlContent"/> are written using 
+        /// <see cref="IHtmlContent.WriteTo(TextWriter, IHtmlEncoder)"/>.
         /// For all other types, the encoded result of <see cref="object.ToString"/> is written to the
         /// <paramref name="writer"/>.
         /// </remarks>
@@ -415,8 +408,8 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// Otherwise writes <see cref="HtmlString"/> values as-is.
         /// </param>
         /// <remarks>
-        /// <paramref name="value"/>s of type <see cref="HtmlString"/> are written without encoding and the
-        /// <see cref="HelperResult.WriteTo(TextWriter)"/> is invoked for <see cref="HelperResult"/> types.
+        /// <paramref name="value"/>s of type <see cref="IHtmlContent"/> are written using 
+        /// <see cref="IHtmlContent.WriteTo(TextWriter, IHtmlEncoder)"/>.
         /// For all other types, the encoded result of <see cref="object.ToString"/> is written to the
         /// <paramref name="writer"/>.
         /// </remarks>
@@ -431,15 +424,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                 return;
             }
 
-            var helperResult = value as HelperResult;
-            if (helperResult != null)
-            {
-                helperResult.WriteTo(writer);
-                return;
-            }
-
-            var htmlString = value as HtmlString;
-            if (htmlString != null)
+            var htmlContent = value as IHtmlContent;
+            if (htmlContent != null)
             {
                 if (escapeQuotes)
                 {
@@ -447,9 +433,9 @@ namespace Microsoft.AspNet.Mvc.Razor
                     // an attribute value that may have been quoted with single quotes, must handle any double quotes
                     // in the value. Writing the value out surrounded by double quotes.
                     //
-                    // Do not combine following condition with check of escapeQuotes; htmlString.ToString() can be
-                    // expensive when the HtmlString is created with a StringCollectionTextWriter.
-                    var stringValue = htmlString.ToString();
+                    // Do not combine following condition with check of escapeQuotes; htmlContent.ToString() can be
+                    // expensive when the IHtmlContent is created with a BufferedHtmlContent.
+                    var stringValue = htmlContent.ToString();
                     if (stringValue.Contains("\""))
                     {
                         writer.Write(stringValue.Replace("\"", "&quot;"));
@@ -457,7 +443,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     }
                 }
 
-                htmlString.WriteTo(writer);
+                htmlContent.WriteTo(writer, encoder);
                 return;
             }
 

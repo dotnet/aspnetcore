@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.Framework.Internal;
@@ -505,7 +506,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// A <see cref="Task"/> that on completion returns a new <see cref="HtmlString"/> containing
         /// the created HTML.
         /// </returns>
-        Task<HtmlString> PartialAsync([NotNull] string partialViewName, object model, ViewDataDictionary viewData);
+        Task<IHtmlContent> PartialAsync([NotNull] string partialViewName, object model, ViewDataDictionary viewData);
 
         /// <summary>
         /// Returns an &lt;input&gt; element of type "password" for the specified <paramref name="expression"/>.

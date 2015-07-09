@@ -19,13 +19,13 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <summary>
         /// Copies the buffered content to the <paramref name="writer"/>.
         /// </summary>
-        /// <param name="writer">The writer to copy the contents to.</param>
+        /// <param name="writer">The <see cref="TextWriter"/> to copy the contents to.</param>
         void CopyTo(TextWriter writer);
 
         /// <summary>
         /// Asynchronously copies the buffered content to the <paramref name="writer"/>.
         /// </summary>
-        /// <param name="writer">The writer to copy the contents to.</param>
+        /// <param name="writer">The <see cref="TextWriter"/> to copy the contents to.</param>
         /// <returns>A <see cref="Task"/> representing the copy operation.</returns>
         Task CopyToAsync(TextWriter writer);
     }

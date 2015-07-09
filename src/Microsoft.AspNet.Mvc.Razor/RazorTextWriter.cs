@@ -5,8 +5,10 @@ using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Mvc.Razor.Internal;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -51,6 +53,9 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private TextWriter TargetWriter { get; set; }
 
+        [RazorInject]
+        private IHtmlEncoder HtmlEncoder { get; set; }
+
         /// <inheritdoc />
         public override void Write(char value)
         {
@@ -63,7 +68,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var htmlString = value as HtmlString;
             if (htmlString != null)
             {
-                htmlString.WriteTo(TargetWriter);
+                htmlString.WriteTo(TargetWriter, HtmlEncoder);
                 return;
             }
 
@@ -196,14 +201,14 @@ namespace Microsoft.AspNet.Mvc.Razor
         public void CopyTo(TextWriter writer)
         {
             writer = UnWrapRazorTextWriter(writer);
-            BufferedWriter.CopyTo(writer);
+            BufferedWriter.CopyTo(writer, HtmlEncoder);
         }
 
         /// <inheritdoc />
         public Task CopyToAsync(TextWriter writer)
         {
             writer = UnWrapRazorTextWriter(writer);
-            return BufferedWriter.CopyToAsync(writer);
+            return BufferedWriter.CopyToAsync(writer, HtmlEncoder);
         }
 
         private static TextWriter UnWrapRazorTextWriter(TextWriter writer)

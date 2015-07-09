@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Moq;
 using Xunit;
@@ -11,12 +12,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
 {
     public class HtmlHelperPartialExtensionsTest
     {
-        public static TheoryData<Func<IHtmlHelper, HtmlString>> PartialExtensionMethods
+        public static TheoryData<Func<IHtmlHelper, IHtmlContent>> PartialExtensionMethods
         {
             get
             {
                 var vdd = new ViewDataDictionary(new EmptyModelMetadataProvider());
-                return new TheoryData<Func<IHtmlHelper, HtmlString>>
+                return new TheoryData<Func<IHtmlHelper, IHtmlContent>>
                 {
                     helper => helper.Partial("test"),
                     helper => helper.Partial("test", new object()),
@@ -28,7 +29,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         [Theory]
         [MemberData(nameof(PartialExtensionMethods))]
-        public void PartialMethods_DoesNotWrapThrownException(Func<IHtmlHelper, HtmlString> partialMethod)
+        public void PartialMethods_DoesNotWrapThrownException(Func<IHtmlHelper, IHtmlContent> partialMethod)
         {
             // Arrange
             var expected = new InvalidOperationException();
@@ -60,7 +61,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             };
             var helper = new Mock<IHtmlHelper>(MockBehavior.Strict);
             helper.Setup(h => h.PartialAsync("test", model, null))
-                  .Returns(Task.FromResult(expected))
+                  .Returns(Task.FromResult((IHtmlContent)expected))
                   .Verifiable();
             helper.SetupGet(h => h.ViewData)
                   .Returns(viewData);
@@ -81,7 +82,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var model = new object();
             var helper = new Mock<IHtmlHelper>(MockBehavior.Strict);
             helper.Setup(h => h.PartialAsync("test", model, null))
-                  .Returns(Task.FromResult(expected))
+                  .Returns(Task.FromResult((IHtmlContent)expected))
                   .Verifiable();
 
             // Act
@@ -105,7 +106,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             };
             var helper = new Mock<IHtmlHelper>(MockBehavior.Strict);
             helper.Setup(h => h.PartialAsync("test", model, passedInViewData))
-                  .Returns(Task.FromResult(expected))
+                  .Returns(Task.FromResult((IHtmlContent)expected))
                   .Verifiable();
             helper.SetupGet(h => h.ViewData)
                   .Returns(viewData);
@@ -127,7 +128,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var passedInViewData = new ViewDataDictionary(new EmptyModelMetadataProvider());
             var helper = new Mock<IHtmlHelper>(MockBehavior.Strict);
             helper.Setup(h => h.PartialAsync("test", passedInModel, passedInViewData))
-                  .Returns(Task.FromResult(expected))
+                  .Returns(Task.FromResult((IHtmlContent)expected))
                   .Verifiable();
 
             // Act

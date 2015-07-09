@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Rendering
@@ -22,7 +23,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// A <see cref="Task"/> that on completion returns a new <see cref="HtmlString"/> containing
         /// the created HTML.
         /// </returns>
-        public static Task<HtmlString> PartialAsync(
+        public static Task<IHtmlContent> PartialAsync(
             [NotNull] this IHtmlHelper htmlHelper,
             [NotNull] string partialViewName)
         {
@@ -41,7 +42,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// A <see cref="Task"/> that on completion returns a new <see cref="HtmlString"/> containing
         /// the created HTML.
         /// </returns>
-        public static Task<HtmlString> PartialAsync(
+        public static Task<IHtmlContent> PartialAsync(
             [NotNull] this IHtmlHelper htmlHelper,
             [NotNull] string partialViewName,
             ViewDataDictionary viewData)
@@ -61,7 +62,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// A <see cref="Task"/> that on completion returns a new <see cref="HtmlString"/> containing
         /// the created HTML.
         /// </returns>
-        public static Task<HtmlString> PartialAsync(
+        public static Task<IHtmlContent> PartialAsync(
             [NotNull] this IHtmlHelper htmlHelper,
             [NotNull] string partialViewName,
             object model)
@@ -83,7 +84,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// This method synchronously calls and blocks on
         /// <see cref="IHtmlHelper.PartialAsync(string, object, ViewDataDictionary)"/>
         /// </remarks>
-        public static HtmlString Partial(
+        public static IHtmlContent Partial(
             [NotNull] this IHtmlHelper htmlHelper,
             [NotNull] string partialViewName)
         {
@@ -105,7 +106,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// This method synchronously calls and blocks on
         /// <see cref="IHtmlHelper.PartialAsync(string, object, ViewDataDictionary)"/>
         /// </remarks>
-        public static HtmlString Partial(
+        public static IHtmlContent Partial(
             [NotNull] this IHtmlHelper htmlHelper,
             [NotNull] string partialViewName,
             ViewDataDictionary viewData)
@@ -128,7 +129,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// This method synchronously calls and blocks on
         /// <see cref="IHtmlHelper.PartialAsync(string, object, ViewDataDictionary)"/>
         /// </remarks>
-        public static HtmlString Partial(
+        public static IHtmlContent Partial(
             [NotNull] this IHtmlHelper htmlHelper,
             [NotNull] string partialViewName,
             object model)
@@ -152,7 +153,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// This method synchronously calls and blocks on
         /// <see cref="IHtmlHelper.PartialAsync(string, object, ViewDataDictionary)"/>
         /// </remarks>
-        public static HtmlString Partial(
+        public static IHtmlContent Partial(
             [NotNull] this IHtmlHelper htmlHelper,
             [NotNull] string partialViewName,
             object model,
