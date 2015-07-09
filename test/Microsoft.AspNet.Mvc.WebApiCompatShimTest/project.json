@@ -1,13 +1,14 @@
 {
-    "compilationOptions": {
-        "warningsAsErrors": "false"
-    },
-    "dependencies": {
-        "Microsoft.AspNet.Mvc.WebApiCompatShim": "6.0.0-*",
-        "Microsoft.AspNet.Testing": "1.0.0-*",
-        "Microsoft.Framework.Logging.Testing": "1.0.0-*",
-        "xunit.runner.aspnet": "2.0.0-aspnet-*"
-    },
+  "compilationOptions": {
+    "warningsAsErrors": "false"
+  },
+  "dependencies": {
+    "Microsoft.AspNet.Http": "1.0.0-*",
+    "Microsoft.AspNet.Mvc.WebApiCompatShim": "6.0.0-*",
+    "Microsoft.AspNet.Testing": "1.0.0-*",
+    "Microsoft.Framework.Logging.Testing": "1.0.0-*",
+    "xunit.runner.aspnet": "2.0.0-aspnet-*"
+  },
     "commands": {
         "test": "xunit.runner.aspnet"
     },

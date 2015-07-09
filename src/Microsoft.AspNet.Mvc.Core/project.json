@@ -12,7 +12,6 @@
         "Microsoft.AspNet.Authorization": "1.0.0-*",
         "Microsoft.AspNet.FileProviders.Abstractions": "1.0.0-*",
         "Microsoft.AspNet.Hosting.Abstractions": "1.0.0-*",
-        "Microsoft.AspNet.Http": "1.0.0-*",
         "Microsoft.AspNet.Mvc.Abstractions": "6.0.0-*",
         "Microsoft.Dnx.Runtime.Abstractions": "1.0.0-*",
         "Microsoft.Framework.ClosedGenericMatcher.Sources": { "version": "1.0.0-*", "type": "build" },

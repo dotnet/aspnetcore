@@ -4,7 +4,6 @@
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc;
 
 namespace ModelBindingWebSite.Controllers
@@ -26,7 +25,7 @@ namespace ModelBindingWebSite.Controllers
             return form.Count;
         }
 
-        public ActionResult ReturnFileContent(FormCollection form)
+        public ActionResult ReturnFileContent(IFormCollection form)
         {
             var file = form.Files.GetFile("File");
             using (var reader = new StreamReader(file.OpenReadStream()))

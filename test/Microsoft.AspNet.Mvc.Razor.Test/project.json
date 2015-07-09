@@ -1,23 +1,24 @@
 {
-    "compile": [
-        "../Microsoft.AspNet.Mvc.Razor.Host.Test/TestFileProvider.cs",
-        "../Microsoft.AspNet.Mvc.Razor.Host.Test/TestFileInfo.cs",
-        "../Microsoft.AspNet.Mvc.Razor.Host.Test/TestFileTrigger.cs"
-    ],
-    "dependencies": {
-        "Microsoft.AspNet.Mvc.DataAnnotations": "6.0.0-*",
-        "Microsoft.AspNet.Mvc.Formatters.Xml": "6.0.0-*",
-        "Microsoft.AspNet.Mvc.Razor": "6.0.0-*",
-        "Microsoft.AspNet.Mvc.TestCommon": {
-            "version": "6.0.0-*",
-            "type": "build"
-        },
-        "Microsoft.AspNet.Testing": "1.0.0-*",
-        "Microsoft.Framework.DependencyInjection": "1.0.0-*",
-        "Microsoft.Framework.WebEncoders.Testing": "1.0.0-*",
-        "Microsoft.Dnx.Runtime": "1.0.0-*",
-        "xunit.runner.aspnet": "2.0.0-aspnet-*"
+  "compile": [
+    "../Microsoft.AspNet.Mvc.Razor.Host.Test/TestFileProvider.cs",
+    "../Microsoft.AspNet.Mvc.Razor.Host.Test/TestFileInfo.cs",
+    "../Microsoft.AspNet.Mvc.Razor.Host.Test/TestFileTrigger.cs"
+  ],
+  "dependencies": {
+    "Microsoft.AspNet.Http": "1.0.0-*",
+    "Microsoft.AspNet.Mvc.DataAnnotations": "6.0.0-*",
+    "Microsoft.AspNet.Mvc.Formatters.Xml": "6.0.0-*",
+    "Microsoft.AspNet.Mvc.Razor": "6.0.0-*",
+    "Microsoft.AspNet.Mvc.TestCommon": {
+      "version": "6.0.0-*",
+      "type": "build"
     },
+    "Microsoft.AspNet.Testing": "1.0.0-*",
+    "Microsoft.Framework.DependencyInjection": "1.0.0-*",
+    "Microsoft.Framework.WebEncoders.Testing": "1.0.0-*",
+    "Microsoft.Dnx.Runtime": "1.0.0-*",
+    "xunit.runner.aspnet": "2.0.0-aspnet-*"
+  },
     "commands": {
         "test": "xunit.runner.aspnet"
     },

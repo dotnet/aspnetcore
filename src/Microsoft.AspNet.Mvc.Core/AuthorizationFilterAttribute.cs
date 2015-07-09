@@ -4,7 +4,6 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNet.WebUtilities;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc

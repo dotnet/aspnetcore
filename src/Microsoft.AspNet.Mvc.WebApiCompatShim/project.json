@@ -1,20 +1,27 @@
 {
-    "description": "Provides compatibility in ASP.NET MVC with ASP.NET Web API 2 to simplify migration of existing Web API implementations.",
-    "version": "6.0.0-*",
-    "repository": {
-        "type": "git",
-        "url": "git://github.com/aspnet/mvc"
+  "description": "Provides compatibility in ASP.NET MVC with ASP.NET Web API 2 to simplify migration of existing Web API implementations.",
+  "version": "6.0.0-*",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/aspnet/mvc"
+  },
+  "compilationOptions": {
+    "warningsAsErrors": false
+  },
+  "dependencies": {
+    "Microsoft.AspNet.WebUtilities": "1.0.0-*",
+    "Microsoft.AspNet.Mvc.Core": "6.0.0-*",
+    "Microsoft.AspNet.Mvc.Formatters.Json": "6.0.0-*",
+    "Microsoft.AspNet.WebApi.Client": "5.2.2",
+    "Microsoft.Framework.PropertyHelper.Sources": {
+      "version": "1.0.0-*",
+      "type": "build"
     },
-    "compilationOptions": {
-        "warningsAsErrors": false
-    },
-    "dependencies": {
-        "Microsoft.AspNet.Mvc.Core": "6.0.0-*",
-        "Microsoft.AspNet.Mvc.Formatters.Json": "6.0.0-*",
-        "Microsoft.AspNet.WebApi.Client": "5.2.2",
-        "Microsoft.Framework.PropertyHelper.Sources": { "version": "1.0.0-*", "type": "build" },
-        "Microsoft.Framework.NotNullAttribute.Sources": { "version": "1.0.0-*", "type": "build" }
-    },
+    "Microsoft.Framework.NotNullAttribute.Sources": {
+      "version": "1.0.0-*",
+      "type": "build"
+    }
+  },
     "frameworks": {
         "dnx451": {
             "frameworkAssemblies": {

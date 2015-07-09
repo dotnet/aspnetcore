@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
         {
             public int Zip { get; set; }
 
-            public FormCollection FileCollection { get; set; }
+            public IFormCollection FileCollection { get; set; }
         }
 
         [Fact]
@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             // Model
             var boundPerson = Assert.IsType<Person>(modelBindingResult.Model);
             Assert.NotNull(boundPerson.Address);
-            var formCollection = Assert.IsAssignableFrom<FormCollection>(boundPerson.Address.FileCollection);
+            var formCollection = Assert.IsAssignableFrom<IFormCollection>(boundPerson.Address.FileCollection);
             var file = Assert.Single(formCollection.Files);
             Assert.Equal("form-data; name=Address.File; filename=text.txt", file.ContentDisposition);
             var reader = new StreamReader(file.OpenReadStream());
@@ -88,7 +88,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                     // Setting a custom parameter prevents it from falling back to an empty prefix.
                     BinderModelName = "CustomParameter",
                 },
-                ParameterType = typeof(FormCollection)
+                ParameterType = typeof(IFormCollection)
             };
 
             var data = "Some Data Is Better Than No Data.";
@@ -109,7 +109,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.True(modelBindingResult.IsModelSet);
 
             // Model
-            var formCollection = Assert.IsType<FormCollection>(modelBindingResult.Model);
+            var formCollection = Assert.IsAssignableFrom<IFormCollection>(modelBindingResult.Model);
             var file = Assert.Single(formCollection.Files);
             Assert.NotNull(file);
             Assert.Equal("form-data; name=CustomParameter; filename=text.txt", file.ContentDisposition);
@@ -133,7 +133,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 {
                     BinderModelName = "CustomParameter",
                 },
-                ParameterType = typeof(FormCollection)
+                ParameterType = typeof(IFormCollection)
             };
 
             // No data is passed.
@@ -148,7 +148,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             // ModelBindingResult
             Assert.NotNull(modelBindingResult);
-            var collection = Assert.IsType<FormCollection>(modelBindingResult.Model);
+            var collection = Assert.IsAssignableFrom<IFormCollection>(modelBindingResult.Model);
 
             // ModelState
             Assert.True(modelState.IsValid);

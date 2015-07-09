@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 { "field2", new string[] { "value2" } }
             });
             var httpContext = GetMockHttpContext(formCollection);
-            var bindingContext = GetBindingContext(typeof(FormCollection), httpContext);
+            var bindingContext = GetBindingContext(typeof(IFormCollection), httpContext);
             var binder = new FormCollectionModelBinder();
 
             // Act
@@ -64,6 +64,27 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.Null(result);
         }
 
+        // We only support IFormCollection here. Using the concrete type won't work.
+        [Fact]
+        public async Task FormCollectionModelBinder_FormCollectionConcreteType_BindFails()
+        {
+            // Arrange
+            var formCollection = new FormCollection(new Dictionary<string, string[]>
+            {
+                { "field1", new string[] { "value1" } },
+                { "field2", new string[] { "value2" } }
+            });
+            var httpContext = GetMockHttpContext(formCollection);
+            var bindingContext = GetBindingContext(typeof(FormCollection), httpContext);
+            var binder = new FormCollectionModelBinder();
+
+            // Act
+            var result = await binder.BindModelAsync(bindingContext);
+
+            // Assert
+            Assert.Null(result);
+        }
+
         [Fact]
         public async Task FormCollectionModelBinder_NoForm_BindSuccessful_ReturnsEmptyFormCollection()
         {
@@ -77,32 +98,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Assert
             Assert.NotNull(result);
-            Assert.IsType(typeof(FormCollection), result.Model);
-            Assert.Empty((FormCollection)result.Model);
-        }
-
-        [Fact]
-        public async Task FormCollectionModelBinder_CustomFormCollection_BindSuccessful()
-        {
-            // Arrange
-            var formCollection = new MyFormCollection(new Dictionary<string, string[]>
-            {
-                { "field1", new string[] { "value1" } },
-                { "field2", new string[] { "value2" } }
-            });
-            var httpContext = GetMockHttpContext(formCollection);
-            var bindingContext = GetBindingContext(typeof(FormCollection), httpContext);
-            var binder = new FormCollectionModelBinder();
-
-            // Act
-            var result = await binder.BindModelAsync(bindingContext);
-
-            // Assert
-            Assert.NotNull(result);
             var form = Assert.IsAssignableFrom<IFormCollection>(result.Model);
-            Assert.Equal(2, form.Count);
-            Assert.Equal("value1", form["field1"]);
-            Assert.Equal("value2", form["field2"]);
+            Assert.Empty(form);
         }
 
         private static HttpContext GetMockHttpContext(IFormCollection formCollection, bool hasForm = true)
