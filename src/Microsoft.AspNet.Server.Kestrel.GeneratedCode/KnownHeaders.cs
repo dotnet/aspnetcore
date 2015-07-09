@@ -20,15 +20,13 @@ namespace Microsoft.AspNet.Server.Kestrel.GeneratedCode
             public string Name { get; set; }
             public int Index { get; set; }
             public string Identifier => Name.Replace("-", "");
-            public string TestBit() => $"((_bits & ({1L << Index}L)) != 0)";
+            public string TestBit() => $"((_bits & {1L << Index}L) != 0)";
             public string SetBit() => $"_bits |= {1L << Index}L";
-            public string ClearBit() => $"_bits &= ~{(1L << Index)}L";
+            public string ClearBit() => $"_bits &= ~{1L << Index}L";
         }
 
         public virtual void BeforeCompile(BeforeCompileContext context)
         {
-            Console.WriteLine("I like pie");
-
             var commonHeaders = new[]
             {
                 "Cache-Control",
