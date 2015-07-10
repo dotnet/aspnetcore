@@ -4,13 +4,16 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using Microsoft.AspNet.Html.Abstractions;
+using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 {
     /// <summary>
     /// Abstract class used to buffer content returned by <see cref="ITagHelper"/>s.
     /// </summary>
-    public abstract class TagHelperContent : IEnumerable<string>
+    public abstract class TagHelperContent : IEnumerable<string>, IHtmlContent
     {
         /// <summary>
         /// Gets a value indicating whether the content was modifed.
@@ -191,5 +194,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             return GetEnumerator();
         }
+
+        /// <inheritdoc />
+        public abstract void WriteTo(TextWriter writer, IHtmlEncoder encoder);
     }
 }
