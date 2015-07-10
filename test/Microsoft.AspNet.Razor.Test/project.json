@@ -23,7 +23,7 @@
       }
     }
   },
-    "compilationOptions": {
-        "define": [ "__RemoveThisBitTo__GENERATE_BASELINES" ]
-    }
+  "compilationOptions": {
+    "define": [ "__RemoveThisBitTo__GENERATE_BASELINES" ]
+  }
 }
