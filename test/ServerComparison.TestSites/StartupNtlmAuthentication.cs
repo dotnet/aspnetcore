@@ -53,25 +53,60 @@ namespace ServerComparison.TestSites
             if ((app.Server as ServerInformation) != null)
             {
                 var serverInformation = (ServerInformation)app.Server;
-                serverInformation.Listener.AuthenticationManager.AuthenticationSchemes = AuthenticationSchemes.NTLM | AuthenticationSchemes.AllowAnonymous;
+                serverInformation.Listener.AuthenticationManager.AuthenticationSchemes =
+                    AuthenticationSchemes.Negotiate | AuthenticationSchemes.NTLM | AuthenticationSchemes.AllowAnonymous;
             }
 
             app.Use((context, next) => 
             {
-                if (context.Request.Path.Equals(new PathString("/Anonymous")))
+                if (context.Request.Path.Equals("/Anonymous"))
                 {
                     return context.Response.WriteAsync("Anonymous?" + !context.User.Identity.IsAuthenticated);
                 }
 
-                if (context.Request.Path.Equals(new PathString("/Restricted")))
+                if (context.Request.Path.Equals("/Restricted"))
                 {
                     if (context.User.Identity.IsAuthenticated)
                     {
-                        return context.Response.WriteAsync("NotAnonymous");
+                        return context.Response.WriteAsync(context.User.Identity.AuthenticationType);
                     }
                     else
                     {
                         return context.Authentication.ChallengeAsync();
+                    }
+                }
+
+                if (context.Request.Path.Equals("/Forbidden"))
+                {
+                    return context.Authentication.ForbidAsync(string.Empty);
+                }
+
+                if (context.Request.Path.Equals("/AutoForbid"))
+                {
+                    return context.Authentication.ChallengeAsync();
+                }
+
+                if (context.Request.Path.Equals("/RestrictedNegotiate"))
+                {
+                    if (string.Equals("Negotiate", context.User.Identity.AuthenticationType, System.StringComparison.Ordinal))
+                    {
+                        return context.Response.WriteAsync("Negotiate");
+                    }
+                    else
+                    {
+                        return context.Authentication.ChallengeAsync("Negotiate");
+                    }
+                }
+
+                if (context.Request.Path.Equals("/RestrictedNTLM"))
+                {
+                    if (string.Equals("NTLM", context.User.Identity.AuthenticationType, System.StringComparison.Ordinal))
+                    {
+                        return context.Response.WriteAsync("NTLM");
+                    }
+                    else
+                    {
+                        return context.Authentication.ChallengeAsync("NTLM");
                     }
                 }
 
