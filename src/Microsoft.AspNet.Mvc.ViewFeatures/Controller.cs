@@ -394,7 +394,7 @@ namespace Microsoft.AspNet.Mvc
             var disposableValue = data as IDisposable;
             if (disposableValue != null)
             {
-                Response.OnCompletedDispose(disposableValue);
+                Response.RegisterForDispose(disposableValue);
             }
 
             return new JsonResult(data);
@@ -417,7 +417,7 @@ namespace Microsoft.AspNet.Mvc
             var disposableValue = data as IDisposable;
             if (disposableValue != null)
             {
-                Response.OnCompletedDispose(disposableValue);
+                Response.RegisterForDispose(disposableValue);
             }
 
             return new JsonResult(data, serializerSettings);
@@ -705,7 +705,7 @@ namespace Microsoft.AspNet.Mvc
         {
             if (fileStream != null)
             {
-                Response.OnCompletedDispose(fileStream);
+                Response.RegisterForDispose(fileStream);
             }
 
             return new FileStreamResult(fileStream, contentType) { FileDownloadName = fileDownloadName };
@@ -769,7 +769,7 @@ namespace Microsoft.AspNet.Mvc
             var disposableValue = value as IDisposable;
             if (disposableValue != null)
             {
-                Response.OnCompletedDispose(disposableValue);
+                Response.RegisterForDispose(disposableValue);
             }
 
             return new HttpNotFoundObjectResult(value);
@@ -795,7 +795,7 @@ namespace Microsoft.AspNet.Mvc
             var disposableValue = error as IDisposable;
             if (disposableValue != null)
             {
-                Response.OnCompletedDispose(disposableValue);
+                Response.RegisterForDispose(disposableValue);
             }
 
             return new BadRequestObjectResult(error);
@@ -823,7 +823,7 @@ namespace Microsoft.AspNet.Mvc
             var disposableValue = value as IDisposable;
             if (disposableValue != null)
             {
-                Response.OnCompletedDispose(disposableValue);
+                Response.RegisterForDispose(disposableValue);
             }
 
             return new CreatedResult(uri, value);
@@ -893,7 +893,7 @@ namespace Microsoft.AspNet.Mvc
             var disposableValue = value as IDisposable;
             if (disposableValue != null)
             {
-                Response.OnCompletedDispose(disposableValue);
+                Response.RegisterForDispose(disposableValue);
             }
 
             return new CreatedAtActionResult(actionName, controllerName, routeValues, value);
@@ -936,7 +936,7 @@ namespace Microsoft.AspNet.Mvc
             var disposableValue = value as IDisposable;
             if (disposableValue != null)
             {
-                Response.OnCompletedDispose(disposableValue);
+                Response.RegisterForDispose(disposableValue);
             }
 
             return new CreatedAtRouteResult(routeName, routeValues, value);
