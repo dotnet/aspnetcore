@@ -68,12 +68,12 @@ namespace Microsoft.AspNet.Server.WebListener
 
         public Task ChallengeAsync(ChallengeContext context)
         {
+            var hasEmptyChallenge = string.IsNullOrEmpty(context.AuthenticationScheme);
             foreach (var scheme in ListEnabledAuthSchemes())
             {
                 var authScheme = scheme.ToString();
                 // Not including any auth types means it's a blanket challenge for any auth type.
-                if (string.IsNullOrEmpty(context.AuthenticationScheme) ||
-                    string.Equals(context.AuthenticationScheme, authScheme, StringComparison.Ordinal))
+                if (hasEmptyChallenge || string.Equals(context.AuthenticationScheme, authScheme, StringComparison.Ordinal))
                 {
                     switch (context.Behavior)
                     {
@@ -89,7 +89,7 @@ namespace Microsoft.AspNet.Server.WebListener
                         case ChallengeBehavior.Automatic:
                             var identity = (ClaimsIdentity)_requestContext.User?.Identity;
                             if (identity != null && identity.IsAuthenticated
-                                && string.Equals(identity.AuthenticationType, context.AuthenticationScheme, StringComparison.Ordinal))
+                                && (hasEmptyChallenge || string.Equals(identity.AuthenticationType, context.AuthenticationScheme, StringComparison.Ordinal)))
                             {
                                 _requestContext.Response.StatusCode = 403;
                                 context.Accept();

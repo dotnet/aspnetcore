@@ -466,6 +466,30 @@ namespace Microsoft.AspNet.Server.WebListener
         [InlineData(AuthenticationSchemes.NTLM)]
         // [InlineData(AuthenticationSchemes.Digest)] // Not implemented
         // [InlineData(AuthenticationSchemes.Basic)] // Can't log in with UseDefaultCredentials
+        public async Task AuthTypes_ChallengeAuthenticatedAuthTypeWithEmptyChallenge_Forbidden(AuthenticationSchemes authType)
+        {
+            string address;
+            using (Utilities.CreateHttpAuthServer(authType, out address, env =>
+            {
+                var context = new DefaultHttpContext((IFeatureCollection)env);
+                Assert.NotNull(context.User);
+                Assert.True(context.User.Identity.IsAuthenticated);
+                return context.Authentication.ChallengeAsync();
+            }))
+            {
+                var response = await SendRequestAsync(address, useDefaultCredentials: true);
+                Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+                // for some reason Kerberos and Negotiate include a 2nd stage challenge.
+                // Assert.Equal(0, response.Headers.WwwAuthenticate.Count);
+            }
+        }
+
+        [Theory]
+        [InlineData(AuthenticationSchemes.Kerberos)]
+        [InlineData(AuthenticationSchemes.Negotiate)]
+        [InlineData(AuthenticationSchemes.NTLM)]
+        // [InlineData(AuthenticationSchemes.Digest)] // Not implemented
+        // [InlineData(AuthenticationSchemes.Basic)] // Can't log in with UseDefaultCredentials
         public async Task AuthTypes_UnathorizedAuthenticatedAuthType_Unauthorized(AuthenticationSchemes authType)
         {
             string address;
