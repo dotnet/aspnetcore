@@ -1,10 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Features;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
 
@@ -28,18 +28,20 @@ namespace Microsoft.AspNet.Diagnostics.Elm
 
         public async Task Invoke(HttpContext context)
         {
-            var requestId = Guid.NewGuid();
-            using (_logger.BeginScope(string.Format("request {0}", requestId)))
+            using (RequestIdentifier.Ensure(context))
             {
-                var p = ElmScope.Current;
-                ElmScope.Current.Context.HttpInfo = GetHttpInfo(context, requestId);
-                try
+                var requestId = context.GetFeature<IHttpRequestIdentifierFeature>().TraceIdentifier;
+                using (_logger.BeginScope("Request: {RequestId}", requestId))
                 {
-                    await _next(context);
-                }
-                finally
-                {
-                    ElmScope.Current.Context.HttpInfo.StatusCode = context.Response.StatusCode;
+                    try
+                    {
+                        ElmScope.Current.Context.HttpInfo = GetHttpInfo(context);
+                        await _next(context);
+                    }
+                    finally
+                    {
+                        ElmScope.Current.Context.HttpInfo.StatusCode = context.Response.StatusCode;
+                    }
                 }
             }
         }
@@ -48,11 +50,11 @@ namespace Microsoft.AspNet.Diagnostics.Elm
         /// Takes the info from the given HttpContext and copies it to an HttpInfo object
         /// </summary>
         /// <returns>The HttpInfo for the current elm context</returns>
-        private static HttpInfo GetHttpInfo(HttpContext context, Guid requestId)
+        private static HttpInfo GetHttpInfo(HttpContext context)
         {
             return new HttpInfo()
             {
-                RequestID = requestId,
+                RequestID = context.GetFeature<IHttpRequestIdentifierFeature>().TraceIdentifier,
                 Host = context.Request.Host,
                 ContentType = context.Request.ContentType,
                 Path = context.Request.Path,

@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Diagnostics.Elm
 {
     public class HttpInfo
     {
-        public Guid RequestID { get; set; }
+        public string RequestID { get; set; }
 
         public HostString Host { get; set; }
 
@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Diagnostics.Elm
         public string Scheme { get; set; }
 
         public int StatusCode { get; set; }
-        
+
         public ClaimsPrincipal User { get; set; }
 
         public string Method { get; set; }
