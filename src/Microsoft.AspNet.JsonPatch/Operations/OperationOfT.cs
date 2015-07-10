@@ -52,11 +52,5 @@ namespace Microsoft.AspNet.JsonPatch.Operations
             }
         }
 
-        public bool ShouldSerializevalue()
-        {
-            return (OperationType == OperationType.Add
-                || OperationType == OperationType.Replace
-                || OperationType == OperationType.Test);
-        }
     }
 }

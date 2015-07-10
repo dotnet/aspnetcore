@@ -11,6 +11,6 @@ namespace Microsoft.AspNet.JsonPatch
     {
         IContractResolver ContractResolver { get; set; }
 
-        List<Operation> GetOperations();
+        IList<Operation> GetOperations();
     }
 }

@@ -122,6 +122,89 @@ namespace Microsoft.AspNet.JsonPatch
             return GetString("TestOperationNotSupported");
         }
 
+        /// <summary>
+        /// objectType must be of type JsonPatchDocument.
+        /// </summary>
+        internal static string ParameterMustMatchType
+        {
+            get { return GetString("ParameterMustMatchType"); }
+        }
+
+        /// <summary>
+        /// objectType must be of type JsonPatchDocument.
+        /// </summary>
+        internal static string FormatParameterMustMatchType(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ParameterMustMatchType"), p0, p1);
+        }        
+
+        /// <summary>
+        /// The property at '{0}' could not be read.
+        /// </summary>
+        internal static string CannotReadProperty
+        {
+            get { return GetString("CannotReadProperty"); }
+        }
+
+        /// <summary>
+        /// The property at '{0}' could not be read.
+        /// </summary>
+        internal static string FormatCannotReadProperty(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("CannotReadProperty"), p0);
+        }
+
+        /// <summary>
+        /// The provided string '{0}' is an invalid path.
+        /// </summary>
+        internal static string InvalidValueForPath
+        {
+            get { return GetString("InvalidValueForPath"); }
+        }
+
+        /// <summary>
+        /// The provided string '{0}' is an invalid path.
+        /// </summary>
+        internal static string FormatInvalidValueForPath(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("InvalidValueForPath"), p0);
+        }
+
+
+        /// <summary>
+        /// The property at path '{0}' could not be removed.
+        /// </summary>
+        internal static string PropertyCannotBeRemoved
+        {
+            get { return GetString("PropertyCannotBeRemoved"); }
+        }
+
+        /// <summary>
+        /// The property at path '{0}' could not be removed.
+        /// </summary>
+        internal static string FormatPropertyCannotBeRemoved(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("PropertyCannotBeRemoved"), p0);
+        }
+
+        /// <summary>
+        /// The property at path '{0}' could not be added.
+        /// </summary>
+        internal static string PropertyCannotBeAdded
+        {
+            get { return GetString("PropertyCannotBeAdded"); }
+        }
+
+        /// <summary>
+        /// The property at path '{0}' could not be added.
+        /// </summary>
+        internal static string FormatPropertyCannotBeAdded(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("PropertyCannotBeAdded"), p0);
+        }
+
+
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

@@ -117,6 +117,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="CannotReadProperty" xml:space="preserve">
+    <value>The property at '{0}' could not be read.</value>
+  </data>
   <data name="CannotUpdateProperty" xml:space="preserve">
     <value>The property at path '{0}' could not be updated.</value>
   </data>
@@ -129,8 +132,20 @@
   <data name="InvalidPathForArrayProperty" xml:space="preserve">
     <value>For operation '{0}', the provided path is invalid for array property at path '{1}'.</value>
   </data>
+  <data name="InvalidValueForPath" xml:space="preserve">
+    <value>The provided string '{0}' is an invalid path.</value>
+  </data>
   <data name="InvalidValueForProperty" xml:space="preserve">
     <value>The value '{0}' is invalid for property at path '{1}'.</value>
+  </data>
+  <data name="ParameterMustMatchType" xml:space="preserve">
+    <value>'{0}' must be of type '{1}'.</value>
+  </data>
+  <data name="PropertyCannotBeAdded" xml:space="preserve">
+    <value>The property at path '{0}' could not be added.</value>
+  </data>
+  <data name="PropertyCannotBeRemoved" xml:space="preserve">
+    <value>The property at path '{0}' could not be removed.</value>
   </data>
   <data name="PropertyDoesNotExist" xml:space="preserve">
     <value>Property does not exist at path '{0}'.</value>

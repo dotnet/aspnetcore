@@ -12,13 +12,8 @@ using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.AspNet.JsonPatch.Converters
 {
-    public class TypedJsonPatchDocumentConverter : JsonConverter
-    {
-        public override bool CanConvert(Type objectType)
-        {
-            return true;
-        }
-
+    public class TypedJsonPatchDocumentConverter : JsonPatchDocumentConverter
+    {        
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue,
             JsonSerializer serializer)
         {
@@ -61,18 +56,6 @@ namespace Microsoft.AspNet.JsonPatch.Converters
             catch (Exception ex)
             {
                 throw new JsonPatchException(Resources.FormatInvalidJsonPatchDocument(objectType.Name), ex);
-            }
-        }
-
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
-        {
-            if (value is IJsonPatchDocument)
-            {
-                var jsonPatchDoc = (IJsonPatchDocument)value;
-                var lst = jsonPatchDoc.GetOperations();
-
-                // write out the operations, no envelope
-                serializer.Serialize(writer, lst);
             }
         }
     }
