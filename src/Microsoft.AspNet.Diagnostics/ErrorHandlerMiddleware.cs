@@ -14,6 +14,7 @@ namespace Microsoft.AspNet.Diagnostics
         private readonly RequestDelegate _next;
         private readonly ErrorHandlerOptions _options;
         private readonly ILogger _logger;
+        private readonly Func<object, Task> _clearCacheHeadersDelegate;
 
         public ErrorHandlerMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, ErrorHandlerOptions options)
         {
@@ -24,6 +25,7 @@ namespace Microsoft.AspNet.Diagnostics
             {
                 _options.ErrorHandler = _next;
             }
+            _clearCacheHeadersDelegate = ClearCacheHeaders;
         }
 
         public async Task Invoke(HttpContext context)
@@ -56,6 +58,8 @@ namespace Microsoft.AspNet.Diagnostics
                     context.SetFeature<IErrorHandlerFeature>(errorHandlerFeature);
                     context.Response.StatusCode = 500;
                     context.Response.Headers.Clear();
+                    context.Response.OnStarting(_clearCacheHeadersDelegate, context.Response);
+
                     // TODO: Try clearing any buffered data. The buffering feature/middleware has not been designed yet.
                     await _options.ErrorHandler(context);
                     // TODO: Optional re-throw? We'll re-throw the original exception by default if the error handler throws.
@@ -70,9 +74,18 @@ namespace Microsoft.AspNet.Diagnostics
                 {
                     context.Request.Path = originalPath;
                 }
-
                 throw; // Re-throw the original if we couldn't handle it
             }
+        }
+
+        private Task ClearCacheHeaders(object state)
+        {
+            var response = (HttpResponse)state;
+            response.Headers.Set("Cache-Control", "no-cache");
+            response.Headers.Set("Pragma", "no-cache");
+            response.Headers.Set("Expires", "-1");
+            response.Headers.Remove("ETag");
+            return Task.FromResult(0);
         }
     }
 }
