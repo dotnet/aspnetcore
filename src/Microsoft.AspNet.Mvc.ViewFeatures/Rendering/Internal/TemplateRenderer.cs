@@ -60,8 +60,6 @@ namespace Microsoft.AspNet.Mvc.Rendering.Internal
                 { typeof(uint).Name, DefaultEditorTemplates.NumberInputTemplate },
                 { typeof(long).Name, DefaultEditorTemplates.NumberInputTemplate },
                 { typeof(ulong).Name, DefaultEditorTemplates.NumberInputTemplate },
-                { typeof(float).Name, DefaultEditorTemplates.NumberInputTemplate },
-                { typeof(double).Name, DefaultEditorTemplates.NumberInputTemplate },
                 { typeof(bool).Name, DefaultEditorTemplates.BooleanTemplate },
                 { typeof(decimal).Name, DefaultEditorTemplates.DecimalTemplate },
                 { typeof(string).Name, DefaultEditorTemplates.StringTemplate },
