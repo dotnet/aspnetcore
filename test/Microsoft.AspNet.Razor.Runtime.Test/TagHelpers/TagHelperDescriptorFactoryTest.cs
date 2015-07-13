@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Razor.TagHelpers;
@@ -14,6 +15,237 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
     {
         private static readonly string AssemblyName =
             typeof(TagHelperDescriptorFactoryTest).GetTypeInfo().Assembly.GetName().Name;
+
+        public static TheoryData EditorBrowsableData
+        {
+            get
+            {
+                // tagHelperType, designTime, expectedDescriptors
+                return new TheoryData<Type, bool, TagHelperDescriptor[]>
+                {
+                    {
+                        typeof(InheritedEditorBrowsableTagHelper),
+                        true,
+                        new[]
+                        {
+                            new TagHelperDescriptor(
+                            tagName: "inherited-editor-browsable",
+                            typeName: typeof(InheritedEditorBrowsableTagHelper).FullName,
+                            assemblyName: AssemblyName,
+                            attributes: new[]
+                            {
+                                new TagHelperAttributeDescriptor(
+                                    name: "property",
+                                    propertyName: nameof(InheritedEditorBrowsableTagHelper.Property),
+                                    typeName: typeof(int).FullName,
+                                    isIndexer: false,
+                                    designTimeDescriptor: null)
+                            })
+                        }
+                    },
+                    { typeof(EditorBrowsableTagHelper), true, new TagHelperDescriptor[0] },
+                    {
+                        typeof(EditorBrowsableTagHelper),
+                        false,
+                        new[]
+                        {
+                            new TagHelperDescriptor(
+                            tagName: "editor-browsable",
+                            typeName: typeof(EditorBrowsableTagHelper).FullName,
+                            assemblyName: AssemblyName,
+                            attributes: new[]
+                            {
+                                new TagHelperAttributeDescriptor(
+                                    name: "property",
+                                    propertyName: nameof(EditorBrowsableTagHelper.Property),
+                                    typeName: typeof(int).FullName,
+                                    isIndexer: false,
+                                    designTimeDescriptor: null)
+                            })
+                        }
+                    },
+                    {
+                        typeof(HiddenPropertyEditorBrowsableTagHelper),
+                        true,
+                        new[]
+                        {
+                            new TagHelperDescriptor(
+                            tagName: "hidden-property-editor-browsable",
+                            typeName: typeof(HiddenPropertyEditorBrowsableTagHelper).FullName,
+                            assemblyName: AssemblyName,
+                            attributes: new TagHelperAttributeDescriptor[0])
+                        }
+                    },
+                    {
+                        typeof(HiddenPropertyEditorBrowsableTagHelper),
+                        false,
+                        new[]
+                        {
+                            new TagHelperDescriptor(
+                            tagName: "hidden-property-editor-browsable",
+                            typeName: typeof(HiddenPropertyEditorBrowsableTagHelper).FullName,
+                            assemblyName: AssemblyName,
+                            attributes: new[]
+                            {
+                                new TagHelperAttributeDescriptor(
+                                    name: "property",
+                                    propertyName: nameof(HiddenPropertyEditorBrowsableTagHelper.Property),
+                                    typeName: typeof(int).FullName,
+                                    isIndexer: false,
+                                    designTimeDescriptor: null)
+                            })
+                        }
+                    },
+                    {
+                        typeof(OverriddenEditorBrowsableTagHelper),
+                        true,
+                        new[]
+                        {
+                            new TagHelperDescriptor(
+                                tagName: "overridden-editor-browsable",
+                                typeName: typeof(OverriddenEditorBrowsableTagHelper).FullName,
+                                assemblyName: AssemblyName,
+                                attributes: new[]
+                                {
+                                    new TagHelperAttributeDescriptor(
+                                        name: "property",
+                                        propertyName: nameof(OverriddenEditorBrowsableTagHelper.Property),
+                                        typeName: typeof(int).FullName,
+                                        isIndexer: false,
+                                        designTimeDescriptor: null)
+                                })
+                        }
+                    },
+                    {
+                        typeof(MultiPropertyEditorBrowsableTagHelper),
+                        true,
+                        new[]
+                        {
+                            new TagHelperDescriptor(
+                                tagName: "multi-property-editor-browsable",
+                                typeName: typeof(MultiPropertyEditorBrowsableTagHelper).FullName,
+                                assemblyName: AssemblyName,
+                                attributes: new[]
+                                {
+                                    new TagHelperAttributeDescriptor(
+                                        name: "property2",
+                                        propertyName: nameof(MultiPropertyEditorBrowsableTagHelper.Property2),
+                                        typeName: typeof(int).FullName,
+                                        isIndexer: false,
+                                        designTimeDescriptor: null)
+                                })
+                        }
+                    },
+                    {
+                        typeof(MultiPropertyEditorBrowsableTagHelper),
+                        false,
+                        new[]
+                        {
+                            new TagHelperDescriptor(
+                                tagName: "multi-property-editor-browsable",
+                                typeName: typeof(MultiPropertyEditorBrowsableTagHelper).FullName,
+                                assemblyName: AssemblyName,
+                                attributes: new[]
+                                {
+                                    new TagHelperAttributeDescriptor(
+                                        name: "property",
+                                        propertyName: nameof(MultiPropertyEditorBrowsableTagHelper.Property),
+                                        typeName: typeof(int).FullName,
+                                        isIndexer: false,
+                                        designTimeDescriptor: null),
+                                    new TagHelperAttributeDescriptor(
+                                        name: "property2",
+                                        propertyName: nameof(MultiPropertyEditorBrowsableTagHelper.Property2),
+                                        typeName: typeof(int).FullName,
+                                        isIndexer: false,
+                                        designTimeDescriptor: null)
+                                })
+                        }
+                    },
+                    {
+                        typeof(OverriddenPropertyEditorBrowsableTagHelper),
+                        true,
+                        new[]
+                        {
+                            new TagHelperDescriptor(
+                                tagName: "overridden-property-editor-browsable",
+                                typeName: typeof(OverriddenPropertyEditorBrowsableTagHelper).FullName,
+                                assemblyName: AssemblyName,
+                                attributes: new TagHelperAttributeDescriptor[0])
+                        }
+                    },
+                    {
+                        typeof(OverriddenPropertyEditorBrowsableTagHelper),
+                        false,
+                        new[]
+                        {
+                            new TagHelperDescriptor(
+                                tagName: "overridden-property-editor-browsable",
+                                typeName: typeof(OverriddenPropertyEditorBrowsableTagHelper).FullName,
+                                assemblyName: AssemblyName,
+                                attributes: new[]
+                                {
+                                    new TagHelperAttributeDescriptor(
+                                        name: "property",
+                                        propertyName: nameof(OverriddenPropertyEditorBrowsableTagHelper.Property),
+                                        typeName: typeof(int).FullName,
+                                        isIndexer: false,
+                                        designTimeDescriptor: null),
+                                    new TagHelperAttributeDescriptor(
+                                        name: "property2",
+                                        propertyName: nameof(OverriddenPropertyEditorBrowsableTagHelper.Property2),
+                                        typeName: typeof(int).FullName,
+                                        isIndexer: false,
+                                        designTimeDescriptor: null)
+                                })
+                        }
+                    },
+                    {
+                        typeof(DefaultEditorBrowsableTagHelper),
+                        true,
+                        new[]
+                        {
+                            new TagHelperDescriptor(
+                            tagName: "default-editor-browsable",
+                            typeName: typeof(DefaultEditorBrowsableTagHelper).FullName,
+                            assemblyName: AssemblyName,
+                            attributes: new[]
+                            {
+                                new TagHelperAttributeDescriptor(
+                                    name: "property",
+                                    propertyName: nameof(DefaultEditorBrowsableTagHelper.Property),
+                                    typeName: typeof(int).FullName,
+                                    isIndexer: false,
+                                    designTimeDescriptor: null)
+                            })
+                        }
+                    },
+                    { typeof(MultiEditorBrowsableTagHelper), true, new TagHelperDescriptor[0] }
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(EditorBrowsableData))]
+        public void CreateDescriptors_UnderstandsEditorBrowsableAttribute(
+            Type tagHelperType,
+            bool designTime,
+            TagHelperDescriptor[] expectedDescriptors)
+        {
+            // Arrange
+            var errorSink = new ErrorSink();
+
+            // Act
+            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
+                AssemblyName,
+                tagHelperType,
+                designTime,
+                errorSink);
+
+            // Assert
+            Assert.Empty(errorSink.Errors);
+            Assert.Equal(expectedDescriptors, descriptors, TagHelperDescriptorComparer.Default);
+        }
 
         public static TheoryData AttributeTargetData
         {
@@ -1562,6 +1794,59 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             }
 
             return data;
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Always)]
+        private class DefaultEditorBrowsableTagHelper : TagHelper
+        {
+            [EditorBrowsable(EditorBrowsableState.Always)]
+            public int Property { get; set; }
+        }
+
+        private class HiddenPropertyEditorBrowsableTagHelper : TagHelper
+        {
+            [EditorBrowsable(EditorBrowsableState.Never)]
+            public int Property { get; set; }
+        }
+
+        private class MultiPropertyEditorBrowsableTagHelper : TagHelper
+        {
+            [EditorBrowsable(EditorBrowsableState.Never)]
+            public int Property { get; set; }
+
+            public virtual int Property2 { get; set; }
+        }
+
+        private class OverriddenPropertyEditorBrowsableTagHelper : MultiPropertyEditorBrowsableTagHelper
+        {
+            [EditorBrowsable(EditorBrowsableState.Never)]
+            public override int Property2 { get; set; }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        private class EditorBrowsableTagHelper : TagHelper
+        {
+            [EditorBrowsable(EditorBrowsableState.Never)]
+            public virtual int Property { get; set; }
+        }
+
+        private class InheritedEditorBrowsableTagHelper : EditorBrowsableTagHelper
+        {
+            public override int Property { get; set; }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        private class OverriddenEditorBrowsableTagHelper : EditorBrowsableTagHelper
+        {
+            [EditorBrowsable(EditorBrowsableState.Advanced)]
+            public override int Property { get; set; }
+        }
+
+        [TargetElement("p")]
+        [TargetElement("div")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        private class MultiEditorBrowsableTagHelper : TagHelper
+        {
         }
 
         [TargetElement(Attributes = "class*")]
