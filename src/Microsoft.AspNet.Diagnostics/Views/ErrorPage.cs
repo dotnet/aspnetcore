@@ -57,7 +57,7 @@ using Views
   
     Response.StatusCode = 500;
     // TODO: Response.ReasonPhrase = "Internal Server Error";
-    Response.ContentType = "text/html";
+    Response.ContentType = "text/html; charset=utf-8";
     Response.ContentLength = null; // Clear any prior Content-Length
     string location = string.Empty;
 

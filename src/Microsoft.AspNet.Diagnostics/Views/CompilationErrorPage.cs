@@ -51,7 +51,7 @@ using Views
 #line 10 "CompilationErrorPage.cshtml"
   
     Response.StatusCode = 500;
-    Response.ContentType = "text/html";
+    Response.ContentType = "text/html; charset=utf-8";
     Response.ContentLength = null; // Clear any prior Content-Length
 
 #line default

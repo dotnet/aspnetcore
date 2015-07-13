@@ -6,6 +6,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.Internal;
@@ -52,7 +53,7 @@ namespace Microsoft.AspNet.Diagnostics.Views
             Context = context;
             Request = Context.Request;
             Response = Context.Response;
-            Output = new StreamWriter(Response.Body);
+            Output = new StreamWriter(Response.Body, Encoding.UTF8, 4096, leaveOpen: true);
             HtmlEncoder = context.ApplicationServices.GetHtmlEncoder();
             await ExecuteAsync();
             Output.Dispose();
@@ -199,7 +200,7 @@ namespace Microsoft.AspNet.Diagnostics.Views
         /// <param name="value">The <see cref="object"/> to write.</param>
         /// <remarks>
         /// <see cref="HelperResult.WriteTo(TextWriter)"/> is invoked for <see cref="HelperResult"/> types.
-        /// For all other types, the encoded result of <see cref="object.ToString"/> is written to the 
+        /// For all other types, the encoded result of <see cref="object.ToString"/> is written to the
         /// <paramref name="writer"/>.
         /// </remarks>
         protected void WriteTo(TextWriter writer, object value)
