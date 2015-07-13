@@ -112,11 +112,11 @@ body .location {
     background: #b20000;
 }
 
-#stackpage .source ol.collapsable li {
+#stackpage .source ol.collapsible li {
     color: #888;
 }
 
-    #stackpage .source ol.collapsable li span {
+    #stackpage .source ol.collapsible li span {
         color: #606060;
     }
 
