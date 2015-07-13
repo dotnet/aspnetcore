@@ -317,6 +317,28 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         public void ProduceEnd(Exception ex)
         {
+            if (ex != null)
+            {
+                if (_resultStarted)
+                {
+                    // We can no longer respond with a 500, so we simply close the connection.
+                    ConnectionControl.End(ProduceEndType.SocketDisconnect);
+                    return;
+                }
+                else
+                {
+                    StatusCode = 500;
+                    ReasonPhrase = null;
+
+                    // If OnStarting hasn't been triggered yet, we don't want to trigger it now that
+                    // the app func has failed. https://github.com/aspnet/KestrelHttpServer/issues/43
+                    _onStarting = null;
+
+                    ResponseHeaders.Clear();
+                    ResponseHeaders["Content-Length"] = new[] { "0" };
+                }
+            }
+
             ProduceStart();
 
             if (!_keepAlive)

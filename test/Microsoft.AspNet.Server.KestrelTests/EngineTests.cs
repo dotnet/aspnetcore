@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
     /// <summary>
     /// Summary description for EngineTests
     /// </summary>
-    internal class EngineTests
+    public class EngineTests
     {
         private async Task App(Frame frame)
         {
@@ -55,6 +55,20 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 catch (NullReferenceException)
                 { return null; }
             }
+        }
+
+        private async Task AppThatThrows(Frame frame)
+        {
+            // Anything added to the ResponseHeaders dictionary is ignored
+            frame.ResponseHeaders["Content-Length"] = new[] { "11" };
+            throw new Exception();
+        }
+
+        private async Task AppThatThrowsAfterWrite(Frame frame)
+        {
+            frame.ResponseHeaders["Content-Length"] = new[] { "11" };
+            await frame.ResponseBody.WriteAsync(Encoding.UTF8.GetBytes("Hello World"), 0, 11);
+            throw new Exception();
         }
 
         private async Task AppChunked(Frame frame)
@@ -340,6 +354,53 @@ namespace Microsoft.AspNet.Server.KestrelTests
                     await connection.ReceiveEnd(
                         "HTTP/1.0 200 OK",
                         "\r\n");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task ThrowingResultsIn500Response()
+        {
+            using (var server = new TestServer(AppThatThrows))
+            {
+                using (var connection = new TestConnection())
+                {
+                    await connection.SendEnd(
+                        "GET / HTTP/1.1",
+                        "",
+                        "GET / HTTP/1.1",
+                        "Connection: close",
+                        "",
+                        "");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 500 Internal Server Error",
+                        "Content-Length: 0",
+                        "",
+                        "HTTP/1.1 500 Internal Server Error",
+                        "Content-Length: 0",
+                        "Connection: close",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task ThrowingAfterWritingKillsConnection()
+        {
+            using (var server = new TestServer(AppThatThrowsAfterWrite))
+            {
+                using (var connection = new TestConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "",
+                        "");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 200 OK",
+                        "Content-Length: 11",
+                        "",
+                        "Hello World");
                 }
             }
         }
