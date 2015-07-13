@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Http
 
         public abstract void OnCompleted([NotNull] Func<object, Task> callback, object state);
 
-        public virtual void OnCompletedDispose([NotNull] IDisposable disposable) => OnCompleted(_disposeDelegate, disposable);
+        public virtual void RegisterForDispose([NotNull] IDisposable disposable) => OnCompleted(_disposeDelegate, disposable);
 
         public virtual void OnCompleted([NotNull] Func<Task> callback) => OnCompleted(_callbackDelegate, callback);
 
