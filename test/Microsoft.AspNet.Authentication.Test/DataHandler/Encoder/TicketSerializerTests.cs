@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
@@ -14,7 +15,7 @@ namespace Microsoft.AspNet.Authentication.DataHandler.Encoder
     public class TicketSerializerTests
     {
         [Fact]
-        public void CanRoundTripNullPrincipal()
+        public void NullPrincipalThrows()
         {
             var properties = new AuthenticationProperties();
             properties.RedirectUri = "bye";
@@ -24,12 +25,7 @@ namespace Microsoft.AspNet.Authentication.DataHandler.Encoder
             using (var writer = new BinaryWriter(stream))
             using (var reader = new BinaryReader(stream))
             {
-                TicketSerializer.Write(writer, ticket);
-                stream.Position = 0;
-                var readTicket = TicketSerializer.Read(reader);
-                readTicket.Principal.ShouldBe(null);
-                readTicket.Properties.RedirectUri.ShouldBe("bye");
-                readTicket.AuthenticationScheme.ShouldBe("Hello");
+                Assert.Throws<ArgumentNullException>(() => TicketSerializer.Write(writer, ticket));
             }
         }
 

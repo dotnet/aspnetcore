@@ -372,6 +372,36 @@ namespace Microsoft.AspNet.Authentication.Cookies
         }
 
         [Fact]
+        public async Task CookieCanBeRejectedAndSignedOutByValidator()
+        {
+            var clock = new TestClock();
+            var server = CreateServer(options =>
+            {
+                options.SystemClock = clock;
+                options.ExpireTimeSpan = TimeSpan.FromMinutes(10);
+                options.SlidingExpiration = false;
+                options.Notifications = new CookieAuthenticationNotifications
+                {
+                    OnValidatePrincipal = ctx =>
+                    {
+                        ctx.RejectPrincipal();
+                        ctx.HttpContext.Authentication.SignOutAsync("Cookies");
+                        return Task.FromResult(0);
+                    }
+                };
+            },
+            context =>
+                context.Authentication.SignInAsync("Cookies",
+                    new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity("Alice", "Cookies")))));
+
+            var transaction1 = await SendAsync(server, "http://example.com/testpath");
+
+            var transaction2 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
+            transaction2.SetCookie.ShouldContain(".AspNet.Cookies=; expires=");
+            FindClaimValue(transaction2, ClaimTypes.Name).ShouldBe(null);
+        }
+
+        [Fact]
         public async Task CookieCanBeRenewedByValidator()
         {
             var clock = new TestClock();
@@ -669,6 +699,149 @@ namespace Microsoft.AspNet.Authentication.Cookies
             var transaction2 = await SendAsync(server, "http://example.com/unauthorized", transaction1.CookieNameValue);
 
             transaction2.Response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+        }
+
+        [Fact]
+        public async Task MapWillNotAffectChallenge()
+        {
+            var server = TestServer.Create(app =>
+                {
+                    app.UseCookieAuthentication(options => options.LoginPath = new PathString("/page"));
+                    app.Map("/login", signoutApp => signoutApp.Run(context => context.Authentication.ChallengeAsync("Cookies", new AuthenticationProperties() { RedirectUri = "/" })));
+                },
+                services => services.AddAuthentication());
+
+            var transaction = await server.SendAsync("http://example.com/login");
+
+            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+
+            var location = transaction.Response.Headers.Location;
+            location.LocalPath.ShouldBe("/page");
+            location.Query.ShouldBe("?ReturnUrl=%2F");
+        }
+
+        [Fact]
+        public async Task MapWithSignInOnlyRedirectToReturnUrlOnLoginPath()
+        {
+            var server = TestServer.Create(app =>
+            {
+                app.UseCookieAuthentication(options => options.LoginPath = new PathString("/login"));
+                app.Map("/notlogin", signoutApp => signoutApp.Run(context => context.Authentication.SignInAsync("Cookies", 
+                    new ClaimsPrincipal())));
+            },
+                services => services.AddAuthentication());
+
+            var transaction = await server.SendAsync("http://example.com/notlogin?ReturnUrl=%2Fpage");
+            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
+            transaction.SetCookie.ShouldNotBe(null);
+        }
+
+        [Fact]
+        public async Task MapWillNotAffectSignInRedirectToReturnUrl()
+        {
+            var server = TestServer.Create(app =>
+            {
+                app.UseCookieAuthentication(options => options.LoginPath = new PathString("/login"));
+                app.Map("/login", signoutApp => signoutApp.Run(context => context.Authentication.SignInAsync("Cookies",
+                    new ClaimsPrincipal())));
+            },
+            services => services.AddAuthentication());
+
+            var transaction = await server.SendAsync("http://example.com/login?ReturnUrl=%2Fpage");
+
+            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+            transaction.SetCookie.ShouldNotBe(null);
+
+            var location = transaction.Response.Headers.Location;
+            location.OriginalString.ShouldBe("/page");
+        }
+
+        [Fact]
+        public async Task MapWithSignOutOnlyRedirectToReturnUrlOnLogoutPath()
+        {
+            var server = TestServer.Create(app =>
+            {
+                app.UseCookieAuthentication(options => options.LogoutPath = new PathString("/logout"));
+                app.Map("/notlogout", signoutApp => signoutApp.Run(context => context.Authentication.SignOutAsync("Cookies")));
+            },
+            services => services.AddAuthentication());
+
+            var transaction = await server.SendAsync("http://example.com/notlogout?ReturnUrl=%2Fpage");
+            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
+            transaction.SetCookie[0].ShouldContain(".AspNet.Cookies=; expires=");
+        }
+
+        [Fact]
+        public async Task MapWillNotAffectSignOutRedirectToReturnUrl()
+        {
+            var server = TestServer.Create(app =>
+            {
+                app.UseCookieAuthentication(options => options.LogoutPath = new PathString("/logout"));
+                app.Map("/logout", signoutApp => signoutApp.Run(context => context.Authentication.SignOutAsync("Cookies")));
+            },
+            services => services.AddAuthentication());
+
+            var transaction = await server.SendAsync("http://example.com/logout?ReturnUrl=%2Fpage");
+
+            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+            transaction.SetCookie[0].ShouldContain(".AspNet.Cookies=; expires=");
+
+            var location = transaction.Response.Headers.Location;
+            location.OriginalString.ShouldBe("/page");
+        }
+
+        [Fact]
+        public async Task MapWillNotAffectAccessDenied()
+        {
+            var server = TestServer.Create(app =>
+                {
+                    app.UseCookieAuthentication(options => options.AccessDeniedPath = new PathString("/denied"));
+                    app.Map("/forbid", signoutApp => signoutApp.Run(context => context.Authentication.ForbidAsync("Cookies")));
+                },
+                services => services.AddAuthentication());
+            var transaction = await server.SendAsync("http://example.com/forbid");
+
+            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+
+            var location = transaction.Response.Headers.Location;
+            location.LocalPath.ShouldBe("/denied");
+        }
+
+        [Fact]
+        public async Task NestedMapWillNotAffectLogin()
+        {
+            var server = TestServer.Create(app =>
+                app.Map("/base", map =>
+                {
+                    map.UseCookieAuthentication(options => options.LoginPath = new PathString("/page"));
+                    map.Map("/login", signoutApp => signoutApp.Run(context => context.Authentication.ChallengeAsync("Cookies", new AuthenticationProperties() { RedirectUri = "/" })));
+                }),
+                services => services.AddAuthentication());
+            var transaction = await server.SendAsync("http://example.com/base/login");
+
+            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+
+            var location = transaction.Response.Headers.Location;
+            location.LocalPath.ShouldBe("/base/page");
+            location.Query.ShouldBe("?ReturnUrl=%2F");
+        }
+
+        [Fact]
+        public async Task NestedMapWillNotAffectAccessDenied()
+        {
+            var server = TestServer.Create(app =>
+                app.Map("/base", map =>
+                {
+                    map.UseCookieAuthentication(options => options.AccessDeniedPath = new PathString("/denied"));
+                    map.Map("/forbid", signoutApp => signoutApp.Run(context => context.Authentication.ForbidAsync("Cookies")));
+                }),
+                services => services.AddAuthentication());
+            var transaction = await server.SendAsync("http://example.com/base/forbid");
+
+            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+
+            var location = transaction.Response.Headers.Location;
+            location.LocalPath.ShouldBe("/base/denied");
         }
 
         private static string FindClaimValue(Transaction transaction, string claimType)

@@ -38,6 +38,8 @@ namespace Microsoft.AspNet.Authentication
 
         protected PathString OriginalPathBase { get; private set; }
 
+        protected PathString OriginalPath { get; private set; }
+
         protected ILogger Logger { get; private set; }
 
         protected IUrlEncoder UrlEncoder { get; private set; }
@@ -62,6 +64,7 @@ namespace Microsoft.AspNet.Authentication
             _baseOptions = options;
             Context = context;
             OriginalPathBase = Request.PathBase;
+            OriginalPath = Request.Path;
             Logger = logger;
             UrlEncoder = encoder;
 
@@ -72,7 +75,7 @@ namespace Microsoft.AspNet.Authentication
             // Automatic authentication is the empty scheme
             if (ShouldHandleScheme(string.Empty))
             {
-                var ticket = await AuthenticateOnceAsync();
+                var ticket = await HandleAuthenticateOnceAsync();
                 if (ticket?.Principal != null)
                 {
                     Context.User = SecurityHelper.MergeUserPrincipal(Context.User, ticket.Principal);
@@ -157,13 +160,10 @@ namespace Microsoft.AspNet.Authentication
             }
         }
 
-        protected Task<AuthenticationTicket> AuthenticateOnceAsync()
+        public bool ShouldHandleScheme(string authenticationScheme)
         {
-            if (_authenticateTask == null)
-            {
-                _authenticateTask = AuthenticateAsync();
-            }
-            return _authenticateTask;
+            return string.Equals(BaseOptions.AuthenticationScheme, authenticationScheme, StringComparison.Ordinal) ||
+                (BaseOptions.AutomaticAuthentication && string.IsNullOrEmpty(authenticationScheme));
         }
 
         public async Task AuthenticateAsync(AuthenticateContext context)
@@ -171,11 +171,10 @@ namespace Microsoft.AspNet.Authentication
             if (ShouldHandleScheme(context.AuthenticationScheme))
             {
                 // Calling Authenticate more than once should always return the original value. 
-                var ticket = await AuthenticateOnceAsync();
+                var ticket = await HandleAuthenticateOnceAsync();
                 if (ticket?.Principal != null)
                 {
                     context.Authenticated(ticket.Principal, ticket.Properties.Items, BaseOptions.Description.Items);
-                    _authenticateTask = Task.FromResult(ticket);
                 }
                 else
                 {
@@ -189,13 +188,16 @@ namespace Microsoft.AspNet.Authentication
             }
         }
 
-        protected abstract Task<AuthenticationTicket> AuthenticateAsync();
-
-        public bool ShouldHandleScheme(string authenticationScheme)
+        protected Task<AuthenticationTicket> HandleAuthenticateOnceAsync()
         {
-            return string.Equals(BaseOptions.AuthenticationScheme, authenticationScheme, StringComparison.Ordinal) ||
-                (BaseOptions.AutomaticAuthentication && string.IsNullOrWhiteSpace(authenticationScheme));
+            if (_authenticateTask == null)
+            {
+                _authenticateTask = HandleAuthenticateAsync();
+            }
+            return _authenticateTask;
         }
+
+        protected abstract Task<AuthenticationTicket> HandleAuthenticateAsync();
 
         public async Task SignInAsync(SignInContext context)
         {
@@ -270,7 +272,7 @@ namespace Microsoft.AspNet.Authentication
                 {
                     case ChallengeBehavior.Automatic:
                         // If there is a principal already, invoke the forbidden code path
-                        var ticket = await AuthenticateAsync();
+                        var ticket = await HandleAuthenticateOnceAsync();
                         if (ticket?.Principal != null)
                         {
                             handled = await HandleForbiddenAsync(context);

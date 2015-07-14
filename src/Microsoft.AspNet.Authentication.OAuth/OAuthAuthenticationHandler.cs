@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Authentication.OAuth
 
         public async Task<bool> InvokeReturnPathAsync()
         {
-            var ticket = await AuthenticateAsync();
+            var ticket = await HandleAuthenticateOnceAsync();
             if (ticket == null)
             {
                 Logger.LogWarning("Invalid return state, unable to redirect.");
@@ -78,7 +78,7 @@ namespace Microsoft.AspNet.Authentication.OAuth
             return context.IsRequestCompleted;
         }
 
-        protected override async Task<AuthenticationTicket> AuthenticateAsync()
+        protected override async Task<AuthenticationTicket> HandleAuthenticateAsync()
         {
             AuthenticationProperties properties = null;
             try

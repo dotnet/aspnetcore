@@ -48,14 +48,30 @@ namespace Microsoft.AspNet.Authentication.Cookies
             Authenticate,
 
             /// <summary>
-            /// The exception was reported in the ApplyResponseGrant code path, during sign-in, sign-out, or refresh.
+            /// The exception was reported in the FinishResponse code path, during sign-in, sign-out, or refresh.
             /// </summary>
-            ApplyResponseGrant,
+            FinishResponse,
 
             /// <summary>
-            /// The exception was reported in the ApplyResponseChallenge code path, during redirect generation.
+            /// The exception was reported in the Unauthorized code path, during redirect generation.
             /// </summary>
-            ApplyResponseChallenge,
+            Unauthorized,
+
+            /// <summary>
+            /// The exception was reported in the Forbidden code path, during redirect generation.
+            /// </summary>
+            Forbidden,
+
+            /// <summary>
+            /// The exception was reported in the SignIn code path
+            /// </summary>
+            SignIn,
+
+            /// <summary>
+            /// The exception was reported in the SignOut code path
+            /// </summary>
+            SignOut,
+
         }
 
         /// <summary>

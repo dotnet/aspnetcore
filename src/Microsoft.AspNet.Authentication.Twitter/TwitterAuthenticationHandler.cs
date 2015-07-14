@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
             return false;
         }
 
-        protected override async Task<AuthenticationTicket> AuthenticateAsync()
+        protected override async Task<AuthenticationTicket> HandleAuthenticateAsync()
         {
             AuthenticationProperties properties = null;
             try
@@ -169,7 +169,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
 
         public async Task<bool> InvokeReturnPathAsync()
         {
-            var model = await AuthenticateAsync();
+            var model = await HandleAuthenticateOnceAsync();
             if (model == null)
             {
                 Logger.LogWarning("Invalid return state, unable to redirect.");

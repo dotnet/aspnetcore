@@ -43,8 +43,7 @@ namespace Microsoft.AspNet.Authentication.DataHandler.Serializer
             var principal = model.Principal;
             if (principal == null)
             {
-                // Use -1 to signal null
-                writer.Write(-1);
+                throw new ArgumentNullException("model.Principal");
             }
             else
             {
@@ -75,37 +74,36 @@ namespace Microsoft.AspNet.Authentication.DataHandler.Serializer
             {
                 return null;
             }
-            string authenticationScheme = reader.ReadString();
-            int identityCount = reader.ReadInt32();
-            ClaimsPrincipal principal = null;
+            var authenticationScheme = reader.ReadString();
+            var identityCount = reader.ReadInt32();
 
-            // Negative values are used to signify null
-            if (identityCount >= 0)
+            if (identityCount < 0)
             {
-                var identities = new ClaimsIdentity[identityCount];
-                for (int i = 0; i != identityCount; ++i)
+                return null;
+            }
+
+            var identities = new ClaimsIdentity[identityCount];
+            for (var i = 0; i != identityCount; ++i)
+            {
+                var authenticationType = reader.ReadString();
+                var nameClaimType = ReadWithDefault(reader, DefaultValues.NameClaimType);
+                var roleClaimType = ReadWithDefault(reader, DefaultValues.RoleClaimType);
+                var count = reader.ReadInt32();
+                var claims = new Claim[count];
+                for (int index = 0; index != count; ++index)
                 {
-                    string authenticationType = reader.ReadString();
-                    string nameClaimType = ReadWithDefault(reader, DefaultValues.NameClaimType);
-                    string roleClaimType = ReadWithDefault(reader, DefaultValues.RoleClaimType);
-                    int count = reader.ReadInt32();
-                    var claims = new Claim[count];
-                    for (int index = 0; index != count; ++index)
-                    {
-                        string type = ReadWithDefault(reader, nameClaimType);
-                        string value = reader.ReadString();
-                        string valueType = ReadWithDefault(reader, DefaultValues.StringValueType);
-                        string issuer = ReadWithDefault(reader, DefaultValues.LocalAuthority);
-                        string originalIssuer = ReadWithDefault(reader, issuer);
-                        claims[index] = new Claim(type, value, valueType, issuer, originalIssuer);
-                    }
-                    identities[i] = new ClaimsIdentity(claims, authenticationType, nameClaimType, roleClaimType);
+                    var type = ReadWithDefault(reader, nameClaimType);
+                    var value = reader.ReadString();
+                    var valueType = ReadWithDefault(reader, DefaultValues.StringValueType);
+                    var issuer = ReadWithDefault(reader, DefaultValues.LocalAuthority);
+                    var originalIssuer = ReadWithDefault(reader, issuer);
+                    claims[index] = new Claim(type, value, valueType, issuer, originalIssuer);
                 }
-                principal = new ClaimsPrincipal(identities);
+                identities[i] = new ClaimsIdentity(claims, authenticationType, nameClaimType, roleClaimType);
             }
 
             var properties = PropertiesSerializer.Read(reader);
-            return new AuthenticationTicket(principal, properties, authenticationScheme);
+            return new AuthenticationTicket(new ClaimsPrincipal(identities), properties, authenticationScheme);
         }
 
         private static void WriteWithDefault(BinaryWriter writer, string value, string defaultValue)
@@ -122,7 +120,7 @@ namespace Microsoft.AspNet.Authentication.DataHandler.Serializer
 
         private static string ReadWithDefault(BinaryReader reader, string defaultValue)
         {
-            string value = reader.ReadString();
+            var value = reader.ReadString();
             if (string.Equals(value, DefaultValues.DefaultStringPlaceholder, StringComparison.Ordinal))
             {
                 return defaultValue;
