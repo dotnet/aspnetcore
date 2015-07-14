@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNet.Server.Kestrel.Networking
 {
@@ -14,6 +15,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
 
         Action<UvShutdownReq, int, object> _callback;
         object _state;
+        GCHandle _pin;
 
         public void Init(UvLoopHandle loop)
         {
@@ -27,12 +29,14 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         {
             _callback = callback;
             _state = state;
+            _pin = GCHandle.Alloc(this, GCHandleType.Normal);
             _uv.shutdown(this, handle, _uv_shutdown_cb);
         }
 
         private static void UvShutdownCb(IntPtr ptr, int status)
         {
             var req = FromIntPtr<UvShutdownReq>(ptr);
+            req._pin.Free();
             req._callback(req, status, req._state);
             req._callback = null;
             req._state = null;
