@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Builder
         /// <returns></returns>
         public static IApplicationBuilder UseErrorPage([NotNull] this IApplicationBuilder builder, ErrorPageOptions options)
         {
-            return builder.Use(next => new ErrorPageMiddleware(next, options).Invoke);
+            return builder.UseMiddleware<ErrorPageMiddleware>(options);
         }
     }
 }

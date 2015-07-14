@@ -13,6 +13,7 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics.Views;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.Logging;
 using Microsoft.Framework.Runtime;
 
 namespace Microsoft.AspNet.Diagnostics
@@ -25,16 +26,19 @@ namespace Microsoft.AspNet.Diagnostics
         private readonly RequestDelegate _next;
         private readonly ErrorPageOptions _options;
         private static readonly bool IsMono = Type.GetType("Mono.Runtime") != null;
+        private readonly ILogger _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ErrorPageMiddleware"/> class
         /// </summary>
         /// <param name="next"></param>
         /// <param name="options"></param>
-        public ErrorPageMiddleware([NotNull] RequestDelegate next, [NotNull] ErrorPageOptions options)
+        public ErrorPageMiddleware(
+            [NotNull] RequestDelegate next, [NotNull] ErrorPageOptions options, ILoggerFactory loggerFactory)
         {
             _next = next;
             _options = options;
+            _logger = loggerFactory.CreateLogger<ErrorPageMiddleware>();
         }
 
         /// <summary>
@@ -51,14 +55,16 @@ namespace Microsoft.AspNet.Diagnostics
             }
             catch (Exception ex)
             {
+                _logger.LogError("An unhandled exception has occurred while executing the request", ex);
                 try
                 {
                     await DisplayException(context, ex);
                     return;
                 }
-                catch (Exception)
+                catch (Exception ex2)
                 {
                     // If there's a Exception while generating the error page, re-throw the original exception.
+                    _logger.LogError("An exception was thrown attempting to display the error page.", ex2);
                 }
                 throw;
             }
