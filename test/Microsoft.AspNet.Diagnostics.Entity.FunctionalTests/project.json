@@ -1,6 +1,6 @@
 {
     "dependencies": {
-        "EntityFramework.SqlServer": "7.0.0-*",
+        "EntityFramework7.SqlServer": "7.0.0-*",
         "Microsoft.AspNet.Diagnostics.Entity": "7.0.0-*",
         "Microsoft.AspNet.Diagnostics.Entity.Tests": "1.0.0",
         "Microsoft.AspNet.TestHost": "1.0.0-*", 
