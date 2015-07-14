@@ -355,7 +355,7 @@ using Views
 #line hidden
 
 #line 97 "ErrorPage.cshtml"
-                                 if (frame.Line != 0 && frame.ContextCode.Any())
+                                 if (frame.Line != 0 && frame.ContextCode !=null && frame.ContextCode.Any())
                                 {
 
 #line default

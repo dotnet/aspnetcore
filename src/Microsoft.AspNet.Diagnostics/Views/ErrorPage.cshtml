@@ -94,7 +94,7 @@
                                     <h3>@frame.Function in <code title="@frame.File">@System.IO.Path.GetFileName(frame.File)</code></h3>
                                 }
 
-                                @if (frame.Line != 0 && frame.ContextCode.Any())
+                                @if (frame.Line != 0 && frame.ContextCode !=null && frame.ContextCode.Any())
                                 {
                                     <div class="source">
                                         @if (frame.PreContextCode != null)
