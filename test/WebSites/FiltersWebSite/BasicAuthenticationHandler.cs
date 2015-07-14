@@ -13,7 +13,7 @@ namespace FiltersWebSite
 {
     public class BasicAuthenticationHandler : AuthenticationHandler<BasicOptions>
     {
-        protected override Task<AuthenticationTicket> AuthenticateAsync()
+        protected override Task<AuthenticationTicket> HandleAuthenticateAsync()
         {
             var principal = new ClaimsPrincipal();
             principal.AddIdentity(new ClaimsIdentity(
