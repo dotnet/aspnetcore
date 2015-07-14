@@ -87,6 +87,25 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         [Fact]
+        public void CheckBoxWithNullExpressionThrows()
+        {
+            // Arrange
+            var expected = "The name of an HTML field cannot be null or empty. Instead use methods " +
+                "Microsoft.AspNet.Mvc.Rendering.IHtmlHelper.Editor or Microsoft.AspNet.Mvc.Rendering." +
+                "IHtmlHelper`1.EditorFor with a non-empty htmlFieldName argument value." +
+                Environment.NewLine + "Parameter name: expression";
+
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetTestModelViewData());
+
+            // Act & Assert
+            var ex = Assert.Throws<ArgumentException>(
+                "expression",
+                () => helper.CheckBox(null, isChecked: true, htmlAttributes: null));
+
+            Assert.Equal(expected, ex.Message);
+        }
+
+        [Fact]
         public void CheckBoxCheckedWithOnlyName_GeneratesExpectedValue()
         {
             // Arrange

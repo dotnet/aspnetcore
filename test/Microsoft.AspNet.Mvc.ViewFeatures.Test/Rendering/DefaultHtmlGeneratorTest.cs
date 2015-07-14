@@ -60,6 +60,116 @@ namespace Microsoft.AspNet.Mvc.Rendering
             Assert.Null(result);
         }
 
+        [Fact]
+        public void GetCurrentValues_WithNullExpression_Throws()
+        {
+            // Arrange
+            var metadataProvider = new TestModelMetadataProvider();
+            var htmlGenerator = GetGenerator(metadataProvider);
+            var viewContext = GetViewContext<Model>(model: null, metadataProvider: metadataProvider);
+            var modelExplorer = metadataProvider.GetModelExplorerForType(typeof(string), model: null);
+
+            var expected = "The name of an HTML field cannot be null or empty. Instead use methods " + 
+                "Microsoft.AspNet.Mvc.Rendering.IHtmlHelper.Editor or Microsoft.AspNet.Mvc.Rendering." + 
+                "IHtmlHelper`1.EditorFor with a non-empty htmlFieldName argument value." +
+                Environment.NewLine + "Parameter name: expression";
+
+            // Act and assert
+            var ex = Assert.Throws<ArgumentException>(
+                "expression",
+                () => htmlGenerator.GetCurrentValues(
+                    viewContext,
+                    modelExplorer,
+                    expression: null,
+                    allowMultiple: true));
+
+            Assert.Equal(expected, ex.Message);
+        }
+
+        [Fact]
+        public void GenerateSelect_WithNullExpression_Throws()
+        {
+            // Arrange
+            var metadataProvider = new TestModelMetadataProvider();
+            var htmlGenerator = GetGenerator(metadataProvider);
+            var viewContext = GetViewContext<Model>(model: null, metadataProvider: metadataProvider);
+            var modelExplorer = metadataProvider.GetModelExplorerForType(typeof(string), model: null);
+
+            var expected = "The name of an HTML field cannot be null or empty. Instead use methods " +
+                "Microsoft.AspNet.Mvc.Rendering.IHtmlHelper.Editor or Microsoft.AspNet.Mvc.Rendering." +
+                "IHtmlHelper`1.EditorFor with a non-empty htmlFieldName argument value." +
+                Environment.NewLine + "Parameter name: expression";
+
+            // Act and assert
+            var ex = Assert.Throws<ArgumentException>(
+                "expression",
+                () => htmlGenerator.GenerateSelect(
+                    viewContext,
+                    modelExplorer,
+                    "label",
+                    null,
+                    new List<SelectListItem>(),
+                    true,
+                    null));
+
+            Assert.Equal(expected, ex.Message);
+        }
+
+        [Fact]
+        public void GenerateTextArea_WithNullExpression_Throws()
+        {
+            // Arrange
+            var metadataProvider = new TestModelMetadataProvider();
+            var htmlGenerator = GetGenerator(metadataProvider);
+            var viewContext = GetViewContext<Model>(model: null, metadataProvider: metadataProvider);
+            var modelExplorer = metadataProvider.GetModelExplorerForType(typeof(string), model: null);
+
+            var expected = "The name of an HTML field cannot be null or empty. Instead use methods " +
+                "Microsoft.AspNet.Mvc.Rendering.IHtmlHelper.Editor or Microsoft.AspNet.Mvc.Rendering." +
+                "IHtmlHelper`1.EditorFor with a non-empty htmlFieldName argument value." +
+                Environment.NewLine + "Parameter name: expression";
+
+            // Act and assert
+            var ex = Assert.Throws<ArgumentException>(
+                "expression", 
+                () => htmlGenerator.GenerateTextArea(
+                    viewContext,
+                    modelExplorer,
+                    null,
+                    1,
+                    1,
+                    null));
+
+            Assert.Equal(expected, ex.Message);
+        }
+
+        [Fact]
+        public void GenerateValidationMessage_WithNullExpression_Throws()
+        {
+            // Arrange
+            var metadataProvider = new TestModelMetadataProvider();
+            var htmlGenerator = GetGenerator(metadataProvider);
+            var viewContext = GetViewContext<Model>(model: null, metadataProvider: metadataProvider);
+            var modelExplorer = metadataProvider.GetModelExplorerForType(typeof(string), model: null);
+
+            var expected = "The name of an HTML field cannot be null or empty. Instead use methods " +
+                "Microsoft.AspNet.Mvc.Rendering.IHtmlHelper.Editor or Microsoft.AspNet.Mvc.Rendering." +
+                "IHtmlHelper`1.EditorFor with a non-empty htmlFieldName argument value." +
+                Environment.NewLine + "Parameter name: expression";
+
+            // Act and assert
+            var ex = Assert.Throws<ArgumentException>(
+                "expression", 
+                () => htmlGenerator.GenerateValidationMessage(
+                    viewContext,
+                    null,
+                    "Message",
+                    "tag",
+                    null));
+
+            Assert.Equal(expected, ex.Message);
+        }
+
         [Theory]
         [InlineData(false)]
         [InlineData(true)]

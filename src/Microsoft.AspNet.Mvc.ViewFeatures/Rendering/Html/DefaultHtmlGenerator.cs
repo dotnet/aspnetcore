@@ -413,8 +413,15 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var fullName = GetFullHtmlFieldName(viewContext, expression);
             if (string.IsNullOrEmpty(fullName))
             {
-                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(expression));
-            }
+                throw new ArgumentException(
+                    Resources.FormatHtmlGenerator_FieldNameCannotBeNullOrEmpty(
+                        typeof(IHtmlHelper).FullName,
+                        nameof(IHtmlHelper.Editor),
+                        typeof(IHtmlHelper<>).FullName,
+                        nameof(IHtmlHelper<object>.EditorFor),
+                        "htmlFieldName"),
+                    nameof(expression));
+        }
 
             // If we got a null selectList, try to use ViewData to get the list of items.
             if (selectList == null)
@@ -483,7 +490,14 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var fullName = GetFullHtmlFieldName(viewContext, expression);
             if (string.IsNullOrEmpty(fullName))
             {
-                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(expression));
+                throw new ArgumentException(
+                    Resources.FormatHtmlGenerator_FieldNameCannotBeNullOrEmpty(
+                        typeof(IHtmlHelper).FullName,
+                        nameof(IHtmlHelper.Editor),
+                        typeof(IHtmlHelper<>).FullName,
+                        nameof(IHtmlHelper<object>.EditorFor),
+                        "htmlFieldName"),
+                    nameof(expression));
             }
 
             ModelState modelState;
@@ -563,7 +577,14 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var fullName = GetFullHtmlFieldName(viewContext, expression);
             if (string.IsNullOrEmpty(fullName))
             {
-                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(expression));
+                throw new ArgumentException(
+                    Resources.FormatHtmlGenerator_FieldNameCannotBeNullOrEmpty(
+                        typeof(IHtmlHelper).FullName,
+                        nameof(IHtmlHelper.Editor),
+                        typeof(IHtmlHelper<>).FullName,
+                        nameof(IHtmlHelper<object>.EditorFor),
+                        "htmlFieldName"),
+                    nameof(expression));
             }
 
             var formContext = viewContext.ClientValidationEnabled ? viewContext.FormContext : null;
@@ -738,7 +759,14 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var fullName = GetFullHtmlFieldName(viewContext, expression);
             if (string.IsNullOrEmpty(fullName))
             {
-                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(expression));
+                throw new ArgumentException(
+                    Resources.FormatHtmlGenerator_FieldNameCannotBeNullOrEmpty(
+                        typeof(IHtmlHelper).FullName,
+                        nameof(IHtmlHelper.Editor),
+                        typeof(IHtmlHelper<>).FullName,
+                        nameof(IHtmlHelper<object>.EditorFor),
+                        "htmlFieldName"),
+                    nameof(expression));
             }
 
             var type = allowMultiple ? typeof(string[]) : typeof(string);
@@ -969,7 +997,14 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var fullName = GetFullHtmlFieldName(viewContext, expression);
             if (string.IsNullOrEmpty(fullName))
             {
-                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(expression));
+                throw new ArgumentException(
+                    Resources.FormatHtmlGenerator_FieldNameCannotBeNullOrEmpty(
+                        typeof(IHtmlHelper).FullName,
+                        nameof(IHtmlHelper.Editor),
+                        typeof(IHtmlHelper<>).FullName,
+                        nameof(IHtmlHelper<object>.EditorFor),
+                        "htmlFieldName"),
+                    nameof(expression));
             }
 
             var tagBuilder = new TagBuilder("input", _htmlEncoder);

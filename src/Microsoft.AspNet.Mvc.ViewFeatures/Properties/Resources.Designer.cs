@@ -762,6 +762,22 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             return string.Format(CultureInfo.CurrentCulture, GetString("RemoteAttribute_RemoteValidationFailed"), p0);
         }
 
+        /// <summary>
+        /// The name of an HTML field cannot be null or empty. Instead use methods {0}.{1} or {2}.{3} with a non-empty {4} argument value.
+        /// </summary>
+        internal static string HtmlGenerator_FieldNameCannotBeNullOrEmpty
+        {
+            get { return GetString("HtmlGenerator_FieldNameCannotBeNullOrEmpty"); }
+        }
+
+        /// <summary>
+        /// The name of an HTML field cannot be null or empty. Instead use methods {0}.{1} or {2}.{3} with a non-empty {4} argument value.
+        /// </summary>
+        internal static string FormatHtmlGenerator_FieldNameCannotBeNullOrEmpty(object p0, object p1, object p2, object p3, object p4)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("HtmlGenerator_FieldNameCannotBeNullOrEmpty"), p0, p1, p2, p3, p4);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

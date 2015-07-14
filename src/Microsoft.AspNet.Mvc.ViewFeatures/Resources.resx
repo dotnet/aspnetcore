@@ -259,4 +259,7 @@
   <data name="RemoteAttribute_RemoteValidationFailed" xml:space="preserve">
     <value>'{0}' is invalid.</value>
   </data>
+  <data name="HtmlGenerator_FieldNameCannotBeNullOrEmpty" xml:space="preserve">
+    <value>The name of an HTML field cannot be null or empty. Instead use methods {0}.{1} or {2}.{3} with a non-empty {4} argument value.</value>
+  </data>
 </root>

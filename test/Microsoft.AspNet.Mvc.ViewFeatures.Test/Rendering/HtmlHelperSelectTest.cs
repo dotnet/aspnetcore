@@ -364,6 +364,27 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         [Theory]
         [MemberData(nameof(DropDownListDataSet))]
+        public void DropDownList_WithNullExpression_Throws(
+            IEnumerable<SelectListItem> selectList,
+            string expectedHtml,
+            string ignoredHtml)
+        {
+            // Arrange
+            var expected = "The name of an HTML field cannot be null or empty. Instead use methods " +
+                "Microsoft.AspNet.Mvc.Rendering.IHtmlHelper.Editor or Microsoft.AspNet.Mvc.Rendering." +
+                "IHtmlHelper`1.EditorFor with a non-empty htmlFieldName argument value." +
+                Environment.NewLine + "Parameter name: expression";
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper();
+
+            // Act & Assert
+            var ex = Assert.Throws<ArgumentException>(
+                "expression", 
+                () => helper.DropDownList(null, selectList: null, optionLabel: null, htmlAttributes: null));
+            Assert.Equal(expected, ex.Message);
+        }
+
+        [Theory]
+        [MemberData(nameof(DropDownListDataSet))]
         public void DropDownList_WithModelValue_GeneratesExpectedValue(
             IEnumerable<SelectListItem> selectList,
             string ignoredHtml,
