@@ -11,8 +11,8 @@
     "publishExclude": "*.cmd",
     "webroot": "wwwroot",
     "dependencies": {
-        "EntityFramework.InMemory": "7.0.0-*",
-        "EntityFramework.SqlServer": "7.0.0-*",
+        "EntityFramework7.InMemory": "7.0.0-*",
+        "EntityFramework7.SqlServer": "7.0.0-*",
         "Kestrel": "1.0.0-*",
         "Microsoft.AspNet.Antiforgery": "1.0.0-*",
         "Microsoft.AspNet.Authentication.Cookies": "1.0.0-*",
