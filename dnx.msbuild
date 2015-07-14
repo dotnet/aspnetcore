@@ -241,7 +241,7 @@
     <Target Name="PoliCheck" DependsOnTargets="FindLatestDropShare">
         <ItemGroup>
             <PoliCheckPackages Include="$(SymbolPackagePath)CultureInfoGenerator.*.symbols.nupkg;
-                                        $(SymbolPackagePath)EntityFramework.*.symbols.nupkg;
+                                        $(SymbolPackagePath)EntityFramework7.*.symbols.nupkg;
                                         $(SymbolPackagePath)Microsoft.Data.Sqlite.*.symbols.nupkg;
                                         $(SymbolPackagePath)Kestrel*.symbols.nupkg;
                                         $(SymbolPackagePath)dnx*.symbols.nupkg;
@@ -269,7 +269,7 @@
             <!-- List is sorted OridnalIgnoreCase -->
             <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Net.Http.Server\WebListener.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Net.Http.Server\RequestProcessing\HttpReasonPhrase.cs;
-                                    $(PoliCheckPath)**\src\EntityFramework.Core.FunctionalTests\TestModels\MonsterContext`.cs">
+                                    $(PoliCheckPath)**\src\EntityFramework7.Core.FunctionalTests\TestModels\MonsterContext`.cs">
                 <term>420</term>
                 <Justification>HTTP response code</Justification>
             </SrcExclusions>
@@ -285,7 +285,7 @@
             </SrcExclusions>
             <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNet.Localization\Internal\CultureInfoList.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.Globalization.CultureInfoCache\CultureInfoList.cs;
-                                    $(PoliCheckPath)**\src\EntityFramework.Core.FunctionalTests\TestModels\Northwind\NorthwindData.cs">
+                                    $(PoliCheckPath)**\src\EntityFramework7.Core.FunctionalTests\TestModels\Northwind\NorthwindData.cs">
                 <term>BS</term>
                 <Justification>Culture info</Justification>
             </SrcExclusions>
@@ -293,11 +293,11 @@
                 <term>butt</term>
                 <Justification>not our code, jquery scripts embedded in .cs file</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\EntityFramework.Core.FunctionalTests\TestModels\Northwind\NorthwindData.cs">
+            <SrcExclusions Include="$(PoliCheckPath)**\src\EntityFramework7.Core.FunctionalTests\TestModels\Northwind\NorthwindData.cs">
                 <term>capital</term>
                 <Justification>Data from Northwind database</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\EntityFramework.Core.FunctionalTests\TestModels\Northwind\NorthwindData.cs">
+            <SrcExclusions Include="$(PoliCheckPath)**\src\EntityFramework7.Core.FunctionalTests\TestModels\Northwind\NorthwindData.cs">
                 <term>cracker</term>
                 <Justification>Data from Northwind database</Justification>
             </SrcExclusions>
@@ -313,7 +313,7 @@
                 <term>DT</term>
                 <Justification>abbreviation for DateTime</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\EntityFramework.Core.FunctionalTests\TestModels\Northwind\NorthwindData.cs">
+            <SrcExclusions Include="$(PoliCheckPath)**\src\EntityFramework7.Core.FunctionalTests\TestModels\Northwind\NorthwindData.cs">
                 <term>DMZ</term>
                 <Justification>base64 string</Justification>
             </SrcExclusions>
@@ -322,17 +322,17 @@
                 <Justification>not our code, jquery scripts embedded in .cs file</Justification>
             </SrcExclusions>
             <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNet.Diagnostics\Views\WelcomePage.cs;
-                                    $(PoliCheckPath)**\src\EntityFramework.Core.FunctionalTests\TestModels\Northwind\NorthwindData.cs">
+                                    $(PoliCheckPath)**\src\EntityFramework7.Core.FunctionalTests\TestModels\Northwind\NorthwindData.cs">
                 <term>FU</term>
                 <Justification>not our code, jquery scripts embedded in .cs file; Base64 encoded strings</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\EntityFramework.Core.FunctionalTests\QueryTestBase.cs">
+            <SrcExclusions Include="$(PoliCheckPath)**\src\EntityFramework7.Core.FunctionalTests\QueryTestBase.cs">
                 <term>fubar</term>
                 <Justification>Temporary exclusion to pass the build.</Justification>
             </SrcExclusions>
             <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNet.Localization\Internal\CultureInfoList.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.Globalization.CultureInfoCache\CultureInfoList.cs;
-                                    $(PoliCheckPath)**\src\EntityFramework.Core.FunctionalTests\TestModels\Northwind\NorthwindData.cs">
+                                    $(PoliCheckPath)**\src\EntityFramework7.Core.FunctionalTests\TestModels\Northwind\NorthwindData.cs">
                 <term>FY</term>
                 <Justification>Culture info</Justification>
             </SrcExclusions>
@@ -340,7 +340,7 @@
                 <term>hack</term>
                 <Justification>Temporary to unblock build.</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\EntityFramework.Core.FunctionalTests\TestModels\ConcurrencyModel\ConcurrencyModelInitializer.cs">
+            <SrcExclusions Include="$(PoliCheckPath)**\src\EntityFramework7.Core.FunctionalTests\TestModels\ConcurrencyModel\ConcurrencyModelInitializer.cs">
                 <term>ho</term>
                 <Justification>Part of a name</Justification>
             </SrcExclusions>
@@ -348,11 +348,11 @@
                 <term>hung</term>
                 <Justification>refers to a stuck process/thread</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\EntityFramework.Core.FunctionalTests\TestModels\Northwind\NorthwindData.cs">
+            <SrcExclusions Include="$(PoliCheckPath)**\src\EntityFramework7.Core.FunctionalTests\TestModels\Northwind\NorthwindData.cs">
                 <term>lez</term>
                 <Justification>part of a name, false positive</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\EntityFramework.SqlServer\SqlServerTypeMapper.cs">
+            <SrcExclusions Include="$(PoliCheckPath)**\src\EntityFramework7.SqlServer\SqlServerTypeMapper.cs">
                 <term>National</term>
                 <Justification>SQL term for nchar/nvarchar</Justification>
             </SrcExclusions>
@@ -363,12 +363,12 @@
                 <term>Oriya</term>
                 <Justification>Font reference</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\EntityFramework.Core.FunctionalTests\TestModels\Northwind\NorthwindData.cs">
+            <SrcExclusions Include="$(PoliCheckPath)**\src\EntityFramework7.Core.FunctionalTests\TestModels\Northwind\NorthwindData.cs">
                 <term>pedro</term>
                 <Justification>Data from Northwind database</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\EntityFramework.Core.FunctionalTests\MonsterFixupTestBase.cs;
-                                    $(PoliCheckPath)**\src\EntityFramework.Core.FunctionalTests\TestModels\MonsterContext`.cs">
+            <SrcExclusions Include="$(PoliCheckPath)**\src\EntityFramework7.Core.FunctionalTests\MonsterFixupTestBase.cs;
+                                    $(PoliCheckPath)**\src\EntityFramework7.Core.FunctionalTests\TestModels\MonsterContext`.cs">
                 <term>pig</term>
                 <Justification>Acceptable within context</Justification>
             </SrcExclusions>
@@ -376,16 +376,16 @@
                 <term>pot</term>
                 <Justification>file extension - powerpoint</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\EntityFramework.Core.FunctionalTests\TestModels\Northwind\NorthwindData.cs">
+            <SrcExclusions Include="$(PoliCheckPath)**\src\EntityFramework7.Core.FunctionalTests\TestModels\Northwind\NorthwindData.cs">
                 <term>queen</term>
                 <Justification>Northwind database sample values</Justification>
             </SrcExclusions>
             <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Net.WebSockets\WebSocketBuffer.cs;
-                                    $(PoliCheckPath)**\src\EntityFramework.Core.FunctionalTests\TestModels\ConcurrencyModel\ConcurrencyModelInitializer.cs;
-                                    $(PoliCheckPath)**\src\EntityFramework.Core.FunctionalTests\TestModels\ConcurrencyModel\Driver.cs;
-                                    $(PoliCheckPath)**\src\EntityFramework.Core.FunctionalTests\TestModels\ConcurrencyModel\Team.cs;
-                                    $(PoliCheckPath)**\src\EntityFramework.Core.FunctionalTests\OptimisticConcurrencyTestBase.cs;
-                                    $(PoliCheckPath)**\EntityFramework.Core.FunctionalTests.dll">
+                                    $(PoliCheckPath)**\src\EntityFramework7.Core.FunctionalTests\TestModels\ConcurrencyModel\ConcurrencyModelInitializer.cs;
+                                    $(PoliCheckPath)**\src\EntityFramework7.Core.FunctionalTests\TestModels\ConcurrencyModel\Driver.cs;
+                                    $(PoliCheckPath)**\src\EntityFramework7.Core.FunctionalTests\TestModels\ConcurrencyModel\Team.cs;
+                                    $(PoliCheckPath)**\src\EntityFramework7.Core.FunctionalTests\OptimisticConcurrencyTestBase.cs;
+                                    $(PoliCheckPath)**\EntityFramework7.Core.FunctionalTests.dll">
                 <term>races</term>
                 <Justification>refers to race condition; property name</Justification>
             </SrcExclusions>
@@ -432,22 +432,22 @@
                 <term>Tibetan</term>
                 <Justification>Font reference</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\EntityFramework.Core.FunctionalTests\TestModels\ConcurrencyModel\ConcurrencyModelInitializer.cs;
-                                    $(PoliCheckPath)**\src\EntityFramework.Core.FunctionalTests\TestModels\ConcurrencyModel\Team.cs;
-                                    $(PoliCheckPath)**\EntityFramework.Core.FunctionalTests.dll">
+            <SrcExclusions Include="$(PoliCheckPath)**\src\EntityFramework7.Core.FunctionalTests\TestModels\ConcurrencyModel\ConcurrencyModelInitializer.cs;
+                                    $(PoliCheckPath)**\src\EntityFramework7.Core.FunctionalTests\TestModels\ConcurrencyModel\Team.cs;
+                                    $(PoliCheckPath)**\EntityFramework7.Core.FunctionalTests.dll">
                 <term>virgin</term>
                 <Justification>Test data</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\EntityFramework.Core.FunctionalTests\AsyncQueryTestBase.cs;
-                                    $(PoliCheckPath)**\src\EntityFramework.Core.FunctionalTests\QueryTestBase.cs;
-                                    $(PoliCheckPath)**\src\EntityFramework.Core.FunctionalTests\TestModels\Northwind\NorthwindData.cs;
+            <SrcExclusions Include="$(PoliCheckPath)**\src\EntityFramework7.Core.FunctionalTests\AsyncQueryTestBase.cs;
+                                    $(PoliCheckPath)**\src\EntityFramework7.Core.FunctionalTests\QueryTestBase.cs;
+                                    $(PoliCheckPath)**\src\EntityFramework7.Core.FunctionalTests\TestModels\Northwind\NorthwindData.cs;
                                     $(PoliCheckPath)**\src\Microsoft.AspNet.Diagnostics\Views\WelcomePage.cs;
                                     $(PoliCheckPath)**\src\Microsoft.AspNet.Localization\Internal\CultureInfoList.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.Globalization.CultureInfoCache\CultureInfoList.cs">
                 <term>UK</term>
                 <Justification>text appears in base64 encoded string of an image; Culture info;Northwind Database</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\EntityFramework.Core.FunctionalTests\TestModels\Northwind\NorthwindData.cs">
+            <SrcExclusions Include="$(PoliCheckPath)**\src\EntityFramework7.Core.FunctionalTests\TestModels\Northwind\NorthwindData.cs">
                 <term>wang</term>
                 <Justification>Data from Northwind database</Justification>
             </SrcExclusions>
