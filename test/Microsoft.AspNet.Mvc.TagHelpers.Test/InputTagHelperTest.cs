@@ -731,7 +731,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     { "datetime", null, "datetime" },
                     { "datetime-local", null, "datetime-local" },
                     { "DATETIME-local", null, "datetime-local" },
-                    { "Decimal", null, "text" },
+                    { "Decimal", "{0:0.00}", "text" },
                     { "Double", null, "text" },
                     { "Int16", null, "number" },
                     { "Int32", null, "number" },
