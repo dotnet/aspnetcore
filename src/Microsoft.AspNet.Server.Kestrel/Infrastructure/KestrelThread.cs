@@ -38,6 +38,7 @@ namespace Microsoft.AspNet.Server.Kestrel
         }
 
         public UvLoopHandle Loop { get { return _loop; } }
+        public ExceptionDispatchInfo FatalError { get { return _closeError; } }
 
         public Action<Action<IntPtr>, IntPtr> QueueCloseHandle { get; internal set; }
 
@@ -173,6 +174,9 @@ namespace Microsoft.AspNet.Server.Kestrel
             catch (Exception ex)
             {
                 _closeError = ExceptionDispatchInfo.Capture(ex);
+                // Request shutdown so we can rethrow this exception
+                // in Stop which should be observable.
+                _engine.AppShutdown.RequestShutdown();
             }
         }
 

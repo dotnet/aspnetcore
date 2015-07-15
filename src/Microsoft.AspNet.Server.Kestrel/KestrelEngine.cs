@@ -13,9 +13,9 @@ namespace Microsoft.AspNet.Server.Kestrel
 {
     public class KestrelEngine : IDisposable
     {
-
-        public KestrelEngine(ILibraryManager libraryManager)
+        public KestrelEngine(ILibraryManager libraryManager, IApplicationShutdown appShutdownService)
         {
+            AppShutdown = appShutdownService;
             Threads = new List<KestrelThread>();
             Listeners = new List<Listener>();
             Memory = new MemoryPool();
@@ -63,6 +63,7 @@ namespace Microsoft.AspNet.Server.Kestrel
 
         public Libuv Libuv { get; private set; }
         public IMemoryPool Memory { get; set; }
+        public IApplicationShutdown AppShutdown { get; private set; }
         public List<KestrelThread> Threads { get; private set; }
         public List<Listener> Listeners { get; private set; }
 

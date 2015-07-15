@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
 
         public void Create(Func<Frame, Task> app)
         {
-            _engine = new KestrelEngine(LibraryManager);
+            _engine = new KestrelEngine(LibraryManager, new ShutdownNotImplemented());
             _engine.Start(1);
             _server = _engine.CreateServer(
                 "http",
