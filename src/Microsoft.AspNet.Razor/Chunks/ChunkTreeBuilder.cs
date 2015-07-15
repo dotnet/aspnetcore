@@ -132,14 +132,6 @@ namespace Microsoft.AspNet.Razor.Chunks
             }, association);
         }
 
-        public void AddResolveUrlChunk(string url, SyntaxTreeNode association)
-        {
-            AddChunk(new ResolveUrlChunk
-            {
-                Url = url
-            }, association);
-        }
-
         public void AddSetBaseTypeChunk(string typeName, SyntaxTreeNode association)
         {
             AddChunk(new SetBaseTypeChunk

@@ -61,10 +61,6 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
             {
                 Visit((RemoveTagHelperChunk)chunk);
             }
-            else if (chunk is ResolveUrlChunk)
-            {
-                Visit((ResolveUrlChunk)chunk);
-            }
             else if (chunk is TypeMemberChunk)
             {
                 Visit((TypeMemberChunk)chunk);
@@ -117,7 +113,6 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
         protected abstract void Visit(CodeAttributeChunk chunk);
         protected abstract void Visit(SectionChunk chunk);
         protected abstract void Visit(TypeMemberChunk chunk);
-        protected abstract void Visit(ResolveUrlChunk chunk);
         protected abstract void Visit(SetBaseTypeChunk chunk);
         protected abstract void Visit(TemplateChunk chunk);
         protected abstract void Visit(ExpressionBlockChunk chunk);

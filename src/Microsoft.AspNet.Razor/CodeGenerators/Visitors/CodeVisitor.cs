@@ -59,9 +59,6 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
         protected override void Visit(TypeMemberChunk chunk)
         {
         }
-        protected override void Visit(ResolveUrlChunk chunk)
-        {
-        }
         protected override void Visit(SetBaseTypeChunk chunk)
         {
         }

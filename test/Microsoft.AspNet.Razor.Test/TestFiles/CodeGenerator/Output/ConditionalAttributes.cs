@@ -73,12 +73,8 @@ WriteTo(__razor_attribute_value_writer, cls);
 
             }
             ), 256), false));
-            Instrumentation.BeginContext(282, 11, true);
-            WriteLiteral(" />\r\n    <a");
-            Instrumentation.EndContext();
-            WriteAttribute("href", Tuple.Create(" href=\"", 293), Tuple.Create("\"", 305), Tuple.Create(Tuple.Create("", 300), Tuple.Create<System.Object, System.Int32>(Href("~/Foo"), 300), false));
-            Instrumentation.BeginContext(306, 16, true);
-            WriteLiteral(" />\r\n    <script");
+            Instrumentation.BeginContext(282, 40, true);
+            WriteLiteral(" />\r\n    <a href=\"~/Foo\" />\r\n    <script");
             Instrumentation.EndContext();
             WriteAttribute("src", Tuple.Create(" src=\"", 322), Tuple.Create("\"", 373), 
             Tuple.Create(Tuple.Create("", 328), Tuple.Create<System.Object, System.Int32>(Url.Content("~/Scripts/jquery-1.6.2.min.js"), 328), false));

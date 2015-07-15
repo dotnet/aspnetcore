@@ -28,7 +28,6 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         }
 
         private const string TestPhysicalPath = @"C:\Bar.cshtml";
-        private const string TestVirtualPath = "~/Foo/Bar.cshtml";
 
         [Fact]
         public void ConstructorRequiresNonNullClassName()
@@ -69,7 +68,6 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         [InlineData("RazorComments")]
         [InlineData("InlineBlocks")]
         [InlineData("ConditionalAttributes")]
-        [InlineData("ResolveUrl")]
         [InlineData("Await")]
         [InlineData("CodeBlockWithTextElement")]
         public void CSharpChunkGeneratorCorrectlyGeneratesRunTimeCode(string testType)

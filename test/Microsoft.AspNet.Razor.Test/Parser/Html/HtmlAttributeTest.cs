@@ -137,10 +137,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                                            .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                            .Accepts(AcceptedCharacters.NonWhiteSpace))),
                             Factory.Markup(" ~/Foo/Bar")
-                                   .WithEditorHints(EditorHints.VirtualPath)
                                    .With(new LiteralAttributeChunkGenerator(
                                        new LocationTagged<string>(" ", 13, 0, 13),
-                                       new LocationTagged<SpanChunkGenerator>(new ResolveUrlChunkGenerator(), 14, 0, 14))),
+                                       new LocationTagged<string>("~/Foo/Bar", 14, 0, 14))),
                             Factory.Markup("'").With(SpanChunkGenerator.Null)),
                         Factory.Markup(" />").Accepts(AcceptedCharacters.None))));
         }
@@ -178,33 +177,6 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                                     Factory.Code("foo")
                                            .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                            .Accepts(AcceptedCharacters.NonWhiteSpace)))),
-                        Factory.Markup(" />"))));
-        }
-
-        [Fact]
-        public void ConditionalAttributeCollapserDoesNotRemoveUrlAttributeValues()
-        {
-            // Act
-            var results = ParseDocument("<a href='~/Foo/Bar' />");
-            var rewritingContext = new RewritingContext(results.Document, new ErrorSink());
-            new ConditionalAttributeCollapser(new HtmlMarkupParser().BuildSpan).Rewrite(rewritingContext);
-            new MarkupCollapser(new HtmlMarkupParser().BuildSpan).Rewrite(rewritingContext);
-            var rewritten = rewritingContext.SyntaxTree;
-
-            // Assert
-            Assert.Equal(0, results.ParserErrors.Count());
-            EvaluateParseTree(rewritten,
-                new MarkupBlock(
-                    new MarkupTagBlock(
-                        Factory.Markup("<a"),
-                        new MarkupBlock(new AttributeBlockChunkGenerator(name: "href", prefix: new LocationTagged<string>(" href='", 2, 0, 2), suffix: new LocationTagged<string>("'", 18, 0, 18)),
-                            Factory.Markup(" href='").With(SpanChunkGenerator.Null),
-                            Factory.Markup("~/Foo/Bar")
-                                   .WithEditorHints(EditorHints.VirtualPath)
-                                   .With(new LiteralAttributeChunkGenerator(
-                                       new LocationTagged<string>(string.Empty, 9, 0, 9),
-                                       new LocationTagged<SpanChunkGenerator>(new ResolveUrlChunkGenerator(), 9, 0, 9))),
-                            Factory.Markup("'").With(SpanChunkGenerator.Null)),
                         Factory.Markup(" />"))));
         }
 

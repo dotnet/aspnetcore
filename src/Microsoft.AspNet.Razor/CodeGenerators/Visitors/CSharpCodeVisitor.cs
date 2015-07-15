@@ -94,45 +94,6 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
             Writer.WriteEndMethodInvocation(false).WriteLine();
         }
 
-        protected override void Visit(ResolveUrlChunk chunk)
-        {
-            if (!Context.Host.DesignTimeMode && string.IsNullOrEmpty(chunk.Url))
-            {
-                return;
-            }
-
-            var generateInstrumentation = ShouldGenerateInstrumentationForExpressions();
-
-            if (generateInstrumentation)
-            {
-                // Add a non-literal context call (non-literal because the expanded URL will not match the source
-                // character-by-character)
-                Writer.WriteStartInstrumentationContext(Context, chunk.Association, isLiteral: false);
-            }
-
-            if (!string.IsNullOrEmpty(chunk.Url) && !Context.Host.DesignTimeMode)
-            {
-                if (Context.ExpressionRenderingMode == ExpressionRenderingMode.WriteToOutput)
-                {
-                    RenderPreWriteStart();
-                }
-
-                Writer.WriteStartMethodInvocation(Context.Host.GeneratedClassContext.ResolveUrlMethodName)
-                      .WriteStringLiteral(chunk.Url)
-                      .WriteEndMethodInvocation(endLine: false);
-
-                if (Context.ExpressionRenderingMode == ExpressionRenderingMode.WriteToOutput)
-                {
-                    Writer.WriteEndMethodInvocation();
-                }
-            }
-
-            if (generateInstrumentation)
-            {
-                Writer.WriteEndInstrumentationContext(Context);
-            }
-        }
-
         protected override void Visit(LiteralChunk chunk)
         {
             if (Context.Host.DesignTimeMode || string.IsNullOrEmpty(chunk.Text))

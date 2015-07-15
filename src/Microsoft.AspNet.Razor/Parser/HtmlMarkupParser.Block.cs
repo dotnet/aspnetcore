@@ -616,20 +616,6 @@ namespace Microsoft.AspNet.Razor.Parser
                     }
                 }
             }
-            else if (At(HtmlSymbolType.Text) &&
-                     CurrentSymbol.Content.Length > 0 &&
-                     CurrentSymbol.Content[0] == '~' &&
-                     NextIs(HtmlSymbolType.ForwardSlash))
-            {
-                Accept(prefix);
-
-                // Virtual Path value
-                var valueStart = CurrentLocation;
-                VirtualPath();
-                Span.ChunkGenerator = new LiteralAttributeChunkGenerator(
-                    prefix.GetContent(prefixStart),
-                    new LocationTagged<SpanChunkGenerator>(new ResolveUrlChunkGenerator(), valueStart));
-            }
             else
             {
                 Accept(prefix);
@@ -674,18 +660,6 @@ namespace Microsoft.AspNet.Razor.Parser
                    sym.Type == HtmlSymbolType.CloseAngle ||
                    sym.Type == HtmlSymbolType.WhiteSpace ||
                    sym.Type == HtmlSymbolType.NewLine;
-        }
-
-        private void VirtualPath()
-        {
-            Assert(HtmlSymbolType.Text);
-            Debug.Assert(CurrentSymbol.Content.Length > 0 && CurrentSymbol.Content[0] == '~');
-
-            // Parse until a transition symbol, whitespace, newline or quote. We support only a fairly minimal subset of Virtual Paths
-            AcceptUntil(HtmlSymbolType.Transition, HtmlSymbolType.WhiteSpace, HtmlSymbolType.NewLine, HtmlSymbolType.SingleQuote, HtmlSymbolType.DoubleQuote);
-
-            // Output a Virtual Path span
-            Span.EditHandler.EditorHints = EditorHints.VirtualPath;
         }
 
         private void RecoverToEndOfTag()

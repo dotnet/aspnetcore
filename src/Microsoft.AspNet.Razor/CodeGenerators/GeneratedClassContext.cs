@@ -136,9 +136,6 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
         public string WriteAttributeMethodName { get; set; }
         public string WriteAttributeToMethodName { get; set; }
 
-        [SuppressMessage("Microsoft.Design", "CA1056:UriPropertiesShouldNotBeStrings", Justification = "Property is not a URL property")]
-        public string ResolveUrlMethodName { get; set; }
-
         public bool AllowSections
         {
             get { return !string.IsNullOrEmpty(DefineSectionMethodName); }

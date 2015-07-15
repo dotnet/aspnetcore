@@ -152,19 +152,17 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             host.DefaultClassName = name;
 
             // Add support for templates, etc.
-            host.GeneratedClassContext = new GeneratedClassContext(GeneratedClassContext.DefaultExecuteMethodName,
-                                                                   GeneratedClassContext.DefaultWriteMethodName,
-                                                                   GeneratedClassContext.DefaultWriteLiteralMethodName,
-                                                                   "WriteTo",
-                                                                   "WriteLiteralTo",
-                                                                   "Template",
-                                                                   "DefineSection",
-                                                                   "Instrumentation.BeginContext",
-                                                                   "Instrumentation.EndContext",
-                                                                   new GeneratedTagHelperContext())
-            {
-                ResolveUrlMethodName = "Href"
-            };
+            host.GeneratedClassContext = new GeneratedClassContext(
+                GeneratedClassContext.DefaultExecuteMethodName,
+                GeneratedClassContext.DefaultWriteMethodName,
+                GeneratedClassContext.DefaultWriteLiteralMethodName,
+                "WriteTo",
+                "WriteLiteralTo",
+                "Template",
+                "DefineSection",
+                "Instrumentation.BeginContext",
+                "Instrumentation.EndContext",
+                new GeneratedTagHelperContext());
             if (hostConfig != null)
             {
                 host = hostConfig(host);

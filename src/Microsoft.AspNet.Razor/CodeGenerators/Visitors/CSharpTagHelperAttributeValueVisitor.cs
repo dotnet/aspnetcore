@@ -95,19 +95,6 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
         /// <summary>
         /// Writes code for the given <paramref name="chunk"/>.
         /// </summary>
-        /// <param name="chunk">The <see cref="ResolveUrlChunk"/> to render.</param>
-        /// <remarks>
-        /// Allowed to support future C# extensions. Likely "~/..." will lead to a C# compilation error but that is up
-        /// to the compiler.
-        /// </remarks>
-        protected override void Visit(ResolveUrlChunk chunk)
-        {
-            RenderCode(chunk.Url, (Span)chunk.Association);
-        }
-
-        /// <summary>
-        /// Writes code for the given <paramref name="chunk"/>.
-        /// </summary>
         /// <param name="chunk">The <see cref="SectionChunk"/> to render.</param>
         /// <remarks>
         /// Unconditionally adds a <see cref="RazorError"/> to inform user of unexpected <c>@section</c> directive.
