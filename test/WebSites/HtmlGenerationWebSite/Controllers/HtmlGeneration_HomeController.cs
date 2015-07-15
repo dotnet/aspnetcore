@@ -185,5 +185,15 @@ namespace HtmlGenerationWebSite.Controllers
         {
             return View();
         }
+
+        public IActionResult ItemUsingSharedEditorTemplate()
+        {
+            return View();
+        }
+
+        public IActionResult ItemUsingModelSpecificEditorTemplate()
+        {
+            return View();
+        }
     }
 }

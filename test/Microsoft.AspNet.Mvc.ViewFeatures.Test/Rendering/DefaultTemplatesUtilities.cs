@@ -30,6 +30,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
 
             public string Property1 { get; set; }
+            [Display(Name = "Prop2")]
             public string Property2 { get; set; }
             public object ComplexInnerModel { get; set; }
         }

@@ -112,7 +112,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                        .Returns(serviceProvider.Object);
 
             var actionContext = new ActionContext(httpContext.Object, new RouteData(), new ActionDescriptor());
-            var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider())
+            var viewData = new ViewDataDictionary<object>(new EmptyModelMetadataProvider())
             {
                 Model = new MyModel()
             };
@@ -190,7 +190,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                        .Returns(serviceProvider.Object);
 
             var actionContext = new ActionContext(httpContext.Object, new RouteData(), new ActionDescriptor());
-            var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider());
+            var viewData = new ViewDataDictionary<object>(new EmptyModelMetadataProvider());
             var viewContext = new ViewContext(actionContext,
                                               Mock.Of<IView>(),
                                               viewData,
