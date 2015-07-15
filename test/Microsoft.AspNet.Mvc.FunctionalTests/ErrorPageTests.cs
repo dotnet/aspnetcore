@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Arrange
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
-            var expectedMediaType = MediaTypeHeaderValue.Parse("text/html");
+            var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
 
             // Act
             var response = await client.GetAsync("http://localhost/" + action);
@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 + "are you missing a using directive or an assembly reference?)";
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
-            var expectedMediaType = MediaTypeHeaderValue.Parse("text/html");
+            var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
 
             // Act
             var response = await client.GetAsync("http://localhost/ErrorFromViewImports");
