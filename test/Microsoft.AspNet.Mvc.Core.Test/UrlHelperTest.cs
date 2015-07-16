@@ -19,6 +19,8 @@ namespace Microsoft.AspNet.Mvc
     public class UrlHelperTest
     {
         [Theory]
+        [InlineData(null, null, null)]
+        [InlineData("/myapproot", null, null)]
         [InlineData("", "/Home/About", "/Home/About")]
         [InlineData("/myapproot", "/test", "/test")]
         public void Content_ReturnsContentPath_WhenItDoesNotStartWithToken(string appRoot,

@@ -2,11 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNet.Hosting;
+using Microsoft.AspNet.Mvc.Razor.TagHelpers;
 using Microsoft.AspNet.Mvc.TagHelpers.Internal;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.Framework.Caching.Memory;
@@ -28,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     [TargetElement("script", Attributes = FallbackSrcExcludeAttributeName)]
     [TargetElement("script", Attributes = FallbackTestExpressionAttributeName)]
     [TargetElement("script", Attributes = AppendVersionAttributeName)]
-    public class ScriptTagHelper : TagHelper
+    public class ScriptTagHelper : UrlResolutionTagHelper
     {
         private const string SrcIncludeAttributeName = "asp-src-include";
         private const string SrcExcludeAttributeName = "asp-src-exclude";
@@ -78,17 +77,19 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// <param name="cache">The <see cref="IMemoryCache"/>.</param>
         /// <param name="htmlEncoder">The <see cref="IHtmlEncoder"/>.</param>
         /// <param name="javaScriptEncoder">The <see cref="IJavaScriptStringEncoder"/>.</param>
+        /// <param name="urlHelper">The <see cref="IUrlHelper"/>.</param>
         public ScriptTagHelper(
             ILogger<ScriptTagHelper> logger,
             IHostingEnvironment hostingEnvironment,
             IMemoryCache cache,
             IHtmlEncoder htmlEncoder,
-            IJavaScriptStringEncoder javaScriptEncoder)
+            IJavaScriptStringEncoder javaScriptEncoder,
+            IUrlHelper urlHelper)
+            : base(urlHelper, htmlEncoder)
         {
             Logger = logger;
             HostingEnvironment = hostingEnvironment;
             Cache = cache;
-            HtmlEncoder = htmlEncoder;
             JavaScriptEncoder = javaScriptEncoder;
         }
 
@@ -164,8 +165,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
         protected IMemoryCache Cache { get; }
 
-        protected IHtmlEncoder HtmlEncoder { get; }
-
         protected IJavaScriptStringEncoder JavaScriptEncoder { get; }
 
         // Internal for ease of use when testing.
@@ -174,10 +173,19 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// <inheritdoc />
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
+            string resolvedUrl;
+
             // Pass through attribute that is also a well-known HTML attribute.
             if (Src != null)
             {
                 output.CopyHtmlAttribute(SrcAttributeName, context);
+
+                if (TryResolveUrl(Src, encodeWebRoot: false, resolvedUrl: out resolvedUrl))
+                {
+                    Src = resolvedUrl;
+                }
+
+                ProcessUrlAttribute(SrcAttributeName, output);
             }
 
             var modeResult = AttributeMatcher.DetermineMode(context, ModeDetails);
@@ -212,6 +220,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             if (mode == Mode.GlobbedSrc || mode == Mode.Fallback && !string.IsNullOrEmpty(SrcInclude))
             {
+                if (TryResolveUrl(SrcInclude, encodeWebRoot: false, resolvedUrl: out resolvedUrl))
+                {
+                    SrcInclude = resolvedUrl;
+                }
+                if (TryResolveUrl(SrcExclude, encodeWebRoot: false, resolvedUrl: out resolvedUrl))
+                {
+                    SrcExclude = resolvedUrl;
+                }
+
                 BuildGlobbedScriptTags(attributes, builder);
                 if (string.IsNullOrEmpty(Src))
                 {
@@ -223,6 +240,19 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             if (mode == Mode.Fallback)
             {
+                if (TryResolveUrl(FallbackSrc, encodeWebRoot: false, resolvedUrl: out resolvedUrl))
+                {
+                    FallbackSrc = resolvedUrl;
+                }
+                if (TryResolveUrl(FallbackSrcInclude, encodeWebRoot: false, resolvedUrl: out resolvedUrl))
+                {
+                    FallbackSrcInclude = resolvedUrl;
+                }
+                if (TryResolveUrl(FallbackSrcExclude, encodeWebRoot: false, resolvedUrl: out resolvedUrl))
+                {
+                    FallbackSrcExclude = resolvedUrl;
+                }
+
                 BuildFallbackBlock(attributes, builder);
             }
 

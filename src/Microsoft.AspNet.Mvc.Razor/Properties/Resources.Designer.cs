@@ -426,6 +426,26 @@ namespace Microsoft.AspNet.Mvc.Razor
             return string.Format(CultureInfo.CurrentCulture, GetString("RazorPage_InvalidTagHelperIndexerAssignment"), p0, p1, p2);
         }
 
+        /// <summary>
+        /// Unexpected return value from '{1}.{2}' for URL '{0}'. If the '{1}' service has been overridden, change '{2}' to replace only the '~/' prefix. Otherwise, add the following directive to the Razor page to disable URL resolution relative to the application's 'webroot' setting:
+        /// 
+        /// @{3} "{4}, {5}"
+        /// </summary>
+        internal static string CouldNotResolveApplicationRelativeUrl_TagHelper
+        {
+            get { return GetString("CouldNotResolveApplicationRelativeUrl_TagHelper"); }
+        }
+
+        /// <summary>
+        /// Unexpected return value from '{1}.{2}' for URL '{0}'. If the '{1}' service has been overridden, change '{2}' to replace only the '~/' prefix. Otherwise, add the following directive to the Razor page to disable URL resolution relative to the application's 'webroot' setting:
+        /// 
+        /// @{3} "{4}, {5}"
+        /// </summary>
+        internal static string FormatCouldNotResolveApplicationRelativeUrl_TagHelper(object p0, object p1, object p2, object p3, object p4, object p5)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("CouldNotResolveApplicationRelativeUrl_TagHelper"), p0, p1, p2, p3, p4, p5);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

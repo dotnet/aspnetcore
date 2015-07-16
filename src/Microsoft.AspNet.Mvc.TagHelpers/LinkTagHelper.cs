@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using Microsoft.AspNet.Hosting;
+using Microsoft.AspNet.Mvc.Razor.TagHelpers;
 using Microsoft.AspNet.Mvc.TagHelpers.Internal;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.Framework.Caching.Memory;
@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     [TargetElement("link", Attributes = FallbackTestPropertyAttributeName)]
     [TargetElement("link", Attributes = FallbackTestValueAttributeName)]
     [TargetElement("link", Attributes = AppendVersionAttributeName)]
-    public class LinkTagHelper : TagHelper
+    public class LinkTagHelper : UrlResolutionTagHelper
     {
         private static readonly string Namespace = typeof(LinkTagHelper).Namespace;
 
@@ -91,17 +91,19 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// <param name="cache">The <see cref="IMemoryCache"/>.</param>
         /// <param name="htmlEncoder">The <see cref="IHtmlEncoder"/>.</param>
         /// <param name="javaScriptEncoder">The <see cref="IJavaScriptStringEncoder"/>.</param>
+        /// <param name="urlHelper">The <see cref="IUrlHelper"/>.</param>
         public LinkTagHelper(
             ILogger<LinkTagHelper> logger,
             IHostingEnvironment hostingEnvironment,
             IMemoryCache cache,
             IHtmlEncoder htmlEncoder,
-            IJavaScriptStringEncoder javaScriptEncoder)
+            IJavaScriptStringEncoder javaScriptEncoder,
+            IUrlHelper urlHelper)
+            : base(urlHelper, htmlEncoder)
         {
             Logger = logger;
             HostingEnvironment = hostingEnvironment;
             Cache = cache;
-            HtmlEncoder = htmlEncoder;
             JavaScriptEncoder = javaScriptEncoder;
         }
 
@@ -195,8 +197,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
         protected IMemoryCache Cache { get; }
 
-        protected IHtmlEncoder HtmlEncoder { get; }
-
         protected IJavaScriptStringEncoder JavaScriptEncoder { get; }
 
         // Internal for ease of use when testing.
@@ -205,10 +205,20 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// <inheritdoc />
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
+            string resolvedUrl;
+
             // Pass through attribute that is also a well-known HTML attribute.
             if (Href != null)
             {
                 output.CopyHtmlAttribute(HrefAttributeName, context);
+
+                // Resolve any application relative URLs (~/) now so they can be used in comparisons later.
+                if (TryResolveUrl(Href, encodeWebRoot: false, resolvedUrl: out resolvedUrl))
+                {
+                    Href = resolvedUrl;
+                }
+
+                ProcessUrlAttribute(HrefAttributeName, output);
             }
 
             var modeResult = AttributeMatcher.DetermineMode(context, ModeDetails);
@@ -243,6 +253,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             if (mode == Mode.GlobbedHref || mode == Mode.Fallback && !string.IsNullOrEmpty(HrefInclude))
             {
+                if (TryResolveUrl(HrefInclude, encodeWebRoot: false, resolvedUrl: out resolvedUrl))
+                {
+                    HrefInclude = resolvedUrl;
+                }
+                if (TryResolveUrl(HrefExclude, encodeWebRoot: false, resolvedUrl: out resolvedUrl))
+                {
+                    HrefExclude = resolvedUrl;
+                }
+
                 BuildGlobbedLinkTags(attributes, builder);
                 if (string.IsNullOrEmpty(Href))
                 {
@@ -254,6 +273,19 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             if (mode == Mode.Fallback)
             {
+                if (TryResolveUrl(FallbackHref, encodeWebRoot: false, resolvedUrl: out resolvedUrl))
+                {
+                    FallbackHref = resolvedUrl;
+                }
+                if (TryResolveUrl(FallbackHrefInclude, encodeWebRoot: false, resolvedUrl: out resolvedUrl))
+                {
+                    FallbackHrefInclude = resolvedUrl;
+                }
+                if (TryResolveUrl(FallbackHrefExclude, encodeWebRoot: false, resolvedUrl: out resolvedUrl))
+                {
+                    FallbackHrefExclude = resolvedUrl;
+                }
+
                 BuildFallbackBlock(builder);
             }
 
@@ -292,7 +324,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             {
                 if (AppendVersion == true)
                 {
-                    for (var i=0; i < fallbackHrefs.Length; i++)
+                    for (var i = 0; i < fallbackHrefs.Length; i++)
                     {
                         // fallbackHrefs come from bound attributes and globbing. Must always be non-null.
                         Debug.Assert(fallbackHrefs[i] != null);

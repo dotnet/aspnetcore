@@ -31,12 +31,16 @@ namespace Microsoft.AspNet.Mvc.Razor
             "Microsoft.AspNet.Mvc",
             "Microsoft.AspNet.Mvc.Rendering",
         };
-        private static readonly Chunk[] _defaultInheritedChunks = new[]
+        private static readonly Chunk[] _defaultInheritedChunks = new Chunk[]
         {
             new InjectChunk("Microsoft.AspNet.Mvc.Rendering.IHtmlHelper<TModel>", HtmlHelperPropertyName),
             new InjectChunk("Microsoft.AspNet.Mvc.Rendering.IJsonHelper", "Json"),
             new InjectChunk("Microsoft.AspNet.Mvc.IViewComponentHelper", "Component"),
             new InjectChunk("Microsoft.AspNet.Mvc.IUrlHelper", "Url"),
+            new AddTagHelperChunk
+            {
+                LookupText = "Microsoft.AspNet.Mvc.Razor.TagHelpers.UrlResolutionTagHelper, Microsoft.AspNet.Mvc.Razor"
+            },
         };
 
         // CodeGenerationContext.DefaultBaseClass is set to MyBaseType<dynamic>.
@@ -99,7 +103,6 @@ namespace Microsoft.AspNet.Mvc.Razor
                     MarkAsHtmlEncodedMethodName = HtmlHelperPropertyName + ".Raw",
                 })
             {
-                ResolveUrlMethodName = "Href",
                 BeginContextMethodName = "BeginContext",
                 EndContextMethodName = "EndContext"
             };

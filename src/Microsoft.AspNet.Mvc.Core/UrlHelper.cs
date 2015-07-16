@@ -120,8 +120,13 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <inheritdoc />
-        public virtual string Content([NotNull] string contentPath)
+        public virtual string Content(string contentPath)
         {
+            if (contentPath == null)
+            {
+                return null;
+            }
+
             return GenerateClientUrl(_httpContext.Request.PathBase, contentPath);
         }
 

@@ -19,6 +19,7 @@ using Microsoft.Framework.Caching;
 using Microsoft.Framework.Caching.Memory;
 using Moq;
 using Xunit;
+using Microsoft.Framework.WebEncoders.Testing;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers
 {
@@ -58,7 +59,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
 
-            var helper = new ImageTagHelper(hostingEnvironment, MakeCache())
+            var helper = new ImageTagHelper(hostingEnvironment, MakeCache(), new CommonTestEncoder(), MakeUrlHelper())
             {
                 ViewContext = viewContext,
                 Src = "testimage.png",
@@ -101,7 +102,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
 
-            var helper = new ImageTagHelper(hostingEnvironment, MakeCache())
+            var helper = new ImageTagHelper(hostingEnvironment, MakeCache(), new CommonTestEncoder(), MakeUrlHelper())
             {
                 ViewContext = viewContext,
                 Src = "/images/test-image.png",
@@ -137,7 +138,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
 
-            var helper = new ImageTagHelper(hostingEnvironment, MakeCache())
+            var helper = new ImageTagHelper(hostingEnvironment, MakeCache(), new CommonTestEncoder(), MakeUrlHelper())
             {
                 ViewContext = viewContext,
                 Src = "/images/test-image.png",
@@ -175,7 +176,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext("/bar");
 
-            var helper = new ImageTagHelper(hostingEnvironment, MakeCache())
+            var helper = new ImageTagHelper(hostingEnvironment, MakeCache(), new CommonTestEncoder(), MakeUrlHelper())
             {
                 ViewContext = viewContext,
                 Src = "/bar/images/image.jpg",
@@ -270,6 +271,17 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         /*options*/ It.IsAny<MemoryCacheEntryOptions>()))
                 .Returns(new object());
             return cache.Object;
+        }
+
+        private static IUrlHelper MakeUrlHelper()
+        {
+            var urlHelper = new Mock<IUrlHelper>();
+
+            urlHelper
+                .Setup(helper => helper.Content(It.IsAny<string>()))
+                .Returns(new Func<string, string>(url => url));
+
+            return urlHelper.Object;
         }
     }
 }
