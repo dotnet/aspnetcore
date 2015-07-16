@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -52,6 +53,12 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             [NotNull] ErrorSink errorSink)
         {
             var typeInfo = type.GetTypeInfo();
+
+            if (ShouldSkipDescriptorCreation(designTime, typeInfo))
+            {
+                return Enumerable.Empty<TagHelperDescriptor>();
+            }
+
             var attributeDescriptors = GetAttributeDescriptors(type, designTime, errorSink);
             var targetElementAttributes = GetValidTargetElementAttributes(typeInfo, errorSink);
 
@@ -264,6 +271,11 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var accessibleProperties = type.GetRuntimeProperties().Where(IsAccessibleProperty);
             foreach (var property in accessibleProperties)
             {
+                if (ShouldSkipDescriptorCreation(designTime, property))
+                {
+                    return Enumerable.Empty<TagHelperAttributeDescriptor>();
+                }
+
                 var attributeNameAttribute = property.GetCustomAttribute<HtmlAttributeNameAttribute>(inherit: false);
                 var hasExplicitName =
                     attributeNameAttribute != null && !string.IsNullOrEmpty(attributeNameAttribute.Name);
@@ -362,6 +374,18 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 attributeDescriptor.PropertyName,
                 errorSink,
                 nameOrPrefix);
+        }
+
+        private static bool ShouldSkipDescriptorCreation(bool designTime, MemberInfo memberInfo)
+        {
+            if (designTime)
+            {
+                var editorBrowsableAttribute = memberInfo.GetCustomAttribute<EditorBrowsableAttribute>(inherit: false);
+
+                return editorBrowsableAttribute != null && editorBrowsableAttribute.State == EditorBrowsableState.Never;
+            }
+
+            return false;
         }
 
         private static bool ValidateTagHelperAttributeNameOrPrefix(
