@@ -100,7 +100,7 @@ namespace Microsoft.Framework.DependencyInjection
             {
                 services.ConfigureIdentity(setupAction);
             }
-            services.Configure<ExternalAuthenticationOptions>(options =>
+            services.Configure<SharedAuthenticationOptions>(options =>
             {
                 options.SignInScheme = IdentityOptions.ExternalCookieAuthenticationScheme;
             });
