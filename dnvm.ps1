@@ -67,7 +67,7 @@ function _WriteOut {
 
 ### Constants
 $ProductVersion="1.0.0"
-$BuildVersion="beta5-10391"
+$BuildVersion="beta5-10398"
 $Authors="Microsoft Open Technologies, Inc."
 
 # If the Version hasn't been replaced...
@@ -85,7 +85,9 @@ Set-Variable -Option Constant "DefaultUserDirectoryName" ".dnx"
 Set-Variable -Option Constant "OldUserDirectoryNames" @(".kre", ".k")
 Set-Variable -Option Constant "RuntimePackageName" "dnx"
 Set-Variable -Option Constant "DefaultFeed" "https://www.nuget.org/api/v2"
+Set-Variable -Option Constant "DefaultFeedKey" "DNX_FEED"
 Set-Variable -Option Constant "DefaultUnstableFeed" "https://www.myget.org/F/aspnetvnext/api/v2"
+Set-Variable -Option Constant "DefaultUnstableFeedKey" "DNX_UNSTABLE_FEED"
 Set-Variable -Option Constant "CrossGenCommand" "dnx-crossgen"
 Set-Variable -Option Constant "OldCrossGenCommand" "k-crossgen"
 Set-Variable -Option Constant "CommandPrefix" "dnvm-"
@@ -94,7 +96,7 @@ Set-Variable -Option Constant "DefaultRuntime" "clr"
 Set-Variable -Option Constant "AliasExtension" ".txt"
 
 # These are intentionally using "%" syntax. The environment variables are expanded whenever the value is used.
-Set-Variable -Option Constant "OldUserHomes" @("%USERPROFILE%\.kre","%USERPROFILE%\.k")
+Set-Variable -Option Constant "OldUserHomes" @("%USERPROFILE%\.kre", "%USERPROFILE%\.k")
 Set-Variable -Option Constant "DefaultUserHome" "%USERPROFILE%\$DefaultUserDirectoryName"
 Set-Variable -Option Constant "HomeEnvVar" "DNX_HOME"
 
@@ -301,7 +303,13 @@ function Write-Feeds {
     } else {
         _WriteOut "<none>"
     }
-
+    _WriteOut
+    _WriteOut -NoNewline "    To use override feeds, set "
+    _WriteOut -NoNewLine -ForegroundColor $ColorScheme.Help_Executable "$DefaultFeedKey"
+    _WriteOut -NoNewline " and "
+    _WriteOut -NoNewLine -ForegroundColor $ColorScheme.Help_Executable "$DefaultUnstableFeedKey"
+    _WriteOut -NoNewline " environment keys respectively"
+    _WriteOut
 }
 
 function Get-RuntimeAlias {
@@ -679,7 +687,7 @@ function Ngen-Library(
     [Parameter(Mandatory=$true)]
     [string]$runtimeBin,
 
-    [ValidateSet("x86","x64")]
+    [ValidateSet("x86", "x64")]
     [Parameter(Mandatory=$true)]
     [string]$architecture) {
 
@@ -752,7 +760,11 @@ function dnvm-help {
             $Script:ExitCodes = $ExitCodes.UnknownCommand
             return
         }
-        $help = Get-Help "dnvm-$Command"
+        if($Host.Version.Major -lt 3) {
+            $help = Get-Help "dnvm-$Command"
+        } else {
+            $help = Get-Help "dnvm-$Command" -ShowWindow:$false
+        }
         if($PassThru -Or $Host.Version.Major -lt 3) {
             $help
         } else {
@@ -819,7 +831,7 @@ function dnvm-help {
             if($help.description) {
                 _WriteOut
                 _WriteOut -ForegroundColor $ColorScheme.Help_Header "remarks:"
-                $help.description.Text.Split(@("`r","`n"), "RemoveEmptyEntries") | 
+                $help.description.Text.Split(@("`r", "`n"), "RemoveEmptyEntries") | 
                     ForEach-Object { _WriteOut "  $_" }
             }
 
@@ -834,7 +846,11 @@ function dnvm-help {
         _WriteOut -ForegroundColor $ColorScheme.Help_Header "commands: "
         Get-Command "$CommandPrefix*" | 
             ForEach-Object {
-                $h = Get-Help $_.Name
+                if($Host.Version.MajorVersion -lt 3) {
+                    $h = Get-Help $_.Name
+                } else {
+                    $h = Get-Help $_.Name -ShowWindow:$false
+                }
                 $name = $_.Name.Substring($CommandPrefix.Length)
                 if($DeprecatedCommands -notcontains $name) {
                     _WriteOut -NoNewLine "    "
@@ -904,11 +920,11 @@ function dnvm-alias {
         [string]$Version,
 
         [Alias("arch")]
-        [ValidateSet("", "x86","x64")]
+        [ValidateSet("", "x86", "x64", "arm")]
         [string]$Architecture = "",
 
         [Alias("r")]
-        [ValidateSet("", "clr","coreclr")]
+        [ValidateSet("", "clr", "coreclr")]
         [string]$Runtime = "")
 
     if($Version) {
@@ -960,12 +976,12 @@ function dnvm-upgrade {
         [string]$Alias = "default",
 
         [Alias("arch")]
-        [ValidateSet("", "x86","x64")]
+        [ValidateSet("", "x86", "x64", "arm")]
         [Parameter(Mandatory=$false)]
         [string]$Architecture = "",
 
         [Alias("r")]
-        [ValidateSet("", "clr","coreclr")]
+        [ValidateSet("", "clr", "coreclr")]
         [Parameter(Mandatory=$false)]
         [string]$Runtime = "",
 
@@ -1022,12 +1038,12 @@ function dnvm-install {
         [string]$VersionNuPkgOrAlias,
 
         [Alias("arch")]
-        [ValidateSet("", "x86","x64")]
+        [ValidateSet("", "x86", "x64", "arm")]
         [Parameter(Mandatory=$false)]
         [string]$Architecture = "",
 
         [Alias("r")]
-        [ValidateSet("", "clr","coreclr")]
+        [ValidateSet("", "clr", "coreclr")]
         [Parameter(Mandatory=$false)]
         [string]$Runtime = "",
 
@@ -1061,14 +1077,14 @@ function dnvm-install {
         if(!$selectedFeed) {
             $selectedFeed = $DefaultUnstableFeed
         } else {
-            _WriteOut -ForegroundColor $ColorScheme.Warning "Default unstable feed ($DefaultUnstableFeed) is being overridden by the value of the DNX_UNSTABLE_FEED environment variable ($ActiveUnstableFeed)"
+            _WriteOut -ForegroundColor $ColorScheme.Warning "Default unstable feed ($DefaultUnstableFeed) is being overridden by the value of the $DefaultUnstableFeedKey environment variable ($ActiveUnstableFeed)"
         }
     } else {
         $selectedFeed = $ActiveFeed
         if(!$selectedFeed) {
             $selectedFeed = $DefaultFeed
         } else {
-            _WriteOut -ForegroundColor $ColorScheme.Warning "Default stable feed ($DefaultFeed) is being overridden by the value of the DNX_FEED environment variable ($ActiveFeed)"
+            _WriteOut -ForegroundColor $ColorScheme.Warning "Default stable feed ($DefaultFeed) is being overridden by the value of the $DefaultFeedKey environment variable ($ActiveFeed)"
         }   
     }    
 
@@ -1236,12 +1252,12 @@ function dnvm-use {
         [string]$VersionOrAlias,
 
         [Alias("arch")]
-        [ValidateSet("", "x86","x64")]
+        [ValidateSet("", "x86", "x64", "arm")]
         [Parameter(Mandatory=$false)]
         [string]$Architecture = "",
 
         [Alias("r")]
-        [ValidateSet("", "clr","coreclr")]
+        [ValidateSet("", "clr", "coreclr")]
         [Parameter(Mandatory=$false)]
         [string]$Runtime = "",
 
@@ -1291,6 +1307,17 @@ function dnvm-run {
     param(
         [Parameter(Mandatory=$true, Position=0)]
         [string]$VersionOrAlias,
+
+        [Alias("arch")]
+        [ValidateSet("", "x86", "x64", "arm")]
+        [Parameter(Mandatory=$false)]
+        [string]$Architecture = "",
+
+        [Alias("r")]
+        [ValidateSet("", "clr", "coreclr")]
+        [Parameter(Mandatory=$false)]
+        [string]$Runtime = "",
+
         [Parameter(Mandatory=$false, Position=1, ValueFromRemainingArguments=$true)]
         [object[]]$DnxArguments)
 
@@ -1321,6 +1348,16 @@ function dnvm-exec {
         [string]$VersionOrAlias,
         [Parameter(Mandatory=$false, Position=1)]
         [string]$Command,
+
+        [Alias("arch")]
+        [ValidateSet("", "x86", "x64", "arm")]
+        [Parameter(Mandatory=$false)]
+        [string]$Architecture = "",
+
+        [Alias("r")]
+        [ValidateSet("", "clr", "coreclr")]
+        [Parameter(Mandatory=$false)]
+        [string]$Runtime = "",
         [Parameter(Mandatory=$false, Position=2, ValueFromRemainingArguments=$true)]
         [object[]]$Arguments)
 
