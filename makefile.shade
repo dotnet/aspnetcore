@@ -30,6 +30,7 @@ functions
             "Logging",
             "Testing",
             "Diagnostics",
+            "Microsoft.Data.Sqlite",
             "EntityFramework",
             "FileSystem",
             "HttpAbstractions",
