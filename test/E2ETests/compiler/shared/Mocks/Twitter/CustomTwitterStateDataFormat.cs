@@ -1,5 +1,6 @@
 ﻿#if TESTING
 using Microsoft.AspNet.Authentication;
+using Microsoft.AspNet.Authentication.Twitter;
 using Newtonsoft.Json;
 
 namespace MusicStore.Mocks.Twitter
