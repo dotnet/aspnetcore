@@ -172,7 +172,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         protected internal GlobbingUrlBuilder GlobbingUrlBuilder { get; set; }
 
         /// <inheritdoc />
-        public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
+        public override void Process(TagHelperContext context, TagHelperOutput output)
         {
             // Pass through attribute that is also a well-known HTML attribute.
             if (Src != null)
@@ -190,24 +190,35 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 return;
             }
 
-            // Get the highest matched mode
-            var mode = modeResult.FullMatches.Select(match => match.Mode).Max();
-
             // NOTE: Values in TagHelperOutput.Attributes may already be HTML-encoded.
             var attributes = new TagHelperAttributeList(output.Attributes);
 
-            var builder = new DefaultTagHelperContent();
-            var originalContent = await context.GetChildContentAsync();
+            if (AppendVersion == true)
+            {
+                EnsureFileVersionProvider();
 
-            if (mode == Mode.Fallback && string.IsNullOrEmpty(SrcInclude) || mode == Mode.AppendVersion)
-            {
-                // No globbing to do, just build a <script /> tag to match the original one in the source file
-                // Or just add file version to the script tag.
-                BuildScriptTag(originalContent, attributes, builder);
+                var attributeStringValue = output.Attributes[SrcAttributeName]?.Value as string;
+                if (attributeStringValue != null)
+                {
+                    output.Attributes[SrcAttributeName].Value =
+                        _fileVersionProvider.AddFileVersionToPath(attributeStringValue);
+                }
             }
-            else
+
+            var builder = new DefaultTagHelperContent();
+
+            // Get the highest matched mode
+            var mode = modeResult.FullMatches.Select(match => match.Mode).Max();
+
+            if (mode == Mode.GlobbedSrc || mode == Mode.Fallback && !string.IsNullOrEmpty(SrcInclude))
             {
-                BuildGlobbedScriptTags(originalContent, attributes, builder);
+                BuildGlobbedScriptTags(attributes, builder);
+                if (string.IsNullOrEmpty(Src))
+                {
+                    // Only SrcInclude is specified. Don't render the original tag.
+                    output.TagName = null;
+                    output.Content.SetContent(string.Empty);
+                }
             }
 
             if (mode == Mode.Fallback)
@@ -215,41 +226,36 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 BuildFallbackBlock(attributes, builder);
             }
 
-            // We've taken over tag rendering, so prevent rendering the outer tag
-            output.TagName = null;
-            output.Content.SetContent(builder);
+            output.PostElement.SetContent(builder);
         }
 
         private void BuildGlobbedScriptTags(
-            TagHelperContent originalContent,
             TagHelperAttributeList attributes,
             TagHelperContent builder)
         {
             EnsureGlobbingUrlBuilder();
 
             // Build a <script> tag for each matched src as well as the original one in the source file
-            var urls = GlobbingUrlBuilder.BuildUrlList(Src, SrcInclude, SrcExclude);
+            var urls = GlobbingUrlBuilder.BuildUrlList(null, SrcInclude, SrcExclude);
             foreach (var url in urls)
             {
                 // "url" values come from bound attributes and globbing. Must always be non-null.
                 Debug.Assert(url != null);
 
-                var content = originalContent;
-                if (!string.Equals(url, Src, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(url, Src, StringComparison.OrdinalIgnoreCase))
                 {
-                    // Do not copy content into added <script/> elements.
-                    content = null;
+                    // Don't build duplicate script tag for the original source url.
+                    continue;
                 }
 
                 attributes[SrcAttributeName] = url;
-                BuildScriptTag(content, attributes, builder);
+                BuildScriptTag(attributes, builder);
             }
         }
 
         private void BuildFallbackBlock(TagHelperAttributeList attributes, DefaultTagHelperContent builder)
         {
             EnsureGlobbingUrlBuilder();
-            EnsureFileVersionProvider();
 
             var fallbackSrcs = GlobbingUrlBuilder.BuildUrlList(FallbackSrc, FallbackSrcInclude, FallbackSrcExclude);
             if (fallbackSrcs.Any())
@@ -330,11 +336,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         }
 
         private void BuildScriptTag(
-            TagHelperContent content,
             TagHelperAttributeList attributes,
             TagHelperContent builder)
         {
-            EnsureFileVersionProvider();
             builder.Append("<script");
 
             foreach (var attribute in attributes)
@@ -356,9 +360,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 AppendAttribute(builder, attribute.Name, attributeValue, escapeQuotes: false);
             }
 
-            builder.Append(">")
-                   .Append(content)
-                   .Append("</script>");
+            builder.Append("></script>");
         }
 
         private void AppendAttribute(TagHelperContent content, string key, object value, bool escapeQuotes)

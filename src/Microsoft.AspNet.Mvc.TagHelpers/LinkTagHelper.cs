@@ -221,23 +221,35 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 return;
             }
 
-            // Get the highest matched mode
-            var mode = modeResult.FullMatches.Select(match => match.Mode).Max();
-
             // NOTE: Values in TagHelperOutput.Attributes may already be HTML-encoded.
             var attributes = new TagHelperAttributeList(output.Attributes);
 
+            if (AppendVersion == true)
+            {
+                EnsureFileVersionProvider();
+
+                var attributeStringValue = output.Attributes[HrefAttributeName]?.Value as string;
+                if (attributeStringValue != null)
+                {
+                    output.Attributes[HrefAttributeName].Value =
+                        _fileVersionProvider.AddFileVersionToPath(attributeStringValue);
+                }
+            }
+
             var builder = new DefaultTagHelperContent();
 
-            if (mode == Mode.Fallback && string.IsNullOrEmpty(HrefInclude) || mode == Mode.AppendVersion)
-            {
-                // No globbing to do, just build a <link /> tag to match the original one in the source file.
-                // Or just add file version to the link tag.
-                BuildLinkTag(attributes, builder);
-            }
-            else
+            // Get the highest matched mode
+            var mode = modeResult.FullMatches.Select(match => match.Mode).Max();
+
+            if (mode == Mode.GlobbedHref || mode == Mode.Fallback && !string.IsNullOrEmpty(HrefInclude))
             {
                 BuildGlobbedLinkTags(attributes, builder);
+                if (string.IsNullOrEmpty(Href))
+                {
+                    // Only HrefInclude is specified. Don't render the original tag.
+                    output.TagName = null;
+                    output.Content.SetContent(string.Empty);
+                }
             }
 
             if (mode == Mode.Fallback)
@@ -245,21 +257,25 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 BuildFallbackBlock(builder);
             }
 
-            // We've taken over tag rendering, so prevent rendering the outer tag
-            output.TagName = null;
-            output.Content.SetContent(builder);
+            output.PostElement.SetContent(builder);
         }
 
         private void BuildGlobbedLinkTags(TagHelperAttributeList attributes, TagHelperContent builder)
         {
             EnsureGlobbingUrlBuilder();
 
-            // Build a <link /> tag for each matched href as well as the original one in the source file
-            var urls = GlobbingUrlBuilder.BuildUrlList(Href, HrefInclude, HrefExclude);
+            // Build a <link /> tag for each matched href.
+            var urls = GlobbingUrlBuilder.BuildUrlList(null, HrefInclude, HrefExclude);
             foreach (var url in urls)
             {
                 // "url" values come from bound attributes and globbing. Must always be non-null.
                 Debug.Assert(url != null);
+
+                if (string.Equals(Href, url, StringComparison.OrdinalIgnoreCase))
+                {
+                    // Don't build duplicate link tag for the original href url.
+                    continue;
+                }
 
                 attributes[HrefAttributeName] = url;
                 BuildLinkTag(attributes, builder);
@@ -332,7 +348,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
         private void BuildLinkTag(TagHelperAttributeList attributes, TagHelperContent builder)
         {
-            EnsureFileVersionProvider();
             builder.Append("<link ");
 
             foreach (var attribute in attributes)
