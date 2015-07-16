@@ -100,33 +100,5 @@ namespace Microsoft.Framework.DependencyInjection
 
             return WithControllersAsServices(services, controllerTypes.Select(type => type.AsType()));
         }
-
-        /// <summary>
-        /// Adds Mvc localization to the application.
-        /// </summary>
-        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
-        /// <returns>The <see cref="IServiceCollection"/>.</returns>
-        public static IServiceCollection AddMvcLocalization([NotNull] this IServiceCollection services)
-        {
-            return AddMvcLocalization(services, LanguageViewLocationExpanderFormat.Suffix);
-        }
-
-        /// <summary>
-        ///  Adds Mvc localization to the application.
-        /// </summary>
-        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
-        /// <param name="format">The view format for localized views.</param>
-        /// <returns>The <see cref="IServiceCollection"/>.</returns>
-        public static IServiceCollection AddMvcLocalization(
-            [NotNull] this IServiceCollection services,
-            LanguageViewLocationExpanderFormat format)
-        {
-            services.ConfigureRazorViewEngine(options =>
-            {
-                options.ViewLocationExpanders.Add(new LanguageViewLocationExpander(format));
-            });
-
-            return services;
-        }
     }
 }

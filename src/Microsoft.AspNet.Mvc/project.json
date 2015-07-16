@@ -13,6 +13,7 @@
         "Microsoft.AspNet.Mvc.Cors": "6.0.0-*",
         "Microsoft.AspNet.Mvc.DataAnnotations": "6.0.0-*",
         "Microsoft.AspNet.Mvc.Formatters.Json": "6.0.0-*",
+        "Microsoft.AspNet.Mvc.Localization": "6.0.0-*",
         "Microsoft.AspNet.Mvc.Razor": "6.0.0-*",
         "Microsoft.AspNet.Mvc.ViewFeatures": "6.0.0-*",
         "Microsoft.Framework.Caching.Memory": "1.0.0-*",

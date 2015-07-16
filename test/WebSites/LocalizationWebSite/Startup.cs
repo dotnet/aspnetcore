@@ -3,6 +3,7 @@
 
 using Microsoft.AspNet.Builder;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Localization;
 
 namespace LocalizationWebSite
 {
@@ -14,6 +15,10 @@ namespace LocalizationWebSite
             // Add MVC services to the services container
             services.AddMvc();
             services.AddMvcLocalization();
+
+            // Adding TestStringLocalizerFactory since ResourceStringLocalizerFactory uses ResourceManager. DNX does
+            // not support getting non-enu resources from ResourceManager yet.
+            services.AddSingleton<IStringLocalizerFactory, TestStringLocalizerFactory>();
         }
 
         public void Configure(IApplicationBuilder app)
