@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Mvc.Core
                 "<div class=\"HtmlEncode[[display-label]]\">HtmlEncode[[Property1]]</div>" + Environment.NewLine
               + "<div class=\"HtmlEncode[[display-field]]\">Model = p1, ModelType = System.String, PropertyName = Property1," +
                     " SimpleDisplayText = p1</div>" + Environment.NewLine
-              + "<div class=\"HtmlEncode[[display-label]]\">HtmlEncode[[Property2]]</div>" + Environment.NewLine
+              + "<div class=\"HtmlEncode[[display-label]]\">HtmlEncode[[Prop2]]</div>" + Environment.NewLine
               + "<div class=\"HtmlEncode[[display-field]]\">Model = (null), ModelType = System.String, PropertyName = Property2," +
                     " SimpleDisplayText = (null)</div>" + Environment.NewLine;
 
@@ -144,7 +144,7 @@ namespace Microsoft.AspNet.Mvc.Core
             // Arrange
             var expected =
                 "Model = p1, ModelType = System.String, PropertyName = Property1, SimpleDisplayText = p1" +
-                "<div class=\"HtmlEncode[[display-label]]\">HtmlEncode[[Property2]]</div>" + Environment.NewLine +
+                "<div class=\"HtmlEncode[[display-label]]\">HtmlEncode[[Prop2]]</div>" + Environment.NewLine +
                 "<div class=\"HtmlEncode[[display-field]]\">Model = (null), ModelType = System.String, PropertyName = Property2," +
                     " SimpleDisplayText = (null)</div>" + Environment.NewLine;
 

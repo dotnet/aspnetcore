@@ -97,7 +97,7 @@ namespace Microsoft.AspNet.Mvc.Core
                     " SimpleDisplayText = p1 " +
                     "<span class=\"HtmlEncode[[field-validation-valid]]\" data-valmsg-for=\"HtmlEncode[[Property1]]\" data-valmsg-replace=\"HtmlEncode[[true]]\">" +
                     "</span></div>" + Environment.NewLine
-              + "<div class=\"HtmlEncode[[editor-label]]\"><label for=\"HtmlEncode[[Property2]]\">HtmlEncode[[Property2]]</label></div>" + Environment.NewLine
+              + "<div class=\"HtmlEncode[[editor-label]]\"><label for=\"HtmlEncode[[Property2]]\">HtmlEncode[[Prop2]]</label></div>" + Environment.NewLine
               + "<div class=\"HtmlEncode[[editor-field]]\">Model = (null), ModelType = System.String, PropertyName = Property2," +
                     " SimpleDisplayText = (null) " +
                     "<span class=\"HtmlEncode[[field-validation-valid]]\" data-valmsg-for=\"HtmlEncode[[Property2]]\" data-valmsg-replace=\"HtmlEncode[[true]]\">" +
@@ -205,7 +205,7 @@ Environment.NewLine;
             // Arrange
             var expected =
                 "Model = p1, ModelType = System.String, PropertyName = Property1, SimpleDisplayText = p1" +
-                "<div class=\"HtmlEncode[[editor-label]]\"><label for=\"HtmlEncode[[Property2]]\">HtmlEncode[[Property2]]</label></div>" +
+                "<div class=\"HtmlEncode[[editor-label]]\"><label for=\"HtmlEncode[[Property2]]\">HtmlEncode[[Prop2]]</label></div>" +
                 Environment.NewLine +
                 "<div class=\"HtmlEncode[[editor-field]]\">" +
                     "Model = (null), ModelType = System.String, PropertyName = Property2, SimpleDisplayText = (null) " +
