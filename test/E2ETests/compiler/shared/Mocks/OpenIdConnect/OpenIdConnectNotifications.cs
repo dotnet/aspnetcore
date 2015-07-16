@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Authentication.Notifications;
 using Microsoft.AspNet.Authentication.OpenIdConnect;
 using Microsoft.AspNet.Http;
 using Microsoft.IdentityModel.Protocols;
