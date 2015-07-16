@@ -11,6 +11,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics.Views;
+using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
@@ -28,6 +29,7 @@ namespace Microsoft.AspNet.Diagnostics
         private readonly ErrorPageOptions _options;
         private static readonly bool IsMono = Type.GetType("Mono.Runtime") != null;
         private readonly ILogger _logger;
+        private readonly IFileProvider _fileProvider;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ErrorPageMiddleware"/> class
@@ -35,11 +37,15 @@ namespace Microsoft.AspNet.Diagnostics
         /// <param name="next"></param>
         /// <param name="options"></param>
         public ErrorPageMiddleware(
-            [NotNull] RequestDelegate next, [NotNull] ErrorPageOptions options, ILoggerFactory loggerFactory)
+            [NotNull] RequestDelegate next,
+            [NotNull] ErrorPageOptions options,
+            ILoggerFactory loggerFactory,
+            IApplicationEnvironment appEnvironment)
         {
             _next = next;
             _options = options;
             _logger = loggerFactory.CreateLogger<ErrorPageMiddleware>();
+            _fileProvider = options.FileProvider ?? new PhysicalFileProvider(appEnvironment.ApplicationBasePath);
         }
 
         /// <summary>
@@ -183,31 +189,102 @@ namespace Microsoft.AspNet.Diagnostics
 
             int lineNumber = line.ToInt32();
 
-            return string.IsNullOrEmpty(file)
-                ? LoadFrame(string.IsNullOrEmpty(function) ? line.ToString() : function, string.Empty, 0)
-                : LoadFrame(function, file, lineNumber);
+            if (string.IsNullOrEmpty(file))
+            {
+                return GetStackFrame(
+                    // Handle stack trace lines like
+                    // "--- End of stack trace from previous location where exception from thrown ---"
+                    string.IsNullOrEmpty(function) ? line.ToString() : function,
+                    file: string.Empty,
+                    lineNumber: 0);
+            }
+            else
+            {
+                return GetStackFrame(function, file, lineNumber);
+            }
         }
 
-        private StackFrame LoadFrame(string function, string file, int lineNumber)
+        // make it internal to enable unit testing
+        internal StackFrame GetStackFrame(string function, string file, int lineNumber)
         {
             var frame = new StackFrame { Function = function, File = file, Line = lineNumber };
+
+            if (string.IsNullOrEmpty(file))
+            {
+                return frame;
+            }
+
+            IEnumerable<string> lines = null;
             if (File.Exists(file))
             {
-                var code = File.ReadLines(file);
-                ReadFrameContent(frame, code, lineNumber, lineNumber);
+                lines = File.ReadLines(file);
             }
+            else
+            {
+                // Handle relative paths and embedded files
+                var fileInfo = _fileProvider.GetFileInfo(file);
+                if (fileInfo.Exists)
+                {
+                    // ReadLines doesn't accept a stream. Use ReadLines as its more efficient
+                    // relative to reading lines via stream reader
+                    if (!string.IsNullOrEmpty(fileInfo.PhysicalPath))
+                    {
+                        lines = File.ReadLines(fileInfo.PhysicalPath);
+                    }
+                    else
+                    {
+                        lines = ReadLines(fileInfo);
+                    }
+                }
+            }
+
+            if (lines != null)
+            {
+                ReadFrameContent(frame, lines, lineNumber, lineNumber);
+            }
+
             return frame;
         }
 
-        private void ReadFrameContent(StackFrame frame,
-                                      IEnumerable<string> code,
-                                      int startLineNumber,
-                                      int endLineNumber)
+        // make it internal to enable unit testing
+        internal void ReadFrameContent(
+            StackFrame frame,
+            IEnumerable<string> allLines,
+            int errorStartLineNumberInFile,
+            int errorEndLineNumberInFile)
         {
-            frame.PreContextLine = Math.Max(startLineNumber - _options.SourceCodeLineCount, 1);
-            frame.PreContextCode = code.Skip(frame.PreContextLine - 1).Take(startLineNumber - frame.PreContextLine).ToArray();
-            frame.ContextCode = code.Skip(startLineNumber - 1).Take(1 + Math.Max(0, endLineNumber - startLineNumber));
-            frame.PostContextCode = code.Skip(startLineNumber).Take(_options.SourceCodeLineCount).ToArray();
+            // Get the line boundaries in the file to be read and read all these lines at once into an array.
+            var preErrorLineNumberInFile = Math.Max(errorStartLineNumberInFile - _options.SourceCodeLineCount, 1);
+            var postErrorLineNumberInFile = errorEndLineNumberInFile + _options.SourceCodeLineCount;
+            var codeBlock = allLines
+                .Skip(preErrorLineNumberInFile - 1)
+                .Take(postErrorLineNumberInFile - preErrorLineNumberInFile + 1)
+                .ToArray();
+
+            var numOfErrorLines = (errorEndLineNumberInFile - errorStartLineNumberInFile) + 1;
+            var errorStartLineNumberInArray = errorStartLineNumberInFile - preErrorLineNumberInFile;
+
+            frame.PreContextLine = preErrorLineNumberInFile;
+            frame.PreContextCode = codeBlock.Take(errorStartLineNumberInArray).ToArray();
+            frame.ContextCode = codeBlock
+                .Skip(errorStartLineNumberInArray)
+                .Take(numOfErrorLines)
+                .ToArray();
+            frame.PostContextCode = codeBlock
+                .Skip(errorStartLineNumberInArray + numOfErrorLines)
+                .ToArray();
+        }
+
+        private static IEnumerable<string> ReadLines(IFileInfo fileInfo)
+        {
+            using (var reader = new StreamReader(fileInfo.CreateReadStream()))
+            {
+                string line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    yield return line;
+                }
+            }
         }
 
         internal class Chunk

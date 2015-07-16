@@ -3,6 +3,7 @@
 
 
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.AspNet.Diagnostics.Views
 {
@@ -32,19 +33,19 @@ namespace Microsoft.AspNet.Diagnostics.Views
         public int PreContextLine { get; set; }
 
         /// <summary>
-        /// 
+        /// Lines of code before the actual error line(s).
         /// </summary>
-        public IEnumerable<string> PreContextCode { get; set; }
+        public IEnumerable<string> PreContextCode { get; set; } = Enumerable.Empty<string>();
 
         /// <summary>
-        /// 
+        /// Line(s) of code responsible for the error.
         /// </summary>
-        public IEnumerable<string> ContextCode { get; set; }
+        public IEnumerable<string> ContextCode { get; set; } = Enumerable.Empty<string>();
 
         /// <summary>
-        /// 
+        /// Lines of code after the actual error line(s).
         /// </summary>
-        public IEnumerable<string> PostContextCode { get; set; }
+        public IEnumerable<string> PostContextCode { get; set; } = Enumerable.Empty<string>();
 
         /// <summary>
         /// Specific error details for this stack frame.

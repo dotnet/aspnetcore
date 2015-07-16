@@ -45,10 +45,10 @@
                             <h3>@frame.ErrorDetails</h3>
                         }
 
-                        @if (frame.Line != 0 && frame.ContextCode !=null && frame.ContextCode.Any())
+                        @if (frame.Line != 0 && frame.ContextCode.Any())
                         {
                             <div class="source">
-                                @if (frame.PreContextCode != null)
+                                @if (frame.PreContextCode.Any())
                                 {
                                     <ol start="@frame.PreContextLine" class="collapsible">
                                         @foreach (var line in frame.PreContextCode)
@@ -63,7 +63,7 @@
                                         <li><span>@line</span></li>
                                     }
                                 </ol>
-                                @if (frame.PostContextCode != null)
+                                @if (frame.PostContextCode.Any())
                                 {
                                     <ol start='@(frame.Line + 1)' class="collapsible">
                                         @foreach (var line in frame.PostContextCode)

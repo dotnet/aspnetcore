@@ -143,8 +143,8 @@ using Views
 #line hidden
 
             WriteLiteral("                    <li class=\"frame\"");
-            WriteAttribute("tabindex", Tuple.Create(" tabindex=\"", 1231), Tuple.Create("\"", 1251), 
-            Tuple.Create(Tuple.Create("", 1242), Tuple.Create<System.Object, System.Int32>(tabIndex, 1242), false));
+            WriteAttribute("tabindex", Tuple.Create(" tabindex=\"", 1246), Tuple.Create("\"", 1266), 
+            Tuple.Create(Tuple.Create("", 1257), Tuple.Create<System.Object, System.Int32>(tabIndex, 1257), false));
             WriteLiteral(">\r\n");
 #line 42 "CompilationErrorPage.cshtml"
                         
@@ -193,7 +193,7 @@ using Views
 #line hidden
 
 #line 48 "CompilationErrorPage.cshtml"
-                         if (frame.Line != 0 && frame.ContextCode !=null && frame.ContextCode.Any())
+                         if (frame.Line != 0 && frame.ContextCode.Any())
                         {
 
 #line default
@@ -207,15 +207,15 @@ using Views
 #line hidden
 
 #line 51 "CompilationErrorPage.cshtml"
-                                 if (frame.PreContextCode != null)
+                                 if (frame.PreContextCode.Any())
                                 {
 
 #line default
 #line hidden
 
             WriteLiteral("                                    <ol");
-            WriteAttribute("start", Tuple.Create(" start=\"", 1777), Tuple.Create("\"", 1806), 
-            Tuple.Create(Tuple.Create("", 1785), Tuple.Create<System.Object, System.Int32>(frame.PreContextLine, 1785), false));
+            WriteAttribute("start", Tuple.Create(" start=\"", 1790), Tuple.Create("\"", 1819), 
+            Tuple.Create(Tuple.Create("", 1798), Tuple.Create<System.Object, System.Int32>(frame.PreContextLine, 1798), false));
             WriteLiteral(" class=\"collapsible\">\r\n");
 #line 54 "CompilationErrorPage.cshtml"
                                         
@@ -251,8 +251,8 @@ using Views
 #line hidden
 
             WriteLiteral("                                <ol");
-            WriteAttribute("start", Tuple.Create(" start=\"", 2187), Tuple.Create("\"", 2206), 
-            Tuple.Create(Tuple.Create("", 2195), Tuple.Create<System.Object, System.Int32>(frame.Line, 2195), false));
+            WriteAttribute("start", Tuple.Create(" start=\"", 2200), Tuple.Create("\"", 2219), 
+            Tuple.Create(Tuple.Create("", 2208), Tuple.Create<System.Object, System.Int32>(frame.Line, 2208), false));
             WriteLiteral(" class=\"highlight\">\r\n");
 #line 61 "CompilationErrorPage.cshtml"
                                     
@@ -288,15 +288,15 @@ using Views
 #line hidden
 
 #line 66 "CompilationErrorPage.cshtml"
-                                 if (frame.PostContextCode != null)
+                                 if (frame.PostContextCode.Any())
                                 {
 
 #line default
 #line hidden
 
             WriteLiteral("                                    <ol");
-            WriteAttribute("start", Tuple.Create(" start=\'", 2635), Tuple.Create("\'", 2660), 
-            Tuple.Create(Tuple.Create("", 2643), Tuple.Create<System.Object, System.Int32>(frame.Line + 1, 2643), false));
+            WriteAttribute("start", Tuple.Create(" start=\'", 2646), Tuple.Create("\'", 2671), 
+            Tuple.Create(Tuple.Create("", 2654), Tuple.Create<System.Object, System.Int32>(frame.Line + 1, 2654), false));
             WriteLiteral(" class=\"collapsible\">\r\n");
 #line 69 "CompilationErrorPage.cshtml"
                                         

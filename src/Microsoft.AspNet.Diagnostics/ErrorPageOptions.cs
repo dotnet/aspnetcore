@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 
+using Microsoft.AspNet.FileProviders;
+
 namespace Microsoft.AspNet.Diagnostics
 {
     /// <summary>
@@ -23,5 +25,13 @@ namespace Microsoft.AspNet.Diagnostics
         /// source code referenced by the exception stack trace is present on the server.
         /// </summary>
         public int SourceCodeLineCount { get; set; }
+
+        /// <summary>
+        /// Provides files containing source code used to display contextual information of an exception.
+        /// </summary>
+        /// <remarks>
+        /// If <c>null</c> <see cref="ErrorPageMiddleware" /> will use a <see cref="PhysicalFileProvider"/>.
+        /// </remarks>
+        public IFileProvider FileProvider { get; set; }
     }
 }

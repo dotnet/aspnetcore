@@ -65,8 +65,8 @@ using Views
 #line hidden
 
             WriteLiteral("\r\n<!DOCTYPE html>\r\n<html");
-            WriteAttribute("lang", Tuple.Create(" lang=\"", 518), Tuple.Create("\"", 579), 
-            Tuple.Create(Tuple.Create("", 525), Tuple.Create<System.Object, System.Int32>(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName, 525), false));
+            WriteAttribute("lang", Tuple.Create(" lang=\"", 533), Tuple.Create("\"", 594), 
+            Tuple.Create(Tuple.Create("", 540), Tuple.Create<System.Object, System.Int32>(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName, 540), false));
             WriteLiteral(" xmlns=\"http://www.w3.org/1999/xhtml\">\r\n    <head>\r\n        <meta charset=\"utf-8\"" +
 " />\r\n        <title>");
 #line 26 "ErrorPage.cshtml"
@@ -147,8 +147,8 @@ using Views
 #line default
 #line hidden
             WriteLiteral(" in <code");
-            WriteAttribute("title", Tuple.Create(" title=\"", 1895), Tuple.Create("\"", 1919), 
-            Tuple.Create(Tuple.Create("", 1903), Tuple.Create<System.Object, System.Int32>(firstFrame.File, 1903), false));
+            WriteAttribute("title", Tuple.Create(" title=\"", 1910), Tuple.Create("\"", 1934), 
+            Tuple.Create(Tuple.Create("", 1918), Tuple.Create<System.Object, System.Int32>(firstFrame.File, 1918), false));
             WriteLiteral(">");
 #line 50 "ErrorPage.cshtml"
                                                                            Write(System.IO.Path.GetFileName(firstFrame.File));
@@ -281,8 +281,8 @@ using Views
 #line hidden
 
             WriteLiteral("                            <li class=\"frame\"");
-            WriteAttribute("tabindex", Tuple.Create(" tabindex=\"", 3327), Tuple.Create("\"", 3347), 
-            Tuple.Create(Tuple.Create("", 3338), Tuple.Create<System.Object, System.Int32>(tabIndex, 3338), false));
+            WriteAttribute("tabindex", Tuple.Create(" tabindex=\"", 3342), Tuple.Create("\"", 3362), 
+            Tuple.Create(Tuple.Create("", 3353), Tuple.Create<System.Object, System.Int32>(tabIndex, 3353), false));
             WriteLiteral(">\r\n");
 #line 87 "ErrorPage.cshtml"
                                 
@@ -332,8 +332,8 @@ using Views
 #line default
 #line hidden
             WriteLiteral(" in <code");
-            WriteAttribute("title", Tuple.Create(" title=\"", 3742), Tuple.Create("\"", 3761), 
-            Tuple.Create(Tuple.Create("", 3750), Tuple.Create<System.Object, System.Int32>(frame.File, 3750), false));
+            WriteAttribute("title", Tuple.Create(" title=\"", 3757), Tuple.Create("\"", 3776), 
+            Tuple.Create(Tuple.Create("", 3765), Tuple.Create<System.Object, System.Int32>(frame.File, 3765), false));
             WriteLiteral(">");
 #line 94 "ErrorPage.cshtml"
                                                                                 Write(System.IO.Path.GetFileName(frame.File));
@@ -355,7 +355,7 @@ using Views
 #line hidden
 
 #line 97 "ErrorPage.cshtml"
-                                 if (frame.Line != 0 && frame.ContextCode !=null && frame.ContextCode.Any())
+                                 if (frame.Line != 0 && frame.ContextCode.Any())
                                 {
 
 #line default
@@ -369,15 +369,15 @@ using Views
 #line hidden
 
 #line 100 "ErrorPage.cshtml"
-                                         if (frame.PreContextCode != null)
+                                         if (frame.PreContextCode.Any())
                                         {
 
 #line default
 #line hidden
 
             WriteLiteral("                                            <ol");
-            WriteAttribute("start", Tuple.Create(" start=\"", 4194), Tuple.Create("\"", 4223), 
-            Tuple.Create(Tuple.Create("", 4202), Tuple.Create<System.Object, System.Int32>(frame.PreContextLine, 4202), false));
+            WriteAttribute("start", Tuple.Create(" start=\"", 4207), Tuple.Create("\"", 4236), 
+            Tuple.Create(Tuple.Create("", 4215), Tuple.Create<System.Object, System.Int32>(frame.PreContextLine, 4215), false));
             WriteLiteral(" class=\"collapsible\">\r\n");
 #line 103 "ErrorPage.cshtml"
                                                 
@@ -413,8 +413,8 @@ using Views
 #line hidden
 
             WriteLiteral("\r\n                                        <ol");
-            WriteAttribute("start", Tuple.Create(" start=\"", 4663), Tuple.Create("\"", 4682), 
-            Tuple.Create(Tuple.Create("", 4671), Tuple.Create<System.Object, System.Int32>(frame.Line, 4671), false));
+            WriteAttribute("start", Tuple.Create(" start=\"", 4676), Tuple.Create("\"", 4695), 
+            Tuple.Create(Tuple.Create("", 4684), Tuple.Create<System.Object, System.Int32>(frame.Line, 4684), false));
             WriteLiteral(" class=\"highlight\">\r\n");
 #line 111 "ErrorPage.cshtml"
                                             
@@ -450,15 +450,15 @@ using Views
 #line hidden
 
 #line 117 "ErrorPage.cshtml"
-                                         if (frame.PostContextCode != null)
+                                         if (frame.PostContextCode.Any())
                                         {
 
 #line default
 #line hidden
 
             WriteLiteral("                                            <ol");
-            WriteAttribute("start", Tuple.Create(" start=\'", 5177), Tuple.Create("\'", 5202), 
-            Tuple.Create(Tuple.Create("", 5185), Tuple.Create<System.Object, System.Int32>(frame.Line + 1, 5185), false));
+            WriteAttribute("start", Tuple.Create(" start=\'", 5188), Tuple.Create("\'", 5213), 
+            Tuple.Create(Tuple.Create("", 5196), Tuple.Create<System.Object, System.Int32>(frame.Line + 1, 5196), false));
             WriteLiteral(" class=\"collapsible\">\r\n");
 #line 120 "ErrorPage.cshtml"
                                                 
