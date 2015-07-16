@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.WebUtilities;
 using Microsoft.Framework.Internal;

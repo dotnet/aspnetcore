@@ -6,7 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Framework.Internal;
 
-namespace Microsoft.AspNet.FeatureModel
+namespace Microsoft.AspNet.Http.Features
 {
     public class FeatureCollection : IFeatureCollection
     {

@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading;
-using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Http.Authentication.Internal;
 using Microsoft.AspNet.Http.Features;

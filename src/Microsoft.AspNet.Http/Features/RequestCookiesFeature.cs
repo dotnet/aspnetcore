@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.Framework.Internal;
 using Microsoft.Net.Http.Headers;

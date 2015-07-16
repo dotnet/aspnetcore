@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.FeatureModel
+namespace Microsoft.AspNet.Http.Features
 {
     public interface IFeatureCollection : IDictionary<Type, object>, IDisposable
     {

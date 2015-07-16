@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Net.WebSockets;
 using System.Threading.Tasks;
-using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.Net.Http.Headers;
 

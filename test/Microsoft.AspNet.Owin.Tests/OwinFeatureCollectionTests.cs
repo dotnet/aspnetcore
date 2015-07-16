@@ -3,7 +3,6 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.Http.Features;
 using Xunit;
 
@@ -32,7 +31,7 @@ namespace Microsoft.AspNet.Owin
                 { "owin.RequestPathBase", "/pathBase" },
                 { "owin.RequestQueryString", "name=value" },
             };
-            var features = new FeatureObject(new OwinFeatureCollection(env));
+            var features = new OwinFeatureCollection(env);
 
             var requestFeature = Get<IHttpRequestFeature>(features);
             Assert.Equal(requestFeature.Method, "POST");
@@ -51,7 +50,7 @@ namespace Microsoft.AspNet.Owin
                 { "owin.RequestPathBase", "/pathBase" },
                 { "owin.RequestQueryString", "name=value" },
             };
-            var features = new FeatureObject(new OwinFeatureCollection(env));
+            var features = new OwinFeatureCollection(env);
 
             var requestFeature = Get<IHttpRequestFeature>(features);
             requestFeature.Method = "GET";
@@ -72,11 +71,10 @@ namespace Microsoft.AspNet.Owin
             {
                 {"owin.RequestMethod", "POST"}
             };
-            var features = new FeatureObject(new OwinFeatureCollection(env));
+            var features = new OwinFeatureCollection(env);
 
             var entries = features.ToArray();
             var keys = features.Keys.ToArray();
-            var values = features.Values.ToArray();
 
             Assert.Contains(typeof(IHttpRequestFeature), keys);
             Assert.Contains(typeof(IHttpResponseFeature), keys);

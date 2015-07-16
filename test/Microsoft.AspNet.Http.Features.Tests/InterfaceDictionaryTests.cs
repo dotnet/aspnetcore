@@ -4,7 +4,7 @@
 using System;
 using Xunit;
 
-namespace Microsoft.AspNet.FeatureModel.Tests
+namespace Microsoft.AspNet.Http.Features
 {
     public class InterfaceDictionaryTests
     {
