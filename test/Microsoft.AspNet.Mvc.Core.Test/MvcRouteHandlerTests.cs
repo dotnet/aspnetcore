@@ -179,6 +179,24 @@ namespace Microsoft.AspNet.Mvc
             Assert.Contains(routeValues, kvp => kvp.Key == "tag" && string.Equals(kvp.Value, "value"));
         }
 
+        [Fact]
+        public async Task RouteAsync_Notifies_ActionInvoked()
+        {
+            // Arrange
+            var listener = new TestNotificationListener();
+
+            var context = CreateRouteContext(notificationListener: listener);
+
+            var handler = new MvcRouteHandler();
+
+            // Act
+            await handler.RouteAsync(context);
+
+            // Assert
+            Assert.NotNull(listener?.ActionInvoked.ActionDescriptor);
+            Assert.NotNull(listener?.ActionInvoked.HttpContext);
+        }
+
         private RouteContext CreateRouteContext(
             ActionDescriptor actionDescriptor = null,
             IActionSelector actionSelector = null,

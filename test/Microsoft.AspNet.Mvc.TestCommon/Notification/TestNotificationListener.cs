@@ -23,11 +23,31 @@ namespace Microsoft.AspNet.Mvc.TestCommon.Notification
             };
         }
 
+        public OnActionInvokedEventData ActionInvoked { get; set; }
+
+        [NotificationName("Microsoft.AspNet.Mvc.ActionInvoked")]
+        public virtual void OnActionInvoked(
+            IHttpContext httpContext,
+            IActionDescriptor actionDescriptor)
+        {
+            ActionInvoked = new OnActionInvokedEventData()
+            {
+                ActionDescriptor = actionDescriptor,
+                HttpContext = httpContext,
+            };
+        }
+
         public class OnActionSelectedEventData
         {
             public IActionDescriptor ActionDescriptor { get; set; }
             public IHttpContext HttpContext { get; set; }
             public IRouteData RouteData { get; set; }
+        }
+
+        public class OnActionInvokedEventData
+        {
+            public IActionDescriptor ActionDescriptor { get; set; }
+            public IHttpContext HttpContext { get; set; }
         }
     }
 }

@@ -85,6 +85,13 @@ namespace Microsoft.AspNet.Mvc
                     await InvokeActionAsync(context, actionDescriptor);
                     context.IsHandled = true;
                 }
+
+                if (_notifier.ShouldNotify("Microsoft.AspNet.Mvc.ActionInvoked"))
+                {
+                    _notifier.Notify(
+                        "Microsoft.AspNet.Mvc.ActionInvoked",
+                        new { actionDescriptor, httpContext = context.HttpContext });
+                }
             }
             finally
             {
