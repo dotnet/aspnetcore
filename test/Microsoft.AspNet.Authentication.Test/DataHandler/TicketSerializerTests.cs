@@ -5,12 +5,11 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
-using Microsoft.AspNet.Authentication.DataHandler.Serializer;
 using Microsoft.AspNet.Http.Authentication;
 using Shouldly;
 using Xunit;
 
-namespace Microsoft.AspNet.Authentication.DataHandler.Encoder
+namespace Microsoft.AspNet.Authentication
 {
     public class TicketSerializerTests
     {

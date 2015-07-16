@@ -2,12 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Authentication.OpenIdConnect;
 using Microsoft.IdentityModel.Protocols;
 using System.Diagnostics.CodeAnalysis;
 using System.IdentityModel.Tokens;
 
-namespace Microsoft.AspNet.Authentication.Notifications
+namespace Microsoft.AspNet.Authentication.OpenIdConnect
 {
     /// <summary>
     /// This Notification can be used to be informed when an 'AuthorizationCode' is received over the OpenIdConnect protocol.

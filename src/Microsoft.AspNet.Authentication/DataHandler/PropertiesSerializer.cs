@@ -1,15 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-
-using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.Framework.Internal;
 
-namespace Microsoft.AspNet.Authentication.DataHandler.Serializer
+namespace Microsoft.AspNet.Authentication
 {
     public class PropertiesSerializer : IDataSerializer<AuthenticationProperties>
     {

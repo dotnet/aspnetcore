@@ -3,7 +3,7 @@
 
 using Microsoft.AspNet.Http;
 
-namespace Microsoft.AspNet.Authentication.Cookies.Infrastructure
+namespace Microsoft.AspNet.Authentication.Cookies
 {
     /// <summary>
     /// This is used by the CookieAuthenticationMiddleware to process request and response cookies.

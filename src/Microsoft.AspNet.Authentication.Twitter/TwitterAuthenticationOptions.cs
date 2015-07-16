@@ -5,7 +5,6 @@ using System;
 using System.Net.Http;
 using System.Security.Claims;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Authentication.Twitter.Messages;
 
 namespace Microsoft.AspNet.Authentication.Twitter
 {

@@ -3,10 +3,8 @@
 
 using Microsoft.AspNet.DataProtection;
 using Microsoft.AspNet.Http.Authentication;
-using Microsoft.AspNet.Authentication.DataHandler.Encoder;
-using Microsoft.AspNet.Authentication.DataHandler.Serializer;
 
-namespace Microsoft.AspNet.Authentication.DataHandler
+namespace Microsoft.AspNet.Authentication
 {
     public class PropertiesDataFormat : SecureDataFormat<AuthenticationProperties>
     {

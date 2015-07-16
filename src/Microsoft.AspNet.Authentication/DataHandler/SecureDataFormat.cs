@@ -1,13 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNet.DataProtection;
-using Microsoft.AspNet.Authentication.DataHandler.Encoder;
-using Microsoft.AspNet.Authentication.DataHandler.Serializer;
 
-namespace Microsoft.AspNet.Authentication.DataHandler
+namespace Microsoft.AspNet.Authentication
 {
     public class SecureDataFormat<TData> : ISecureDataFormat<TData>
     {

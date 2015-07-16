@@ -5,7 +5,7 @@ using System;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.Internal;
 
-namespace Microsoft.AspNet.Authentication.Notifications
+namespace Microsoft.AspNet.Authentication
 {
     /// <summary>
     /// When a user configures the <see cref="AuthenticationMiddleware{TOptions}"/> to be notified prior to redirecting to an IdentityProvider

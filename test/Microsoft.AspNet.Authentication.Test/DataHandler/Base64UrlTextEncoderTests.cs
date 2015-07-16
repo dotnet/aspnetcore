@@ -4,7 +4,7 @@
 using Shouldly;
 using Xunit;
 
-namespace Microsoft.AspNet.Authentication.DataHandler.Encoder
+namespace Microsoft.AspNet.Authentication
 {
     public class Base64UrlTextEncoderTests
     {

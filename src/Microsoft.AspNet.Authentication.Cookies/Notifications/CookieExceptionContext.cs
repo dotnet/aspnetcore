@@ -4,7 +4,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Authentication.Notifications;
 
 namespace Microsoft.AspNet.Authentication.Cookies
 {

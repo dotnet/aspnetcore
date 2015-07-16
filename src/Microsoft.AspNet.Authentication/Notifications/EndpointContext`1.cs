@@ -4,7 +4,7 @@
 
 using Microsoft.AspNet.Http;
 
-namespace Microsoft.AspNet.Authentication.Notifications
+namespace Microsoft.AspNet.Authentication
 {
     /// <summary>
     /// Base class used for certain event contexts

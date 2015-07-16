@@ -3,7 +3,6 @@
 
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
-using Microsoft.AspNet.Authentication.Notifications;
 
 namespace Microsoft.AspNet.Authentication.Twitter
 {

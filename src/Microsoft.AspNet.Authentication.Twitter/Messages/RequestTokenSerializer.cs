@@ -3,11 +3,10 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using Microsoft.AspNet.Authentication.DataHandler.Serializer;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.Framework.Internal;
 
-namespace Microsoft.AspNet.Authentication.Twitter.Messages
+namespace Microsoft.AspNet.Authentication.Twitter
 {
     /// <summary>
     /// Serializes and deserializes Twitter request and access tokens so that they can be used by other application components.

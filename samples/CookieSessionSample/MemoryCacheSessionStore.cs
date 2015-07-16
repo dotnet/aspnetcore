@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Authentication;
-using Microsoft.AspNet.Authentication.Cookies.Infrastructure;
+using Microsoft.AspNet.Authentication.Cookies;
 using Microsoft.Framework.Caching.Memory;
 
 namespace CookieSessionSample

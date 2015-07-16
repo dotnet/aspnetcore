@@ -10,7 +10,7 @@ using Microsoft.Framework.Internal;
 using Microsoft.Framework.WebEncoders;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNet.Authentication.Cookies.Infrastructure
+namespace Microsoft.AspNet.Authentication.Cookies
 {
     /// <summary>
     /// This handles cookies that are limited by per cookie length. It breaks down long cookies for responses, and reassembles them

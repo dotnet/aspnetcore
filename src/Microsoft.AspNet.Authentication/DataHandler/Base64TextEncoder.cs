@@ -4,7 +4,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Authentication.DataHandler.Encoder
+namespace Microsoft.AspNet.Authentication
 {
     public class Base64TextEncoder : ITextEncoder
     {

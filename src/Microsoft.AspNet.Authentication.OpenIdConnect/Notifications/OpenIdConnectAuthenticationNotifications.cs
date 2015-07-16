@@ -3,7 +3,6 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Authentication.Notifications;
 using Microsoft.IdentityModel.Protocols;
 
 namespace Microsoft.AspNet.Authentication.OpenIdConnect

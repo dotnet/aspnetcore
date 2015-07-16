@@ -7,7 +7,7 @@ using System.Linq;
 using System.Security.Claims;
 using Microsoft.Framework.Internal;
 
-namespace Microsoft.AspNet.Authentication.DataHandler.Serializer
+namespace Microsoft.AspNet.Authentication
 {
     public class TicketSerializer : IDataSerializer<AuthenticationTicket>
     {

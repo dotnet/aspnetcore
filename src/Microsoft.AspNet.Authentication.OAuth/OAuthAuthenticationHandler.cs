@@ -8,7 +8,6 @@ using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Authentication.DataHandler.Encoder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Http.Extensions;

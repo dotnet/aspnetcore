@@ -4,7 +4,7 @@
 using System;
 using Microsoft.AspNet.Http;
 
-namespace Microsoft.AspNet.Authentication.Notifications
+namespace Microsoft.AspNet.Authentication
 {
     public class AuthenticationFailedNotification<TMessage, TOptions> : BaseNotification<TOptions>
     {

@@ -1,9 +1,7 @@
-﻿using System;
-using Microsoft.AspNet.Authentication.OpenIdConnect;
-using Microsoft.AspNet.Http;
+﻿using Microsoft.AspNet.Http;
 using Microsoft.IdentityModel.Protocols;
 
-namespace Microsoft.AspNet.Authentication.Notifications
+namespace Microsoft.AspNet.Authentication.OpenIdConnect
 {
     /// <summary>
     /// This Notification can be used to be informed when an 'AuthorizationCode' is redeemed for tokens at the token endpoint.

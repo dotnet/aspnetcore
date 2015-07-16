@@ -2,7 +2,7 @@
 
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.Authentication.Cookies.Infrastructure
+namespace Microsoft.AspNet.Authentication.Cookies
 {
     /// <summary>
     /// This provides an abstract storage mechanic to preserve identity information on the server

@@ -3,7 +3,7 @@
 
 using Microsoft.AspNet.Http;
 
-namespace Microsoft.AspNet.Authentication.Notifications
+namespace Microsoft.AspNet.Authentication
 {
     public class SecurityTokenValidatedNotification<TMessage, TOptions> : BaseNotification<TOptions>
     {
