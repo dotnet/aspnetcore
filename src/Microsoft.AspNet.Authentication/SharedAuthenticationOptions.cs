@@ -6,7 +6,7 @@ using System;
 
 namespace Microsoft.AspNet.Authentication
 {
-    public class ExternalAuthenticationOptions
+    public class SharedAuthenticationOptions
     {
         /// <summary>
         /// Gets or sets the authentication scheme corresponding to the default middleware

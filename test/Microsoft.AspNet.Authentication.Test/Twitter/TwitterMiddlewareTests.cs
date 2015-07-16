@@ -171,7 +171,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
             services =>
             {
                 services.AddAuthentication();
-                services.Configure<ExternalAuthenticationOptions>(options =>
+                services.Configure<SharedAuthenticationOptions>(options =>
                 {
                     options.SignInScheme = "External";
                 });

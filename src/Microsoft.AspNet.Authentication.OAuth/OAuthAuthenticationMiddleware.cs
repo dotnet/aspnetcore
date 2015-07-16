@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Authentication.OAuth
             [NotNull] IDataProtectionProvider dataProtectionProvider,
             [NotNull] ILoggerFactory loggerFactory,
             [NotNull] IUrlEncoder encoder,
-            [NotNull] IOptions<ExternalAuthenticationOptions> externalOptions,
+            [NotNull] IOptions<SharedAuthenticationOptions> sharedOptions,
             [NotNull] IOptions<TOptions> options,
             ConfigureOptions<TOptions> configureOptions = null)
             : base(next, options, loggerFactory, encoder, configureOptions)
@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.Authentication.OAuth
 
             if (string.IsNullOrEmpty(Options.SignInScheme))
             {
-                Options.SignInScheme = externalOptions.Options.SignInScheme;
+                Options.SignInScheme = sharedOptions.Options.SignInScheme;
             }
         }
 

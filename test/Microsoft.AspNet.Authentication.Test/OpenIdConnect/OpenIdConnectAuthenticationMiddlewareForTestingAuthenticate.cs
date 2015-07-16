@@ -26,12 +26,12 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             ILoggerFactory loggerFactory,
             IUrlEncoder encoder,
             IServiceProvider services,
-            IOptions<ExternalAuthenticationOptions> externalOptions,
+            IOptions<SharedAuthenticationOptions> sharedOptions,
             IOptions<OpenIdConnectAuthenticationOptions> options,
             ConfigureOptions<OpenIdConnectAuthenticationOptions> configureOptions = null,
             OpenIdConnectAuthenticationHandler handler = null
             )
-        : base(next, dataProtectionProvider, loggerFactory, encoder, services, externalOptions, options, configureOptions)
+        : base(next, dataProtectionProvider, loggerFactory, encoder, services, sharedOptions, options, configureOptions)
         {
             _handler = handler;
             var customFactory = loggerFactory as InMemoryLoggerFactory;

@@ -31,6 +31,9 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         /// <param name="next">The next middleware in the ASP.NET pipeline to invoke.</param>
         /// <param name="dataProtectionProvider"> provider for creating a data protector.</param>
         /// <param name="loggerFactory">factory for creating a <see cref="ILogger"/>.</param>
+        /// <param name="encoder"></param>
+        /// <param name="services"></param>
+        /// <param name="sharedOptions"></param>
         /// <param name="options">a <see cref="IOptions{OpenIdConnectAuthenticationOptions}"/> instance that will supply <see cref="OpenIdConnectAuthenticationOptions"/> 
         /// if configureOptions is null.</param>
         /// <param name="configureOptions">a <see cref="ConfigureOptions{OpenIdConnectAuthenticationOptions}"/> instance that will be passed to an instance of <see cref="OpenIdConnectAuthenticationOptions"/>
@@ -42,14 +45,14 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             [NotNull] ILoggerFactory loggerFactory,
             [NotNull] IUrlEncoder encoder,
             [NotNull] IServiceProvider services,
-            [NotNull] IOptions<ExternalAuthenticationOptions> externalOptions,
+            [NotNull] IOptions<SharedAuthenticationOptions> sharedOptions,
             [NotNull] IOptions<OpenIdConnectAuthenticationOptions> options,
             ConfigureOptions<OpenIdConnectAuthenticationOptions> configureOptions = null)
             : base(next, options, loggerFactory, encoder, configureOptions)
         {
-            if (string.IsNullOrEmpty(Options.SignInScheme) && !string.IsNullOrEmpty(externalOptions.Options.SignInScheme))
+            if (string.IsNullOrEmpty(Options.SignInScheme) && !string.IsNullOrEmpty(sharedOptions.Options.SignInScheme))
             {
-                Options.SignInScheme = externalOptions.Options.SignInScheme;
+                Options.SignInScheme = sharedOptions.Options.SignInScheme;
             }
 
             if (Options.StateDataFormat == null)

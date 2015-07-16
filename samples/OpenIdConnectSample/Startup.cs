@@ -15,7 +15,7 @@ namespace OpenIdConnectSample
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddAuthentication();
-            services.Configure<ExternalAuthenticationOptions>(options =>
+            services.Configure<SharedAuthenticationOptions>(options =>
             {
                 options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
             });

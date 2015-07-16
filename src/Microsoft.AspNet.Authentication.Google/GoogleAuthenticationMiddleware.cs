@@ -24,16 +24,19 @@ namespace Microsoft.AspNet.Authentication.Google
         /// <param name="next">The next middleware in the HTTP pipeline to invoke.</param>
         /// <param name="dataProtectionProvider"></param>
         /// <param name="loggerFactory"></param>
+        /// <param name="encoder"></param>
+        /// <param name="sharedOptions"></param>
         /// <param name="options">Configuration options for the middleware.</param>
+        /// <param name="configureOptions"></param>
         public GoogleAuthenticationMiddleware(
             [NotNull] RequestDelegate next,
             [NotNull] IDataProtectionProvider dataProtectionProvider,
             [NotNull] ILoggerFactory loggerFactory,
             [NotNull] IUrlEncoder encoder,
-            [NotNull] IOptions<ExternalAuthenticationOptions> externalOptions,
+            [NotNull] IOptions<SharedAuthenticationOptions> sharedOptions,
             [NotNull] IOptions<GoogleAuthenticationOptions> options,
             ConfigureOptions<GoogleAuthenticationOptions> configureOptions = null)
-            : base(next, dataProtectionProvider, loggerFactory, encoder, externalOptions, options, configureOptions)
+            : base(next, dataProtectionProvider, loggerFactory, encoder, sharedOptions, options, configureOptions)
         {
             if (Options.Scope.Count == 0)
             {

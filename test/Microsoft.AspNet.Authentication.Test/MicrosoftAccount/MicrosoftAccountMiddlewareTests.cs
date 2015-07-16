@@ -218,7 +218,7 @@ namespace Microsoft.AspNet.Authentication.Tests.MicrosoftAccount
             services =>
             {
                 services.AddAuthentication();
-                services.Configure<ExternalAuthenticationOptions>(options =>
+                services.Configure<SharedAuthenticationOptions>(options =>
                 {
                     options.SignInScheme = TestExtensions.CookieAuthenticationScheme;
                 });

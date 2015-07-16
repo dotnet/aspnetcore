@@ -601,7 +601,7 @@ namespace Microsoft.AspNet.Authentication.Google
             services =>
             {
                 services.AddAuthentication();
-                services.Configure<ExternalAuthenticationOptions>(options =>
+                services.Configure<SharedAuthenticationOptions>(options =>
                 {
                     options.SignInScheme = TestExtensions.CookieAuthenticationScheme;
                 });

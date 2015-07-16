@@ -366,7 +366,7 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             services =>
             {
                 services.AddAuthentication();
-                services.Configure<ExternalAuthenticationOptions>(options =>
+                services.Configure<SharedAuthenticationOptions>(options =>
                 {
                     options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 });

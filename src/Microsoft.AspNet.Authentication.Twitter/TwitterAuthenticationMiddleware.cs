@@ -26,16 +26,18 @@ namespace Microsoft.AspNet.Authentication.Twitter
         /// Initializes a <see cref="TwitterAuthenticationMiddleware"/>
         /// </summary>
         /// <param name="next">The next middleware in the HTTP pipeline to invoke</param>
-        /// <param name="services"></param>
         /// <param name="dataProtectionProvider"></param>
         /// <param name="loggerFactory"></param>
+        /// <param name="encoder"></param>
+        /// <param name="sharedOptions"></param>
         /// <param name="options">Configuration options for the middleware</param>
+        /// <param name="configureOptions"></param>
         public TwitterAuthenticationMiddleware(
             [NotNull] RequestDelegate next,
             [NotNull] IDataProtectionProvider dataProtectionProvider,
             [NotNull] ILoggerFactory loggerFactory,
             [NotNull] IUrlEncoder encoder,
-            [NotNull] IOptions<ExternalAuthenticationOptions> externalOptions,
+            [NotNull] IOptions<SharedAuthenticationOptions> sharedOptions,
             [NotNull] IOptions<TwitterAuthenticationOptions> options,
             ConfigureOptions<TwitterAuthenticationOptions> configureOptions = null)
             : base(next, options, loggerFactory, encoder, configureOptions)
@@ -55,7 +57,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
             }
             if (Options.StateDataFormat == null)
             {
-                IDataProtector dataProtector = dataProtectionProvider.CreateProtector(
+                var dataProtector = dataProtectionProvider.CreateProtector(
                     typeof(TwitterAuthenticationMiddleware).FullName, Options.AuthenticationScheme, "v1");
                 Options.StateDataFormat = new SecureDataFormat<RequestToken>(
                     Serializers.RequestToken,
@@ -65,7 +67,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
 
             if (string.IsNullOrEmpty(Options.SignInScheme))
             {
-                Options.SignInScheme = externalOptions.Options.SignInScheme;
+                Options.SignInScheme = sharedOptions.Options.SignInScheme;
             }
             if (string.IsNullOrEmpty(Options.SignInScheme))
             {
@@ -92,7 +94,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Managed by caller")]
         private static HttpMessageHandler ResolveHttpMessageHandler(TwitterAuthenticationOptions options)
         {
-            HttpMessageHandler handler = options.BackchannelHttpHandler ??
+            var handler = options.BackchannelHttpHandler ??
 #if DNX451
                 new WebRequestHandler();
             // If they provided a validator, apply it or fail.
