@@ -27,6 +27,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private bool _resultStarted;
         private bool _responseStarted;
         private bool _keepAlive;
+        private readonly FrameRequestHeaders _requestHeaders = new FrameRequestHeaders();
+        private readonly FrameResponseHeaders _responseHeaders = new FrameResponseHeaders();
 
         /*
         //IDictionary<string, object> _environment;
@@ -43,8 +45,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             FrameControl = this;
             StatusCode = 200;
-            RequestHeaders = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
-            ResponseHeaders = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
+            RequestHeaders = _requestHeaders;
+            ResponseHeaders = _responseHeaders;
         }
 
         public string Method { get; set; }

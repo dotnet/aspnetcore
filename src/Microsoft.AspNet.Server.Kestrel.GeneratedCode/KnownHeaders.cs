@@ -10,9 +10,9 @@ namespace Microsoft.AspNet.Server.Kestrel.GeneratedCode
     // To enable this option, right-click on the project and select the Properties menu item. In the Build tab select "Produce outputs on build".
     public class KnownHeaders : ICompileModule
     {
-        string Each<T>(IEnumerable<T> values, Func<T, string> formatter)
+        static string Each<T>(IEnumerable<T> values, Func<T, string> formatter)
         {
-            return values.Select(formatter).Aggregate((a, b) => a + b + "\r\n");
+            return values.Select(formatter).Aggregate((a, b) => a + b);
         }
 
         class KnownHeader
@@ -26,6 +26,12 @@ namespace Microsoft.AspNet.Server.Kestrel.GeneratedCode
         }
 
         public virtual void BeforeCompile(BeforeCompileContext context)
+        {
+            var syntaxTree = Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(GeneratedFile());
+            context.Compilation = context.Compilation.AddSyntaxTrees(syntaxTree);
+        }
+
+        public static string GeneratedFile()
         {
             var commonHeaders = new[]
             {
@@ -71,7 +77,7 @@ namespace Microsoft.AspNet.Server.Kestrel.GeneratedCode
                 "Referer",
                 "Range",
                 "TE",
-                "Translage",
+                "Translate",
                 "User-Agent",
             }).Select((header, index) => new KnownHeader
             {
@@ -113,7 +119,7 @@ namespace Microsoft.AspNet.Server.Kestrel.GeneratedCode
                 }
             };
 
-            var syntaxTree = Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText($@"
+            return $@"
 using System;
 using System.Collections.Generic;
 
@@ -122,11 +128,12 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     public partial class {loop.ClassName} 
     {{
         long _bits = 0;
-        {Each(loop.Headers, header => "string[] _" + header.Identifier + ";")}
+        {Each(loop.Headers, header => @"
+        string[] _" + header.Identifier + ";")}
 
         protected override int GetCountFast()
         {{
-            var count = Unknown.Count;
+            var count = MaybeUnknown?.Count ?? 0;
             {Each(loop.Headers, header => $@"
                 if ({header.TestBit()}) 
                 {{
@@ -142,7 +149,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {{{Each(loop.HeadersByLength, byLength => $@"
                 case {byLength.Key}:
                     {{{Each(byLength, header => $@"
-                        if (0 == StringComparer.OrdinalIgnoreCase.Compare(key, ""{header.Name}"")) 
+                        if (""{header.Name}"".Equals(key, StringComparison.OrdinalIgnoreCase)) 
                         {{
                             if ({header.TestBit()})
                             {{
@@ -156,7 +163,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     ")}}}
                     break;
             ")}}}
-            return Unknown[key];
+            if (MaybeUnknown == null) 
+            {{
+                throw new System.Collections.Generic.KeyNotFoundException();
+            }}
+            return MaybeUnknown[key];
         }}
 
         protected override bool TryGetValueFast(string key, out string[] value)
@@ -165,7 +176,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {{{Each(loop.HeadersByLength, byLength => $@"
                 case {byLength.Key}:
                     {{{Each(byLength, header => $@"
-                        if (0 == StringComparer.OrdinalIgnoreCase.Compare(key, ""{header.Name}"")) 
+                        if (""{header.Name}"".Equals(key, StringComparison.OrdinalIgnoreCase)) 
                         {{
                             if ({header.TestBit()})
                             {{
@@ -181,7 +192,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     ")}}}
                     break;
             ")}}}
-            return Unknown.TryGetValue(key, out value);
+            value = null;
+            return MaybeUnknown?.TryGetValue(key, out value) ?? false;
         }}
 
         protected override void SetValueFast(string key, string[] value)
@@ -190,7 +202,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {{{Each(loop.HeadersByLength, byLength => $@"
                 case {byLength.Key}:
                     {{{Each(byLength, header => $@"
-                        if (0 == StringComparer.OrdinalIgnoreCase.Compare(key, ""{header.Name}"")) 
+                        if (""{header.Name}"".Equals(key, StringComparison.OrdinalIgnoreCase)) 
                         {{
                             {header.SetBit()};
                             _{header.Identifier} = value;
@@ -208,7 +220,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {{{Each(loop.HeadersByLength, byLength => $@"
                 case {byLength.Key}:
                     {{{Each(byLength, header => $@"
-                        if (0 == StringComparer.OrdinalIgnoreCase.Compare(key, ""{header.Name}"")) 
+                        if (""{header.Name}"".Equals(key, StringComparison.OrdinalIgnoreCase)) 
                         {{
                             if ({header.TestBit()})
                             {{
@@ -230,7 +242,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {{{Each(loop.HeadersByLength, byLength => $@"
                 case {byLength.Key}:
                     {{{Each(byLength, header => $@"
-                        if (0 == StringComparer.OrdinalIgnoreCase.Compare(key, ""{header.Name}"")) 
+                        if (""{header.Name}"".Equals(key, StringComparison.OrdinalIgnoreCase)) 
                         {{
                             if ({header.TestBit()})
                             {{
@@ -245,13 +257,13 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     ")}}}
                     break;
             ")}}}
-            return Unknown.Remove(key);
+            return MaybeUnknown?.Remove(key) ?? false;
         }}
 
         protected override void ClearFast()
         {{
             _bits = 0;
-            Unknown.Clear();
+            MaybeUnknown?.Clear();
         }}
         
         protected override void CopyToFast(KeyValuePair<string, string[]>[] array, int arrayIndex)
@@ -273,27 +285,44 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     ++arrayIndex;
                 }}
             ")}
-            ((ICollection<KeyValuePair<string, string[]>>)Unknown).CopyTo(array, arrayIndex);
+            ((ICollection<KeyValuePair<string, string[]>>)MaybeUnknown)?.CopyTo(array, arrayIndex);
         }}
 
-        protected override IEnumerable<KeyValuePair<string, string[]>> EnumerateFast()
+        public partial struct Enumerator
         {{
-            {Each(loop.Headers, header => $@"
-                if ({header.TestBit()}) 
-                {{
-                    yield return new KeyValuePair<string, string[]>(""{header.Name}"", _{header.Identifier});
-                }}
-            ")}
-            foreach(var kv in Unknown)
+            public bool MoveNext()
             {{
-                yield return kv;
+                switch (_state)
+                {{
+                    {Each(loop.Headers, header => $@"
+                        case {header.Index}:
+                            goto state{header.Index};
+                    ")}
+                    default:
+                        goto state_default;
+                }}
+                {Each(loop.Headers, header => $@"
+                state{header.Index}:
+                    if ({header.TestBit()})
+                    {{
+                        _current = new KeyValuePair<string, string[]>(""{header.Name}"", _collection._{header.Identifier});
+                        _state = {header.Index + 1};
+                        return true;
+                    }}
+                ")}
+                state_default:
+                    if (!_hasUnknown || !_unknownEnumerator.MoveNext())
+                    {{
+                        _current = default(KeyValuePair<string, string[]>);
+                        return false;
+                    }}
+                    _current = _unknownEnumerator.Current;
+                    return true;
             }}
         }}
     }}
 ")}}}
-");
-
-            context.Compilation = context.Compilation.AddSyntaxTrees(syntaxTree);
+";
         }
 
         public virtual void AfterCompile(AfterCompileContext context)

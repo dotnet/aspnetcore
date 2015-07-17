@@ -6,8 +6,7 @@
         "url": "git://github.com/aspnet/kestrelhttpserver"
     },
     "dependencies": {
-        "Microsoft.Dnx.Runtime.Abstractions": "1.0.0-beta7-*",
-        "Microsoft.AspNet.Server.Kestrel.GeneratedCode": { "version": "1.0.0-*", "type": "build" }
+        "Microsoft.Dnx.Runtime.Abstractions": "1.0.0-beta7-*"
     },
     "frameworks": {
         "dnx451": { },
@@ -33,5 +32,8 @@
     },
     "compilationOptions": {
         "allowUnsafe": true
+    },
+    "scripts": {
+        "prepare": "dnx ../Microsoft.AspNet.Server.Kestrel.GeneratedCode run Http/FrameHeaders.Generated.cs"
     }
 }
