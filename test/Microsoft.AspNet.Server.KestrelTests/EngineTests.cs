@@ -57,20 +57,6 @@ namespace Microsoft.AspNet.Server.KestrelTests
             }
         }
 
-        private async Task AppThatThrows(Frame frame)
-        {
-            // Anything added to the ResponseHeaders dictionary is ignored
-            frame.ResponseHeaders["Content-Length"] = new[] { "11" };
-            throw new Exception();
-        }
-
-        private async Task AppThatThrowsAfterWrite(Frame frame)
-        {
-            frame.ResponseHeaders["Content-Length"] = new[] { "11" };
-            await frame.ResponseBody.WriteAsync(Encoding.UTF8.GetBytes("Hello World"), 0, 11);
-            throw new Exception();
-        }
-
         private async Task AppChunked(Frame frame)
         {
             var data = new MemoryStream();
@@ -361,7 +347,20 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [Fact]
         public async Task ThrowingResultsIn500Response()
         {
-            using (var server = new TestServer(AppThatThrows))
+            bool onStartingCalled = false;
+
+            using (var server = new TestServer(frame =>
+            {
+                frame.OnStarting(_ =>
+                {
+                    onStartingCalled = true;
+                    return Task.FromResult<object>(null);
+                }, null);
+
+                // Anything added to the ResponseHeaders dictionary is ignored
+                frame.ResponseHeaders["Content-Length"] = new[] { "11" };
+                throw new Exception();
+            }))
             {
                 using (var connection = new TestConnection())
                 {
@@ -381,6 +380,8 @@ namespace Microsoft.AspNet.Server.KestrelTests
                         "Connection: close",
                         "",
                         "");
+
+                    Assert.False(onStartingCalled);
                 }
             }
         }
@@ -388,7 +389,20 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [Fact]
         public async Task ThrowingAfterWritingKillsConnection()
         {
-            using (var server = new TestServer(AppThatThrowsAfterWrite))
+            bool onStartingCalled = false;
+
+            using (var server = new TestServer(async frame =>
+            {
+                frame.OnStarting(_ =>
+                {
+                    onStartingCalled = true;
+                    return Task.FromResult<object>(null);
+                }, null);
+
+                frame.ResponseHeaders["Content-Length"] = new[] { "11" };
+                await frame.ResponseBody.WriteAsync(Encoding.ASCII.GetBytes("Hello World"), 0, 11);
+                throw new Exception();
+            }))
             {
                 using (var connection = new TestConnection())
                 {
@@ -401,6 +415,43 @@ namespace Microsoft.AspNet.Server.KestrelTests
                         "Content-Length: 11",
                         "",
                         "Hello World");
+
+                    Assert.True(onStartingCalled);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task ThrowingAfterPartialWriteKillsConnection()
+        {
+            bool onStartingCalled = false;
+
+            using (var server = new TestServer(async frame =>
+            {
+                frame.OnStarting(_ =>
+                {
+                    onStartingCalled = true;
+                    return Task.FromResult<object>(null);
+                }, null);
+
+                frame.ResponseHeaders["Content-Length"] = new[] { "11" };
+                await frame.ResponseBody.WriteAsync(Encoding.ASCII.GetBytes("Hello"), 0, 5);
+                throw new Exception();
+            }))
+            {
+                using (var connection = new TestConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "",
+                        "");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 200 OK",
+                        "Content-Length: 11",
+                        "",
+                        "Hello");
+
+                    Assert.True(onStartingCalled);
                 }
             }
         }
