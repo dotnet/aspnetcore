@@ -1804,7 +1804,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         private class PersonWithNoProperties
         {
-            public string name;
+            public string name = null;
         }
 
         private class PersonWithBindExclusion
