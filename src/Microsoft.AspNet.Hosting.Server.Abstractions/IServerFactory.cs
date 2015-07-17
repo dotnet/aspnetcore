@@ -3,7 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.FeatureModel;
+using Microsoft.AspNet.Http.Features;
 using Microsoft.Framework.Configuration;
 
 namespace Microsoft.AspNet.Hosting.Server

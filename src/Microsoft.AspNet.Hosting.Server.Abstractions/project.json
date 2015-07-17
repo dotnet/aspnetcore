@@ -5,7 +5,7 @@
         "url": "git://github.com/aspnet/hosting"
     },
     "dependencies": {
-        "Microsoft.AspNet.FeatureModel": "1.0.0-*",
+        "Microsoft.AspNet.Http.Features": "1.0.0-*",
         "Microsoft.Framework.Configuration.Abstractions": "1.0.0-*"
     },
 
