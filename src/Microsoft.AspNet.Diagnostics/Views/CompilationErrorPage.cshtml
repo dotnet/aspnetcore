@@ -45,7 +45,7 @@
                             <h3>@frame.ErrorDetails</h3>
                         }
 
-                        @if (frame.Line != 0 && frame.ContextCode.Any())
+                        @if (frame.Line != 0 && frame.ContextCode !=null && frame.ContextCode.Any())
                         {
                             <div class="source">
                                 @if (frame.PreContextCode != null)

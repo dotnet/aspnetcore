@@ -307,7 +307,6 @@ WriteTo(__razor_helper_writer, LogRow(new LogInfo()
         public override async Task ExecuteAsync()
         {
             Response.ContentType = "text/html; charset=utf-8";
-            Response.ContentLength = null; // Clear any prior Content-Length
             WriteLiteral("\r\n");
             WriteLiteral("\r\n\r\n");
             WriteLiteral("\r\n");

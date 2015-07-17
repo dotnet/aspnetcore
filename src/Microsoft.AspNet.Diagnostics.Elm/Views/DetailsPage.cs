@@ -241,7 +241,6 @@ WriteTo(__razor_helper_writer, Traverse(node.Children[i]));
         public override async Task ExecuteAsync()
         {
             Response.ContentType = "text/html; charset=utf-8";
-            Response.ContentLength = null; // Clear any prior Content-Length
             WriteLiteral("\r\n");
             WriteLiteral("\r\n");
             WriteLiteral("\r\n");

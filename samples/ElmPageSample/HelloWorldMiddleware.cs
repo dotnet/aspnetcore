@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
@@ -19,11 +21,13 @@ namespace ElmPageSample
 
         public async Task Invoke(HttpContext httpContext)
         {
-            using (_logger.BeginScope("C"))
+            using (_logger.BeginScope("Scope1"))
             {
                 _logger.LogVerbose("Getting message");
 
-                await httpContext.Response.WriteAsync("Hello World!");
+                httpContext.Response.ContentType = "text/html; charset=utf-8";
+                await httpContext.Response.WriteAsync(
+                    "<html><body><h2>Hello World!</h2><a href=\"/Elm\">Elm Logs</a></body></html>");
             }
         }
     }
