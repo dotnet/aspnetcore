@@ -197,7 +197,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {
                 foreach (var entry in onStarting)
                 {
-                    entry.Key.Invoke(entry.Value);
+                    entry.Key.Invoke(entry.Value).Wait();
                 }
             }
         }
@@ -216,7 +216,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 {
                     try
                     {
-                        entry.Key.Invoke(entry.Value);
+                        entry.Key.Invoke(entry.Value).Wait();
                     }
                     catch
                     {
