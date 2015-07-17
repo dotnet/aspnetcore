@@ -20,21 +20,21 @@ namespace SessionSample
 
         public void ConfigureServices(IServiceCollection services)
         {
-            // Adds a default in-memory implementation of IDistributedCache
-            services.AddCaching();
+            // Uncomment the following line to use the Microsoft SQL Server implementation of IDistributedCache.
+            // Note that this would require setting up the session state database.
+            //services.AddSqlServerCache(o =>
+            //{
+            //    o.ConnectionString = "Server=.;Database=ASPNET5SessionState;Trusted_Connection=True;";
+            //    o.SchemaName = "dbo";
+            //    o.TableName = "Sessions";
+            //});
 
             // Uncomment the following line to use the Redis implementation of IDistributedCache.
             // This will override any previously registered IDistributedCache service.
             //services.AddTransient<IDistributedCache, RedisCache>();
 
-            // Uncomment the following line to use the Microsoft SQL Server implementation of IDistributedCache.
-            // Note that this would require setting up the session state database.
-            // This will override any previously registered IDistributedCache service.
-            //services.AddSqlServerCache(o =>
-            //{
-            //    o.ConnectionString = "Server=.;Database=ASPNET5SessionState;Trusted_Connection=True;";
-            //    o.TableName = "Sessions";
-            //});
+            // Adds a default in-memory implementation of IDistributedCache
+            services.AddCaching();
 
             services.AddSession();
 
