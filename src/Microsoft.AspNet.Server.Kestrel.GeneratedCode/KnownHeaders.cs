@@ -23,6 +23,52 @@ namespace Microsoft.AspNet.Server.Kestrel.GeneratedCode
             public string TestBit() => $"((_bits & {1L << Index}L) != 0)";
             public string SetBit() => $"_bits |= {1L << Index}L";
             public string ClearBit() => $"_bits &= ~{1L << Index}L";
+
+            public string EqualIgnoreCaseBytes()
+            {
+                var result = "";
+                var delim = "";
+                var index = 0;
+                while (index != Name.Length)
+                {
+                    if (Name.Length - index >= 8)
+                    {
+                        result += delim + Term(Name, index, 8, "pUL", "uL");
+                        index += 8;
+                    }
+                    else if (Name.Length - index >= 4)
+                    {
+                        result += delim + Term(Name, index, 4, "pUI", "u");
+                        index += 4;
+                    }
+                    else if (Name.Length - index >= 2)
+                    {
+                        result += delim + Term(Name, index, 2, "pUS", "u");
+                        index += 2;
+                    }
+                    else
+                    {
+                        result += delim + Term(Name, index, 1, "pUB", "u");
+                        index += 1;
+                    }
+                    delim = " && ";
+                }
+                return $"({result})";
+            }
+
+            protected string Term(string name, int offset, int count, string array, string suffix)
+            {
+                ulong mask = 0;
+                ulong comp = 0;
+                for (var scan = 0; scan != count; ++scan)
+                {
+                    var ch = (byte)name[offset + count - scan - 1];
+                    var isAlpha = (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z');
+                    comp = (comp << 8) + (ch & (isAlpha ? 0xdfu : 0xffu));
+                    mask = (mask << 8) + (isAlpha ? 0xdfu : 0xffu);
+                }
+                return $"(({array}[{offset / count}] & {mask}{suffix}) == {comp}{suffix})";
+            }
         }
 
         public virtual void BeforeCompile(BeforeCompileContext context)
@@ -288,13 +334,14 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             ((ICollection<KeyValuePair<string, string[]>>)MaybeUnknown)?.CopyTo(array, arrayIndex);
         }}
 
-        public void Append(string key, string value)
+        public unsafe void Append(byte[] keyBytes, int keyOffset, int keyLength, string value)
         {{
-            switch(key.Length)
+            fixed(byte* ptr = keyBytes) {{ var pUB = ptr + keyOffset; var pUL = (ulong*)pUB; var pUI = (uint*)pUB; var pUS = (ushort*)pUB;
+            switch(keyLength)
             {{{Each(loop.HeadersByLength, byLength => $@"
                 case {byLength.Key}:
                     {{{Each(byLength, header => $@"
-                        if (""{header.Name}"".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        if ({header.EqualIgnoreCaseBytes()}) 
                         {{
                             if ({header.TestBit()})
                             {{
@@ -309,7 +356,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         }}
                     ")}}}
                     break;
-            ")}}}
+            ")}}}}}
+            var key = System.Text.Encoding.ASCII.GetString(keyBytes, keyOffset, keyLength);
             string[] existing;
             Unknown[key] = Unknown.TryGetValue(key, out existing) ? AppendValue(existing, value) : new[] {{value}};
         }}
