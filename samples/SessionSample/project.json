@@ -1,7 +1,6 @@
 {
     "commands": {
-        "web": "Microsoft.AspNet.Hosting server=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:5001",
-        "install-sqlservercache": "Microsoft.Framework.Caching.SqlServer"
+        "web": "Microsoft.AspNet.Hosting server=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:5001"
     },
     "dependencies": {
         "Microsoft.AspNet.Server.IIS": "1.0.0-*",
