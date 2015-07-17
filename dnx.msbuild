@@ -301,7 +301,7 @@
                 <term>cracker</term>
                 <Justification>Data from Northwind database</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNet.Authentication.Cookies\Infrastructure\ICookieManager.cs;
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNet.Authentication.Cookies\ICookieManager.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Net.Http.Server\RequestProcessing\BoundaryType.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Net.Http.Server\RequestProcessing\Response.cs;
                                     $(PoliCheckPath)**\Microsoft.AspNet.Authentication.Cookies.dll;
