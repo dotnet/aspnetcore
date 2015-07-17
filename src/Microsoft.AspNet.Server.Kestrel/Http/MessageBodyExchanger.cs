@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 {
                     LocalIntakeFin = true;
                 }
-                if (_reads.Any())
+                if (_reads.Count != 0)
                 {
                     ThreadPool.QueueUserWorkItem(_completePending, this);
                 }
@@ -86,7 +86,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     if (_buffer.Count != 0 || buffer.Count == 0 || LocalIntakeFin)
                     {
                         // there is data we can take right now
-                        if (_reads.Any())
+                        if (_reads.Count != 0)
                         {
                             // someone snuck in, try again
                             continue;
@@ -137,7 +137,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 {
                     return false;
                 }
-                if (!_reads.Any())
+                if (_reads.Count == 0)
                 {
                     return false;
                 }
