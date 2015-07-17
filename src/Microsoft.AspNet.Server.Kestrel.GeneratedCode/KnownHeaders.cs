@@ -288,6 +288,32 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             ((ICollection<KeyValuePair<string, string[]>>)MaybeUnknown)?.CopyTo(array, arrayIndex);
         }}
 
+        public void Append(string key, string value)
+        {{
+            switch(key.Length)
+            {{{Each(loop.HeadersByLength, byLength => $@"
+                case {byLength.Key}:
+                    {{{Each(byLength, header => $@"
+                        if (""{header.Name}"".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {{
+                            if ({header.TestBit()})
+                            {{
+                                _{header.Identifier} = AppendValue(_{header.Identifier}, value);
+                            }}
+                            else
+                            {{
+                                {header.SetBit()};
+                                _{header.Identifier} = new[] {{value}};
+                            }}
+                            return;
+                        }}
+                    ")}}}
+                    break;
+            ")}}}
+            string[] existing;
+            Unknown[key] = Unknown.TryGetValue(key, out existing) ? AppendValue(existing, value) : new[] {{value}};
+        }}
+
         public partial struct Enumerator
         {{
             public bool MoveNext()

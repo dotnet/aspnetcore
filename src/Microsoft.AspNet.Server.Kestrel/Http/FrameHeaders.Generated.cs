@@ -3447,6 +3447,656 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             ((ICollection<KeyValuePair<string, string[]>>)MaybeUnknown)?.CopyTo(array, arrayIndex);
         }
 
+        public void Append(string key, string value)
+        {
+            switch(key.Length)
+            {
+                case 13:
+                    {
+                        if ("Cache-Control".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 1L) != 0))
+                            {
+                                _CacheControl = AppendValue(_CacheControl, value);
+                            }
+                            else
+                            {
+                                _bits |= 1L;
+                                _CacheControl = new[] {value};
+                            }
+                            return;
+                        }
+                    
+                        if ("Content-Range".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 131072L) != 0))
+                            {
+                                _ContentRange = AppendValue(_ContentRange, value);
+                            }
+                            else
+                            {
+                                _bits |= 131072L;
+                                _ContentRange = new[] {value};
+                            }
+                            return;
+                        }
+                    
+                        if ("Last-Modified".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 524288L) != 0))
+                            {
+                                _LastModified = AppendValue(_LastModified, value);
+                            }
+                            else
+                            {
+                                _bits |= 524288L;
+                                _LastModified = new[] {value};
+                            }
+                            return;
+                        }
+                    
+                        if ("Authorization".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 16777216L) != 0))
+                            {
+                                _Authorization = AppendValue(_Authorization, value);
+                            }
+                            else
+                            {
+                                _bits |= 16777216L;
+                                _Authorization = new[] {value};
+                            }
+                            return;
+                        }
+                    
+                        if ("If-None-Match".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 2147483648L) != 0))
+                            {
+                                _IfNoneMatch = AppendValue(_IfNoneMatch, value);
+                            }
+                            else
+                            {
+                                _bits |= 2147483648L;
+                                _IfNoneMatch = new[] {value};
+                            }
+                            return;
+                        }
+                    }
+                    break;
+            
+                case 10:
+                    {
+                        if ("Connection".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 2L) != 0))
+                            {
+                                _Connection = AppendValue(_Connection, value);
+                            }
+                            else
+                            {
+                                _bits |= 2L;
+                                _Connection = new[] {value};
+                            }
+                            return;
+                        }
+                    
+                        if ("Keep-Alive".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 8L) != 0))
+                            {
+                                _KeepAlive = AppendValue(_KeepAlive, value);
+                            }
+                            else
+                            {
+                                _bits |= 8L;
+                                _KeepAlive = new[] {value};
+                            }
+                            return;
+                        }
+                    
+                        if ("User-Agent".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 1099511627776L) != 0))
+                            {
+                                _UserAgent = AppendValue(_UserAgent, value);
+                            }
+                            else
+                            {
+                                _bits |= 1099511627776L;
+                                _UserAgent = new[] {value};
+                            }
+                            return;
+                        }
+                    }
+                    break;
+            
+                case 4:
+                    {
+                        if ("Date".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 4L) != 0))
+                            {
+                                _Date = AppendValue(_Date, value);
+                            }
+                            else
+                            {
+                                _bits |= 4L;
+                                _Date = new[] {value};
+                            }
+                            return;
+                        }
+                    
+                        if ("From".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 134217728L) != 0))
+                            {
+                                _From = AppendValue(_From, value);
+                            }
+                            else
+                            {
+                                _bits |= 134217728L;
+                                _From = new[] {value};
+                            }
+                            return;
+                        }
+                    
+                        if ("Host".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 268435456L) != 0))
+                            {
+                                _Host = AppendValue(_Host, value);
+                            }
+                            else
+                            {
+                                _bits |= 268435456L;
+                                _Host = new[] {value};
+                            }
+                            return;
+                        }
+                    }
+                    break;
+            
+                case 6:
+                    {
+                        if ("Pragma".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 16L) != 0))
+                            {
+                                _Pragma = AppendValue(_Pragma, value);
+                            }
+                            else
+                            {
+                                _bits |= 16L;
+                                _Pragma = new[] {value};
+                            }
+                            return;
+                        }
+                    
+                        if ("Accept".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 1048576L) != 0))
+                            {
+                                _Accept = AppendValue(_Accept, value);
+                            }
+                            else
+                            {
+                                _bits |= 1048576L;
+                                _Accept = new[] {value};
+                            }
+                            return;
+                        }
+                    
+                        if ("Cookie".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 33554432L) != 0))
+                            {
+                                _Cookie = AppendValue(_Cookie, value);
+                            }
+                            else
+                            {
+                                _bits |= 33554432L;
+                                _Cookie = new[] {value};
+                            }
+                            return;
+                        }
+                    
+                        if ("Expect".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 67108864L) != 0))
+                            {
+                                _Expect = AppendValue(_Expect, value);
+                            }
+                            else
+                            {
+                                _bits |= 67108864L;
+                                _Expect = new[] {value};
+                            }
+                            return;
+                        }
+                    }
+                    break;
+            
+                case 7:
+                    {
+                        if ("Trailer".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 32L) != 0))
+                            {
+                                _Trailer = AppendValue(_Trailer, value);
+                            }
+                            else
+                            {
+                                _bits |= 32L;
+                                _Trailer = new[] {value};
+                            }
+                            return;
+                        }
+                    
+                        if ("Upgrade".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 128L) != 0))
+                            {
+                                _Upgrade = AppendValue(_Upgrade, value);
+                            }
+                            else
+                            {
+                                _bits |= 128L;
+                                _Upgrade = new[] {value};
+                            }
+                            return;
+                        }
+                    
+                        if ("Warning".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 512L) != 0))
+                            {
+                                _Warning = AppendValue(_Warning, value);
+                            }
+                            else
+                            {
+                                _bits |= 512L;
+                                _Warning = new[] {value};
+                            }
+                            return;
+                        }
+                    
+                        if ("Expires".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 262144L) != 0))
+                            {
+                                _Expires = AppendValue(_Expires, value);
+                            }
+                            else
+                            {
+                                _bits |= 262144L;
+                                _Expires = new[] {value};
+                            }
+                            return;
+                        }
+                    
+                        if ("Referer".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 68719476736L) != 0))
+                            {
+                                _Referer = AppendValue(_Referer, value);
+                            }
+                            else
+                            {
+                                _bits |= 68719476736L;
+                                _Referer = new[] {value};
+                            }
+                            return;
+                        }
+                    }
+                    break;
+            
+                case 17:
+                    {
+                        if ("Transfer-Encoding".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 64L) != 0))
+                            {
+                                _TransferEncoding = AppendValue(_TransferEncoding, value);
+                            }
+                            else
+                            {
+                                _bits |= 64L;
+                                _TransferEncoding = new[] {value};
+                            }
+                            return;
+                        }
+                    
+                        if ("If-Modified-Since".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 1073741824L) != 0))
+                            {
+                                _IfModifiedSince = AppendValue(_IfModifiedSince, value);
+                            }
+                            else
+                            {
+                                _bits |= 1073741824L;
+                                _IfModifiedSince = new[] {value};
+                            }
+                            return;
+                        }
+                    }
+                    break;
+            
+                case 3:
+                    {
+                        if ("Via".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 256L) != 0))
+                            {
+                                _Via = AppendValue(_Via, value);
+                            }
+                            else
+                            {
+                                _bits |= 256L;
+                                _Via = new[] {value};
+                            }
+                            return;
+                        }
+                    }
+                    break;
+            
+                case 5:
+                    {
+                        if ("Allow".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 1024L) != 0))
+                            {
+                                _Allow = AppendValue(_Allow, value);
+                            }
+                            else
+                            {
+                                _bits |= 1024L;
+                                _Allow = new[] {value};
+                            }
+                            return;
+                        }
+                    
+                        if ("Range".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 137438953472L) != 0))
+                            {
+                                _Range = AppendValue(_Range, value);
+                            }
+                            else
+                            {
+                                _bits |= 137438953472L;
+                                _Range = new[] {value};
+                            }
+                            return;
+                        }
+                    }
+                    break;
+            
+                case 14:
+                    {
+                        if ("Content-Length".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 2048L) != 0))
+                            {
+                                _ContentLength = AppendValue(_ContentLength, value);
+                            }
+                            else
+                            {
+                                _bits |= 2048L;
+                                _ContentLength = new[] {value};
+                            }
+                            return;
+                        }
+                    
+                        if ("Accept-Charset".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 2097152L) != 0))
+                            {
+                                _AcceptCharset = AppendValue(_AcceptCharset, value);
+                            }
+                            else
+                            {
+                                _bits |= 2097152L;
+                                _AcceptCharset = new[] {value};
+                            }
+                            return;
+                        }
+                    }
+                    break;
+            
+                case 12:
+                    {
+                        if ("Content-Type".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 4096L) != 0))
+                            {
+                                _ContentType = AppendValue(_ContentType, value);
+                            }
+                            else
+                            {
+                                _bits |= 4096L;
+                                _ContentType = new[] {value};
+                            }
+                            return;
+                        }
+                    
+                        if ("Max-Forwards".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 17179869184L) != 0))
+                            {
+                                _MaxForwards = AppendValue(_MaxForwards, value);
+                            }
+                            else
+                            {
+                                _bits |= 17179869184L;
+                                _MaxForwards = new[] {value};
+                            }
+                            return;
+                        }
+                    }
+                    break;
+            
+                case 16:
+                    {
+                        if ("Content-Encoding".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 8192L) != 0))
+                            {
+                                _ContentEncoding = AppendValue(_ContentEncoding, value);
+                            }
+                            else
+                            {
+                                _bits |= 8192L;
+                                _ContentEncoding = new[] {value};
+                            }
+                            return;
+                        }
+                    
+                        if ("Content-Language".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 16384L) != 0))
+                            {
+                                _ContentLanguage = AppendValue(_ContentLanguage, value);
+                            }
+                            else
+                            {
+                                _bits |= 16384L;
+                                _ContentLanguage = new[] {value};
+                            }
+                            return;
+                        }
+                    
+                        if ("Content-Location".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 32768L) != 0))
+                            {
+                                _ContentLocation = AppendValue(_ContentLocation, value);
+                            }
+                            else
+                            {
+                                _bits |= 32768L;
+                                _ContentLocation = new[] {value};
+                            }
+                            return;
+                        }
+                    }
+                    break;
+            
+                case 11:
+                    {
+                        if ("Content-MD5".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 65536L) != 0))
+                            {
+                                _ContentMD5 = AppendValue(_ContentMD5, value);
+                            }
+                            else
+                            {
+                                _bits |= 65536L;
+                                _ContentMD5 = new[] {value};
+                            }
+                            return;
+                        }
+                    }
+                    break;
+            
+                case 15:
+                    {
+                        if ("Accept-Encoding".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 4194304L) != 0))
+                            {
+                                _AcceptEncoding = AppendValue(_AcceptEncoding, value);
+                            }
+                            else
+                            {
+                                _bits |= 4194304L;
+                                _AcceptEncoding = new[] {value};
+                            }
+                            return;
+                        }
+                    
+                        if ("Accept-Language".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 8388608L) != 0))
+                            {
+                                _AcceptLanguage = AppendValue(_AcceptLanguage, value);
+                            }
+                            else
+                            {
+                                _bits |= 8388608L;
+                                _AcceptLanguage = new[] {value};
+                            }
+                            return;
+                        }
+                    }
+                    break;
+            
+                case 8:
+                    {
+                        if ("If-Match".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 536870912L) != 0))
+                            {
+                                _IfMatch = AppendValue(_IfMatch, value);
+                            }
+                            else
+                            {
+                                _bits |= 536870912L;
+                                _IfMatch = new[] {value};
+                            }
+                            return;
+                        }
+                    
+                        if ("If-Range".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 4294967296L) != 0))
+                            {
+                                _IfRange = AppendValue(_IfRange, value);
+                            }
+                            else
+                            {
+                                _bits |= 4294967296L;
+                                _IfRange = new[] {value};
+                            }
+                            return;
+                        }
+                    }
+                    break;
+            
+                case 19:
+                    {
+                        if ("If-Unmodified-Since".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 8589934592L) != 0))
+                            {
+                                _IfUnmodifiedSince = AppendValue(_IfUnmodifiedSince, value);
+                            }
+                            else
+                            {
+                                _bits |= 8589934592L;
+                                _IfUnmodifiedSince = new[] {value};
+                            }
+                            return;
+                        }
+                    
+                        if ("Proxy-Authorization".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 34359738368L) != 0))
+                            {
+                                _ProxyAuthorization = AppendValue(_ProxyAuthorization, value);
+                            }
+                            else
+                            {
+                                _bits |= 34359738368L;
+                                _ProxyAuthorization = new[] {value};
+                            }
+                            return;
+                        }
+                    }
+                    break;
+            
+                case 2:
+                    {
+                        if ("TE".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 274877906944L) != 0))
+                            {
+                                _TE = AppendValue(_TE, value);
+                            }
+                            else
+                            {
+                                _bits |= 274877906944L;
+                                _TE = new[] {value};
+                            }
+                            return;
+                        }
+                    }
+                    break;
+            
+                case 9:
+                    {
+                        if ("Translate".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 549755813888L) != 0))
+                            {
+                                _Translate = AppendValue(_Translate, value);
+                            }
+                            else
+                            {
+                                _bits |= 549755813888L;
+                                _Translate = new[] {value};
+                            }
+                            return;
+                        }
+                    }
+                    break;
+            }
+            string[] existing;
+            Unknown[key] = Unknown.TryGetValue(key, out existing) ? AppendValue(existing, value) : new[] {value};
+        }
+
         public partial struct Enumerator
         {
             public bool MoveNext()
@@ -6468,6 +7118,486 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 }
             
             ((ICollection<KeyValuePair<string, string[]>>)MaybeUnknown)?.CopyTo(array, arrayIndex);
+        }
+
+        public void Append(string key, string value)
+        {
+            switch(key.Length)
+            {
+                case 13:
+                    {
+                        if ("Cache-Control".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 1L) != 0))
+                            {
+                                _CacheControl = AppendValue(_CacheControl, value);
+                            }
+                            else
+                            {
+                                _bits |= 1L;
+                                _CacheControl = new[] {value};
+                            }
+                            return;
+                        }
+                    
+                        if ("Content-Range".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 131072L) != 0))
+                            {
+                                _ContentRange = AppendValue(_ContentRange, value);
+                            }
+                            else
+                            {
+                                _bits |= 131072L;
+                                _ContentRange = new[] {value};
+                            }
+                            return;
+                        }
+                    
+                        if ("Last-Modified".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 524288L) != 0))
+                            {
+                                _LastModified = AppendValue(_LastModified, value);
+                            }
+                            else
+                            {
+                                _bits |= 524288L;
+                                _LastModified = new[] {value};
+                            }
+                            return;
+                        }
+                    
+                        if ("Accept-Ranges".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 1048576L) != 0))
+                            {
+                                _AcceptRanges = AppendValue(_AcceptRanges, value);
+                            }
+                            else
+                            {
+                                _bits |= 1048576L;
+                                _AcceptRanges = new[] {value};
+                            }
+                            return;
+                        }
+                    }
+                    break;
+            
+                case 10:
+                    {
+                        if ("Connection".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 2L) != 0))
+                            {
+                                _Connection = AppendValue(_Connection, value);
+                            }
+                            else
+                            {
+                                _bits |= 2L;
+                                _Connection = new[] {value};
+                            }
+                            return;
+                        }
+                    
+                        if ("Keep-Alive".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 8L) != 0))
+                            {
+                                _KeepAlive = AppendValue(_KeepAlive, value);
+                            }
+                            else
+                            {
+                                _bits |= 8L;
+                                _KeepAlive = new[] {value};
+                            }
+                            return;
+                        }
+                    
+                        if ("Set-Cookie".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 134217728L) != 0))
+                            {
+                                _SetCookie = AppendValue(_SetCookie, value);
+                            }
+                            else
+                            {
+                                _bits |= 134217728L;
+                                _SetCookie = new[] {value};
+                            }
+                            return;
+                        }
+                    }
+                    break;
+            
+                case 4:
+                    {
+                        if ("Date".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 4L) != 0))
+                            {
+                                _Date = AppendValue(_Date, value);
+                            }
+                            else
+                            {
+                                _bits |= 4L;
+                                _Date = new[] {value};
+                            }
+                            return;
+                        }
+                    
+                        if ("ETag".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 4194304L) != 0))
+                            {
+                                _ETag = AppendValue(_ETag, value);
+                            }
+                            else
+                            {
+                                _bits |= 4194304L;
+                                _ETag = new[] {value};
+                            }
+                            return;
+                        }
+                    
+                        if ("Vary".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 268435456L) != 0))
+                            {
+                                _Vary = AppendValue(_Vary, value);
+                            }
+                            else
+                            {
+                                _bits |= 268435456L;
+                                _Vary = new[] {value};
+                            }
+                            return;
+                        }
+                    }
+                    break;
+            
+                case 6:
+                    {
+                        if ("Pragma".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 16L) != 0))
+                            {
+                                _Pragma = AppendValue(_Pragma, value);
+                            }
+                            else
+                            {
+                                _bits |= 16L;
+                                _Pragma = new[] {value};
+                            }
+                            return;
+                        }
+                    
+                        if ("Server".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 67108864L) != 0))
+                            {
+                                _Server = AppendValue(_Server, value);
+                            }
+                            else
+                            {
+                                _bits |= 67108864L;
+                                _Server = new[] {value};
+                            }
+                            return;
+                        }
+                    }
+                    break;
+            
+                case 7:
+                    {
+                        if ("Trailer".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 32L) != 0))
+                            {
+                                _Trailer = AppendValue(_Trailer, value);
+                            }
+                            else
+                            {
+                                _bits |= 32L;
+                                _Trailer = new[] {value};
+                            }
+                            return;
+                        }
+                    
+                        if ("Upgrade".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 128L) != 0))
+                            {
+                                _Upgrade = AppendValue(_Upgrade, value);
+                            }
+                            else
+                            {
+                                _bits |= 128L;
+                                _Upgrade = new[] {value};
+                            }
+                            return;
+                        }
+                    
+                        if ("Warning".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 512L) != 0))
+                            {
+                                _Warning = AppendValue(_Warning, value);
+                            }
+                            else
+                            {
+                                _bits |= 512L;
+                                _Warning = new[] {value};
+                            }
+                            return;
+                        }
+                    
+                        if ("Expires".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 262144L) != 0))
+                            {
+                                _Expires = AppendValue(_Expires, value);
+                            }
+                            else
+                            {
+                                _bits |= 262144L;
+                                _Expires = new[] {value};
+                            }
+                            return;
+                        }
+                    }
+                    break;
+            
+                case 17:
+                    {
+                        if ("Transfer-Encoding".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 64L) != 0))
+                            {
+                                _TransferEncoding = AppendValue(_TransferEncoding, value);
+                            }
+                            else
+                            {
+                                _bits |= 64L;
+                                _TransferEncoding = new[] {value};
+                            }
+                            return;
+                        }
+                    
+                        if ("Proxy-Autheticate".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 16777216L) != 0))
+                            {
+                                _ProxyAutheticate = AppendValue(_ProxyAutheticate, value);
+                            }
+                            else
+                            {
+                                _bits |= 16777216L;
+                                _ProxyAutheticate = new[] {value};
+                            }
+                            return;
+                        }
+                    }
+                    break;
+            
+                case 3:
+                    {
+                        if ("Via".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 256L) != 0))
+                            {
+                                _Via = AppendValue(_Via, value);
+                            }
+                            else
+                            {
+                                _bits |= 256L;
+                                _Via = new[] {value};
+                            }
+                            return;
+                        }
+                    
+                        if ("Age".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 2097152L) != 0))
+                            {
+                                _Age = AppendValue(_Age, value);
+                            }
+                            else
+                            {
+                                _bits |= 2097152L;
+                                _Age = new[] {value};
+                            }
+                            return;
+                        }
+                    }
+                    break;
+            
+                case 5:
+                    {
+                        if ("Allow".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 1024L) != 0))
+                            {
+                                _Allow = AppendValue(_Allow, value);
+                            }
+                            else
+                            {
+                                _bits |= 1024L;
+                                _Allow = new[] {value};
+                            }
+                            return;
+                        }
+                    }
+                    break;
+            
+                case 14:
+                    {
+                        if ("Content-Length".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 2048L) != 0))
+                            {
+                                _ContentLength = AppendValue(_ContentLength, value);
+                            }
+                            else
+                            {
+                                _bits |= 2048L;
+                                _ContentLength = new[] {value};
+                            }
+                            return;
+                        }
+                    }
+                    break;
+            
+                case 12:
+                    {
+                        if ("Content-Type".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 4096L) != 0))
+                            {
+                                _ContentType = AppendValue(_ContentType, value);
+                            }
+                            else
+                            {
+                                _bits |= 4096L;
+                                _ContentType = new[] {value};
+                            }
+                            return;
+                        }
+                    }
+                    break;
+            
+                case 16:
+                    {
+                        if ("Content-Encoding".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 8192L) != 0))
+                            {
+                                _ContentEncoding = AppendValue(_ContentEncoding, value);
+                            }
+                            else
+                            {
+                                _bits |= 8192L;
+                                _ContentEncoding = new[] {value};
+                            }
+                            return;
+                        }
+                    
+                        if ("Content-Language".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 16384L) != 0))
+                            {
+                                _ContentLanguage = AppendValue(_ContentLanguage, value);
+                            }
+                            else
+                            {
+                                _bits |= 16384L;
+                                _ContentLanguage = new[] {value};
+                            }
+                            return;
+                        }
+                    
+                        if ("Content-Location".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 32768L) != 0))
+                            {
+                                _ContentLocation = AppendValue(_ContentLocation, value);
+                            }
+                            else
+                            {
+                                _bits |= 32768L;
+                                _ContentLocation = new[] {value};
+                            }
+                            return;
+                        }
+                    
+                        if ("WWW-Authenticate".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 536870912L) != 0))
+                            {
+                                _WWWAuthenticate = AppendValue(_WWWAuthenticate, value);
+                            }
+                            else
+                            {
+                                _bits |= 536870912L;
+                                _WWWAuthenticate = new[] {value};
+                            }
+                            return;
+                        }
+                    }
+                    break;
+            
+                case 11:
+                    {
+                        if ("Content-MD5".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 65536L) != 0))
+                            {
+                                _ContentMD5 = AppendValue(_ContentMD5, value);
+                            }
+                            else
+                            {
+                                _bits |= 65536L;
+                                _ContentMD5 = new[] {value};
+                            }
+                            return;
+                        }
+                    
+                        if ("Retry-After".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 33554432L) != 0))
+                            {
+                                _RetryAfter = AppendValue(_RetryAfter, value);
+                            }
+                            else
+                            {
+                                _bits |= 33554432L;
+                                _RetryAfter = new[] {value};
+                            }
+                            return;
+                        }
+                    }
+                    break;
+            
+                case 8:
+                    {
+                        if ("Location".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 8388608L) != 0))
+                            {
+                                _Location = AppendValue(_Location, value);
+                            }
+                            else
+                            {
+                                _bits |= 8388608L;
+                                _Location = new[] {value};
+                            }
+                            return;
+                        }
+                    }
+                    break;
+            }
+            string[] existing;
+            Unknown[key] = Unknown.TryGetValue(key, out existing) ? AppendValue(existing, value) : new[] {value};
         }
 
         public partial struct Enumerator

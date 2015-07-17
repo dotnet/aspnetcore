@@ -23,6 +23,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             Terminated,
         }
 
+        static Encoding _ascii = Encoding.ASCII;
         Mode _mode;
         private bool _resultStarted;
         private bool _responseStarted;
@@ -517,11 +518,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         ch2 != ' ' &&
                             ch2 != '\t')
                 {
-                    var name = Encoding.ASCII.GetString(remaining.Array, remaining.Offset, colonIndex);
+                    var name = _ascii.GetString(remaining.Array, remaining.Offset, colonIndex);
                     var value = "";
                     if (valueEndIndex != -1)
                     {
-                        value = Encoding.ASCII.GetString(
+                        value = _ascii.GetString(
                             remaining.Array, remaining.Offset + valueStartIndex, valueEndIndex - valueStartIndex);
                     }
                     if (wrappedHeaders)
@@ -565,17 +566,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         private void AddRequestHeader(string name, string value)
         {
-            string[] existing;
-            if (!RequestHeaders.TryGetValue(name, out existing) ||
-                existing == null ||
-                existing.Length == 0)
-            {
-                RequestHeaders[name] = new[] { value };
-            }
-            else
-            {
-                RequestHeaders[name] = existing.Concat(new[] { value }).ToArray();
-            }
+            _requestHeaders.Append(name, value);
         }
     }
 }

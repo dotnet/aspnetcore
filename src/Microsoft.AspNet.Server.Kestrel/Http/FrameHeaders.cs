@@ -11,6 +11,14 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         protected Dictionary<string, string[]> Unknown => MaybeUnknown ?? (MaybeUnknown = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase));
 
+        protected static string[] AppendValue(string[] existing, string append)
+        {
+            var appended = new string[existing.Length + 1];
+            Array.Copy(existing, appended, existing.Length);
+            appended[existing.Length] = append;
+            return appended;
+        }
+
         protected virtual int GetCountFast()
         { throw new NotImplementedException(); }
 
