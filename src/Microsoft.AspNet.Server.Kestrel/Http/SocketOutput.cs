@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             _callbacksPending = new Queue<CallbackContext>();
         }
 
-        public void Write(ArraySegment<byte> buffer, Action<Exception, object> callback, object state)
+        public void Write(ArraySegment<byte> buffer, Action<Exception, object> callback, object state, bool immediate)
         {
             //TODO: need buffering that works
             var copy = new byte[buffer.Count];
@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     });
                 }
 
-                if (_writesPending < _maxPendingWrites)
+                if (_writesPending < _maxPendingWrites && immediate)
                 {
                     ScheduleWrite();
                     _writesPending++;

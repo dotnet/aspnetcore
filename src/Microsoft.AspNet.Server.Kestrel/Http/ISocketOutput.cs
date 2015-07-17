@@ -10,6 +10,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     /// </summary>
     public interface ISocketOutput
     {
-        void Write(ArraySegment<byte> buffer, Action<Exception, object> callback, object state);
+        void Write(ArraySegment<byte> buffer, Action<Exception, object> callback, object state, bool immediate = true);
     }
 }

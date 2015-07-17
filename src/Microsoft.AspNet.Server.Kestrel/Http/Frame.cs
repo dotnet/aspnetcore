@@ -250,7 +250,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         public void Write(ArraySegment<byte> data, Action<Exception, object> callback, object state)
         {
-            ProduceStart();
+            ProduceStart(immediate: false);
             SocketOutput.Write(data, callback, state);
         }
 
@@ -293,7 +293,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
         }
 
-        public void ProduceStart()
+        public void ProduceStart(bool immediate = true)
         {
             if (_resultStarted) return;
             _resultStarted = true;
@@ -315,7 +315,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     }
                     ((IDisposable)x).Dispose();
                 },
-                responseHeader.Item2);
+                responseHeader.Item2,
+                immediate: immediate);
         }
 
         public void ProduceEnd(Exception ex)
