@@ -4,8 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.Hosting.Server;
+using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Server.Kestrel;
 using Microsoft.Framework.Configuration;
 using Microsoft.Framework.Runtime;
