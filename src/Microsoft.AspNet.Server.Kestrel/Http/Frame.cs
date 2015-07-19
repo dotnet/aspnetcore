@@ -231,7 +231,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             Exception error = null;
             try
             {
-                await Application.Invoke(this);
+                await Application.Invoke(this).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
