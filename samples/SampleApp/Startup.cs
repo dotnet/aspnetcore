@@ -11,7 +11,7 @@ namespace SampleApp
     {
         public void Configure(IApplicationBuilder app)
         {
-            app.Run(async context =>
+            app.Run(context =>
             {
                 Console.WriteLine("{0} {1}{2}{3}",
                     context.Request.Method,
@@ -21,7 +21,7 @@ namespace SampleApp
 
                 context.Response.ContentLength = 11;
                 context.Response.ContentType = "text/plain";
-                await context.Response.WriteAsync("Hello world");
+                return context.Response.WriteAsync("Hello world");
             });
         }
     }
