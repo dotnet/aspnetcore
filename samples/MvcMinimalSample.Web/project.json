@@ -20,9 +20,6 @@
   },
 
   "publishExclude": [
-    "node_modules",
-    "bower_components",
-    "**.xproj",
     "**.user",
     "**.vspscc"
   ],
