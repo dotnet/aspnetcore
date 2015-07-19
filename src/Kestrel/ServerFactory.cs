@@ -46,7 +46,7 @@ namespace Kestrel
                     async frame =>
                     {
                         var request = new ServerRequest(frame);
-                        await application.Invoke(request.Features);
+                        await application.Invoke(request.Features).ConfigureAwait(false);
                     }));
             }
             disposables.Add(engine);
