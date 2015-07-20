@@ -56,7 +56,7 @@ functions
             "CORS",
             "Entropy",
         };
-        
+
         // Doesn't build on Mono since their contracts don't match
         string[] excludeReposOnMono = new[] { "Helios" };
 
@@ -89,9 +89,9 @@ var buildTarget = "compile"
     nuget-pack nuspecFile='${Path.Combine(BASE_DIR, "KoreBuild.nuspec")}' packageVersion='${VERSION}' outputDir='${TARGET_DIR}'
 
 #pack-install .pack
-    nuget-local-publish sourcePackagesDir='${TARGET_DIR}' 
+    nuget-local-publish sourcePackagesDir='${TARGET_DIR}'
 
-#git-pull target='pull' 
+#git-pull target='pull'
     @{
         Parallel.ForEach(repos, repo =>
         {
@@ -177,7 +177,7 @@ var buildTarget = "compile"
         foreach (var repo in GetAllRepos())
         {
             CloneOrUpdate(repo);
-            
+
             GitCommand(repo, "checkout origin/dev -B release");
 
             if(!ShouldSkipCopyingNugetConfig(repo))
@@ -223,82 +223,37 @@ var buildTarget = "compile"
     -// Pin versions of packages in project.json and updated project.lock.json
     -// More information https://github.com/aspnet/Universe/wiki/%23pin-version-:-Pinning-package-version-for-a-particular-release-in-project.json
     @{
-        // NOTE: Before running update the below monikers as needed
-        var branch = Environment.GetEnvironmentVariable("BUILD_BRANCH");
-        var stableBranches = new[] {"master"};
-
-        var oldPreRelease = Environment.GetEnvironmentVariable("OLD_RELEASE");
-        var newPreRelease = Environment.GetEnvironmentVariable("NEW_RELEASE");
-        var excludeReposForJson = new[]
-            {
-              "Coherence",
-              "Coherence-Signed",
-              "dnvm",
-              "Entropy"
-            };
-
-        var oldCoreCLRBuild = Environment.GetEnvironmentVariable("CORECLR_RELEASE_BUILD_OLD");
-        var newCoreCLRBuild = Environment.GetEnvironmentVariable("CORECLR_RELEASE_BUILD_NEW");
-        var oldCoreCLRPrerelease = Environment.GetEnvironmentVariable("OLD_CORECLR_RELEASE");
-        var newCoreCLRPrerelease = Environment.GetEnvironmentVariable("NEW_CORECLR_RELEASE");
-
-        var oldRoslynPrerelease = Environment.GetEnvironmentVariable("OLD_ROSLYN_RELEASE");
-        var newRoslynPrerelease = Environment.GetEnvironmentVariable("NEW_ROSLYN_RELEASE");
-
-        foreach (var repo in GetAllRepos().Except(excludeReposForJson))
+        var coherenceFeed = Environment.GetEnvironmentVariable("COHERENCE_FEED");
+        if (string.IsNullOrEmpty(coherenceFeed))
         {
-            CloneOrUpdate(repo);
+            throw new Exception("COHERENCE_FEED not specified. Usually this is Packages-NoTimestamp directory of Coherence-Signed.");
+        }
 
-            GitCommand(repo, string.Format("checkout {0}", branch));
+        var excludeReposForJson = new[]
+        {
+          "Coherence",
+          "Coherence-Signed",
+          "dnvm",
+          "Entropy"
+        };
 
-            if(File.Exists(Path.Combine(repo, "build.cmd")))
+        var repos = GetAllRepos().Except(excludeReposForJson);
+        Parallel.ForEach(repos, CloneOrUpdate);
+
+        foreach (var repo in repos)
+        {
+            GitCommand(repo, "checkout master");
+
+            if (File.Exists(Path.Combine(repo, "build.cmd")))
             {
                 File.Copy(Path.Combine("build-template", "build.cmd"),
                       Path.Combine(repo, "build.cmd"),
                       overwrite: true);
             }
 
-            // Process project.json files to pin version numbers
-            // Replace version in project.json
-            foreach(var file in Directory.GetFiles(repo,"project.json", SearchOption.AllDirectories))
-            {
-                var builder = new StringBuilder();
-                var contents = File.ReadAllLines(file);
+            var repoPath = Path.Combine(Directory.GetCurrentDirectory(), repo);
 
-                foreach(var jsonEntry in contents)
-                {
-                    if(jsonEntry.Contains("\"System.") || jsonEntry.Contains("CSharp"))
-                    {
-                        var oldSearchExp = BuildVersionExpression(branch, oldCoreCLRPrerelease, oldCoreCLRBuild);
-                        var newReplaceExp = BuildVersionExpression(branch, newCoreCLRPrerelease, newCoreCLRBuild);
-
-                        builder.AppendLine(jsonEntry.Replace(oldSearchExp, newReplaceExp));
-                    }
-                    else if(jsonEntry.Contains("CodeAnalysis."))
-                    {
-                        var oldSearchExp = BuildVersionExpression(branch, oldRoslynPrerelease);
-                        var newReplaceExp = BuildVersionExpression(branch, newRoslynPrerelease);
-
-                        builder.AppendLine(jsonEntry.Replace(oldSearchExp, newReplaceExp));
-                    }
-                    else if(jsonEntry.Contains("IdentityModel"))
-                    {
-                        // IdentityModel packages don't have a stable build and are updated very frequently on the NuGet feed
-                        builder.AppendLine(jsonEntry);
-                    }
-                    else
-                    {
-                        var oldSearchExp = BuildVersionExpression(branch, oldPreRelease);
-                        var newReplaceExp = BuildVersionExpression(branch, newPreRelease);
-
-                        var newEntry = ProcessExcludesForPackages(jsonEntry, stableBranches.Contains(branch));
-
-                        builder.AppendLine(newEntry.Replace(oldSearchExp, newReplaceExp));
-                    }
-                }
-
-                File.WriteAllText(file, builder.ToString());
-            }
+            Exec("dnx", string.Format(@".\tools\PinVersion run ""{0}"" ""{1}""", repo, coherenceFeed), string.Empty);
 
             // Build projects to produce project.lock.json
             Exec("build.cmd", "compile", repo);
@@ -321,11 +276,11 @@ var buildTarget = "compile"
                 {
                     GitCommand(repo, string.Format("add -f {0}", gitFilePath));
                 }
-            } 
+            }
 
-            GitCommand(repo, "commit -am \"Updating json files to pin versions and build.cmd to pin KoreBuild and DNX\""); 
+            GitCommand(repo, "commit -am \"Updating json files to pin versions and build.cmd to pin KoreBuild and DNX\"");
 
-            GitCommand(repo, string.Format("push origin {0}:{0} -f", branch));
+            GitCommand(repo, "push origin master:master -f");
         }
     }
 
@@ -380,8 +335,8 @@ var buildTarget = "compile"
     @{
         var failed = new Dictionary<string, Exception>();
         var skipped = new List<string>();
-        
-        foreach(var repo in repos) 
+
+        foreach(var repo in repos)
         {
             var blockName = string.Format("Building {0}", repo);
             if (IsTeamCity)
@@ -391,7 +346,7 @@ var buildTarget = "compile"
             try
             {
                 Log.Info(blockName);
-                
+
                 if (SKIP_NO_CREDENTIALS)
                 {
                     if (!Directory.Exists(repo))
@@ -411,7 +366,7 @@ var buildTarget = "compile"
                 {
                     Exec("build.cmd", buildTarget, repo);
                 }
-                
+
                 Log.Info(string.Format("Build {0} succeeded", repo));
             }
             catch(Exception ex)
@@ -419,7 +374,7 @@ var buildTarget = "compile"
                 Log.Warn(string.Format("Build {0} failed: {1}", repo, ex.Message));
                 failed[repo] = ex;
             }
-            finally 
+            finally
             {
                 if (IsTeamCity)
                 {
@@ -451,7 +406,7 @@ var buildTarget = "compile"
                 Log.Info(string.Format("Build {0} succeeded", repo));
             }
         }
-        
+
         if (failed.Any())
         {
             throw new Exception("One or more repos failed to build");
@@ -460,7 +415,7 @@ var buildTarget = "compile"
 
 #only-install target='install'
     @{
-        foreach(var repo in repos) 
+        foreach(var repo in repos)
         {
             if (IsMono)
             {
@@ -472,7 +427,7 @@ var buildTarget = "compile"
             }
         }
     }
-    
+
 #run-snapshot-manager
     @{
         Exec(@".nuget\nuget.exe", @"restore -out packages tools\TCDependencyManager\packages.config", "");
@@ -484,7 +439,7 @@ var buildTarget = "compile"
 
 #git-status description='Show status of repos known by Universe'
     @{
-        foreach(var repo in repos) 
+        foreach(var repo in repos)
         {
             GitStatus(repo);
         }
@@ -499,7 +454,7 @@ var buildTarget = "compile"
         {
             throw new Exception("git-clean cancelled");
         }
-        foreach(var repo in repos) 
+        foreach(var repo in repos)
         {
             GitClean(repo);
         }
@@ -590,7 +545,7 @@ functions
 
             return url.StartsWith("https://", System.StringComparison.OrdinalIgnoreCase);
         }
-        
+
         static bool IsAccessible(string key)
         {
             var req = WebRequest.CreateHttp("https://github.com/aspnet/" + key);
@@ -601,12 +556,12 @@ functions
             }
             catch (WebException ex)
             {
-                if (ex.Response != null && 
+                if (ex.Response != null &&
                     ((HttpWebResponse)ex.Response).StatusCode == HttpStatusCode.NotFound)
                 {
                     return false;
                 }
-                
+
                 // Ignore any other exception. They should surface as part of git clone with well-known messages.
             }
             return true;
@@ -646,7 +601,7 @@ functions
                 if (useHttps &&
                     !IsAccessible(repo))
                 {
-                    if (SKIP_NO_CREDENTIALS) 
+                    if (SKIP_NO_CREDENTIALS)
                     {
                         // This is used on the XPlat CI. Must return because otherwise git will wait for user
                         // input and hang the build
@@ -687,7 +642,7 @@ functions
                         .Replace("]", "|]");
         }
 
-        // Currently there are two packages that need to be special cased. 
+        // Currently there are two packages that need to be special cased.
         // TODO: Revisit as this is changed in the near future.
         string ProcessExcludesForPackages(string jsonEntry, bool stable=false)
         {
@@ -710,7 +665,7 @@ functions
                 builder.Append(preRelease);
             }
 
-            // If buildnumber is provided, append. 
+            // If buildnumber is provided, append.
             // This for CORE CLR packages
             if(!String.IsNullOrEmpty(buildNumber))
             {

@@ -1,0 +1,15 @@
+﻿{
+    "version": "1.0.0-*",
+    "dependencies": {
+        "Newtonsoft.Json": "6.0.8",
+        "NuGet.Core": "2.8.6"
+    },
+
+    "commands": {
+        "PinVersion": "PinVersion"
+    },
+
+    "frameworks": {
+        "dnx451": { }
+    }
+}
