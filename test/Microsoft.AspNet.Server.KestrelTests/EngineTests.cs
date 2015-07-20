@@ -535,5 +535,92 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 }
             }
         }
+
+        [Fact]
+        public async Task ThrowingInOnStartingResultsIn500Response()
+        {
+            using (var server = new TestServer(frame =>
+            {
+                frame.OnStarting(_ =>
+                {
+                    throw new Exception();
+                }, null);
+
+                frame.ResponseHeaders.Clear();
+                frame.ResponseHeaders["Content-Length"] = new[] { "11" };
+
+                // If we write to the response stream, we will not get a 500.
+
+                return Task.FromResult<object>(null);
+            }))
+            {
+                using (var connection = new TestConnection())
+                {
+                    await connection.SendEnd(
+                        "GET / HTTP/1.1",
+                        "",
+                        "GET / HTTP/1.1",
+                        "Connection: close",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 500 Internal Server Error",
+                        "");
+                    await connection.ReceiveStartsWith("Date:");
+                    await connection.Receive(
+                        "Content-Length: 0",
+                        "Server: Kestrel",
+                        "",
+                        "HTTP/1.1 500 Internal Server Error",
+                        "");
+                    await connection.ReceiveStartsWith("Date:");
+                    await connection.ReceiveEnd(
+                        "Content-Length: 0",
+                        "Server: Kestrel",
+                        "Connection: close",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task ThrowingInOnStartingResultsInFailedWrites()
+        {
+            using (var server = new TestServer(async frame =>
+            {
+                var onStartingException = new Exception();
+
+                frame.OnStarting(_ =>
+                {
+                    throw onStartingException;
+                }, null);
+
+                frame.ResponseHeaders.Clear();
+                frame.ResponseHeaders["Content-Length"] = new[] { "11" };
+
+                var writeException = await Assert.ThrowsAsync<Exception>(async () =>
+                    await frame.ResponseBody.WriteAsync(Encoding.ASCII.GetBytes("Hello World"), 0, 11));
+
+                Assert.Same(onStartingException, writeException);
+
+                // The second write should succeed since the OnStarting callback will not be called again
+                await frame.ResponseBody.WriteAsync(Encoding.ASCII.GetBytes("Exception!!"), 0, 11);
+            }))
+            {
+                using (var connection = new TestConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        "Content-Length: 11",
+                        "",
+                        "Exception!!"); ;
+                }
+            }
+        }
     }
 }
