@@ -21,25 +21,6 @@ namespace Microsoft.AspNet.Authorization
             _options = options.Options;
         }
 
-        public bool Authorize(ClaimsPrincipal user, object resource, string policyName)
-        {
-            var policy = _options.GetPolicy(policyName);
-            return (policy == null) 
-                ? false 
-                : this.Authorize(user, resource, policy);
-        }
-
-        public bool Authorize(ClaimsPrincipal user, object resource, [NotNull] IEnumerable<IAuthorizationRequirement> requirements)
-        {
-            var authContext = new AuthorizationContext(requirements, user, resource);
-            foreach (var handler in _handlers)
-            {
-                handler.Handle(authContext);
-                //REVIEW: Do we want to consider short circuiting on failure
-            }
-            return authContext.HasSucceeded;
-        }
-
         public async Task<bool> AuthorizeAsync(ClaimsPrincipal user, object resource, [NotNull] IEnumerable<IAuthorizationRequirement> requirements)
         {
             var authContext = new AuthorizationContext(requirements, user, resource);

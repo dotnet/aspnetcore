@@ -23,15 +23,6 @@ namespace Microsoft.AspNet.Authorization
         Task<bool> AuthorizeAsync(ClaimsPrincipal user, object resource, [NotNull] IEnumerable<IAuthorizationRequirement> requirements);
 
         /// <summary>
-        /// Checks if a user meets a specific set of requirements for the specified resource
-        /// </summary>
-        /// <param name="user"></param>
-        /// <param name="resource"></param>
-        /// <param name="requirements"></param>
-        /// <returns></returns>
-        bool Authorize(ClaimsPrincipal user, object resource, [NotNull] IEnumerable<IAuthorizationRequirement> requirements);
-
-        /// <summary>
         /// Checks if a user meets a specific authorization policy
         /// </summary>
         /// <param name="user">The user to check the policy against.</param>
@@ -39,14 +30,5 @@ namespace Microsoft.AspNet.Authorization
         /// <param name="policyName">The name of the policy to check against a specific context.</param>
         /// <returns><value>true</value> when the user fulfills the policy, <value>false</value> otherwise.</returns>
         Task<bool> AuthorizeAsync(ClaimsPrincipal user, object resource, [NotNull] string policyName);
-
-        /// <summary>
-        /// Checks if a user meets a specific authorization policy
-        /// </summary>
-        /// <param name="user">The user to check the policy against.</param>
-        /// <param name="resource">The resource the policy should be checked with.</param>
-        /// <param name="policyName">The name of the policy to check against a specific context.</param>
-        /// <returns><value>true</value> when the user fulfills the policy, <value>false</value> otherwise.</returns>
-        bool Authorize(ClaimsPrincipal user, object resource, [NotNull] string policyName);
     }
 }

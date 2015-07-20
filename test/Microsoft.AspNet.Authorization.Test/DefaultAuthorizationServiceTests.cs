@@ -831,7 +831,7 @@ namespace Microsoft.AspNet.Authorization.Test
         }
 
         [Fact]
-        public void CanAuthorizeWithDelegateRequirement()
+        public async Task CanAuthorizeWithDelegateRequirement()
         {
             var authorizationService = BuildAuthorizationService(services =>
             {
@@ -843,7 +843,7 @@ namespace Microsoft.AspNet.Authorization.Test
             var user = new ClaimsPrincipal();
 
             // Act
-            var allowed = authorizationService.Authorize(user, "Basic");
+            var allowed = await authorizationService.AuthorizeAsync(user, "Basic");
 
             // Assert
             Assert.True(allowed);
