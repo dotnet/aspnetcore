@@ -51,10 +51,10 @@ namespace Microsoft.AspNet.Authentication.Facebook
 
         protected override async Task<AuthenticationTicket> CreateTicketAsync(ClaimsIdentity identity, AuthenticationProperties properties, OAuthTokenResponse tokens)
         {
-            var endpoint = Options.UserInformationEndpoint + "?access_token=" + UrlEncoder.UrlEncode(tokens.AccessToken);
+            var endpoint = QueryHelpers.AddQueryString(Options.UserInformationEndpoint, "access_token", tokens.AccessToken);
             if (Options.SendAppSecretProof)
             {
-                endpoint += "&appsecret_proof=" + GenerateAppSecretProof(tokens.AccessToken);
+                endpoint = QueryHelpers.AddQueryString(endpoint, "appsecret_proof", GenerateAppSecretProof(tokens.AccessToken));
             }
 
             var response = await Backchannel.GetAsync(endpoint, Context.RequestAborted);

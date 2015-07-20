@@ -3,15 +3,21 @@
 
 using System;
 using System.Net;
+using System.Net.Http;
+using System.Collections.Generic;
+using System.Text;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Authentication.OAuth;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.DataProtection;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.TestHost;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.WebEncoders;
 using Shouldly;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace Microsoft.AspNet.Authentication.Facebook
@@ -166,6 +172,76 @@ namespace Microsoft.AspNet.Authentication.Facebook
             location.ShouldContain("redirect_uri=");
             location.ShouldContain("scope=");
             location.ShouldContain("state=");
+        }
+
+        [Fact]
+        public async Task CustomUserInfoEndpointHasValidGraphQuery()
+        {
+            var customUserInfoEndpoint = "https://graph.facebook.com/me?fields=email,timezone,picture";
+            string finalUserInfoEndpoint = string.Empty;
+            var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider().CreateProtector("FacebookTest"));
+            var server = CreateServer(
+                app =>
+                {
+                    app.UseFacebookAuthentication();
+                    app.UseCookieAuthentication();
+                },
+                services =>
+                {
+                    services.AddAuthentication();
+                    services.ConfigureFacebookAuthentication(options =>
+                    {
+                        options.AppId = "Test App Id";
+                        options.AppSecret = "Test App Secret";
+                        options.StateDataFormat = stateFormat;
+                        options.UserInformationEndpoint = customUserInfoEndpoint;
+                        options.BackchannelHttpHandler = new TestHttpMessageHandler
+                        {
+                            Sender = req =>
+                            {
+                                if (req.RequestUri.GetLeftPart(UriPartial.Path) == FacebookAuthenticationDefaults.TokenEndpoint)
+                                {
+                                    var res = new HttpResponseMessage(HttpStatusCode.OK);
+                                    var tokenResponse = new Dictionary<string, string>
+                                    {
+                                        { "access_token", "TestAuthToken" },
+                                    };
+                                    res.Content = new FormUrlEncodedContent(tokenResponse);
+                                    return res;
+                                }
+                                if (req.RequestUri.GetLeftPart(UriPartial.Path) ==
+                                    new Uri(customUserInfoEndpoint).GetLeftPart(UriPartial.Path))
+                                {
+                                    finalUserInfoEndpoint = req.RequestUri.ToString();
+                                    var res = new HttpResponseMessage(HttpStatusCode.OK);
+                                    var graphResponse = JsonConvert.SerializeObject(new
+                                    {
+                                        id = "TestProfileId",
+                                        name = "TestName"
+                                    });
+                                    res.Content = new StringContent(graphResponse, Encoding.UTF8);
+                                    return res;
+                                }
+                                return null;
+                            }
+                        };
+                    });
+                }, handler: null);
+
+            var properties = new AuthenticationProperties();
+            var correlationKey = ".AspNet.Correlation.Facebook";
+            var correlationValue = "TestCorrelationId";
+            properties.Items.Add(correlationKey, correlationValue);
+            properties.RedirectUri = "/me";
+            var state = stateFormat.Protect(properties);
+            var transaction = await server.SendAsync(
+                "https://example.com/signin-facebook?code=TestCode&state=" + UrlEncoder.Default.UrlEncode(state),
+                correlationKey + "=" + correlationValue);
+            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+            transaction.Response.Headers.Location.ToString().ShouldBe("/me");
+            finalUserInfoEndpoint.Count(c => c == '?').ShouldBe(1);
+            finalUserInfoEndpoint.ShouldContain("fields=email,timezone,picture");
+            finalUserInfoEndpoint.ShouldContain("&access_token=");
         }
 
         private static TestServer CreateServer(Action<IApplicationBuilder> configure, Action<IServiceCollection> configureServices, Func<HttpContext, bool> handler)
