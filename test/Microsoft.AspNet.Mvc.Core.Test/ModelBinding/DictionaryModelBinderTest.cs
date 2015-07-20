@@ -2,7 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 #if DNX451
+using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Internal;
 using Moq;
@@ -62,6 +65,200 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.Equal(2, dictionary.Count);
             Assert.Equal("forty-two", dictionary[42]);
             Assert.Equal("eighty-four", dictionary[84]);
+        }
+
+        // modelName, keyFormat, dictionary
+        public static TheoryData<string, string, IDictionary<string, string>> StringToStringData
+        {
+            get
+            {
+                var dictionaryWithOne = new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    { "one", "one" },
+                };
+                var dictionaryWithThree = new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    { "one", "one" },
+                    { "two", "two" },
+                    { "three", "three" },
+                };
+
+                return new TheoryData<string, string, IDictionary<string, string>>
+                {
+                    { string.Empty, "[{0}]", dictionaryWithOne },
+                    { string.Empty, "[{0}]", dictionaryWithThree },
+                    { "prefix", "prefix[{0}]", dictionaryWithOne },
+                    { "prefix", "prefix[{0}]", dictionaryWithThree },
+                    { "prefix.property", "prefix.property[{0}]", dictionaryWithOne },
+                    { "prefix.property", "prefix.property[{0}]", dictionaryWithThree },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(StringToStringData))]
+        public async Task BindModel_FallsBackToBindingValues(
+            string modelName,
+            string keyFormat,
+            IDictionary<string, string> dictionary)
+        {
+            // Arrange
+            var binder = new DictionaryModelBinder<string, string>();
+            var context = CreateContext();
+            context.ModelName = modelName;
+            context.OperationBindingContext.ModelBinder = CreateCompositeBinder();
+            context.OperationBindingContext.ValueProvider = CreateEnumerableValueProvider(keyFormat, dictionary);
+            context.ValueProvider = context.OperationBindingContext.ValueProvider;
+
+            var metadataProvider = context.OperationBindingContext.MetadataProvider;
+            context.ModelMetadata = metadataProvider.GetMetadataForProperty(
+                typeof(ModelWithDictionaryProperty),
+                nameof(ModelWithDictionaryProperty.DictionaryProperty));
+
+            // Act
+            var result = await binder.BindModelAsync(context);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.IsFatalError);
+            Assert.True(result.IsModelSet);
+            Assert.Equal(modelName, result.Key);
+            Assert.NotNull(result.ValidationNode);
+
+            var resultDictionary = Assert.IsAssignableFrom<IDictionary<string, string>>(result.Model);
+            Assert.Equal(dictionary, resultDictionary);
+        }
+
+        // Similar to one BindModel_FallsBackToBindingValues case but without an IEnumerableValueProvider.
+        [Fact]
+        public async Task BindModel_DoesNotFallBack_WithoutEnumerableValueProvider()
+        {
+            // Arrange
+            var dictionary = new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                { "one", "one" },
+                { "two", "two" },
+                { "three", "three" },
+            };
+
+            var binder = new DictionaryModelBinder<string, string>();
+            var context = CreateContext();
+            context.ModelName = "prefix";
+            context.OperationBindingContext.ModelBinder = CreateCompositeBinder();
+            context.OperationBindingContext.ValueProvider = CreateTestValueProvider("prefix[{0}]", dictionary);
+            context.ValueProvider = context.OperationBindingContext.ValueProvider;
+
+            var metadataProvider = context.OperationBindingContext.MetadataProvider;
+            context.ModelMetadata = metadataProvider.GetMetadataForProperty(
+                typeof(ModelWithDictionaryProperty),
+                nameof(ModelWithDictionaryProperty.DictionaryProperty));
+
+            // Act
+            var result = await binder.BindModelAsync(context);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.IsFatalError);
+            Assert.True(result.IsModelSet);
+            Assert.Equal("prefix", result.Key);
+            Assert.NotNull(result.ValidationNode);
+
+            var resultDictionary = Assert.IsAssignableFrom<IDictionary<string, string>>(result.Model);
+            Assert.Empty(resultDictionary);
+        }
+
+        public static TheoryData<IDictionary<long, int>> LongToIntData
+        {
+            get
+            {
+                var dictionaryWithOne = new Dictionary<long, int>
+                {
+                    { 0L, 0 },
+                };
+                var dictionaryWithThree = new Dictionary<long, int>
+                {
+                    { -1L, -1 },
+                    { long.MaxValue, int.MaxValue },
+                    { long.MinValue, int.MinValue },
+                };
+
+                return new TheoryData<IDictionary<long, int>> { dictionaryWithOne, dictionaryWithThree };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(LongToIntData))]
+        public async Task BindModel_FallsBackToBindingValues_WithValueTypes(IDictionary<long, int> dictionary)
+        {
+            // Arrange
+            var stringDictionary = dictionary.ToDictionary(kvp => kvp.Key.ToString(), kvp => kvp.Value.ToString());
+            var binder = new DictionaryModelBinder<long, int>();
+            var context = CreateContext();
+            context.ModelName = "prefix";
+            context.OperationBindingContext.ModelBinder = CreateCompositeBinder();
+            context.OperationBindingContext.ValueProvider =
+                CreateEnumerableValueProvider("prefix[{0}]", stringDictionary);
+            context.ValueProvider = context.OperationBindingContext.ValueProvider;
+
+            var metadataProvider = context.OperationBindingContext.MetadataProvider;
+            context.ModelMetadata = metadataProvider.GetMetadataForProperty(
+                typeof(ModelWithDictionaryProperty),
+                nameof(ModelWithDictionaryProperty.DictionaryProperty));
+
+            // Act
+            var result = await binder.BindModelAsync(context);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.IsFatalError);
+            Assert.True(result.IsModelSet);
+            Assert.Equal("prefix", result.Key);
+            Assert.NotNull(result.ValidationNode);
+
+            var resultDictionary = Assert.IsAssignableFrom<IDictionary<long, int>>(result.Model);
+            Assert.Equal(dictionary, resultDictionary);
+        }
+
+        [Fact]
+        public async Task BindModel_FallsBackToBindingValues_WithComplexValues()
+        {
+            // Arrange
+            var dictionary = new Dictionary<int, ModelWithProperties>
+            {
+                { 23, new ModelWithProperties { Id = 43, Name = "Wilma" } },
+                { 27, new ModelWithProperties { Id = 98, Name = "Fred" } },
+            };
+            var stringDictionary = new Dictionary<string, string>
+            {
+                { "prefix[23].Id", "43" },
+                { "prefix[23].Name", "Wilma" },
+                { "prefix[27].Id", "98" },
+                { "prefix[27].Name", "Fred" },
+            };
+            var binder = new DictionaryModelBinder<int, ModelWithProperties>();
+            var context = CreateContext();
+            context.ModelName = "prefix";
+            context.OperationBindingContext.ModelBinder = CreateCompositeBinder();
+            context.OperationBindingContext.ValueProvider = CreateEnumerableValueProvider("{0}", stringDictionary);
+            context.ValueProvider = context.OperationBindingContext.ValueProvider;
+
+            var metadataProvider = context.OperationBindingContext.MetadataProvider;
+            context.ModelMetadata = metadataProvider.GetMetadataForProperty(
+                typeof(ModelWithDictionaryProperty),
+                nameof(ModelWithDictionaryProperty.DictionaryProperty));
+
+            // Act
+            var result = await binder.BindModelAsync(context);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.IsFatalError);
+            Assert.True(result.IsModelSet);
+            Assert.Equal("prefix", result.Key);
+            Assert.NotNull(result.ValidationNode);
+
+            var resultDictionary = Assert.IsAssignableFrom<IDictionary<int, ModelWithProperties>>(result.Model);
+            Assert.Equal(dictionary, resultDictionary);
         }
 
         [Fact]
@@ -161,6 +358,46 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             return modelBindingContext;
         }
 
+        private static IModelBinder CreateCompositeBinder()
+        {
+            var binders = new IModelBinder[]
+            {
+                new TypeConverterModelBinder(),
+                new TypeMatchModelBinder(),
+                new MutableObjectModelBinder(),
+                new ComplexModelDtoModelBinder(),
+            };
+
+            return new CompositeModelBinder(binders);
+        }
+
+        private static IValueProvider CreateEnumerableValueProvider(
+            string keyFormat,
+            IDictionary<string, string> dictionary)
+        {
+            // Convert to an IDictionary<string, string[]> then wrap it up.
+            var backingStore = dictionary.ToDictionary(
+                kvp => string.Format(keyFormat, kvp.Key),
+                kvp => new[] { kvp.Value });
+            var stringCollection = new ReadableStringCollection(backingStore);
+
+            return new ReadableStringCollectionValueProvider(
+                BindingSource.Form,
+                stringCollection,
+                CultureInfo.InvariantCulture);
+        }
+
+        // Like CreateEnumerableValueProvider except returned instance does not implement IEnumerableValueProvider.
+        private static IValueProvider CreateTestValueProvider(string keyFormat, IDictionary<string, string> dictionary)
+        {
+            // Convert to an IDictionary<string, object> then wrap it up.
+            var backingStore = dictionary.ToDictionary(
+                kvp => string.Format(keyFormat, kvp.Key),
+                kvp => (object)kvp.Value);
+
+            return new TestValueProvider(BindingSource.Form, backingStore);
+        }
+
         private static ModelBindingContext GetModelBindingContext(bool isReadOnly)
         {
             var metadataProvider = new TestModelMetadataProvider();
@@ -207,6 +444,32 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         private class ModelWithDictionaryProperty
         {
             public Dictionary<string, string> DictionaryProperty { get; set; }
+        }
+
+        private class ModelWithProperties
+        {
+            public int Id { get; set; }
+
+            public string Name { get; set; }
+
+            public override bool Equals(object obj)
+            {
+                var other = obj as ModelWithProperties;
+                return other != null &&
+                    Id == other.Id &&
+                    string.Equals(Name, other.Name, StringComparison.Ordinal);
+            }
+
+            public override int GetHashCode()
+            {
+                int nameCode = Name == null ? 0 : Name.GetHashCode();
+                return nameCode ^ Id.GetHashCode();
+            }
+
+            public override string ToString()
+            {
+                return $"{{{ Id }, '{ Name }'}}";
+            }
         }
     }
 }

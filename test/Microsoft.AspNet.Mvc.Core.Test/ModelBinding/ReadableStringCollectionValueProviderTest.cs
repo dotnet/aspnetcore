@@ -16,10 +16,19 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         private static readonly IReadableStringCollection _backingStore = new ReadableStringCollection(
             new Dictionary<string, string[]>
             {
-                { "foo", new[] { "fooValue1", "fooValue2"} },
-                { "bar.baz", new[] {"someOtherValue" } },
+                { "some", new[] { "someValue1", "someValue2" } },
                 { "null_value", null },
-                { "prefix.null_value", null }
+                { "prefix.name", new[] { "someOtherValue" } },
+                { "prefix.null_value", null },
+                { "prefix.property1.property", null },
+                { "prefix.property2[index]", null },
+                { "prefix[index1]", null },
+                { "prefix[index1].property1", null },
+                { "prefix[index1].property2", null },
+                { "prefix[index2].property", null },
+                { "[index]", null },
+                { "[index].property", null },
+                { "[index][anotherIndex]", null },
             });
 
         [Fact]
@@ -30,7 +39,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var valueProvider = new ReadableStringCollectionValueProvider(BindingSource.Query, backingStore, null);
 
             // Act
-            var result = await valueProvider.ContainsPrefixAsync("");
+            var result = await valueProvider.ContainsPrefixAsync(string.Empty);
 
             // Assert
             Assert.False(result);
@@ -43,7 +52,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var valueProvider = new ReadableStringCollectionValueProvider(BindingSource.Query, _backingStore, null);
 
             // Act
-            var result = await valueProvider.ContainsPrefixAsync("");
+            var result = await valueProvider.ContainsPrefixAsync(string.Empty);
 
             // Assert
             Assert.True(result);
@@ -56,9 +65,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var valueProvider = new ReadableStringCollectionValueProvider(BindingSource.Query, _backingStore, null);
 
             // Act & Assert
-            Assert.True(await valueProvider.ContainsPrefixAsync("foo"));
-            Assert.True(await valueProvider.ContainsPrefixAsync("bar"));
-            Assert.True(await valueProvider.ContainsPrefixAsync("bar.baz"));
+            Assert.True(await valueProvider.ContainsPrefixAsync("some"));
+            Assert.True(await valueProvider.ContainsPrefixAsync("prefix"));
+            Assert.True(await valueProvider.ContainsPrefixAsync("prefix.name"));
+            Assert.True(await valueProvider.ContainsPrefixAsync("[index]"));
+            Assert.True(await valueProvider.ContainsPrefixAsync("prefix[index1]"));
         }
 
         [Fact]
@@ -80,15 +91,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             // Arrange
             var expected = new Dictionary<string, string>
             {
-                { "bar", "bar" },
-                { "foo", "foo" },
+                { "index", "[index]" },
                 { "null_value", "null_value" },
-                { "prefix", "prefix" }
+                { "prefix", "prefix" },
+                { "some", "some" },
             };
             var valueProvider = new ReadableStringCollectionValueProvider(BindingSource.Query, _backingStore, culture: null);
 
             // Act
-            var result = await valueProvider.GetKeysFromPrefixAsync("");
+            var result = await valueProvider.GetKeysFromPrefixAsync(string.Empty);
 
             // Assert
             Assert.Equal(expected, result.OrderBy(kvp => kvp.Key));
@@ -111,15 +122,40 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public async Task GetKeysFromPrefixAsync_KnownPrefix_ReturnsMatchingItems()
         {
             // Arrange
+            var expected = new Dictionary<string, string>
+            {
+                { "name", "prefix.name" },
+                { "null_value", "prefix.null_value" },
+                { "property1", "prefix.property1" },
+                { "property2", "prefix.property2" },
+                { "index1", "prefix[index1]" },
+                { "index2", "prefix[index2]" },
+            };
             var valueProvider = new ReadableStringCollectionValueProvider(BindingSource.Query, _backingStore, null);
 
             // Act
-            var result = await valueProvider.GetKeysFromPrefixAsync("bar");
+            var result = await valueProvider.GetKeysFromPrefixAsync("prefix");
 
             // Assert
-            var kvp = Assert.Single(result);
-            Assert.Equal("baz", kvp.Key);
-            Assert.Equal("bar.baz", kvp.Value);
+            Assert.Equal(expected, result);
+        }
+
+        [Fact]
+        public async Task GetKeysFromPrefixAsync_IndexPrefix_ReturnsMatchingItems()
+        {
+            // Arrange
+            var expected = new Dictionary<string, string>
+            {
+                { "property", "[index].property" },
+                { "anotherIndex", "[index][anotherIndex]" }
+            };
+            var valueProvider = new ReadableStringCollectionValueProvider(BindingSource.Query, _backingStore, null);
+
+            // Act
+            var result = await valueProvider.GetKeysFromPrefixAsync("[index]");
+
+            // Assert
+            Assert.Equal(expected, result);
         }
 
         [Fact]
@@ -130,13 +166,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var valueProvider = new ReadableStringCollectionValueProvider(BindingSource.Query, _backingStore, culture);
 
             // Act
-            var vpResult = await valueProvider.GetValueAsync("bar.baz");
+            var result = await valueProvider.GetValueAsync("prefix.name");
 
             // Assert
-            Assert.NotNull(vpResult);
-            Assert.Equal("someOtherValue", vpResult.RawValue);
-            Assert.Equal("someOtherValue", vpResult.AttemptedValue);
-            Assert.Equal(culture, vpResult.Culture);
+            Assert.NotNull(result);
+            Assert.Equal("someOtherValue", result.RawValue);
+            Assert.Equal("someOtherValue", result.AttemptedValue);
+            Assert.Equal(culture, result.Culture);
         }
 
         [Fact]
@@ -147,13 +183,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var valueProvider = new ReadableStringCollectionValueProvider(BindingSource.Query, _backingStore, culture);
 
             // Act
-            var vpResult = await valueProvider.GetValueAsync("foo");
+            var result = await valueProvider.GetValueAsync("some");
 
             // Assert
-            Assert.NotNull(vpResult);
-            Assert.Equal(new[] { "fooValue1", "fooValue2" }, (IList<string>)vpResult.RawValue);
-            Assert.Equal("fooValue1,fooValue2", vpResult.AttemptedValue);
-            Assert.Equal(culture, vpResult.Culture);
+            Assert.NotNull(result);
+            Assert.Equal(new[] { "someValue1", "someValue2" }, (IList<string>)result.RawValue);
+            Assert.Equal("someValue1,someValue2", result.AttemptedValue);
+            Assert.Equal(culture, result.Culture);
         }
 
         [Theory]
@@ -185,11 +221,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var valueProvider = new ReadableStringCollectionValueProvider(BindingSource.Query, backingStore, culture);
 
             // Act
-            var vpResult = await valueProvider.GetValueAsync("key");
+            var result = await valueProvider.GetValueAsync("key");
 
             // Assert
-            Assert.Equal(new[] { null, null, "value" }, vpResult.RawValue as IEnumerable<string>);
-            Assert.Equal(",,value", vpResult.AttemptedValue);
+            Assert.Equal(new[] { null, null, "value" }, result.RawValue as IEnumerable<string>);
+            Assert.Equal(",,value", result.AttemptedValue);
         }
 
         [Fact]
@@ -199,10 +235,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var valueProvider = new ReadableStringCollectionValueProvider(BindingSource.Query, _backingStore, null);
 
             // Act
-            var vpResult = await valueProvider.GetValueAsync("bar");
+            var result = await valueProvider.GetValueAsync("prefix");
 
             // Assert
-            Assert.Null(vpResult);
+            Assert.Null(result);
         }
 
         [Fact]

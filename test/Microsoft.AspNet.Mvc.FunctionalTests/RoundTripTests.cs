@@ -101,13 +101,19 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Arrange
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
+            var expected = "6 feet";
 
             // Act
             var expression = await client.GetStringAsync("http://localhost/RoundTrip/GetPersonParentHeightAttribute");
+            var keyValuePairs = new[]
+            {
+                new KeyValuePair<string, string>(expression, expected),
+            };
+            var result = await GetPerson(client, keyValuePairs);
 
             // Assert
             Assert.Equal("Parent.Attributes[height]", expression);
-            // TODO: https://github.com/aspnet/Mvc/issues/1418 Requires resolution in model binding
+            Assert.Equal(expected, result.Parent.Attributes["height"]);
         }
 
         // Uses the expression p => p.Dependents[0].Dependents[0].Name

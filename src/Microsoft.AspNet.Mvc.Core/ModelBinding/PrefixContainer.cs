@@ -81,31 +81,34 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         private static void GetKeyFromEmptyPrefix(string entry, IDictionary<string, string> results)
         {
-            var dotPosition = entry.IndexOf('.');
-            var bracketPosition = entry.IndexOf('[');
-            var delimiterPosition = -1;
+            string key;
+            string fullName;
+            var delimiterPosition = IndexOfDelimiter(entry, 0);
 
-            if (dotPosition == -1)
+            if (delimiterPosition == 0 && entry[0] == '[')
             {
-                if (bracketPosition != -1)
+                // Handle an entry such as "[key]".
+                var bracketPosition = entry.IndexOf(']', 1);
+                if (bracketPosition == -1)
                 {
-                    delimiterPosition = bracketPosition;
+                    // Malformed for dictionary.
+                    return;
                 }
+
+                key = entry.Substring(1, bracketPosition - 1);
+                fullName = entry.Substring(0, bracketPosition + 1);
             }
             else
             {
-                if (bracketPosition == -1)
-                {
-                    delimiterPosition = dotPosition;
-                }
-                else
-                {
-                    delimiterPosition = Math.Min(dotPosition, bracketPosition);
-                }
+                // Handle an entry such as "key", "key.property" and "key[index]".
+                key = delimiterPosition == -1 ? entry : entry.Substring(0, delimiterPosition);
+                fullName = key;
             }
 
-            var key = delimiterPosition == -1 ? entry : entry.Substring(0, delimiterPosition);
-            results[key] = key;
+            if (!results.ContainsKey(key))
+            {
+                results.Add(key, fullName);
+            }
         }
 
         private static void GetKeyFromNonEmptyPrefix(string prefix, string entry, IDictionary<string, string> results)
@@ -117,17 +120,23 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             switch (entry[prefix.Length])
             {
                 case '.':
-                    var dotPosition = entry.IndexOf('.', keyPosition);
-                    if (dotPosition == -1)
+                    // Handle an entry such as "prefix.key", "prefix.key.property" and "prefix.key[index]".
+                    var delimiterPosition = IndexOfDelimiter(entry, keyPosition);
+                    if (delimiterPosition == -1)
                     {
-                        dotPosition = entry.Length;
+                        // Neither '.' nor '[' found later in the name. Use rest of the string.
+                        key = entry.Substring(keyPosition);
+                        fullName = entry;
                     }
-
-                    key = entry.Substring(keyPosition, dotPosition - keyPosition);
-                    fullName = entry.Substring(0, dotPosition);
+                    else
+                    {
+                        key = entry.Substring(keyPosition, delimiterPosition - keyPosition);
+                        fullName = entry.Substring(0, delimiterPosition);
+                    }
                     break;
 
                 case '[':
+                    // Handle an entry such as "prefix[key]".
                     var bracketPosition = entry.IndexOf(']', keyPosition);
                     if (bracketPosition == -1)
                     {
@@ -140,6 +149,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     break;
 
                 default:
+                    // Ignore an entry such as "prefixA".
                     return;
             }
 
@@ -186,6 +196,28 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 default:
                     return false; // not known delimiter
             }
+        }
+
+        private static int IndexOfDelimiter(string entry, int startIndex)
+        {
+            int delimiterPosition;
+            var bracketPosition = entry.IndexOf('[', startIndex);
+            var dotPosition = entry.IndexOf('.', startIndex);
+
+            if (dotPosition == -1)
+            {
+                delimiterPosition = bracketPosition;
+            }
+            else if (bracketPosition == -1)
+            {
+                delimiterPosition = dotPosition;
+            }
+            else
+            {
+                delimiterPosition = Math.Min(dotPosition, bracketPosition);
+            }
+
+            return delimiterPosition;
         }
 
         /// <summary>
