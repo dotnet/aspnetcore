@@ -15,6 +15,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.Runtime;
+using Microsoft.Framework.Runtime.Compilation;
 
 namespace Microsoft.AspNet.Diagnostics
 {

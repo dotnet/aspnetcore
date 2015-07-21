@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
@@ -38,9 +39,9 @@ namespace Microsoft.AspNet.Diagnostics.Tests
         public void CreateRuntimeInfoModel_GetsTheVersionAndAllPackages()
         {
             // Arrage
-            var libraries = new ILibraryInformation[] {
-                new FakeLibraryInformation() { Name ="LibInfo1", Path = "Path1" },
-                new FakeLibraryInformation() { Name ="LibInfo2", Path = "Path2" },
+            var libraries = new [] {
+                new Library("LibInfo1", string.Empty, "Path1", string.Empty, Enumerable.Empty<string>(), Enumerable.Empty<AssemblyName>()),
+                new Library("LibInfo2", string.Empty, "Path2", string.Empty, Enumerable.Empty<string>(), Enumerable.Empty<AssemblyName>())
             };
 
             var libraryManagerMock = new Mock<ILibraryManager>(MockBehavior.Strict);
@@ -109,9 +110,9 @@ namespace Microsoft.AspNet.Diagnostics.Tests
         {
             // Arrange
             var libraryManagerMock = new Mock<ILibraryManager>(MockBehavior.Strict);
-            libraryManagerMock.Setup(l => l.GetLibraries()).Returns(new ILibraryInformation[] {
-                        new FakeLibraryInformation() { Name ="LibInfo1", Version = "1.0.0-beta1", Path = "Path1" },
-                        new FakeLibraryInformation() { Name ="LibInfo2", Version = "1.0.0-beta2", Path = "Path2" },
+            libraryManagerMock.Setup(l => l.GetLibraries()).Returns(new [] {
+                        new Library("LibInfo1", "1.0.0-beta1", "Path1", string.Empty, Enumerable.Empty<string>(), Enumerable.Empty<AssemblyName>()),
+                        new Library("LibInfo2", "1.0.0-beta2", "Path2", string.Empty, Enumerable.Empty<string>(), Enumerable.Empty<AssemblyName>())
                     });
 
             var runtimeEnvironmentMock = new Mock<IRuntimeEnvironment>(MockBehavior.Strict);
@@ -169,8 +170,8 @@ namespace Microsoft.AspNet.Diagnostics.Tests
         {
             // Arrange
             var libraryManagerMock = new Mock<ILibraryManager>(MockBehavior.Strict);
-            libraryManagerMock.Setup(l => l.GetLibraries()).Returns(new ILibraryInformation[] {
-                        new FakeLibraryInformation() { Name ="LibInfo1", Version = "1.0.0-beta1", Path = "Path1" },
+            libraryManagerMock.Setup(l => l.GetLibraries()).Returns(new [] {
+                        new Library("LibInfo1", "1.0.0-beta1", "Path1", string.Empty, Enumerable.Empty<string>(), Enumerable.Empty<AssemblyName>()),
                     });
 
             var runtimeEnvironmentMock = new Mock<IRuntimeEnvironment>(MockBehavior.Strict);
@@ -218,39 +219,6 @@ namespace Microsoft.AspNet.Diagnostics.Tests
             }
         }
 #endif
-
-        private class FakeLibraryInformation : ILibraryInformation
-        {
-            public string Name { get; set; }
-
-            public string Version { get; set; }
-
-            public string Path { get; set; }
-
-            public IEnumerable<string> Dependencies
-            {
-                get
-                {
-                    throw new NotImplementedException("Should not be needed by this middleware");
-                }
-            }
-
-            public string Type
-            {
-                get
-                {
-                    throw new NotImplementedException("Should not be needed by this middleware");
-                }
-            }
-
-            public IEnumerable<AssemblyName> LoadableAssemblies
-            {
-                get
-                {
-                    throw new NotImplementedException("Should not be needed by this middleware");
-                }
-            }
-        }
 
         private class CustomHtmlEncoder : IHtmlEncoder
         {

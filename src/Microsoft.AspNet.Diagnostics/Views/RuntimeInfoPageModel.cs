@@ -16,6 +16,6 @@ namespace Microsoft.AspNet.Diagnostics.Views
 
         public string RuntimeType { get; internal set; }
 
-        public IEnumerable<ILibraryInformation> References { get; internal set; }
+        public IEnumerable<Library> References { get; internal set; }
     }
 }
