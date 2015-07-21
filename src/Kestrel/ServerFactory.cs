@@ -18,10 +18,12 @@ namespace Kestrel
     public class ServerFactory : IServerFactory
     {
         private readonly ILibraryManager _libraryManager;
+        private readonly IApplicationShutdown _appShutdownService;
 
-        public ServerFactory(ILibraryManager libraryManager)
+        public ServerFactory(ILibraryManager libraryManager, IApplicationShutdown appShutdownService)
         {
             _libraryManager = libraryManager;
+            _appShutdownService = appShutdownService;
         }
 
         public IServerInformation Initialize(IConfiguration configuration)
@@ -35,7 +37,7 @@ namespace Kestrel
         {
             var disposables = new List<IDisposable>();
             var information = (ServerInformation)serverInformation;
-            var engine = new KestrelEngine(_libraryManager);
+            var engine = new KestrelEngine(_libraryManager, _appShutdownService);
             engine.Start(1);
             foreach (var address in information.Addresses)
             {

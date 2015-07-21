@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
         Libuv _uv;
         public NetworkingTests()
         {
-            var engine = new KestrelEngine(LibraryManager);
+            var engine = new KestrelEngine(LibraryManager, new ShutdownNotImplemented());
             _uv = engine.Libuv;
         }
 
