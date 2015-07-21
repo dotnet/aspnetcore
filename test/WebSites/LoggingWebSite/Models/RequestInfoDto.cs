@@ -6,7 +6,7 @@ namespace LoggingWebSite
 {
     public class RequestInfoDto
     {
-        public Guid RequestID { get; set; }
+        public string RequestID { get; set; }
 
         public string Host { get; set; }
 
@@ -25,7 +25,7 @@ namespace LoggingWebSite
         public IEnumerable<KeyValuePair<string, string[]>> Headers { get; set; }
 
         public string Query { get; set; }
-        
+
         public IEnumerable<KeyValuePair<string, string[]>> Cookies { get; set; }
     }
 }
