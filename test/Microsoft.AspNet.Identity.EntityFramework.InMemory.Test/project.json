@@ -6,7 +6,7 @@
     "Microsoft.AspNet.Identity.EntityFramework": "3.0.0-*",
     "Microsoft.AspNet.DataProtection": "1.0.0-*",
     "Microsoft.AspNet.Testing": "1.0.0-*",
-    "EntityFramework7.InMemory": "7.0.0-*",
+    "EntityFramework.InMemory": "7.0.0-*",
     "Microsoft.Framework.OptionsModel" : "1.0.0-*",
     "xunit.runner.aspnet": "2.0.0-aspnet-*"
   },
