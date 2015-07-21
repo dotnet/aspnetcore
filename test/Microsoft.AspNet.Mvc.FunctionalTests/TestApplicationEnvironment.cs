@@ -50,5 +50,15 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             get { return _originalAppEnvironment.RuntimeFramework; }
         }
+
+        public object GetData(string name)
+        {
+            return _originalAppEnvironment.GetData(name);
+        }
+
+        public void SetData(string name, object value)
+        {
+            _originalAppEnvironment.SetData(name, value);
+        }
     }
 }
