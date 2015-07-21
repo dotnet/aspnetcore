@@ -166,7 +166,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             ValidationContext validationContext)
         {
             var isValid = true;
-            ExpandValidationNode(validationContext, modelExplorer);
+            var childNodes = GetChildNodes(validationContext, modelExplorer);
 
             IList<IModelValidator> validators = null;
             var elementMetadata = modelExplorer.Metadata.ElementMetadata;
@@ -175,7 +175,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                 validators = GetValidators(validationContext.ModelValidationContext.ValidatorProvider, elementMetadata);
             }
 
-            foreach (var childNode in validationContext.ValidationNode.ChildNodes)
+            foreach (var childNode in childNodes)
             {
                 var childModelExplorer = childNode.ModelMetadata.MetadataKind == Metadata.ModelMetadataKind.Type ?
                     _modelMetadataProvider.GetModelExplorerForType(childNode.ModelMetadata.ModelType, childNode.Model) :
@@ -271,16 +271,20 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             return filters.Any(filter => filter.IsTypeExcluded(type));
         }
 
-        private void ExpandValidationNode(ValidationContext context, ModelExplorer modelExplorer)
+        private IList<ModelValidationNode> GetChildNodes(ValidationContext context, ModelExplorer modelExplorer)
         {
             var validationNode = context.ValidationNode;
+
+            // This is the trivial case where the node-tree that was built-up during binding already has
+            // all of the nodes we need.
             if (validationNode.ChildNodes.Count != 0 ||
                 !validationNode.ValidateAllProperties ||
                 validationNode.Model == null)
             {
-                return;
+                return validationNode.ChildNodes;
             }
 
+            var childNodes = new List<ModelValidationNode>(validationNode.ChildNodes);
             var elementMetadata = modelExplorer.Metadata.ElementMetadata;
             if (elementMetadata == null)
             {
@@ -293,7 +297,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                     {
                         ValidateAllProperties = true
                     };
-                    validationNode.ChildNodes.Add(childNode);
+                    childNodes.Add(childNode);
                 }
             }
             else
@@ -312,10 +316,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                         ValidateAllProperties = true
                     };
 
-                    validationNode.ChildNodes.Add(childNode);
+                    childNodes.Add(childNode);
                     index++;
                 }
             }
+
+            return childNodes;
         }
 
         private class ValidationContext
