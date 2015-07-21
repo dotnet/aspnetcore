@@ -88,8 +88,8 @@ __dnvm_find_latest() {
         local packageId="$_DNVM_RUNTIME_PACKAGE_NAME-$platform-$(__dnvm_current_os)-$arch"
     fi
     local url="$DNX_ACTIVE_FEED/GetUpdates()?packageIds=%27$packageId%27&versions=%270.0%27&includePrerelease=true&includeAllVersions=false"
-    xml="$(curl $url 2>/dev/null)"
-    echo $xml | grep \<[a-zA-Z]:Version\>* >> /dev/null || return 1
+    xml=$(curl "$url" 2>/dev/null)
+    echo "$xml" | egrep "(\<[a-zA-Z]:Version\>)*" >> /dev/null || return 1
     version="$(echo $xml | sed 's/.*<[a-zA-Z]:Version>\([^<]*\).*/\1/')"
     echo $version
 }
