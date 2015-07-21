@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.Hosting
             var services = new ServiceCollection();
 
             // Import from manifest
-            var manifest = _services.GetService<IServiceManifest>();
+            var manifest = _services.GetService<IRuntimeServices>();
             if (manifest != null)
             {
                 foreach (var service in manifest.Services)
