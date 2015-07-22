@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
     public class MessageBodyTests
     {
         [Fact]
-        public async Task Http10ConnectionClose()
+        public void Http10ConnectionClose()
         {
             var input = new TestInput();
             var body = MessageBody.For("HTTP/1.0", new Dictionary<string, string[]>(), input.FrameContext);

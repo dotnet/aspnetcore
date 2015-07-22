@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
         }
 
         [Fact]
-        public async Task LoopCanBeInitAndClose()
+        public void LoopCanBeInitAndClose()
         {
             var loop = new UvLoopHandle();
             loop.Init(_uv);
@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
         }
 
         [Fact]
-        public async Task AsyncCanBeSent()
+        public void AsyncCanBeSent()
         {
             var loop = new UvLoopHandle();
             loop.Init(_uv);
@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
         }
 
         [Fact]
-        public async Task SocketCanBeInitAndClose()
+        public void SocketCanBeInitAndClose()
         {
             var loop = new UvLoopHandle();
             loop.Init(_uv);

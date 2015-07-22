@@ -76,7 +76,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
         }
 
         [Fact]
-        public async Task EngineCanStartAndStop()
+        public void EngineCanStartAndStop()
         {
             var engine = new KestrelEngine(LibraryManager, new ShutdownNotImplemented());
             engine.Start(1);
@@ -84,7 +84,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
         }
 
         [Fact]
-        public async Task ListenerCanCreateAndDispose()
+        public void ListenerCanCreateAndDispose()
         {
             var engine = new KestrelEngine(LibraryManager, new ShutdownNotImplemented());
             engine.Start(1);
@@ -95,7 +95,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
 
 
         [Fact]
-        public async Task ConnectionCanReadAndWrite()
+        public void ConnectionCanReadAndWrite()
         {
             var engine = new KestrelEngine(LibraryManager, new ShutdownNotImplemented());
             engine.Start(1);

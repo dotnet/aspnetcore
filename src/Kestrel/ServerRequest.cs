@@ -221,7 +221,7 @@ namespace Kestrel
             }
         }
 
-        async Task<Stream> IHttpUpgradeFeature.UpgradeAsync()
+        Task<Stream> IHttpUpgradeFeature.UpgradeAsync()
         {
             _frame.StatusCode = 101;
             _frame.ReasonPhrase = "Switching Protocols";
@@ -235,7 +235,7 @@ namespace Kestrel
                 }
             }
             _frame.ProduceStart();
-            return _frame.DuplexStream;
+            return Task.FromResult(_frame.DuplexStream);
         }
     }
 }
