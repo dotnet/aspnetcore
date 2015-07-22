@@ -739,7 +739,7 @@ namespace Microsoft.AspNet.Mvc.Test
         [Fact]
         public void HttpUnauthorized_SetsStatusCode()
         {
-            // Arrange 
+            // Arrange
             var controller = new TestableController();
 
             // Act
@@ -798,6 +798,45 @@ namespace Microsoft.AspNet.Mvc.Test
             // Assert
             Assert.IsType<HttpNotFoundObjectResult>(result);
             Assert.Equal(StatusCodes.Status404NotFound, result.StatusCode);
+            Assert.Same(input, result.Value);
+            mockHttpContext.Verify(
+                x => x.Response.RegisterForDispose(It.IsAny<IDisposable>()),
+                Times.Once());
+        }
+
+        [Fact]
+        public void Ok_SetsStatusCode()
+        {
+            // Arrange
+            var controller = new TestableController();
+
+            // Act
+            var result = controller.Ok();
+
+            // Assert
+            Assert.IsType<HttpOkResult>(result);
+            Assert.Equal(StatusCodes.Status200OK, result.StatusCode);
+        }
+
+        [Fact]
+        public void Ok_WithIDisposableObject_RegistersForDispose()
+        {
+            // Arrange
+            var mockHttpContext = new Mock<DefaultHttpContext>();
+            mockHttpContext.Setup(x => x.Response.RegisterForDispose(It.IsAny<IDisposable>()));
+
+            var controller = new TestableController()
+            {
+                ActionContext = new ActionContext(mockHttpContext.Object, new RouteData(), new ActionDescriptor())
+            };
+            var input = new DisposableObject();
+
+            // Act
+            var result = controller.Ok(input);
+
+            // Assert
+            Assert.IsType<HttpOkObjectResult>(result);
+            Assert.Equal(StatusCodes.Status200OK, result.StatusCode);
             Assert.Same(input, result.Value);
             mockHttpContext.Verify(
                 x => x.Response.RegisterForDispose(It.IsAny<IDisposable>()),

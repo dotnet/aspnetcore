@@ -51,7 +51,7 @@ namespace BasicWebSite.Controllers
         [RequireHttps]
         public IActionResult HttpsOnlyAction()
         {
-            return new HttpStatusCodeResult(StatusCodes.Status200OK);
+            return Ok();
         }
 
         public Task ActionReturningTask()

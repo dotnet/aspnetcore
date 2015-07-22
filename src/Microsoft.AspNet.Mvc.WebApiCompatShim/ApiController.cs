@@ -295,25 +295,25 @@ namespace System.Web.Http
         }
 
         /// <summary>
-        /// Creates an <see cref="OkResult"/> (200 OK).
+        /// Creates an <see cref="HttpOkResult"/> (200 OK).
         /// </summary>
-        /// <returns>An <see cref="OkResult"/>.</returns>
+        /// <returns>An <see cref="HttpOkResult"/>.</returns>
         [NonAction]
-        public virtual OkResult Ok()
+        public virtual HttpOkResult Ok()
         {
-            return new OkResult();
+            return new HttpOkResult();
         }
 
         /// <summary>
-        /// Creates an <see cref="OkNegotiatedContentResult{T}"/> (200 OK) with the specified values.
+        /// Creates an <see cref="HttpOkObjectResult"/> (200 OK) with the specified values.
         /// </summary>
         /// <typeparam name="T">The type of content in the entity body.</typeparam>
         /// <param name="content">The content value to negotiate and format in the entity body.</param>
-        /// <returns>An <see cref="OkNegotiatedContentResult{T}"/> with the specified values.</returns>
+        /// <returns>An <see cref="HttpOkObjectResult"/> with the specified values.</returns>
         [NonAction]
-        public virtual OkNegotiatedContentResult<T> Ok<T>([NotNull] T content)
+        public virtual HttpOkObjectResult Ok<T>(T content)
         {
-            return new OkNegotiatedContentResult<T>(content);
+            return new HttpOkObjectResult(content);
         }
 
         /// <summary>

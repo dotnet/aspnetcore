@@ -290,7 +290,7 @@ namespace System.Web.Http
             var result = controller.Ok();
 
             // Assert
-            Assert.Equal(200, Assert.IsType<OkResult>(result).StatusCode);
+            Assert.Equal(200, Assert.IsType<HttpOkResult>(result).StatusCode);
         }
 
 
@@ -305,8 +305,8 @@ namespace System.Web.Http
             var result = controller.Ok(product);
 
             // Assert
-            var okResult = Assert.IsType<OkNegotiatedContentResult<Product>>(result);
-            Assert.Same(product, okResult.Content);
+            var okResult = Assert.IsType<HttpOkObjectResult>(result);
+            Assert.Same(product, okResult.Value);
         }
 
         [Fact]

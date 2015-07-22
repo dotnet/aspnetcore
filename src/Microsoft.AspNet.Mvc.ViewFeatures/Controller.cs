@@ -464,6 +464,33 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
+        /// Creates a <see cref="HttpOkResult"/> object that produces an empty OK (200) response.
+        /// </summary>
+        /// <returns>The created <see cref="HttpOkResult"/> for the response.</returns>
+        [NonAction]
+        public virtual HttpOkResult Ok()
+        {
+            return new HttpOkResult();
+        }
+
+        /// <summary>
+        /// Creates an <see cref="HttpOkObjectResult"/> object that produces an OK (200) response.
+        /// </summary>
+        /// <param name="value">The content value to format in the entity body.</param>
+        /// <returns>The created <see cref="HttpOkObjectResult"/> for the response.</returns>
+        [NonAction]
+        public virtual HttpOkObjectResult Ok(object value)
+        {
+            var disposableValue = value as IDisposable;
+            if (disposableValue != null)
+            {
+                Response.RegisterForDispose(disposableValue);
+            }
+
+            return new HttpOkObjectResult(value);
+        }
+
+        /// <summary>
         /// Creates a <see cref="RedirectResult"/> object that redirects to the specified <paramref name="url"/>.
         /// </summary>
         /// <param name="url">The URL to redirect to.</param>
@@ -1025,7 +1052,7 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         /// <typeparam name="TModel">The type of the model object.</typeparam>
         /// <param name="model">The model instance to update.</param>
-        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful</returns>
+        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
         [NonAction]
         public virtual Task<bool> TryUpdateModelAsync<TModel>([NotNull] TModel model)
             where TModel : class
@@ -1039,9 +1066,9 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         /// <typeparam name="TModel">The type of the model object.</typeparam>
         /// <param name="model">The model instance to update.</param>
-        /// <param name="prefix">The prefix to use when looking up values in the current <see cref="IValueProvider"/>
+        /// <param name="prefix">The prefix to use when looking up values in the current <see cref="IValueProvider"/>.
         /// </param>
-        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful</returns>
+        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
         [NonAction]
         public virtual async Task<bool> TryUpdateModelAsync<TModel>([NotNull] TModel model,
                                                                     [NotNull] string prefix)
@@ -1067,7 +1094,7 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="prefix">The prefix to use when looking up values in the <paramref name="valueProvider"/>.
         /// </param>
         /// <param name="valueProvider">The <see cref="IValueProvider"/> used for looking up values.</param>
-        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful</returns>
+        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
         [NonAction]
         public virtual async Task<bool> TryUpdateModelAsync<TModel>([NotNull] TModel model,
                                                                     [NotNull] string prefix,
@@ -1105,7 +1132,7 @@ namespace Microsoft.AspNet.Mvc
         /// </param>
         /// <param name="includeExpressions"> <see cref="Expression"/>(s) which represent top-level properties
         /// which need to be included for the current model.</param>
-        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful</returns>
+        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
         [NonAction]
         public async Task<bool> TryUpdateModelAsync<TModel>(
             [NotNull] TModel model,
@@ -1144,7 +1171,7 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="prefix">The prefix to use when looking up values in the current <see cref="IValueProvider"/>.
         /// </param>
         /// <param name="predicate">A predicate which can be used to filter properties at runtime.</param>
-        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful</returns>
+        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
         [NonAction]
         public async Task<bool> TryUpdateModelAsync<TModel>(
             [NotNull] TModel model,
@@ -1180,12 +1207,12 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         /// <typeparam name="TModel">The type of the model object.</typeparam>
         /// <param name="model">The model instance to update.</param>
-        /// <param name="prefix">The prefix to use when looking up values in the <paramref name="valueProvider"/>
+        /// <param name="prefix">The prefix to use when looking up values in the <paramref name="valueProvider"/>.
         /// </param>
         /// <param name="valueProvider">The <see cref="IValueProvider"/> used for looking up values.</param>
         /// <param name="includeExpressions"> <see cref="Expression"/>(s) which represent top-level properties
         /// which need to be included for the current model.</param>
-        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful</returns>
+        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
         [NonAction]
         public async Task<bool> TryUpdateModelAsync<TModel>(
             [NotNull] TModel model,
@@ -1222,11 +1249,11 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         /// <typeparam name="TModel">The type of the model object.</typeparam>
         /// <param name="model">The model instance to update.</param>
-        /// <param name="prefix">The prefix to use when looking up values in the <paramref name="valueProvider"/>
+        /// <param name="prefix">The prefix to use when looking up values in the <paramref name="valueProvider"/>.
         /// </param>
         /// <param name="valueProvider">The <see cref="IValueProvider"/> used for looking up values.</param>
         /// <param name="predicate">A predicate which can be used to filter properties at runtime.</param>
-        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful</returns>
+        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
         [NonAction]
         public async Task<bool> TryUpdateModelAsync<TModel>(
             [NotNull] TModel model,
@@ -1263,9 +1290,9 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         /// <param name="model">The model instance to update.</param>
         /// <param name="modelType">The type of model instance to update.</param>
-        /// <param name="prefix">The prefix to use when looking up values in the current <see cref="IValueProvider"/>
+        /// <param name="prefix">The prefix to use when looking up values in the current <see cref="IValueProvider"/>.
         /// </param>
-        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful</returns>
+        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
         [NonAction]
         public virtual async Task<bool> TryUpdateModelAsync([NotNull] object model,
                                                             [NotNull] Type modelType,
@@ -1299,11 +1326,11 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         /// <param name="model">The model instance to update.</param>
         /// <param name="modelType">The type of model instance to update.</param>
-        /// <param name="prefix">The prefix to use when looking up values in the <paramref name="valueProvider"/>
+        /// <param name="prefix">The prefix to use when looking up values in the <paramref name="valueProvider"/>.
         /// </param>
         /// <param name="valueProvider">The <see cref="IValueProvider"/> used for looking up values.</param>
         /// <param name="predicate">A predicate which can be used to filter properties at runtime.</param>
-        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful</returns>
+        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
         [NonAction]
         public async Task<bool> TryUpdateModelAsync(
             [NotNull] object model,
@@ -1339,7 +1366,7 @@ namespace Microsoft.AspNet.Mvc
         /// Validates the specified <paramref name="model"/> instance.
         /// </summary>
         /// <param name="model">The model to validate.</param>
-        /// <returns><c>true</c> if the <see cref="ModelState"/> is valid; <c>false</c> otherwise. </returns>
+        /// <returns><c>true</c> if the <see cref="ModelState"/> is valid; <c>false</c> otherwise.</returns>
         [NonAction]
         public virtual bool TryValidateModel([NotNull] object model)
         {
@@ -1352,7 +1379,7 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="model">The model to validate.</param>
         /// <param name="prefix">The key to use when looking up information in <see cref="ModelState"/>.
         /// </param>
-        /// <returns><c>true</c> if the <see cref="ModelState"/> is valid;<c>false</c> otherwise. </returns>
+        /// <returns><c>true</c> if the <see cref="ModelState"/> is valid;<c>false</c> otherwise.</returns>
         [NonAction]
         public virtual bool TryValidateModel([NotNull] object model, string prefix)
         {
