@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Hosting
             };
 
             var builder = new ConfigurationBuilder()
-                .Add(new MemoryConfigurationSource(vals));
+                .AddInMemoryCollection(vals);
             var config = builder.Build();
             var host = CreateBuilder(config).Build();
             host.Start();
@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.Hosting
             };
 
             var builder = new ConfigurationBuilder()
-                .Add(new MemoryConfigurationSource(vals));
+                .AddInMemoryCollection(vals);
             var config = builder.Build();
             var host = CreateBuilder(config).Build();
             host.Start();
@@ -158,7 +158,7 @@ namespace Microsoft.AspNet.Hosting
             };
 
             var builder = new ConfigurationBuilder()
-                .Add(new MemoryConfigurationSource(vals));
+                .AddInMemoryCollection(vals);
             var config = builder.Build();
 
             var engine = CreateBuilder(config).Build();
@@ -175,7 +175,7 @@ namespace Microsoft.AspNet.Hosting
             };
 
             var builder = new ConfigurationBuilder()
-                .Add(new MemoryConfigurationSource(vals));
+                .AddInMemoryCollection(vals);
             var config = builder.Build();
 
             var engine = CreateBuilder(config).Build();
