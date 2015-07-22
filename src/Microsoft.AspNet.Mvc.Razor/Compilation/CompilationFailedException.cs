@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         /// <summary>
         /// Instantiates a new instance of <see cref="CompilationFailedException"/>.
         /// </summary>
-        /// <param name="compilationFailures"><see cref="ICompilationFailure"/>s containing
+        /// <param name="compilationFailures"><see cref="CompilationFailure"/>s containing
         /// details of the compilation failure.</param>
         public CompilationFailedException(
                 [NotNull] IEnumerable<CompilationFailure> compilationFailures)
