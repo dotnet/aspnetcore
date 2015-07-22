@@ -64,6 +64,19 @@ ViewWithSyncComponents Invoke: hello from viewdatacomponent"
             Assert.Equal("10", body.Trim());
         }
 
+        [Fact]
+        public async Task ViewComponents_InvokeWithViewComponentResult()
+        {
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
+            var client = server.CreateClient();
+
+            // Act
+            var body = await client.GetStringAsync("http://localhost/ViewComponentResult/Invoke?number=31");
+
+            // Assert
+            Assert.Equal("31", body.Trim());
+        }
+
         [Theory]
         [InlineData("http://localhost/Home/ViewComponentWithEnumerableModelUsingWhere", "Where")]
         [InlineData("http://localhost/Home/ViewComponentWithEnumerableModelUsingSelect", "Select")]

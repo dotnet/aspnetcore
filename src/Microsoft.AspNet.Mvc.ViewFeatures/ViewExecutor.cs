@@ -14,11 +14,10 @@ namespace Microsoft.AspNet.Mvc
     /// </summary>
     public static class ViewExecutor
     {
-        private const int BufferSize = 1024;
-        private static readonly MediaTypeHeaderValue DefaultContentType = new MediaTypeHeaderValue("text/html")
+        public static readonly MediaTypeHeaderValue DefaultContentType = new MediaTypeHeaderValue("text/html")
         {
             Encoding = Encoding.UTF8
-        };
+        }.CopyAsReadOnly();
 
         /// <summary>
         /// Asynchronously renders the specified <paramref name="view"/> to the response body.
@@ -37,32 +36,17 @@ namespace Microsoft.AspNet.Mvc
         {
             var response = actionContext.HttpContext.Response;
 
-            var contentTypeHeader = contentType;
-            Encoding encoding;
-            if (contentTypeHeader == null)
+            contentType = contentType ?? DefaultContentType;
+            if (contentType.Encoding == null)
             {
-                contentTypeHeader = DefaultContentType;
-                encoding = Encoding.UTF8;
-            }
-            else
-            {
-                if (contentTypeHeader.Encoding == null)
-                {
-                    // Do not modify the user supplied content type, so copy it instead
-                    contentTypeHeader = contentTypeHeader.Copy();
-                    contentTypeHeader.Encoding = Encoding.UTF8;
-
-                    encoding = Encoding.UTF8;
-                }
-                else
-                {
-                    encoding = contentTypeHeader.Encoding;
-                }
+                // Do not modify the user supplied content type, so copy it instead
+                contentType = contentType.Copy();
+                contentType.Encoding = Encoding.UTF8;
             }
 
-            response.ContentType = contentTypeHeader.ToString();
+            response.ContentType = contentType.ToString();
 
-            using (var writer = new HttpResponseStreamWriter(response.Body, encoding))
+            using (var writer = new HttpResponseStreamWriter(response.Body, contentType.Encoding))
             {
                 var viewContext = new ViewContext(
                     actionContext,
@@ -72,7 +56,8 @@ namespace Microsoft.AspNet.Mvc
                     writer,
                     htmlHelperOptions);
 
-                await view.RenderAsync(viewContext);            }
+                await view.RenderAsync(viewContext);
+            }
         }
     }
 }

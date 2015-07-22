@@ -325,6 +325,46 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
+        /// Creates a <see cref="ViewComponentResult"/> by specifying the name of a view component to render.
+        /// </summary>
+        /// <param name="componentName">
+        /// The view component name. Can be a view component
+        /// <see cref="ViewComponents.ViewComponentDescriptor.ShortName"/> or
+        /// <see cref="ViewComponents.ViewComponentDescriptor.FullName"/>.</param>
+        /// <param name="arguments">The arguments to pass to the view component.</param>
+        /// <returns>The created <see cref="ViewComponentResult"/> object for the response.</returns>
+        [NonAction]
+        public virtual ViewComponentResult ViewComponent(string componentName, params object[] arguments)
+        {
+            return new ViewComponentResult()
+            {
+                ViewComponentName = componentName,
+                Arguments = arguments,
+                ViewData = ViewData,
+                TempData = TempData
+            };
+        }
+
+        /// <summary>
+        /// Creates a <see cref="ViewComponentResult"/> by specifying the <see cref="Type"/> of a view component to
+        /// render.
+        /// </summary>
+        /// <param name="componentType">The view component <see cref="Type"/>.</param>
+        /// <param name="arguments">The arguments to pass to the view component.</param>
+        /// <returns>The created <see cref="ViewComponentResult"/> object for the response.</returns>
+        [NonAction]
+        public virtual ViewComponentResult ViewComponent(Type componentType, params object[] arguments)
+        {
+            return new ViewComponentResult()
+            {
+                ViewComponentType = componentType,
+                Arguments = arguments,
+                ViewData = ViewData,
+                TempData = TempData
+            };
+        }
+
+        /// <summary>
         /// Creates a <see cref="ContentResult"/> object by specifying a <paramref name="content"/> string.
         /// </summary>
         /// <param name="content">The content to write to the response.</param>

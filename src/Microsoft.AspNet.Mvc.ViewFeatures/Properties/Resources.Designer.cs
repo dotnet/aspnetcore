@@ -778,6 +778,22 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             return string.Format(CultureInfo.CurrentCulture, GetString("HtmlGenerator_FieldNameCannotBeNullOrEmpty"), p0, p1, p2, p3, p4);
         }
 
+        /// <summary>
+        /// Either the '{0}' or '{1}' property must be set in order to invoke a view component.
+        /// </summary>
+        internal static string ViewComponentResult_NameOrTypeMustBeSet
+        {
+            get { return GetString("ViewComponentResult_NameOrTypeMustBeSet"); }
+        }
+
+        /// <summary>
+        /// Either the '{0}' or '{1}' property must be set in order to invoke a view component.
+        /// </summary>
+        internal static string FormatViewComponentResult_NameOrTypeMustBeSet(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ViewComponentResult_NameOrTypeMustBeSet"), p0, p1);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

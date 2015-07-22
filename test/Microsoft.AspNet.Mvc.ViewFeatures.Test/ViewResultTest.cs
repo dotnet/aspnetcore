@@ -138,6 +138,33 @@ namespace Microsoft.AspNet.Mvc
         }
 
         [Fact]
+        public async Task ViewResult_SetsStatusCode()
+        {
+            // Arrange
+            var viewName = "myview";
+            var httpContext = GetHttpContext();
+            var context = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+            var viewEngine = new Mock<IViewEngine>();
+            var view = Mock.Of<IView>();
+
+            viewEngine.Setup(e => e.FindView(context, "myview"))
+                      .Returns(ViewEngineResult.Found("myview", view));
+
+            var viewResult = new ViewResult
+            {
+                ViewName = viewName,
+                ViewEngine = viewEngine.Object,
+                StatusCode = 404,
+            };
+
+            // Act
+            await viewResult.ExecuteResultAsync(context);
+
+            // Assert
+            Assert.Equal(404, httpContext.Response.StatusCode);
+        }
+
+        [Fact]
         public async Task ExecuteResultAsync_UsesActionDescriptorName_IfViewNameIsNull()
         {
             // Arrange

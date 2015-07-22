@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Mvc
         }
 
         [Fact]
-        public async Task ViewResult_UsesFindPartialViewOnSpecifiedViewEngineToLocateViews()
+        public async Task PartialViewResult_UsesFindPartialViewOnSpecifiedViewEngineToLocateViews()
         {
             // Arrange
             var viewName = "myview";
@@ -123,6 +123,33 @@ namespace Microsoft.AspNet.Mvc
 
             // Assert
             Assert.Equal(expectedContentTypeHeaderValue, httpContext.Response.ContentType);
+        }
+
+        [Fact]
+        public async Task PartialViewResult_SetsStatusCode()
+        {
+            // Arrange
+            var viewName = "myview";
+            var httpContext = GetHttpContext();
+            var context = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+            var viewEngine = new Mock<IViewEngine>();
+            var view = Mock.Of<IView>();
+
+            viewEngine.Setup(e => e.FindPartialView(context, "myview"))
+                      .Returns(ViewEngineResult.Found("myview", view));
+
+            var viewResult = new PartialViewResult
+            {
+                ViewName = viewName,
+                ViewEngine = viewEngine.Object,
+                StatusCode = 404,
+            };
+
+            // Act
+            await viewResult.ExecuteResultAsync(context);
+
+            // Assert
+            Assert.Equal(404, httpContext.Response.StatusCode);
         }
 
         [Fact]

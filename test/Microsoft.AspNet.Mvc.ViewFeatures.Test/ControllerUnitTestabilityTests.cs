@@ -553,6 +553,52 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal(actionContext.ModelState, controller2.ViewData.ModelState);
         }
 
+        [Fact]
+        public void ViewComponent_WithName()
+        {
+            // Arrange
+            var controller = new TestabilityController();
+
+            // Act
+            var result = controller.ViewComponent("TagCloud");
+
+            // Assert
+            Assert.NotNull(result);
+            
+            Assert.Equal("TagCloud", result.ViewComponentName);
+        }
+
+        [Fact]
+        public void ViewComponent_WithType()
+        {
+            // Arrange
+            var controller = new TestabilityController();
+
+            // Act
+            var result = controller.ViewComponent(typeof(TagCloudViewComponent));
+
+            // Assert
+            Assert.NotNull(result);
+
+            Assert.Equal(typeof(TagCloudViewComponent), result.ViewComponentType);
+        }
+
+        [Fact]
+        public void ViewComponent_WithArguments()
+        {
+            // Arrange
+            var controller = new TestabilityController();
+
+            // Act
+            var result = controller.ViewComponent(typeof(TagCloudViewComponent), "Hi", "There");
+
+            // Assert
+            Assert.NotNull(result);
+
+            Assert.Equal(typeof(TagCloudViewComponent), result.ViewComponentType);
+            Assert.Equal(new object[] { "Hi", "There" }, result.Arguments);
+        }
+
         public static IEnumerable<object[]> TestabilityViewTestData
         {
             get
@@ -665,6 +711,10 @@ namespace Microsoft.AspNet.Mvc
         {
             public string Property1 { get; set; }
             public string Property2 { get; set; }
+        }
+
+        private class TagCloudViewComponent
+        {
         }
     }
 }
