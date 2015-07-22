@@ -10,6 +10,8 @@ using Microsoft.AspNet.Razor;
 using Microsoft.AspNet.Razor.CodeGenerators;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
+using Microsoft.Framework.Runtime;
+using Microsoft.Framework.Runtime.Compilation;
 
 namespace Microsoft.AspNet.Mvc.Razor.Compilation
 {
@@ -82,19 +84,32 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                 razorError.Location.FilePath ?? file.RelativePath,
                 StringComparer.Ordinal);
 
-            var failures = new List<RazorCompilationFailure>();
+            var failures = new List<CompilationFailure>();
             foreach (var group in messageGroups)
             {
                 var filePath = group.Key;
                 var fileContent = ReadFileContentsSafely(filePath);
-                var compilationFailure = new RazorCompilationFailure(
+                var compilationFailure = new CompilationFailure(
                     filePath,
                     fileContent,
-                    group.Select(parserError => new RazorCompilationMessage(parserError, filePath)));
+                    group.Select(parserError => CreateDiagnosticMessage(parserError, filePath)));
                 failures.Add(compilationFailure);
             }
 
             return CompilationResult.Failed(failures);
+        }
+
+        private DiagnosticMessage CreateDiagnosticMessage(RazorError error, string filePath)
+        {
+            return new DiagnosticMessage(
+                error.Message,
+                $"{error} ({error.Location.LineIndex},{error.Location.CharacterIndex}) {error.Message}",
+                filePath,
+                DiagnosticMessageSeverity.Error,
+                error.Location.LineIndex + 1,
+                error.Location.CharacterIndex,
+                error.Location.LineIndex + 1,
+                error.Location.CharacterIndex + error.Length);
         }
 
         private string ReadFileContentsSafely(string relativePath)

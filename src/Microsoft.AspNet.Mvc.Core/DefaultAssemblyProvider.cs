@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.Mvc
         {
             get
             {
-                return GetCandidateLibraries().SelectMany(l => l.LoadableAssemblies)
+                return GetCandidateLibraries().SelectMany(l => l.Assemblies)
                                               .Select(Load);
             }
         }
@@ -60,12 +60,12 @@ namespace Microsoft.AspNet.Mvc
         /// By default it returns all assemblies that reference any of the primary MVC assemblies
         /// while ignoring MVC assemblies.
         /// </summary>
-        /// <returns>A set of <see cref="ILibraryInformation"/>.</returns>
-        protected virtual IEnumerable<ILibraryInformation> GetCandidateLibraries()
+        /// <returns>A set of <see cref="Library"/>.</returns>
+        protected virtual IEnumerable<Library> GetCandidateLibraries()
         {
             if (ReferenceAssemblies == null)
             {
-                return Enumerable.Empty<ILibraryInformation>();
+                return Enumerable.Empty<Library>();
             }
 
             // GetReferencingLibraries returns the transitive closure of referencing assemblies
@@ -80,7 +80,7 @@ namespace Microsoft.AspNet.Mvc
             return Assembly.Load(assemblyName);
         }
 
-        private bool IsCandidateLibrary(ILibraryInformation library)
+        private bool IsCandidateLibrary(Library library)
         {
             Debug.Assert(ReferenceAssemblies != null);
             return !ReferenceAssemblies.Contains(library.Name);

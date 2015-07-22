@@ -7,6 +7,7 @@ using Microsoft.AspNet.Mvc.Razor.Precompilation;
 using Microsoft.Framework.Caching.Memory;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Runtime;
+using Microsoft.Framework.Runtime.Compilation;
 using Microsoft.Framework.Runtime.Roslyn;
 
 namespace Microsoft.AspNet.Mvc

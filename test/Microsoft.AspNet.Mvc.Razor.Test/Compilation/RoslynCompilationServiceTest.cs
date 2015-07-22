@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
 public class MyTestType  {}";
             var applicationEnvironment = GetApplicationEnvironment();
             var accessor = GetLoadContextAccessor();
-            var libraryManager = GetLibraryManager();
+            var libraryExporter = GetLibraryExporter();
 
             var compilerOptionsProvider = new Mock<ICompilerOptionsProvider>();
             compilerOptionsProvider.Setup(p => p.GetCompilerOptions(applicationEnvironment.ApplicationName,
@@ -39,7 +39,7 @@ public class MyTestType  {}";
 
             var compilationService = new RoslynCompilationService(applicationEnvironment,
                                                                   accessor,
-                                                                  libraryManager,
+                                                                  libraryExporter,
                                                                   compilerOptionsProvider.Object,
                                                                   mvcRazorHost.Object,
                                                                   GetOptions());
@@ -66,7 +66,7 @@ public class MyTestType  {}";
 this should fail";
             var applicationEnvironment = GetApplicationEnvironment();
             var accessor = GetLoadContextAccessor();
-            var libraryManager = GetLibraryManager();
+            var libraryExporter = GetLibraryExporter();
 
             var compilerOptionsProvider = new Mock<ICompilerOptionsProvider>();
             compilerOptionsProvider.Setup(p => p.GetCompilerOptions(applicationEnvironment.ApplicationName,
@@ -79,7 +79,7 @@ this should fail";
 
             var compilationService = new RoslynCompilationService(applicationEnvironment,
                                                                   accessor,
-                                                                  libraryManager,
+                                                                  libraryExporter,
                                                                   compilerOptionsProvider.Object,
                                                                   mvcRazorHost,
                                                                   GetOptions(fileProvider));
@@ -104,7 +104,7 @@ this should fail";
             var content = @"this should fail";
             var applicationEnvironment = GetApplicationEnvironment();
             var accessor = GetLoadContextAccessor();
-            var libraryManager = GetLibraryManager();
+            var libraryExporter = GetLibraryExporter();
 
             var compilerOptionsProvider = new Mock<ICompilerOptionsProvider>();
             compilerOptionsProvider.Setup(p => p.GetCompilerOptions(applicationEnvironment.ApplicationName,
@@ -115,7 +115,7 @@ this should fail";
 
             var compilationService = new RoslynCompilationService(applicationEnvironment,
                                                                   accessor,
-                                                                  libraryManager,
+                                                                  libraryExporter,
                                                                   compilerOptionsProvider.Object,
                                                                   mvcRazorHost,
                                                                   GetOptions());
@@ -144,7 +144,7 @@ this should fail";
 this should fail";
             var applicationEnvironment = GetApplicationEnvironment();
             var accessor = GetLoadContextAccessor();
-            var libraryManager = GetLibraryManager();
+            var libraryExporter = GetLibraryExporter();
 
             var compilerOptionsProvider = new Mock<ICompilerOptionsProvider>();
             compilerOptionsProvider.Setup(p => p.GetCompilerOptions(applicationEnvironment.ApplicationName,
@@ -161,7 +161,7 @@ this should fail";
 
             var compilationService = new RoslynCompilationService(applicationEnvironment,
                                                                   accessor,
-                                                                  libraryManager,
+                                                                  libraryExporter,
                                                                   compilerOptionsProvider.Object,
                                                                   mvcRazorHost,
                                                                   GetOptions(fileProvider));
@@ -192,7 +192,7 @@ public class MyNonCustomDefinedClass {}
 ";
             var applicationEnvironment = GetApplicationEnvironment();
             var accessor = GetLoadContextAccessor();
-            var libraryManager = GetLibraryManager();
+            var libraryExporter = GetLibraryExporter();
 
             var compilerOptionsProvider = new Mock<ICompilerOptionsProvider>();
             compilerOptionsProvider.Setup(p => p.GetCompilerOptions(applicationEnvironment.ApplicationName,
@@ -205,7 +205,7 @@ public class MyNonCustomDefinedClass {}
 
             var compilationService = new RoslynCompilationService(applicationEnvironment,
                                                                   accessor,
-                                                                  libraryManager,
+                                                                  libraryExporter,
                                                                   compilerOptionsProvider.Object,
                                                                   mvcRazorHost.Object,
                                                                   GetOptions());
@@ -229,7 +229,7 @@ public class RazorPrefixType  {}
 public class NotRazorPrefixType {}";
             var applicationEnvironment = GetApplicationEnvironment();
             var accessor = GetLoadContextAccessor();
-            var libraryManager = GetLibraryManager();
+            var libraryExporter = GetLibraryExporter();
 
             var compilerOptionsProvider = new Mock<ICompilerOptionsProvider>();
             compilerOptionsProvider.Setup(p => p.GetCompilerOptions(applicationEnvironment.ApplicationName,
@@ -242,7 +242,7 @@ public class NotRazorPrefixType {}";
 
             var compilationService = new RoslynCompilationService(applicationEnvironment,
                                                                   accessor,
-                                                                  libraryManager,
+                                                                  libraryExporter,
                                                                   compilerOptionsProvider.Object,
                                                                   mvcRazorHost.Object,
                                                                   GetOptions());
@@ -275,7 +275,7 @@ public class NotRazorPrefixType {}";
             var compilationService = new RoslynCompilationService(
                 GetApplicationEnvironment(),
                 GetLoadContextAccessor(),
-                GetLibraryManager(),
+                GetLibraryExporter(),
                 Mock.Of<ICompilerOptionsProvider>(),
                 Mock.Of<IMvcRazorHost>(),
                 options.Object);
@@ -365,21 +365,17 @@ public class NotRazorPrefixType {}";
                 isEnabledByDefault: true);
         }
 
-        private static ILibraryManager GetLibraryManager()
+        private static ILibraryExporter GetLibraryExporter()
         {
             var fileReference = new Mock<IMetadataFileReference>();
             fileReference.SetupGet(f => f.Path)
                          .Returns(typeof(string).Assembly.Location);
-            var libraryExport = new Mock<ILibraryExport>();
-            libraryExport.SetupGet(e => e.MetadataReferences)
-                         .Returns(new[] { fileReference.Object });
-            libraryExport.SetupGet(e => e.SourceReferences)
-                         .Returns(new ISourceReference[0]);
+            var libraryExport = new LibraryExport(fileReference.Object);
 
-            var libraryManager = new Mock<ILibraryManager>();
-            libraryManager.Setup(l => l.GetAllExports(It.IsAny<string>()))
-                          .Returns(libraryExport.Object);
-            return libraryManager.Object;
+            var libraryExporter = new Mock<ILibraryExporter>();
+            libraryExporter.Setup(l => l.GetAllExports(It.IsAny<string>()))
+                          .Returns(libraryExport);
+            return libraryExporter.Object;
         }
 
         private static IAssemblyLoadContextAccessor GetLoadContextAccessor()

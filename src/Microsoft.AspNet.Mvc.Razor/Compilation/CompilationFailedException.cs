@@ -4,8 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Framework.Runtime;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.Runtime.Compilation;
 
 namespace Microsoft.AspNet.Mvc.Razor.Compilation
 {
@@ -20,16 +20,16 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         /// <param name="compilationFailures"><see cref="ICompilationFailure"/>s containing
         /// details of the compilation failure.</param>
         public CompilationFailedException(
-                [NotNull] IEnumerable<ICompilationFailure> compilationFailures)
+                [NotNull] IEnumerable<CompilationFailure> compilationFailures)
             : base(FormatMessage(compilationFailures))
         {
             CompilationFailures = compilationFailures;
         }
 
         /// <inheritdoc />
-        public IEnumerable<ICompilationFailure> CompilationFailures { get; }
+        public IEnumerable<CompilationFailure> CompilationFailures { get; }
 
-        private static string FormatMessage(IEnumerable<ICompilationFailure> compilationFailures)
+        private static string FormatMessage(IEnumerable<CompilationFailure> compilationFailures)
         {
             return Resources.CompilationFailed + Environment.NewLine +
                 string.Join(

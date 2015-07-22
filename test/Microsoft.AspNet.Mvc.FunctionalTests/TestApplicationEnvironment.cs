@@ -28,9 +28,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             get { return _applicationName; }
         }
 
-        public string Version
+        public string ApplicationVersion
         {
-            get { return _originalAppEnvironment.Version; }
+            get { return _originalAppEnvironment.ApplicationVersion; }
         }
 
         public string ApplicationBasePath

@@ -22,10 +22,10 @@ namespace Microsoft.AspNet.Mvc.Core
             manager.Setup(f => f.GetReferencingLibraries(It.IsAny<string>()))
                    .Returns(new[]
                    {
-                        CreateLibraryInfo("Microsoft.AspNet.Mvc.Core"),
-                        CreateLibraryInfo("Microsoft.AspNet.Mvc"),
-                        CreateLibraryInfo("Microsoft.AspNet.Mvc.Abstractions"),
-                        CreateLibraryInfo("SomeRandomAssembly"),
+                        new Library("Microsoft.AspNet.Mvc.Core"),
+                        new Library("Microsoft.AspNet.Mvc"),
+                        new Library("Microsoft.AspNet.Mvc.Abstractions"),
+                        new Library("SomeRandomAssembly"),
                    })
                    .Verifiable();
             var provider = new TestAssemblyProvider(manager.Object);
@@ -45,13 +45,13 @@ namespace Microsoft.AspNet.Mvc.Core
             // Arrange
             var manager = new Mock<ILibraryManager>();
             manager.Setup(f => f.GetReferencingLibraries(It.IsAny<string>()))
-                  .Returns(Enumerable.Empty<ILibraryInformation>());
+                  .Returns(Enumerable.Empty<Library>());
             manager.Setup(f => f.GetReferencingLibraries("Microsoft.AspNet.Mvc.Core"))
-                   .Returns(new[] { CreateLibraryInfo("Foo") });
+                   .Returns(new[] { new Library("Foo") });
             manager.Setup(f => f.GetReferencingLibraries("Microsoft.AspNet.Mvc.Abstractions"))
-                   .Returns(new[] { CreateLibraryInfo("Bar") });
+                   .Returns(new[] { new Library("Bar") });
             manager.Setup(f => f.GetReferencingLibraries("Microsoft.AspNet.Mvc"))
-                   .Returns(new[] { CreateLibraryInfo("Baz") });
+                   .Returns(new[] { new Library("Baz") });
             var provider = new TestAssemblyProvider(manager.Object);
 
             // Act
@@ -118,30 +118,23 @@ namespace Microsoft.AspNet.Mvc.Core
             Assert.True(expected.SetEquals(referenceAssemblies));
         }
 
-        private static ILibraryInformation CreateLibraryInfo(string name)
-        {
-            var info = new Mock<ILibraryInformation>();
-            info.SetupGet(b => b.Name).Returns(name);
-            return info.Object;
-        }
-
         private static ILibraryManager CreateLibraryManager()
         {
             var manager = new Mock<ILibraryManager>();
             manager.Setup(f => f.GetReferencingLibraries(It.IsAny<string>()))
-                  .Returns(Enumerable.Empty<ILibraryInformation>());
+                  .Returns(Enumerable.Empty<Library>());
             manager.Setup(f => f.GetReferencingLibraries("Microsoft.AspNet.Mvc.Core"))
-                   .Returns(new[] { CreateLibraryInfo("Baz") });
+                   .Returns(new[] { new Library("Baz") });
             manager.Setup(f => f.GetReferencingLibraries("MyAssembly"))
-                   .Returns(new[] { CreateLibraryInfo("Foo") });
+                   .Returns(new[] { new Library("Foo") });
             manager.Setup(f => f.GetReferencingLibraries("AnotherAssembly"))
-                   .Returns(new[] { CreateLibraryInfo("Bar") });
+                   .Returns(new[] { new Library("Bar") });
             return manager.Object;
         }
 
         private class TestAssemblyProvider : DefaultAssemblyProvider
         {
-            public new IEnumerable<ILibraryInformation> GetCandidateLibraries()
+            public new IEnumerable<Library> GetCandidateLibraries()
             {
                 return base.GetCandidateLibraries();
             }
@@ -202,7 +195,7 @@ namespace Microsoft.AspNet.Mvc.Core
 
                     return new HashSet<string>(
                         SelectMvcAssemblies(
-                            GetLoadableAssemblies(dependencies)));
+                            GetAssemblies(dependencies)));
                 }
             }
 
@@ -249,11 +242,11 @@ namespace Microsoft.AspNet.Mvc.Core
                 return mvcAssemblies;
             }
 
-            private static IEnumerable<string> GetLoadableAssemblies(IEnumerable<string> libraries)
+            private static IEnumerable<string> GetAssemblies(IEnumerable<string> libraries)
             {
                 return libraries
                     .Select(n => _libraryManager.GetLibraryInformation(n))
-                    .SelectMany(n => n.LoadableAssemblies)
+                    .SelectMany(n => n.Assemblies)
                     .Distinct()
                     .Select(n => n.Name);
             }

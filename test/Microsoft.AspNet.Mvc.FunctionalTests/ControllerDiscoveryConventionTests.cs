@@ -132,7 +132,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             }
 
-            protected override IEnumerable<ILibraryInformation> GetCandidateLibraries()
+            protected override IEnumerable<Library> GetCandidateLibraries()
             {
                 var libraries = base.GetCandidateLibraries();
                 // Filter out other WebSite projects
