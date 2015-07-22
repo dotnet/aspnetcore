@@ -1,24 +1,34 @@
 ﻿{
-  "description": "Features that enable globalization & localization of MVC applications.",
-  "version": "6.0.0-*",
-  "compilationOptions": {
-    "warningsAsErrors": false
-  },
-  "dependencies": {
-    "Microsoft.AspNet.Localization": "1.0.0-*",
-    "Microsoft.AspNet.Mvc.Razor": "6.0.0-*",
-    "Microsoft.Framework.DependencyInjection": "1.0.0-*",
-    "Microsoft.Framework.Localization": "1.0.0-*",
-    "Microsoft.Framework.NotNullAttribute.Sources": { "version": "1.0.0-*", "type": "build" },
-    "Microsoft.Framework.PropertyHelper.Sources": { "version": "1.0.0-*", "type": "build" }
-  },
-  "frameworks": {
-    "dnx451": {},
-    "dnxcore50": {}
-  },
-  "exclude": [
-    "wwwroot",
-    "node_modules",
-    "bower_components"
-  ]
+    "description": "Features that enable globalization & localization of MVC applications.",
+    "version": "6.0.0-*",
+    "compilationOptions": {
+        "warningsAsErrors": false
+    },
+    "dependencies": {
+        "Microsoft.AspNet.Localization": "1.0.0-*",
+        "Microsoft.AspNet.Mvc.Razor": "6.0.0-*",
+        "Microsoft.Framework.DependencyInjection": "1.0.0-*",
+        "Microsoft.Framework.Localization": "1.0.0-*",
+        "Microsoft.Framework.NotNullAttribute.Sources": {
+            "version": "1.0.0-*",
+            "type": "build"
+        },
+        "Microsoft.Framework.PropertyHelper.Sources": {
+            "version": "1.0.0-*",
+            "type": "build"
+        }
+    },
+    "frameworks": {
+        "dnx451": { },
+        "dnxcore50": { }
+    },
+    "exclude": [
+        "wwwroot",
+        "node_modules",
+        "bower_components"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/aspnet/mvc"
+    }
 }
