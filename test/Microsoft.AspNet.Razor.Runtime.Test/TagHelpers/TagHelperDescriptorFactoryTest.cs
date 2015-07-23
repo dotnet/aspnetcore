@@ -186,17 +186,18 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                                 attributes: new[]
                                 {
                                     new TagHelperAttributeDescriptor(
+                                        name: "property2",
+                                        propertyName: nameof(OverriddenPropertyEditorBrowsableTagHelper.Property2),
+                                        typeName: typeof(int).FullName,
+                                        isIndexer: false,
+                                        designTimeDescriptor: null),
+                                    new TagHelperAttributeDescriptor(
                                         name: "property",
                                         propertyName: nameof(OverriddenPropertyEditorBrowsableTagHelper.Property),
                                         typeName: typeof(int).FullName,
                                         isIndexer: false,
                                         designTimeDescriptor: null),
-                                    new TagHelperAttributeDescriptor(
-                                        name: "property2",
-                                        propertyName: nameof(OverriddenPropertyEditorBrowsableTagHelper.Property2),
-                                        typeName: typeof(int).FullName,
-                                        isIndexer: false,
-                                        designTimeDescriptor: null)
+
                                 })
                         }
                     },
@@ -244,7 +245,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // Assert
             Assert.Empty(errorSink.Errors);
-            Assert.Equal(expectedDescriptors, descriptors, TagHelperDescriptorComparer.Default);
+            Assert.Equal(expectedDescriptors, descriptors, CaseSensitiveTagHelperDescriptorComparer.Default);
         }
 
         public static TheoryData AttributeTargetData

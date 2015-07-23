@@ -273,7 +273,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             {
                 if (ShouldSkipDescriptorCreation(designTime, property))
                 {
-                    return Enumerable.Empty<TagHelperAttributeDescriptor>();
+                    continue;
                 }
 
                 var attributeNameAttribute = property.GetCustomAttribute<HtmlAttributeNameAttribute>(inherit: false);
