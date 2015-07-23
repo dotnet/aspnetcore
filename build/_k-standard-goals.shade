@@ -1,6 +1,8 @@
 use assembly="System.Xml.Linq, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
 use namespace="System"
+use namespace="System.Globalization"
 use namespace="System.IO"
+use namespace="System.Linq"
 use import="Files"
 use import="BuildEnv"
 use import="Environment"
@@ -190,9 +192,23 @@ default Quiet='${ false }'
 
 #resx
    @{
+     var cultures = CultureInfo.GetCultures(CultureTypes.NeutralCultures | CultureTypes.InstalledWin32Cultures | CultureTypes.SpecificCultures);
      foreach (var file in Directory.EnumerateFiles(BASE_DIR, "*.resx", SearchOption.AllDirectories))
      {
-        UpdateResx(file);
+        var splitFileName = Path.GetFileNameWithoutExtension(file).Split(new string[] { "." }, StringSplitOptions.None);
+
+        if (splitFileName.Length > 1)
+        {
+            var localeString = splitFileName.Last();
+            if (!cultures.Any(c => localeString.Equals(c.Name)))
+            {
+                UpdateResx(file);
+            }
+        }
+        else
+        {
+            UpdateResx(file);
+        }
      }
    }
 
