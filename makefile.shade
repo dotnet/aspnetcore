@@ -38,6 +38,7 @@ functions
             "Helios",
             "Antiforgery",
             "Identity",
+            "Localization",
             "Razor",
             "RazorTooling",
             "Routing",
