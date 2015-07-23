@@ -49,14 +49,13 @@ namespace Microsoft.AspNet.Server.Testing
         {
             var commandName = DeploymentParameters.ServerType == ServerType.WebListener ? "web" : "kestrel";
             var dnxPath = Path.Combine(ChosenRuntimePath, "dnx.exe");
-            Logger.LogInformation("Executing {dnxexe} {appPath} {command} --server.urls {url}",
-                dnxPath, DeploymentParameters.ApplicationPath,
-                commandName, DeploymentParameters.ApplicationBaseUriHint);
+            var dnxArgs = $"--appbase \"{DeploymentParameters.ApplicationPath}\" Microsoft.Framework.ApplicationHost {commandName} --server.urls {DeploymentParameters.ApplicationBaseUriHint}";
+            Logger.LogInformation("Executing {dnxexe} {dnxArgs}", dnxPath, dnxArgs);
 
             var startInfo = new ProcessStartInfo
             {
                 FileName = dnxPath,
-                Arguments = string.Format("\"{0}\" {1} --server.urls {2}", DeploymentParameters.ApplicationPath, commandName, DeploymentParameters.ApplicationBaseUriHint),
+                Arguments = dnxArgs,
                 UseShellExecute = false,
                 CreateNoWindow = true,
                 RedirectStandardError = true,
