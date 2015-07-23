@@ -14,6 +14,9 @@
             }
         }
     },
+    "compilationOptions": {
+        "allowUnsafe": true
+    },
     "commands": {
         "run": "xunit.runner.aspnet",
         "test": "xunit.runner.aspnet"

@@ -4,7 +4,6 @@
 using Microsoft.AspNet.Server.Kestrel.Networking;
 using System;
 using System.Threading;
-using System.Threading;
 
 namespace Microsoft.AspNet.Server.Kestrel.Http
 {

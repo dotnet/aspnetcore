@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
     /// <summary>
     /// Summary description for UvWriteRequest
     /// </summary>
-    public class UvWriteReq : UvReq
+    public class UvWriteReq : UvRequest
     {
         private readonly static Libuv.uv_write_cb _uv_write_cb = UvWriteCb;
 
@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         public void Init(UvLoopHandle loop)
         {
             var requestSize = loop.Libuv.req_size(Libuv.RequestType.WRITE);
-            var bufferSize = Marshal.SizeOf(typeof(Libuv.uv_buf_t)) * BUFFER_COUNT;
+            var bufferSize = Marshal.SizeOf<Libuv.uv_buf_t>() * BUFFER_COUNT;
             CreateMemory(
                 loop.Libuv,
                 loop.ThreadId,

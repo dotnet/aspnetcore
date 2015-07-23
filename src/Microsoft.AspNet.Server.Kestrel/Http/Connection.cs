@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         private readonly UvStreamHandle _socket;
         private Frame _frame;
-        long _connectionId;
+        long _connectionId = 0;
 
         public Connection(ListenerContext context, UvStreamHandle socket) : base(context)
         {
