@@ -58,8 +58,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
 
         public int Check(int statusCode)
         {
-            var x = Marshal.GetLastWin32Error();
-
             Exception error;
             var result = Check(statusCode, out error);
             if (error != null)
