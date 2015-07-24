@@ -118,6 +118,18 @@ namespace Microsoft.AspNet.Server.Kestrel
             return tcs.Task;
         }
 
+        public void Send(Action<object> callback, object state)
+        {
+            if (_loop.ThreadId == Thread.CurrentThread.ManagedThreadId)
+            {
+                callback.Invoke(state);
+            }
+            else
+            {
+                PostAsync(callback, state).Wait();
+            }
+        }
+
         private void PostCloseHandle(Action<IntPtr> callback, IntPtr handle)
         {
             lock (_workSync)

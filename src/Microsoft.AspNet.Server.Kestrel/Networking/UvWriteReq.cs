@@ -81,6 +81,54 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             }
         }
 
+        public unsafe void Write2(
+            UvStreamHandle handle,
+            ArraySegment<ArraySegment<byte>> bufs,
+            UvStreamHandle sendHandle,
+            Action<UvWriteReq, int, Exception, object> callback,
+            object state)
+        {
+            try
+            {
+                // add GCHandle to keeps this SafeHandle alive while request processing
+                _pins.Add(GCHandle.Alloc(this, GCHandleType.Normal));
+
+                var pBuffers = (Libuv.uv_buf_t*)_bufs;
+                var nBuffers = bufs.Count;
+                if (nBuffers > BUFFER_COUNT)
+                {
+                    // create and pin buffer array when it's larger than the pre-allocated one
+                    var bufArray = new Libuv.uv_buf_t[nBuffers];
+                    var gcHandle = GCHandle.Alloc(bufArray, GCHandleType.Pinned);
+                    _pins.Add(gcHandle);
+                    pBuffers = (Libuv.uv_buf_t*)gcHandle.AddrOfPinnedObject();
+                }
+
+                for (var index = 0; index != nBuffers; ++index)
+                {
+                    // create and pin each segment being written
+                    var buf = bufs.Array[bufs.Offset + index];
+
+                    var gcHandle = GCHandle.Alloc(buf.Array, GCHandleType.Pinned);
+                    _pins.Add(gcHandle);
+                    pBuffers[index] = Libuv.buf_init(
+                        gcHandle.AddrOfPinnedObject() + buf.Offset,
+                        buf.Count);
+                }
+
+                _callback = callback;
+                _state = state;
+                _uv.write2(this, handle, pBuffers, nBuffers, sendHandle, _uv_write_cb);
+            }
+            catch
+            {
+                _callback = null;
+                _state = null;
+                Unpin(this);
+                throw;
+            }
+        }
+
         private static void Unpin(UvWriteReq req)
         {
             foreach (var pin in req._pins)

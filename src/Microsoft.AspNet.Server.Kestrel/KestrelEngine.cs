@@ -38,10 +38,10 @@ namespace Microsoft.AspNet.Server.Kestrel
                         : "amd64";
 
                     libraryPath = Path.Combine(
-                        libraryPath, 
+                        libraryPath,
                         "native",
                         "windows",
-                        architecture, 
+                        architecture,
                         "libuv.dll");
                 }
                 else if (Libuv.IsDarwin)
@@ -91,16 +91,37 @@ namespace Microsoft.AspNet.Server.Kestrel
 
         public IDisposable CreateServer(string scheme, string host, int port, Func<Frame, Task> application)
         {
-            var listeners = new List<Listener>();
+            var listeners = new List<IDisposable>();
 
             try
             {
+                var pipeName = (Libuv.IsWindows ? @"\\.\pipe\kestrel_" : "/tmp/kestrel_") + Guid.NewGuid().ToString("n");
+
+                var single = Threads.Count == 1;
+                var first = true;
+
                 foreach (var thread in Threads)
                 {
-                    var listener = new Listener(Memory);
+                    if (single)
+                    {
+                        var listener = new Listener(Memory);
+                        listeners.Add(listener);
+                        listener.StartAsync(scheme, host, port, thread, application).Wait();
+                    }
+                    else if (first)
+                    {
+                        var listener = new ListenerPrimary(Memory);
+                        listeners.Add(listener);
+                        listener.StartAsync(pipeName, scheme, host, port, thread, application).Wait();
+                    }
+                    else
+                    {
+                        var listener = new ListenerSecondary(Memory);
+                        listeners.Add(listener);
+                        listener.StartAsync(pipeName, thread, application).Wait();
+                    }
 
-                    listeners.Add(listener);
-                    listener.StartAsync(scheme, host, port, thread, application).Wait();
+                    first = false;
                 }
                 return new Disposable(() =>
                 {

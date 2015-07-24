@@ -1,6 +1,9 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.Framework.Runtime;
+using System;
+
 namespace Microsoft.AspNet.Server.KestrelTests
 {
     /// <summary>
@@ -8,9 +11,21 @@ namespace Microsoft.AspNet.Server.KestrelTests
     /// </summary>
     public class Program
     {
-        public void Main()
+        private readonly IApplicationEnvironment env;
+        private readonly IServiceProvider sp;
+
+        public Program(IApplicationEnvironment env, IServiceProvider sp)
         {
-            new EngineTests().DisconnectingClient().Wait();
+            this.env = env;
+            this.sp = sp;
+        }
+
+        public int Main()
+        {
+            return new Xunit.Runner.AspNet.Program(env, sp).Main(new string[] {
+                "-class",
+                typeof(MultipleLoopTests).FullName
+            });
         }
     }
 }

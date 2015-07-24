@@ -38,7 +38,7 @@ namespace Kestrel
             var disposables = new List<IDisposable>();
             var information = (ServerInformation)serverInformation;
             var engine = new KestrelEngine(_libraryManager, _appShutdownService);
-            engine.Start(1);
+            engine.Start(Environment.ProcessorCount);
             foreach (var address in information.Addresses)
             {
                 disposables.Add(engine.CreateServer(
