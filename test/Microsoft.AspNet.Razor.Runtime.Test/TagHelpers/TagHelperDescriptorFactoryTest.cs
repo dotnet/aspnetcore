@@ -16,6 +16,91 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         private static readonly string AssemblyName =
             typeof(TagHelperDescriptorFactoryTest).GetTypeInfo().Assembly.GetName().Name;
 
+        // TagHelperDesignTimeDescriptors are not created in CoreCLR.
+#if !DNXCORE50
+        public static TheoryData OutputElementHintData
+        {
+            get
+            {
+                // tagHelperType, expectedDescriptors
+                return new TheoryData<Type, TagHelperDescriptor[]>
+                {
+                    {
+                        typeof(OutputElementHintTagHelper),
+                        new[]
+                        {
+                            new TagHelperDescriptor(
+                                prefix: string.Empty,
+                                tagName: "output-element-hint",
+                                typeName: typeof(OutputElementHintTagHelper).FullName,
+                                assemblyName: AssemblyName,
+                                attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
+                                requiredAttributes: Enumerable.Empty<string>(),
+                                designTimeDescriptor: new TagHelperDesignTimeDescriptor(
+                                    summary: null,
+                                    remarks: null,
+                                    outputElementHint: "strong"))
+                        }
+                    },
+                    {
+                        typeof(MulitpleDescriptorTagHelperWithOutputElementHint),
+                        new[]
+                        {
+                            new TagHelperDescriptor(
+                                prefix: string.Empty,
+                                tagName: "a",
+                                typeName: typeof(MulitpleDescriptorTagHelperWithOutputElementHint).FullName,
+                                assemblyName: AssemblyName,
+                                attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
+                                requiredAttributes: Enumerable.Empty<string>(),
+                                designTimeDescriptor: new TagHelperDesignTimeDescriptor(
+                                    summary: null,
+                                    remarks: null,
+                                    outputElementHint: "div")),
+                            new TagHelperDescriptor(
+                                prefix: string.Empty,
+                                tagName: "p",
+                                typeName: typeof(MulitpleDescriptorTagHelperWithOutputElementHint).FullName,
+                                assemblyName: AssemblyName,
+                                attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
+                                requiredAttributes: Enumerable.Empty<string>(),
+                                designTimeDescriptor: new TagHelperDesignTimeDescriptor(
+                                    summary: null,
+                                    remarks: null,
+                                    outputElementHint: "div"))
+                        }
+                    }
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(OutputElementHintData))]
+        public void CreateDescriptors_CreatesDesignTimeDescriptorsWithOutputElementHint(
+            Type tagHelperType,
+            TagHelperDescriptor[] expectedDescriptors)
+        {
+            // Arrange
+            var errorSink = new ErrorSink();
+
+            // Act
+            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
+                AssemblyName,
+                tagHelperType,
+                designTime: true,
+                errorSink: errorSink);
+
+            // Assert
+            Assert.Empty(errorSink.Errors);
+
+            // We don't care about order. Mono returns reflected attributes differently so we need to ensure order
+            // doesn't matter by sorting.
+            descriptors = descriptors.OrderBy(descriptor => descriptor.TagName);
+
+            Assert.Equal(expectedDescriptors, descriptors, CaseSensitiveTagHelperDescriptorComparer.Default);
+        }
+#endif
+
         public static TheoryData EditorBrowsableData
         {
             get
@@ -2132,6 +2217,18 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         }
 
         private class GenericDictionarySubclass<TValue> : Dictionary<string, TValue>
+        {
+        }
+
+        [OutputElementHint("strong")]
+        private class OutputElementHintTagHelper : TagHelper
+        {
+        }
+
+        [TargetElement("a")]
+        [TargetElement("p")]
+        [OutputElementHint("div")]
+        private class MulitpleDescriptorTagHelperWithOutputElementHint : TagHelper
         {
         }
     }

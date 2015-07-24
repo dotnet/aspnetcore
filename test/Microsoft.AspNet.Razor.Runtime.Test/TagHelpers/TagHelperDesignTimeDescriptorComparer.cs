@@ -27,7 +27,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             return descriptorX != null &&
                 descriptorY != null &&
                 string.Equals(descriptorX.Summary, descriptorY.Summary, StringComparison.Ordinal) &&
-                string.Equals(descriptorX.Remarks, descriptorY.Remarks, StringComparison.Ordinal);
+                string.Equals(descriptorX.Remarks, descriptorY.Remarks, StringComparison.Ordinal) &&
+                string.Equals(descriptorX.OutputElementHint, descriptorY.OutputElementHint, StringComparison.Ordinal);
         }
 
         public int GetHashCode(TagHelperDesignTimeDescriptor descriptor)
@@ -36,6 +37,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 .Start()
                 .Add(descriptor.Summary, StringComparer.Ordinal)
                 .Add(descriptor.Remarks, StringComparer.Ordinal)
+                .Add(descriptor.OutputElementHint, StringComparer.Ordinal)
                 .CombinedHash;
         }
     }

@@ -94,7 +94,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 #if !DNXCORE50
             if (designTime)
             {
-                typeDesignTimeDescriptor = TagHelperDesignTimeDescriptorFactory.CreateDescriptor(typeInfo.GetType());
+                typeDesignTimeDescriptor = TagHelperDesignTimeDescriptorFactory.CreateDescriptor(typeInfo.AsType());
             }
 #endif
 
