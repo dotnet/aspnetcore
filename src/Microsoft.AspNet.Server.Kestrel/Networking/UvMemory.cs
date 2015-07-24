@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
     public abstract class UvMemory : SafeHandle
     {
         protected Libuv _uv;
-        private int _threadId;
+        protected int _threadId;
 
         public UvMemory() : base(IntPtr.Zero, true)
         {

@@ -84,16 +84,16 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
 
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        delegate int uv_loop_init(UvLoopHandle a0);
-        uv_loop_init _uv_loop_init = default(uv_loop_init);
+        protected delegate int uv_loop_init(UvLoopHandle a0);
+        protected uv_loop_init _uv_loop_init = default(uv_loop_init);
         public void loop_init(UvLoopHandle handle)
         {
             Check(_uv_loop_init(handle));
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        delegate int uv_loop_close(IntPtr a0);
-        uv_loop_close _uv_loop_close = default(uv_loop_close);
+        protected delegate int uv_loop_close(IntPtr a0);
+        protected uv_loop_close _uv_loop_close = default(uv_loop_close);
         public void loop_close(UvLoopHandle handle)
         {
             handle.Validate(closed: true);
@@ -101,8 +101,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        delegate int uv_run(UvLoopHandle handle, int mode);
-        uv_run _uv_run = default(uv_run);
+        protected delegate int uv_run(UvLoopHandle handle, int mode);
+        protected uv_run _uv_run = default(uv_run);
         public int run(UvLoopHandle handle, int mode)
         {
             handle.Validate();
@@ -110,8 +110,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        delegate void uv_stop(UvLoopHandle handle);
-        uv_stop _uv_stop = default(uv_stop);
+        protected delegate void uv_stop(UvLoopHandle handle);
+        protected uv_stop _uv_stop = default(uv_stop);
         public void stop(UvLoopHandle handle)
         {
             handle.Validate();
@@ -119,8 +119,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        delegate void uv_ref(UvHandle handle);
-        uv_ref _uv_ref = default(uv_ref);
+        protected delegate void uv_ref(UvHandle handle);
+        protected uv_ref _uv_ref = default(uv_ref);
         public void @ref(UvHandle handle)
         {
             handle.Validate();
@@ -128,8 +128,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        delegate void uv_unref(UvHandle handle);
-        uv_unref _uv_unref = default(uv_unref);
+        protected delegate void uv_unref(UvHandle handle);
+        protected uv_unref _uv_unref = default(uv_unref);
         public void unref(UvHandle handle)
         {
             handle.Validate();
@@ -140,8 +140,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void uv_close_cb(IntPtr handle);
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        delegate void uv_close(IntPtr handle, uv_close_cb close_cb);
-        uv_close _uv_close = default(uv_close);
+        protected delegate void uv_close(IntPtr handle, uv_close_cb close_cb);
+        protected uv_close _uv_close = default(uv_close);
         public void close(UvHandle handle, uv_close_cb close_cb)
         {
             handle.Validate(closed: true);
@@ -155,8 +155,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void uv_async_cb(IntPtr handle);
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        delegate int uv_async_init(UvLoopHandle loop, UvAsyncHandle handle, uv_async_cb cb);
-        uv_async_init _uv_async_init = default(uv_async_init);
+        protected delegate int uv_async_init(UvLoopHandle loop, UvAsyncHandle handle, uv_async_cb cb);
+        protected uv_async_init _uv_async_init = default(uv_async_init);
         public void async_init(UvLoopHandle loop, UvAsyncHandle handle, uv_async_cb cb)
         {
             loop.Validate();
@@ -165,16 +165,16 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        delegate int uv_async_send(UvAsyncHandle handle);
-        uv_async_send _uv_async_send = default(uv_async_send);
+        protected delegate int uv_async_send(UvAsyncHandle handle);
+        protected uv_async_send _uv_async_send = default(uv_async_send);
         public void async_send(UvAsyncHandle handle)
         {
             Check(_uv_async_send(handle));
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        delegate int uv_tcp_init(UvLoopHandle loop, UvTcpHandle handle);
-        uv_tcp_init _uv_tcp_init = default(uv_tcp_init);
+        protected delegate int uv_tcp_init(UvLoopHandle loop, UvTcpHandle handle);
+        protected uv_tcp_init _uv_tcp_init = default(uv_tcp_init);
         public void tcp_init(UvLoopHandle loop, UvTcpHandle handle)
         {
             loop.Validate();
@@ -183,8 +183,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        delegate int uv_tcp_bind(UvTcpHandle handle, ref sockaddr addr, int flags);
-        uv_tcp_bind _uv_tcp_bind = default(uv_tcp_bind);
+        protected delegate int uv_tcp_bind(UvTcpHandle handle, ref sockaddr addr, int flags);
+        protected uv_tcp_bind _uv_tcp_bind = default(uv_tcp_bind);
         public void tcp_bind(UvTcpHandle handle, ref sockaddr addr, int flags)
         {
             handle.Validate();
@@ -192,8 +192,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        delegate int uv_tcp_open(UvTcpHandle handle, IntPtr hSocket);
-        uv_tcp_open _uv_tcp_open = default(uv_tcp_open);
+        protected delegate int uv_tcp_open(UvTcpHandle handle, IntPtr hSocket);
+        protected uv_tcp_open _uv_tcp_open = default(uv_tcp_open);
         public void tcp_open(UvTcpHandle handle, IntPtr hSocket)
         {
             handle.Validate();
@@ -201,8 +201,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        delegate int uv_pipe_init(UvLoopHandle loop, UvPipeHandle handle, int ipc);
-        uv_pipe_init _uv_pipe_init = default(uv_pipe_init);
+        protected delegate int uv_pipe_init(UvLoopHandle loop, UvPipeHandle handle, int ipc);
+        protected uv_pipe_init _uv_pipe_init = default(uv_pipe_init);
         public void pipe_init(UvLoopHandle loop, UvPipeHandle handle, bool ipc)
         {
             loop.Validate();
@@ -211,8 +211,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        delegate int uv_pipe_bind(UvPipeHandle loop, string name);
-        uv_pipe_bind _uv_pipe_bind = default(uv_pipe_bind);
+        protected delegate int uv_pipe_bind(UvPipeHandle loop, string name);
+        protected uv_pipe_bind _uv_pipe_bind = default(uv_pipe_bind);
         public void pipe_bind(UvPipeHandle handle, string name)
         {
             handle.Validate();
@@ -222,8 +222,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void uv_connection_cb(IntPtr server, int status);
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        delegate int uv_listen(UvStreamHandle handle, int backlog, uv_connection_cb cb);
-        uv_listen _uv_listen = default(uv_listen);
+        protected delegate int uv_listen(UvStreamHandle handle, int backlog, uv_connection_cb cb);
+        protected uv_listen _uv_listen = default(uv_listen);
         public void listen(UvStreamHandle handle, int backlog, uv_connection_cb cb)
         {
             handle.Validate();
@@ -231,8 +231,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        delegate int uv_accept(UvStreamHandle server, UvStreamHandle client);
-        uv_accept _uv_accept = default(uv_accept);
+        protected delegate int uv_accept(UvStreamHandle server, UvStreamHandle client);
+        protected uv_accept _uv_accept = default(uv_accept);
         public void accept(UvStreamHandle server, UvStreamHandle client)
         {
             server.Validate();
@@ -243,8 +243,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void uv_connect_cb(IntPtr req, int status);
         [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        unsafe delegate int uv_pipe_connect(UvConnectRequest req, UvPipeHandle handle, string name, uv_connect_cb cb);
-        uv_pipe_connect _uv_pipe_connect = default(uv_pipe_connect);
+        unsafe protected delegate int uv_pipe_connect(UvConnectRequest req, UvPipeHandle handle, string name, uv_connect_cb cb);
+        protected uv_pipe_connect _uv_pipe_connect = default(uv_pipe_connect);
         unsafe public void pipe_connect(UvConnectRequest req, UvPipeHandle handle, string name, uv_connect_cb cb)
         {
             req.Validate();
@@ -257,8 +257,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void uv_read_cb(IntPtr server, int nread, ref uv_buf_t buf);
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        delegate int uv_read_start(UvStreamHandle handle, uv_alloc_cb alloc_cb, uv_read_cb read_cb);
-        uv_read_start _uv_read_start = default(uv_read_start);
+        protected delegate int uv_read_start(UvStreamHandle handle, uv_alloc_cb alloc_cb, uv_read_cb read_cb);
+        protected uv_read_start _uv_read_start = default(uv_read_start);
         public void read_start(UvStreamHandle handle, uv_alloc_cb alloc_cb, uv_read_cb read_cb)
         {
             handle.Validate();
@@ -266,8 +266,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        delegate int uv_read_stop(UvStreamHandle handle);
-        uv_read_stop _uv_read_stop = default(uv_read_stop);
+        protected delegate int uv_read_stop(UvStreamHandle handle);
+        protected uv_read_stop _uv_read_stop = default(uv_read_stop);
         public void read_stop(UvStreamHandle handle)
         {
             handle.Validate();
@@ -275,8 +275,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        delegate int uv_try_write(UvStreamHandle handle, Libuv.uv_buf_t[] bufs, int nbufs);
-        uv_try_write _uv_try_write = default(uv_try_write);
+        protected delegate int uv_try_write(UvStreamHandle handle, Libuv.uv_buf_t[] bufs, int nbufs);
+        protected uv_try_write _uv_try_write = default(uv_try_write);
         public int try_write(UvStreamHandle handle, Libuv.uv_buf_t[] bufs, int nbufs)
         {
             handle.Validate();
@@ -286,8 +286,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void uv_write_cb(IntPtr req, int status);
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        unsafe delegate int uv_write(UvRequest req, UvStreamHandle handle, Libuv.uv_buf_t* bufs, int nbufs, uv_write_cb cb);
-        uv_write _uv_write = default(uv_write);
+        unsafe protected delegate int uv_write(UvRequest req, UvStreamHandle handle, Libuv.uv_buf_t* bufs, int nbufs, uv_write_cb cb);
+        protected uv_write _uv_write = default(uv_write);
         unsafe public void write(UvRequest req, UvStreamHandle handle, Libuv.uv_buf_t* bufs, int nbufs, uv_write_cb cb)
         {
             req.Validate();
@@ -296,8 +296,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        unsafe delegate int uv_write2(UvRequest req, UvStreamHandle handle, Libuv.uv_buf_t* bufs, int nbufs, UvStreamHandle sendHandle, uv_write_cb cb);
-        uv_write2 _uv_write2 = default(uv_write2);
+        unsafe protected delegate int uv_write2(UvRequest req, UvStreamHandle handle, Libuv.uv_buf_t* bufs, int nbufs, UvStreamHandle sendHandle, uv_write_cb cb);
+        protected uv_write2 _uv_write2 = default(uv_write2);
         unsafe public void write2(UvRequest req, UvStreamHandle handle, Libuv.uv_buf_t* bufs, int nbufs, UvStreamHandle sendHandle, uv_write_cb cb)
         {
             req.Validate();
@@ -308,8 +308,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void uv_shutdown_cb(IntPtr req, int status);
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        delegate int uv_shutdown(UvShutdownReq req, UvStreamHandle handle, uv_shutdown_cb cb);
-        uv_shutdown _uv_shutdown = default(uv_shutdown);
+        protected delegate int uv_shutdown(UvShutdownReq req, UvStreamHandle handle, uv_shutdown_cb cb);
+        protected uv_shutdown _uv_shutdown = default(uv_shutdown);
         public void shutdown(UvShutdownReq req, UvStreamHandle handle, uv_shutdown_cb cb)
         {
             req.Validate();
@@ -318,8 +318,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        delegate IntPtr uv_err_name(int err);
-        uv_err_name _uv_err_name = default(uv_err_name);
+        protected delegate IntPtr uv_err_name(int err);
+        protected uv_err_name _uv_err_name = default(uv_err_name);
         public unsafe String err_name(int err)
         {
             IntPtr ptr = _uv_err_name(err);
@@ -327,8 +327,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        delegate IntPtr uv_strerror(int err);
-        uv_strerror _uv_strerror = default(uv_strerror);
+        protected delegate IntPtr uv_strerror(int err);
+        protected uv_strerror _uv_strerror = default(uv_strerror);
         public unsafe String strerror(int err)
         {
             IntPtr ptr = _uv_strerror(err);
@@ -336,42 +336,42 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        delegate int uv_loop_size();
-        uv_loop_size _uv_loop_size = default(uv_loop_size);
+        protected delegate int uv_loop_size();
+        protected uv_loop_size _uv_loop_size = default(uv_loop_size);
         public int loop_size()
         {
             return _uv_loop_size();
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        delegate int uv_handle_size(HandleType handleType);
-        uv_handle_size _uv_handle_size = default(uv_handle_size);
+        protected delegate int uv_handle_size(HandleType handleType);
+        protected uv_handle_size _uv_handle_size = default(uv_handle_size);
         public int handle_size(HandleType handleType)
         {
             return _uv_handle_size(handleType);
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        delegate int uv_req_size(RequestType reqType);
-        uv_req_size _uv_req_size = default(uv_req_size);
+        protected delegate int uv_req_size(RequestType reqType);
+        protected uv_req_size _uv_req_size = default(uv_req_size);
         public int req_size(RequestType reqType)
         {
             return _uv_req_size(reqType);
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        delegate int uv_ip4_addr(string ip, int port, out sockaddr addr);
+        protected delegate int uv_ip4_addr(string ip, int port, out sockaddr addr);
 
-        uv_ip4_addr _uv_ip4_addr = default(uv_ip4_addr);
+        protected uv_ip4_addr _uv_ip4_addr = default(uv_ip4_addr);
         public int ip4_addr(string ip, int port, out sockaddr addr, out Exception error)
         {
             return Check(_uv_ip4_addr(ip, port, out addr), out error);
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        delegate int uv_ip6_addr(string ip, int port, out sockaddr addr);
+        protected delegate int uv_ip6_addr(string ip, int port, out sockaddr addr);
 
-        uv_ip6_addr _uv_ip6_addr = default(uv_ip6_addr);
+        protected uv_ip6_addr _uv_ip6_addr = default(uv_ip6_addr);
         public int ip6_addr(string ip, int port, out sockaddr addr, out Exception error)
         {
             return Check(_uv_ip6_addr(ip, port, out addr), out error);
@@ -380,8 +380,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void uv_walk_cb(IntPtr handle, IntPtr arg);
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        unsafe delegate int uv_walk(UvLoopHandle loop, uv_walk_cb walk_cb, IntPtr arg);
-        uv_walk _uv_walk = default(uv_walk);
+        unsafe protected delegate int uv_walk(UvLoopHandle loop, uv_walk_cb walk_cb, IntPtr arg);
+        protected uv_walk _uv_walk = default(uv_walk);
         unsafe public void walk(UvLoopHandle loop, uv_walk_cb walk_cb, IntPtr arg)
         {
             loop.Validate();

@@ -14,11 +14,8 @@ namespace Microsoft.AspNet.Server.Kestrel
     public class KestrelEngine : IDisposable
     {
         public KestrelEngine(ILibraryManager libraryManager, IApplicationShutdown appShutdownService)
+            : this(appShutdownService)
         {
-            AppShutdown = appShutdownService;
-            Threads = new List<KestrelThread>();
-            Listeners = new List<Listener>();
-            Memory = new MemoryPool();
             Libuv = new Libuv();
 
             var libraryPath = default(string);
@@ -59,6 +56,21 @@ namespace Microsoft.AspNet.Server.Kestrel
                 }
             }
             Libuv.Load(libraryPath);
+        }
+
+        // For testing
+        internal KestrelEngine(Libuv uv, IApplicationShutdown appShutdownService)
+           : this(appShutdownService)
+        {
+            Libuv = uv;
+        }
+
+        private KestrelEngine(IApplicationShutdown appShutdownService)
+        {
+            AppShutdown = appShutdownService;
+            Threads = new List<KestrelThread>();
+            Listeners = new List<Listener>();
+            Memory = new MemoryPool();
         }
 
         public Libuv Libuv { get; private set; }
