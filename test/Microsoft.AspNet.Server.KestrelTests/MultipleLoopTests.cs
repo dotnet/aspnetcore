@@ -143,7 +143,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
 
             var serverListenPipe = new UvPipeHandle();
             serverListenPipe.Init(loop, false);
-            serverListenPipe.Bind(@"\\.\pipe\ServerPipeListenForConnections");
+            serverListenPipe.Bind(@"\\.\pipe\ServerPipeDispatchConnections");
             serverListenPipe.Listen(128, (_1, status, error, _2) =>
             {
                 serverConnectionPipe = new UvPipeHandle();
@@ -194,7 +194,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 loop2.Init(_uv);
                 clientConnectionPipe.Init(loop2, true);
                 connect.Init(loop2);
-                connect.Connect(clientConnectionPipe, @"\\.\pipe\ServerPipeListenForConnections", (_1, status, error, _2) =>
+                connect.Connect(clientConnectionPipe, @"\\.\pipe\ServerPipeDispatchConnections", (_1, status, error, _2) =>
                 {
                     connect.Dispose();
 
