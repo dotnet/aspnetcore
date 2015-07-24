@@ -8,6 +8,7 @@ using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Hosting.Startup;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.Configuration;
+using Microsoft.Framework.Configuration.Memory;
 using Microsoft.Framework.Runtime.Infrastructure;
 
 namespace Microsoft.AspNet.WebSockets.Client.Test
