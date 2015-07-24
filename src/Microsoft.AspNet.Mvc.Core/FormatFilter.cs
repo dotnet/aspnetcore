@@ -21,11 +21,11 @@ namespace Microsoft.AspNet.Mvc
         /// Initializes an instance of <see cref="FormatFilter"/>.
         /// </summary>
         /// <param name="options">The <see cref="IOptions{MvcOptions}"/></param>
-        /// <param name="actionContext">The <see cref="IScopedInstance{ActionContext}"/></param>
-        public FormatFilter(IOptions<MvcOptions> options, IScopedInstance<ActionContext> actionContext)
+        /// <param name="actionContextAccessor">The <see cref="IActionContextAccessor"/></param>
+        public FormatFilter(IOptions<MvcOptions> options, IActionContextAccessor actionContextAccessor)
         {
             IsActive = true;
-            Format = GetFormat(actionContext.Value);
+            Format = GetFormat(actionContextAccessor.ActionContext);
 
             if (string.IsNullOrEmpty(Format))
             {

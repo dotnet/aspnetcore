@@ -7,7 +7,6 @@ using System.Diagnostics;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Routing;
-using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc
@@ -18,27 +17,31 @@ namespace Microsoft.AspNet.Mvc
     /// </summary>
     public class UrlHelper : IUrlHelper
     {
-        private readonly HttpContext _httpContext;
-        private readonly IRouter _router;
-        private readonly IDictionary<string, object> _ambientValues;
+        private readonly IActionContextAccessor _actionContextAccessor;
         private readonly IActionSelector _actionSelector;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UrlHelper"/> class using the specified action context and
         /// action selector.
         /// </summary>
-        /// <param name="contextAccessor">The <see cref="IScopedInstance{TContext}"/> to access the action context
+        /// <param name="actionContextAccessor">The <see cref="IActionContextAccessor"/> to access the action context
         /// of the current request.</param>
         /// <param name="actionSelector">The <see cref="IActionSelector"/> to be used for verifying the correctness of
         /// supplied parameters for a route.
         /// </param>
-        public UrlHelper(IScopedInstance<ActionContext> contextAccessor, IActionSelector actionSelector)
+        public UrlHelper(IActionContextAccessor actionContextAccessor, IActionSelector actionSelector)
         {
-            _httpContext = contextAccessor.Value.HttpContext;
-            _router = contextAccessor.Value.RouteData.Routers[0];
-            _ambientValues = contextAccessor.Value.RouteData.Values;
+            _actionContextAccessor = actionContextAccessor;
             _actionSelector = actionSelector;
         }
+
+        protected IDictionary<string, object> AmbientValues => ActionContext.RouteData.Values;
+
+        protected ActionContext ActionContext => _actionContextAccessor.ActionContext;
+
+        protected HttpContext HttpContext => ActionContext.HttpContext;
+
+        protected IRouter Router => ActionContext.RouteData.Routers[0];
 
         /// <inheritdoc />
         public virtual string Action(UrlActionContext actionContext)
@@ -98,8 +101,8 @@ namespace Microsoft.AspNet.Mvc
         /// <returns>The absolute path of the URL.</returns>
         protected virtual string GeneratePathFromRoute(string routeName, IDictionary<string, object> values)
         {
-            var context = new VirtualPathContext(_httpContext, _ambientValues, values, routeName);
-            var pathData = _router.GetVirtualPath(context);
+            var context = new VirtualPathContext(HttpContext, AmbientValues, values, routeName);
+            var pathData = Router.GetVirtualPath(context);
             if (pathData == null)
             {
                 return null;
@@ -108,7 +111,7 @@ namespace Microsoft.AspNet.Mvc
             // VirtualPathData.VirtualPath returns string.Empty for null.
             Debug.Assert(pathData.VirtualPath != null);
 
-            var fullPath = _httpContext.Request.PathBase.Add(pathData.VirtualPath).Value;
+            var fullPath = HttpContext.Request.PathBase.Add(pathData.VirtualPath).Value;
             if (fullPath.Length == 0)
             {
                 return "/";
@@ -129,7 +132,7 @@ namespace Microsoft.AspNet.Mvc
             else if (contentPath[0] == '~')
             {
                 var segment = new PathString(contentPath.Substring(1));
-                var applicationPath = _httpContext.Request.PathBase;
+                var applicationPath = HttpContext.Request.PathBase;
 
                 return applicationPath.Add(segment).Value;
             }
@@ -144,8 +147,8 @@ namespace Microsoft.AspNet.Mvc
             {
                 RouteName = routeName,
                 Values = values,
-                Protocol = _httpContext.Request.Scheme,
-                Host = _httpContext.Request.Host.ToUriComponent()
+                Protocol = HttpContext.Request.Scheme,
+                Host = HttpContext.Request.Host.ToUriComponent()
             });
         }
 
@@ -174,7 +177,7 @@ namespace Microsoft.AspNet.Mvc
             else
             {
                 protocol = string.IsNullOrEmpty(protocol) ? "http" : protocol;
-                host = string.IsNullOrEmpty(host) ? _httpContext.Request.Host.Value : host;
+                host = string.IsNullOrEmpty(host) ? HttpContext.Request.Host.Value : host;
 
                 url = protocol + "://" + host + url;
                 return url;

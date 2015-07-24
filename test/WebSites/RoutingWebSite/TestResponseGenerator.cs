@@ -14,9 +14,9 @@ namespace RoutingWebSite
     {
         private readonly ActionContext _actionContext;
 
-        public TestResponseGenerator(IScopedInstance<ActionContext> contextAccessor)
+        public TestResponseGenerator(IActionContextAccessor contextAccessor)
         {
-            _actionContext = contextAccessor.Value;
+            _actionContext = contextAccessor.ActionContext;
             if (_actionContext == null)
             {
                 throw new InvalidOperationException("ActionContext should not be null here.");

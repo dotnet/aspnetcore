@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var httpContext = GetHttpContext(updateRequest, updateOptions);
 
             var services = httpContext.RequestServices;
-            var actionBindingContext = services.GetRequiredService<IScopedInstance<ActionBindingContext>>().Value;
+            var actionBindingContext = services.GetRequiredService<IActionBindingContextAccessor>().ActionBindingContext;
 
             return new OperationBindingContext()
             {
@@ -77,8 +77,8 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var actionContext = new ActionContext(httpContext, new RouteData(), new ControllerActionDescriptor());
 
             var actionContextAccessor =
-                httpContext.RequestServices.GetRequiredService<IScopedInstance<ActionContext>>();
-            actionContextAccessor.Value = actionContext;
+                httpContext.RequestServices.GetRequiredService<IActionContextAccessor>();
+            actionContextAccessor.ActionContext = actionContext;
 
             var options = new TestMvcOptions().Options;
             if (updateOptions != null)
@@ -87,8 +87,8 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             }
 
             var actionBindingContextAccessor =
-                httpContext.RequestServices.GetRequiredService<IScopedInstance<ActionBindingContext>>();
-            actionBindingContextAccessor.Value = GetActionBindingContext(options, actionContext);
+                httpContext.RequestServices.GetRequiredService<IActionBindingContextAccessor>();
+            actionBindingContextAccessor.ActionBindingContext = GetActionBindingContext(options, actionContext);
         }
 
         private static ActionBindingContext GetActionBindingContext(MvcOptions options, ActionContext actionContext)

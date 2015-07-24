@@ -12,12 +12,15 @@ namespace Microsoft.AspNet.Mvc
 {
     public class DefaultControllerPropertyActivator : IControllerPropertyActivator
     {
-        private readonly ConcurrentDictionary<Type, PropertyActivator<ActionContext>[]> _activateActions;
-        private readonly Func<Type, PropertyActivator<ActionContext>[]> _getPropertiesToActivate;
+        private readonly IActionBindingContextAccessor _actionBindingContextAccessor;
+        private readonly ConcurrentDictionary<Type, PropertyActivator<Contexts>[]> _activateActions;
+        private readonly Func<Type, PropertyActivator<Contexts>[]> _getPropertiesToActivate;
 
-        public DefaultControllerPropertyActivator()
+        public DefaultControllerPropertyActivator(IActionBindingContextAccessor actionBindingContextAccessor)
         {
-            _activateActions = new ConcurrentDictionary<Type, PropertyActivator<ActionContext>[]>();
+            _actionBindingContextAccessor = actionBindingContextAccessor;
+
+            _activateActions = new ConcurrentDictionary<Type, PropertyActivator<Contexts>[]>();
             _getPropertiesToActivate = GetPropertiesToActivate;
         }
 
@@ -28,34 +31,39 @@ namespace Microsoft.AspNet.Mvc
                 controllerType,
                 _getPropertiesToActivate);
 
+            var contexts = new Contexts()
+            {
+                ActionBindingContext = _actionBindingContextAccessor.ActionBindingContext,
+                ActionContext = actionContext,
+            };
+
             for (var i = 0; i < propertiesToActivate.Length; i++)
             {
                 var activateInfo = propertiesToActivate[i];
-                activateInfo.Activate(controller, actionContext);
+                activateInfo.Activate(controller, contexts);
             }
         }
 
-        private PropertyActivator<ActionContext>[] GetPropertiesToActivate(Type type)
+        private PropertyActivator<Contexts>[] GetPropertiesToActivate(Type type)
         {
-            IEnumerable<PropertyActivator<ActionContext>> activators;
-            activators = PropertyActivator<ActionContext>.GetPropertiesToActivate(
+            IEnumerable<PropertyActivator<Contexts>> activators;
+            activators = PropertyActivator<Contexts>.GetPropertiesToActivate(
                 type,
                 typeof(ActionContextAttribute),
-                p => new PropertyActivator<ActionContext>(p, c => c));
+                p => new PropertyActivator<Contexts>(p, c => c.ActionContext));
 
-            activators = activators.Concat(PropertyActivator<ActionContext>.GetPropertiesToActivate(
+            activators = activators.Concat(PropertyActivator<Contexts>.GetPropertiesToActivate(
                 type,
                 typeof(ActionBindingContextAttribute),
-                p => new PropertyActivator<ActionContext>(p, GetActionBindingContext)));
+                p => new PropertyActivator<Contexts>(p, c => c.ActionBindingContext)));
 
             return activators.ToArray();
         }
 
-        private static ActionBindingContext GetActionBindingContext(ActionContext context)
+        private struct Contexts
         {
-            var serviceProvider = context.HttpContext.RequestServices;
-            var accessor = serviceProvider.GetRequiredService<IScopedInstance<ActionBindingContext>>();
-            return accessor.Value;
+            public ActionBindingContext ActionBindingContext;
+            public ActionContext ActionContext;
         }
     }
 }

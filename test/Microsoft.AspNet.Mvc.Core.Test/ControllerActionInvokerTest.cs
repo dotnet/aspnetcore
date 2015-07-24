@@ -2040,8 +2040,8 @@ namespace Microsoft.AspNet.Mvc
                 new IModelBinder[0],
                 new IModelValidatorProvider[0],
                 new IValueProviderFactory[0],
-                new MockScopedInstance<ActionBindingContext>(),
-                new NullLoggerFactory(),
+                new ActionBindingContextAccessor(),
+                new NullLoggerFactory().CreateLogger<ControllerActionInvoker>(),
                 maxAllowedErrorsInModelState);
 
             return invoker;
@@ -2102,8 +2102,8 @@ namespace Microsoft.AspNet.Mvc
                 new IModelBinder[] { binder.Object },
                 new IModelValidatorProvider[0],
                 new IValueProviderFactory[0],
-                new MockScopedInstance<ActionBindingContext>(),
-                new NullLoggerFactory(),
+                new ActionBindingContextAccessor(),
+                new NullLoggerFactory().CreateLogger<ControllerActionInvoker>(),
                 200);
 
             // Act
@@ -2202,8 +2202,8 @@ namespace Microsoft.AspNet.Mvc
                 IReadOnlyList<IModelBinder> modelBinders,
                 IReadOnlyList<IModelValidatorProvider> modelValidatorProviders,
                 IReadOnlyList<IValueProviderFactory> valueProviderFactories,
-                IScopedInstance<ActionBindingContext> actionBindingContext,
-                ILoggerFactory loggerFactory,
+                IActionBindingContextAccessor actionBindingContext,
+                ILogger logger,
                 int maxAllowedErrorsInModelState)
                 : base(
                       actionContext,
@@ -2217,7 +2217,7 @@ namespace Microsoft.AspNet.Mvc
                       modelValidatorProviders,
                       valueProviderFactories,
                       actionBindingContext,
-                      loggerFactory,
+                      logger,
                       maxAllowedErrorsInModelState)
             {
                 ControllerFactory = controllerFactory;

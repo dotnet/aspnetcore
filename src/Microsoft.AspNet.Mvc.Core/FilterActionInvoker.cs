@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Mvc.Core
         private readonly IReadOnlyList<IOutputFormatter> _outputFormatters;
         private readonly IReadOnlyList<IModelValidatorProvider> _modelValidatorProviders;
         private readonly IReadOnlyList<IValueProviderFactory> _valueProviderFactories;
-        private readonly IScopedInstance<ActionBindingContext> _actionBindingContextAccessor;
+        private readonly IActionBindingContextAccessor _actionBindingContextAccessor;
         private readonly ILogger _logger;
         private readonly int _maxModelValidationErrors;
 
@@ -61,8 +61,8 @@ namespace Microsoft.AspNet.Mvc.Core
             [NotNull] IReadOnlyList<IModelBinder> modelBinders,
             [NotNull] IReadOnlyList<IModelValidatorProvider> modelValidatorProviders,
             [NotNull] IReadOnlyList<IValueProviderFactory> valueProviderFactories,
-            [NotNull] IScopedInstance<ActionBindingContext> actionBindingContextAccessor,
-            [NotNull] ILoggerFactory loggerFactory,
+            [NotNull] IActionBindingContextAccessor actionBindingContextAccessor,
+            [NotNull] ILogger logger,
             int maxModelValidationErrors)
         {
             ActionContext = actionContext;
@@ -74,7 +74,7 @@ namespace Microsoft.AspNet.Mvc.Core
             _modelValidatorProviders = modelValidatorProviders;
             _valueProviderFactories = valueProviderFactories;
             _actionBindingContextAccessor = actionBindingContextAccessor;
-            _logger = loggerFactory.CreateLogger<FilterActionInvoker>();
+            _logger = logger;
             _maxModelValidationErrors = maxModelValidationErrors;
         }
 
@@ -84,11 +84,11 @@ namespace Microsoft.AspNet.Mvc.Core
         {
             get
             {
-                return _actionBindingContextAccessor.Value;
+                return _actionBindingContextAccessor.ActionBindingContext;
             }
             private set
             {
-                _actionBindingContextAccessor.Value = value;
+                _actionBindingContextAccessor.ActionBindingContext = value;
             }
         }
 
@@ -316,7 +316,22 @@ namespace Microsoft.AspNet.Mvc.Core
                 }
                 else
                 {
-                    // We've reached the end of resource filters, so move on to exception filters.
+                    // We've reached the end of resource filters, so move to setting up state to invoke model
+                    // binding.
+                    ActionBindingContext = new ActionBindingContext();
+                    ActionBindingContext.InputFormatters = _resourceExecutingContext.InputFormatters;
+                    ActionBindingContext.OutputFormatters = _resourceExecutingContext.OutputFormatters;
+                    ActionBindingContext.ModelBinder = new CompositeModelBinder(_resourceExecutingContext.ModelBinders);
+                    ActionBindingContext.ValidatorProvider = new CompositeModelValidatorProvider(
+                        _resourceExecutingContext.ValidatorProviders);
+
+                    var valueProviderFactoryContext = new ValueProviderFactoryContext(
+                        ActionContext.HttpContext,
+                        ActionContext.RouteData.Values);
+
+                    ActionBindingContext.ValueProvider = CompositeValueProvider.Create(
+                        _resourceExecutingContext.ValueProviderFactories,
+                        valueProviderFactoryContext);
 
                     // >> ExceptionFilters >> Model Binding >> ActionFilters >> Action
                     await InvokeAllExceptionFiltersAsync();
@@ -464,23 +479,6 @@ namespace Microsoft.AspNet.Mvc.Core
         private async Task InvokeAllActionFiltersAsync()
         {
             _cursor.SetStage(FilterStage.ActionFilters);
-
-            Debug.Assert(_resourceExecutingContext != null);
-
-            ActionBindingContext = new ActionBindingContext();
-            ActionBindingContext.InputFormatters = _resourceExecutingContext.InputFormatters;
-            ActionBindingContext.OutputFormatters = _resourceExecutingContext.OutputFormatters;
-            ActionBindingContext.ModelBinder = new CompositeModelBinder(_resourceExecutingContext.ModelBinders);
-            ActionBindingContext.ValidatorProvider = new CompositeModelValidatorProvider(
-                _resourceExecutingContext.ValidatorProviders);
-
-            var valueProviderFactoryContext = new ValueProviderFactoryContext(
-                ActionContext.HttpContext,
-                ActionContext.RouteData.Values);
-
-            ActionBindingContext.ValueProvider = CompositeValueProvider.Create(
-                _resourceExecutingContext.ValueProviderFactories,
-                valueProviderFactoryContext);
 
             Instance = CreateInstance();
 

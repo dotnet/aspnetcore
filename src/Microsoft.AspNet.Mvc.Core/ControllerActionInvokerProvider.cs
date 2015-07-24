@@ -21,16 +21,16 @@ namespace Microsoft.AspNet.Mvc.Core
         private readonly IReadOnlyList<IOutputFormatter> _outputFormatters;
         private readonly IReadOnlyList<IModelValidatorProvider> _modelValidatorProviders;
         private readonly IReadOnlyList<IValueProviderFactory> _valueProviderFactories;
-        private readonly IScopedInstance<ActionBindingContext> _actionBindingContextAccessor;
+        private readonly IActionBindingContextAccessor _actionBindingContextAccessor;
         private readonly int _maxModelValidationErrors;
-        private readonly ILoggerFactory _loggerFactory;
+        private readonly ILogger _logger;
 
         public ControllerActionInvokerProvider(
             IControllerFactory controllerFactory,
             IEnumerable<IFilterProvider> filterProviders,
             IControllerActionArgumentBinder argumentBinder,
             IOptions<MvcOptions> optionsAccessor,
-            IScopedInstance<ActionBindingContext> actionBindingContextAccessor,
+            IActionBindingContextAccessor actionBindingContextAccessor,
             ILoggerFactory loggerFactory)
         {
             _controllerFactory = controllerFactory;
@@ -43,7 +43,8 @@ namespace Microsoft.AspNet.Mvc.Core
             _valueProviderFactories = optionsAccessor.Options.ValueProviderFactories.ToArray();
             _actionBindingContextAccessor = actionBindingContextAccessor;
             _maxModelValidationErrors = optionsAccessor.Options.MaxModelValidationErrors;
-            _loggerFactory = loggerFactory;
+
+            _logger = loggerFactory.CreateLogger<ControllerActionInvoker>();
         }
 
         public int Order
@@ -70,7 +71,7 @@ namespace Microsoft.AspNet.Mvc.Core
                                     _modelValidatorProviders,
                                     _valueProviderFactories,
                                     _actionBindingContextAccessor,
-                                    _loggerFactory,
+                                    _logger,
                                     _maxModelValidationErrors);
             }
         }

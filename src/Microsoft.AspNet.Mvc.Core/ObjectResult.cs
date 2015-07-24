@@ -297,8 +297,8 @@ namespace Microsoft.AspNet.Mvc
                 var actionBindingContext = context
                     .HttpContext
                     .RequestServices
-                    .GetRequiredService<IScopedInstance<ActionBindingContext>>()
-                    .Value;
+                    .GetRequiredService<IActionBindingContextAccessor>()
+                    .ActionBindingContext;
 
                 // In scenarios where there is a resource filter which directly shortcircuits using an ObjectResult.
                 // actionBindingContext is not setup yet and is null.

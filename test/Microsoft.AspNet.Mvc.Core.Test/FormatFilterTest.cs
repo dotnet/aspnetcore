@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Mvc
             var resultExecutingContext = mockObjects.CreateResultExecutingContext();
             var resourceExecutingContext = mockObjects.CreateResourceExecutingContext(new IFilterMetadata[] { });
 
-            var filter = new FormatFilter(mockObjects.OptionsManager, mockObjects.ScopedInstance);
+            var filter = new FormatFilter(mockObjects.OptionsManager, mockObjects.ActionContextAccessor);
 
             // Act
             filter.OnResourceExecuting(resourceExecutingContext);
@@ -90,7 +90,7 @@ namespace Microsoft.AspNet.Mvc
                 ac,
                 new IFilterMetadata[] { });
 
-            var filter = new FormatFilter(mockObjects.OptionsManager, mockObjects.ScopedInstance);
+            var filter = new FormatFilter(mockObjects.OptionsManager, mockObjects.ActionContextAccessor);
 
             // Act
             filter.OnResourceExecuting(resourceExecutingContext);
@@ -122,7 +122,7 @@ namespace Microsoft.AspNet.Mvc
                 format,
                 MediaTypeHeaderValue.Parse(contentType));
 
-            var filter = new FormatFilter(mockObjects.OptionsManager, mockObjects.ScopedInstance);
+            var filter = new FormatFilter(mockObjects.OptionsManager, mockObjects.ActionContextAccessor);
 
             // Act
             filter.OnResourceExecuting(resourceExecutingContext);
@@ -145,7 +145,7 @@ namespace Microsoft.AspNet.Mvc
             var mockObjects = new MockObjects(format, place);
             var resourceExecutingContext = mockObjects.CreateResourceExecutingContext(new IFilterMetadata[] { });
 
-            var filter = new FormatFilter(mockObjects.OptionsManager, mockObjects.ScopedInstance);
+            var filter = new FormatFilter(mockObjects.OptionsManager, mockObjects.ActionContextAccessor);
 
             // Act
             filter.OnResourceExecuting(resourceExecutingContext);
@@ -162,7 +162,7 @@ namespace Microsoft.AspNet.Mvc
             var mockObjects = new MockObjects();
             var resourceExecutingContext = mockObjects.CreateResourceExecutingContext(new IFilterMetadata[] { });
 
-            var filter = new FormatFilter(mockObjects.OptionsManager, mockObjects.ScopedInstance);
+            var filter = new FormatFilter(mockObjects.OptionsManager, mockObjects.ActionContextAccessor);
 
             // Act
             filter.OnResourceExecuting(resourceExecutingContext);
@@ -184,7 +184,7 @@ namespace Microsoft.AspNet.Mvc
             var mockObjects = new MockObjects(format, place);
             var resourceExecutingContext = mockObjects.CreateResourceExecutingContext(new IFilterMetadata[] { produces });
 
-            var filter = new FormatFilter(mockObjects.OptionsManager, mockObjects.ScopedInstance);
+            var filter = new FormatFilter(mockObjects.OptionsManager, mockObjects.ActionContextAccessor);
 
             // Act
             filter.OnResourceExecuting(resourceExecutingContext);
@@ -205,7 +205,7 @@ namespace Microsoft.AspNet.Mvc
                 "xml",
                 MediaTypeHeaderValue.Parse("application/xml"));
 
-            var filter = new FormatFilter(mockObjects.OptionsManager, mockObjects.ScopedInstance);
+            var filter = new FormatFilter(mockObjects.OptionsManager, mockObjects.ActionContextAccessor);
 
             // Act
             filter.OnResourceExecuting(resourceExecutingContext);
@@ -226,7 +226,7 @@ namespace Microsoft.AspNet.Mvc
                 "xml",
                 MediaTypeHeaderValue.Parse("application/xml;version=1"));
 
-            var filter = new FormatFilter(mockObjects.OptionsManager, mockObjects.ScopedInstance);
+            var filter = new FormatFilter(mockObjects.OptionsManager, mockObjects.ActionContextAccessor);
 
             // Act
             filter.OnResourceExecuting(resourceExecutingContext);
@@ -252,7 +252,7 @@ namespace Microsoft.AspNet.Mvc
                 "xml",
                 MediaTypeHeaderValue.Parse("application/xml"));
 
-            var filter = new FormatFilter(mockObjects.OptionsManager, mockObjects.ScopedInstance);
+            var filter = new FormatFilter(mockObjects.OptionsManager, mockObjects.ActionContextAccessor);
 
             // Act
             filter.OnResourceExecuting(resourceExecutingContext);
@@ -271,7 +271,7 @@ namespace Microsoft.AspNet.Mvc
             // Arrange
             var mockObjects = new MockObjects(format, place);
             var resourceExecutingContext = mockObjects.CreateResourceExecutingContext(new IFilterMetadata[] { });
-            var filter = new FormatFilter(mockObjects.OptionsManager, mockObjects.ScopedInstance);
+            var filter = new FormatFilter(mockObjects.OptionsManager, mockObjects.ActionContextAccessor);
 
             // Act
             filter.OnResourceExecuting(resourceExecutingContext);
@@ -294,7 +294,7 @@ namespace Microsoft.AspNet.Mvc
             var mockObjects = new MockObjects(format, place);
             var resultExecutingContext = mockObjects.CreateResultExecutingContext();
             var filterAttribute = new FormatFilterAttribute();
-            var filter = new FormatFilter(mockObjects.OptionsManager, mockObjects.ScopedInstance);
+            var filter = new FormatFilter(mockObjects.OptionsManager, mockObjects.ActionContextAccessor);
 
             // Act and Assert
             Assert.Equal(expected, filter.IsActive);
@@ -322,7 +322,7 @@ namespace Microsoft.AspNet.Mvc
             public HttpContext MockHttpContext { get; private set; }
             public ActionContext MockActionContext { get; private set; }
 
-            public IScopedInstance<ActionContext> ScopedInstance { get; private set; }
+            public IActionContextAccessor ActionContextAccessor { get; private set; }
             public IOptions<MvcOptions> OptionsManager { get; private set; }
 
             public MockObjects(string format = null, FormatSource? place = null)
@@ -399,9 +399,10 @@ namespace Microsoft.AspNet.Mvc
 
                 // Setup MVC services on mock service provider
                 MockActionContext = CreateMockActionContext(httpContext, format, place);
-                var scopedInstance = new Mock<IScopedInstance<ActionContext>>();
-                scopedInstance.Setup(s => s.Value).Returns(MockActionContext);
-                ScopedInstance = scopedInstance.Object;
+                ActionContextAccessor = new ActionContextAccessor()
+                {
+                    ActionContext = MockActionContext,
+                };
             }
         }
 #endif

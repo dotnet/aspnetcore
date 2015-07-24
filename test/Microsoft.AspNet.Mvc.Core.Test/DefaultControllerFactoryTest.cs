@@ -102,7 +102,7 @@ namespace Microsoft.AspNet.Mvc.Core
             var bindingContext = new ActionBindingContext();
 
             var services = GetServices();
-            services.GetRequiredService<IScopedInstance<ActionBindingContext>>().Value = bindingContext;
+            services.GetRequiredService<IActionBindingContextAccessor>().ActionBindingContext = bindingContext;
             var httpContext = new DefaultHttpContext
             {
                 RequestServices = services
@@ -255,11 +255,10 @@ namespace Microsoft.AspNet.Mvc.Core
                     .Returns(metadataProvider);
             services.Setup(s => s.GetService(typeof(IObjectModelValidator)))
                     .Returns(new DefaultObjectValidator(new IExcludeTypeValidationFilter[0], metadataProvider));
-            services
-                .Setup(s => s.GetService(typeof(IScopedInstance<ActionBindingContext>)))
-                .Returns(new MockScopedInstance<ActionBindingContext>());
             services.Setup(s => s.GetService(typeof(ITempDataDictionary)))
                        .Returns(new Mock<ITempDataDictionary>().Object);
+            services.Setup(s => s.GetService(typeof(IActionBindingContextAccessor)))
+                .Returns(new ActionBindingContextAccessor());
             return services.Object;
         }
 
@@ -268,7 +267,7 @@ namespace Microsoft.AspNet.Mvc.Core
             controllerActivator = controllerActivator ?? Mock.Of<IControllerActivator>();
             var propertyActivators = new IControllerPropertyActivator[]
             {
-                new DefaultControllerPropertyActivator(),
+                new DefaultControllerPropertyActivator(new ActionBindingContextAccessor()),
             };
 
             return new DefaultControllerFactory(controllerActivator, propertyActivators);

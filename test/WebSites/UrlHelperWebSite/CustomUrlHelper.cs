@@ -4,7 +4,6 @@
 using System;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc;
-using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.OptionsModel;
 
 namespace UrlHelperWebSite
@@ -19,12 +18,14 @@ namespace UrlHelperWebSite
         private readonly IOptions<AppOptions> _appOptions;
         private readonly HttpContext _httpContext;
 
-        public CustomUrlHelper(IScopedInstance<ActionContext> contextAccessor, IActionSelector actionSelector,
-                               IOptions<AppOptions> appOptions)
+        public CustomUrlHelper(
+            IActionContextAccessor contextAccessor,
+            IActionSelector actionSelector,
+            IOptions<AppOptions> appOptions)
             : base(contextAccessor, actionSelector)
         {
             _appOptions = appOptions;
-            _httpContext = contextAccessor.Value.HttpContext;
+            _httpContext = contextAccessor.ActionContext.HttpContext;
         }
 
         /// <summary>

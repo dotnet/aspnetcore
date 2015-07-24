@@ -81,11 +81,11 @@ namespace Microsoft.AspNet.Mvc
             {
                 OutputFormatters = optionsAccessor.Options.OutputFormatters,
             };
-            var bindingContextAccessor = new MockScopedInstance<ActionBindingContext>
+            var bindingContextAccessor = new ActionBindingContextAccessor
             {
-                Value = bindingContext,
+                ActionBindingContext = bindingContext,
             };
-            services.Add(new ServiceDescriptor(typeof(IScopedInstance<ActionBindingContext>), bindingContextAccessor));
+            services.Add(new ServiceDescriptor(typeof(IActionBindingContextAccessor), bindingContextAccessor));
 
             return services.BuildServiceProvider();
         }

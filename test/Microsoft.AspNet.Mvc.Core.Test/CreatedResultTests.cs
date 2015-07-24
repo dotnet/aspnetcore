@@ -97,13 +97,13 @@ namespace Microsoft.AspNet.Mvc
                 .Setup(p => p.RequestServices.GetService(typeof(ILogger<ObjectResult>)))
                 .Returns(new Mock<ILogger<ObjectResult>>().Object);
 
-            var mockActionBindingContext = new Mock<IScopedInstance<ActionBindingContext>>();
-            mockActionBindingContext
-                .SetupGet(o=> o.Value)
-                .Returns(new ActionBindingContext() { OutputFormatters = optionsAccessor.Options.OutputFormatters });
+            var actionBindingContext = new ActionBindingContext()
+            {
+                OutputFormatters = optionsAccessor.Options.OutputFormatters
+            };
             httpContext
-                .Setup(o => o.RequestServices.GetService(typeof(IScopedInstance<ActionBindingContext>)))
-                .Returns(mockActionBindingContext.Object);
+                .Setup(o => o.RequestServices.GetService(typeof(IActionBindingContextAccessor)))
+                .Returns(new ActionBindingContextAccessor() { ActionBindingContext = actionBindingContext });
 
             return httpContext.Object;
         }

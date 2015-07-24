@@ -272,7 +272,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public string Name { get; set; }
 
             [FromServices]
-            public IScopedInstance<ActionBindingContext> BindingContext { get; set; }
+            public IActionBindingContextAccessor BindingContext { get; set; }
         }
 
         [Fact]
@@ -1528,7 +1528,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public Address1 Address { get; set; }
 
             [FromServices]
-            public IScopedInstance<ActionBindingContext> BindingContext { get; set; }
+            public IActionBindingContextAccessor BindingContext { get; set; }
         }
 
         // If a nested POCO object has all properties bound from a greedy source, then it should be populated

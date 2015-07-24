@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Core;
@@ -17,15 +16,19 @@ namespace Microsoft.AspNet.Mvc
 {
     public class MvcRouteHandler : IRouter
     {
-        private INotifier _notifier;
+        private IActionContextAccessor _actionContextAccessor;
+        private IActionInvokerFactory _actionInvokerFactory;
+        private IActionSelector _actionSelector;
         private ILogger _logger;
+        private INotifier _notifier;
 
         public VirtualPathData GetVirtualPath([NotNull] VirtualPathContext context)
         {
+            EnsureServices(context.Context);
+
             // The contract of this method is to check that the values coming in from the route are valid;
             // that they match an existing action, setting IsBound = true if the values are OK.
-            var actionSelector = context.Context.RequestServices.GetRequiredService<IActionSelector>();
-            context.IsBound = actionSelector.HasValidAction(context);
+            context.IsBound = _actionSelector.HasValidAction(context);
 
             // We return null here because we're not responsible for generating the url, the route is.
             return null;
@@ -38,13 +41,9 @@ namespace Microsoft.AspNet.Mvc
             // Verify if AddMvc was done before calling UseMvc
             // We use the MvcMarkerService to make sure if all the services were added.
             MvcServicesHelper.ThrowIfMvcNotRegistered(services);
+            EnsureServices(context.HttpContext);
 
-            EnsureLogger(context.HttpContext);
-            EnsureNotifier(context.HttpContext);
-
-            var actionSelector = services.GetRequiredService<IActionSelector>();
-            var actionDescriptor = await actionSelector.SelectAsync(context);
-
+            var actionDescriptor = await _actionSelector.SelectAsync(context);
             if (actionDescriptor == null)
             {
                 _logger.LogVerbose("No actions matched the current request.");
@@ -104,15 +103,10 @@ namespace Microsoft.AspNet.Mvc
 
         private async Task InvokeActionAsync(RouteContext context, ActionDescriptor actionDescriptor)
         {
-            var services = context.HttpContext.RequestServices;
-            Debug.Assert(services != null);
-
             var actionContext = new ActionContext(context.HttpContext, context.RouteData, actionDescriptor);
-
-            var contextAccessor = services.GetRequiredService<IScopedInstance<ActionContext>>();
-            contextAccessor.Value = actionContext;
-            var invokerFactory = services.GetRequiredService<IActionInvokerFactory>();
-            var invoker = invokerFactory.CreateInvoker(actionContext);
+            _actionContextAccessor.ActionContext = actionContext;
+            
+            var invoker = _actionInvokerFactory.CreateInvoker(actionContext);
             if (invoker == null)
             {
                 throw new InvalidOperationException(
@@ -123,17 +117,29 @@ namespace Microsoft.AspNet.Mvc
             await invoker.InvokeAsync();
         }
 
-        private void EnsureLogger(HttpContext context)
+        private void EnsureServices(HttpContext context)
         {
+            if (_actionContextAccessor == null)
+            {
+                _actionContextAccessor = context.RequestServices.GetRequiredService<IActionContextAccessor>();
+            }
+
+            if (_actionInvokerFactory == null)
+            {
+                _actionInvokerFactory = context.RequestServices.GetRequiredService<IActionInvokerFactory>();
+            }
+
+            if (_actionSelector == null)
+            {
+                _actionSelector = context.RequestServices.GetRequiredService<IActionSelector>();
+            }
+
             if (_logger == null)
             {
                 var factory = context.RequestServices.GetRequiredService<ILoggerFactory>();
                 _logger = factory.CreateLogger<MvcRouteHandler>();
             }
-        }
 
-        private void EnsureNotifier(HttpContext context)
-        {
             if (_notifier == null)
             {
                 _notifier = context.RequestServices.GetRequiredService<INotifier>();

@@ -205,8 +205,6 @@ namespace Microsoft.AspNet.Mvc
             IOptions<MvcOptions> optionsAccessor = null,
             object notificationListener = null)
         {
-            var mockContextAccessor = new Mock<IScopedInstance<ActionContext>>();
-
             if (actionDescriptor == null)
             {
                 var mockAction = new Mock<ActionDescriptor>();
@@ -252,8 +250,8 @@ namespace Microsoft.AspNet.Mvc
             }
 
             var httpContext = new Mock<HttpContext>();
-            httpContext.Setup(h => h.RequestServices.GetService(typeof(IScopedInstance<ActionContext>)))
-                .Returns(mockContextAccessor.Object);
+            httpContext.Setup(h => h.RequestServices.GetService(typeof(IActionContextAccessor)))
+                .Returns(new ActionContextAccessor());
             httpContext.Setup(h => h.RequestServices.GetService(typeof(IActionSelector)))
                 .Returns(actionSelector);
             httpContext.Setup(h => h.RequestServices.GetService(typeof(IActionInvokerFactory)))

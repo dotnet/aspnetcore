@@ -820,23 +820,18 @@ namespace Microsoft.AspNet.Mvc
             return context;
         }
 
-        private static IScopedInstance<ActionContext> CreateActionContext(HttpContext context)
+        private static IActionContextAccessor CreateActionContext(HttpContext context)
         {
             return CreateActionContext(context, (new Mock<IRouter>()).Object);
         }
 
-        private static IScopedInstance<ActionContext> CreateActionContext(HttpContext context, IRouter router)
+        private static IActionContextAccessor CreateActionContext(HttpContext context, IRouter router)
         {
             var routeData = new RouteData();
             routeData.Routers.Add(router);
 
-            var actionContext = new ActionContext(context,
-                                                  routeData,
-                                                  new ActionDescriptor());
-            var contextAccessor = new Mock<IScopedInstance<ActionContext>>();
-            contextAccessor.SetupGet(c => c.Value)
-                           .Returns(actionContext);
-            return contextAccessor.Object;
+            var actionContext = new ActionContext(context, routeData, new ActionDescriptor());
+            return new ActionContextAccessor() { ActionContext = actionContext };
         }
 
         private static UrlHelper CreateUrlHelper()
@@ -874,7 +869,7 @@ namespace Microsoft.AspNet.Mvc
             return new UrlHelper(actionContext, actionSelector.Object);
         }
 
-        private static UrlHelper CreateUrlHelper(IScopedInstance<ActionContext> contextAccessor)
+        private static UrlHelper CreateUrlHelper(IActionContextAccessor contextAccessor)
         {
             var actionSelector = new Mock<IActionSelector>(MockBehavior.Strict);
             return new UrlHelper(contextAccessor, actionSelector.Object);

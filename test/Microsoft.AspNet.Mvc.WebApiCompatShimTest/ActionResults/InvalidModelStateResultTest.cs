@@ -86,15 +86,9 @@ namespace System.Web.Http
             optionsAccessor.SetupGet(o => o.Options)
                 .Returns(options);
 
-            var mockActionBindingContext = new Mock<IScopedInstance<ActionBindingContext>>();
-
-            var bindingContext = new ActionBindingContext { OutputFormatters = options.OutputFormatters };
-            mockActionBindingContext
-                .SetupGet(o => o.Value)
-                .Returns(bindingContext);
-
-            services.Setup(o => o.GetService(typeof(IScopedInstance<ActionBindingContext>)))
-                    .Returns(mockActionBindingContext.Object);
+            var actionBindingContext = new ActionBindingContext { OutputFormatters = options.OutputFormatters };
+            services.Setup(o => o.GetService(typeof(IActionBindingContextAccessor)))
+                    .Returns(new ActionBindingContextAccessor() { ActionBindingContext = actionBindingContext });
 
             services.Setup(s => s.GetService(typeof(IOptions<MvcOptions>)))
                 .Returns(optionsAccessor.Object);

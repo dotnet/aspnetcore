@@ -102,13 +102,12 @@ namespace Microsoft.AspNet.Mvc
             services.Setup(s => s.GetService(typeof(ILogger<ObjectResult>)))
                        .Returns(new Mock<ILogger<ObjectResult>>().Object);
 
-            var mockContextAccessor = new Mock<IScopedInstance<ActionBindingContext>>();
-            mockContextAccessor
-                .SetupGet(o => o.Value)
-                .Returns(new ActionBindingContext() { OutputFormatters = optionsAccessor.Options.OutputFormatters });
-
-            services.Setup(o => o.GetService(typeof(IScopedInstance<ActionBindingContext>)))
-                       .Returns(mockContextAccessor.Object);
+            var actionBindingContext = new ActionBindingContext
+            {
+                OutputFormatters = optionsAccessor.Options.OutputFormatters
+            };
+            services.Setup(o => o.GetService(typeof(IActionBindingContextAccessor)))
+                    .Returns(new ActionBindingContextAccessor() { ActionBindingContext = actionBindingContext });
 
             return httpContext;
         }

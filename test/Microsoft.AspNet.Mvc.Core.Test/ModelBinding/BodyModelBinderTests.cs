@@ -290,25 +290,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return bindingContext;
         }
 
-        private static IScopedInstance<ActionContext> CreateActionContext(HttpContext context)
-        {
-            return CreateActionContext(context, (new Mock<IRouter>()).Object);
-        }
-
-        private static IScopedInstance<ActionContext> CreateActionContext(HttpContext context, IRouter router)
-        {
-            var routeData = new RouteData();
-            routeData.Routers.Add(router);
-
-            var actionContext = new ActionContext(context,
-                                                  routeData,
-                                                  new ActionDescriptor());
-            var contextAccessor = new Mock<IScopedInstance<ActionContext>>();
-            contextAccessor.SetupGet(c => c.Value)
-                           .Returns(actionContext);
-            return contextAccessor.Object;
-        }
-
         private class Person
         {
             public string Name { get; set; }

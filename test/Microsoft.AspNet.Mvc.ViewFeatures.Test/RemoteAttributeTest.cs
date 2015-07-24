@@ -536,7 +536,7 @@ namespace Microsoft.AspNet.Mvc
             return builder;
         }
 
-        private static IScopedInstance<ActionContext> GetContextAccessor(
+        private static IActionContextAccessor GetContextAccessor(
             IServiceProvider serviceProvider,
             RouteData routeData = null)
         {
@@ -557,12 +557,12 @@ namespace Microsoft.AspNet.Mvc
             }
 
             var actionContext = new ActionContext(httpContext, routeData, new ActionDescriptor());
-            var contextAccessor = new Mock<IScopedInstance<ActionContext>>();
-            contextAccessor
-                .SetupGet(accessor => accessor.Value)
-                .Returns(actionContext);
+            var contextAccessor = new ActionContextAccessor()
+            {
+                ActionContext = actionContext,
+            };
 
-            return contextAccessor.Object;
+            return contextAccessor;
         }
 
         private static ServiceCollection GetServiceCollection()

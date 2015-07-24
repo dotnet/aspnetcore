@@ -904,20 +904,14 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             httpContext.Setup(o => o.RequestServices.GetService(typeof(ILogger<ObjectResult>)))
                 .Returns(new Mock<ILogger<ObjectResult>>().Object);
 
-            var mockActionBindingContext = new Mock<IScopedInstance<ActionBindingContext>>();
-
-            ActionBindingContext bindingContext = null;
+            ActionBindingContext actionBindingContext = null;
             if (setupActionBindingContext)
             {
-                bindingContext = new ActionBindingContext { OutputFormatters = outputFormatters.ToList() };
+                actionBindingContext = new ActionBindingContext { OutputFormatters = outputFormatters.ToList() };
             }
-
-            mockActionBindingContext
-                .SetupGet(o => o.Value)
-                .Returns(bindingContext);
-
-            httpContext.Setup(o => o.RequestServices.GetService(typeof(IScopedInstance<ActionBindingContext>)))
-                       .Returns(mockActionBindingContext.Object);
+            
+            httpContext.Setup(o => o.RequestServices.GetService(typeof(IActionBindingContextAccessor)))
+                    .Returns(new ActionBindingContextAccessor() { ActionBindingContext = actionBindingContext });
 
             return new ActionContext(httpContext.Object, new RouteData(), new ActionDescriptor());
         }
