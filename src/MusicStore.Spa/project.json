@@ -36,7 +36,7 @@
     "Microsoft.Framework.Configuration": "1.0.0-*",
     "Microsoft.Framework.Configuration.EnvironmentVariables": "1.0.0-*",
     "Microsoft.Framework.Configuration.Json": "1.0.0-*",
-    "AutoMapper": "4.0.0-ci1026"
+    "AutoMapper": "4.0.0-alpha1"
   },
   "commands": {
     "WebListener": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls http://localhost:5102",
