@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                                     (_1, _2, _3) => buf,
                                     (_1, status2, error2, state2) =>
                                     {
-                                        if (status2 <= 0)
+                                        if (status2 == 0)
                                         {
                                             DispatchPipe.Dispose();
                                             Marshal.FreeHGlobal(ptr);

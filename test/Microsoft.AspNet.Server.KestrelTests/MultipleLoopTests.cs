@@ -115,7 +115,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
                         (_3, cb, _4) => buf,
                         (_3, status2, error2, _4) =>
                         {
-                            if (status2 <= 0)
+                            if (status2 == 0)
                             {
                                 clientConnectionPipe.Dispose();
                             }
@@ -203,7 +203,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
                         (_3, cb, _4) => buf,
                         (_3, status2, error2, _4) =>
                         {
-                            if (status2 <= 0)
+                            if (status2 == 0)
                             {
                                 clientConnectionPipe.Dispose();
                                 return;
@@ -216,7 +216,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
                                 (_5, cb, _6) => buf2,
                                 (_5, status3, error3, _6) =>
                                 {
-                                    if (status3 <= 0)
+                                    if (status3 == 0)
                                     {
                                         clientConnectionTcp.Dispose();
                                     }
