@@ -1,4 +1,53 @@
+
+# Getting started with ASP.NET 5 and Docker
+
+It is possible to run the sample apps using [Docker](https://www.docker.com/) and the [ASP.NET 5 Preview Docker Image](https://registry.hub.docker.com/u/microsoft/aspnet/).
+
+### Get the source code
+```
+git clone git@github.com:aspnet/Home.git aspnet-home
+cd aspnet-home/samples/latest/HelloWeb
+```
+
+### Build a docker image
+```
+docker build -t aspnet-home-helloweb .
+```
+
+### Run a docker container
+```
+docker run -it -p 5004:5004 aspnet-home-helloweb
+```
+
+### See the HelloWeb sample in action
+The URL to the sample app depends on how you are running Docker.
+
+If you are using [boot2docker](https://github.com/boot2docker/boot2docker):
+
+```
+open http://$(boot2docker ip):5004
+```
+
+Otherwise, you can access the sample app directly on localhost:
+
+```
+open http://localhost:5004
+```
+
+### Stop the container
+You can stop the docker container by pressing <kbd>Enter</kbd> in the console, or by using ```docker ps``` to identify the container id followed by ```docker stop <container id>```.
+
+
+### Learn more
+Detailed instructions on how to use the [ASP.NET 5 Preview Docker Image](https://registry.hub.docker.com/u/microsoft/aspnet/) can be found on http://blogs.msdn.com/b/webdev/archive/2015/01/14/running-asp-net-5-applications-in-linux-containers-with-docker.aspx. Please note that the ```kpm``` and ```k``` tools have been renamed since that article was published.
+
+
+
+# Getting started with ASP.NET 5 and Linux
+
 > Tested on: Ubuntu 14.04, Mint 17.01
+
+This section deals with setting up a machine to run applications without the Docker image.
 
 As with all other operating systems you need DNVM to get going with ASP.NET 5. To get it you run `curl` to download a `.sh` file and then run it. To configure a Linux machine to run an ASP.NET 5 application use the following instructions.
 
@@ -9,11 +58,6 @@ The steps to set up a Linux machine are:
  * Get DNVM
  * Add sources to NuGet.config (For package restore)
 
-### Docker
-
-Instructions on how to use the ASP.NET [Docker](https://www.docker.com/) image here: http://blogs.msdn.com/b/webdev/archive/2015/01/14/running-asp-net-5-applications-in-linux-containers-with-docker.aspx
-
-The rest of this section deals with setting up a machine to run applications without the Docker image.
 
 ### Get Mono
 
@@ -59,7 +103,7 @@ curl -sSL https://raw.githubusercontent.com/aspnet/Home/dev/dnvminstall.sh | DNX
 
 Once this step is complete you should be able to run `dnvm` and see some help text.
 
-# Add Sources to NuGet.config
+### Add Sources to NuGet.config
 
 Now that we have DNVM and the other tools needed to run an ASP.NET application we need to add the development configuration sources to get nightly builds of all the ASP.NET packages.
 
