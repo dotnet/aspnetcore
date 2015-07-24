@@ -32,9 +32,5 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         {
             _uv.pipe_bind(this, name);
         }
-
-        //public void Open(IntPtr hSocket)
-        //{
-        //}
     }
 }
