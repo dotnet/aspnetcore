@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     socket,
                     (write2, status, error, state) => 
                     {
-                        write.Dispose();
+                        write2.Dispose();
                         ((UvTcpHandle)state).Dispose();
                     },
                     socket);
