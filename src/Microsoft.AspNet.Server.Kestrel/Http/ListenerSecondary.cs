@@ -3,6 +3,7 @@
 
 using Microsoft.AspNet.Server.Kestrel.Networking;
 using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
@@ -65,7 +66,17 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
                                         var acceptSocket = new UvTcpHandle();
                                         acceptSocket.Init(Thread.Loop, Thread.QueueCloseHandle);
-                                        DispatchPipe.Accept(acceptSocket);
+
+                                        try
+                                        {
+                                            DispatchPipe.Accept(acceptSocket);
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            Trace.WriteLine("DispatchPipe.Accept " + ex.Message);
+                                            acceptSocket.Dispose();
+                                            return;
+                                        }
 
                                         var connection = new Connection(this, acceptSocket);
                                         connection.Start();
