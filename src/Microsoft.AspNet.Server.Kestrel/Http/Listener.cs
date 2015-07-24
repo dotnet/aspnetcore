@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             return tcs.Task;
         }
 
-        protected void OnConnection(UvStreamHandle listenSocket, int status)
+        private void OnConnection(UvStreamHandle listenSocket, int status)
         {
             var acceptSocket = new UvTcpHandle();
             acceptSocket.Init(Thread.Loop, Thread.QueueCloseHandle);
