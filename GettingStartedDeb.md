@@ -86,17 +86,19 @@ The important part of this is that you have a package source with aspnetvnext an
 
 If the DNVM command don't work after rebooting, verify if your distribution uses dash instead of bash
 
-> Tested on: Mint 17.01
+> Tested on: Mint 17.2
+
 Locate this line on your ~/.profile file and remove it
 
-´´´
+```
 [ -s "$HOME/.dnx/dnvm/dnvm.sh" ] && . "$HOME/.dnx/dnvm/dnvm.sh" #Load dnvm
-´´´
+```
 
 Create a file named .bashrc on your ~/ and append that same line on the new file
 
-´´´
+
+```
 sudo nano ~/.bashrc
 
 [ -s "$HOME/.dnx/dnvm/dnvm.sh" ] && . "$HOME/.dnx/dnvm/dnvm.sh" #Load dnvm
-´´´
+```
