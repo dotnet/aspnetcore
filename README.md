@@ -40,27 +40,7 @@ where dnvm
 
 ## OS X
 
-On OS X the best way to get DNVM is to use [Homebrew](http://www.brew.sh). If you don't have Homebrew installed then follow the [Homebrew installation instructions](http://www.brew.sh). Once you have Homebrew then run the following commands:
-
-```
-brew tap aspnet/dnx
-brew update
-brew install dnvm
-```
-
-Add dnvm to your bash profile (./bash_profile)
-```bash
-source dnvm.sh
-```
-
-
-Note that on Windows the .NET Framework is already installed, whereas on OS X the brew formula uses a particular version of [Mono](http://www.mono-project.com/) that we know works with ASP.NET 5.
-
-To verify that everything works run the `dnvm` command. 
-
-Should that fail, for example with `-bash: dnvm: command not found`, run the command `source dnvm.sh`. This means that `dnvm` will be available in this session. 
-
-To make sure `dnvm` is available for *every* session, add the command to your `~/.bashrc` with the following command `echo "source dnvm.sh" >> ~/.bashrc`. 
+See the instructions on the ASP.NET 5 Documentation site: [Installing ASP.NET 5 on Mac OS X](http://docs.asp.net/en/latest/getting-started/installing-on-mac.html)
 
 ## Linux
 
