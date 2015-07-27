@@ -1058,23 +1058,34 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var manager = CreateRoleManager();
             var role = CreateTestRole("ClaimsAddRemove");
+            var roleSafe = CreateTestRole("ClaimsAdd");
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(role));
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(roleSafe));
             Claim[] claims = { new Claim("c", "v"), new Claim("c2", "v2"), new Claim("c2", "v3") };
             foreach (Claim c in claims)
             {
                 IdentityResultAssert.IsSuccess(await manager.AddClaimAsync(role, c));
+                IdentityResultAssert.IsSuccess(await manager.AddClaimAsync(roleSafe, c));
             }
             var roleClaims = await manager.GetClaimsAsync(role);
+            var safeRoleClaims = await manager.GetClaimsAsync(roleSafe);
             Assert.Equal(3, roleClaims.Count);
+            Assert.Equal(3, safeRoleClaims.Count);
             IdentityResultAssert.IsSuccess(await manager.RemoveClaimAsync(role, claims[0]));
             roleClaims = await manager.GetClaimsAsync(role);
+            safeRoleClaims = await manager.GetClaimsAsync(roleSafe);
             Assert.Equal(2, roleClaims.Count);
+            Assert.Equal(3, safeRoleClaims.Count);
             IdentityResultAssert.IsSuccess(await manager.RemoveClaimAsync(role, claims[1]));
             roleClaims = await manager.GetClaimsAsync(role);
+            safeRoleClaims = await manager.GetClaimsAsync(roleSafe);
             Assert.Equal(1, roleClaims.Count);
+            Assert.Equal(3, safeRoleClaims.Count);
             IdentityResultAssert.IsSuccess(await manager.RemoveClaimAsync(role, claims[2]));
             roleClaims = await manager.GetClaimsAsync(role);
+            safeRoleClaims = await manager.GetClaimsAsync(roleSafe);
             Assert.Equal(0, roleClaims.Count);
+            Assert.Equal(3, safeRoleClaims.Count);
         }
 
         [Fact]
