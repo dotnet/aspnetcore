@@ -1,36 +1,48 @@
 {
-    "description": "Runtime components for rendering Razor pages.",
-    "version": "4.0.0-*",
-    "repository": {
-        "type": "git",
-        "url": "git://github.com/aspnet/razor"
+  "description": "Runtime components for rendering Razor pages.",
+  "version": "4.0.0-*",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/aspnet/razor"
+  },
+  "dependencies": {
+    "Microsoft.AspNet.Html.Abstractions": "1.0.0-*",
+    "Microsoft.AspNet.Razor": "4.0.0-*",
+    "Microsoft.Framework.BufferEntryCollection.Sources": {
+      "type": "build",
+      "version": "1.0.0-*"
     },
-    "dependencies": {
-        "Microsoft.AspNet.Html.Abstractions": "1.0.0-*",
-        "Microsoft.AspNet.Razor": "4.0.0-*",
-        "Microsoft.Framework.BufferEntryCollection.Sources": { "type": "build", "version": "1.0.0-*" },
-        "Microsoft.Framework.ClosedGenericMatcher.Sources": { "type": "build", "version": "1.0.0-*" },
-        "Microsoft.Framework.CopyOnWriteDictionary.Sources": { "type": "build", "version": "1.0.0-*" },
-        "Microsoft.Framework.NotNullAttribute.Sources": { "type": "build", "version": "1.0.0-*" }
+    "Microsoft.Framework.ClosedGenericMatcher.Sources": {
+      "type": "build",
+      "version": "1.0.0-*"
     },
-    "frameworks": {
-        "net45": {
-            "frameworkAssemblies": {
-                "System.Xml": "4.0.0.0",
-                "System.Xml.Linq": "4.0.0.0"
-            }
-        },
-        "dnx451": {
-            "frameworkAssemblies": {
-                "System.Xml": "4.0.0.0",
-                "System.Xml.Linq": "4.0.0.0"
-            }
-        },
-        "dnxcore50": {
-            "dependencies": {
-                "System.Reflection.Extensions": "4.0.0-beta-*",
-                "System.Text.RegularExpressions": "4.0.10-beta-*"
-            }
-        }
+    "Microsoft.Framework.CopyOnWriteDictionary.Sources": {
+      "type": "build",
+      "version": "1.0.0-*"
+    },
+    "Microsoft.Framework.NotNullAttribute.Sources": {
+      "type": "build",
+      "version": "1.0.0-*"
     }
+  },
+  "frameworks": {
+    "net45": {
+      "frameworkAssemblies": {
+        "System.Xml": "4.0.0.0",
+        "System.Xml.Linq": "4.0.0.0"
+      }
+    },
+    "dnx451": {
+      "frameworkAssemblies": {
+        "System.Xml": "4.0.0.0",
+        "System.Xml.Linq": "4.0.0.0"
+      }
+    },
+    "dnxcore50": {
+      "dependencies": {
+        "System.Reflection.Extensions": "4.0.0-beta-*",
+        "System.Text.RegularExpressions": "4.0.10-beta-*"
+      }
+    }
+  }
 }
