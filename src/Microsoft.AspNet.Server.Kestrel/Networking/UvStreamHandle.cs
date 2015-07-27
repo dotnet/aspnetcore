@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
                 _listenCallback = callback;
                 _listenState = state;
                 _listenVitality = GCHandle.Alloc(this, GCHandleType.Normal);
-                _uv.listen(this, 10, _uv_connection_cb);
+                _uv.listen(this, backlog, _uv_connection_cb);
             }
             catch
             {

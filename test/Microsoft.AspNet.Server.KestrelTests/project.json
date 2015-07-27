@@ -14,8 +14,11 @@
             }
         }
     },
+    "compilationOptions": {
+        "allowUnsafe": true
+    },
     "commands": {
-        "run": "xunit.runner.aspnet",
+        "run": "Microsoft.AspNet.Server.KestrelTests",
         "test": "xunit.runner.aspnet"
     }
 }

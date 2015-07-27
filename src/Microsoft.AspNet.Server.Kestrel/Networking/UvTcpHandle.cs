@@ -48,5 +48,10 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
 
             _uv.tcp_bind(this, ref addr, 0);
         }
+
+        public void Open(IntPtr hSocket)
+        {
+            _uv.tcp_open(this, hSocket);
+        }
     }
 }

@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 using Microsoft.AspNet.Server.Kestrel.Networking;
 using System;
 using System.Diagnostics;
@@ -53,7 +54,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     ListenSocket = new UvTcpHandle();
                     ListenSocket.Init(Thread.Loop, Thread.QueueCloseHandle);
                     ListenSocket.Bind(new IPEndPoint(IPAddress.Any, port));
-                    ListenSocket.Listen(10, _connectionCallback, this);
+                    ListenSocket.Listen(Constants.ListenBacklog, _connectionCallback, this);
                     tcs.SetResult(0);
                 }
                 catch (Exception ex)
@@ -70,7 +71,12 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             acceptSocket.Init(Thread.Loop, Thread.QueueCloseHandle);
             listenSocket.Accept(acceptSocket);
 
-            var connection = new Connection(this, acceptSocket);
+            DispatchConnection(acceptSocket);
+        }
+
+        protected virtual void DispatchConnection(UvTcpHandle socket)
+        {
+            var connection = new Connection(this, socket);
             connection.Start();
         }
 

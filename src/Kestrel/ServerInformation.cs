@@ -8,7 +8,7 @@ using Microsoft.Framework.Configuration;
 
 namespace Kestrel
 {
-    public class ServerInformation : IServerInformation
+    public class ServerInformation : IServerInformation, IKestrelServerInformation
     {
         public ServerInformation()
         {
@@ -25,7 +25,7 @@ namespace Kestrel
             foreach (var url in urls.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
             {
                 var address = ServerAddress.FromUrl(url);
-                if(address != null)
+                if (address != null)
                 {
                     Addresses.Add(address);
                 }
@@ -41,5 +41,7 @@ namespace Kestrel
         }
 
         public IList<ServerAddress> Addresses { get; private set; }
+
+        public int ThreadCount { get; set; }
     }
 }
