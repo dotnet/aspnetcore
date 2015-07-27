@@ -519,96 +519,62 @@ namespace Microsoft.AspNet.Mvc.Razor
             [NotNull] PositionTagged<string> suffix,
             params AttributeValue[] values)
         {
-            var first = true;
-            var wroteSomething = false;
             if (values.Length == 0)
             {
-                // Explicitly empty attribute, so write the prefix and suffix
+                // Explicitly empty attribute, so write the prefix
                 WritePositionTaggedLiteral(writer, prefix);
-                WritePositionTaggedLiteral(writer, suffix);
+            }
+            else if (values.Length == 1 && values[0].Prefix == "" &&
+                (values[0].Value.Value is bool || values[0].Value.Value == null))
+            {
+                // Value is either null or a bool with no prefix.
+                var attributeValue = values[0];
+                var positionTaggedAttributeValue = attributeValue.Value;
+
+                if (positionTaggedAttributeValue.Value == null || !(bool)positionTaggedAttributeValue.Value)
+                {
+                    // The value is null or just the bool 'false', don't write anything.
+                    return;
+                }
+
+                WritePositionTaggedLiteral(writer, prefix);
+
+                var sourceLength = suffix.Position - positionTaggedAttributeValue.Position;
+
+                // The value is just the bool 'true', write the attribute name instead of the string 'True'.
+                WriteAttributeValue(writer, attributeValue, name, sourceLength);
             }
             else
             {
+                // This block handles two cases.
+                // 1. Single value with prefix.
+                // 2. Multiple values with or without prefix.
+                WritePositionTaggedLiteral(writer, prefix);
                 for (var i = 0; i < values.Length; i++)
                 {
-                    var attrVal = values[i];
-                    var val = attrVal.Value;
-                    var next = i == values.Length - 1 ?
-                        suffix : // End of the list, grab the suffix
-                        values[i + 1].Prefix; // Still in the list, grab the next prefix
+                    var attributeValue = values[i];
+                    var positionTaggedAttributeValue = attributeValue.Value;
 
-                    if (val.Value == null)
+                    if (positionTaggedAttributeValue.Value == null)
                     {
                         // Nothing to write
                         continue;
                     }
 
-                    // The special cases here are that the value we're writing might already be a string, or that the
-                    // value might be a bool. If the value is the bool 'true' we want to write the attribute name
-                    // instead of the string 'true'. If the value is the bool 'false' we don't want to write anything.
-                    // Otherwise the value is another object (perhaps an HtmlString) and we'll ask it to format itself.
-                    string stringValue;
-
-                    // Intentionally using is+cast here for performance reasons. This is more performant than as+bool?
-                    // because of boxing.
-                    if (val.Value is bool)
-                    {
-                        if ((bool)val.Value)
-                        {
-                            stringValue = name;
-                        }
-                        else
-                        {
-                            continue;
-                        }
-                    }
-                    else
-                    {
-                        stringValue = val.Value as string;
-                    }
-
-                    if (first)
-                    {
-                        WritePositionTaggedLiteral(writer, prefix);
-                        first = false;
-                    }
-
-                    if (!string.IsNullOrEmpty(attrVal.Prefix))
-                    {
-                        WritePositionTaggedLiteral(writer, attrVal.Prefix);
-                    }
+                    var next = i == values.Length - 1 ?
+                        suffix : // End of the list, grab the suffix
+                        values[i + 1].Prefix; // Still in the list, grab the next prefix
 
                     // Calculate length of the source span by the position of the next value (or suffix)
-                    var sourceLength = next.Position - attrVal.Value.Position;
+                    var sourceLength = next.Position - attributeValue.Value.Position;
 
-                    BeginContext(attrVal.Value.Position, sourceLength, isLiteral: attrVal.Literal);
-                    // The extra branching here is to ensure that we call the Write*To(string) overload where
-                    // possible.
-                    if (attrVal.Literal && stringValue != null)
-                    {
-                        WriteLiteralTo(writer, stringValue);
-                    }
-                    else if (attrVal.Literal)
-                    {
-                        WriteLiteralTo(writer, val.Value);
-                    }
-                    else if (stringValue != null)
-                    {
-                        WriteTo(writer, stringValue);
-                    }
-                    else
-                    {
-                        WriteTo(writer, val.Value);
-                    }
+                    var stringValue = positionTaggedAttributeValue.Value as string;
 
-                    EndContext();
-                    wroteSomething = true;
-                }
-                if (wroteSomething)
-                {
-                    WritePositionTaggedLiteral(writer, suffix);
+                    WriteAttributeValue(writer, attributeValue, stringValue, sourceLength);
                 }
             }
+
+            WritePositionTaggedLiteral(writer, suffix);
         }
 
         public virtual string Href([NotNull] string contentPath)
@@ -619,6 +585,43 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
 
             return _urlHelper.Content(contentPath);
+        }
+
+        private void WriteAttributeValue(
+            TextWriter writer,
+            AttributeValue attributeValue,
+            string stringValue,
+            int sourceLength)
+        {
+            var positionTaggedAttributeValue = attributeValue.Value;
+
+            if (!string.IsNullOrEmpty(attributeValue.Prefix))
+            {
+                WritePositionTaggedLiteral(writer, attributeValue.Prefix);
+            }
+
+            BeginContext(attributeValue.Value.Position, sourceLength, isLiteral: attributeValue.Literal);
+
+            // The extra branching here is to ensure that we call the Write*To(string) overload where
+            // possible.
+            if (attributeValue.Literal && stringValue != null)
+            {
+                WriteLiteralTo(writer, stringValue);
+            }
+            else if (attributeValue.Literal)
+            {
+                WriteLiteralTo(writer, positionTaggedAttributeValue.Value);
+            }
+            else if (stringValue != null)
+            {
+                WriteTo(writer, stringValue);
+            }
+            else
+            {
+                WriteTo(writer, positionTaggedAttributeValue.Value);
+            }
+
+            EndContext();
         }
 
         private void WritePositionTaggedLiteral(TextWriter writer, string value, int position)

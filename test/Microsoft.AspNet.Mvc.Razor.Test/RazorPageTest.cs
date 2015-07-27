@@ -687,6 +687,37 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         [Fact]
+        public async Task WriteAttribute_WithBoolValue_CallsBeginAndEndContext_OnPageExecutionListenerContext()
+        {
+            // Arrange
+            var page = CreatePage(p =>
+            {
+                p.HtmlEncoder = new CommonTestEncoder();
+                p.WriteAttribute("href",
+                                 new PositionTagged<string>("prefix", 0),
+                                 new PositionTagged<string>("suffix", 10),
+                                 new AttributeValue(new PositionTagged<string>("", 6),
+                                                    new PositionTagged<object>("true", 6),
+                                                    literal: false));
+            });
+            var context = new Mock<IPageExecutionContext>(MockBehavior.Strict);
+            var sequence = new MockSequence();
+            context.InSequence(sequence).Setup(f => f.BeginContext(0, 6, true)).Verifiable();
+            context.InSequence(sequence).Setup(f => f.EndContext()).Verifiable();
+            context.InSequence(sequence).Setup(f => f.BeginContext(6, 4, false)).Verifiable();
+            context.InSequence(sequence).Setup(f => f.EndContext()).Verifiable();
+            context.InSequence(sequence).Setup(f => f.BeginContext(10, 6, true)).Verifiable();
+            context.InSequence(sequence).Setup(f => f.EndContext()).Verifiable();
+            page.PageExecutionContext = context.Object;
+
+            // Act
+            await page.ExecuteAsync();
+
+            // Assert
+            context.Verify();
+        }
+
+        [Fact]
         public async Task WriteAttribute_CallsBeginAndEndContext_OnPrefixAndSuffixValues()
         {
             // Arrange
@@ -709,6 +740,93 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             // Assert
             context.Verify();
+        }
+
+        public static TheoryData<AttributeValue[], string> WriteAttributeData
+        {
+            get
+            {
+                // AttributeValues, ExpectedOutput
+                return new TheoryData<AttributeValue[], string>
+                {
+                    {
+                        new AttributeValue[] {
+                            new AttributeValue(
+                                new PositionTagged<string>("", 9),
+                                new PositionTagged<object>(true, 9),
+                                literal: false)
+                        },
+                        "someattr=HtmlEncode[[someattr]]"
+                    },
+                    {
+                        new AttributeValue[] {
+                            new AttributeValue(
+                                new PositionTagged<string>("", 9),
+                                new PositionTagged<object>(false, 9),
+                                literal: false)
+                        },
+                        ""
+                    },
+                    {
+                        new AttributeValue[] {
+                            new AttributeValue(
+                                new PositionTagged<string>("", 9),
+                                new PositionTagged<object>(null, 9),
+                                literal: false)
+                        },
+                        ""
+                    },
+                    {
+                        new AttributeValue[] {
+                            new AttributeValue(
+                                new PositionTagged<string>("  ", 9),
+                                new PositionTagged<object>(false, 11),
+                                literal: false)
+                        },
+                        "someattr=  HtmlEncode[[False]]"
+                    },
+                    {
+                        new AttributeValue[] {
+                            new AttributeValue(
+                                new PositionTagged<string>("  ", 9),
+                                new PositionTagged<object>(null, 11),
+                                literal: false)
+                        },
+                        "someattr="
+                    },
+                    {
+                        new AttributeValue[] {
+                            new AttributeValue(
+                                new PositionTagged<string>("  ", 9),
+                                new PositionTagged<object>(true, 11),
+                                literal: false),
+                            new AttributeValue(
+                                new PositionTagged<string>("  ", 15),
+                                new PositionTagged<object>("abcd", 17),
+                                literal: true),
+                        },
+                        "someattr=  HtmlEncode[[True]]  abcd"
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(WriteAttributeData))]
+        public void WriteAttributeTo_WritesAsExpected(AttributeValue[] attributeValues, string expectedOutput)
+        {
+            // Arrange
+            var page = CreatePage(p => { });
+            page.HtmlEncoder = new CommonTestEncoder();
+            var writer = new StringWriter();
+            var prefix = new PositionTagged<string>("someattr=", 0);
+            var suffix = new PositionTagged<string>("", 0);
+
+            // Act
+            page.WriteAttributeTo(writer, "someattr", prefix, suffix, attributeValues);
+
+            // Assert
+            Assert.Equal(expectedOutput, writer.ToString());
         }
 
         [Fact]

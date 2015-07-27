@@ -195,5 +195,10 @@ namespace HtmlGenerationWebSite.Controllers
         {
             return View();
         }
+
+        public IActionResult AttributesWithBooleanValues()
+        {
+            return View();
+        }
     }
 }

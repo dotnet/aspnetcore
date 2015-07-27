@@ -53,6 +53,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [InlineData("Image", null)]
         // Testing InputTagHelper with File
         [InlineData("Input", null)]
+        // Testing attribute values with boolean and null values
+        [InlineData("AttributesWithBooleanValues", null)]
         public async Task HtmlGenerationWebSite_GeneratesExpectedResults(string action, string antiforgeryPath)
         {
             // This uses FileVersionProvider which uses Uri.TryCreate - https://github.com/aspnet/External/issues/21
@@ -117,6 +119,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [InlineData("OrderUsingHtmlHelpers", "/HtmlGeneration_Order/Submit")]
         [InlineData("Product", null)]
         [InlineData("Script", null)]
+        [InlineData("AttributesWithBooleanValues", null)]
         public async Task HtmlGenerationWebSite_GenerateEncodedResults(string action, string antiforgeryPath)
         {
             // This uses FileVersionProvider which uses Uri.TryCreate - https://github.com/aspnet/External/issues/21
