@@ -135,15 +135,18 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [Fact]
         public void ServerPipeDispatchConnections()
         {
+            var pipeName = @"\\.\pipe\ServerPipeDispatchConnections" + Guid.NewGuid().ToString("n");
 
             var loop = new UvLoopHandle();
             loop.Init(_uv);
 
             var serverConnectionPipe = default(UvPipeHandle);
+            var serverConnectionPipeAcceptedEvent = new ManualResetEvent(false);
+            var serverConnectionTcpDisposedEvent = new ManualResetEvent(false);
 
             var serverListenPipe = new UvPipeHandle();
             serverListenPipe.Init(loop, false);
-            serverListenPipe.Bind(@"\\.\pipe\ServerPipeDispatchConnections");
+            serverListenPipe.Bind(pipeName);
             serverListenPipe.Listen(128, (_1, status, error, _2) =>
             {
                 serverConnectionPipe = new UvPipeHandle();
@@ -151,9 +154,11 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 try
                 {
                     serverListenPipe.Accept(serverConnectionPipe);
+                    serverConnectionPipeAcceptedEvent.Set();
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    Console.WriteLine(ex);
                     serverConnectionPipe.Dispose();
                     serverConnectionPipe = null;
                 }
@@ -168,6 +173,8 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 serverConnectionTcp.Init(loop);
                 serverListenTcp.Accept(serverConnectionTcp);
 
+                serverConnectionPipeAcceptedEvent.WaitOne();
+
                 var writeRequest = new UvWriteReq();
                 writeRequest.Init(loop);
                 writeRequest.Write2(
@@ -177,8 +184,9 @@ namespace Microsoft.AspNet.Server.KestrelTests
                     (_3, status2, error2, _4) =>
                     {
                         writeRequest.Dispose();
-                        serverConnectionPipe.Dispose();
                         serverConnectionTcp.Dispose();
+                        serverConnectionTcpDisposedEvent.Set();
+                        serverConnectionPipe.Dispose();
                         serverListenPipe.Dispose();
                         serverListenTcp.Dispose();
                     },
@@ -194,11 +202,14 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 loop2.Init(_uv);
                 clientConnectionPipe.Init(loop2, true);
                 connect.Init(loop2);
-                connect.Connect(clientConnectionPipe, @"\\.\pipe\ServerPipeDispatchConnections", (_1, status, error, _2) =>
+                connect.Connect(clientConnectionPipe, pipeName, (_1, status, error, _2) =>
                 {
                     connect.Dispose();
 
                     var buf = loop2.Libuv.buf_init(Marshal.AllocHGlobal(64), 64);
+
+                    serverConnectionTcpDisposedEvent.WaitOne();
+
                     clientConnectionPipe.ReadStart(
                         (_3, cb, _4) => buf,
                         (_3, status2, error2, _4) =>
@@ -231,12 +242,21 @@ namespace Microsoft.AspNet.Server.KestrelTests
 
             var worker2 = new Thread(() =>
             {
-                var socket = new Socket(SocketType.Stream, ProtocolType.IP);
-                socket.Connect(IPAddress.Loopback, 54321);
-                socket.Send(new byte[] { 6, 7, 8, 9 });
-                socket.Shutdown(SocketShutdown.Send);
-                var cb = socket.Receive(new byte[64]);
-                socket.Dispose();
+                try
+                {
+                    serverConnectionPipeAcceptedEvent.WaitOne();
+
+                    var socket = new Socket(SocketType.Stream, ProtocolType.IP);
+                    socket.Connect(IPAddress.Loopback, 54321);
+                    socket.Send(new byte[] { 6, 7, 8, 9 });
+                    socket.Shutdown(SocketShutdown.Send);
+                    var cb = socket.Receive(new byte[64]);
+                    socket.Dispose();
+                }
+                catch(Exception ex)
+                {
+                    Console.WriteLine(ex);
+                }
             });
 
             worker.Start();
