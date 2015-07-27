@@ -6,9 +6,9 @@ using System.Collections.Generic;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.Internal.Web.Utils;
 
-namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
+namespace Microsoft.AspNet.Razor.Test.Internal
 {
-    public class TagHelperAttributeDescriptorComparer : IEqualityComparer<TagHelperAttributeDescriptor>
+    internal class TagHelperAttributeDescriptorComparer : IEqualityComparer<TagHelperAttributeDescriptor>
     {
         public static readonly TagHelperAttributeDescriptorComparer Default =
             new TagHelperAttributeDescriptorComparer();

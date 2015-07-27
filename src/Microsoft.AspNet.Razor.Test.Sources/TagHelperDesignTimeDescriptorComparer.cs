@@ -6,21 +6,18 @@ using System.Collections.Generic;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.Internal.Web.Utils;
 
-namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
+namespace Microsoft.AspNet.Razor.Test.Internal
 {
-    public class TagHelperAttributeDesignTimeDescriptorComparer :
-        IEqualityComparer<TagHelperAttributeDesignTimeDescriptor>
+    internal class TagHelperDesignTimeDescriptorComparer : IEqualityComparer<TagHelperDesignTimeDescriptor>
     {
-        public static readonly TagHelperAttributeDesignTimeDescriptorComparer Default =
-            new TagHelperAttributeDesignTimeDescriptorComparer();
+        public static readonly TagHelperDesignTimeDescriptorComparer Default =
+            new TagHelperDesignTimeDescriptorComparer();
 
-        private TagHelperAttributeDesignTimeDescriptorComparer()
+        private TagHelperDesignTimeDescriptorComparer()
         {
         }
 
-        public bool Equals(
-            TagHelperAttributeDesignTimeDescriptor descriptorX,
-            TagHelperAttributeDesignTimeDescriptor descriptorY)
+        public bool Equals(TagHelperDesignTimeDescriptor descriptorX, TagHelperDesignTimeDescriptor descriptorY)
         {
             if (descriptorX == descriptorY)
             {
@@ -30,15 +27,17 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             return descriptorX != null &&
                 descriptorY != null &&
                 string.Equals(descriptorX.Summary, descriptorY.Summary, StringComparison.Ordinal) &&
-                string.Equals(descriptorX.Remarks, descriptorY.Remarks, StringComparison.Ordinal);
+                string.Equals(descriptorX.Remarks, descriptorY.Remarks, StringComparison.Ordinal) &&
+                string.Equals(descriptorX.OutputElementHint, descriptorY.OutputElementHint, StringComparison.Ordinal);
         }
 
-        public int GetHashCode(TagHelperAttributeDesignTimeDescriptor descriptor)
+        public int GetHashCode(TagHelperDesignTimeDescriptor descriptor)
         {
             return HashCodeCombiner
                 .Start()
                 .Add(descriptor.Summary, StringComparer.Ordinal)
                 .Add(descriptor.Remarks, StringComparer.Ordinal)
+                .Add(descriptor.OutputElementHint, StringComparer.Ordinal)
                 .CombinedHash;
         }
     }

@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using Microsoft.AspNet.Razor.Test.Internal;
 using Newtonsoft.Json;
 using Xunit;
 

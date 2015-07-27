@@ -6,9 +6,9 @@ using System.Linq;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.Internal.Web.Utils;
 
-namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
+namespace Microsoft.AspNet.Razor.Test.Internal
 {
-    public class CaseSensitiveTagHelperDescriptorComparer : TagHelperDescriptorComparer
+    internal class CaseSensitiveTagHelperDescriptorComparer : TagHelperDescriptorComparer
     {
         public new static readonly CaseSensitiveTagHelperDescriptorComparer Default =
             new CaseSensitiveTagHelperDescriptorComparer();

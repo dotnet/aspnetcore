@@ -3,6 +3,10 @@
   "resource": "TestFiles/**/*",
   "dependencies": {
     "Microsoft.AspNet.Razor": "4.0.0-*",
+    "Microsoft.AspNet.Razor.Test.Sources": {
+      "version": "4.0.0-*",
+      "type": "build"
+    },
     "Microsoft.AspNet.Testing": "1.0.0-*",
     "xunit.runner.aspnet": "2.0.0-aspnet-*"
   },

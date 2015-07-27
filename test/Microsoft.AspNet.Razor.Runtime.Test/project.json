@@ -2,6 +2,10 @@
   "version": "1.0.0",
   "dependencies": {
     "Microsoft.AspNet.Razor.Runtime": "4.0.0-*",
+    "Microsoft.AspNet.Razor.Test.Sources": {
+      "version": "4.0.0-*",
+      "type": "build"
+    },
     "Microsoft.AspNet.Testing": "1.0.0-*",
     "Microsoft.Framework.WebEncoders.Testing": "1.0.0-*",
     "xunit.runner.aspnet": "2.0.0-aspnet-*"

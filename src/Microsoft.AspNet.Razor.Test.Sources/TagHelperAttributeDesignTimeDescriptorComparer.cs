@@ -3,20 +3,24 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.Internal.Web.Utils;
 
-namespace Microsoft.AspNet.Razor.TagHelpers
+namespace Microsoft.AspNet.Razor.Test.Internal
 {
-    public class TagHelperDesignTimeDescriptorComparer : IEqualityComparer<TagHelperDesignTimeDescriptor>
+    internal class TagHelperAttributeDesignTimeDescriptorComparer :
+        IEqualityComparer<TagHelperAttributeDesignTimeDescriptor>
     {
-        public static readonly TagHelperDesignTimeDescriptorComparer Default =
-            new TagHelperDesignTimeDescriptorComparer();
+        public static readonly TagHelperAttributeDesignTimeDescriptorComparer Default =
+            new TagHelperAttributeDesignTimeDescriptorComparer();
 
-        private TagHelperDesignTimeDescriptorComparer()
+        private TagHelperAttributeDesignTimeDescriptorComparer()
         {
         }
 
-        public bool Equals(TagHelperDesignTimeDescriptor descriptorX, TagHelperDesignTimeDescriptor descriptorY)
+        public bool Equals(
+            TagHelperAttributeDesignTimeDescriptor descriptorX,
+            TagHelperAttributeDesignTimeDescriptor descriptorY)
         {
             if (descriptorX == descriptorY)
             {
@@ -29,7 +33,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 string.Equals(descriptorX.Remarks, descriptorY.Remarks, StringComparison.Ordinal);
         }
 
-        public int GetHashCode(TagHelperDesignTimeDescriptor descriptor)
+        public int GetHashCode(TagHelperAttributeDesignTimeDescriptor descriptor)
         {
             return HashCodeCombiner
                 .Start()
