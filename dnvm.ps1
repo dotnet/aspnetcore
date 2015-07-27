@@ -67,7 +67,7 @@ function _WriteOut {
 
 ### Constants
 $ProductVersion="1.0.0"
-$BuildVersion="beta7-10399"
+$BuildVersion="beta7-10400"
 $Authors="Microsoft Open Technologies, Inc."
 
 # If the Version hasn't been replaced...
@@ -1234,7 +1234,7 @@ function dnvm-install {
         $Architecture = Get-PackageArch $runtimeFullName
         $Runtime = Get-PackageRuntime $runtimeFullName
         $OS = Get-PackageOS $runtimeFullName
-        $Version = Get-PackageVersion $VersionNuPkgOrAlias
+        $Version = Get-PackageVersion $runtimeFullName
     } else {
         $aliasPath = Join-Path $AliasesDir "$VersionNuPkgOrAlias$AliasExtension"
         if(Test-Path $aliasPath) {
@@ -1258,7 +1258,7 @@ function dnvm-install {
         }
     }
 
-    $runtimeInfo = GetRuntimeInfo $Architecture $Runtime $OS $VersionNupkgOrAlias
+    $runtimeInfo = GetRuntimeInfo $Architecture $Runtime $OS $Version
 
     if ($VersionNuPkgOrAlias -eq "latest") {
         Write-Progress -Activity "Installing runtime" -Status "Determining latest runtime" -Id 1
