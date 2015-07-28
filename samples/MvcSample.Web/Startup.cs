@@ -2,22 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-#if DNX451
 using System.IO;
 using Autofac;
-#endif
+using Autofac.Framework.DependencyInjection;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Razor;
-#if DNX451
 using Microsoft.Framework.Configuration;
-#endif
 using Microsoft.Framework.DependencyInjection;
-#if DNX451
-using Microsoft.Framework.DependencyInjection.Autofac;
 using Microsoft.Dnx.Runtime;
-using Microsoft.Dnx.Runtime.Infrastructure;
-#endif
 using MvcSample.Web.Filters;
 using MvcSample.Web.Services;
 
@@ -25,9 +18,7 @@ namespace MvcSample.Web
 {
     public class Startup
     {
-#if DNX451
         private bool _autoFac;
-#endif
 
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
@@ -48,10 +39,6 @@ namespace MvcSample.Web
 
             services.AddMvcLocalization(LanguageViewLocationExpanderFormat.SubFolder);
 
-#if DNX451
-            // Fully-qualify configuration path to avoid issues in functional tests. Just "config.json" would be fine
-            // but Configuration uses CallContextServiceLocator.Locator.ServiceProvider to get IApplicationEnvironment.
-            // Functional tests update that service but not in the static provider.
             var applicationEnvironment = services.BuildServiceProvider().GetRequiredService<IApplicationEnvironment>();
             var configurationPath = Path.Combine(applicationEnvironment.ApplicationBasePath, "config.json");
 
@@ -72,9 +59,7 @@ namespace MvcSample.Web
                 var builder = new ContainerBuilder();
 
                 // Create the container and use the default application services as a fallback
-                AutofacRegistration.Populate(
-                    builder,
-                    services);
+                builder.Populate(services);
 
                 builder.RegisterModule<MonitoringModule>();
 
@@ -83,7 +68,6 @@ namespace MvcSample.Web
                 return container.Resolve<IServiceProvider>();
             }
             else
-#endif
             {
                 return services.BuildServiceProvider();
             }
@@ -94,12 +78,10 @@ namespace MvcSample.Web
             app.UseStatusCodePages();
             app.UseFileServer();
 
-#if DNX451
             if (_autoFac)
             {
                 app.UseMiddleware<MonitoringMiddlware>();
             }
-#endif
             app.UseRequestLocalization();
 
             app.UseSession();

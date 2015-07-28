@@ -4,9 +4,8 @@
         "kestrel": "Microsoft.AspNet.Hosting --server Kestrel --server.urls http://localhost:5000"
     },
     "dependencies": {
-        "Autofac": "3.3.0",
+        "Autofac.Framework.DependencyInjection": "4.0.0-*",
         "Kestrel": "1.0.0-*",
-        "Microsoft.Framework.DependencyInjection.Autofac": "1.0.0-*",
         "Microsoft.AspNet.Mvc": "6.0.0-*",
         "Microsoft.AspNet.Mvc.TestConfiguration": "1.0.0",
         "Microsoft.AspNet.Server.IIS": "1.0.0-*",
@@ -14,7 +13,8 @@
         "Microsoft.AspNet.StaticFiles": "1.0.0-*"
     },
     "frameworks": {
-        "dnx451": { }
+        "dnx451": { },
+        "dnxcore50": { }
     },
     "webroot": "wwwroot"
 }

@@ -3,9 +3,9 @@
 
 using System;
 using Autofac;
+using Autofac.Framework.DependencyInjection;
 using Microsoft.AspNet.Builder;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Autofac;
 
 namespace AutofacWebSite
 {
@@ -18,8 +18,7 @@ namespace AutofacWebSite
             services.AddTransient<HelloWorldBuilder>();
 
             var builder = new ContainerBuilder();
-            AutofacRegistration.Populate(builder,
-                                         services);
+            builder.Populate(services);
 
             var container = builder.Build();
 
