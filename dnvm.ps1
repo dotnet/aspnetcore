@@ -67,7 +67,7 @@ function _WriteOut {
 
 ### Constants
 $ProductVersion="1.0.0"
-$BuildVersion="beta7-10401"
+$BuildVersion="beta7-10402"
 $Authors="Microsoft Open Technologies, Inc."
 
 # If the Version hasn't been replaced...
@@ -785,7 +785,7 @@ function dnvm-update-self {
     Apply-Proxy $wc -Proxy:$Proxy
     
     $dnvmFile = Join-Path $PSScriptRoot "dnvm.ps1"
-    $tempDnvmFile = Join-Path $PSScriptRoot "dnvm.ps1" "temp"
+    $tempDnvmFile = Join-Path $PSScriptRoot "temp"
     $backupFilePath = Join-Path $PSSCriptRoot "dnvm.ps1.bak"
 
     $wc.DownloadFile($DNVMUpgradeUrl, $tempDnvmFile)
