@@ -5,13 +5,14 @@ using Microsoft.AspNet.Server.Kestrel.Networking;
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Diagnostics;
 
 namespace Microsoft.AspNet.Server.Kestrel.Http
 {
     public class SocketOutput : ISocketOutput
     {
         private const int _maxPendingWrites = 3;
-        private const int _maxBytesBufferedBeforeThrottling = 65536;
+        private const int _maxBytesPreCompleted = 65536;
 
         private readonly KestrelThread _thread;
         private readonly UvStreamHandle _socket;
@@ -23,7 +24,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         // but have not completed.
         private int _writesPending = 0;
 
-        private int _numBytesBuffered = 0;
+        private int _numBytesPreCompleted = 0;
         private Exception _lastWriteError;
         private WriteContext _nextWriteContext;
         private readonly Queue<CallbackContext> _callbacksPending;
@@ -54,14 +55,17 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 }
 
                 _nextWriteContext.Buffers.Enqueue(buffer);
-                _numBytesBuffered += buffer.Count;
 
                 // Complete the write task immediately if all previous write tasks have been completed,
                 // the buffers haven't grown too large, and the last write to the socket succeeded.
                 triggerCallbackNow = _lastWriteError == null &&
                                      _callbacksPending.Count == 0 &&
-                                     _numBytesBuffered <= _maxBytesBufferedBeforeThrottling;
-                if (!triggerCallbackNow)
+                                     _numBytesPreCompleted + buffer.Count <= _maxBytesPreCompleted;
+                if (triggerCallbackNow)
+                {
+                    _numBytesPreCompleted += buffer.Count;
+                }
+                else
                 {
                     _callbacksPending.Enqueue(new CallbackContext
                     {
@@ -78,6 +82,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 }
             }
 
+            // Make sure we call user code outside of the lock.
             if (triggerCallbackNow)
             {
                 callback(null, state);
@@ -164,15 +169,28 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
                 foreach (var writeBuffer in writtenBuffers)
                 {
-                    _numBytesBuffered -= writeBuffer.Count;
+                    // _numBytesPreCompleted can temporarily go negative in the event there are
+                    // completed writes that we haven't triggered callbacks for yet.
+                    _numBytesPreCompleted -= writeBuffer.Count;
                 }
 
-                var bytesLeftToBuffer = _maxBytesBufferedBeforeThrottling - _numBytesBuffered;
+
+                // bytesLeftToBuffer can be greater than _maxBytesPreCompleted
+                // This allows large writes to complete once they've actually finished.
+                var bytesLeftToBuffer = _maxBytesPreCompleted - _numBytesPreCompleted;
                 while (_callbacksPending.Count > 0 &&
                        _callbacksPending.Peek().BytesToWrite <= bytesLeftToBuffer)
                 {
-                    TriggerCallback(_callbacksPending.Dequeue());
+                    var callbackContext = _callbacksPending.Dequeue();
+
+                    _numBytesPreCompleted += callbackContext.BytesToWrite;
+
+                    TriggerCallback(callbackContext);
                 }
+
+                // Now that the while loop has completed the following invariants should hold true:
+                Trace.Assert(_numBytesPreCompleted >= 0);
+                Trace.Assert(_numBytesPreCompleted <= _maxBytesPreCompleted);
             }
 
             req.Dispose();
