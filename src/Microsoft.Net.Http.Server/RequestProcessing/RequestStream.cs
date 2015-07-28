@@ -248,20 +248,17 @@ namespace Microsoft.Net.Http.Server
 
                 try
                 {
-                    fixed (byte* pBuffer = buffer)
-                    {
-                        uint flags = 0;
+                    uint flags = 0;
 
-                        statusCode =
-                            UnsafeNclNativeMethods.HttpApi.HttpReceiveRequestEntityBody(
-                                _requestContext.RequestQueueHandle,
-                                _requestContext.RequestId,
-                                flags,
-                                asyncResult.PinnedBuffer,
-                                (uint)size,
-                                out bytesReturned,
-                                asyncResult.NativeOverlapped);
-                    }
+                    statusCode =
+                        UnsafeNclNativeMethods.HttpApi.HttpReceiveRequestEntityBody(
+                            _requestContext.RequestQueueHandle,
+                            _requestContext.RequestId,
+                            flags,
+                            asyncResult.PinnedBuffer,
+                            (uint)size,
+                            out bytesReturned,
+                            asyncResult.NativeOverlapped);
                 }
                 catch (Exception e)
                 {
