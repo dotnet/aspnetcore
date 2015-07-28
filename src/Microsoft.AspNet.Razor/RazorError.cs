@@ -3,7 +3,7 @@
 
 using System;
 using System.Globalization;
-using Microsoft.Internal.Web.Utils;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor
 {

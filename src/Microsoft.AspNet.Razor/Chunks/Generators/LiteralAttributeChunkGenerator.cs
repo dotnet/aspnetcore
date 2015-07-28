@@ -4,7 +4,7 @@
 using System.Globalization;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Text;
-using Microsoft.Internal.Web.Utils;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Chunks.Generators
 {

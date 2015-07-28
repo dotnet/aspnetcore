@@ -4,7 +4,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Framework.Internal;
-using Microsoft.Internal.Web.Utils;
 
 namespace Microsoft.AspNet.Razor.CodeGenerators
 {

@@ -8,7 +8,7 @@ using System.Globalization;
 using System.Linq;
 using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.Text;
-using Microsoft.Internal.Web.Utils;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
 {

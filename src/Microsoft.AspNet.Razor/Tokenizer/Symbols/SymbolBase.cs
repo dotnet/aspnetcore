@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.Framework.Internal;
-using Microsoft.Internal.Web.Utils;
 
 namespace Microsoft.AspNet.Razor.Tokenizer.Symbols
 {

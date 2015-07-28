@@ -6,6 +6,10 @@
     "url": "git://github.com/aspnet/razor"
   },
   "dependencies": {
+    "Microsoft.Framework.HashCodeCombiner.Sources": {
+      "type": "build",
+      "version": "1.0.0-*"
+    },
     "Microsoft.Framework.NotNullAttribute.Sources": {
       "type": "build",
       "version": "1.0.0-*"

@@ -5,7 +5,6 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using Microsoft.Framework.Internal;
-using Microsoft.Internal.Web.Utils;
 
 namespace Microsoft.AspNet.Razor.Text
 {
@@ -79,7 +78,7 @@ namespace Microsoft.AspNet.Razor.Text
 
         public static implicit operator TValue(LocationTagged<TValue> value)
         {
-            return value.Value;
+            return value == null ? default(TValue) : value.Value;
         }
 
         public static bool operator ==(LocationTagged<TValue> left, LocationTagged<TValue> right)

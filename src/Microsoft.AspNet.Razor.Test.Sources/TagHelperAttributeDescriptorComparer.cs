@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Razor.TagHelpers;
-using Microsoft.Internal.Web.Utils;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Test.Internal
 {
