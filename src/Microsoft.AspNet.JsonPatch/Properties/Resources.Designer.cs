@@ -59,6 +59,23 @@ namespace Microsoft.AspNet.JsonPatch
         }
 
         /// <summary>
+        ///  For operation '{0}' on array property at path '{1}', the index is negative.
+        /// </summary>
+        internal static string NegativeIndexForArrayProperty
+        {
+            get { return GetString("NegativeIndexForArrayProperty"); }
+        }
+
+        /// <summary>
+        /// For operation '{0}' on array property at path '{1}', the index is negative.
+        /// </summary>
+        internal static string FormatNegativeIndexForArrayProperty(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("NegativeIndexForArrayProperty"), p0, p1);
+        }
+         
+
+        /// <summary>
         /// The type '{0}' was malformed and could not be parsed.
         /// </summary>
         internal static string InvalidJsonPatchDocument
@@ -185,6 +202,23 @@ namespace Microsoft.AspNet.JsonPatch
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("PropertyDoesNotExist"), p0);
         }
+
+        /// <summary>
+        /// The key '{0}' was not found.
+        /// </summary>
+        internal static string DictionaryKeyNotFound
+        {
+            get { return GetString("DictionaryKeyNotFound"); }
+        }
+
+        /// <summary>
+        /// The key '{0}' was not found.
+        /// </summary>
+        internal static string FormatDictionaryKeyNotFound(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("DictionaryKeyNotFound"), p0);
+        }
+
 
         /// <summary>
         /// The test operation is not supported.

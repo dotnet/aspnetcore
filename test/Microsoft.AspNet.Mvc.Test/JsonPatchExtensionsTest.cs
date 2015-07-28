@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Mvc
 
             // Assert
             var error = Assert.Single(modelState["Customer"].Errors);
-            Assert.Equal("Property does not exist at path 'Customer/CustomerId'.", error.ErrorMessage);
+            Assert.Equal("The property at path 'Customer/CustomerId' could not be added.", error.ErrorMessage);
         }
 
         [Fact]
@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Mvc
 
             // Assert
             var error = Assert.Single(modelState["jsonpatch.Customer"].Errors);
-            Assert.Equal("Property does not exist at path 'Customer/CustomerId'.", error.ErrorMessage);
+            Assert.Equal("The property at path 'Customer/CustomerId' could not be added.", error.ErrorMessage);
         }
 
         public class Customer

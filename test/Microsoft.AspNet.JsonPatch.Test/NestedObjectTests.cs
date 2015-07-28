@@ -470,7 +470,9 @@ namespace Microsoft.AspNet.JsonPatch.Test
 
             // Act & Assert
             var exception = Assert.Throws<JsonPatchException>(() => { patchDoc.ApplyTo(doc); });
-            Assert.Equal("Property does not exist at path '/simpledto/integerlist/-1'.", exception.Message);
+            Assert.Equal(
+                "For operation 'add' on array property at path '/simpledto/integerlist/-1', the index is negative.",
+                exception.Message);
         }
 
         [Fact]
@@ -497,7 +499,9 @@ namespace Microsoft.AspNet.JsonPatch.Test
                 {
                     deserialized.ApplyTo(doc);
                 });
-            Assert.Equal("Property does not exist at path '/simpledto/integerlist/-1'.", exception.Message);
+            Assert.Equal(
+                "For operation 'add' on array property at path '/simpledto/integerlist/-1', the index is negative.",
+                exception.Message);
         }
 
         [Fact]
@@ -523,7 +527,9 @@ namespace Microsoft.AspNet.JsonPatch.Test
             
  
             //Assert
-            Assert.Equal("Property does not exist at path '/simpledto/integerlist/-1'.", logger.ErrorMessage);
+            Assert.Equal(
+                "For operation 'add' on array property at path '/simpledto/integerlist/-1', the index is negative.",
+                logger.ErrorMessage);
         }
 
         [Fact]
@@ -1316,7 +1322,9 @@ namespace Microsoft.AspNet.JsonPatch.Test
 
             // Act & Assert
             var exception = Assert.Throws<JsonPatchException>(() => { patchDoc.ApplyTo(doc); });
-            Assert.Equal("Property does not exist at path '/simpledto/integerlist/-1'.", exception.Message);
+            Assert.Equal(
+                "Property does not exist at path '/simpledto/integerlist/-1'.",
+                exception.Message);
         }
 
         [Fact]
@@ -1340,7 +1348,9 @@ namespace Microsoft.AspNet.JsonPatch.Test
 
             // Act & Assert
             var exception = Assert.Throws<JsonPatchException>(() => { deserialized.ApplyTo(doc); });
-            Assert.Equal("Property does not exist at path '/simpledto/integerlist/-1'.", exception.Message);
+            Assert.Equal(
+                "Property does not exist at path '/simpledto/integerlist/-1'.",
+                exception.Message);
         }
 
         [Fact]
@@ -1366,7 +1376,9 @@ namespace Microsoft.AspNet.JsonPatch.Test
             
 
             // Assert
-            Assert.Equal("Property does not exist at path '/simpledto/integerlist/-1'.", logger.ErrorMessage);
+            Assert.Equal(
+                "For operation 'replace' on array property at path '/simpledto/integerlist/-1', the index is negative.",
+                logger.ErrorMessage);
         }
 
         [Fact]

@@ -312,7 +312,9 @@ namespace Microsoft.AspNet.JsonPatch.Test
 
             // Act & Assert
             var exception = Assert.Throws<JsonPatchException>(() => { patchDoc.ApplyTo(doc); });
-            Assert.Equal("Property does not exist at path '/integerlist/-1'.", exception.Message);
+            Assert.Equal(
+                "For operation 'add' on array property at path '/integerlist/-1', the index is negative.",
+                exception.Message);
         }
 
         [Fact]
@@ -333,7 +335,9 @@ namespace Microsoft.AspNet.JsonPatch.Test
 
             // Act & Assert
             var exception = Assert.Throws<JsonPatchException>(() => { deserialized.ApplyTo(doc); });
-            Assert.Equal("Property does not exist at path '/integerlist/-1'.", exception.Message);
+            Assert.Equal(
+                "For operation 'add' on array property at path '/integerlist/-1', the index is negative.",
+                exception.Message);
         }
 
         [Fact]
@@ -354,7 +358,9 @@ namespace Microsoft.AspNet.JsonPatch.Test
             patchDoc.ApplyTo(doc, logger.LogErrorMessage);
              
             // Assert
-            Assert.Equal("Property does not exist at path '/integerlist/-1'.", logger.ErrorMessage);
+            Assert.Equal(
+                "For operation 'add' on array property at path '/integerlist/-1', the index is negative.",
+                logger.ErrorMessage);
         }
 
         [Fact]
