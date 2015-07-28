@@ -114,19 +114,19 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         true,
                         new[]
                         {
-                            new TagHelperDescriptor(
-                            tagName: "inherited-editor-browsable",
-                            typeName: typeof(InheritedEditorBrowsableTagHelper).FullName,
-                            assemblyName: AssemblyName,
-                            attributes: new[]
-                            {
-                                new TagHelperAttributeDescriptor(
-                                    name: "property",
-                                    propertyName: nameof(InheritedEditorBrowsableTagHelper.Property),
-                                    typeName: typeof(int).FullName,
-                                    isIndexer: false,
-                                    designTimeDescriptor: null)
-                            })
+                            CreateTagHelperDescriptor(
+                                tagName: "inherited-editor-browsable",
+                                typeName: typeof(InheritedEditorBrowsableTagHelper).FullName,
+                                assemblyName: AssemblyName,
+                                attributes: new[]
+                                {
+                                    new TagHelperAttributeDescriptor(
+                                        name: "property",
+                                        propertyName: nameof(InheritedEditorBrowsableTagHelper.Property),
+                                        typeName: typeof(int).FullName,
+                                        isIndexer: false,
+                                        designTimeDescriptor: null)
+                                })
                         }
                     },
                     { typeof(EditorBrowsableTagHelper), true, new TagHelperDescriptor[0] },
@@ -135,19 +135,19 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         false,
                         new[]
                         {
-                            new TagHelperDescriptor(
-                            tagName: "editor-browsable",
-                            typeName: typeof(EditorBrowsableTagHelper).FullName,
-                            assemblyName: AssemblyName,
-                            attributes: new[]
-                            {
-                                new TagHelperAttributeDescriptor(
-                                    name: "property",
-                                    propertyName: nameof(EditorBrowsableTagHelper.Property),
-                                    typeName: typeof(int).FullName,
-                                    isIndexer: false,
-                                    designTimeDescriptor: null)
-                            })
+                            CreateTagHelperDescriptor(
+                                tagName: "editor-browsable",
+                                typeName: typeof(EditorBrowsableTagHelper).FullName,
+                                assemblyName: AssemblyName,
+                                attributes: new[]
+                                {
+                                    new TagHelperAttributeDescriptor(
+                                        name: "property",
+                                        propertyName: nameof(EditorBrowsableTagHelper.Property),
+                                        typeName: typeof(int).FullName,
+                                        isIndexer: false,
+                                        designTimeDescriptor: null)
+                                })
                         }
                     },
                     {
@@ -155,11 +155,11 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         true,
                         new[]
                         {
-                            new TagHelperDescriptor(
-                            tagName: "hidden-property-editor-browsable",
-                            typeName: typeof(HiddenPropertyEditorBrowsableTagHelper).FullName,
-                            assemblyName: AssemblyName,
-                            attributes: new TagHelperAttributeDescriptor[0])
+                            CreateTagHelperDescriptor(
+                                tagName: "hidden-property-editor-browsable",
+                                typeName: typeof(HiddenPropertyEditorBrowsableTagHelper).FullName,
+                                assemblyName: AssemblyName,
+                                attributes: new TagHelperAttributeDescriptor[0])
                         }
                     },
                     {
@@ -167,19 +167,19 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         false,
                         new[]
                         {
-                            new TagHelperDescriptor(
-                            tagName: "hidden-property-editor-browsable",
-                            typeName: typeof(HiddenPropertyEditorBrowsableTagHelper).FullName,
-                            assemblyName: AssemblyName,
-                            attributes: new[]
-                            {
-                                new TagHelperAttributeDescriptor(
-                                    name: "property",
-                                    propertyName: nameof(HiddenPropertyEditorBrowsableTagHelper.Property),
-                                    typeName: typeof(int).FullName,
-                                    isIndexer: false,
-                                    designTimeDescriptor: null)
-                            })
+                            CreateTagHelperDescriptor(
+                                tagName: "hidden-property-editor-browsable",
+                                typeName: typeof(HiddenPropertyEditorBrowsableTagHelper).FullName,
+                                assemblyName: AssemblyName,
+                                attributes: new[]
+                                {
+                                    new TagHelperAttributeDescriptor(
+                                        name: "property",
+                                        propertyName: nameof(HiddenPropertyEditorBrowsableTagHelper.Property),
+                                        typeName: typeof(int).FullName,
+                                        isIndexer: false,
+                                        designTimeDescriptor: null)
+                                })
                         }
                     },
                     {
@@ -187,7 +187,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         true,
                         new[]
                         {
-                            new TagHelperDescriptor(
+                            CreateTagHelperDescriptor(
                                 tagName: "overridden-editor-browsable",
                                 typeName: typeof(OverriddenEditorBrowsableTagHelper).FullName,
                                 assemblyName: AssemblyName,
@@ -207,7 +207,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         true,
                         new[]
                         {
-                            new TagHelperDescriptor(
+                            CreateTagHelperDescriptor(
                                 tagName: "multi-property-editor-browsable",
                                 typeName: typeof(MultiPropertyEditorBrowsableTagHelper).FullName,
                                 assemblyName: AssemblyName,
@@ -227,7 +227,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         false,
                         new[]
                         {
-                            new TagHelperDescriptor(
+                            CreateTagHelperDescriptor(
                                 tagName: "multi-property-editor-browsable",
                                 typeName: typeof(MultiPropertyEditorBrowsableTagHelper).FullName,
                                 assemblyName: AssemblyName,
@@ -253,7 +253,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         true,
                         new[]
                         {
-                            new TagHelperDescriptor(
+                            CreateTagHelperDescriptor(
                                 tagName: "overridden-property-editor-browsable",
                                 typeName: typeof(OverriddenPropertyEditorBrowsableTagHelper).FullName,
                                 assemblyName: AssemblyName,
@@ -265,7 +265,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         false,
                         new[]
                         {
-                            new TagHelperDescriptor(
+                            CreateTagHelperDescriptor(
                                 tagName: "overridden-property-editor-browsable",
                                 typeName: typeof(OverriddenPropertyEditorBrowsableTagHelper).FullName,
                                 assemblyName: AssemblyName,
@@ -292,19 +292,19 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         true,
                         new[]
                         {
-                            new TagHelperDescriptor(
-                            tagName: "default-editor-browsable",
-                            typeName: typeof(DefaultEditorBrowsableTagHelper).FullName,
-                            assemblyName: AssemblyName,
-                            attributes: new[]
-                            {
-                                new TagHelperAttributeDescriptor(
-                                    name: "property",
-                                    propertyName: nameof(DefaultEditorBrowsableTagHelper.Property),
-                                    typeName: typeof(int).FullName,
-                                    isIndexer: false,
-                                    designTimeDescriptor: null)
-                            })
+                            CreateTagHelperDescriptor(
+                                tagName: "default-editor-browsable",
+                                typeName: typeof(DefaultEditorBrowsableTagHelper).FullName,
+                                assemblyName: AssemblyName,
+                                attributes: new[]
+                                {
+                                    new TagHelperAttributeDescriptor(
+                                        name: "property",
+                                        propertyName: nameof(DefaultEditorBrowsableTagHelper.Property),
+                                        typeName: typeof(int).FullName,
+                                        isIndexer: false,
+                                        designTimeDescriptor: null)
+                                })
                         }
                     },
                     { typeof(MultiEditorBrowsableTagHelper), true, new TagHelperDescriptor[0] }
@@ -347,7 +347,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         typeof(AttributeTargetingTagHelper),
                         new[]
                         {
-                            new TagHelperDescriptor(
+                            CreateTagHelperDescriptor(
                                 TagHelperDescriptorProvider.ElementCatchAllTarget,
                                 typeof(AttributeTargetingTagHelper).FullName,
                                 AssemblyName,
@@ -359,7 +359,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         typeof(MultiAttributeTargetingTagHelper),
                         new[]
                         {
-                            new TagHelperDescriptor(
+                            CreateTagHelperDescriptor(
                                 TagHelperDescriptorProvider.ElementCatchAllTarget,
                                 typeof(MultiAttributeTargetingTagHelper).FullName,
                                 AssemblyName,
@@ -371,13 +371,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         typeof(MultiAttributeAttributeTargetingTagHelper),
                         new[]
                         {
-                            new TagHelperDescriptor(
+                            CreateTagHelperDescriptor(
                                 TagHelperDescriptorProvider.ElementCatchAllTarget,
                                 typeof(MultiAttributeAttributeTargetingTagHelper).FullName,
                                 AssemblyName,
                                 attributes,
                                 requiredAttributes: new[] { "custom" }),
-                            new TagHelperDescriptor(
+                            CreateTagHelperDescriptor(
                                 TagHelperDescriptorProvider.ElementCatchAllTarget,
                                 typeof(MultiAttributeAttributeTargetingTagHelper).FullName,
                                 AssemblyName,
@@ -389,7 +389,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         typeof(InheritedAttributeTargetingTagHelper),
                         new[]
                         {
-                            new TagHelperDescriptor(
+                            CreateTagHelperDescriptor(
                                 TagHelperDescriptorProvider.ElementCatchAllTarget,
                                 typeof(InheritedAttributeTargetingTagHelper).FullName,
                                 AssemblyName,
@@ -401,7 +401,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         typeof(RequiredAttributeTagHelper),
                         new[]
                         {
-                            new TagHelperDescriptor(
+                            CreateTagHelperDescriptor(
                                 "input",
                                 typeof(RequiredAttributeTagHelper).FullName,
                                 AssemblyName,
@@ -413,7 +413,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         typeof(InheritedRequiredAttributeTagHelper),
                         new[]
                         {
-                            new TagHelperDescriptor(
+                            CreateTagHelperDescriptor(
                                 "div",
                                 typeof(InheritedRequiredAttributeTagHelper).FullName,
                                 AssemblyName,
@@ -425,13 +425,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         typeof(MultiAttributeRequiredAttributeTagHelper),
                         new[]
                         {
-                            new TagHelperDescriptor(
+                            CreateTagHelperDescriptor(
                                 "div",
                                 typeof(MultiAttributeRequiredAttributeTagHelper).FullName,
                                 AssemblyName,
                                 attributes,
                                 requiredAttributes: new[] { "class" }),
-                            new TagHelperDescriptor(
+                            CreateTagHelperDescriptor(
                                 "input",
                                 typeof(MultiAttributeRequiredAttributeTagHelper).FullName,
                                 AssemblyName,
@@ -443,13 +443,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         typeof(MultiAttributeSameTagRequiredAttributeTagHelper),
                         new[]
                         {
-                            new TagHelperDescriptor(
+                            CreateTagHelperDescriptor(
                                 "input",
                                 typeof(MultiAttributeSameTagRequiredAttributeTagHelper).FullName,
                                 AssemblyName,
                                 attributes,
                                 requiredAttributes: new[] { "style" }),
-                            new TagHelperDescriptor(
+                            CreateTagHelperDescriptor(
                                 "input",
                                 typeof(MultiAttributeSameTagRequiredAttributeTagHelper).FullName,
                                 AssemblyName,
@@ -461,7 +461,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         typeof(MultiRequiredAttributeTagHelper),
                         new[]
                         {
-                            new TagHelperDescriptor(
+                            CreateTagHelperDescriptor(
                                 "input",
                                 typeof(MultiRequiredAttributeTagHelper).FullName,
                                 AssemblyName,
@@ -473,13 +473,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         typeof(MultiTagMultiRequiredAttributeTagHelper),
                         new[]
                         {
-                            new TagHelperDescriptor(
+                            CreateTagHelperDescriptor(
                                 "div",
                                 typeof(MultiTagMultiRequiredAttributeTagHelper).FullName,
                                 AssemblyName,
                                 attributes,
                                 requiredAttributes: new[] { "class", "style" }),
-                            new TagHelperDescriptor(
+                            CreateTagHelperDescriptor(
                                 "input",
                                 typeof(MultiTagMultiRequiredAttributeTagHelper).FullName,
                                 AssemblyName,
@@ -491,7 +491,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         typeof(AttributeWildcardTargetingTagHelper),
                         new[]
                         {
-                            new TagHelperDescriptor(
+                            CreateTagHelperDescriptor(
                                 TagHelperDescriptorProvider.ElementCatchAllTarget,
                                 typeof(AttributeWildcardTargetingTagHelper).FullName,
                                 AssemblyName,
@@ -503,7 +503,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         typeof(MultiAttributeWildcardTargetingTagHelper),
                         new[]
                         {
-                            new TagHelperDescriptor(
+                            CreateTagHelperDescriptor(
                                 TagHelperDescriptorProvider.ElementCatchAllTarget,
                                 typeof(MultiAttributeWildcardTargetingTagHelper).FullName,
                                 AssemblyName,
@@ -599,14 +599,14 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 nameof(OverriddenAttributeTagHelper.ValidAttribute2));
             var expectedDescriptors = new[]
             {
-                new TagHelperDescriptor(
+                CreateTagHelperDescriptor(
                     "overridden-attribute",
                     typeof(OverriddenAttributeTagHelper).FullName,
                     AssemblyName,
                     new[]
                     {
-                        new TagHelperAttributeDescriptor("SomethingElse", validProperty1),
-                        new TagHelperAttributeDescriptor("Something-Else", validProperty2)
+                        CreateTagHelperAttributeDescriptor("SomethingElse", validProperty1),
+                        CreateTagHelperAttributeDescriptor("Something-Else", validProperty2)
                     })
             };
 
@@ -633,14 +633,14 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 nameof(InheritedOverriddenAttributeTagHelper.ValidAttribute2));
             var expectedDescriptors = new[]
             {
-                new TagHelperDescriptor(
+                CreateTagHelperDescriptor(
                     "inherited-overridden-attribute",
                     typeof(InheritedOverriddenAttributeTagHelper).FullName,
                     AssemblyName,
                     new[]
                     {
-                        new TagHelperAttributeDescriptor("valid-attribute1", validProperty1),
-                        new TagHelperAttributeDescriptor("Something-Else", validProperty2)
+                        CreateTagHelperAttributeDescriptor("valid-attribute1", validProperty1),
+                        CreateTagHelperAttributeDescriptor("Something-Else", validProperty2)
                     })
             };
 
@@ -667,14 +667,14 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 nameof(InheritedNotOverriddenAttributeTagHelper.ValidAttribute2));
             var expectedDescriptors = new[]
             {
-                new TagHelperDescriptor(
+                CreateTagHelperDescriptor(
                     "inherited-not-overridden-attribute",
                     typeof(InheritedNotOverriddenAttributeTagHelper).FullName,
                     AssemblyName,
                     new[]
                     {
-                        new TagHelperAttributeDescriptor("SomethingElse", validProperty1),
-                        new TagHelperAttributeDescriptor("Something-Else", validProperty2)
+                        CreateTagHelperAttributeDescriptor("SomethingElse", validProperty1),
+                        CreateTagHelperAttributeDescriptor("Something-Else", validProperty2)
                     })
             };
 
@@ -697,7 +697,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var errorSink = new ErrorSink();
             var objectAssemblyName = typeof(object).GetTypeInfo().Assembly.GetName().Name;
             var expectedDescriptor =
-                new TagHelperDescriptor("object", "System.Object", objectAssemblyName);
+                CreateTagHelperDescriptor("object", "System.Object", objectAssemblyName);
 
             // Act
             var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
@@ -717,9 +717,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             // Arrange
             var errorSink = new ErrorSink();
-
-            // Also confirm isStringProperty is calculated correctly.
-            var expectedDescriptor = new TagHelperDescriptor(
+            var expectedDescriptor = CreateTagHelperDescriptor(
                 "inherited-single-attribute",
                 typeof(InheritedSingleAttributeTagHelper).FullName,
                 AssemblyName,
@@ -730,7 +728,6 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         nameof(InheritedSingleAttributeTagHelper.IntAttribute),
                         typeof(int).FullName,
                         isIndexer: false,
-                        isStringProperty: false,
                         designTimeDescriptor: null)
                 });
 
@@ -753,13 +750,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Arrange
             var errorSink = new ErrorSink();
             var intProperty = typeof(SingleAttributeTagHelper).GetProperty(nameof(SingleAttributeTagHelper.IntAttribute));
-            var expectedDescriptor = new TagHelperDescriptor(
+            var expectedDescriptor = CreateTagHelperDescriptor(
                 "single-attribute",
                 typeof(SingleAttributeTagHelper).FullName,
                 AssemblyName,
                 new[]
                 {
-                    new TagHelperAttributeDescriptor("int-attribute", intProperty)
+                    CreateTagHelperAttributeDescriptor("int-attribute", intProperty)
                 });
 
             // Act
@@ -782,13 +779,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var errorSink = new ErrorSink();
             var validProperty = typeof(MissingAccessorTagHelper).GetProperty(
                 nameof(MissingAccessorTagHelper.ValidAttribute));
-            var expectedDescriptor = new TagHelperDescriptor(
+            var expectedDescriptor = CreateTagHelperDescriptor(
                 "missing-accessor",
                 typeof(MissingAccessorTagHelper).FullName,
                 AssemblyName,
                 new[]
                 {
-                    new TagHelperAttributeDescriptor("valid-attribute", validProperty)
+                    CreateTagHelperAttributeDescriptor("valid-attribute", validProperty)
                 });
 
             // Act
@@ -811,13 +808,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var errorSink = new ErrorSink();
             var validProperty = typeof(NonPublicAccessorTagHelper).GetProperty(
                 nameof(NonPublicAccessorTagHelper.ValidAttribute));
-            var expectedDescriptor = new TagHelperDescriptor(
+            var expectedDescriptor = CreateTagHelperDescriptor(
                 "non-public-accessor",
                 typeof(NonPublicAccessorTagHelper).FullName,
                 AssemblyName,
                 new[]
                 {
-                    new TagHelperAttributeDescriptor("valid-attribute", validProperty)
+                    CreateTagHelperAttributeDescriptor("valid-attribute", validProperty)
                 });
 
             // Act
@@ -838,9 +835,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             // Arrange
             var errorSink = new ErrorSink();
-
-            // Also confirm isStringProperty is calculated correctly.
-            var expectedDescriptor = new TagHelperDescriptor(
+            var expectedDescriptor = CreateTagHelperDescriptor(
                 "not-bound-attribute",
                 typeof(NotBoundAttributeTagHelper).FullName,
                 AssemblyName,
@@ -851,7 +846,6 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         nameof(NotBoundAttributeTagHelper.BoundProperty),
                         typeof(object).FullName,
                         isIndexer: false,
-                        isStringProperty: false,
                         designTimeDescriptor: null)
                 });
 
@@ -891,11 +885,9 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             // Arrange
             var errorSink = new ErrorSink();
-
-            // Also confirm isStringProperty is calculated correctly.
             var expectedDescriptors = new[]
             {
-                new TagHelperDescriptor(
+                CreateTagHelperDescriptor(
                     "div",
                     typeof(MultiTagTagHelper).FullName,
                     AssemblyName,
@@ -906,10 +898,9 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                             nameof(MultiTagTagHelper.ValidAttribute),
                             typeof(string).FullName,
                             isIndexer: false,
-                            isStringProperty: true,
                             designTimeDescriptor: null)
                     }),
-                new TagHelperDescriptor(
+                CreateTagHelperDescriptor(
                     "p",
                     typeof(MultiTagTagHelper).FullName,
                     AssemblyName,
@@ -920,7 +911,6 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                             nameof(MultiTagTagHelper.ValidAttribute),
                             typeof(string).FullName,
                             isIndexer: false,
-                            isStringProperty: true,
                             designTimeDescriptor: null)
                     })
             };
@@ -948,13 +938,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Arrange
             var errorSink = new ErrorSink();
             var validProp = typeof(InheritedMultiTagTagHelper).GetProperty(nameof(InheritedMultiTagTagHelper.ValidAttribute));
-            var expectedDescriptor = new TagHelperDescriptor(
+            var expectedDescriptor = CreateTagHelperDescriptor(
                     "inherited-multi-tag",
                     typeof(InheritedMultiTagTagHelper).FullName,
                     AssemblyName,
                     new[]
                     {
-                        new TagHelperAttributeDescriptor("valid-attribute", validProp)
+                        CreateTagHelperAttributeDescriptor("valid-attribute", validProp)
                     });
 
             // Act
@@ -977,11 +967,11 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var errorSink = new ErrorSink();
             var expectedDescriptors = new[]
             {
-                new TagHelperDescriptor(
+                CreateTagHelperDescriptor(
                     "div",
                     typeof(DuplicateTagNameTagHelper).FullName,
                     AssemblyName),
-                new TagHelperDescriptor(
+                CreateTagHelperDescriptor(
                     "p",
                     typeof(DuplicateTagNameTagHelper).FullName,
                     AssemblyName)
@@ -1011,9 +1001,10 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var errorSink = new ErrorSink();
             var expectedDescriptors = new[]
             {
-                new TagHelperDescriptor("data-condition",
-                                        typeof(OverrideNameTagHelper).FullName,
-                                        AssemblyName),
+                CreateTagHelperDescriptor(
+                    "data-condition",
+                    typeof(OverrideNameTagHelper).FullName,
+                    AssemblyName),
             };
 
             // Act
@@ -1141,7 +1132,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         typeof(InvalidBoundAttributeWithValid),
                         new[]
                         {
-                            new TagHelperAttributeDescriptor(
+                            CreateTagHelperAttributeDescriptor(
                                 "int-attribute",
                                 typeof(InvalidBoundAttributeWithValid)
                                     .GetProperty(nameof(InvalidBoundAttributeWithValid.IntAttribute)))
@@ -1159,7 +1150,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         typeof(OverriddenInvalidBoundAttributeWithValid),
                         new[]
                         {
-                            new TagHelperAttributeDescriptor(
+                            CreateTagHelperAttributeDescriptor(
                                 "valid-something",
                                 typeof(OverriddenInvalidBoundAttributeWithValid)
                                     .GetProperty(nameof(OverriddenInvalidBoundAttributeWithValid.DataSomething)))
@@ -1253,14 +1244,12 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                                 propertyName: nameof(DefaultValidHtmlAttributePrefix.DictionaryProperty),
                                 typeName: typeof(IDictionary<string, string>).FullName,
                                 isIndexer: false,
-                                isStringProperty: false,
                                 designTimeDescriptor: null),
                             new TagHelperAttributeDescriptor(
                                 name: "dictionary-property-",
                                 propertyName: nameof(DefaultValidHtmlAttributePrefix.DictionaryProperty),
                                 typeName: typeof(string).FullName,
                                 isIndexer: true,
-                                isStringProperty: true,
                                 designTimeDescriptor: null),
                         },
                         new string[0]
@@ -1274,14 +1263,12 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                                 propertyName: nameof(SingleValidHtmlAttributePrefix.DictionaryProperty),
                                 typeName: typeof(IDictionary<string, string>).FullName,
                                 isIndexer: false,
-                                isStringProperty: false,
                                 designTimeDescriptor: null),
                             new TagHelperAttributeDescriptor(
                                 name: "valid-name-",
                                 propertyName: nameof(SingleValidHtmlAttributePrefix.DictionaryProperty),
                                 typeName: typeof(string).FullName,
                                 isIndexer: true,
-                                isStringProperty: true,
                                 designTimeDescriptor: null),
                         },
                         new string[0]
@@ -1295,91 +1282,78 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                                 propertyName: nameof(MultipleValidHtmlAttributePrefix.DictionaryProperty),
                                 typeName: typeof(Dictionary<string, object>).FullName,
                                 isIndexer: false,
-                                isStringProperty: false,
                                 designTimeDescriptor: null),
                             new TagHelperAttributeDescriptor(
                                 name: "valid-name2",
                                 propertyName: nameof(MultipleValidHtmlAttributePrefix.DictionarySubclassProperty),
                                 typeName: typeof(DictionarySubclass).FullName,
                                 isIndexer: false,
-                                isStringProperty: false,
                                 designTimeDescriptor: null),
                             new TagHelperAttributeDescriptor(
                                 name: "valid-name3",
                                 propertyName: nameof(MultipleValidHtmlAttributePrefix.DictionaryWithoutParameterlessConstructorProperty),
                                 typeName: typeof(DictionaryWithoutParameterlessConstructor).FullName,
                                 isIndexer: false,
-                                isStringProperty: false,
                                 designTimeDescriptor: null),
                             new TagHelperAttributeDescriptor(
                                 name: "valid-name4",
                                 propertyName: nameof(MultipleValidHtmlAttributePrefix.GenericDictionarySubclassProperty),
                                 typeName: typeof(GenericDictionarySubclass<object>).FullName,
                                 isIndexer: false,
-                                isStringProperty: false,
                                 designTimeDescriptor: null),
                             new TagHelperAttributeDescriptor(
                                 name: "valid-name5",
                                 propertyName: nameof(MultipleValidHtmlAttributePrefix.SortedDictionaryProperty),
                                 typeName: typeof(SortedDictionary<string, int>).FullName,
                                 isIndexer: false,
-                                isStringProperty: false,
                                 designTimeDescriptor: null),
                             new TagHelperAttributeDescriptor(
                                 name: "valid-name6",
                                 propertyName: nameof(MultipleValidHtmlAttributePrefix.StringProperty),
                                 typeName: typeof(string).FullName,
                                 isIndexer: false,
-                                isStringProperty: true,
                                 designTimeDescriptor: null),
                             new TagHelperAttributeDescriptor(
                                 name: "valid-prefix1-",
                                 propertyName: nameof(MultipleValidHtmlAttributePrefix.DictionaryProperty),
                                 typeName: typeof(object).FullName,
                                 isIndexer: true,
-                                isStringProperty: false,
                                 designTimeDescriptor: null),
                             new TagHelperAttributeDescriptor(
                                 name: "valid-prefix2-",
                                 propertyName: nameof(MultipleValidHtmlAttributePrefix.DictionarySubclassProperty),
                                 typeName: typeof(string).FullName,
                                 isIndexer: true,
-                                isStringProperty: true,
                                 designTimeDescriptor: null),
                             new TagHelperAttributeDescriptor(
                                 name: "valid-prefix3-",
                                 propertyName: nameof(MultipleValidHtmlAttributePrefix.DictionaryWithoutParameterlessConstructorProperty),
                                 typeName: typeof(string).FullName,
                                 isIndexer: true,
-                                isStringProperty: true,
                                 designTimeDescriptor: null),
                             new TagHelperAttributeDescriptor(
                                 name: "valid-prefix4-",
                                 propertyName: nameof(MultipleValidHtmlAttributePrefix.GenericDictionarySubclassProperty),
                                 typeName: typeof(object).FullName,
                                 isIndexer: true,
-                                isStringProperty: false,
                                 designTimeDescriptor: null),
                             new TagHelperAttributeDescriptor(
                                 name: "valid-prefix5-",
                                 propertyName: nameof(MultipleValidHtmlAttributePrefix.SortedDictionaryProperty),
                                 typeName: typeof(int).FullName,
                                 isIndexer: true,
-                                isStringProperty: false,
                                 designTimeDescriptor: null),
                             new TagHelperAttributeDescriptor(
                                 name: "get-only-dictionary-property-",
                                 propertyName: nameof(MultipleValidHtmlAttributePrefix.GetOnlyDictionaryProperty),
                                 typeName: typeof(int).FullName,
                                 isIndexer: true,
-                                isStringProperty: false,
                                 designTimeDescriptor: null),
                             new TagHelperAttributeDescriptor(
                                 name: "valid-prefix6",
                                 propertyName: nameof(MultipleValidHtmlAttributePrefix.GetOnlyDictionaryPropertyWithAttributePrefix),
                                 typeName: typeof(string).FullName,
                                 isIndexer: true,
-                                isStringProperty: true,
                                 designTimeDescriptor: null),
                         },
                         new string[0]
@@ -1403,7 +1377,6 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                                 propertyName: nameof(MultipleInvalidHtmlAttributePrefix.LongProperty),
                                 typeName: typeof(long).FullName,
                                 isIndexer: false,
-                                isStringProperty: false,
                                 designTimeDescriptor: null),
                         },
                         new[]
@@ -1881,6 +1854,35 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             }
 
             return data;
+        }
+
+        private static TagHelperDescriptor CreateTagHelperDescriptor(
+            string tagName,
+            string typeName,
+            string assemblyName,
+            IEnumerable<TagHelperAttributeDescriptor> attributes = null,
+            IEnumerable<string> requiredAttributes = null)
+        {
+            return new TagHelperDescriptor(
+                prefix: string.Empty,
+                tagName: tagName,
+                typeName: typeName,
+                assemblyName: assemblyName,
+                attributes: attributes ?? Enumerable.Empty<TagHelperAttributeDescriptor>(),
+                requiredAttributes: requiredAttributes ?? Enumerable.Empty<string>(),
+                designTimeDescriptor: null);
+        }
+
+        private static TagHelperAttributeDescriptor CreateTagHelperAttributeDescriptor(
+            string name,
+            PropertyInfo propertyInfo)
+        {
+            return new TagHelperAttributeDescriptor(
+                name,
+                propertyInfo.Name,
+                propertyInfo.PropertyType.FullName,
+                isIndexer: false,
+                designTimeDescriptor: null);
         }
 
         [EditorBrowsable(EditorBrowsableState.Always)]

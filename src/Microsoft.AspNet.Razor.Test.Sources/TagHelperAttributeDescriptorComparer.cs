@@ -30,6 +30,7 @@ namespace Microsoft.AspNet.Razor.Test.Internal
                 string.Equals(descriptorX.Name, descriptorY.Name, StringComparison.Ordinal) &&
                 string.Equals(descriptorX.PropertyName, descriptorY.PropertyName, StringComparison.Ordinal) &&
                 string.Equals(descriptorX.TypeName, descriptorY.TypeName, StringComparison.Ordinal) &&
+                descriptorX.IsStringProperty == descriptorY.IsStringProperty &&
                 TagHelperAttributeDesignTimeDescriptorComparer.Default.Equals(
                     descriptorX.DesignTimeDescriptor,
                     descriptorY.DesignTimeDescriptor);
@@ -37,13 +38,12 @@ namespace Microsoft.AspNet.Razor.Test.Internal
 
         public int GetHashCode(TagHelperAttributeDescriptor descriptor)
         {
-            // Ignore IsStringProperty because it is directly inferred from TypeName and thus won't vary the hash
-            // bucket.
             return HashCodeCombiner.Start()
                 .Add(descriptor.IsIndexer)
                 .Add(descriptor.Name, StringComparer.Ordinal)
                 .Add(descriptor.PropertyName, StringComparer.Ordinal)
                 .Add(descriptor.TypeName, StringComparer.Ordinal)
+                .Add(descriptor.IsStringProperty)
                 .Add(TagHelperAttributeDesignTimeDescriptorComparer.Default.GetHashCode(
                     descriptor.DesignTimeDescriptor))
                 .CombinedHash;

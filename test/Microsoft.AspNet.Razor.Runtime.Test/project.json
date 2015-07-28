@@ -7,6 +7,10 @@
       "type": "build"
     },
     "Microsoft.AspNet.Testing": "1.0.0-*",
+    "Microsoft.Framework.HashCodeCombiner.Sources": {
+      "type": "build",
+      "version": "1.0.0-*"
+    },
     "Microsoft.Framework.WebEncoders.Testing": "1.0.0-*",
     "xunit.runner.aspnet": "2.0.0-aspnet-*"
   },
