@@ -172,8 +172,7 @@ namespace Microsoft.AspNet.Http.Internal
 
         public override object GetFeature(Type type)
         {
-            object value;
-            return _features.TryGetValue(type, out value) ? value : null;
+            return _features[type];
         }
 
         public override void SetFeature(Type type, object instance)

@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Http.Features.Internal
             var features = new FeatureCollection();
             var request = new HttpRequestFeature();
             request.QueryString = "foo=bar";
-            features.Add(typeof(IHttpRequestFeature), request);
+            features[typeof(IHttpRequestFeature)] = request;
 
             var provider = new QueryFeature(features);
 

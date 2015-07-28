@@ -18,23 +18,19 @@ namespace Microsoft.AspNet.Http.Features
 
         public T Fetch(IFeatureCollection features)
         {
-            if (_revision == features.Revision) return _feature;
-            object value;
-            if (features.TryGetValue(typeof(T), out value))
+            if (_revision == features.Revision)
             {
-                _feature = (T)value;
+                return _feature;
             }
-            else
-            {
-                _feature = default(T);
-            }
+            _feature = (T)features[typeof(T)];
             _revision = features.Revision;
             return _feature;
         }
 
         public T Update(IFeatureCollection features, T feature)
         {
-            features[typeof(T)] = _feature = feature;
+            features[typeof(T)] = feature;
+            _feature = feature;
             _revision = features.Revision;
             return feature;
         }

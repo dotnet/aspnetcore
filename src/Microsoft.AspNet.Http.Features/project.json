@@ -13,6 +13,7 @@
         "dnxcore50": {
             "dependencies": {
                 "System.Collections": "4.0.10-beta-*",
+                "System.Linq": "4.0.0-beta-*",
                 "System.Net.Primitives": "4.0.10-beta-*",
                 "System.Net.WebSockets": "4.0.0-beta-*",
                 "System.Runtime.Extensions": "4.0.10-beta-*",

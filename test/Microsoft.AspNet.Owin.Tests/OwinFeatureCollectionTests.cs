@@ -12,9 +12,9 @@ namespace Microsoft.AspNet.Owin
     {
         private T Get<T>(IFeatureCollection features)
         {
-            object value;
-            return features.TryGetValue(typeof(T), out value) ? (T)value : default(T);
+            return (T)features[typeof(T)];
         }
+
         private T Get<T>(IDictionary<string, object> env, string key)
         {
             object value;
@@ -62,22 +62,6 @@ namespace Microsoft.AspNet.Owin
             Assert.Equal("/path2", Get<string>(env, "owin.RequestPath"));
             Assert.Equal("/pathBase2", Get<string>(env, "owin.RequestPathBase"));
             Assert.Equal("name=value2", Get<string>(env, "owin.RequestQueryString"));
-        }
-
-        [Fact]
-        public void ImplementedInterfacesAreEnumerated()
-        {
-            var env = new Dictionary<string, object>
-            {
-                {"owin.RequestMethod", "POST"}
-            };
-            var features = new OwinFeatureCollection(env);
-
-            var entries = features.ToArray();
-            var keys = features.Keys.ToArray();
-
-            Assert.Contains(typeof(IHttpRequestFeature), keys);
-            Assert.Contains(typeof(IHttpResponseFeature), keys);
         }
     }
 }

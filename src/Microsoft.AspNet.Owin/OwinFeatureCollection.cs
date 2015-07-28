@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.WebSockets;
 using System.Reflection;
@@ -16,7 +16,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Features.Authentication;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Owin
 {
@@ -109,6 +108,12 @@ namespace Microsoft.AspNet.Owin
         {
             get { return Prop<IDictionary<string, string[]>>(OwinConstants.RequestHeaders); }
             set { Prop(OwinConstants.RequestHeaders, value); }
+        }
+
+        string IHttpRequestIdentifierFeature.TraceIdentifier
+        {
+            get { return Prop<string>(OwinConstants.RequestId); }
+            set { Prop(OwinConstants.RequestId, value); }
         }
 
         Stream IHttpRequestFeature.Body
@@ -266,7 +271,7 @@ namespace Microsoft.AspNet.Owin
 
         /// <summary>
         /// Gets or sets if the underlying server supports WebSockets. This is enabled by default.
-        /// The value should be consistant across requests.
+        /// The value should be consistent across requests.
         /// </summary>
         public bool SupportsWebSockets { get; set; }
 
@@ -290,17 +295,25 @@ namespace Microsoft.AspNet.Owin
             return accept(context);
         }
 
+        // IFeatureCollection
+
         public int Revision
         {
             get { return 0; } // Not modifiable
         }
 
-        public void Add(Type key, object value)
+        public bool IsReadOnly
         {
-            throw new NotSupportedException();
+            get { return true; }
         }
 
-        public bool ContainsKey(Type key)
+        public object this[Type key]
+        {
+            get { return Get(key); }
+            set { throw new NotSupportedException(); }
+        }
+
+        private bool SupportsInterface(Type key)
         {
             // Does this type implement the requested interface?
             if (key.GetTypeInfo().IsAssignableFrom(GetType().GetTypeInfo()))
@@ -325,136 +338,48 @@ namespace Microsoft.AspNet.Owin
             return false;
         }
 
-        public ICollection<Type> Keys
+        public object Get(Type key)
         {
-            get
+            if (SupportsInterface(key))
             {
-                var keys = new List<Type>()
-                {
-                    typeof(IHttpRequestFeature),
-                    typeof(IHttpResponseFeature),
-                    typeof(IHttpConnectionFeature),
-                    typeof(IOwinEnvironmentFeature),
-                    typeof(IHttpRequestLifetimeFeature),
-                    typeof(IHttpAuthenticationFeature),
-                };
-                if (SupportsSendFile)
-                {
-                    keys.Add(typeof(IHttpSendFileFeature));
-                }
-                if (SupportsClientCerts)
-                {
-                    keys.Add(typeof(ITlsConnectionFeature));
-                }
-                if (SupportsWebSockets)
-                {
-                    keys.Add(typeof(IHttpWebSocketFeature));
-                }
-                return keys;
+                return this;
             }
+            return null;
         }
 
-        public bool Remove(Type key)
+        public void Set(Type key, object value)
         {
             throw new NotSupportedException();
         }
 
-        public bool TryGetValue(Type key, out object value)
+        IEnumerator IEnumerable.GetEnumerator()
         {
-            if (ContainsKey(key))
-            {
-                value = this;
-                return true;
-            }
-            value = null;
-            return false;
-        }
-
-        public ICollection<object> Values
-        {
-            get { throw new NotSupportedException(); }
-        }
-
-        public object this[Type key]
-        {
-            get
-            {
-                object value;
-                if (TryGetValue(key, out value))
-                {
-                    return value;
-                }
-                throw new KeyNotFoundException(key.FullName);
-            }
-            set
-            {
-                throw new NotSupportedException();
-            }
-        }
-
-        public void Add(KeyValuePair<Type, object> item)
-        {
-            throw new NotSupportedException();
-        }
-
-        public void Clear()
-        {
-            throw new NotSupportedException();
-        }
-
-        public bool Contains(KeyValuePair<Type, object> item)
-        {
-            object result;
-            return TryGetValue(item.Key, out result) && result.Equals(item.Value);
-        }
-
-        public void CopyTo([NotNull] KeyValuePair<Type, object>[] array, int arrayIndex)
-        {
-            if (arrayIndex < 0 || arrayIndex > array.Length)
-            {
-                throw new ArgumentOutOfRangeException(nameof(arrayIndex), arrayIndex, string.Empty);
-            }
-            var keys = Keys;
-            if (keys.Count > array.Length - arrayIndex)
-            {
-                throw new ArgumentException();
-            }
-
-            foreach (var key in keys)
-            {
-                array[arrayIndex++] = new KeyValuePair<Type, object>(key, this[key]);
-            }
-        }
-
-        public int Count
-        {
-            get { return Keys.Count; }
-        }
-
-        public bool IsReadOnly
-        {
-            get { return true; }
-        }
-
-        string IHttpRequestIdentifierFeature.TraceIdentifier
-        {
-            get { return Prop<string>(OwinConstants.RequestId); }
-            set { Prop(OwinConstants.RequestId, value); }
-        }
-
-        public bool Remove(KeyValuePair<Type, object> item)
-        {
-            throw new NotSupportedException();
+            return GetEnumerator();
         }
 
         public IEnumerator<KeyValuePair<Type, object>> GetEnumerator()
         {
-            return Keys.Select(type => new KeyValuePair<Type, object>(type, this[type])).GetEnumerator();
-        }
+            yield return new KeyValuePair<Type, object>(typeof(IHttpRequestFeature), this);
+            yield return new KeyValuePair<Type, object>(typeof(IHttpResponseFeature), this);
+            yield return new KeyValuePair<Type, object>(typeof(IHttpConnectionFeature), this);
+            yield return new KeyValuePair<Type, object>(typeof(IHttpRequestIdentifierFeature), this);
+            yield return new KeyValuePair<Type, object>(typeof(IHttpRequestLifetimeFeature), this);
+            yield return new KeyValuePair<Type, object>(typeof(IHttpAuthenticationFeature), this);
+            yield return new KeyValuePair<Type, object>(typeof(IOwinEnvironmentFeature), this);
 
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
+            // Check for conditional features
+            if (SupportsSendFile)
+            {
+                yield return new KeyValuePair<Type, object>(typeof(IHttpSendFileFeature), this);
+            }
+            if (SupportsClientCerts)
+            {
+                yield return new KeyValuePair<Type, object>(typeof(ITlsConnectionFeature), this);
+            }
+            if (SupportsWebSockets)
+            {
+                yield return new KeyValuePair<Type, object>(typeof(IHttpWebSocketFeature), this);
+            }
         }
 
         public void Dispose()
