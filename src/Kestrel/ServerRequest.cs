@@ -27,9 +27,9 @@ namespace Kestrel
 
         private void PopulateFeatures()
         {
-            _features.Add(typeof(IHttpRequestFeature), this);
-            _features.Add(typeof(IHttpResponseFeature), this);
-            _features.Add(typeof(IHttpUpgradeFeature), this);
+            _features[typeof(IHttpRequestFeature)] = this;
+            _features[typeof(IHttpResponseFeature)] = this;
+            _features[typeof(IHttpUpgradeFeature)] = this;
         }
 
         internal IFeatureCollection Features
