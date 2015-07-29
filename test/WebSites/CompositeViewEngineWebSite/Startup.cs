@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Mvc;
 using Microsoft.Framework.DependencyInjection;
 
 namespace CompositeViewEngineWebSite
@@ -16,7 +15,7 @@ namespace CompositeViewEngineWebSite
             services.AddMvc()
                 .ConfigureMvcViews(options =>
                 {
-                    options.ViewEngines.Insert(0, typeof(TestViewEngine));
+                    options.ViewEngines.Insert(0, new TestViewEngine());
                 });
         }
 

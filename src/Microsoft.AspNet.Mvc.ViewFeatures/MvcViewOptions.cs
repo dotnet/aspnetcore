@@ -19,10 +19,9 @@ namespace Microsoft.AspNet.Mvc
         public HtmlHelperOptions HtmlHelperOptions { get;[param: NotNull] set; } = new HtmlHelperOptions();
 
         /// <summary>
-        /// Gets a list of descriptors that represent <see cref="Rendering.IViewEngine"/> used
-        /// by this application.
+        /// Gets a list <see cref="IViewEngine"/>s used by this application.
         /// </summary>
-        public IList<ViewEngineDescriptor> ViewEngines { get; } = new List<ViewEngineDescriptor>();
+        public IList<IViewEngine> ViewEngines { get; } = new List<IViewEngine>();
 
         /// <summary>
         /// Gets a list of <see cref="IClientModelValidatorProvider"/> instances.

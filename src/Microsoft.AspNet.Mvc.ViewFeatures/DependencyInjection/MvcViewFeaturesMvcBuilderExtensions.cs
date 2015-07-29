@@ -55,9 +55,7 @@ namespace Microsoft.Framework.DependencyInjection
             //
             // View Engine and related infrastructure
             //
-            // The provider is inexpensive to initialize and provides ViewEngines that may require request
-            // specific services.
-            services.TryAddScoped<ICompositeViewEngine, CompositeViewEngine>();
+            services.TryAddSingleton<ICompositeViewEngine, CompositeViewEngine>();
 
             // Support for activating ViewDataDictionary
             services.TryAddEnumerable(

@@ -7,10 +7,13 @@ using Microsoft.Framework.OptionsModel;
 namespace Microsoft.AspNet.Mvc
 {
     /// <summary>
-    /// Sets up default options for <see cref="MvcOptions"/>.
+    /// Sets up default options for <see cref="MvcViewOptions"/>.
     /// </summary>
     public class MvcViewOptionsSetup : ConfigureOptions<MvcViewOptions>
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="MvcViewOptionsSetup"/>.
+        /// </summary>
         public MvcViewOptionsSetup()
             : base(ConfigureMvc)
         {

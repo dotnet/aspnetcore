@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Framework.Internal;
@@ -15,41 +14,14 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <summary>
         /// Initializes a new instance of <see cref="CompositeViewEngine"/>.
         /// </summary>
-        /// <param name="optionsAccessor">The options accessor for <see cref="MvcOptions"/>.</param>
-        /// <param name="typeActivatorCache">As <see cref="ITypeActivatorCache"/> instance that creates
-        /// an instance of type <see cref="IViewEngine"/>.</param>
-        /// <param name="serviceProvider">A <see cref="IServiceProvider"/> instance that retrieves services from the
-        /// service collection.</param>
-        public CompositeViewEngine(
-            IOptions<MvcViewOptions> optionsAccessor,
-            ITypeActivatorCache typeActivatorCache,
-            IServiceProvider serviceProvider)
+        /// <param name="optionsAccessor">The options accessor for <see cref="MvcViewOptions"/>.</param>
+        public CompositeViewEngine(IOptions<MvcViewOptions> optionsAccessor)
         {
-            var viewEngines = new List<IViewEngine>();
-            foreach (var descriptor in optionsAccessor.Options.ViewEngines)
-            {
-                IViewEngine viewEngine;
-                if (descriptor.ViewEngine != null)
-                {
-                    viewEngine = descriptor.ViewEngine;
-                }
-                else
-                {
-                    viewEngine = typeActivatorCache.CreateInstance<IViewEngine>(
-                        serviceProvider, 
-                        descriptor.ViewEngineType);
-                }
-
-                viewEngines.Add(viewEngine);
-            }
-
-            ViewEngines = viewEngines;
+            ViewEngines = optionsAccessor.Options.ViewEngines.ToArray();
         }
 
-        /// <summary>
-        /// Gets the list of <see cref="IViewEngine"/> this instance of <see cref="CompositeViewEngine"/> delegates to.
-        /// </summary>
-        public IReadOnlyList<IViewEngine> ViewEngines { get;  }
+        /// <inheritdoc />
+        public IReadOnlyList<IViewEngine> ViewEngines { get; }
 
         /// <inheritdoc />
         public ViewEngineResult FindPartialView([NotNull] ActionContext context,

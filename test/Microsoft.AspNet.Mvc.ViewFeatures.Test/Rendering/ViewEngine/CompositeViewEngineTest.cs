@@ -13,35 +13,21 @@ namespace Microsoft.AspNet.Mvc.Rendering
     public class CompositeViewEngineTest
     {
         [Fact]
-        public void ViewEngines_ReturnsInstantiatedListOfViewEngines()
+        public void ViewEngines_UsesListOfViewEnginesFromOptions()
         {
             // Arrange
-            var service = Mock.Of<ITestService>();
-            var viewEngine = Mock.Of<IViewEngine>();
-            var type = typeof(TestViewEngine);
-            var serviceProvider = new Mock<IServiceProvider>();
-            serviceProvider.Setup(p => p.GetService(typeof(ITestService)))
-                           .Returns(service);
-            var typeActivatorCache = new DefaultTypeActivatorCache();
+            var viewEngine1 = Mock.Of<IViewEngine>();
+            var viewEngine2 = Mock.Of<IViewEngine>();
             var optionsAccessor = new MockMvcViewOptionsAccessor();
-            optionsAccessor.Options.ViewEngines.Add(viewEngine);
-            optionsAccessor.Options.ViewEngines.Add(type);
-            var compositeViewEngine = new CompositeViewEngine(
-                optionsAccessor, 
-                typeActivatorCache, 
-                serviceProvider.Object);
+            optionsAccessor.Options.ViewEngines.Add(viewEngine1);
+            optionsAccessor.Options.ViewEngines.Add(viewEngine2);
+            var compositeViewEngine = new CompositeViewEngine(optionsAccessor);
 
             // Act
             var result = compositeViewEngine.ViewEngines;
 
             // Assert
-            Assert.Collection(result,
-                actual => Assert.Same(viewEngine, actual),
-                actual =>
-                {
-                    var testViewEngine = Assert.IsType<TestViewEngine>(actual);
-                    Assert.Same(service, testViewEngine.Service);
-                });
+            Assert.Equal(new[] { viewEngine1, viewEngine2 }, result);
         }
 
         [Fact]
@@ -51,10 +37,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var viewName = "test-view";
             var actionContext = GetActionContext();
             var optionsAccessor = new MockMvcViewOptionsAccessor();
-            var compositeViewEngine = new CompositeViewEngine(
-                optionsAccessor,
-                Mock.Of<ITypeActivatorCache>(),
-                Mock.Of<IServiceProvider>());
+            var compositeViewEngine = new CompositeViewEngine(optionsAccessor);
 
             // Act
             var result = compositeViewEngine.FindView(actionContext, viewName);
@@ -75,10 +58,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                    .Returns(ViewEngineResult.NotFound(viewName, new[] { "controller/test-view" }));
             var optionsAccessor = new MockMvcViewOptionsAccessor();
             optionsAccessor.Options.ViewEngines.Add(engine.Object);
-            var compositeViewEngine = new CompositeViewEngine(
-                optionsAccessor,
-                Mock.Of<ITypeActivatorCache>(),
-                Mock.Of<IServiceProvider>());
+            var compositeViewEngine = new CompositeViewEngine(optionsAccessor);
 
             // Act
             var result = compositeViewEngine.FindView(GetActionContext(), viewName);
@@ -99,10 +79,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                    .Returns(ViewEngineResult.Found(viewName, view));
             var optionsAccessor = new MockMvcViewOptionsAccessor();
             optionsAccessor.Options.ViewEngines.Add(engine.Object);
-            var compositeViewEngine = new CompositeViewEngine(
-                optionsAccessor,
-                Mock.Of<ITypeActivatorCache>(),
-                Mock.Of<IServiceProvider>());
+            var compositeViewEngine = new CompositeViewEngine(optionsAccessor);
 
             // Act
             var result = compositeViewEngine.FindView(GetActionContext(), viewName);
@@ -133,10 +110,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             optionsAccessor.Options.ViewEngines.Add(engine1.Object);
             optionsAccessor.Options.ViewEngines.Add(engine2.Object);
             optionsAccessor.Options.ViewEngines.Add(engine3.Object);
-            var compositeViewEngine = new CompositeViewEngine(
-                optionsAccessor,
-                Mock.Of<ITypeActivatorCache>(),
-                Mock.Of<IServiceProvider>());
+            var compositeViewEngine = new CompositeViewEngine(optionsAccessor);
 
             // Act
             var result = compositeViewEngine.FindView(GetActionContext(), viewName);
@@ -166,10 +140,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             optionsAccessor.Options.ViewEngines.Add(engine1.Object);
             optionsAccessor.Options.ViewEngines.Add(engine2.Object);
             optionsAccessor.Options.ViewEngines.Add(engine3.Object);
-            var compositeViewEngine = new CompositeViewEngine(
-                optionsAccessor,
-                Mock.Of<ITypeActivatorCache>(),
-                Mock.Of<IServiceProvider>());
+            var compositeViewEngine = new CompositeViewEngine(optionsAccessor);
 
             // Act
             var result = compositeViewEngine.FindView(GetActionContext(), viewName);
@@ -185,10 +156,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             // Arrange
             var viewName = "my-partial-view";
             var optionsAccessor = new MockMvcViewOptionsAccessor();
-            var compositeViewEngine = new CompositeViewEngine(
-                optionsAccessor,
-                Mock.Of<ITypeActivatorCache>(),
-                Mock.Of<IServiceProvider>());
+            var compositeViewEngine = new CompositeViewEngine(optionsAccessor);
 
             // Act
             var result = compositeViewEngine.FindPartialView(GetActionContext(), viewName);
@@ -208,10 +176,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                    .Returns(ViewEngineResult.NotFound(viewName, new[] { "Shared/partial-view" }));
             var optionsAccessor = new MockMvcViewOptionsAccessor();
             optionsAccessor.Options.ViewEngines.Add(engine.Object);
-            var compositeViewEngine = new CompositeViewEngine(
-                optionsAccessor,
-                Mock.Of<ITypeActivatorCache>(),
-                Mock.Of<IServiceProvider>());
+            var compositeViewEngine = new CompositeViewEngine(optionsAccessor);
 
             // Act
             var result = compositeViewEngine.FindPartialView(GetActionContext(), viewName);
@@ -232,10 +197,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                    .Returns(ViewEngineResult.Found(viewName, view));
             var optionsAccessor = new MockMvcViewOptionsAccessor();
             optionsAccessor.Options.ViewEngines.Add(engine.Object);
-            var compositeViewEngine = new CompositeViewEngine(
-                optionsAccessor,
-                Mock.Of<ITypeActivatorCache>(),
-                Mock.Of<IServiceProvider>());
+            var compositeViewEngine = new CompositeViewEngine(optionsAccessor);
 
             // Act
             var result = compositeViewEngine.FindPartialView(GetActionContext(), viewName);
@@ -266,10 +228,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             optionsAccessor.Options.ViewEngines.Add(engine1.Object);
             optionsAccessor.Options.ViewEngines.Add(engine2.Object);
             optionsAccessor.Options.ViewEngines.Add(engine3.Object);
-            var compositeViewEngine = new CompositeViewEngine(
-                optionsAccessor,
-                Mock.Of<ITypeActivatorCache>(),
-                Mock.Of<IServiceProvider>());
+            var compositeViewEngine = new CompositeViewEngine(optionsAccessor);
 
             // Act
             var result = compositeViewEngine.FindPartialView(GetActionContext(), viewName);
@@ -299,10 +258,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             optionsAccessor.Options.ViewEngines.Add(engine1.Object);
             optionsAccessor.Options.ViewEngines.Add(engine2.Object);
             optionsAccessor.Options.ViewEngines.Add(engine3.Object);
-            var compositeViewEngine = new CompositeViewEngine(
-                optionsAccessor,
-                Mock.Of<ITypeActivatorCache>(),
-                Mock.Of<IServiceProvider>());
+            var compositeViewEngine = new CompositeViewEngine(optionsAccessor);
 
             // Act
             var result = compositeViewEngine.FindPartialView(GetActionContext(), viewName);

@@ -52,6 +52,8 @@ namespace Microsoft.Framework.DependencyInjection
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IConfigureOptions<RazorViewEngineOptions>, RazorViewEngineOptionsSetup>());
 
+            services.TryAddSingleton<IRazorViewEngine, RazorViewEngine>();
+
             // Caches view locations that are valid for the lifetime of the application.
             services.TryAddSingleton<IViewLocationCache, DefaultViewLocationCache>();
             services.TryAdd(ServiceDescriptor.Singleton<IChunkTreeCache>(serviceProvider =>

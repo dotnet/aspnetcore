@@ -2,13 +2,16 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Mvc.Razor;
+using Microsoft.Dnx.Runtime;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.OptionsModel;
+using Moq;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
@@ -20,11 +23,11 @@ namespace Microsoft.AspNet.Mvc
         public void Setup_SetsUpViewEngines()
         {
             // Arrange & Act
-            var options = GetOptions<MvcViewOptions>();
+            var options = GetOptions<MvcViewOptions>(AddDnxServices);
 
             // Assert
-            Assert.Equal(1, options.ViewEngines.Count);
-            Assert.Equal(typeof(RazorViewEngine), options.ViewEngines[0].ViewEngineType);
+            var viewEngine = Assert.Single(options.ViewEngines);
+            Assert.IsType<RazorViewEngine>(viewEngine);
         }
 
         [Fact]
@@ -107,7 +110,7 @@ namespace Microsoft.AspNet.Mvc
         public void Setup_SetsUpClientModelValidatorProviders()
         {
             // Arrange & Act
-            var options = GetOptions<MvcViewOptions>();
+            var options = GetOptions<MvcViewOptions>(AddDnxServices);
 
             // Assert
             Assert.Equal(2, options.ClientModelValidatorProviders.Count);
@@ -219,6 +222,20 @@ namespace Microsoft.AspNet.Mvc
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
             return serviceProvider;
+        }
+
+        private static void AddDnxServices(IServiceCollection serviceCollection)
+        {
+            serviceCollection.AddInstance(Mock.Of<ILibraryManager>());
+            serviceCollection.AddInstance(Mock.Of<IAssemblyLoadContextAccessor>());
+            var applicationEnvironment = new Mock<IApplicationEnvironment>();
+
+            // ApplicationBasePath is used to set up a PhysicalFileProvider which requires
+            // a real directory.
+            applicationEnvironment.SetupGet(e => e.ApplicationBasePath)
+                .Returns(Directory.GetCurrentDirectory());
+
+            serviceCollection.AddInstance(applicationEnvironment.Object);
         }
     }
 }
