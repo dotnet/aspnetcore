@@ -67,7 +67,7 @@ function _WriteOut {
 
 ### Constants
 $ProductVersion="1.0.0"
-$BuildVersion="beta7-10404"
+$BuildVersion="beta7-10405"
 $Authors="Microsoft Open Technologies, Inc."
 
 # If the Version hasn't been replaced...
@@ -509,6 +509,16 @@ param(
   }
 }
 
+function Find-Package {
+    param(
+        $runtimeInfo,
+        [string]$Feed,
+        [string]$Proxy
+    )
+    $url = "$Feed/Packages()?`$filter=Id eq '$($runtimeInfo.RuntimeId)' and Version eq '$($runtimeInfo.Version)'"
+    Invoke-NuGetWebRequest $runtimeInfo.RuntimeId $url $Proxy
+}
+
 function Find-Latest {
     param(
         $runtimeInfo,
@@ -521,23 +531,32 @@ function Find-Latest {
     $RuntimeId = $runtimeInfo.RuntimeId
     _WriteDebug "Latest RuntimeId: $RuntimeId"
     $url = "$Feed/GetUpdates()?packageIds=%27$RuntimeId%27&versions=%270.0%27&includePrerelease=true&includeAllVersions=false"
+    Invoke-NuGetWebRequest $RuntimeId $url $Proxy
+}
+
+function Invoke-NuGetWebRequest {
+    param (
+        [string]$RuntimeId,
+        [string]$Url,
+        [string]$Proxy
+    )
     # NOTE: DO NOT use Invoke-WebRequest. It requires PowerShell 4.0!
 
     $wc = New-Object System.Net.WebClient
     Apply-Proxy $wc -Proxy:$Proxy
-    _WriteDebug "Downloading $url ..."
+    _WriteDebug "Downloading $Url ..."
     try {
-        [xml]$xml = $wc.DownloadString($url)
+        [xml]$xml = $wc.DownloadString($Url)
     } catch {
         $Script:ExitCode = $ExitCodes.NoRuntimesOnFeed
         throw "Unable to find any runtime packages on the feed!"
     }
 
     $version = Select-Xml "//d:Version" -Namespace @{d='http://schemas.microsoft.com/ado/2007/08/dataservices'} $xml
-
     if($version) {
-        _WriteDebug "Found latest version: $version"
-        $version
+        $downloadUrl = (Select-Xml "//d:content/@src" -Namespace @{d='http://www.w3.org/2005/Atom'} $xml).Node.value
+        _WriteDebug "Found $version at $downloadUrl"
+        @{ Version = $version; DownloadUrl = $downloadUrl }
     } else {
         throw "There are no runtimes matching the name $RuntimeId on feed $feed."
     }
@@ -571,20 +590,22 @@ function Get-PackageOS() {
     $runtimeFullName -replace "$RuntimePackageName-[^-]*-([^-]*)-[^.]*.*", '$1'
 }
 
-function Download-Package(
-    $runtimeInfo,
-    [string]$DestinationFile,
-    [Parameter(Mandatory=$true)]
-    [string]$Feed,
-    [string]$Proxy) {
-
+function Download-Package() {
+    param(
+        $runtimeInfo,
+        [Parameter(Mandatory=$true)]
+        [string]$DownloadUrl,
+        [string]$DestinationFile,
+        [Parameter(Mandatory=$true)]
+        [string]$Feed,
+        [string]$Proxy
+    )
     
-    $url = "$Feed/package/" + ($runtimeInfo.RuntimeId) + "/" + $runtimeInfo.Version
     _WriteOut "Downloading $($runtimeInfo.RuntimeName) from $feed"
     $wc = New-Object System.Net.WebClient
     try {
       Apply-Proxy $wc -Proxy:$Proxy     
-      _WriteDebug "Downloading $url ..."
+      _WriteDebug "Downloading $DownloadUrl ..."
 
       Register-ObjectEvent $wc DownloadProgressChanged -SourceIdentifier WebClient.ProgressChanged -action {
         $Global:downloadData = $eventArgs
@@ -595,14 +616,14 @@ function Download-Package(
         $Global:downloadCompleted = $true
       } | Out-Null
 
-      $wc.DownloadFileAsync($url, $DestinationFile)
+      $wc.DownloadFileAsync($DownloadUrl, $DestinationFile)
 
       while(-not $Global:downloadCompleted){
         $percent = $Global:downloadData.ProgressPercentage
         $totalBytes = $Global:downloadData.TotalBytesToReceive
         $receivedBytes = $Global:downloadData.BytesReceived
         If ($percent -ne $null) {
-            Write-Progress -Activity ("Downloading $RuntimeShortFriendlyName from $url") `
+            Write-Progress -Activity ("Downloading $RuntimeShortFriendlyName from $DownloadUrl") `
                 -Status ("Downloaded $($Global:downloadData.BytesReceived) of $($Global:downloadData.TotalBytesToReceive) bytes") `
                 -PercentComplete $percent -Id 2 -ParentId 1
         }
@@ -616,7 +637,7 @@ function Download-Package(
         }
       }
 
-      Write-Progress -Status "Done" -Activity ("Downloading $RuntimeShortFriendlyName from $url") -Id 2 -ParentId 1 -Completed
+      Write-Progress -Status "Done" -Activity ("Downloading $RuntimeShortFriendlyName from $DownloadUrl") -Id 2 -ParentId 1 -Completed
     }
     finally {
         Remove-Variable downloadData -Scope "Global"
@@ -1255,14 +1276,22 @@ function dnvm-install {
             if([String]::IsNullOrEmpty($Architecture)) {
                 $OS = Get-PackageOS $BaseName
             }
+        } else {
+            $Version = $VersionNuPkgOrAlias
         }
     }
 
     $runtimeInfo = GetRuntimeInfo $Architecture $Runtime $OS $Version
 
-    if ($VersionNuPkgOrAlias -eq "latest") {
-        Write-Progress -Activity "Installing runtime" -Status "Determining latest runtime" -Id 1
-        $Version = Find-Latest -runtimeInfo:$runtimeInfo -Feed:$selectedFeed
+    if (!$IsNuPkg) {
+        if ($VersionNuPkgOrAlias -eq "latest") {
+            Write-Progress -Activity "Installing runtime" -Status "Determining latest runtime" -Id 1
+            $findPackageResult = Find-Latest -runtimeInfo:$runtimeInfo -Feed:$selectedFeed
+        }
+        else {
+            $findPackageResult = Find-Package -runtimeInfo:$runtimeInfo -Feed:$selectedFeed
+        }
+        $Version = $findPackageResult.Version
     }
 
     #If the version is still empty at this point then VersionOrNupkgOrAlias is an actual version.
@@ -1317,7 +1346,7 @@ function dnvm-install {
             Write-Progress -Activity "Installing runtime" -Status "Downloading runtime" -Id 1
             _WriteDebug "Downloading version $($runtimeInfo.Version) to $DownloadFile"
 
-            Download-Package -RuntimeInfo:$runtimeInfo -DestinationFile:$DownloadFile -Proxy:$Proxy -Feed:$selectedFeed
+            Download-Package -RuntimeInfo:$runtimeInfo -DownloadUrl:$findPackageResult.DownloadUrl -DestinationFile:$DownloadFile -Proxy:$Proxy -Feed:$selectedFeed
         }
 
         Write-Progress -Activity "Installing runtime" -Status "Unpacking runtime" -Id 1
