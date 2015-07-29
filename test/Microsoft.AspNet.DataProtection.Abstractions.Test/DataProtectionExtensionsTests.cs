@@ -8,7 +8,7 @@ using System.Text;
 using Microsoft.AspNet.DataProtection.Infrastructure;
 using Microsoft.AspNet.DataProtection.Abstractions;
 using Microsoft.AspNet.Testing;
-using Microsoft.Framework.Runtime;
+using Microsoft.Dnx.Runtime;
 using Moq;
 using Xunit;
 

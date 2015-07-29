@@ -11,7 +11,7 @@ using Microsoft.AspNet.DataProtection.Abstractions;
 using Microsoft.Framework.Internal;
 
 #if DNX451 || DNXCORE50 // [[ISSUE1400]] Replace with DNX_ANY when it becomes available
-using Microsoft.Framework.Runtime;
+using Microsoft.Dnx.Runtime;
 #endif
 
 namespace Microsoft.AspNet.DataProtection

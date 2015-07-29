@@ -13,12 +13,12 @@
         "net451": { },
         "dnx451": {
             "dependencies": {
-                "Microsoft.Framework.Runtime.Abstractions": "1.0.0-*"
+                "Microsoft.Dnx.Runtime.Abstractions": "1.0.0-*"
             }
         },
         "dnxcore50": {
             "dependencies": {
-                "Microsoft.Framework.Runtime.Abstractions": "1.0.0-*",
+                "Microsoft.Dnx.Runtime.Abstractions": "1.0.0-*",
                 "System.ComponentModel": "4.0.0-beta-*",
                 "System.Diagnostics.Debug": "4.0.10-beta-*",
                 "System.Reflection": "4.0.10-beta-*",
