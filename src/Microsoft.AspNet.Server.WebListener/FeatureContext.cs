@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Server.WebListener
         private static Func<object,Task> OnStartDelegate = OnStart;
 
         private RequestContext _requestContext;
-        private FeatureCollection _features;
+        private IFeatureCollection _features;
         private bool _enableResponseCaching;
 
         private Stream _requestBody;
@@ -76,16 +76,20 @@ namespace Microsoft.AspNet.Server.WebListener
         internal FeatureContext(RequestContext requestContext, bool enableResponseCaching)
         {
             _requestContext = requestContext;
-            _features = new FeatureCollection();
+            _features = new StandardFeatureCollection(this);
             _authHandler = new AuthenticationHandler(requestContext);
             _enableResponseCaching = enableResponseCaching;
             requestContext.Response.OnStarting(OnStartDelegate, this);
-            PopulateFeatures();
         }
 
         internal IFeatureCollection Features
         {
             get { return _features; }
+        }
+
+        internal object RequestContext
+        {
+            get { return _requestContext; }
         }
 
         private Request Request
@@ -96,31 +100,6 @@ namespace Microsoft.AspNet.Server.WebListener
         private Response Response
         {
             get { return _requestContext.Response; }
-        }
-
-        private void PopulateFeatures()
-        {
-            _features.Add(typeof(IHttpRequestFeature), this);
-            _features.Add(typeof(IHttpConnectionFeature), this);
-            _features.Add(typeof(IHttpResponseFeature), this);
-            _features.Add(typeof(IHttpSendFileFeature), this);
-            _features.Add(typeof(IHttpBufferingFeature), this);
-            _features.Add(typeof(IHttpRequestLifetimeFeature), this);
-            _features.Add(typeof(IHttpAuthenticationFeature), this);
-            _features.Add(typeof(IHttpRequestIdentifierFeature), this);
-
-            if (Request.IsSecureConnection)
-            {
-                _features.Add(typeof(ITlsConnectionFeature), this);
-                _features.Add(typeof(ITlsTokenBindingFeature), this);
-            }
-
-            // Win8+
-            if (WebSocketHelpers.AreWebSocketsSupported)
-            {
-                _features.Add(typeof(IHttpUpgradeFeature), this);
-                _features.Add(typeof(IHttpWebSocketFeature), this);
-            }
         }
 
         Stream IHttpRequestFeature.Body
@@ -326,6 +305,11 @@ namespace Microsoft.AspNet.Server.WebListener
             return _clientCert;
         }
 
+        internal ITlsConnectionFeature GetTlsConnectionFeature()
+        {
+            return Request.IsSecureConnection ? this : null;
+        }
+
         byte[] ITlsTokenBindingFeature.GetProvidedTokenBindingId()
         {
             return Request.GetProvidedTokenBindingId();
@@ -334,6 +318,11 @@ namespace Microsoft.AspNet.Server.WebListener
         byte[] ITlsTokenBindingFeature.GetReferredTokenBindingId()
         {
             return Request.GetReferredTokenBindingId();
+        }
+
+        internal ITlsTokenBindingFeature GetTlsTokenBindingFeature()
+        {
+            return Request.IsSecureConnection ? this : null;
         }
 
         void IHttpBufferingFeature.DisableRequestBuffering()
