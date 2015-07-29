@@ -8,7 +8,7 @@ using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Storage;
 using Microsoft.Framework.Configuration;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Runtime;
+using Microsoft.Dnx.Runtime;
 
 namespace MusicStore.Models
 {

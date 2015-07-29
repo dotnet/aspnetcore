@@ -10,7 +10,7 @@ using Microsoft.Framework.Caching.Memory;
 using Microsoft.Framework.Configuration;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
-using Microsoft.Framework.Runtime;
+using Microsoft.Dnx.Runtime;
 using Microsoft.Net.Http.Server;
 using MusicStore.Components;
 using MusicStore.Models;

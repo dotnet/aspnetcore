@@ -11,7 +11,7 @@ using Microsoft.Framework.Caching.Memory;
 using Microsoft.Framework.Configuration;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
-using Microsoft.Framework.Runtime;
+using Microsoft.Dnx.Runtime;
 using MusicStore.Mocks.Common;
 using MusicStore.Mocks.OpenIdConnect;
 using MusicStore.Components;

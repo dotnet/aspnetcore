@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using Microsoft.Framework.Runtime;
-using Microsoft.Framework.Runtime.Infrastructure;
+using Microsoft.Dnx.Runtime;
 
 namespace MusicStore
 {
