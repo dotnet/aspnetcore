@@ -2,7 +2,7 @@
 # Source this file from your .bash-profile or script to use
 
 # "Constants"
-_DNVM_BUILDNUMBER="beta7-10402"
+_DNVM_BUILDNUMBER="beta7-10403"
 _DNVM_AUTHORS="Microsoft Open Technologies, Inc."
 _DNVM_RUNTIME_PACKAGE_NAME="dnx"
 _DNVM_RUNTIME_FRIENDLY_NAME=".NET Execution Environment"
@@ -245,13 +245,14 @@ __dnvm_unpack() {
 
     [ -e "$runtimeFile" ] && rm -f "$runtimeFile"
 
-    #Set shell commands as executable
-    find "$runtimeFolder/bin/" -type f \
-        -exec sh -c "head -c 20 {} | grep '/usr/bin/env bash\|/bin/bash' > /dev/null"  \; -print | xargs -r chmod 775
-
     #Set dnx to be executable
     if [[ -s "$runtimeFolder/bin/dnx" ]]; then
         chmod 775 "$runtimeFolder/bin/dnx"
+    fi
+
+    #Set dnu to be executable
+    if [[ -s "$runtimeFolder/bin/dnu" ]]; then
+        chmod 775 "$runtimeFolder/bin/dnu"
     fi
 }
 
