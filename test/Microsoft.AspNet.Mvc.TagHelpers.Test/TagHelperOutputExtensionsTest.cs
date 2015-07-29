@@ -9,7 +9,6 @@ using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Testing;
 using Microsoft.Framework.WebEncoders.Testing;
-using Microsoft.Internal.Web.Utils;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers

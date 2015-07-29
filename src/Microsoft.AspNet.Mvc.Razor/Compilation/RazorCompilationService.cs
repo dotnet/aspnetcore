@@ -8,10 +8,10 @@ using System.Linq;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Razor;
 using Microsoft.AspNet.Razor.CodeGenerators;
+using Microsoft.Dnx.Compilation;
+using Microsoft.Dnx.Runtime;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
-using Microsoft.Framework.Runtime;
-using Microsoft.Framework.Runtime.Compilation;
 
 namespace Microsoft.AspNet.Mvc.Razor.Compilation
 {

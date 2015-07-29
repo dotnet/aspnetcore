@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Resources;
 using Microsoft.Framework.Localization;
 using Microsoft.Framework.Localization.Internal;
-using Microsoft.Framework.Runtime;
+using Microsoft.Dnx.Runtime;
 
 namespace LocalizationWebSite
 {

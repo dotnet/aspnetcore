@@ -5,8 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.Framework.Internal;
-using Microsoft.Framework.Runtime;
-using Microsoft.Framework.Runtime.Compilation;
+using Microsoft.Dnx.Runtime;
+using Microsoft.Dnx.Compilation;
 
 namespace Microsoft.AspNet.Mvc.Razor.Compilation
 {

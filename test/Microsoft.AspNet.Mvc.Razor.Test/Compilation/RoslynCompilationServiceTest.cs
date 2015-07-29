@@ -8,9 +8,9 @@ using System.Runtime.Versioning;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.Dnx.Compilation;
+using Microsoft.Dnx.Runtime;
 using Microsoft.Framework.OptionsModel;
-using Microsoft.Framework.Runtime;
-using Microsoft.Framework.Runtime.Compilation;
 using Moq;
 using Xunit;
 

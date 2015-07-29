@@ -3,12 +3,12 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Framework.Runtime;
+using Microsoft.AspNet.Http;
+using Microsoft.Dnx.Runtime;
+using Microsoft.Dnx.Runtime.Infrastructure;
+using Microsoft.Framework.DependencyInjection;
 using Moq;
 using Xunit;
-using Microsoft.AspNet.Http;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Runtime.Infrastructure;
 
 namespace Microsoft.AspNet.Mvc.Core
 {

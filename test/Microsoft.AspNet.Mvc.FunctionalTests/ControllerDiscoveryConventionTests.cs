@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using ControllerDiscoveryConventionsWebSite;
 using Microsoft.AspNet.Builder;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Runtime;
+using Microsoft.Dnx.Runtime;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests

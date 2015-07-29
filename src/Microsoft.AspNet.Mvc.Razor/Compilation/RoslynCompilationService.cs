@@ -16,9 +16,9 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
-using Microsoft.Framework.Runtime;
-using Microsoft.Framework.Runtime.Compilation;
-using Microsoft.Framework.Runtime.Roslyn;
+using Microsoft.Dnx.Runtime;
+using Microsoft.Dnx.Compilation;
+using Microsoft.Dnx.Compilation.CSharp;
 
 namespace Microsoft.AspNet.Mvc.Razor.Compilation
 {

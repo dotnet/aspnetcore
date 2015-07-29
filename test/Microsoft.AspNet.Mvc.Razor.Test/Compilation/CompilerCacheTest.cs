@@ -12,7 +12,7 @@ using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Mvc.Razor.Internal;
 using Microsoft.AspNet.Mvc.Razor.Precompilation;
 using Microsoft.AspNet.Testing.xunit;
-using Microsoft.Framework.Runtime;
+using Microsoft.Dnx.Runtime;
 using Moq;
 using Xunit;
 

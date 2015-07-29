@@ -5,9 +5,9 @@ using System.Globalization;
 using System.Text;
 using Microsoft.AspNet.Mvc.Razor.Compilation;
 using Microsoft.CodeAnalysis;
+using Microsoft.Dnx.Compilation.CSharp;
+using Microsoft.Dnx.Runtime;
 using Microsoft.Framework.Internal;
-using Microsoft.Framework.Runtime;
-using Microsoft.Framework.Runtime.Roslyn;
 
 namespace Microsoft.AspNet.Mvc.Razor.Precompilation
 {

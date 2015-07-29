@@ -15,8 +15,8 @@ using Microsoft.Framework.Configuration;
 using Microsoft.Framework.DependencyInjection;
 #if DNX451
 using Microsoft.Framework.DependencyInjection.Autofac;
-using Microsoft.Framework.Runtime;
-using Microsoft.Framework.Runtime.Infrastructure;
+using Microsoft.Dnx.Runtime;
+using Microsoft.Dnx.Runtime.Infrastructure;
 #endif
 using MvcSample.Web.Filters;
 using MvcSample.Web.Services;

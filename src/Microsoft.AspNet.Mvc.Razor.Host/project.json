@@ -19,12 +19,12 @@
     "net45": { },
     "dnx451": {
       "dependencies": {
-        "Microsoft.Framework.Runtime.Abstractions": "1.0.0-*"
+        "Microsoft.Dnx.Runtime.Abstractions": "1.0.0-*"
       }
     },
     "dnxcore50": {
       "dependencies": {
-        "Microsoft.Framework.Runtime.Abstractions": "1.0.0-*",
+        "Microsoft.Dnx.Runtime.Abstractions": "1.0.0-*",
         "System.Collections.Concurrent": "4.0.10-beta-*",
         "System.ComponentModel.TypeConverter": "4.0.0-beta-*",
         "System.Reflection.Extensions": "4.0.0-beta-*",
