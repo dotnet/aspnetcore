@@ -52,6 +52,7 @@
                          $(DropSource)**\dnx*.nupkg;
                          $(DropSource)**\KoreBuild*.nupkg;
                          $(DropSource)**\Microsoft.AspNet*.nupkg;
+                         $(DropSource)**\Microsoft.Dnx*.nupkg;
                          $(DropSource)**\Microsoft.Framework*.nupkg;
                          $(DropSource)**\Microsoft.Net*.nupkg;
                          $(DropSource)**\NuGet.*.nupkg;
@@ -65,6 +66,7 @@
                          $(SymbolPackagePath)**\KoreBuild*.nupkg;
                          $(SymbolPackagePath)**\dnx*.nupkg;
                          $(SymbolPackagePath)**\Microsoft.AspNet*.nupkg;
+                         $(SymbolPackagePath)**\Microsoft.Dnx*.nupkg;
                          $(SymbolPackagePath)**\Microsoft.Framework*.nupkg;
                          $(SymbolPackagePath)**\Microsoft.Net*.nupkg;
                          $(DropSource)**\NuGet.*.nupkg"
@@ -98,7 +100,8 @@
                          $(UnsignedPackagesPath)**\Kestrel*.dll;
                          $(UnsignedPackagesPath)**\dnx*.dll;
                          $(UnsignedPackagesPath)**\Microsoft.AspNet*.dll;
-                         $(UnsignedPackagesPath)**\Microsoft.Framework*.dll;                         
+                         $(UnsignedPackagesPath)**\Microsoft.Dnx*.dll;         
+                         $(UnsignedPackagesPath)**\Microsoft.Framework*.dll;                   
                          $(UnsignedPackagesPath)**\Microsoft.Net*.dll;
                          $(UnsignedPackagesPath)**\NuGet.*.dll;
                          $(UnsignedPackagesPath)**\signalrclient.dll;
@@ -174,6 +177,7 @@
                                  $(UnsignedPackagesPath)**\KoreBuild*.nuspec;
                                  $(UnsignedPackagesPath)**\dnx*.nuspec;
                                  $(UnsignedPackagesPath)**\Microsoft.AspNet*.nuspec;
+                                 $(UnsignedPackagesPath)**\Microsoft.Dnx.*.nuspec;
                                  $(UnsignedPackagesPath)**\Microsoft.Framework.*.nuspec;
                                  $(UnsignedPackagesPath)**\Microsoft.Net.*.nuspec;
                                  $(UnsignedPackagesPath)**\NuGet.*.nuspec;
@@ -246,6 +250,7 @@
                                         $(SymbolPackagePath)Kestrel*.symbols.nupkg;
                                         $(SymbolPackagePath)dnx*.symbols.nupkg;
                                         $(SymbolPackagePath)Microsoft.AspNet*.symbols.nupkg;
+                                        $(SymbolPackagePath)Microsoft.Dnx*.symbols.nupkg;
                                         $(SymbolPackagePath)Microsoft.Framework*.symbols.nupkg;
                                         $(SymbolPackagePath)Microsoft.Net*.symbols.nupkg;
                                         $(SymbolPackagePath)NuGet.*.symbols.nupkg;
@@ -390,38 +395,38 @@
                 <Justification>refers to race condition; property name</Justification>
             </SrcExclusions>
             <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNet.Diagnostics\Views\WelcomePage.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Colors.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Program.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Building\BuildContext.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Building\BuildManager.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\ConsoleCommands\ListConsoleCommand.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Commands\AddCommand.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Commands\InstallCommand.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Commands\WrapCommand.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Install\InstallBuilder.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Install\InstallGlobalCommand.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Install\UninstallCommand.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\List\LibraryDependencyFlatRenderer.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Publish\PublishManager.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Restore\RestoreCommand.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Restore\NuGet\KpmPackageFolder.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Restore\NuGet\NuGetv2Feed.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Restore\NuGet\NuGetv3Feed.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Restore\NuGet\PackageFeed.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Restore\NuGet\PackageUtilities.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Shims\ConsoleColor.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\SourceControl\SourceBuilder.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\Reports.cs;
-                                    $(PoliCheckPath)**\Microsoft.Framework.PackageManager.dll">
+                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\Colors.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\Program.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\Building\BuildContext.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\Building\BuildManager.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\ConsoleCommands\ListConsoleCommand.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\Commands\AddCommand.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\Commands\InstallCommand.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\Commands\WrapCommand.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\Install\InstallBuilder.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\Install\InstallGlobalCommand.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\Install\UninstallCommand.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\List\LibraryDependencyFlatRenderer.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\Publish\PublishManager.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\Restore\RestoreCommand.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\Restore\NuGet\KpmPackageFolder.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\Restore\NuGet\NuGetv2Feed.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\Restore\NuGet\NuGetv3Feed.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\Restore\NuGet\PackageFeed.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\Restore\NuGet\PackageUtilities.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\Shims\ConsoleColor.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\SourceControl\SourceBuilder.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\Reports.cs;
+                                    $(PoliCheckPath)**\Microsoft.Dnx.Tooling.dll">
                 <term>Red</term>
                 <Justification>Color constant name</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\SourceControl\GitSourceControlProvider.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Framework.PackageManager\SourceControl\SourceControlProviderFactory.cs">
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\SourceControl\GitSourceControlProvider.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\SourceControl\SourceControlProviderFactory.cs">
                 <term>git</term>
                 <Justification>Refers to the source control product</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Framework.Runtime\DependencyManagement\ProjectReferenceDependencyProvider.cs">
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Dnx.Runtime\DependencyManagement\ProjectReferenceDependencyProvider.cs">
                 <term>sucks</term>
                 <Justification>expression of sadness</Justification>
             </SrcExclusions>

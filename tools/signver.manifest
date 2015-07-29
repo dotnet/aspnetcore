@@ -5,12 +5,12 @@
     <File Name="dnvm.ps1" Ignore="yes" />
     <File Name="dnx.exe" Ignore="yes" />
     <File Name="dnx.coreclr.dll" Ignore="yes" />
-    <File Name="dnx.coreclr.managed.dll" Ignore="yes" />
-    <File Name="dnx.host.dll" Ignore="yes" />
+    <File Name="Microsoft.Dnx.Host.CoreClr.dll" Ignore="yes" />
+    <File Name="Microsoft.Dnx.Host.dll" Ignore="yes" />
     <File Name="dnx.hosting.shared.dll" Ignore="yes" />
-    <File Name="dnx.mono.managed.dll" Ignore="yes" />
+    <File Name="Microsoft.Dnx.Host.Mono.dll" Ignore="yes" />
     <File Name="dnx.clr.dll" Ignore="yes" />
-    <File Name="dnx.clr.managed.dll" Ignore="yes" />
+    <File Name="Microsoft.Dnx.Host.Clr.dll" Ignore="yes" />
     <File Name="clrcompression.dll" Ignore="yes" />
     <File Name="clretwrc.dll" Ignore="yes" />
     <File Name="coreclr.dll" Ignore="yes" />
