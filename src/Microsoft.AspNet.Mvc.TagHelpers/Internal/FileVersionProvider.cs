@@ -49,10 +49,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
         {
             var resolvedPath = path;
 
-            var queryStringStartIndex = path.IndexOf('?');
-            if (queryStringStartIndex != -1)
+            var queryStringOrFragmentStartIndex = path.IndexOfAny(new char[] { '?', '#' });
+            if (queryStringOrFragmentStartIndex != -1)
             {
-                resolvedPath = path.Substring(0, queryStringStartIndex);
+                resolvedPath = path.Substring(0, queryStringOrFragmentStartIndex);
             }
 
             Uri uri;

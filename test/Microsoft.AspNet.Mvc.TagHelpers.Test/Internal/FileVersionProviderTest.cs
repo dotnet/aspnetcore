@@ -23,6 +23,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
         [InlineData("/hello/world", "/hello/world?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk")]
         [InlineData("/hello/world?q=test", "/hello/world?q=test&v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk")]
         [InlineData("/hello/world?q=foo&bar", "/hello/world?q=foo&bar&v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk")]
+        [InlineData("/hello/world?q=foo&bar#abc", "/hello/world?q=foo&bar&v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk#abc")]
+        [InlineData("/hello/world#somefragment", "/hello/world?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk#somefragment")]
         public void AddsVersionToFiles_WhenCacheIsAbsent(string filePath, string expected)
         {
             // Arrange

@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 attributes: new TagHelperAttributeList
                 {
                     { "alt", new HtmlString("alt text") },
-                    { "data-extra", new HtmlString("something") },                    
+                    { "data-extra", new HtmlString("something") },
                     { "title", new HtmlString("Image title") },
                     { "src", "testimage.png" },
                     { "asp-append-version", "true" }
@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 attributes: new TagHelperAttributeList
                 {
                     { "alt", new HtmlString("alt text") },
-                    { "data-extra", new HtmlString("something") },                    
+                    { "data-extra", new HtmlString("something") },
                     { "title", new HtmlString("Image title") },
                 });
 
@@ -68,10 +68,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // Act
             helper.Process(context, output);
 
-            // Assert            
+            // Assert
             Assert.Equal(expectedOutput.TagName, output.TagName);
             Assert.Equal(4, output.Attributes.Count);
-            
+
             for(int i=0; i < expectedOutput.Attributes.Count; i++)
             {
                 var expectedAtribute = expectedOutput.Attributes[i];
