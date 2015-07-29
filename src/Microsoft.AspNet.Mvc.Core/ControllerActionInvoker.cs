@@ -18,7 +18,6 @@ namespace Microsoft.AspNet.Mvc.Core
         private readonly ControllerActionDescriptor _descriptor;
         private readonly IControllerFactory _controllerFactory;
         private readonly IControllerActionArgumentBinder _argumentBinder;
-        private readonly ITempDataDictionary _tempData;
 
         public ControllerActionInvoker(
             [NotNull] ActionContext actionContext,
@@ -32,7 +31,6 @@ namespace Microsoft.AspNet.Mvc.Core
             [NotNull] IReadOnlyList<IModelValidatorProvider> modelValidatorProviders,
             [NotNull] IReadOnlyList<IValueProviderFactory> valueProviderFactories,
             [NotNull] IScopedInstance<ActionBindingContext> actionBindingContextAccessor,
-            [NotNull] ITempDataDictionary tempData,
             [NotNull] ILoggerFactory loggerFactory,
             int maxModelValidationErrors)
             : base(
@@ -50,7 +48,6 @@ namespace Microsoft.AspNet.Mvc.Core
             _descriptor = descriptor;
             _controllerFactory = controllerFactory;
             _argumentBinder = controllerActionArgumentBinder;
-            _tempData = tempData;
 
             if (descriptor.MethodInfo == null)
             {
@@ -70,7 +67,6 @@ namespace Microsoft.AspNet.Mvc.Core
 
         protected override void ReleaseInstance(object instance)
         {
-            _tempData.Save();
             _controllerFactory.ReleaseController(instance);
         }
 

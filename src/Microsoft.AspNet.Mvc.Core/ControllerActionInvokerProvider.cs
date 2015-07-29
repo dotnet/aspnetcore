@@ -22,7 +22,6 @@ namespace Microsoft.AspNet.Mvc.Core
         private readonly IReadOnlyList<IModelValidatorProvider> _modelValidatorProviders;
         private readonly IReadOnlyList<IValueProviderFactory> _valueProviderFactories;
         private readonly IScopedInstance<ActionBindingContext> _actionBindingContextAccessor;
-        private readonly ITempDataDictionary _tempData;
         private readonly int _maxModelValidationErrors;
         private readonly ILoggerFactory _loggerFactory;
 
@@ -32,7 +31,6 @@ namespace Microsoft.AspNet.Mvc.Core
             IControllerActionArgumentBinder argumentBinder,
             IOptions<MvcOptions> optionsAccessor,
             IScopedInstance<ActionBindingContext> actionBindingContextAccessor,
-            ITempDataDictionary tempData,
             ILoggerFactory loggerFactory)
         {
             _controllerFactory = controllerFactory;
@@ -44,7 +42,6 @@ namespace Microsoft.AspNet.Mvc.Core
             _modelValidatorProviders = optionsAccessor.Options.ModelValidatorProviders.ToArray();
             _valueProviderFactories = optionsAccessor.Options.ValueProviderFactories.ToArray();
             _actionBindingContextAccessor = actionBindingContextAccessor;
-            _tempData = tempData;
             _maxModelValidationErrors = optionsAccessor.Options.MaxModelValidationErrors;
             _loggerFactory = loggerFactory;
         }
@@ -73,7 +70,6 @@ namespace Microsoft.AspNet.Mvc.Core
                                     _modelValidatorProviders,
                                     _valueProviderFactories,
                                     _actionBindingContextAccessor,
-                                    _tempData,
                                     _loggerFactory,
                                     _maxModelValidationErrors);
             }

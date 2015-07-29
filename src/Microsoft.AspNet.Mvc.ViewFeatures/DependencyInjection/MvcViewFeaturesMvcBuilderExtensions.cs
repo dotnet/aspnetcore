@@ -51,6 +51,8 @@ namespace Microsoft.Framework.DependencyInjection
 
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IConfigureOptions<MvcViewOptions>, MvcViewOptionsSetup>());
+            services.TryAddEnumerable(
+                ServiceDescriptor.Transient<IConfigureOptions<MvcOptions>, TempDataMvcOptionsSetup>());
 
             //
             // View Engine and related infrastructure
@@ -95,6 +97,16 @@ namespace Microsoft.Framework.DependencyInjection
             services.TryAddTransient<IViewComponentDescriptorProvider, DefaultViewComponentDescriptorProvider>();
             services.TryAddSingleton<IViewComponentInvokerFactory, DefaultViewComponentInvokerFactory>();
             services.TryAddTransient<IViewComponentHelper, DefaultViewComponentHelper>();
+
+            //
+            // Temp Data
+            //
+            // Holds per-request data so it should be scoped
+            services.TryAddScoped<ITempDataDictionary, TempDataDictionary>();
+            services.TryAddScoped<SaveTempDataFilter>();
+
+            // This does caching so it should stay singleton
+            services.TryAddSingleton<ITempDataProvider, SessionStateTempDataProvider>();
         }
     }
 }

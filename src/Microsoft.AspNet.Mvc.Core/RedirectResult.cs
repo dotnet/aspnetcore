@@ -8,7 +8,7 @@ using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class RedirectResult : ActionResult
+    public class RedirectResult : ActionResult, IKeepTempDataResult
     {
         private string _url;
 
@@ -60,8 +60,6 @@ namespace Microsoft.AspNet.Mvc
                 destinationUrl = urlHelper.Content(Url);
             }
 
-            var tempData = context.HttpContext.RequestServices.GetRequiredService<ITempDataDictionary>();
-            tempData.Keep();
             context.HttpContext.Response.Redirect(destinationUrl, Permanent);
         }
 

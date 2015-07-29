@@ -10,7 +10,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
-using Microsoft.AspNet.Mvc.Core;
+using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.Framework.Internal;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;

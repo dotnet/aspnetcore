@@ -875,54 +875,6 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         /// <summary>
-        /// The '{0}' cannot serialize an object of type '{1}' to session state.
-        /// </summary>
-        internal static string TempData_CannotSerializeToSession
-        {
-            get { return GetString("TempData_CannotSerializeToSession"); }
-        }
-
-        /// <summary>
-        /// The '{0}' cannot serialize an object of type '{1}' to session state.
-        /// </summary>
-        internal static string FormatTempData_CannotSerializeToSession(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("TempData_CannotSerializeToSession"), p0, p1);
-        }
-
-        /// <summary>
-        /// Cannot deserialize {0} of type '{1}'.
-        /// </summary>
-        internal static string TempData_CannotDeserializeToken
-        {
-            get { return GetString("TempData_CannotDeserializeToken"); }
-        }
-
-        /// <summary>
-        /// Cannot deserialize {0} of type '{1}'.
-        /// </summary>
-        internal static string FormatTempData_CannotDeserializeToken(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("TempData_CannotDeserializeToken"), p0, p1);
-        }
-
-        /// <summary>
-        /// The '{0}' cannot serialize a dictionary with a key of type '{1}' to session state.
-        /// </summary>
-        internal static string TempData_CannotSerializeDictionary
-        {
-            get { return GetString("TempData_CannotSerializeDictionary"); }
-        }
-
-        /// <summary>
-        /// The '{0}' cannot serialize a dictionary with a key of type '{1}' to session state.
-        /// </summary>
-        internal static string FormatTempData_CannotSerializeDictionary(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("TempData_CannotSerializeDictionary"), p0, p1);
-        }
-
-        /// <summary>
         /// The type '{0}' cannot be activated by '{1}' because it is either a value type, an interface, an abstract class or an open generic type.
         /// </summary>
         internal static string ValueInterfaceAbstractOrOpenGenericTypesCannotBeActivated

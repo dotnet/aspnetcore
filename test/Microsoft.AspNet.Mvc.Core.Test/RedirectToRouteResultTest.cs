@@ -75,32 +75,6 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         [Fact]
-        public void RedirectToRoute_Execute_Calls_TempDataKeep()
-        {
-            // Arrange
-            var tempData = new Mock<ITempDataDictionary>();
-            tempData.Setup(t => t.Keep()).Verifiable();
-
-            var httpContext = new Mock<HttpContext>();
-            httpContext.Setup(o => o.Response).Returns(new Mock<HttpResponse>().Object);
-            httpContext.Setup(o => o.RequestServices.GetService(typeof(ITempDataDictionary))).Returns(tempData.Object);
-            var actionContext = new ActionContext(httpContext.Object,
-                                                  new RouteData(),
-                                                  new ActionDescriptor());
-
-            var result = new RedirectToRouteResult("SampleRoute", null)
-            {
-                UrlHelper = GetMockUrlHelper("SampleRoute")
-            };
-
-            // Act
-            result.ExecuteResult(actionContext);
-
-            // Assert
-            tempData.Verify(t => t.Keep(), Times.Once());
-        }
-
-        [Fact]
         public async Task ExecuteResultAsync_UsesRouteName_ToGenerateLocationHeader()
         {
             // Arrange

@@ -131,15 +131,6 @@ namespace Microsoft.Framework.DependencyInjection
             }));
 
             //
-            // Temp Data
-            //
-            // Holds per-request data so it should be scoped
-            services.TryAddScoped<ITempDataDictionary, TempDataDictionary>();
-
-            // This does caching so it should stay singleton
-            services.TryAddSingleton<ITempDataProvider, SessionStateTempDataProvider>();
-
-            //
             // Random Infrastructure
             //
             services.TryAddSingleton<MvcMarkerService, MvcMarkerService>();

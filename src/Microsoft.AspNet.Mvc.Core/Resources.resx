@@ -288,15 +288,6 @@
   <data name="ModelType_WrongType" xml:space="preserve">
     <value>The model's runtime type '{0}' is not assignable to the type '{1}'.</value>
   </data>
-  <data name="TempData_CannotSerializeToSession" xml:space="preserve">
-    <value>The '{0}' cannot serialize an object of type '{1}' to session state.</value>
-  </data>
-  <data name="TempData_CannotDeserializeToken" xml:space="preserve">
-    <value>Cannot deserialize {0} of type '{1}'.</value>
-  </data>
-  <data name="TempData_CannotSerializeDictionary" xml:space="preserve">
-    <value>The '{0}' cannot serialize a dictionary with a key of type '{1}' to session state.</value>
-  </data>
   <data name="ValueInterfaceAbstractOrOpenGenericTypesCannotBeActivated" xml:space="preserve">
     <value>The type '{0}' cannot be activated by '{1}' because it is either a value type, an interface, an abstract class or an open generic type.</value>
   </data>

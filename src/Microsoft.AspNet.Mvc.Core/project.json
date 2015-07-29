@@ -14,15 +14,15 @@
         "Microsoft.AspNet.Hosting.Abstractions": "1.0.0-*",
         "Microsoft.AspNet.Http": "1.0.0-*",
         "Microsoft.AspNet.Mvc.Abstractions": "6.0.0-*",
+        "Microsoft.Dnx.Runtime.Abstractions": "1.0.0-*",
         "Microsoft.Framework.ClosedGenericMatcher.Sources": { "version": "1.0.0-*", "type": "build" },
         "Microsoft.Framework.Logging.Abstractions": "1.0.0-*",
         "Microsoft.Framework.Notification": "1.0.0-*",
         "Microsoft.Framework.NotNullAttribute.Sources": { "version": "1.0.0-*", "type": "build" },
         "Microsoft.Framework.PropertyActivator.Sources": { "version": "1.0.0-*", "type": "build" },
         "Microsoft.Framework.PropertyHelper.Sources": { "version": "1.0.0-*", "type": "build" },
-        "Microsoft.Framework.SecurityHelper.Sources": { "version": "1.0.0-*", "type": "build" },
-        "Microsoft.Dnx.Compilation.Abstractions": "1.0.0-*",
-        "Newtonsoft.Json": "6.0.6"
+        "Microsoft.Framework.SecurityHelper.Sources": { "version": "1.0.0-*", "type": "build" }
+
     },
     "frameworks": {
         "dnx451": { },

@@ -55,36 +55,6 @@ namespace Microsoft.AspNet.Mvc
         }
 
         [Fact]
-        public async Task InvokeAction_SavesTempData_WhenActionDoesNotThrow()
-        {
-            // Arrange
-            var tempData = new Mock<ITempDataDictionary>();
-            tempData.Setup(t => t.Save()).Verifiable();
-
-            var invoker = CreateInvoker(Mock.Of<IFilterMetadata>(), actionThrows: false, tempData: tempData.Object);
-
-            // Act
-            await invoker.InvokeAsync();
-
-            // Assert
-            tempData.Verify(t => t.Save(), Times.Once());
-        }
-
-        [Fact]
-        public async Task InvokeAction_SavesTempData_WhenActionThrows()
-        {
-            // Arrange
-            var tempData = new Mock<ITempDataDictionary>();
-            tempData.Setup(t => t.Save()).Verifiable();
-
-            var invoker = CreateInvoker(Mock.Of<IFilterMetadata>(), actionThrows: true, tempData: tempData.Object);
-
-            // Act & Assert
-            await Assert.ThrowsAsync(_actionException.GetType(), async () => await invoker.InvokeAsync());
-            tempData.Verify(t => t.Save(), Times.Once());
-        }
-
-        [Fact]
         public async Task InvokeAction_DoesNotAsyncInvokeExceptionFilter_WhenActionDoesNotThrow()
         {
             // Arrange
@@ -1967,7 +1937,6 @@ namespace Microsoft.AspNet.Mvc
             var invoker = CreateInvoker(
                 filter,
                 actionThrows: false,
-                tempData: null,
                 maxAllowedErrorsInModelState: expected);
 
             // Act & Assert
@@ -1978,16 +1947,14 @@ namespace Microsoft.AspNet.Mvc
         private TestControllerActionInvoker CreateInvoker(
             IFilterMetadata filter,
             bool actionThrows = false,
-            ITempDataDictionary tempData = null,
             int maxAllowedErrorsInModelState = 200)
         {
-            return CreateInvoker(new[] { filter }, actionThrows, tempData, maxAllowedErrorsInModelState);
+            return CreateInvoker(new[] { filter }, actionThrows, maxAllowedErrorsInModelState);
         }
 
         private TestControllerActionInvoker CreateInvoker(
             IFilterMetadata[] filters,
             bool actionThrows = false,
-            ITempDataDictionary tempData = null,
             int maxAllowedErrorsInModelState = 200)
         {
             var actionDescriptor = new ControllerActionDescriptor()
@@ -2004,16 +1971,13 @@ namespace Microsoft.AspNet.Mvc
             {
                 actionDescriptor.MethodInfo = typeof(ControllerActionInvokerTest).GetMethod("ActionMethod");
             }
-
-            tempData = tempData ?? new Mock<ITempDataDictionary>().Object;
+            
             var httpContext = new Mock<HttpContext>(MockBehavior.Loose);
             var httpRequest = new DefaultHttpContext().Request;
             var httpResponse = new DefaultHttpContext().Response;
 
             httpContext.SetupGet(c => c.Request).Returns(httpRequest);
             httpContext.SetupGet(c => c.Response).Returns(httpResponse);
-            httpContext.Setup(o => o.RequestServices.GetService(typeof(ITempDataDictionary)))
-                       .Returns(tempData);
             httpContext.Setup(o => o.RequestServices.GetService(typeof(ILogger<ObjectResult>)))
                        .Returns(new Mock<ILogger<ObjectResult>>().Object);
 
@@ -2077,7 +2041,6 @@ namespace Microsoft.AspNet.Mvc
                 new IModelValidatorProvider[0],
                 new IValueProviderFactory[0],
                 new MockScopedInstance<ActionBindingContext>(),
-                tempData,
                 new NullLoggerFactory(),
                 maxAllowedErrorsInModelState);
 
@@ -2140,7 +2103,6 @@ namespace Microsoft.AspNet.Mvc
                 new IModelValidatorProvider[0],
                 new IValueProviderFactory[0],
                 new MockScopedInstance<ActionBindingContext>(),
-                Mock.Of<ITempDataDictionary>(),
                 new NullLoggerFactory(),
                 200);
 
@@ -2241,7 +2203,6 @@ namespace Microsoft.AspNet.Mvc
                 IReadOnlyList<IModelValidatorProvider> modelValidatorProviders,
                 IReadOnlyList<IValueProviderFactory> valueProviderFactories,
                 IScopedInstance<ActionBindingContext> actionBindingContext,
-                ITempDataDictionary tempData,
                 ILoggerFactory loggerFactory,
                 int maxAllowedErrorsInModelState)
                 : base(
@@ -2256,7 +2217,6 @@ namespace Microsoft.AspNet.Mvc
                       modelValidatorProviders,
                       valueProviderFactories,
                       actionBindingContext,
-                      tempData,
                       loggerFactory,
                       maxAllowedErrorsInModelState)
             {

@@ -9,7 +9,7 @@ using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class RedirectToRouteResult : ActionResult
+    public class RedirectToRouteResult : ActionResult, IKeepTempDataResult
     {
         public RedirectToRouteResult(object routeValues)
             : this(routeName: null, routeValues: routeValues)
@@ -51,8 +51,6 @@ namespace Microsoft.AspNet.Mvc
                 throw new InvalidOperationException(Resources.NoRoutesMatched);
             }
 
-            var tempData = context.HttpContext.RequestServices.GetRequiredService<ITempDataDictionary>();
-            tempData.Keep();
             context.HttpContext.Response.Redirect(destinationUrl, Permanent);
         }
 

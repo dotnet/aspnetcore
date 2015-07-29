@@ -205,6 +205,7 @@ namespace Microsoft.AspNet.Mvc
                             typeof(MvcCoreMvcOptionsSetup),
                             typeof(MvcDataAnnotationsMvcOptionsSetup),
                             typeof(MvcJsonMvcOptionsSetup),
+                            typeof(TempDataMvcOptionsSetup),
                         }
                     },
                     {
