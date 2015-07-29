@@ -5,7 +5,7 @@ using System;
 using System.Reflection;
 using System.Resources;
 using Microsoft.Framework.Internal;
-using Microsoft.Framework.Runtime;
+using Microsoft.Dnx.Runtime;
 
 namespace Microsoft.Framework.Localization
 {

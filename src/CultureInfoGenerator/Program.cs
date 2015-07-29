@@ -4,7 +4,7 @@
 using System;
 using System.Globalization;
 using System.IO;
-using Microsoft.Framework.Runtime;
+using Microsoft.Dnx.Runtime;
 using Microsoft.Win32;
 
 namespace CultureInfoGenerator
