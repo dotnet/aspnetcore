@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNet.Hosting.Internal;
-using Microsoft.Framework.Runtime.Infrastructure;
+using Microsoft.Dnx.Runtime.Infrastructure;
 using Xunit;
 
 namespace Microsoft.AspNet.Hosting

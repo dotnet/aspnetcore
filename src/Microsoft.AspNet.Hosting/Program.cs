@@ -4,7 +4,7 @@
 using System;
 using Microsoft.Framework.Configuration;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Runtime;
+using Microsoft.Dnx.Runtime;
 
 namespace Microsoft.AspNet.Hosting
 {

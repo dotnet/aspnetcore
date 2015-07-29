@@ -18,7 +18,7 @@ using Microsoft.Framework.Configuration;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
-using Microsoft.Framework.Runtime.Infrastructure;
+using Microsoft.Dnx.Runtime.Infrastructure;
 using Moq;
 using Xunit;
 

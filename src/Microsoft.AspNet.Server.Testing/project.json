@@ -8,7 +8,7 @@
     "dependencies": {
         "Microsoft.AspNet.Testing": "1.0.0-*",
         "Microsoft.Framework.Logging.Abstractions": "1.0.0-*",
-        "Microsoft.Framework.Runtime.Abstractions": "1.0.0-*"
+        "Microsoft.Dnx.Runtime.Abstractions": "1.0.0-*"
     },
     "frameworks": {
         "dnx451": {
