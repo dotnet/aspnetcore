@@ -9,7 +9,7 @@ using Microsoft.AspNet.Builder.Internal;
 using Microsoft.AspNet.Identity.Test;
 using Microsoft.Data.Entity;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Runtime.Infrastructure;
+using Microsoft.Dnx.Runtime.Infrastructure;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.EntityFramework.Test
