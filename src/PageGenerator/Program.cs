@@ -7,7 +7,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.AspNet.Razor;
 using Microsoft.AspNet.Razor.CodeGenerators;
-using Microsoft.Framework.Runtime;
+using Microsoft.Dnx.Runtime;
 
 namespace PageGenerator
 {

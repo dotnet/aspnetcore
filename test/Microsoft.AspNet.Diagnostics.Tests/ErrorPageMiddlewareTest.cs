@@ -13,7 +13,7 @@ using Microsoft.AspNet.Diagnostics.Views;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.Framework.Caching;
 using Microsoft.Framework.Logging;
-using Microsoft.Framework.Runtime;
+using Microsoft.Dnx.Runtime;
 using Xunit;
 
 namespace Microsoft.AspNet.Diagnostics

@@ -31,7 +31,7 @@ using Microsoft.AspNet.Diagnostics.Views
 #line hidden
     ;
 #line 6 "RuntimeInfoPage.cshtml"
-using Microsoft.Framework.Runtime;
+using Microsoft.Dnx.Runtime;
 
 #line default
 #line hidden

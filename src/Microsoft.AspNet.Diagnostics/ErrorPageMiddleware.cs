@@ -13,10 +13,10 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics.Views;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Http;
+using Microsoft.Dnx.Compilation;
+using Microsoft.Dnx.Runtime;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
-using Microsoft.Framework.Runtime;
-using Microsoft.Framework.Runtime.Compilation;
 
 namespace Microsoft.AspNet.Diagnostics
 {

@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics.Views;
 using Microsoft.AspNet.Http;
+using Microsoft.Dnx.Runtime;
 using Microsoft.Framework.Internal;
-using Microsoft.Framework.Runtime;
 
 namespace Microsoft.AspNet.Diagnostics
 {
