@@ -1,12 +1,12 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Server.Kestrel;
-using Microsoft.AspNet.Server.Kestrel.Http;
-using Microsoft.Framework.Runtime;
-using Microsoft.Framework.Runtime.Infrastructure;
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Server.Kestrel;
+using Microsoft.AspNet.Server.Kestrel.Http;
+using Microsoft.Dnx.Runtime;
+using Microsoft.Dnx.Runtime.Infrastructure;
 
 namespace Microsoft.AspNet.Server.KestrelTests
 {

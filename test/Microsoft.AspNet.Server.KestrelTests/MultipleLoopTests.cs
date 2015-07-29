@@ -1,15 +1,12 @@
-﻿using Microsoft.AspNet.Server.Kestrel;
-using Microsoft.AspNet.Server.Kestrel.Networking;
-using Microsoft.Framework.Runtime;
-using Microsoft.Framework.Runtime.Infrastructure;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Threading;
-using System.Threading.Tasks;
+using Microsoft.AspNet.Server.Kestrel;
+using Microsoft.AspNet.Server.Kestrel.Networking;
+using Microsoft.Dnx.Runtime;
+using Microsoft.Dnx.Runtime.Infrastructure;
 using Xunit;
 
 namespace Microsoft.AspNet.Server.KestrelTests

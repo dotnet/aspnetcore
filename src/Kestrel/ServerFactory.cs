@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Hosting.Server;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Server.Kestrel;
+using Microsoft.Dnx.Runtime;
 using Microsoft.Framework.Configuration;
-using Microsoft.Framework.Runtime;
 
 namespace Kestrel
 {

@@ -3,7 +3,7 @@
 
 using System;
 using System.Threading;
-using Microsoft.Framework.Runtime;
+using Microsoft.Dnx.Runtime;
 
 namespace Microsoft.AspNet.Server.KestrelTests
 {
