@@ -607,15 +607,18 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             {
             }
 
-            public bool Equals(
-                IReadOnlyTagHelperAttribute attributeX,
-                IReadOnlyTagHelperAttribute attributeY)
+            public bool Equals(IReadOnlyTagHelperAttribute attributeX, IReadOnlyTagHelperAttribute attributeY)
             {
-                return
-                    attributeX == attributeY ||
-                    // Normal comparer doesn't care about the Name case, in tests we do.
+                if (attributeX == attributeY)
+                {
+                    return true;
+                }
+
+                // Normal comparer (TagHelperAttribute.Equals()) doesn't care about the Name case, in tests we do.
+                return attributeX != null &&
                     string.Equals(attributeX.Name, attributeY.Name, StringComparison.Ordinal) &&
-                    Equals(attributeX.Value, attributeY.Value);
+                    attributeX.Minimized == attributeY.Minimized &&
+                    (attributeX.Minimized || Equals(attributeX.Value, attributeY.Value));
             }
 
             public int GetHashCode(IReadOnlyTagHelperAttribute attribute)
