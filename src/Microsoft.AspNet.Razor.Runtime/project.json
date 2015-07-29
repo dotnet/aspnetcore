@@ -8,7 +8,7 @@
   "dependencies": {
     "Microsoft.AspNet.Html.Abstractions": "1.0.0-*",
     "Microsoft.AspNet.Razor": "4.0.0-*",
-    "Microsoft.Framework.BufferEntryCollection.Sources": {
+    "Microsoft.Framework.BufferedHtmlContent.Sources": {
       "type": "build",
       "version": "1.0.0-*"
     },

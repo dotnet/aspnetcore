@@ -2,8 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
+using System.Text;
+using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.WebEncoders;
 
@@ -14,35 +15,60 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
     /// </summary>
     public class DefaultTagHelperContent : TagHelperContent
     {
-        private readonly BufferEntryCollection _buffer;
+        private BufferedHtmlContent _buffer;
 
-        /// <summary>
-        /// Instantiates a new instance of <see cref="DefaultTagHelperContent"/>.
-        /// </summary>
-        public DefaultTagHelperContent()
-        {
-            _buffer = new BufferEntryCollection();
-        }
-
-        /// <inheritdoc />
-        public override bool IsModified
+        private BufferedHtmlContent Buffer
         {
             get
             {
-                return _buffer.IsModified;
+                if (_buffer == null)
+                {
+                    _buffer = new BufferedHtmlContent();
+                }
+
+                return _buffer;
             }
         }
 
         /// <inheritdoc />
+        public override bool IsModified => _buffer != null;
+
+        /// <inheritdoc />
+        /// <remarks>Returns <c>true</c> for a cleared <see cref="TagHelperContent"/>.</remarks>
         public override bool IsWhiteSpace
         {
             get
             {
-                foreach (var value in _buffer)
+                if (_buffer == null)
                 {
-                    if (!string.IsNullOrWhiteSpace(value))
+                    return true;
+                }
+
+                using (var writer = new EmptyOrWhiteSpaceWriter())
+                {
+                    foreach (var entry in _buffer.Entries)
                     {
-                        return false;
+                        if (entry == null)
+                        {
+                            continue;
+                        }
+
+                        var stringValue = entry as string;
+                        if (stringValue != null)
+                        {
+                            if (!string.IsNullOrWhiteSpace(stringValue))
+                            {
+                                return false;
+                            }
+                        }
+                        else
+                        {
+                            ((IHtmlContent)entry).WriteTo(writer, HtmlEncoder.Default);
+                            if (!writer.IsWhiteSpace)
+                            {
+                                return false;
+                            }
+                        }
                     }
                 }
 
@@ -55,11 +81,36 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             get
             {
-                foreach (var value in _buffer)
+                if (_buffer == null)
                 {
-                    if (!string.IsNullOrEmpty(value))
+                    return true;
+                }
+
+                using (var writer = new EmptyOrWhiteSpaceWriter())
+                {
+                    foreach (var entry in _buffer.Entries)
                     {
-                        return false;
+                        if (entry == null)
+                        {
+                            continue;
+                        }
+
+                        var stringValue = entry as string;
+                        if (stringValue != null)
+                        {
+                            if (!string.IsNullOrEmpty(stringValue))
+                            {
+                                return false;
+                            }
+                        }
+                        else
+                        {
+                            ((IHtmlContent)entry).WriteTo(writer, HtmlEncoder.Default);
+                            if (!writer.IsEmpty)
+                            {
+                                return false;
+                            }
+                        }
                     }
                 }
 
@@ -68,54 +119,37 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         }
 
         /// <inheritdoc />
-        public override TagHelperContent SetContent(string value)
-        {
-            Clear();
-            Append(value);
-            return this;
-        }
-
-        /// <inheritdoc />
-        public override TagHelperContent SetContent(TagHelperContent tagHelperContent)
-        {
-            Clear();
-            Append(tagHelperContent);
-            return this;
-        }
-
-
-        /// <inheritdoc />
         public override TagHelperContent Append(string value)
         {
-            _buffer.Add(value);
+            Buffer.Append(value);
             return this;
         }
 
         /// <inheritdoc />
         public override TagHelperContent AppendFormat([NotNull] string format, object arg0)
         {
-            _buffer.Add(string.Format(format, arg0));
+            Buffer.Append(string.Format(format, arg0));
             return this;
         }
 
         /// <inheritdoc />
         public override TagHelperContent AppendFormat([NotNull] string format, object arg0, object arg1)
         {
-            _buffer.Add(string.Format(format, arg0, arg1));
+            Buffer.Append(string.Format(format, arg0, arg1));
             return this;
         }
 
         /// <inheritdoc />
         public override TagHelperContent AppendFormat([NotNull] string format, object arg0, object arg1, object arg2)
         {
-            _buffer.Add(string.Format(format, arg0, arg1, arg2));
+            Buffer.Append(string.Format(format, arg0, arg1, arg2));
             return this;
         }
 
         /// <inheritdoc />
         public override TagHelperContent AppendFormat([NotNull] string format, params object[] args)
         {
-            _buffer.Add(string.Format(format, args));
+            Buffer.Append(string.Format(format, args));
             return this;
         }
 
@@ -125,7 +159,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             [NotNull] string format,
             object arg0)
         {
-            _buffer.Add(string.Format(provider, format, arg0));
+            Buffer.Append(string.Format(provider, format, arg0));
             return this;
         }
 
@@ -136,7 +170,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             object arg0,
             object arg1)
         {
-            _buffer.Add(string.Format(provider, format, arg0, arg1));
+            Buffer.Append(string.Format(provider, format, arg0, arg1));
             return this;
         }
 
@@ -148,7 +182,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             object arg1,
             object arg2)
         {
-            _buffer.Add(string.Format(provider, format, arg0, arg1, arg2));
+            Buffer.Append(string.Format(provider, format, arg0, arg1, arg2));
             return this;
         }
 
@@ -158,43 +192,43 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             [NotNull] string format,
             params object[] args)
         {
-            _buffer.Add(string.Format(provider, format, args));
+            Buffer.Append(string.Format(provider, format, args));
             return this;
         }
 
         /// <inheritdoc />
-        public override TagHelperContent Append(TagHelperContent tagHelperContent)
+        public override TagHelperContent Append(IHtmlContent htmlContent)
         {
-            if (tagHelperContent != null)
-            {
-                foreach (var value in tagHelperContent)
-                {
-                    Append(value);
-                }
-            }
-
-            // If Append() was called with an empty TagHelperContent IsModified should
-            // still be true. If the content was not already modified, it means it is empty.
-            // So the Clear() method can be used to indirectly set the IsModified.
-            if (!IsModified)
-            {
-                Clear();
-            }
-
+            Buffer.Append(htmlContent);
             return this;
         }
 
         /// <inheritdoc />
         public override TagHelperContent Clear()
         {
-            _buffer.Clear();
+            Buffer.Clear();
             return this;
         }
 
         /// <inheritdoc />
         public override string GetContent()
         {
-            return string.Join(string.Empty, _buffer);
+            if (_buffer == null)
+            {
+                return string.Empty;
+            }
+
+            using (var writer = new StringWriter())
+            {
+                WriteTo(writer, HtmlEncoder.Default);
+                return writer.ToString();
+            }
+        }
+
+        /// <inheritdoc />
+        public override void WriteTo([NotNull] TextWriter writer, [NotNull] IHtmlEncoder encoder)
+        {
+            Buffer.WriteTo(writer, encoder);
         }
 
         /// <inheritdoc />
@@ -203,20 +237,40 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             return GetContent();
         }
 
-        /// <inheritdoc />
-        public override IEnumerator<string> GetEnumerator()
+        // Overrides Write(string) to find if the content written is empty/whitespace.
+        private class EmptyOrWhiteSpaceWriter : TextWriter
         {
-            // The enumerator is exposed so that SetContent(TagHelperContent) and Append(TagHelperContent)
-            // can use this to iterate through the values of the buffer.
-            return _buffer.GetEnumerator();
-        }
-
-        /// <inheritdoc />
-        public override void WriteTo(TextWriter writer, IHtmlEncoder encoder)
-        {
-            foreach (var entry in _buffer)
+            public override Encoding Encoding
             {
-                writer.Write(entry);
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public bool IsEmpty { get; private set; } = true;
+
+            public bool IsWhiteSpace { get; private set; } = true;
+
+#if DNXCORE50
+            // This is an abstract method in DNXCore
+            public override void Write(char value)
+            {
+                throw new NotImplementedException();
+            }
+#endif
+
+            public override void Write(string value)
+            {
+                if (IsEmpty && !string.IsNullOrEmpty(value))
+                {
+                    IsEmpty = false;
+                }
+
+                if (IsWhiteSpace && !string.IsNullOrWhiteSpace(value))
+                {
+                    IsWhiteSpace = false;
+                }
             }
         }
     }

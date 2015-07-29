@@ -301,7 +301,6 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // Assert
             Assert.Equal(expected, copiedTagHelperContent.GetContent());
-            Assert.Equal(new[] { text1, text2 }, copiedTagHelperContent.ToArray());
         }
 
         [Fact]
@@ -527,23 +526,6 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         }
 
         [Fact]
-        public void GetEnumerator_EnumeratesThroughBuffer()
-        {
-            // Arrange
-            var tagHelperContent = new DefaultTagHelperContent();
-            var expected = new string[] { "Hello", "World" };
-            tagHelperContent.SetContent(expected[0]);
-            tagHelperContent.Append(expected[1]);
-            var i = 0;
-
-            // Act & Assert
-            foreach (var val in tagHelperContent)
-            {
-                Assert.Equal(expected[i++], val);
-            }
-        }
-
-        [Fact]
         public void Fluent_SetContent_Append_WritesExpectedContent()
         {
             // Arrange
@@ -562,17 +544,14 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             // Arrange
             var tagHelperContent = new DefaultTagHelperContent();
-            var expected = new[] { "First ", "Second Third" };
+            var expected = "First Second Third";
             var i = 0;
 
             // Act
             tagHelperContent.SetContent("First ").AppendFormat("{0} Third", "Second");
 
             // Assert
-            foreach (var value in tagHelperContent)
-            {
-                Assert.Equal(expected[i++], value);
-            }
+            Assert.Equal(expected, tagHelperContent.GetContent());
         }
 
         [Fact]
@@ -580,7 +559,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             // Arrange
             var tagHelperContent = new DefaultTagHelperContent();
-            var expected = new[] { "First ", "Second Third ", "Fourth" };
+            var expected = "First Second Third Fourth";
             var i = 0;
 
             // Act
@@ -590,10 +569,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 .Append("Fourth");
 
             // Assert
-            foreach (var value in tagHelperContent)
-            {
-                Assert.Equal(expected[i++], value);
-            }
+            Assert.Equal(expected, tagHelperContent.GetContent());
         }
 
         [Fact]

@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.IO;
 using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.Framework.WebEncoders;
@@ -13,7 +11,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
     /// <summary>
     /// Abstract class used to buffer content returned by <see cref="ITagHelper"/>s.
     /// </summary>
-    public abstract class TagHelperContent : IEnumerable<string>, IHtmlContent
+    public abstract class TagHelperContent : IHtmlContent
     {
         /// <summary>
         /// Gets a value indicating whether the content was modifed.
@@ -35,14 +33,24 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// </summary>
         /// <param name="value">The <see cref="string"/> that replaces the content.</param>
         /// <returns>A reference to this instance after the set operation has completed.</returns>
-        public abstract TagHelperContent SetContent(string value);
+        public TagHelperContent SetContent(string value)
+        {
+            Clear();
+            Append(value);
+            return this;
+        }
 
         /// <summary>
         /// Sets the content.
         /// </summary>
-        /// <param name="tagHelperContent">The <see cref="TagHelperContent"/> that replaces the content.</param>
+        /// <param name="htmlContent">The <see cref="IHtmlContent"/> that replaces the content.</param>
         /// <returns>A reference to this instance after the set operation has completed.</returns>
-        public abstract TagHelperContent SetContent(TagHelperContent tagHelperContent);
+        public TagHelperContent SetContent(IHtmlContent htmlContent)
+        {
+            Clear();
+            Append(htmlContent);
+            return this;
+        }
 
         /// <summary>
         /// Appends <paramref name="value"/> to the existing content.
@@ -168,11 +176,11 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         public abstract TagHelperContent AppendFormat(IFormatProvider provider, string format, params object[] args);
 
         /// <summary>
-        /// Appends <paramref name="tagHelperContent"/> to the existing content.
+        /// Appends <paramref name="htmlContent"/> to the existing content.
         /// </summary>
-        /// <param name="tagHelperContent">The <see cref="TagHelperContent"/> to be appended.</param>
+        /// <param name="htmlContent">The <see cref="IHtmlContent"/> to be appended.</param>
         /// <returns>A reference to this instance after the append operation has completed.</returns>
-        public abstract TagHelperContent Append(TagHelperContent tagHelperContent);
+        public abstract TagHelperContent Append(IHtmlContent htmlContent);
 
         /// <summary>
         /// Clears the content.
@@ -185,15 +193,6 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// </summary>
         /// <returns>A <see cref="string"/> containing the content.</returns>
         public abstract string GetContent();
-
-        /// <inheritdoc />
-        public abstract IEnumerator<string> GetEnumerator();
-
-        /// <inheritdoc />
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
 
         /// <inheritdoc />
         public abstract void WriteTo(TextWriter writer, IHtmlEncoder encoder);
