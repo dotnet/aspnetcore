@@ -620,11 +620,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             public int GetHashCode(IReadOnlyTagHelperAttribute attribute)
             {
-                return HashCodeCombiner
-                    .Start()
-                    .Add(attribute.Name, StringComparer.Ordinal)
-                    .Add(attribute.Value)
-                    .CombinedHash;
+                return attribute.GetHashCode();
             }
         }
     }
