@@ -14,11 +14,11 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Features.Internal;
 using Microsoft.AspNet.Testing.xunit;
+using Microsoft.Dnx.Runtime.Infrastructure;
 using Microsoft.Framework.Configuration;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
-using Microsoft.Dnx.Runtime.Infrastructure;
 using Moq;
 using Xunit;
 
