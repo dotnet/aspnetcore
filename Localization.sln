@@ -26,7 +26,7 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Globali
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{B723DB83-A670-4BCB-95FB-195361331AD2}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Localization.Test", "test\Microsoft.Framework.Localization.Test\Microsoft.Framework.Localization.Test.xproj", "{287AD58D-DF34-4F16-8616-FD78FA1CADF9}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Localization.Tests", "test\Microsoft.Framework.Localization.Tests\Microsoft.Framework.Localization.Tests.xproj", "{287AD58D-DF34-4F16-8616-FD78FA1CADF9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
