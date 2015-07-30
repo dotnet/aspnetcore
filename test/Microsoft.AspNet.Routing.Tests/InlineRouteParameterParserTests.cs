@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Routing.Template;
 using Microsoft.Framework.DependencyInjection;
@@ -24,8 +23,8 @@ namespace Microsoft.AspNet.Routing.Tests
             Assert.Equal("param", templatePart.Name);
             Assert.Equal("111111", templatePart.DefaultValue);
 
-            Assert.Single(templatePart.InlineConstraints);
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == "int");
+            var constraint = Assert.Single(templatePart.InlineConstraints);
+            Assert.Equal("int", constraint.Constraint);
         }
 
         [Fact]
@@ -38,8 +37,8 @@ namespace Microsoft.AspNet.Routing.Tests
             Assert.Equal("param", templatePart.Name);
             Assert.Equal("111111", templatePart.DefaultValue);
 
-            Assert.Single(templatePart.InlineConstraints);
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(\d+)");
+            var constraint = Assert.Single(templatePart.InlineConstraints);
+            Assert.Equal(@"test(\d+)", constraint.Constraint);
         }
 
         [Fact]
@@ -52,8 +51,8 @@ namespace Microsoft.AspNet.Routing.Tests
             Assert.Equal("param", templatePart.Name);
             Assert.True(templatePart.IsOptional);
 
-            Assert.Single(templatePart.InlineConstraints);
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"int");
+            var constraint = Assert.Single(templatePart.InlineConstraints);
+            Assert.Equal("int", constraint.Constraint);
         }
 
         [Fact]
@@ -67,8 +66,8 @@ namespace Microsoft.AspNet.Routing.Tests
             Assert.Equal("12", templatePart.DefaultValue);
             Assert.True(templatePart.IsOptional);
 
-            Assert.Single(templatePart.InlineConstraints);
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"int");
+            var constraint = Assert.Single(templatePart.InlineConstraints);
+            Assert.Equal("int", constraint.Constraint);
         }
 
         [Fact]
@@ -82,8 +81,8 @@ namespace Microsoft.AspNet.Routing.Tests
             Assert.Equal("12?", templatePart.DefaultValue);
             Assert.True(templatePart.IsOptional);
 
-            Assert.Single(templatePart.InlineConstraints);
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"int");
+            var constraint = Assert.Single(templatePart.InlineConstraints);
+            Assert.Equal("int", constraint.Constraint);
         }
 
         [Fact]
@@ -96,8 +95,8 @@ namespace Microsoft.AspNet.Routing.Tests
             Assert.Equal("param", templatePart.Name);
             Assert.True(templatePart.IsOptional);
 
-            Assert.Single(templatePart.InlineConstraints);
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(\d+)");
+            var constraint = Assert.Single(templatePart.InlineConstraints);
+            Assert.Equal(@"test(\d+)", constraint.Constraint);
         }
 
         [Fact]
@@ -112,8 +111,8 @@ namespace Microsoft.AspNet.Routing.Tests
 
             Assert.Equal("abc", templatePart.DefaultValue);
 
-            Assert.Single(templatePart.InlineConstraints);
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(\d+)");
+            var constraint = Assert.Single(templatePart.InlineConstraints);
+            Assert.Equal(@"test(\d+)", constraint.Constraint);
         }
 
         [Fact]
@@ -125,10 +124,9 @@ namespace Microsoft.AspNet.Routing.Tests
             // Assert
             Assert.Equal("param", templatePart.Name);
 
-            Assert.Equal(2, templatePart.InlineConstraints.Count());
-
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(d+)");
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(w+)");
+            Assert.Collection(templatePart.InlineConstraints,
+                constraint => Assert.Equal(@"test(d+)", constraint.Constraint),
+                constraint => Assert.Equal(@"test(w+)", constraint.Constraint));
         }
 
         [Fact]
@@ -140,11 +138,11 @@ namespace Microsoft.AspNet.Routing.Tests
             // Assert
             Assert.Equal("param", templatePart.Name);
 
-            Assert.Equal(4, templatePart.InlineConstraints.Count());
-
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(d+)");
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(w+)");
-            Assert.Equal(2, templatePart.InlineConstraints.Count(c => c.Constraint == string.Empty));
+            Assert.Collection(templatePart.InlineConstraints,
+                constraint => Assert.Empty(constraint.Constraint),
+                constraint => Assert.Equal(@"test(d+)", constraint.Constraint),
+                constraint => Assert.Empty(constraint.Constraint),
+                constraint => Assert.Equal(@"test(w+)", constraint.Constraint));
         }
 
         [Fact]
@@ -156,10 +154,9 @@ namespace Microsoft.AspNet.Routing.Tests
             // Assert
             Assert.Equal("param", templatePart.Name);
 
-            Assert.Equal(2, templatePart.InlineConstraints.Count());
-
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(\d+)");
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(\w:+)");
+            Assert.Collection(templatePart.InlineConstraints,
+                constraint => Assert.Equal(@"test(\d+)", constraint.Constraint),
+                constraint => Assert.Equal(@"test(\w:+)", constraint.Constraint));
         }
 
         [Fact]
@@ -173,10 +170,9 @@ namespace Microsoft.AspNet.Routing.Tests
 
             Assert.Equal("qwer", templatePart.DefaultValue);
 
-            Assert.Equal(2, templatePart.InlineConstraints.Count());
-
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(\d+)");
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(\w+)");
+            Assert.Collection(templatePart.InlineConstraints,
+                constraint => Assert.Equal(@"test(\d+)", constraint.Constraint),
+                constraint => Assert.Equal(@"test(\w+)", constraint.Constraint));
         }
 
         [Fact]
@@ -190,11 +186,10 @@ namespace Microsoft.AspNet.Routing.Tests
 
             Assert.Equal("=qwer", templatePart.DefaultValue);
 
-            Assert.Equal(3, templatePart.InlineConstraints.Count());
-
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(\d+)");
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(\w+)");
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == string.Empty);
+            Assert.Collection(templatePart.InlineConstraints,
+                constraint => Assert.Equal(@"test(\d+)", constraint.Constraint),
+                constraint => Assert.Empty(constraint.Constraint),
+                constraint => Assert.Equal(@"test(\w+)", constraint.Constraint));
         }
 
         [Fact]
@@ -211,9 +206,10 @@ namespace Microsoft.AspNet.Routing.Tests
             Assert.Equal("hello", param1.DefaultValue);
             Assert.False(param1.IsOptional);
 
-            Assert.Equal(2, param1.InlineConstraints.Count());
-            Assert.Single(param1.InlineConstraints, c => c.Constraint == "int");
-            Assert.Single(param1.InlineConstraints, c => c.Constraint == "test(3)");
+            Assert.Collection(param1.InlineConstraints,
+                constraint => Assert.Equal("int", constraint.Constraint),
+                constraint => Assert.Equal("test(3)", constraint.Constraint)
+            );
 
             var param2 = parameters[1];
             Assert.Equal("p2", param2.Name);
@@ -255,8 +251,8 @@ namespace Microsoft.AspNet.Routing.Tests
             // Assert
             Assert.Equal("param", templatePart.Name);
 
-            Assert.Single(templatePart.InlineConstraints);
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(\})");
+            var constraint = Assert.Single(templatePart.InlineConstraints);
+            Assert.Equal(@"test(\})", constraint.Constraint);
         }
 
         [Fact]
@@ -270,8 +266,8 @@ namespace Microsoft.AspNet.Routing.Tests
 
             Assert.Equal("wer", templatePart.DefaultValue);
 
-            Assert.Single(templatePart.InlineConstraints);
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(\})");
+            var constraint = Assert.Single(templatePart.InlineConstraints);
+            Assert.Equal(@"test(\})", constraint.Constraint);
         }
 
         [Fact]
@@ -283,8 +279,8 @@ namespace Microsoft.AspNet.Routing.Tests
             // Assert
             Assert.Equal("param", templatePart.Name);
 
-            Assert.Single(templatePart.InlineConstraints);
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(\))");
+            var constraint = Assert.Single(templatePart.InlineConstraints);
+            Assert.Equal(@"test(\))", constraint.Constraint);
         }
 
         [Fact]
@@ -298,8 +294,8 @@ namespace Microsoft.AspNet.Routing.Tests
 
             Assert.Equal("fsd", templatePart.DefaultValue);
 
-            Assert.Single(templatePart.InlineConstraints);
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(\))");
+            var constraint = Assert.Single(templatePart.InlineConstraints);
+            Assert.Equal(@"test(\))", constraint.Constraint);
         }
 
         [Fact]
@@ -311,8 +307,8 @@ namespace Microsoft.AspNet.Routing.Tests
             // Assert
             Assert.Equal("param", templatePart.Name);
 
-            Assert.Single(templatePart.InlineConstraints);
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(:)");
+            var constraint = Assert.Single(templatePart.InlineConstraints);
+            Assert.Equal(@"test(:)", constraint.Constraint);
         }
 
         [Fact]
@@ -326,8 +322,8 @@ namespace Microsoft.AspNet.Routing.Tests
 
             Assert.Equal("mnf", templatePart.DefaultValue);
 
-            Assert.Single(templatePart.InlineConstraints);
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(:)");
+            var constraint = Assert.Single(templatePart.InlineConstraints);
+            Assert.Equal(@"test(:)", constraint.Constraint);
         }
 
         [Fact]
@@ -339,8 +335,8 @@ namespace Microsoft.AspNet.Routing.Tests
             // Assert
             Assert.Equal("param", templatePart.Name);
 
-            Assert.Single(templatePart.InlineConstraints);
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(a:b:c)");
+            var constraint = Assert.Single(templatePart.InlineConstraints);
+            Assert.Equal(@"test(a:b:c)", constraint.Constraint);
         }
 
         [Fact]
@@ -354,8 +350,8 @@ namespace Microsoft.AspNet.Routing.Tests
 
             Assert.Equal("12", templatePart.DefaultValue);
 
-            Assert.Single(templatePart.InlineConstraints);
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == "test");
+            var constraint = Assert.Single(templatePart.InlineConstraints);
+            Assert.Equal("test", constraint.Constraint);
         }
 
         [Fact]
@@ -369,9 +365,9 @@ namespace Microsoft.AspNet.Routing.Tests
 
             Assert.Equal("12", templatePart.DefaultValue);
 
-            Assert.Equal(2, templatePart.InlineConstraints.Count());
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == "test");
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == "");
+            Assert.Collection(templatePart.InlineConstraints,
+                constraint => Assert.Empty(constraint.Constraint),
+                constraint => Assert.Equal("test", constraint.Constraint));
         }
 
         [Fact]
@@ -383,9 +379,9 @@ namespace Microsoft.AspNet.Routing.Tests
             // Assert
             Assert.Equal(":param", templatePart.Name);
 
-            Assert.Equal(templatePart.InlineConstraints.Count(), 2);
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == "test");
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == "");
+            Assert.Collection(templatePart.InlineConstraints,
+                constraint => Assert.Equal("test", constraint.Constraint),
+                constraint => Assert.Empty(constraint.Constraint));
         }
 
         [Fact]
@@ -397,8 +393,8 @@ namespace Microsoft.AspNet.Routing.Tests
             // Assert
             Assert.Equal("param", templatePart.Name);
 
-            Assert.Single(templatePart.InlineConstraints);
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(\w,\w)");
+            var constraint = Assert.Single(templatePart.InlineConstraints);
+            Assert.Equal(@"test(\w,\w)", constraint.Constraint);
         }
 
         [Fact]
@@ -410,8 +406,8 @@ namespace Microsoft.AspNet.Routing.Tests
             // Assert
             Assert.Equal("par,am", templatePart.Name);
 
-            Assert.Single(templatePart.InlineConstraints);
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(\w)");
+            var constraint = Assert.Single(templatePart.InlineConstraints);
+            Assert.Equal(@"test(\w)", constraint.Constraint);
         }
 
         [Fact]
@@ -425,8 +421,8 @@ namespace Microsoft.AspNet.Routing.Tests
 
             Assert.Equal("jsd", templatePart.DefaultValue);
 
-            Assert.Single(templatePart.InlineConstraints);
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(\w,\w)");
+            var constraint = Assert.Single(templatePart.InlineConstraints);
+            Assert.Equal(@"test(\w,\w)", constraint.Constraint);
         }
 
         [Fact]
@@ -441,8 +437,8 @@ namespace Microsoft.AspNet.Routing.Tests
 
             Assert.True(templatePart.IsOptional);
 
-            Assert.Single(templatePart.InlineConstraints);
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"int");
+            var constraint = Assert.Single(templatePart.InlineConstraints);
+            Assert.Equal("int", constraint.Constraint);
         }
 
         [Fact]
@@ -455,8 +451,8 @@ namespace Microsoft.AspNet.Routing.Tests
             Assert.Equal("param", templatePart.Name);
             Assert.Null(templatePart.DefaultValue);
 
-            Assert.Single(templatePart.InlineConstraints);
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(=)");
+            var constraint = Assert.Single(templatePart.InlineConstraints);
+            Assert.Equal("test(=)", constraint.Constraint);
         }
 
         [Fact]
@@ -480,8 +476,8 @@ namespace Microsoft.AspNet.Routing.Tests
             Assert.Equal("param", templatePart.Name);
             Assert.Null(templatePart.DefaultValue);
 
-            Assert.Single(templatePart.InlineConstraints);
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(a==b)");
+            var constraint = Assert.Single(templatePart.InlineConstraints);
+            Assert.Equal("test(a==b)", constraint.Constraint);
         }
 
         [Fact]
@@ -494,8 +490,8 @@ namespace Microsoft.AspNet.Routing.Tests
             Assert.Equal("param", templatePart.Name);
             Assert.Equal("dvds", templatePart.DefaultValue);
 
-            Assert.Single(templatePart.InlineConstraints);
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(a==b)");
+            var constraint = Assert.Single(templatePart.InlineConstraints);
+            Assert.Equal("test(a==b)", constraint.Constraint);
         }
 
         [Fact]
@@ -552,8 +548,8 @@ namespace Microsoft.AspNet.Routing.Tests
             Assert.Equal("param", templatePart.Name);
             Assert.Equal("sds", templatePart.DefaultValue);
 
-            Assert.Single(templatePart.InlineConstraints);
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(=)");
+            var constraint = Assert.Single(templatePart.InlineConstraints);
+            Assert.Equal("test(=)", constraint.Constraint);
         }
 
         [Fact]
@@ -565,8 +561,8 @@ namespace Microsoft.AspNet.Routing.Tests
             // Assert
             Assert.Equal("param", templatePart.Name);
 
-            Assert.Single(templatePart.InlineConstraints);
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(\{)");
+            var constraint = Assert.Single(templatePart.InlineConstraints);
+            Assert.Equal(@"test(\{)", constraint.Constraint);
         }
 
         [Fact]
@@ -578,8 +574,8 @@ namespace Microsoft.AspNet.Routing.Tests
             // Assert
             Assert.Equal("par{am", templatePart.Name);
 
-            Assert.Single(templatePart.InlineConstraints);
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(\sd)");
+            var constraint = Assert.Single(templatePart.InlineConstraints);
+            Assert.Equal(@"test(\sd)", constraint.Constraint);
         }
 
         [Fact]
@@ -593,8 +589,8 @@ namespace Microsoft.AspNet.Routing.Tests
 
             Assert.Equal("xvc", templatePart.DefaultValue);
 
-            Assert.Single(templatePart.InlineConstraints);
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(\{)");
+            var constraint = Assert.Single(templatePart.InlineConstraints);
+            Assert.Equal(@"test(\{)", constraint.Constraint);
         }
 
         [Fact]
@@ -606,8 +602,8 @@ namespace Microsoft.AspNet.Routing.Tests
             // Assert
             Assert.Equal("par(am", templatePart.Name);
 
-            Assert.Single(templatePart.InlineConstraints);
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(\()");
+            var constraint = Assert.Single(templatePart.InlineConstraints);
+            Assert.Equal(@"test(\()", constraint.Constraint);
         }
 
         [Fact]
@@ -619,8 +615,8 @@ namespace Microsoft.AspNet.Routing.Tests
             // Assert
             Assert.Equal("param", templatePart.Name);
 
-            Assert.Single(templatePart.InlineConstraints);
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(\()");
+            var constraint = Assert.Single(templatePart.InlineConstraints);
+            Assert.Equal(@"test(\()", constraint.Constraint);
         }
 
         [Fact]
@@ -632,8 +628,8 @@ namespace Microsoft.AspNet.Routing.Tests
             // Assert
             Assert.Equal("param", templatePart.Name);
 
-            Assert.Single(templatePart.InlineConstraints);
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(#$%");
+            var constraint = Assert.Single(templatePart.InlineConstraints);
+            Assert.Equal("test(#$%", constraint.Constraint);
         }
 
         [Fact]
@@ -645,9 +641,9 @@ namespace Microsoft.AspNet.Routing.Tests
             // Assert
             Assert.Equal("param", templatePart.Name);
 
-            Assert.Equal(2, templatePart.InlineConstraints.Count());
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(#");
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test1");
+            Assert.Collection(templatePart.InlineConstraints,
+                constraint => Assert.Equal(@"test(#", constraint.Constraint),
+                constraint => Assert.Equal(@"test1", constraint.Constraint));
         }
 
         [Fact]
@@ -661,8 +657,8 @@ namespace Microsoft.AspNet.Routing.Tests
 
             Assert.Equal("djk", templatePart.DefaultValue);
 
-            Assert.Single(templatePart.InlineConstraints);
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(\()");
+            var constraint = Assert.Single(templatePart.InlineConstraints);
+            Assert.Equal(@"test(\()", constraint.Constraint);
         }
 
         [Fact]
@@ -676,8 +672,8 @@ namespace Microsoft.AspNet.Routing.Tests
             Assert.Null(templatePart.DefaultValue);
             Assert.False(templatePart.IsOptional);
 
-            Assert.Single(templatePart.InlineConstraints);
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(\?)");
+            var constraint = Assert.Single(templatePart.InlineConstraints);
+            Assert.Equal(@"test(\?)", constraint.Constraint);
         }
 
         [Fact]
@@ -691,8 +687,8 @@ namespace Microsoft.AspNet.Routing.Tests
             Assert.Null(templatePart.DefaultValue);
             Assert.True(templatePart.IsOptional);
 
-            Assert.Single(templatePart.InlineConstraints);
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(\?)");
+            var constraint = Assert.Single(templatePart.InlineConstraints);
+            Assert.Equal(@"test(\?)", constraint.Constraint);
         }
 
         [Fact]
@@ -705,9 +701,9 @@ namespace Microsoft.AspNet.Routing.Tests
             Assert.Equal("param", templatePart.Name);
             Assert.Equal("sdf", templatePart.DefaultValue);
             Assert.False(templatePart.IsOptional);
-            
-            Assert.Single(templatePart.InlineConstraints);
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(\?)");
+
+            var constraint = Assert.Single(templatePart.InlineConstraints);
+            Assert.Equal(@"test(\?)", constraint.Constraint);
         }
 
         [Fact]
@@ -721,8 +717,8 @@ namespace Microsoft.AspNet.Routing.Tests
             Assert.Equal("sdf", templatePart.DefaultValue);
             Assert.True(templatePart.IsOptional);
 
-            Assert.Single(templatePart.InlineConstraints);
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(\?)");
+            var constraint = Assert.Single(templatePart.InlineConstraints);
+            Assert.Equal(@"test(\?)", constraint.Constraint);
         }
 
         [Fact]
@@ -736,8 +732,8 @@ namespace Microsoft.AspNet.Routing.Tests
             Assert.Null(templatePart.DefaultValue);
             Assert.False(templatePart.IsOptional);
 
-            Assert.Single(templatePart.InlineConstraints);
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(\?)");
+            var constraint = Assert.Single(templatePart.InlineConstraints);
+            Assert.Equal(@"test(\?)", constraint.Constraint);
         }
 
         [Fact]
@@ -751,9 +747,9 @@ namespace Microsoft.AspNet.Routing.Tests
             Assert.Null(templatePart.DefaultValue);
             Assert.False(templatePart.IsOptional);
 
-            Assert.Equal(templatePart.InlineConstraints.Count(), 2);
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(#)");
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"$)");
+            Assert.Collection(templatePart.InlineConstraints,
+                constraint => Assert.Equal(@"test(#)", constraint.Constraint),
+                constraint => Assert.Equal(@"$)", constraint.Constraint));
         }
 
         [Fact]
@@ -767,8 +763,8 @@ namespace Microsoft.AspNet.Routing.Tests
             Assert.Null(templatePart.DefaultValue);
             Assert.False(templatePart.IsOptional);
 
-            Assert.Single(templatePart.InlineConstraints);
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"test(#:)$)");
+            var constraint = Assert.Single(templatePart.InlineConstraints);
+            Assert.Equal(@"test(#:)$)", constraint.Constraint);
         }
 
         [Fact]
@@ -782,8 +778,8 @@ namespace Microsoft.AspNet.Routing.Tests
             Assert.Null(templatePart.DefaultValue);
             Assert.False(templatePart.IsOptional);
 
-            Assert.Single(templatePart.InlineConstraints);
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"regex(^\d{{3}}-\d{{3}}-\d{{4}}$)");
+            var constraint = Assert.Single(templatePart.InlineConstraints);
+            Assert.Equal(@"regex(^\d{{3}}-\d{{3}}-\d{{4}}$)", constraint.Constraint);
         }
 
         [Fact]
@@ -797,8 +793,8 @@ namespace Microsoft.AspNet.Routing.Tests
             Assert.Equal(templatePart.DefaultValue, "123-456-7890");
             Assert.False(templatePart.IsOptional);
 
-            Assert.Single(templatePart.InlineConstraints);
-            Assert.Single(templatePart.InlineConstraints, c => c.Constraint == @"regex(^\d{{3}}-\d{{3}}-\d{{4}}$)");
+            var constraint = Assert.Single(templatePart.InlineConstraints);
+            Assert.Equal(@"regex(^\d{{3}}-\d{{3}}-\d{{4}}$)", constraint.Constraint);
         }
 
         [Theory]
