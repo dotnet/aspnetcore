@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
@@ -43,17 +44,24 @@ namespace Microsoft.AspNet.Antiforgery
             return _tokenSerializer.Deserialize(requestCookie);
         }
 
-        public async Task<AntiforgeryToken> GetFormTokenAsync(HttpContext httpContext)
+        public async Task<AntiforgeryTokenSet> GetRequestTokensAsync([NotNull] HttpContext httpContext)
         {
-            var form = await httpContext.Request.ReadFormAsync();
-            var value = form[_options.FormFieldName];
-            if (string.IsNullOrEmpty(value))
+            var requestCookie = httpContext.Request.Cookies[_options.CookieName];
+            if (string.IsNullOrEmpty(requestCookie))
             {
-                // did not exist
-                return null;
+                throw new InvalidOperationException(
+                    Resources.FormatAntiforgery_CookieToken_MustBeProvided(_options.CookieName));
             }
 
-            return _tokenSerializer.Deserialize(value);
+            var form = await httpContext.Request.ReadFormAsync();
+            var formField = form[_options.FormFieldName];
+            if (string.IsNullOrEmpty(formField))
+            {
+                throw new InvalidOperationException(
+                    Resources.FormatAntiforgery_FormToken_MustBeProvided(_options.FormFieldName));
+            }
+
+            return new AntiforgeryTokenSet(formField, requestCookie);
         }
 
         public void SaveCookieToken(HttpContext httpContext, AntiforgeryToken token)

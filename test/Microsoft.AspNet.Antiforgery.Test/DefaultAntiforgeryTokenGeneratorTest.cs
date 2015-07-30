@@ -19,7 +19,6 @@ namespace Microsoft.AspNet.Antiforgery
         {
             // Arrange
             var tokenProvider = new DefaultAntiforgeryTokenGenerator(
-                optionsAccessor: new TestOptionsManager(),
                 claimUidExtractor: null,
                 additionalDataProvider: null);
 
@@ -40,7 +39,6 @@ namespace Microsoft.AspNet.Antiforgery
             Assert.False(httpContext.User.Identity.IsAuthenticated);
 
             var tokenProvider = new DefaultAntiforgeryTokenGenerator(
-                optionsAccessor: new TestOptionsManager(),
                 claimUidExtractor: null,
                 additionalDataProvider: null);
 
@@ -74,7 +72,6 @@ namespace Microsoft.AspNet.Antiforgery
             var claimUidExtractor = new Mock<IClaimUidExtractor>().Object;
 
             var tokenProvider = new DefaultAntiforgeryTokenGenerator(
-                optionsAccessor: new TestOptionsManager(),
                 claimUidExtractor: claimUidExtractor,
                 additionalDataProvider: null);
 
@@ -109,7 +106,6 @@ namespace Microsoft.AspNet.Antiforgery
             var claimUidExtractor = new Mock<IClaimUidExtractor>().Object;
 
             var tokenProvider = new DefaultAntiforgeryTokenGenerator(
-                optionsAccessor: new TestOptionsManager(),
                 claimUidExtractor: claimUidExtractor,
                 additionalDataProvider: mockAdditionalDataProvider.Object);
 
@@ -148,7 +144,6 @@ namespace Microsoft.AspNet.Antiforgery
                                  .Returns(base64ClaimUId);
 
             var tokenProvider = new DefaultAntiforgeryTokenGenerator(
-                optionsAccessor: new TestOptionsManager(),
                 claimUidExtractor: mockClaimUidExtractor.Object,
                 additionalDataProvider: null);
 
@@ -182,7 +177,6 @@ namespace Microsoft.AspNet.Antiforgery
             var claimUidExtractor = new Mock<IClaimUidExtractor>().Object;
 
             var tokenProvider = new DefaultAntiforgeryTokenGenerator(
-                optionsAccessor: new TestOptionsManager(),
                 claimUidExtractor: claimUidExtractor,
                 additionalDataProvider: null);
 
@@ -209,7 +203,6 @@ namespace Microsoft.AspNet.Antiforgery
             };
 
             var tokenProvider = new DefaultAntiforgeryTokenGenerator(
-                optionsAccessor: new TestOptionsManager(),
                 claimUidExtractor: null,
                 additionalDataProvider: null);
 
@@ -226,7 +219,6 @@ namespace Microsoft.AspNet.Antiforgery
             // Arrange
             AntiforgeryToken cookieToken = null;
             var tokenProvider = new DefaultAntiforgeryTokenGenerator(
-                optionsAccessor: new TestOptionsManager(),
                 claimUidExtractor: null,
                 additionalDataProvider: null);
 
@@ -247,7 +239,6 @@ namespace Microsoft.AspNet.Antiforgery
             };
 
             var tokenProvider = new DefaultAntiforgeryTokenGenerator(
-                optionsAccessor: new TestOptionsManager(),
                 claimUidExtractor: null,
                 additionalDataProvider: null);
 
@@ -268,21 +259,16 @@ namespace Microsoft.AspNet.Antiforgery
 
             var fieldtoken = new AntiforgeryToken() { IsSessionToken = false };
 
-            var options = new AntiforgeryOptions()
-            {
-                CookieName = "my-cookie-name"
-            };
-
             var tokenProvider = new DefaultAntiforgeryTokenGenerator(
-                optionsAccessor: new TestOptionsManager(options),
                 claimUidExtractor: null,
                 additionalDataProvider: null);
 
             // Act & assert
-            var ex =
-                Assert.Throws<InvalidOperationException>(
-                    () => tokenProvider.ValidateTokens(httpContext, null, fieldtoken));
-            Assert.Equal(@"The required antiforgery cookie ""my-cookie-name"" is not present.", ex.Message);
+            var ex = Assert.Throws<ArgumentNullException>(
+                () => tokenProvider.ValidateTokens(httpContext, null, fieldtoken));
+
+            var trimmed = ex.Message.Substring(0, ex.Message.IndexOf(Environment.NewLine));
+            Assert.Equal(@"The cookie token must be provided.", trimmed);
         }
 
         [Fact]
@@ -294,21 +280,16 @@ namespace Microsoft.AspNet.Antiforgery
 
             var sessionToken = new AntiforgeryToken() { IsSessionToken = true };
 
-            var options = new AntiforgeryOptions()
-            {
-                FormFieldName = "my-form-field-name"
-            };
-
             var tokenProvider = new DefaultAntiforgeryTokenGenerator(
-                optionsAccessor: new TestOptionsManager(options),
                 claimUidExtractor: null,
                 additionalDataProvider: null);
 
             // Act & assert
-            var ex =
-                Assert.Throws<InvalidOperationException>(
-                    () => tokenProvider.ValidateTokens(httpContext, sessionToken, null));
-            Assert.Equal(@"The required antiforgery form field ""my-form-field-name"" is not present.", ex.Message);
+            var ex = Assert.Throws<ArgumentNullException>(
+                () => tokenProvider.ValidateTokens(httpContext, sessionToken, null));
+
+            var trimmed = ex.Message.Substring(0, ex.Message.IndexOf(Environment.NewLine));
+            Assert.Equal("The form token must be provided.", trimmed);
         }
 
         [Fact]
@@ -321,14 +302,7 @@ namespace Microsoft.AspNet.Antiforgery
             var sessionToken = new AntiforgeryToken() { IsSessionToken = true };
             var fieldtoken = new AntiforgeryToken() { IsSessionToken = false };
 
-            var options = new AntiforgeryOptions()
-            {
-                CookieName = "my-cookie-name",
-                FormFieldName = "my-form-field-name"
-            };
-
             var tokenProvider = new DefaultAntiforgeryTokenGenerator(
-                optionsAccessor: new TestOptionsManager(options),
                 claimUidExtractor: null,
                 additionalDataProvider: null);
 
@@ -338,7 +312,7 @@ namespace Microsoft.AspNet.Antiforgery
                     () => tokenProvider.ValidateTokens(httpContext, fieldtoken, fieldtoken));
             Assert.Equal(
                 "Validation of the provided antiforgery token failed. " +
-                @"The cookie ""my-cookie-name"" and the form field ""my-form-field-name"" were swapped.",
+                @"The cookie token and the form token were swapped.",
                 ex1.Message);
 
             var ex2 =
@@ -346,7 +320,7 @@ namespace Microsoft.AspNet.Antiforgery
                     () => tokenProvider.ValidateTokens(httpContext, sessionToken, sessionToken));
             Assert.Equal(
                 "Validation of the provided antiforgery token failed. " +
-                @"The cookie ""my-cookie-name"" and the form field ""my-form-field-name"" were swapped.",
+                @"The cookie token and the form token were swapped.",
                 ex2.Message);
         }
 
@@ -361,7 +335,6 @@ namespace Microsoft.AspNet.Antiforgery
             var fieldtoken = new AntiforgeryToken() { IsSessionToken = false };
 
             var tokenProvider = new DefaultAntiforgeryTokenGenerator(
-                optionsAccessor: new TestOptionsManager(),
                 claimUidExtractor: null,
                 additionalDataProvider: null);
 
@@ -399,7 +372,6 @@ namespace Microsoft.AspNet.Antiforgery
                                  .Returns((string)null);
 
             var tokenProvider = new DefaultAntiforgeryTokenGenerator(
-                optionsAccessor: new TestOptionsManager(),
                 claimUidExtractor: mockClaimUidExtractor.Object,
                 additionalDataProvider: null);
 
@@ -434,7 +406,6 @@ namespace Microsoft.AspNet.Antiforgery
                                  .Returns(Convert.ToBase64String(differentToken.GetData()));
 
             var tokenProvider = new DefaultAntiforgeryTokenGenerator(
-                optionsAccessor: new TestOptionsManager(),
                 claimUidExtractor: mockClaimUidExtractor.Object,
                 additionalDataProvider: null);
 
@@ -468,7 +439,6 @@ namespace Microsoft.AspNet.Antiforgery
                                       .Returns(false);
 
             var tokenProvider = new DefaultAntiforgeryTokenGenerator(
-                optionsAccessor: new TestOptionsManager(),
                 claimUidExtractor: null,
                 additionalDataProvider: mockAdditionalDataProvider.Object);
 
@@ -500,7 +470,6 @@ namespace Microsoft.AspNet.Antiforgery
                                       .Returns(true);
 
             var tokenProvider = new DefaultAntiforgeryTokenGenerator(
-                optionsAccessor: new TestOptionsManager(),
                 claimUidExtractor: null,
                 additionalDataProvider: mockAdditionalDataProvider.Object);
 
@@ -533,7 +502,6 @@ namespace Microsoft.AspNet.Antiforgery
                                       .Returns(true);
 
             var tokenProvider = new DefaultAntiforgeryTokenGenerator(
-                optionsAccessor: new TestOptionsManager(),
                 claimUidExtractor: new Mock<IClaimUidExtractor>().Object,
                 additionalDataProvider: mockAdditionalDataProvider.Object);
 
@@ -565,7 +533,6 @@ namespace Microsoft.AspNet.Antiforgery
                                  .Returns(Convert.ToBase64String(fieldtoken.ClaimUid.GetData()));
 
             var tokenProvider = new DefaultAntiforgeryTokenGenerator(
-                optionsAccessor: new TestOptionsManager(),
                 claimUidExtractor: mockClaimUidExtractor.Object,
                 additionalDataProvider: null);
 

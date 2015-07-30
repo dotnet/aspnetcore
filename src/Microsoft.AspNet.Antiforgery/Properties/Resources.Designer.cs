@@ -59,22 +59,6 @@ namespace Microsoft.AspNet.Antiforgery
         }
 
         /// <summary>
-        /// The required antiforgery cookie "{0}" is not present.
-        /// </summary>
-        internal static string AntiforgeryToken_CookieMissing
-        {
-            get { return GetString("AntiforgeryToken_CookieMissing"); }
-        }
-
-        /// <summary>
-        /// The required antiforgery cookie "{0}" is not present.
-        /// </summary>
-        internal static string FormatAntiforgeryToken_CookieMissing(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("AntiforgeryToken_CookieMissing"), p0);
-        }
-
-        /// <summary>
         /// The antiforgery token could not be decrypted.
         /// </summary>
         internal static string AntiforgeryToken_DeserializationFailed
@@ -88,22 +72,6 @@ namespace Microsoft.AspNet.Antiforgery
         internal static string FormatAntiforgeryToken_DeserializationFailed()
         {
             return GetString("AntiforgeryToken_DeserializationFailed");
-        }
-
-        /// <summary>
-        /// The required antiforgery form field "{0}" is not present.
-        /// </summary>
-        internal static string AntiforgeryToken_FormFieldMissing
-        {
-            get { return GetString("AntiforgeryToken_FormFieldMissing"); }
-        }
-
-        /// <summary>
-        /// The required antiforgery form field "{0}" is not present.
-        /// </summary>
-        internal static string FormatAntiforgeryToken_FormFieldMissing(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("AntiforgeryToken_FormFieldMissing"), p0);
         }
 
         /// <summary>
@@ -123,7 +91,7 @@ namespace Microsoft.AspNet.Antiforgery
         }
 
         /// <summary>
-        /// Validation of the provided antiforgery token failed. The cookie "{0}" and the form field "{1}" were swapped.
+        /// Validation of the provided antiforgery token failed. The cookie token and the form token were swapped.
         /// </summary>
         internal static string AntiforgeryToken_TokensSwapped
         {
@@ -131,11 +99,11 @@ namespace Microsoft.AspNet.Antiforgery
         }
 
         /// <summary>
-        /// Validation of the provided antiforgery token failed. The cookie "{0}" and the form field "{1}" were swapped.
+        /// Validation of the provided antiforgery token failed. The cookie token and the form token were swapped.
         /// </summary>
-        internal static string FormatAntiforgeryToken_TokensSwapped(object p0, object p1)
+        internal static string FormatAntiforgeryToken_TokensSwapped()
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("AntiforgeryToken_TokensSwapped"), p0, p1);
+            return GetString("AntiforgeryToken_TokensSwapped");
         }
 
         /// <summary>
@@ -168,6 +136,70 @@ namespace Microsoft.AspNet.Antiforgery
         internal static string FormatAntiforgeryWorker_RequireSSL(object p0, object p1, object p2)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("AntiforgeryWorker_RequireSSL"), p0, p1, p2);
+        }
+
+        /// <summary>
+        /// The required antiforgery cookie "{0}" is not present.
+        /// </summary>
+        internal static string Antiforgery_CookieToken_MustBeProvided
+        {
+            get { return GetString("Antiforgery_CookieToken_MustBeProvided"); }
+        }
+
+        /// <summary>
+        /// The required antiforgery cookie "{0}" is not present.
+        /// </summary>
+        internal static string FormatAntiforgery_CookieToken_MustBeProvided(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Antiforgery_CookieToken_MustBeProvided"), p0);
+        }
+
+        /// <summary>
+        /// The cookie token must be provided.
+        /// </summary>
+        internal static string Antiforgery_CookieToken_MustBeProvided_Generic
+        {
+            get { return GetString("Antiforgery_CookieToken_MustBeProvided_Generic"); }
+        }
+
+        /// <summary>
+        /// The cookie token must be provided.
+        /// </summary>
+        internal static string FormatAntiforgery_CookieToken_MustBeProvided_Generic()
+        {
+            return GetString("Antiforgery_CookieToken_MustBeProvided_Generic");
+        }
+
+        /// <summary>
+        /// The required antiforgery form field "{0}" is not present.
+        /// </summary>
+        internal static string Antiforgery_FormToken_MustBeProvided
+        {
+            get { return GetString("Antiforgery_FormToken_MustBeProvided"); }
+        }
+
+        /// <summary>
+        /// The required antiforgery form field "{0}" is not present.
+        /// </summary>
+        internal static string FormatAntiforgery_FormToken_MustBeProvided(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Antiforgery_FormToken_MustBeProvided"), p0);
+        }
+
+        /// <summary>
+        /// The form token must be provided.
+        /// </summary>
+        internal static string Antiforgery_FormToken_MustBeProvided_Generic
+        {
+            get { return GetString("Antiforgery_FormToken_MustBeProvided_Generic"); }
+        }
+
+        /// <summary>
+        /// The form token must be provided.
+        /// </summary>
+        internal static string FormatAntiforgery_FormToken_MustBeProvided_Generic()
+        {
+            return GetString("Antiforgery_FormToken_MustBeProvided_Generic");
         }
 
         /// <summary>

@@ -6,22 +6,18 @@ using System.Diagnostics;
 using System.Security.Claims;
 using System.Security.Principal;
 using Microsoft.AspNet.Http;
-using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Antiforgery
 {
     public class DefaultAntiforgeryTokenGenerator : IAntiforgeryTokenGenerator
     {
         private readonly IClaimUidExtractor _claimUidExtractor;
-        private readonly AntiforgeryOptions _options;
         private readonly IAntiforgeryAdditionalDataProvider _additionalDataProvider;
 
         public DefaultAntiforgeryTokenGenerator(
-            IOptions<AntiforgeryOptions> optionsAccessor,
             IClaimUidExtractor claimUidExtractor,
             IAntiforgeryAdditionalDataProvider additionalDataProvider)
         {
-            _options = optionsAccessor.Options;
             _claimUidExtractor = claimUidExtractor;
             _additionalDataProvider = additionalDataProvider;
         }
@@ -96,23 +92,24 @@ namespace Microsoft.AspNet.Antiforgery
             AntiforgeryToken sessionToken,
             AntiforgeryToken fieldToken)
         {
-            // Were the tokens even present at all?
             if (sessionToken == null)
             {
-                throw new InvalidOperationException(
-                    Resources.FormatAntiforgeryToken_CookieMissing(_options.CookieName));
+                throw new ArgumentNullException(
+                    nameof(sessionToken),
+                    Resources.Antiforgery_CookieToken_MustBeProvided_Generic);
             }
+
             if (fieldToken == null)
             {
-                throw new InvalidOperationException(
-                    Resources.FormatAntiforgeryToken_FormFieldMissing(_options.FormFieldName));
+                throw new ArgumentNullException(
+                    nameof(fieldToken),
+                    Resources.Antiforgery_FormToken_MustBeProvided_Generic);
             }
 
             // Do the tokens have the correct format?
             if (!sessionToken.IsSessionToken || fieldToken.IsSessionToken)
             {
-                throw new InvalidOperationException(
-                    Resources.FormatAntiforgeryToken_TokensSwapped(_options.CookieName, _options.FormFieldName));
+                throw new InvalidOperationException(Resources.AntiforgeryToken_TokensSwapped);
             }
 
             // Are the security tokens embedded in each incoming token identical?

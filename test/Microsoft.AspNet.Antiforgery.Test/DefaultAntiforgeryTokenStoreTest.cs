@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Internal;
 using Microsoft.Framework.DependencyInjection;
 using Moq;
 using Xunit;
@@ -160,20 +161,16 @@ namespace Microsoft.AspNet.Antiforgery
         }
 
         [Fact]
-        public async Task GetFormToken_FormFieldIsEmpty_ReturnsNull()
+        public async Task GetRequestTokens_CookieIsEmpty_Throws()
         {
             // Arrange
-            var mockHttpContext = new Mock<HttpContext>();
-            var requestContext = new Mock<HttpRequest>();
-            var formCollection = new Mock<IFormCollection>();
-            formCollection.Setup(f => f["form-field-name"]).Returns(string.Empty);
-            requestContext.Setup(o => o.ReadFormAsync(CancellationToken.None))
-                          .Returns(Task.FromResult(formCollection.Object));
-            mockHttpContext.Setup(o => o.Request)
-                           .Returns(requestContext.Object);
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Form = new FormCollection(new Dictionary<string, string[]>());
+            httpContext.Request.Cookies = new ReadableStringCollection(new Dictionary<string, string[]>());
 
             var options = new AntiforgeryOptions()
             {
+                CookieName = "cookie-name",
                 FormFieldName = "form-field-name",
             };
 
@@ -182,81 +179,72 @@ namespace Microsoft.AspNet.Antiforgery
                 tokenSerializer: null);
 
             // Act
-            var token = await tokenStore.GetFormTokenAsync(mockHttpContext.Object);
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                async () => await tokenStore.GetRequestTokensAsync(httpContext));
 
-            // Assert
-            Assert.Null(token);
+            // Assert         
+            Assert.Equal("The required antiforgery cookie \"cookie-name\" is not present.", exception.Message);
         }
 
         [Fact]
-        public async Task GetFormToken_FormFieldIsInvalid_PropagatesException()
+        public async Task GetRequestTokens_FormFieldIsEmpty_Throws()
         {
             // Arrange
-            var formCollection = new Mock<IFormCollection>();
-            formCollection.Setup(f => f["form-field-name"]).Returns("invalid-value");
-
-            var requestContext = new Mock<HttpRequest>();
-            requestContext.Setup(o => o.ReadFormAsync(CancellationToken.None))
-                          .Returns(Task.FromResult(formCollection.Object));
-
-            var mockHttpContext = new Mock<HttpContext>();
-            mockHttpContext.Setup(o => o.Request)
-                           .Returns(requestContext.Object);
-
-            var expectedException = new InvalidOperationException("some exception");
-            var mockSerializer = new Mock<IAntiforgeryTokenSerializer>();
-            mockSerializer.Setup(o => o.Deserialize("invalid-value"))
-                          .Throws(expectedException);
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Form = new FormCollection(new Dictionary<string, string[]>());
+            httpContext.Request.Cookies = new ReadableStringCollection(new Dictionary<string, string[]>()
+            {
+                { "cookie-name", new string[] { "cookie-value" } },
+            });
 
             var options = new AntiforgeryOptions()
             {
+                CookieName = "cookie-name",
                 FormFieldName = "form-field-name",
             };
 
             var tokenStore = new DefaultAntiforgeryTokenStore(
                 optionsAccessor: new TestOptionsManager(options),
-                tokenSerializer: mockSerializer.Object);
+                tokenSerializer: null);
 
-            // Act & assert
+            // Act
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-                        async () => await tokenStore.GetFormTokenAsync(mockHttpContext.Object));
-            Assert.Same(expectedException, exception);
+                async () => await tokenStore.GetRequestTokensAsync(httpContext));
+
+            // Assert         
+            Assert.Equal("The required antiforgery form field \"form-field-name\" is not present.", exception.Message);
         }
 
         [Fact]
         public async Task GetFormToken_FormFieldIsValid_ReturnsToken()
         {
             // Arrange
-            var expectedToken = new AntiforgeryToken();
-
-            // Arrange
-            var mockHttpContext = new Mock<HttpContext>();
-            var requestContext = new Mock<HttpRequest>();
-            var formCollection = new Mock<IFormCollection>();
-            formCollection.Setup(f => f["form-field-name"]).Returns("valid-value");
-            requestContext.Setup(o => o.ReadFormAsync(CancellationToken.None))
-                          .Returns(Task.FromResult(formCollection.Object));
-            mockHttpContext.Setup(o => o.Request)
-                           .Returns(requestContext.Object);
-
-            var mockSerializer = new Mock<IAntiforgeryTokenSerializer>();
-            mockSerializer.Setup(o => o.Deserialize("valid-value"))
-                          .Returns(expectedToken);
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Form = new FormCollection(new Dictionary<string, string[]>()
+            {
+                { "form-field-name", new string[] { "form-value" } },
+            });
+            httpContext.Request.Cookies = new ReadableStringCollection(new Dictionary<string, string[]>()
+            {
+                { "cookie-name", new string[] { "cookie-value" } },
+            });
 
             var options = new AntiforgeryOptions()
             {
+                CookieName = "cookie-name",
                 FormFieldName = "form-field-name",
             };
 
             var tokenStore = new DefaultAntiforgeryTokenStore(
                 optionsAccessor: new TestOptionsManager(options),
-                tokenSerializer: mockSerializer.Object);
+                tokenSerializer: null);
 
             // Act
-            var retVal = await tokenStore.GetFormTokenAsync(mockHttpContext.Object);
+            var tokens = await tokenStore.GetRequestTokensAsync(httpContext);
 
             // Assert
-            Assert.Same(expectedToken, retVal);
+            Assert.Equal("cookie-value", tokens.CookieToken);
+            Assert.Equal("form-value", tokens.FormToken);
         }
 
         [Theory]

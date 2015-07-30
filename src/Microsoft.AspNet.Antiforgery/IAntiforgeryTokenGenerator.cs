@@ -1,8 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Security.Claims;
 using Microsoft.AspNet.Http;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Antiforgery
 {
@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Antiforgery
         // Given a cookie token, generates a corresponding form token.
         // The incoming cookie token must be valid.
         AntiforgeryToken GenerateFormToken(
-            HttpContext httpContext,
+            [NotNull] HttpContext httpContext,
             AntiforgeryToken cookieToken);
 
         // Determines whether an existing cookie token is valid (well-formed).
@@ -26,8 +26,8 @@ namespace Microsoft.AspNet.Antiforgery
 
         // Validates a (cookie, form) token pair.
         void ValidateTokens(
-            HttpContext httpContext,
-            AntiforgeryToken cookieToken,
-            AntiforgeryToken formToken);
+            [NotNull] HttpContext httpContext,
+            [NotNull] AntiforgeryToken cookieToken,
+            [NotNull] AntiforgeryToken formToken);
     }
 }

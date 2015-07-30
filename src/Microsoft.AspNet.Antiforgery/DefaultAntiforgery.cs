@@ -76,12 +76,8 @@ namespace Microsoft.AspNet.Antiforgery
         {
             CheckSSLConfig(context);
 
-            // Extract cookie & form tokens
-            var cookieToken = _tokenStore.GetCookieToken(context);
-            var formToken = await _tokenStore.GetFormTokenAsync(context);
-
-            // Validate
-            _tokenGenerator.ValidateTokens(context, cookieToken, formToken);
+            var tokens = await _tokenStore.GetRequestTokensAsync(context);
+            ValidateTokens(context, tokens);
         }
 
         /// <inheritdoc />
@@ -89,9 +85,23 @@ namespace Microsoft.AspNet.Antiforgery
         {
             CheckSSLConfig(context);
 
+            if (string.IsNullOrEmpty(antiforgeryTokenSet.CookieToken))
+            {
+                throw new ArgumentException(
+                    Resources.Antiforgery_CookieToken_MustBeProvided_Generic,
+                    nameof(antiforgeryTokenSet));
+            }
+
+            if (string.IsNullOrEmpty(antiforgeryTokenSet.FormToken))
+            {
+                throw new ArgumentException(
+                    Resources.Antiforgery_FormToken_MustBeProvided_Generic,
+                    nameof(antiforgeryTokenSet));
+            }
+
             // Extract cookie & form tokens
-            var deserializedCookieToken = DeserializeToken(antiforgeryTokenSet.CookieToken);
-            var deserializedFormToken = DeserializeToken(antiforgeryTokenSet.FormToken);
+            var deserializedCookieToken = _tokenSerializer.Deserialize(antiforgeryTokenSet.CookieToken);
+            var deserializedFormToken = _tokenSerializer.Deserialize(antiforgeryTokenSet.FormToken);
 
             // Validate
             _tokenGenerator.ValidateTokens(
@@ -151,26 +161,6 @@ namespace Microsoft.AspNet.Antiforgery
                     nameof(AntiforgeryOptions),
                     nameof(AntiforgeryOptions.RequireSsl),
                     "true"));
-            }
-        }
-
-        private AntiforgeryToken DeserializeToken(string serializedToken)
-        {
-            return (!string.IsNullOrEmpty(serializedToken))
-                ? _tokenSerializer.Deserialize(serializedToken)
-                : null;
-        }
-
-        private AntiforgeryToken DeserializeTokenDoesNotThrow(string serializedToken)
-        {
-            try
-            {
-                return DeserializeToken(serializedToken);
-            }
-            catch
-            {
-                // ignore failures since we'll just generate a new token
-                return null;
             }
         }
 

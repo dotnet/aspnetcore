@@ -127,20 +127,14 @@
   <data name="AntiforgeryToken_ClaimUidMismatch" xml:space="preserve">
     <value>The provided antiforgery token was meant for a different claims-based user than the current user.</value>
   </data>
-  <data name="AntiforgeryToken_CookieMissing" xml:space="preserve">
-    <value>The required antiforgery cookie "{0}" is not present.</value>
-  </data>
   <data name="AntiforgeryToken_DeserializationFailed" xml:space="preserve">
     <value>The antiforgery token could not be decrypted.</value>
-  </data>
-  <data name="AntiforgeryToken_FormFieldMissing" xml:space="preserve">
-    <value>The required antiforgery form field "{0}" is not present.</value>
   </data>
   <data name="AntiforgeryToken_SecurityTokenMismatch" xml:space="preserve">
     <value>The antiforgery cookie token and form field token do not match.</value>
   </data>
   <data name="AntiforgeryToken_TokensSwapped" xml:space="preserve">
-    <value>Validation of the provided antiforgery token failed. The cookie "{0}" and the form field "{1}" were swapped.</value>
+    <value>Validation of the provided antiforgery token failed. The cookie token and the form token were swapped.</value>
   </data>
   <data name="AntiforgeryToken_UsernameMismatch" xml:space="preserve">
     <value>The provided antiforgery token was meant for user "{0}", but the current user is "{1}".</value>
@@ -148,6 +142,18 @@
   <data name="AntiforgeryWorker_RequireSSL" xml:space="preserve">
     <value>The antiforgery system has the configuration value {0}.{1} = {2}, but the current request is not an SSL request.</value>
     <comment>0 = nameof(AntiforgeryOptions), 1 = nameof(RequireSsl), 2 = bool.TrueString</comment>
+  </data>
+  <data name="Antiforgery_CookieToken_MustBeProvided" xml:space="preserve">
+    <value>The required antiforgery cookie "{0}" is not present.</value>
+  </data>
+  <data name="Antiforgery_CookieToken_MustBeProvided_Generic" xml:space="preserve">
+    <value>The cookie token must be provided.</value>
+  </data>
+  <data name="Antiforgery_FormToken_MustBeProvided" xml:space="preserve">
+    <value>The required antiforgery form field "{0}" is not present.</value>
+  </data>
+  <data name="Antiforgery_FormToken_MustBeProvided_Generic" xml:space="preserve">
+    <value>The form token must be provided.</value>
   </data>
   <data name="ArgumentCannotBeNullOrEmpty" xml:space="preserve">
     <value>Value cannot be null or empty.</value>
