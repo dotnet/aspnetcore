@@ -74,8 +74,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 endTagHelperWritingScope: () => defaultTagHelperContent);
 
             // Act
-            var content1 = await executionContext.GetChildContentAsync();
-            var content2 = await executionContext.GetChildContentAsync();
+            var content1 = await executionContext.GetChildContentAsync(useCachedResult: true);
+            var content2 = await executionContext.GetChildContentAsync(useCachedResult: true);
 
             // Assert
             Assert.Equal(expectedContent, content1.GetContent());
@@ -83,7 +83,36 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         }
 
         [Fact]
-        public async Task GetChildContentAsync_ReturnsNewObjectEveryTimeItIsCalled()
+        public async Task GetChildContentAsync_CanExecuteChildrenMoreThanOnce()
+        {
+            // Arrange
+            var executionCount = 0;
+            var executionContext = new TagHelperExecutionContext(
+                "p",
+                selfClosing: false,
+                items: null,
+                uniqueId: string.Empty,
+                executeChildContentAsync: () =>
+                {
+                    executionCount++;
+
+                    return Task.FromResult(result: true);
+                },
+                startTagHelperWritingScope: () => { },
+                endTagHelperWritingScope: () => new DefaultTagHelperContent());
+
+            // Act
+            await executionContext.GetChildContentAsync(useCachedResult: false);
+            await executionContext.GetChildContentAsync(useCachedResult: false);
+
+            // Assert
+            Assert.Equal(2, executionCount);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task GetChildContentAsync_ReturnsNewObjectEveryTimeItIsCalled(bool useCachedResult)
         {
             // Arrange
             var defaultTagHelperContent = new DefaultTagHelperContent();
@@ -97,14 +126,14 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 endTagHelperWritingScope: () => defaultTagHelperContent);
 
             // Act
-            var content1 = await executionContext.GetChildContentAsync();
+            var content1 = await executionContext.GetChildContentAsync(useCachedResult);
             content1.Append("Hello");
-            var content2 = await executionContext.GetChildContentAsync();
+            var content2 = await executionContext.GetChildContentAsync(useCachedResult);
             content2.Append("World!");
 
             // Assert
             Assert.NotSame(content1, content2);
-            Assert.Empty((await executionContext.GetChildContentAsync()).GetContent());
+            Assert.Empty((await executionContext.GetChildContentAsync(useCachedResult)).GetContent());
         }
 
         [Fact]

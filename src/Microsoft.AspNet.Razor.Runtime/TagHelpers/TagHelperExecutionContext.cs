@@ -191,9 +191,9 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// Child content is only executed once. Successive calls to this method or successive executions of the
         /// returned <see cref="Task{TagHelperContent}"/> return a cached result.
         /// </remarks>
-        public async Task<TagHelperContent> GetChildContentAsync()
+        public async Task<TagHelperContent> GetChildContentAsync(bool useCachedResult)
         {
-            if (_childContent == null)
+            if (!useCachedResult || _childContent == null)
             {
                 _startTagHelperWritingScope();
                 await _executeChildContentAsync();

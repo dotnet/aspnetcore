@@ -11,6 +11,30 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 {
     public class TagHelperContextTest
     {
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task GetChildContentAsync_PassesUseCachedResultAsExpected(bool expectedUseCachedResultValue)
+        {
+            // Arrange
+            bool? useCachedResultValue = null;
+            var context = new TagHelperContext(
+                allAttributes: Enumerable.Empty<IReadOnlyTagHelperAttribute>(),
+                items: new Dictionary<object, object>(),
+                uniqueId: string.Empty,
+                getChildContentAsync: useCachedResult =>
+                {
+                    useCachedResultValue = useCachedResult;
+                    return Task.FromResult<TagHelperContent>(new DefaultTagHelperContent());
+                });
+
+            // Act
+            await context.GetChildContentAsync(expectedUseCachedResultValue);
+
+            // Assert
+            Assert.Equal(expectedUseCachedResultValue, useCachedResultValue);
+        }
+
         [Fact]
         public void Constructor_SetsProperties_AsExpected()
         {
@@ -25,7 +49,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 allAttributes: Enumerable.Empty<IReadOnlyTagHelperAttribute>(),
                 items: expectedItems,
                 uniqueId: string.Empty,
-                getChildContentAsync: () => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent()));
+                getChildContentAsync: useCachedResult =>
+                    Task.FromResult<TagHelperContent>(new DefaultTagHelperContent()));
 
             // Assert
             Assert.NotNull(context.Items);
