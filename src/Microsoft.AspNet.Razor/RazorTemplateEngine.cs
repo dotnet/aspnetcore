@@ -233,7 +233,6 @@ namespace Microsoft.AspNet.Razor
                 if (!Host.DesignTimeMode)
                 {
                     // We don't need to calculate the checksum in design time.
-
                     if (!inputStream.CanSeek)
                     {
                         memoryStream = new MemoryStream();
