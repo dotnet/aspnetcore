@@ -19,6 +19,6 @@
     },
     "commands": {
         "run": "Microsoft.AspNet.Server.KestrelTests",
-        "test": "xunit.runner.aspnet"
+        "test": "xunit.runner.aspnet -parallel none"
     }
 }
