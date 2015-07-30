@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Utilities
         [ContractAnnotation("value:null => halt")]
         public static T NotNull<T>([NoEnumeration] T value, [InvokerParameterName] [NotNull] string parameterName)
         {
-            NotEmpty(parameterName, "parameterName");
+            NotEmpty(parameterName, nameof(parameterName));
 
             if (ReferenceEquals(value, null))
             {
@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Utilities
         [ContractAnnotation("value:null => halt")]
         public static IReadOnlyList<T> NotEmpty<T>(IReadOnlyList<T> value, [InvokerParameterName] [NotNull] string parameterName)
         {
-            NotEmpty(parameterName, "parameterName");
+            NotEmpty(parameterName, nameof(parameterName));
             NotNull(value, parameterName);
 
             if (value.Count == 0)
@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Utilities
         {
             if (ReferenceEquals(parameterName, null))
             {
-                throw new ArgumentNullException("parameterName");
+                throw new ArgumentNullException(nameof(parameterName));
             }
 
             if (parameterName.Length == 0)
@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Utilities
         public static T IsDefined<T>(T value, [InvokerParameterName] [NotNull] string parameterName)
             where T : struct
         {
-            NotEmpty(parameterName, "parameterName");
+            NotEmpty(parameterName, nameof(parameterName));
 
             if (!Enum.IsDefined(typeof(T), value))
             {

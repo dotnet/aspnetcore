@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity
         public static DatabaseErrorPageOptions ShowAll => new DatabaseErrorPageOptions
                                                               {
                                                                   ShowExceptionDetails = true,
-                                                                  ListMigrations = true,
+                                                                  ListMigrations = true
                                                               };
 
         public virtual bool ShowExceptionDetails { get; set; }

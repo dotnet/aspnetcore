@@ -11,15 +11,15 @@ namespace Microsoft.AspNet.Builder
     {
         public static IApplicationBuilder UseDatabaseErrorPage([NotNull] this IApplicationBuilder builder)
         {
-            Check.NotNull(builder, "builder");
+            Check.NotNull(builder, nameof(builder));
 
             return builder.UseDatabaseErrorPage(DatabaseErrorPageOptions.ShowAll);
         }
 
         public static IApplicationBuilder UseDatabaseErrorPage([NotNull] this IApplicationBuilder builder, [NotNull] DatabaseErrorPageOptions options)
         {
-            Check.NotNull(builder, "builder");
-            Check.NotNull(options, "options");
+            Check.NotNull(builder, nameof(builder));
+            Check.NotNull(options, nameof(options));
 
             return builder.UseMiddleware<DatabaseErrorPageMiddleware>(options); 
         }

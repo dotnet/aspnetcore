@@ -27,10 +27,10 @@ namespace Microsoft.AspNet.Diagnostics.Entity
 
         public DatabaseErrorPageMiddleware([NotNull] RequestDelegate next, [NotNull] IServiceProvider serviceProvider, [NotNull] ILoggerFactory loggerFactory, [NotNull] DatabaseErrorPageOptions options)
         {
-            Check.NotNull(next, "next");
-            Check.NotNull(serviceProvider, "serviceProvider");
-            Check.NotNull(loggerFactory, "loggerFactory");
-            Check.NotNull(options, "options");
+            Check.NotNull(next, nameof(next));
+            Check.NotNull(serviceProvider, nameof(serviceProvider));
+            Check.NotNull(loggerFactory, nameof(loggerFactory));
+            Check.NotNull(options, nameof(options));
 
             _next = next;
             _serviceProvider = serviceProvider;

@@ -82,8 +82,8 @@ namespace Microsoft.AspNet.Diagnostics.Entity
 
             public virtual void SetError([NotNull] Type contextType, [NotNull] Exception exception)
             {
-                Check.NotNull(contextType, "contextType");
-                Check.NotNull(exception, "exception");
+                Check.NotNull(contextType, nameof(contextType));
+                Check.NotNull(exception, nameof(exception));
 
                 _contextType = contextType;
                 _exception = exception;
