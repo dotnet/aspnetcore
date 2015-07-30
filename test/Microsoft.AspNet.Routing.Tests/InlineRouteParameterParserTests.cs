@@ -13,6 +13,70 @@ namespace Microsoft.AspNet.Routing.Tests
 {
     public class InlineRouteParameterParserTests
     {
+        [Theory]
+        [InlineData("=")]
+        [InlineData(":")]
+        public void ParseRouteParameter_WithoutADefaultValue(string parameterName)
+        {
+            // Arrange & Act
+            var templatePart = ParseParameter(parameterName);
+
+            // Assert
+            Assert.Equal(parameterName, templatePart.Name);
+            Assert.Null(templatePart.DefaultValue);
+            Assert.Empty(templatePart.InlineConstraints);
+        }
+
+        [Fact]
+        public void ParseRouteParameter_WithoutADefaultValue()
+        {
+            // Arrange & Act
+            var templatePart = ParseParameter("param=");
+
+            // Assert
+            Assert.Equal("param", templatePart.Name);
+            Assert.Equal("", templatePart.DefaultValue);
+            Assert.Empty(templatePart.InlineConstraints);
+        }
+
+        [Fact]
+        public void ParseRouteParameter_WithoutAConstraintName()
+        {
+            // Arrange & Act
+            var templatePart = ParseParameter("param:");
+
+            // Assert
+            Assert.Equal("param", templatePart.Name);
+            Assert.Null(templatePart.DefaultValue);
+            var constraint = Assert.Single(templatePart.InlineConstraints);
+            Assert.Empty(constraint.Constraint);
+        }
+
+        [Fact]
+        public void ParseRouteParameter_WithoutAConstraintNameOrParameterName()
+        {
+            // Arrange & Act
+            var templatePart = ParseParameter("param:=");
+
+            // Assert
+            Assert.Equal("param", templatePart.Name);
+            Assert.Equal("", templatePart.DefaultValue);
+            var constraint = Assert.Single(templatePart.InlineConstraints);
+            Assert.Empty(constraint.Constraint);
+        }
+
+        [Fact]
+        public void ParseRouteParameter_WithADefaultValueContainingConstraintSeparator()
+        {
+            // Arrange & Act
+            var templatePart = ParseParameter("param=:");
+
+            // Assert
+            Assert.Equal("param", templatePart.Name);
+            Assert.Equal(":", templatePart.DefaultValue);
+            Assert.Empty(templatePart.InlineConstraints);
+        }
+
         [Fact]
         public void ParseRouteParameter_ConstraintAndDefault_ParsedCorrectly()
         {
@@ -190,6 +254,23 @@ namespace Microsoft.AspNet.Routing.Tests
                 constraint => Assert.Equal(@"test(\d+)", constraint.Constraint),
                 constraint => Assert.Empty(constraint.Constraint),
                 constraint => Assert.Equal(@"test(\w+)", constraint.Constraint));
+        }
+
+        [Theory]
+        [InlineData("=")]
+        [InlineData("+=")]
+        [InlineData(">= || <= || ==")]
+        public void ParseRouteParameter_WithDefaultValue_ContainingDelimiter(string defaultValue)
+        {
+            // Arrange & Act
+            var templatePart = ParseParameter($"comparison-operator:length(6)={defaultValue}");
+
+            // Assert
+            Assert.Equal("comparison-operator", templatePart.Name);
+            Assert.Equal(defaultValue, templatePart.DefaultValue);
+
+            var constraint = Assert.Single(templatePart.InlineConstraints);
+            Assert.Equal("length(6)", constraint.Constraint);
         }
 
         [Fact]
@@ -647,6 +728,36 @@ namespace Microsoft.AspNet.Routing.Tests
         }
 
         [Fact]
+        public void ParseRouteParameter_ConstraintWithOpenParenAndColonWithDefaultValue_ParsedCorrectly()
+        {
+            // Arrange & Act
+            var templatePart = ParseParameter(@"param:test(abc:somevalue):name(test1:differentname=default-value");
+
+            // Assert
+            Assert.Equal("param", templatePart.Name);
+            Assert.Equal("default-value", templatePart.DefaultValue);
+
+            Assert.Collection(templatePart.InlineConstraints,
+                constraint => Assert.Equal(@"test(abc:somevalue)", constraint.Constraint),
+                constraint => Assert.Equal(@"name(test1", constraint.Constraint),
+                constraint => Assert.Equal(@"differentname", constraint.Constraint));
+        }
+
+        [Fact]
+        public void ParseRouteParameter_ConstraintWithOpenParenAndDefaultValue_ParsedCorrectly()
+        {
+            // Arrange & Act
+            var templatePart = ParseParameter(@"param:test(constraintvalue=test1");
+
+            // Assert
+            Assert.Equal("param", templatePart.Name);
+            Assert.Equal("test1", templatePart.DefaultValue);
+
+            var constraint = Assert.Single(templatePart.InlineConstraints);
+            Assert.Equal(@"test(constraintvalue", constraint.Constraint);
+        }
+
+        [Fact]
         public void ParseRouteParameter_ConstraintWithOpenParenInPattern_WithDefaultValue_ParsedCorrectly()
         {
             // Arrange & Act
@@ -765,6 +876,21 @@ namespace Microsoft.AspNet.Routing.Tests
 
             var constraint = Assert.Single(templatePart.InlineConstraints);
             Assert.Equal(@"test(#:)$)", constraint.Constraint);
+        }
+
+        [Fact]
+        public void ParseRouteParameter_ContainingMultipleUnclosedParenthesisInConstraint()
+        {
+            // Arrange & Act
+            var templatePart = ParseParameter(@"foo:regex(\\(\\(\\(\\()");
+
+            // Assert
+            Assert.Equal("foo", templatePart.Name);
+            Assert.Null(templatePart.DefaultValue);
+            Assert.False(templatePart.IsOptional);
+
+            var constraint = Assert.Single(templatePart.InlineConstraints);
+            Assert.Equal(@"regex(\\(\\(\\(\\()", constraint.Constraint);
         }
 
         [Fact]
