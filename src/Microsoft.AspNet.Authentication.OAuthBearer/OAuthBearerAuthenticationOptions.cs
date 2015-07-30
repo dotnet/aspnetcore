@@ -7,6 +7,7 @@ using System.IdentityModel.Tokens;
 using System.Net.Http;
 using Microsoft.Framework.Internal;
 using Microsoft.IdentityModel.Protocols;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace Microsoft.AspNet.Authentication.OAuthBearer
 {
