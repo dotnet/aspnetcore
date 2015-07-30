@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             _callbacksPending = new Queue<CallbackContext>();
         }
 
-        public void Write(ArraySegment<byte> buffer, Action<Exception, object> callback, object state, bool immediate)
+        public void Write(ArraySegment<byte> buffer, Action<Exception, object> callback, object state, bool immediate = true)
         {
             //TODO: need buffering that works
             var copy = new byte[buffer.Count];

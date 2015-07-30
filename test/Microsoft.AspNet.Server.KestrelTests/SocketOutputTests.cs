@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 };
 
                 // Act
-                socketOutput.Write(buffer, onCompleted, state: null);
+                socketOutput.Write(buffer, onCompleted, null);
 
                 // Assert
                 Assert.True(completedWh.Wait(100));
@@ -94,14 +94,14 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 };
 
                 // Act 
-                socketOutput.Write(buffer, onCompleted, state: null);
+                socketOutput.Write(buffer, onCompleted, null);
                 // Assert
                 // The first write should pre-complete since it is <= _maxBytesPreCompleted.
                 Assert.True(completedWh.Wait(100));
                 // Arrange
                 completedWh.Reset();
                 // Act
-                socketOutput.Write(buffer, onCompleted, state: null);
+                socketOutput.Write(buffer, onCompleted, null);
                 // Assert 
                 // Too many bytes are already pre-completed for the second write to pre-complete.
                 Assert.False(completedWh.Wait(100));
