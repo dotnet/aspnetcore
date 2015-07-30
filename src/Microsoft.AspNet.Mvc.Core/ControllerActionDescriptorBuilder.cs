@@ -281,11 +281,12 @@ namespace Microsoft.AspNet.Mvc
 
         private static ParameterDescriptor CreateParameterDescriptor(ParameterModel parameterModel)
         {
-            var parameterDescriptor = new ParameterDescriptor()
+            var parameterDescriptor = new ControllerParameterDescriptor()
             {
                 Name = parameterModel.ParameterName,
                 ParameterType = parameterModel.ParameterInfo.ParameterType,
-                BindingInfo = parameterModel.BindingInfo
+                BindingInfo = parameterModel.BindingInfo,
+                ParameterInfo = parameterModel.ParameterInfo,
             };
 
             return parameterDescriptor;
@@ -293,11 +294,12 @@ namespace Microsoft.AspNet.Mvc
 
         private static ParameterDescriptor CreateParameterDescriptor(PropertyModel propertyModel)
         {
-            var parameterDescriptor = new ParameterDescriptor()
+            var parameterDescriptor = new ControllerBoundPropertyDescriptor()
             {
                 BindingInfo = propertyModel.BindingInfo,
                 Name = propertyModel.PropertyName,
                 ParameterType = propertyModel.PropertyInfo.PropertyType,
+                PropertyInfo = propertyModel.PropertyInfo,
             };
 
             return parameterDescriptor;

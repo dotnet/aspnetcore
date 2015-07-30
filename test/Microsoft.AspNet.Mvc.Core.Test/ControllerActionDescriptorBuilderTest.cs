@@ -17,11 +17,14 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var applicationModel = new ApplicationModel();
-            var controller = new ControllerModel(typeof(TestController).GetTypeInfo(),
-                                                 new List<object>() { });
+            var controller = new ControllerModel(
+                typeof(TestController).GetTypeInfo(),
+                new List<object>() { });
+
+            var propertyInfo = controller.ControllerType.GetProperty("BoundProperty");
             controller.ControllerProperties.Add(
                 new PropertyModel(
-                    controller.ControllerType.GetProperty("BoundProperty"),
+                    propertyInfo,
                     new List<object>() { })
                 {
                     BindingInfo = BindingInfo.GetBindingInfo(new object[] { new FromQueryAttribute() }),
@@ -43,8 +46,12 @@ namespace Microsoft.AspNet.Mvc
             var descriptors = ControllerActionDescriptorBuilder.Build(applicationModel);
 
             // Assert
-            var property = Assert.Single(descriptors.Single().BoundProperties);
+            var controllerDescriptor = Assert.Single(descriptors);
+
+            var parameter = Assert.Single(controllerDescriptor.BoundProperties);
+            var property = Assert.IsType<ControllerBoundPropertyDescriptor>(parameter);
             Assert.Equal("BoundProperty", property.Name);
+            Assert.Equal(propertyInfo, property.PropertyInfo);
             Assert.Equal(typeof(string), property.ParameterType);
             Assert.Equal(BindingSource.Query, property.BindingInfo.BindingSource);
         }
