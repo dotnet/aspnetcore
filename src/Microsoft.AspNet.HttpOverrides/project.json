@@ -1,6 +1,10 @@
 ﻿{
   "version": "1.0.0-*",
   "description": "XForward and Method override middlewares for ASP.NET",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/aspnet/basicmiddleware"
+  },
   "dependencies": {
     "Microsoft.CSharp": "4.0.0-*",
     "Microsoft.AspNet.Http.Abstractions": "1.0.0-*",
