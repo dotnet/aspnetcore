@@ -1,10 +1,12 @@
 ﻿{
     "version": "1.0.0-*",
     "description": "Provides cached instances of CultureInfo using a generated list of known culture names for use in scenarios where unbounded CultureInfo creation is undesirable.",
-
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/aspnet/localization"
+    },
     "dependencies": {
     },
-
     "frameworks": {
         "dnx451": { },
         "dnxcore50": {
@@ -15,10 +17,5 @@
                 "System.Globalization": "4.0.10-beta-*"
             }
         }
-    },
-
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/aspnet/localization"
     }
 }

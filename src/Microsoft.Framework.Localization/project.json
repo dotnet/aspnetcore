@@ -1,7 +1,10 @@
 ﻿{
     "version": "1.0.0-*",
     "description": "Application localization services.",
-
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/aspnet/localization"
+    },
     "dependencies": {
         "Microsoft.Framework.DependencyInjection.Abstractions": "1.0.0-*",
         "Microsoft.Framework.Localization.Abstractions": "1.0.0-*",
@@ -11,7 +14,6 @@
         },
         "Microsoft.Dnx.Runtime.Abstractions": "1.0.0-*"
     },
-
     "frameworks": {
         "dnx451": { },
         "dnxcore50": {
@@ -26,10 +28,5 @@
                 "System.Threading": "4.0.10-beta-*"
             }
         }
-    },
-
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/aspnet/localization"
     }
 }

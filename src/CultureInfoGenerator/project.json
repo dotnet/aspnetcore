@@ -1,21 +1,17 @@
 ﻿{
     "version": "1.0.0-*",
     "description": "Generates a list of known culture names from the OS using CultureInfo.GetCultures. This tool is intended to be run on Windows using full .NET Framework.",
-
-    "dependencies": {
-        "Microsoft.Dnx.Runtime.Abstractions": "1.0.0-*"
-    },
-
-    "commands": {
-        "CultureInfoGenerator": "CultureInfoGenerator"
-    },
-
-    "frameworks": {
-        "dnx451": { }
-    },
-
     "repository": {
         "type": "git",
         "url": "https://github.com/aspnet/localization"
+    },
+    "dependencies": {
+        "Microsoft.Dnx.Runtime.Abstractions": "1.0.0-*"
+    },
+    "commands": {
+        "CultureInfoGenerator": "CultureInfoGenerator"
+    },
+    "frameworks": {
+        "dnx451": { }
     }
 }
