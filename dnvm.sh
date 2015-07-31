@@ -2,7 +2,7 @@
 # Source this file from your .bash-profile or script to use
 
 # "Constants"
-_DNVM_BUILDNUMBER="beta7-10405"
+_DNVM_BUILDNUMBER="beta7-10406"
 _DNVM_AUTHORS="Microsoft Open Technologies, Inc."
 _DNVM_RUNTIME_PACKAGE_NAME="dnx"
 _DNVM_RUNTIME_FRIENDLY_NAME=".NET Execution Environment"
@@ -764,7 +764,7 @@ dnvm()
             fi
 
             local formattedHome=`(echo $_DNVM_USER_PACKAGES | sed s=$HOME=~=g)`
-            for f in $(find $_DNVM_USER_PACKAGES -name "$searchGlob" \( -type d -or -type l \) -prune -exec basename {} \;); do
+            for f in $(find $_DNVM_USER_PACKAGES -name "$searchGlob" \( -type d -or -type l \) -prune -exec basename {} \; | sort -t. -k2 -k3 -k4 -k1); do
                 local active=""
                 [[ $PATH == *"$_DNVM_USER_PACKAGES/$f/bin"* ]] && local active="  *"
                 local pkgRuntime=$(__dnvm_package_runtime "$f")
