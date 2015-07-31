@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Mvc.Core
         private ActionDescriptorsCollection GetCollection()
         {
             var providers =
-                _serviceProvider.GetRequiredServices<IActionDescriptorProvider>()
+                _serviceProvider.GetServices<IActionDescriptorProvider>()
                                 .OrderBy(p => p.Order)
                                 .ToArray();
 
