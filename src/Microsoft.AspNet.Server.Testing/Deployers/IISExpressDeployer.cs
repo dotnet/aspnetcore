@@ -132,7 +132,7 @@ namespace Microsoft.AspNet.Server.Testing
         private void CopyAspNetLoader()
         {
             var libraryManager = (ILibraryManager)CallContextServiceLocator.Locator.ServiceProvider.GetService(typeof(ILibraryManager));
-            var interopLibrary = libraryManager.GetLibraryInformation("Microsoft.AspNet.Loader.IIS.Interop");
+            var interopLibrary = libraryManager.GetLibrary("Microsoft.AspNet.Loader.IIS.Interop");
 
             if (interopLibrary == null)
             {
