@@ -170,7 +170,20 @@ using System;
 using System.Collections.Generic;
 
 namespace Microsoft.AspNet.Server.Kestrel.Http 
-{{{Each(loops, loop => $@"
+{{
+    public partial class FrameResponseHeaders
+    {{
+        public FrameResponseHeaders()
+        {{
+            _Server = new[] {{ ""Kestrel"" }};
+            _Date = new[] {{ DateTime.UtcNow.ToString(""r"") }};
+            _bits = {
+                1L << responseHeaders.First(header => header.Name == "Server").Index |
+                1L << responseHeaders.First(header => header.Name == "Date").Index
+            }L;
+        }}
+    }}
+{Each(loops, loop => $@"
     public partial class {loop.ClassName} 
     {{
         long _bits = 0;

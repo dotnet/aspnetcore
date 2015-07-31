@@ -22,6 +22,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
     {
         private async Task App(Frame frame)
         {
+            frame.ResponseHeaders.Clear();
             for (; ;)
             {
                 var buffer = new byte[8192];
@@ -59,6 +60,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
 
         private async Task AppChunked(Frame frame)
         {
+            frame.ResponseHeaders.Clear();
             var data = new MemoryStream();
             for (; ;)
             {
@@ -358,6 +360,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 }, null);
 
                 // Anything added to the ResponseHeaders dictionary is ignored
+                frame.ResponseHeaders.Clear();
                 frame.ResponseHeaders["Content-Length"] = new[] { "11" };
                 throw new Exception();
             }))
@@ -371,12 +374,20 @@ namespace Microsoft.AspNet.Server.KestrelTests
                         "Connection: close",
                         "",
                         "");
-                    await connection.ReceiveEnd(
+                    await connection.Receive(
                         "HTTP/1.1 500 Internal Server Error",
+                        "");
+                    await connection.ReceiveStartsWith("Date:");
+                    await connection.Receive(
                         "Content-Length: 0",
+                        "Server: Kestrel",
                         "",
                         "HTTP/1.1 500 Internal Server Error",
+                        "");
+                    await connection.ReceiveStartsWith("Date:");
+                    await connection.ReceiveEnd(
                         "Content-Length: 0",
+                        "Server: Kestrel",
                         "Connection: close",
                         "",
                         "");
@@ -399,6 +410,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
                     return Task.FromResult<object>(null);
                 }, null);
 
+                frame.ResponseHeaders.Clear();
                 frame.ResponseHeaders["Content-Length"] = new[] { "11" };
                 await frame.ResponseBody.WriteAsync(Encoding.ASCII.GetBytes("Hello World"), 0, 11);
                 throw new Exception();
@@ -434,6 +446,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
                     return Task.FromResult<object>(null);
                 }, null);
 
+                frame.ResponseHeaders.Clear();
                 frame.ResponseHeaders["Content-Length"] = new[] { "11" };
                 await frame.ResponseBody.WriteAsync(Encoding.ASCII.GetBytes("Hello"), 0, 5);
                 throw new Exception();

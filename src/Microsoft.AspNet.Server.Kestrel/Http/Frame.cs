@@ -338,7 +338,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     // the app func has failed. https://github.com/aspnet/KestrelHttpServer/issues/43
                     _onStarting = null;
 
-                    ResponseHeaders.Clear();
+                    ResponseHeaders = new FrameResponseHeaders();
                     ResponseHeaders["Content-Length"] = new[] { "0" };
                 }
             }

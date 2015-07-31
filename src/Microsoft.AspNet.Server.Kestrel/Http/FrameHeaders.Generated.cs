@@ -4,6 +4,16 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNet.Server.Kestrel.Http 
 {
+    public partial class FrameResponseHeaders
+    {
+        public FrameResponseHeaders()
+        {
+            _Server = new[] { "Kestrel" };
+            _Date = new[] { DateTime.UtcNow.ToString("r") };
+            _bits = 67108868L;
+        }
+    }
+
     public partial class FrameRequestHeaders 
     {
         long _bits = 0;

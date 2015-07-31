@@ -84,6 +84,38 @@ namespace Microsoft.AspNet.Server.KestrelTests
             Assert.Equal(expected, new String(actual, 0, offset));
         }
 
+        public async Task ReceiveStartsWith(string prefix, int maxLineLength = 1024)
+        {
+            var actual = new char[maxLineLength];
+            var offset = 0;
+
+            while (offset < maxLineLength)
+            {
+                // Read one char at a time so we don't read past the end of the line.
+                var task = _reader.ReadAsync(actual, offset, 1);
+                if (!Debugger.IsAttached)
+                {
+                    Assert.True(task.Wait(1000), "timeout");
+                }
+                var count = await task;
+                if (count == 0)
+                {
+                    break;
+                }
+
+                Assert.True(count == 1);
+                offset++;
+
+                if (actual[offset - 1] == '\n')
+                {
+                    break;
+                }
+            }
+
+            var actualLine = new string(actual, 0, offset);
+            Assert.StartsWith(prefix, actualLine);
+        }
+
         public async Task ReceiveEnd(params string[] lines)
         {
             await Receive(lines);
