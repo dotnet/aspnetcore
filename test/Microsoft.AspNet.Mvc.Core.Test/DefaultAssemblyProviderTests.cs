@@ -209,7 +209,7 @@ namespace Microsoft.AspNet.Mvc.Core
 
             private static void GetAllDependencies(string libraryName, HashSet<string> dependencies)
             {
-                var directDependencies = _libraryManager.GetLibraryInformation(libraryName).Dependencies;
+                var directDependencies = _libraryManager.GetLibrary(libraryName).Dependencies;
 
                 if (directDependencies != null)
                 {
@@ -245,7 +245,7 @@ namespace Microsoft.AspNet.Mvc.Core
             private static IEnumerable<string> GetAssemblies(IEnumerable<string> libraries)
             {
                 return libraries
-                    .Select(n => _libraryManager.GetLibraryInformation(n))
+                    .Select(n => _libraryManager.GetLibrary(n))
                     .SelectMany(n => n.Assemblies)
                     .Distinct()
                     .Select(n => n.Name);
