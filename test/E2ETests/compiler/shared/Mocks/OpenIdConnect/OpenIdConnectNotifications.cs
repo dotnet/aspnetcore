@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Authentication;
 using Microsoft.AspNet.Authentication.OpenIdConnect;
 using Microsoft.AspNet.Http;
-using Microsoft.IdentityModel.Protocols;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using MusicStore.Mocks.Common;
 
 namespace MusicStore.Mocks.OpenIdConnect
