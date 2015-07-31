@@ -724,7 +724,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 allAttributes: new TagHelperAttributeList(),
                 items: new Dictionary<object, object>(),
                 uniqueId: id,
-                getChildContentAsync: () =>
+                getChildContentAsync: useCachedResult =>
                 {
                     TagHelperContent tagHelperContent;
                     if(!cache.TryGetValue("key1", out tagHelperContent))
@@ -781,7 +781,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 allAttributes: new TagHelperAttributeList(),
                 items: new Dictionary<object, object>(),
                 uniqueId: id,
-                getChildContentAsync: () =>
+                getChildContentAsync: useCachedResult =>
                 {
                     var tagHelperContent = new DefaultTagHelperContent();
                     tagHelperContent.SetContent(childContent);

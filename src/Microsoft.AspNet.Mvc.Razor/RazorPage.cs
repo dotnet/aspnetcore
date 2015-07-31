@@ -353,7 +353,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 }
                 else if (tagHelperExecutionContext.ChildContentRetrieved)
                 {
-                    var childContent = await tagHelperExecutionContext.GetChildContentAsync();
+                    var childContent = await tagHelperExecutionContext.GetChildContentAsync(useCachedResult: true);
                     WriteTo(writer, childContent);
                 }
                 else
@@ -387,7 +387,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <param name="writer">The <see cref="TextWriter"/> instance to write to.</param>
         /// <param name="value">The <see cref="object"/> to write.</param>
         /// <remarks>
-        /// <paramref name="value"/>s of type <see cref="IHtmlContent"/> are written using 
+        /// <paramref name="value"/>s of type <see cref="IHtmlContent"/> are written using
         /// <see cref="IHtmlContent.WriteTo(TextWriter, IHtmlEncoder)"/>.
         /// For all other types, the encoded result of <see cref="object.ToString"/> is written to the
         /// <paramref name="writer"/>.
@@ -408,7 +408,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// Otherwise writes <see cref="HtmlString"/> values as-is.
         /// </param>
         /// <remarks>
-        /// <paramref name="value"/>s of type <see cref="IHtmlContent"/> are written using 
+        /// <paramref name="value"/>s of type <see cref="IHtmlContent"/> are written using
         /// <see cref="IHtmlContent.WriteTo(TextWriter, IHtmlEncoder)"/>.
         /// For all other types, the encoded result of <see cref="object.ToString"/> is written to the
         /// <paramref name="writer"/>.

@@ -1367,7 +1367,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             tagHelperExecutionContext.Output = new TagHelperOutput("p", new TagHelperAttributeList());
             if (childContentRetrieved)
             {
-                await tagHelperExecutionContext.GetChildContentAsync();
+                await tagHelperExecutionContext.GetChildContentAsync(useCachedResult: true);
             }
 
             // Act

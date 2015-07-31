@@ -90,7 +90,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test",
-                getChildContentAsync: () => Task.FromResult<TagHelperContent>(result: null));
+                getChildContentAsync: useCachedResult => Task.FromResult<TagHelperContent>(result: null));
             var output = new TagHelperOutput(originalTagName, outputAttributes)
             {
                 SelfClosing = true,
@@ -194,7 +194,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test",
-                getChildContentAsync: () =>
+                getChildContentAsync: useCachedResult =>
                 {
                     var tagHelperContent = new DefaultTagHelperContent();
                     tagHelperContent.SetContent("Something");
@@ -256,7 +256,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test",
-                getChildContentAsync: () =>
+                getChildContentAsync: useCachedResult =>
                 {
                     var tagHelperContent = new DefaultTagHelperContent();
                     tagHelperContent.SetContent("Something");
@@ -352,7 +352,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 allAttributes: contextAttributes,
                 items: new Dictionary<object, object>(),
                 uniqueId: "test",
-                getChildContentAsync: () =>
+                getChildContentAsync: useCachedResult =>
                 {
                     var tagHelperContent = new DefaultTagHelperContent();
                     tagHelperContent.SetContent("Something");
@@ -451,7 +451,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 allAttributes: contextAttributes,
                 items: new Dictionary<object, object>(),
                 uniqueId: "test",
-                getChildContentAsync: () =>
+                getChildContentAsync: useCachedResult =>
                 {
                     var tagHelperContent = new DefaultTagHelperContent();
                     tagHelperContent.SetContent("Something");
@@ -547,7 +547,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 allAttributes: contextAttributes,
                 items: new Dictionary<object, object>(),
                 uniqueId: "test",
-                getChildContentAsync: () =>
+                getChildContentAsync: useCachedResult =>
                 {
                     var tagHelperContent = new DefaultTagHelperContent();
                     tagHelperContent.SetContent("Something");
@@ -654,7 +654,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 allAttributes: contextAttributes,
                 items: new Dictionary<object, object>(),
                 uniqueId: "test",
-                getChildContentAsync: () =>
+                getChildContentAsync: useCachedResult =>
                 {
                     var tagHelperContent = new DefaultTagHelperContent();
                     tagHelperContent.SetContent("Something");
@@ -774,7 +774,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test",
-                getChildContentAsync: () => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent()));
+                getChildContentAsync: useCachedResult => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent()));
 
             var output = new TagHelperOutput(expectedTagName, attributes: new TagHelperAttributeList())
             {
@@ -855,7 +855,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test",
-                getChildContentAsync: () => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent()));
+                getChildContentAsync: useCachedResult => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent()));
 
             var output = new TagHelperOutput(expectedTagName, attributes: new TagHelperAttributeList())
             {
