@@ -63,8 +63,8 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
                 migrationBuilder.CreateTable("Blog",
                 c => new
                 {
-                    BlogId = c.Column("int").Annotation("SqlServer:ValueGeneration", "Identity"),
-                    Name = c.Column("nvarchar(max)", nullable: true),
+                    BlogId = c.Column<string>("int").Annotation("SqlServer:ValueGeneration", "Identity"),
+                    Name = c.Column<string>("nvarchar(max)", nullable: true),
                 })
                 .PrimaryKey("PK_Blog", t => t.BlogId);
             }
