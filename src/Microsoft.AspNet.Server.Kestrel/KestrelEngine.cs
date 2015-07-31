@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Server.Kestrel
 
             if (libraryManager != null)
             {
-                var library = libraryManager.GetLibraryInformation("Microsoft.AspNet.Server.Kestrel");
+                var library = libraryManager.GetLibrary("Microsoft.AspNet.Server.Kestrel");
                 libraryPath = library.Path;
                 if (library.Type == "Project")
                 {
