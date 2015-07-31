@@ -524,25 +524,26 @@ namespace Microsoft.AspNet.Mvc.Razor
                 // Explicitly empty attribute, so write the prefix
                 WritePositionTaggedLiteral(writer, prefix);
             }
-            else if (values.Length == 1 && values[0].Prefix == "" &&
-                (values[0].Value.Value is bool || values[0].Value.Value == null))
+            else if (IsSingleBoolFalseOrNullValue(values))
             {
-                // Value is either null or a bool with no prefix.
+                // Value is either null or the bool 'false' with no prefix; don't render the attribute.
+                return;
+            }
+            else if (UseAttributeNameAsValue(values))
+            {
                 var attributeValue = values[0];
                 var positionTaggedAttributeValue = attributeValue.Value;
-
-                if (positionTaggedAttributeValue.Value == null || !(bool)positionTaggedAttributeValue.Value)
-                {
-                    // The value is null or just the bool 'false', don't write anything.
-                    return;
-                }
 
                 WritePositionTaggedLiteral(writer, prefix);
 
                 var sourceLength = suffix.Position - positionTaggedAttributeValue.Position;
+                var nameAttributeValue = new AttributeValue(
+                    attributeValue.Prefix,
+                    new PositionTagged<object>(name, attributeValue.Value.Position),
+                    literal: attributeValue.Literal);
 
                 // The value is just the bool 'true', write the attribute name instead of the string 'True'.
-                WriteAttributeValue(writer, attributeValue, name, sourceLength);
+                WriteAttributeValue(writer, nameAttributeValue, sourceLength);
             }
             else
             {
@@ -568,13 +569,58 @@ namespace Microsoft.AspNet.Mvc.Razor
                     // Calculate length of the source span by the position of the next value (or suffix)
                     var sourceLength = next.Position - attributeValue.Value.Position;
 
-                    var stringValue = positionTaggedAttributeValue.Value as string;
-
-                    WriteAttributeValue(writer, attributeValue, stringValue, sourceLength);
+                    WriteAttributeValue(writer, attributeValue, sourceLength);
                 }
             }
 
             WritePositionTaggedLiteral(writer, suffix);
+        }
+
+        public void AddHtmlAttributeValues(
+            string attributeName,
+            TagHelperExecutionContext executionContext,
+            params AttributeValue[] values)
+        {
+            if (IsSingleBoolFalseOrNullValue(values))
+            {
+                // The first value was 'null' or 'false' indicating that we shouldn't render the attribute. The
+                // attribute is treated as a TagHelper attribute so it's only available in
+                // TagHelperContext.AllAttributes for TagHelper authors to see (if they want to see why the attribute
+                // was removed from TagHelperOutput.Attributes).
+                executionContext.AddTagHelperAttribute(
+                    attributeName,
+                    values[0].Value.Value?.ToString() ?? string.Empty);
+
+                return;
+            }
+            else if (UseAttributeNameAsValue(values))
+            {
+                executionContext.AddHtmlAttribute(attributeName, attributeName);
+            }
+            else
+            {
+                var valueBuffer = new StringCollectionTextWriter(Output.Encoding);
+
+                foreach (var value in values)
+                {
+                    if (value.Value.Value == null)
+                    {
+                        // Skip null values
+                        continue;
+                    }
+
+                    if (!string.IsNullOrEmpty(value.Prefix))
+                    {
+                        WriteLiteralTo(valueBuffer, value.Prefix);
+                    }
+
+                    WriteUnprefixedAttributeValueTo(valueBuffer, value);
+                }
+
+                var htmlString = new HtmlString(valueBuffer.ToString());
+
+                executionContext.AddHtmlAttribute(attributeName, htmlString);
+            }
         }
 
         public virtual string Href([NotNull] string contentPath)
@@ -587,14 +633,8 @@ namespace Microsoft.AspNet.Mvc.Razor
             return _urlHelper.Content(contentPath);
         }
 
-        private void WriteAttributeValue(
-            TextWriter writer,
-            AttributeValue attributeValue,
-            string stringValue,
-            int sourceLength)
+        private void WriteAttributeValue(TextWriter writer, AttributeValue attributeValue, int sourceLength)
         {
-            var positionTaggedAttributeValue = attributeValue.Value;
-
             if (!string.IsNullOrEmpty(attributeValue.Prefix))
             {
                 WritePositionTaggedLiteral(writer, attributeValue.Prefix);
@@ -602,8 +642,17 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             BeginContext(attributeValue.Value.Position, sourceLength, isLiteral: attributeValue.Literal);
 
-            // The extra branching here is to ensure that we call the Write*To(string) overload where
-            // possible.
+            WriteUnprefixedAttributeValueTo(writer, attributeValue);
+
+            EndContext();
+        }
+
+        private void WriteUnprefixedAttributeValueTo(TextWriter writer, AttributeValue attributeValue)
+        {
+            var positionTaggedAttributeValue = attributeValue.Value;
+            var stringValue = positionTaggedAttributeValue.Value as string;
+
+            // The extra branching here is to ensure that we call the Write*To(string) overload where possible.
             if (attributeValue.Literal && stringValue != null)
             {
                 WriteLiteralTo(writer, stringValue);
@@ -620,8 +669,6 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
                 WriteTo(writer, positionTaggedAttributeValue.Value);
             }
-
-            EndContext();
         }
 
         private void WritePositionTaggedLiteral(TextWriter writer, string value, int position)
@@ -844,6 +891,32 @@ namespace Microsoft.AspNet.Mvc.Razor
             antiforgery.SetCookieTokenAndHeader(Context);
 
             return HtmlString.Empty;
+        }
+
+        private bool IsSingleBoolFalseOrNullValue(AttributeValue[] values)
+        {
+            if (values.Length == 1 && string.IsNullOrEmpty(values[0].Prefix) &&
+                (values[0].Value.Value is bool || values[0].Value.Value == null))
+            {
+                var attributeValue = values[0];
+                var positionTaggedAttributeValue = attributeValue.Value;
+
+                if (positionTaggedAttributeValue.Value == null || !(bool)positionTaggedAttributeValue.Value)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool UseAttributeNameAsValue(AttributeValue[] values)
+        {
+            // If the value is just the bool 'true', use the attribute name as the value.
+            return values.Length == 1 &&
+                string.IsNullOrEmpty(values[0].Prefix) &&
+                values[0].Value.Value is bool &&
+                (bool)values[0].Value.Value;
         }
 
         private void EnsureMethodCanBeInvoked(string methodName)

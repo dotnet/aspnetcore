@@ -30,6 +30,11 @@ namespace TagHelpersWebSite.Controllers
             return View();
         }
 
+        public ViewResult UnboundDynamicAttributes()
+        {
+            return View();
+        }
+
         public ViewResult NestedViewImportsTagHelper()
         {
             return View();

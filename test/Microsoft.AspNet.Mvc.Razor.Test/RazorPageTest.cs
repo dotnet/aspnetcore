@@ -742,6 +742,189 @@ namespace Microsoft.AspNet.Mvc.Razor
             context.Verify();
         }
 
+        public static TheoryData AddHtmlAttributeValues_ValueData
+        {
+            get
+            {
+                // attributeValues, expectedValue
+                return new TheoryData<AttributeValue[], string>
+                {
+                    {
+                        new AttributeValue[] {
+                            new AttributeValue(
+                                new PositionTagged<string>("", 9),
+                                new PositionTagged<object>("Hello", 9),
+                                literal: true)
+                        },
+                        "Hello"
+                    },
+                    {
+                        new AttributeValue[] {
+                            new AttributeValue(
+                                new PositionTagged<string>(" ", 9),
+                                new PositionTagged<object>("Hello", 10),
+                                literal: true)
+                        },
+                        " Hello"
+                    },
+                    {
+                        new AttributeValue[] {
+                            new AttributeValue(
+                                new PositionTagged<string>(" ", 9),
+                                new PositionTagged<object>(null, 10),
+                                literal: false)
+                        },
+                        ""
+                    },
+                    {
+                        new AttributeValue[] {
+                            new AttributeValue(
+                                new PositionTagged<string>(" ", 9),
+                                new PositionTagged<object>(false, 10),
+                                literal: false)
+                        },
+                        " HtmlEncode[[False]]"
+                    },
+                    {
+                        new AttributeValue[] {
+                            new AttributeValue(
+                                new PositionTagged<string>("  ", 9),
+                                new PositionTagged<object>(true, 11),
+                                literal: false),
+                            new AttributeValue(
+                                new PositionTagged<string>("  ", 15),
+                                new PositionTagged<object>("abcd", 17),
+                                literal: true),
+                        },
+                        "  HtmlEncode[[True]]  abcd"
+                    },
+
+                    {
+                        new AttributeValue[] {
+                            new AttributeValue(
+                                new PositionTagged<string>("", 9),
+                                new PositionTagged<object>("prefix", 9),
+                                literal: true),
+                            new AttributeValue(
+                                new PositionTagged<string>("  ", 15),
+                                new PositionTagged<object>(null, 17),
+                                literal: false),
+                            new AttributeValue(
+                                new PositionTagged<string>(" ", 21),
+                                new PositionTagged<object>("suffix", 22),
+                                literal: false),
+                        },
+                        "prefix HtmlEncode[[suffix]]"
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(AddHtmlAttributeValues_ValueData))]
+        public void AddHtmlAttributeValues_AddsToHtmlAttributesAsExpected(
+            AttributeValue[] attributeValues,
+            string expectedValue)
+        {
+            // Arrange
+            var page = CreatePage(p => { });
+            page.HtmlEncoder = new CommonTestEncoder();
+            var executionContext = new TagHelperExecutionContext(
+                "p",
+                selfClosing: false,
+                items: null,
+                uniqueId: string.Empty,
+                executeChildContentAsync: () => Task.FromResult(result: true),
+                startTagHelperWritingScope: () => { },
+                endTagHelperWritingScope: () => new DefaultTagHelperContent());
+
+            // Act
+            page.AddHtmlAttributeValues("someattr", executionContext, attributeValues);
+
+            // Assert
+            var htmlAttribute = Assert.Single(executionContext.HTMLAttributes);
+            Assert.Equal("someattr", htmlAttribute.Name, StringComparer.Ordinal);
+            Assert.IsType<HtmlString>(htmlAttribute.Value);
+            Assert.Equal(expectedValue, htmlAttribute.Value.ToString(), StringComparer.Ordinal);
+            Assert.False(htmlAttribute.Minimized);
+            var allAttribute = Assert.Single(executionContext.AllAttributes);
+            Assert.Equal("someattr", allAttribute.Name, StringComparer.Ordinal);
+            Assert.IsType<HtmlString>(allAttribute.Value);
+            Assert.Equal(expectedValue, allAttribute.Value.ToString(), StringComparer.Ordinal);
+            Assert.False(allAttribute.Minimized);
+        }
+
+        [Theory]
+        [InlineData(null, "")]
+        [InlineData(false, "False")]
+        public void AddHtmlAttributeValues_OnlyAddsToAllAttributesWhenAttributeRemoved(
+            object attributeValue,
+            string expectedValue)
+        {
+            // Arrange
+            var page = CreatePage(p => { });
+            page.HtmlEncoder = new CommonTestEncoder();
+            var executionContext = new TagHelperExecutionContext(
+                "p",
+                selfClosing: false,
+                items: null,
+                uniqueId: string.Empty,
+                executeChildContentAsync: () => Task.FromResult(result: true),
+                startTagHelperWritingScope: () => { },
+                endTagHelperWritingScope: () => new DefaultTagHelperContent());
+
+            // Act
+            page.AddHtmlAttributeValues(
+                "someattr",
+                executionContext,
+                new AttributeValue(
+                    prefix: new PositionTagged<string>(string.Empty, 9),
+                    value: new PositionTagged<object>(attributeValue, 9),
+                    literal: false));
+
+            // Assert
+            Assert.Empty(executionContext.HTMLAttributes);
+            var attribute = Assert.Single(executionContext.AllAttributes);
+            Assert.Equal("someattr", attribute.Name, StringComparer.Ordinal);
+            Assert.Equal(expectedValue, (string)attribute.Value, StringComparer.Ordinal);
+            Assert.False(attribute.Minimized);
+        }
+
+        [Fact]
+        public void AddHtmlAttributeValues_AddsAttributeNameAsValueWhenValueIsUnprefixedTrue()
+        {
+            // Arrange
+            var page = CreatePage(p => { });
+            page.HtmlEncoder = new CommonTestEncoder();
+            var executionContext = new TagHelperExecutionContext(
+                "p",
+                selfClosing: false,
+                items: null,
+                uniqueId: string.Empty,
+                executeChildContentAsync: () => Task.FromResult(result: true),
+                startTagHelperWritingScope: () => { },
+                endTagHelperWritingScope: () => new DefaultTagHelperContent());
+
+            // Act
+            page.AddHtmlAttributeValues(
+                "someattr",
+                executionContext,
+                new AttributeValue(
+                    prefix: new PositionTagged<string>(string.Empty, 9),
+                    value: new PositionTagged<object>(true, 9),
+                    literal: false));
+
+            // Assert
+            var htmlAttribute = Assert.Single(executionContext.HTMLAttributes);
+            Assert.Equal("someattr", htmlAttribute.Name, StringComparer.Ordinal);
+            Assert.Equal("someattr", (string)htmlAttribute.Value, StringComparer.Ordinal);
+            Assert.False(htmlAttribute.Minimized);
+            var allAttribute = Assert.Single(executionContext.AllAttributes);
+            Assert.Equal("someattr", allAttribute.Name, StringComparer.Ordinal);
+            Assert.Equal("someattr", (string)allAttribute.Value, StringComparer.Ordinal);
+            Assert.False(allAttribute.Minimized);
+        }
+
         public static TheoryData<AttributeValue[], string> WriteAttributeData
         {
             get

@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using BasicWebSite;
 using Microsoft.AspNet.Builder;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.WebEncoders;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -32,6 +33,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [InlineData("Index")]
         [InlineData("About")]
         [InlineData("Help")]
+        [InlineData("UnboundDynamicAttributes")]
         public async Task CanRenderViewsWithTagHelpers(string action)
         {
             // Arrange
@@ -45,6 +47,37 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Act
             // The host is not important as everything runs in memory and tests are isolated from each other.
             var response = await client.GetAsync("http://localhost/Home/" + action);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+#if GENERATE_BASELINES
+            ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
+#else
+            Assert.Equal(expectedContent, responseContent, ignoreLineEndingDifferences: true);
+#endif
+        }
+
+        [Fact]
+        public async Task CanRenderViewsWithTagHelpersAndUnboundDynamicAttributes_Encoded()
+        {
+            // Arrange
+            var server = TestHelper.CreateServer(_app, SiteName, services =>
+            {
+                _configureServices(services);
+                services.AddTransient<IHtmlEncoder, TestHtmlEncoder>();
+            });
+            var client = server.CreateClient();
+            var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
+            var outputFile = "compiler/resources/TagHelpersWebSite.Home.UnboundDynamicAttributes.Encoded.html";
+            var expectedContent =
+                await ResourceFile.ReadResourceAsync(_resourcesAssembly, outputFile, sourceFile: false);
+
+            // Act
+            // The host is not important as everything runs in memory and tests are isolated from each other.
+            var response = await client.GetAsync("http://localhost/Home/UnboundDynamicAttributes");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
