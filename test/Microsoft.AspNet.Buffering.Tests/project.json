@@ -1,0 +1,22 @@
+﻿{
+  "version": "1.0.0-*",
+  "dependencies": {
+    "Microsoft.AspNet.Buffering": "1.0.0-*",
+    "Microsoft.AspNet.TestHost": "1.0.0-*",
+    "xunit.runner.aspnet": "2.0.0-aspnet-*"
+  },
+  "commands": {
+    "test": "xunit.runner.aspnet"
+  },
+
+  "frameworks": {
+    "dnx451": { },
+    "dnxcore50": {
+      "dependencies": {
+        "System.Collections": "4.0.10-*",
+        "System.Linq": "4.0.0-*",
+        "System.Threading": "4.0.10-*"
+      }
+    }
+  }
+}
