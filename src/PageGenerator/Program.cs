@@ -28,7 +28,7 @@ namespace PageGenerator
             {
                 throw new ArgumentException(string.Format("Requires {0} argument (Library Name), {1} given", NumArgs, args.Length));
             }
-            var diagnosticsLibInfo = _libraryManager.GetLibraryInformation(args[0]);
+            var diagnosticsLibInfo = _libraryManager.GetLibrary(args[0]);
             if (diagnosticsLibInfo == null)
             {
                 throw new ArgumentException(string.Format(
