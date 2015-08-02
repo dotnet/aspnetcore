@@ -94,7 +94,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     null,   // message
                     null,   // headerTag
                     null))  // htmlAttributes
-                .Returns(new TagBuilder("div", new HtmlEncoder()))
+                .Returns(new TagBuilder("div"))
                 .Verifiable();
 
             var validationSummaryTagHelper = new ValidationSummaryTagHelper(generator.Object)
@@ -130,9 +130,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         public async Task ProcessAsync_MergesTagBuilderFromGenerateValidationSummary()
         {
             // Arrange
-            var tagBuilder = new TagBuilder("span2", new HtmlEncoder())
+            var tagBuilder = new TagBuilder("span2")
             {
-                InnerHtml = "New HTML"
+                InnerHtml = new HtmlString("New HTML")
             };
 
             tagBuilder.Attributes.Add("data-foo", "bar");
@@ -224,9 +224,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         public async Task ProcessAsync_GeneratesValidationSummaryWhenNotNone(ValidationSummary validationSummary)
         {
             // Arrange
-            var tagBuilder = new TagBuilder("span2", new HtmlEncoder())
+            var tagBuilder = new TagBuilder("span2")
             {
-                InnerHtml = "New HTML"
+                InnerHtml = new HtmlString("New HTML")
             };
 
             var generator = new Mock<IHtmlGenerator>();

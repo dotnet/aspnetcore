@@ -93,7 +93,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             generator
                 .Setup(mock =>
                     mock.GenerateValidationMessage(expectedViewContext, "Hello", null, null, null))
-                .Returns(new TagBuilder("span", new CommonTestEncoder()))
+                .Returns(new TagBuilder("span"))
                 .Verifiable();
 
             var validationMessageTagHelper = new ValidationMessageTagHelper(generator.Object)
@@ -142,9 +142,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             string childContent, string outputContent, string expectedOutputContent)
         {
             // Arrange
-            var tagBuilder = new TagBuilder("span2", new CommonTestEncoder())
+            var tagBuilder = new TagBuilder("span2")
             {
-                InnerHtml = "New HTML"
+                InnerHtml = new HtmlString("New HTML")
             };
             tagBuilder.Attributes.Add("data-foo", "bar");
             tagBuilder.Attributes.Add("data-hello", "world");
@@ -203,9 +203,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             string childContent, string expectedOutputContent)
         {
             // Arrange
-            var tagBuilder = new TagBuilder("span2", new CommonTestEncoder())
+            var tagBuilder = new TagBuilder("span2")
             {
-                InnerHtml = "New HTML"
+                InnerHtml = new HtmlString("New HTML")
             };
             tagBuilder.Attributes.Add("data-foo", "bar");
             tagBuilder.Attributes.Add("data-hello", "world");

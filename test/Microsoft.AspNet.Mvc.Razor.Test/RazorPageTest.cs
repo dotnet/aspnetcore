@@ -4,11 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Mvc.TestCommon;
 using Microsoft.AspNet.PageExecutionInstrumentation;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Testing;
@@ -181,7 +181,9 @@ namespace Microsoft.AspNet.Mvc.Razor
                 // Assert
                 var content = Assert.IsType<DefaultTagHelperContent>(returnValue);
                 Assert.Equal("HtmlEncode[[Hello ]]HtmlEncode[[World!]]", content.GetContent());
-                Assert.Equal(new[] { "HtmlEncode[[Hello ]]", "HtmlEncode[[World!]]" }, content.ToArray());
+                Assert.Equal(
+                    "HtmlEncode[[Hello ]]HtmlEncode[[World!]]",
+                    HtmlContentUtilities.HtmlContentToString(content));
             }, viewContext);
             await page.ExecuteAsync();
         }

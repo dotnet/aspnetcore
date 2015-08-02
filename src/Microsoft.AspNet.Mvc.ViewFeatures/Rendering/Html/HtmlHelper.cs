@@ -32,6 +32,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         private readonly IHtmlGenerator _htmlGenerator;
         private readonly ICompositeViewEngine _viewEngine;
+        private readonly IHtmlEncoder _htmlEncoder;
 
         private ViewContext _viewContext;
 
@@ -48,8 +49,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             _viewEngine = viewEngine;
             _htmlGenerator = htmlGenerator;
+            _htmlEncoder = htmlEncoder;
             MetadataProvider = metadataProvider;
-            HtmlEncoder = htmlEncoder;
             UrlEncoder = urlEncoder;
             JavaScriptStringEncoder = javaScriptStringEncoder;
         }
@@ -122,9 +123,6 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public IHtmlEncoder HtmlEncoder { get; }
-
-        /// <inheritdoc />
         public IUrlEncoder UrlEncoder { get; }
 
         /// <inheritdoc />
@@ -192,7 +190,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public HtmlString ActionLink(
+        public IHtmlContent ActionLink(
             [NotNull] string linkText,
             string actionName,
             string controllerName,
@@ -216,11 +214,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 return HtmlString.Empty;
             }
 
-            return tagBuilder.ToHtmlString(TagRenderMode.Normal);
+            return tagBuilder.ToHtmlContent(TagRenderMode.Normal);
         }
 
         /// <inheritdoc />
-        public HtmlString AntiForgeryToken()
+        public IHtmlContent AntiForgeryToken()
         {
             var html = _htmlGenerator.GenerateAntiforgery(ViewContext);
             return html ?? HtmlString.Empty;
@@ -251,7 +249,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public HtmlString CheckBox(string expression, bool? isChecked, object htmlAttributes)
+        public IHtmlContent CheckBox(string expression, bool? isChecked, object htmlAttributes)
         {
             return GenerateCheckBox(
                 modelExplorer: null,
@@ -285,7 +283,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public HtmlString Display(string expression,
+        public IHtmlContent Display(string expression,
                                   string templateName,
                                   string htmlFieldName,
                                   object additionalViewData)
@@ -313,7 +311,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public HtmlString DropDownList(
+        public IHtmlContent DropDownList(
             string expression,
             IEnumerable<SelectListItem> selectList,
             string optionLabel,
@@ -328,7 +326,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public HtmlString Editor(
+        public IHtmlContent Editor(
             string expression,
             string templateName,
             string htmlFieldName,
@@ -377,7 +375,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public HtmlString Hidden(string expression, object value, object htmlAttributes)
+        public IHtmlContent Hidden(string expression, object value, object htmlAttributes)
         {
             return GenerateHidden(
                 modelExplorer: null,
@@ -394,7 +392,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public HtmlString Label(string expression, string labelText, object htmlAttributes)
+        public IHtmlContent Label(string expression, string labelText, object htmlAttributes)
         {
             var modelExplorer = ExpressionMetadataProvider.FromStringExpression(expression, ViewData, MetadataProvider);
             return GenerateLabel(
@@ -405,7 +403,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public HtmlString ListBox(string expression, IEnumerable<SelectListItem> selectList, object htmlAttributes)
+        public IHtmlContent ListBox(string expression, IEnumerable<SelectListItem> selectList, object htmlAttributes)
         {
             return GenerateListBox(
                 modelExplorer: null,
@@ -439,7 +437,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return RenderPartialCoreAsync(partialViewName, model, viewData, ViewContext.Writer);
         }
 
-        protected virtual HtmlString GenerateDisplay(ModelExplorer modelExplorer,
+        protected virtual IHtmlContent GenerateDisplay(ModelExplorer modelExplorer,
                                                      string htmlFieldName,
                                                      string templateName,
                                                      object additionalViewData)
@@ -453,9 +451,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                                                       readOnly: true,
                                                       additionalViewData: additionalViewData);
 
-            var templateResult = templateBuilder.Build();
-
-            return new HtmlString(templateResult);
+            return templateBuilder.Build();
         }
 
         protected virtual async Task RenderPartialCoreAsync([NotNull] string partialViewName,
@@ -491,7 +487,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public HtmlString Password(string expression, object value, object htmlAttributes)
+        public IHtmlContent Password(string expression, object value, object htmlAttributes)
         {
             return GeneratePassword(
                 modelExplorer: null,
@@ -501,7 +497,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public HtmlString RadioButton(string expression, object value, bool? isChecked, object htmlAttributes)
+        public IHtmlContent RadioButton(string expression, object value, bool? isChecked, object htmlAttributes)
         {
             return GenerateRadioButton(
                 modelExplorer: null,
@@ -512,19 +508,19 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public HtmlString Raw(string value)
+        public IHtmlContent Raw(string value)
         {
             return new HtmlString(value);
         }
 
         /// <inheritdoc />
-        public HtmlString Raw(object value)
+        public IHtmlContent Raw(object value)
         {
             return new HtmlString(value == null ? null : value.ToString());
         }
 
         /// <inheritdoc />
-        public HtmlString RouteLink(
+        public IHtmlContent RouteLink(
             [NotNull] string linkText,
             string routeName,
             string protocol,
@@ -546,17 +542,17 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 return HtmlString.Empty;
             }
 
-            return tagBuilder.ToHtmlString(TagRenderMode.Normal);
+            return tagBuilder.ToHtmlContent(TagRenderMode.Normal);
         }
 
         /// <inheritdoc />
-        public HtmlString ValidationMessage(string expression, string message, object htmlAttributes, string tag)
+        public IHtmlContent ValidationMessage(string expression, string message, object htmlAttributes, string tag)
         {
             return GenerateValidationMessage(expression, message, htmlAttributes, tag);
         }
 
         /// <inheritdoc />
-        public HtmlString ValidationSummary(
+        public IHtmlContent ValidationSummary(
             bool excludePropertyErrors,
             string message,
             object htmlAttributes,
@@ -584,7 +580,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public HtmlString TextArea(string expression, string value, int rows, int columns, object htmlAttributes)
+        public IHtmlContent TextArea(string expression, string value, int rows, int columns, object htmlAttributes)
         {
             var modelExplorer = ExpressionMetadataProvider.FromStringExpression(expression, ViewData, MetadataProvider);
             if (value != null)
@@ -606,7 +602,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public HtmlString TextBox(string expression, object value, string format, object htmlAttributes)
+        public IHtmlContent TextBox(string expression, object value, string format, object htmlAttributes)
         {
             return GenerateTextBox(modelExplorer: null, expression: expression, value: value, format: format,
                 htmlAttributes: htmlAttributes);
@@ -628,7 +624,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return new MvcForm(ViewContext);
         }
 
-        protected virtual HtmlString GenerateCheckBox(
+        protected virtual IHtmlContent GenerateCheckBox(
             ModelExplorer modelExplorer,
             string expression,
             bool? isChecked,
@@ -647,9 +643,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 return HtmlString.Empty;
             }
 
-            var elements = checkbox.ToString(TagRenderMode.SelfClosing) + hidden.ToString(TagRenderMode.SelfClosing);
+            var elements = new BufferedHtmlContent();
+            elements.Append(checkbox.ToHtmlContent(TagRenderMode.SelfClosing));
+            elements.Append(hidden.ToHtmlContent(TagRenderMode.SelfClosing));
 
-            return new HtmlString(elements);
+            return elements;
         }
 
         protected virtual string GenerateDisplayName([NotNull] ModelExplorer modelExplorer, string expression)
@@ -672,7 +670,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return modelExplorer.GetSimpleDisplayText() ?? string.Empty;
         }
 
-        protected HtmlString GenerateDropDown(
+        protected IHtmlContent GenerateDropDown(
             ModelExplorer modelExplorer,
             string expression,
             IEnumerable<SelectListItem> selectList,
@@ -692,10 +690,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 return HtmlString.Empty;
             }
 
-            return tagBuilder.ToHtmlString(TagRenderMode.Normal);
+            return tagBuilder.ToHtmlContent(TagRenderMode.Normal);
         }
 
-        protected virtual HtmlString GenerateEditor(
+        protected virtual IHtmlContent GenerateEditor(
             ModelExplorer modelExplorer,
             string htmlFieldName,
             string templateName,
@@ -711,9 +709,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 readOnly: false,
                 additionalViewData: additionalViewData);
 
-            var templateResult = templateBuilder.Build();
-
-            return new HtmlString(templateResult);
+            return templateBuilder.Build();
         }
 
         /// <summary>
@@ -755,7 +751,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 htmlAttributes);
             if (tagBuilder != null)
             {
-                ViewContext.Writer.Write(tagBuilder.ToString(TagRenderMode.StartTag));
+                tagBuilder.ToHtmlContent(TagRenderMode.StartTag).WriteTo(ViewContext.Writer, _htmlEncoder);
             }
 
             return CreateForm();
@@ -797,13 +793,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 htmlAttributes);
             if (tagBuilder != null)
             {
-                ViewContext.Writer.Write(tagBuilder.ToString(TagRenderMode.StartTag));
+                tagBuilder.ToHtmlContent(TagRenderMode.StartTag).WriteTo(ViewContext.Writer, _htmlEncoder);
             }
 
             return CreateForm();
         }
 
-        protected virtual HtmlString GenerateHidden(
+        protected virtual IHtmlContent GenerateHidden(
             ModelExplorer modelExplorer,
             string expression,
             object value,
@@ -823,7 +819,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 return HtmlString.Empty;
             }
 
-            return tagBuilder.ToHtmlString(TagRenderMode.SelfClosing);
+            return tagBuilder.ToHtmlContent(TagRenderMode.SelfClosing);
         }
 
         protected virtual string GenerateId(string expression)
@@ -834,7 +830,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return id;
         }
 
-        protected virtual HtmlString GenerateLabel(
+        protected virtual IHtmlContent GenerateLabel(
             [NotNull] ModelExplorer modelExplorer,
             string expression,
             string labelText,
@@ -851,10 +847,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 return HtmlString.Empty;
             }
 
-            return tagBuilder.ToHtmlString(TagRenderMode.Normal);
+            return tagBuilder.ToHtmlContent(TagRenderMode.Normal);
         }
 
-        protected HtmlString GenerateListBox(
+        protected IHtmlContent GenerateListBox(
             ModelExplorer modelExplorer,
             string expression,
             IEnumerable<SelectListItem> selectList,
@@ -873,7 +869,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 return HtmlString.Empty;
             }
 
-            return tagBuilder.ToHtmlString(TagRenderMode.Normal);
+            return tagBuilder.ToHtmlContent(TagRenderMode.Normal);
         }
 
         protected virtual string GenerateName(string expression)
@@ -882,7 +878,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return fullName;
         }
 
-        protected virtual HtmlString GeneratePassword(
+        protected virtual IHtmlContent GeneratePassword(
             ModelExplorer modelExplorer,
             string expression,
             object value,
@@ -899,10 +895,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 return HtmlString.Empty;
             }
 
-            return tagBuilder.ToHtmlString(TagRenderMode.SelfClosing);
+            return tagBuilder.ToHtmlContent(TagRenderMode.SelfClosing);
         }
 
-        protected virtual HtmlString GenerateRadioButton(
+        protected virtual IHtmlContent GenerateRadioButton(
             ModelExplorer modelExplorer,
             string expression,
             object value,
@@ -921,10 +917,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 return HtmlString.Empty;
             }
 
-            return tagBuilder.ToHtmlString(TagRenderMode.SelfClosing);
+            return tagBuilder.ToHtmlContent(TagRenderMode.SelfClosing);
         }
 
-        protected virtual HtmlString GenerateTextArea(
+        protected virtual IHtmlContent GenerateTextArea(
             ModelExplorer modelExplorer,
             string expression,
             int rows,
@@ -943,10 +939,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 return HtmlString.Empty;
             }
 
-            return tagBuilder.ToHtmlString(TagRenderMode.Normal);
+            return tagBuilder.ToHtmlContent(TagRenderMode.Normal);
         }
 
-        protected virtual HtmlString GenerateTextBox(
+        protected virtual IHtmlContent GenerateTextBox(
             ModelExplorer modelExplorer,
             string expression,
             object value,
@@ -965,10 +961,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 return HtmlString.Empty;
             }
 
-            return tagBuilder.ToHtmlString(TagRenderMode.SelfClosing);
+            return tagBuilder.ToHtmlContent(TagRenderMode.SelfClosing);
         }
 
-        protected virtual HtmlString GenerateValidationMessage(
+        protected virtual IHtmlContent GenerateValidationMessage(
             string expression,
             string message,
             object htmlAttributes,
@@ -985,10 +981,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 return HtmlString.Empty;
             }
 
-            return tagBuilder.ToHtmlString(TagRenderMode.Normal);
+            return tagBuilder.ToHtmlContent(TagRenderMode.Normal);
         }
 
-        protected virtual HtmlString GenerateValidationSummary(
+        protected virtual IHtmlContent GenerateValidationSummary(
             bool excludePropertyErrors,
             string message,
             object htmlAttributes,
@@ -1005,7 +1001,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 return HtmlString.Empty;
             }
 
-            return tagBuilder.ToHtmlString(TagRenderMode.Normal);
+            return tagBuilder.ToHtmlContent(TagRenderMode.Normal);
         }
 
         protected virtual string GenerateValue(string expression, object value, string format, bool useViewData)

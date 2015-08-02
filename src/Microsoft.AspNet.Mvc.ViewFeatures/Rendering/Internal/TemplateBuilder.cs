@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Globalization;
+using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.Framework.Internal;
 
@@ -42,7 +43,7 @@ namespace Microsoft.AspNet.Mvc.Rendering.Internal
             _metadata = modelExplorer.Metadata;
         }
 
-        public string Build()
+        public IHtmlContent Build()
         {
             if (_metadata.ConvertEmptyStringToNull && string.Empty.Equals(_model))
             {
@@ -66,7 +67,7 @@ namespace Microsoft.AspNet.Mvc.Rendering.Internal
             // don't check to make sure that the object hasn't already been displayed
             if (_viewData.TemplateInfo.Visited(_modelExplorer))
             {
-                return string.Empty;
+                return HtmlString.Empty;
             }
 
             // We need to copy the ModelExplorer to copy the model metadata. Otherwise we might

@@ -249,12 +249,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 output.Attributes.Clear();
                 output.TagName = null;
 
-                output.Content.Append(tagBuilder.ToString(TagRenderMode.SelfClosing));
+                output.Content.Append(tagBuilder.ToHtmlContent(TagRenderMode.SelfClosing));
 
                 tagBuilder = Generator.GenerateHiddenForCheckbox(ViewContext, modelExplorer, For.Name);
                 if (tagBuilder != null)
                 {
-                    output.Content.Append(tagBuilder.ToString(TagRenderMode.SelfClosing));
+                    output.Content.Append(tagBuilder.ToHtmlContent(TagRenderMode.SelfClosing));
                 }
             }
         }

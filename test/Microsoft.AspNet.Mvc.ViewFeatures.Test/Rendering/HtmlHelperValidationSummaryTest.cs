@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.TestCommon;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Rendering
@@ -150,7 +151,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 tag: tag);
 
             // Assert
-            Assert.Equal(expected, result.ToString());
+            Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
         }
 
         [Theory]
@@ -222,7 +223,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 tag: null);
 
             // Assert
-            Assert.Equal(expected, result.ToString());
+            Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
         }
 
         [Theory]
@@ -248,7 +249,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 tag: null);
 
             // Assert
-            Assert.Equal(expected, result.ToString());
+            Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
         }
 
         [Theory]
@@ -273,7 +274,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 tag: null);
 
             // Assert
-            Assert.Equal(expected, result.ToString());
+            Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
         }
 
         [Theory]
@@ -297,7 +298,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 tag: null);
 
             // Assert
-            Assert.Equal(expected, result.ToString());
+            Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
         }
 
         [Fact]
@@ -330,7 +331,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 tag: null);
 
             // Assert
-            Assert.Equal(expected, result.ToString());
+            Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
         }
 
         // Adds errors for various parts of the model, including the root.

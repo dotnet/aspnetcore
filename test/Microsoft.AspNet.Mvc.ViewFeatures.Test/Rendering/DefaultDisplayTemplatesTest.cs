@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Mvc.TestCommon;
 using Moq;
 using Xunit;
 
@@ -63,7 +64,7 @@ namespace Microsoft.AspNet.Mvc.Core
             var result = DefaultDisplayTemplates.ObjectTemplate(html);
 
             // Assert
-            Assert.Equal(expected, result);
+            Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
         }
 
         [Fact]
@@ -82,7 +83,7 @@ namespace Microsoft.AspNet.Mvc.Core
             var result = DefaultDisplayTemplates.ObjectTemplate(html);
 
             // Assert
-            Assert.Equal("(null value)", result);
+            Assert.Equal("(null value)", HtmlContentUtilities.HtmlContentToString(result));
         }
 
         [Theory]
@@ -112,7 +113,7 @@ namespace Microsoft.AspNet.Mvc.Core
             var result = DefaultDisplayTemplates.ObjectTemplate(html);
 
             // Assert
-            Assert.Equal(expectedResult, result);
+            Assert.Equal(expectedResult, HtmlContentUtilities.HtmlContentToString(result));
         }
 
         [Fact]
@@ -121,9 +122,9 @@ namespace Microsoft.AspNet.Mvc.Core
             // Arrange
             var expected =
 @"<div class=""HtmlEncode[[display-label]]"">HtmlEncode[[Property1]]</div>
-<div class=""HtmlEncode[[display-field]]"">HtmlEncode[[]]</div>
+<div class=""HtmlEncode[[display-field]]""></div>
 <div class=""HtmlEncode[[display-label]]"">HtmlEncode[[Property3]]</div>
-<div class=""HtmlEncode[[display-field]]"">HtmlEncode[[]]</div>
+<div class=""HtmlEncode[[display-field]]""></div>
 ";
             var model = new DefaultTemplatesUtilities.ObjectWithScaffoldColumn();
             var viewEngine = new Mock<ICompositeViewEngine>();
@@ -135,7 +136,7 @@ namespace Microsoft.AspNet.Mvc.Core
             var result = DefaultDisplayTemplates.ObjectTemplate(htmlHelper);
 
             // Assert
-            Assert.Equal(expected, result);
+            Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
         }
 
         [Fact]
@@ -162,7 +163,7 @@ namespace Microsoft.AspNet.Mvc.Core
             var result = DefaultDisplayTemplates.ObjectTemplate(html);
 
             // Assert
-            Assert.Equal(expected, result);
+            Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
         }
 
         [Fact]
@@ -204,7 +205,7 @@ namespace Microsoft.AspNet.Mvc.Core
             var result = DefaultDisplayTemplates.ObjectTemplate(html);
 
             // Assert
-            Assert.Equal(expected, result);
+            Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
         }
 
         [Fact]
@@ -223,7 +224,7 @@ namespace Microsoft.AspNet.Mvc.Core
             var result = DefaultDisplayTemplates.HiddenInputTemplate(html);
 
             // Assert
-            Assert.Equal("HtmlEncode[[Formatted string]]", result);
+            Assert.Equal("HtmlEncode[[Formatted string]]", HtmlContentUtilities.HtmlContentToString(result));
         }
 
         [Fact]
@@ -249,7 +250,7 @@ namespace Microsoft.AspNet.Mvc.Core
             var result = DefaultDisplayTemplates.HiddenInputTemplate(html);
 
             // Assert
-            Assert.Empty(result);
+            Assert.Empty(HtmlContentUtilities.HtmlContentToString(result));
         }
 
         [Fact]
@@ -268,7 +269,7 @@ namespace Microsoft.AspNet.Mvc.Core
             var result = helper.Display("Property1");
 
             // Assert
-            Assert.Equal("HtmlEncode[[ViewData string]]", result.ToString());
+            Assert.Equal("HtmlEncode[[ViewData string]]", HtmlContentUtilities.HtmlContentToString(result));
         }
 
         [Fact]
@@ -287,7 +288,7 @@ namespace Microsoft.AspNet.Mvc.Core
             var result = helper.DisplayFor(m => m.Property1);
 
             // Assert
-            Assert.Equal("HtmlEncode[[Model string]]", result.ToString());
+            Assert.Equal("HtmlEncode[[Model string]]", HtmlContentUtilities.HtmlContentToString(result));
         }
 
         [Fact]
@@ -305,7 +306,7 @@ namespace Microsoft.AspNet.Mvc.Core
             var result = helper.Display("Property1");
 
             // Assert
-            Assert.Equal("HtmlEncode[[Model string]]", result.ToString());
+            Assert.Equal("HtmlEncode[[Model string]]", HtmlContentUtilities.HtmlContentToString(result));
         }
 
         [Theory]
@@ -326,7 +327,7 @@ namespace Microsoft.AspNet.Mvc.Core
             var result = helper.DisplayFor(m => m.Property1);
 
             // Assert
-            Assert.Equal("HtmlEncode[[]]", result.ToString());
+            Assert.Equal(string.Empty, HtmlContentUtilities.HtmlContentToString(result));
         }
 
         [Fact]

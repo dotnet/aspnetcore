@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq.Expressions;
+using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Rendering
@@ -18,7 +19,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </summary>
         /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="expression">Expression name, relative to the current model.</param>
-        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; elements.</returns>
+        /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; elements.</returns>
         /// <remarks>
         /// <para>
         /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set checkbox
@@ -48,7 +49,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// value "checked" if the <see cref="bool"/> values is <c>true</c>; does not include the attribute otherwise.
         /// </para>
         /// </remarks>
-        public static HtmlString CheckBox([NotNull] this IHtmlHelper htmlHelper, string expression)
+        public static IHtmlContent CheckBox([NotNull] this IHtmlHelper htmlHelper, string expression)
         {
             return htmlHelper.CheckBox(expression, isChecked: null, htmlAttributes: null);
         }
@@ -60,7 +61,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="expression">Expression name, relative to the current model.</param>
         /// <param name="isChecked">If <c>true</c>, checkbox is initially checked.</param>
-        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; elements.</returns>
+        /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; elements.</returns>
         /// <remarks>
         /// <para>
         /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set checkbox
@@ -91,7 +92,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// value "checked" if the <see cref="bool"/> values is <c>true</c>; does not include the attribute otherwise.
         /// </para>
         /// </remarks>
-        public static HtmlString CheckBox(
+        public static IHtmlContent CheckBox(
             [NotNull] this IHtmlHelper htmlHelper,
             string expression,
             bool isChecked)
@@ -110,7 +111,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing the HTML
         /// attributes.
         /// </param>
-        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; elements.</returns>
+        /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; elements.</returns>
         /// <remarks>
         /// <para>
         /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set checkbox
@@ -141,7 +142,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// value "checked" if the <see cref="bool"/> values is <c>true</c>; does not include the attribute otherwise.
         /// </para>
         /// </remarks>
-        public static HtmlString CheckBox(
+        public static IHtmlContent CheckBox(
             [NotNull] this IHtmlHelper htmlHelper,
             string expression,
             object htmlAttributes)
@@ -155,7 +156,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </summary>
         /// <param name="htmlHelper">The <see cref="IHtmlHelper{TModel}"/> instance this method extends.</param>
         /// <param name="expression">An expression to be evaluated against the current model.</param>
-        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; elements.</returns>
+        /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; elements.</returns>
         /// <remarks>
         /// <para>
         /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and the string representation of the
@@ -179,7 +180,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// value "checked" if the <see cref="bool"/> values is <c>true</c>; does not include the attribute otherwise.
         /// </para>
         /// </remarks>
-        public static HtmlString CheckBoxFor<TModel>(
+        public static IHtmlContent CheckBoxFor<TModel>(
             [NotNull] this IHtmlHelper<TModel> htmlHelper,
             [NotNull] Expression<Func<TModel, bool>> expression)
         {
@@ -191,7 +192,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </summary>
         /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="expression">Expression name, relative to the current model.</param>
-        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element.</returns>
+        /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element.</returns>
         /// <remarks>
         /// <para>
         /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
@@ -217,7 +218,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <item>Otherwise, <c>string.Empty</c>.</item>
         /// </list>
         /// </remarks>
-        public static HtmlString Hidden([NotNull] this IHtmlHelper htmlHelper, string expression)
+        public static IHtmlContent Hidden([NotNull] this IHtmlHelper htmlHelper, string expression)
         {
             return htmlHelper.Hidden(expression, value: null, htmlAttributes: null);
         }
@@ -228,7 +229,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="expression">Expression name, relative to the current model.</param>
         /// <param name="value">If non-<c>null</c>, value to include in the element.</param>
-        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element.</returns>
+        /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element.</returns>
         /// <remarks>
         /// <para>
         /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
@@ -255,7 +256,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <item>Otherwise, <c>string.Empty</c>.</item>
         /// </list>
         /// </remarks>
-        public static HtmlString Hidden(
+        public static IHtmlContent Hidden(
             [NotNull] this IHtmlHelper htmlHelper,
             string expression,
             object value)
@@ -270,7 +271,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="expression">An expression to be evaluated against the current model.</param>
         /// <typeparam name="TModel">The type of the model.</typeparam>
         /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
-        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element.</returns>
+        /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element.</returns>
         /// <remarks>
         /// <para>
         /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and the string representation of the
@@ -290,7 +291,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <item>Otherwise, <c>string.Empty</c>.</item>
         /// </list>
         /// </remarks>
-        public static HtmlString HiddenFor<TModel, TResult>(
+        public static IHtmlContent HiddenFor<TModel, TResult>(
             [NotNull] this IHtmlHelper<TModel> htmlHelper,
             [NotNull] Expression<Func<TModel, TResult>> expression)
         {
@@ -302,13 +303,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </summary>
         /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="expression">Expression name, relative to the current model.</param>
-        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element.</returns>
+        /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element.</returns>
         /// <remarks>
         /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
         /// &lt;input&gt; element's "name" attribute. Sanitizes <paramref name="expression"/> to set element's "id"
         /// attribute. Sets &lt;input&gt; element's "value" attribute to <c>string.Empty</c>.
         /// </remarks>
-        public static HtmlString Password([NotNull] this IHtmlHelper htmlHelper, string expression)
+        public static IHtmlContent Password([NotNull] this IHtmlHelper htmlHelper, string expression)
         {
             return htmlHelper.Password(expression, value: null, htmlAttributes: null);
         }
@@ -319,7 +320,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="expression">Expression name, relative to the current model.</param>
         /// <param name="value">If non-<c>null</c>, value to include in the element.</param>
-        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element.</returns>
+        /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element.</returns>
         /// <remarks>
         /// <para>
         /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
@@ -332,7 +333,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <item>Otherwise, <c>string.Empty</c>.</item>
         /// </list>
         /// </remarks>
-        public static HtmlString Password(
+        public static IHtmlContent Password(
             [NotNull] this IHtmlHelper htmlHelper,
             string expression,
             object value)
@@ -347,7 +348,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="expression">An expression to be evaluated against the current model.</param>
         /// <typeparam name="TModel">The type of the model.</typeparam>
         /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
-        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element.</returns>
+        /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element.</returns>
         /// <remarks>
         /// <para>
         /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and the string representation of the
@@ -363,7 +364,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <item>Otherwise, <c>string.Empty</c>.</item>
         /// </list>
         /// </remarks>
-        public static HtmlString PasswordFor<TModel, TResult>(
+        public static IHtmlContent PasswordFor<TModel, TResult>(
             [NotNull] this IHtmlHelper<TModel> htmlHelper,
             [NotNull] Expression<Func<TModel, TResult>> expression)
         {
@@ -376,7 +377,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="expression">Expression name, relative to the current model.</param>
         /// <param name="value">Value to include in the element. Must not be <c>null</c>.</param>
-        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element.</returns>
+        /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element.</returns>
         /// <remarks>
         /// <para>
         /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
@@ -408,7 +409,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// the attribute otherwise.
         /// </para>
         /// </remarks>
-        public static HtmlString RadioButton(
+        public static IHtmlContent RadioButton(
             [NotNull] this IHtmlHelper htmlHelper,
             string expression,
             object value)
@@ -430,7 +431,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing the HTML
         /// attributes.
         /// </param>
-        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element.</returns>
+        /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element.</returns>
         /// <remarks>
         /// <para>
         /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
@@ -469,7 +470,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// the attribute otherwise.
         /// </para>
         /// </remarks>
-        public static HtmlString RadioButton(
+        public static IHtmlContent RadioButton(
             [NotNull] this IHtmlHelper htmlHelper,
             string expression,
             object value,
@@ -491,7 +492,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// If <c>true</c>, radio button is initially selected. Must not be <c>null</c> if
         /// <paramref name="value"/> is also <c>null</c>.
         /// </param>
-        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element.</returns>
+        /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element.</returns>
         /// <remarks>
         /// <para>
         /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
@@ -529,7 +530,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// the attribute otherwise.
         /// </para>
         /// </remarks>
-        public static HtmlString RadioButton(
+        public static IHtmlContent RadioButton(
             [NotNull] this IHtmlHelper htmlHelper,
             string expression,
             object value,
@@ -546,7 +547,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="value">Value to include in the element. Must not be <c>null</c>.</param>
         /// <typeparam name="TModel">The type of the model.</typeparam>
         /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
-        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element.</returns>
+        /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element.</returns>
         /// <remarks>
         /// <para>
         /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and the string representation of the
@@ -571,7 +572,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <paramref name="value"/>; does not include the attribute otherwise.
         /// </para>
         /// </remarks>
-        public static HtmlString RadioButtonFor<TModel, TResult>(
+        public static IHtmlContent RadioButtonFor<TModel, TResult>(
             [NotNull] this IHtmlHelper<TModel> htmlHelper,
             [NotNull] Expression<Func<TModel, TResult>> expression,
             [NotNull] object value)
@@ -584,7 +585,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </summary>
         /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="expression">Expression name, relative to the current model.</param>
-        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element.</returns>
+        /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element.</returns>
         /// <remarks>
         /// <para>
         /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
@@ -610,7 +611,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <item>Otherwise, <c>string.Empty</c>.</item>
         /// </list>
         /// </remarks>
-        public static HtmlString TextBox([NotNull] this IHtmlHelper htmlHelper, string expression)
+        public static IHtmlContent TextBox([NotNull] this IHtmlHelper htmlHelper, string expression)
         {
             return htmlHelper.TextBox(expression, value: null, format: null, htmlAttributes: null);
         }
@@ -621,7 +622,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="expression">Expression name, relative to the current model.</param>
         /// <param name="value">If non-<c>null</c>, value to include in the element.</param>
-        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element.</returns>
+        /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element.</returns>
         /// <remarks>
         /// <para>
         /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
@@ -650,7 +651,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <item>Otherwise, <c>string.Empty</c>.</item>
         /// </list>
         /// </remarks>
-        public static HtmlString TextBox(
+        public static IHtmlContent TextBox(
             [NotNull] this IHtmlHelper htmlHelper,
             string expression,
             object value)
@@ -667,7 +668,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="format">
         /// The composite format <see cref="string"/> (see http://msdn.microsoft.com/en-us/library/txafckwd.aspx).
         /// </param>
-        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element.</returns>
+        /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element.</returns>
         /// <remarks>
         /// <para>
         /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
@@ -701,7 +702,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <item>Otherwise, <c>string.Empty</c>.</item>
         /// </list>
         /// </remarks>
-        public static HtmlString TextBox(
+        public static IHtmlContent TextBox(
             [NotNull] this IHtmlHelper htmlHelper,
             string expression,
             object value,
@@ -721,7 +722,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing the HTML
         /// attributes.
         /// </param>
-        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element.</returns>
+        /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element.</returns>
         /// <remarks>
         /// <para>
         /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
@@ -751,7 +752,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <item>Otherwise, <c>string.Empty</c>.</item>
         /// </list>
         /// </remarks>
-        public static HtmlString TextBox(
+        public static IHtmlContent TextBox(
             [NotNull] this IHtmlHelper htmlHelper,
             string expression,
             object value,
@@ -767,7 +768,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="expression">An expression to be evaluated against the current model.</param>
         /// <typeparam name="TModel">The type of the model.</typeparam>
         /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
-        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element.</returns>
+        /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element.</returns>
         /// <remarks>
         /// <para>
         /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and the string representation of the
@@ -786,7 +787,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <item>Otherwise, <c>string.Empty</c>.</item>
         /// </list>
         /// </remarks>
-        public static HtmlString TextBoxFor<TModel, TResult>(
+        public static IHtmlContent TextBoxFor<TModel, TResult>(
             [NotNull] this IHtmlHelper<TModel> htmlHelper,
             [NotNull] Expression<Func<TModel, TResult>> expression)
         {
@@ -803,7 +804,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </param>
         /// <typeparam name="TModel">The type of the model.</typeparam>
         /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
-        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element.</returns>
+        /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element.</returns>
         /// <remarks>
         /// <para>
         /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and the string representation of the
@@ -824,7 +825,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <item>Otherwise, <c>string.Empty</c>.</item>
         /// </list>
         /// </remarks>
-        public static HtmlString TextBoxFor<TModel, TResult>(
+        public static IHtmlContent TextBoxFor<TModel, TResult>(
             [NotNull] this IHtmlHelper<TModel> htmlHelper,
             [NotNull] Expression<Func<TModel, TResult>> expression,
             string format)
@@ -844,7 +845,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </param>
         /// <typeparam name="TModel">The type of the model.</typeparam>
         /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
-        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element.</returns>
+        /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element.</returns>
         /// <remarks>
         /// <para>
         /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and the string representation of the
@@ -864,7 +865,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <item>Otherwise, <c>string.Empty</c>.</item>
         /// </list>
         /// </remarks>
-        public static HtmlString TextBoxFor<TModel, TResult>(
+        public static IHtmlContent TextBoxFor<TModel, TResult>(
             [NotNull] this IHtmlHelper<TModel> htmlHelper,
             [NotNull] Expression<Func<TModel, TResult>> expression,
             object htmlAttributes)
@@ -877,7 +878,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </summary>
         /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="expression">Expression name, relative to the current model.</param>
-        /// <returns>A new <see cref="HtmlString"/> containing the &lt;textarea&gt; element.</returns>
+        /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;textarea&gt; element.</returns>
         /// <remarks>
         /// <para>
         /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
@@ -903,7 +904,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <item>Otherwise, <c>string.Empty</c>.</item>
         /// </list>
         /// </remarks>
-        public static HtmlString TextArea(
+        public static IHtmlContent TextArea(
             [NotNull] this IHtmlHelper htmlHelper,
             string expression)
         {
@@ -920,7 +921,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing the HTML
         /// attributes.
         /// </param>
-        /// <returns>A new <see cref="HtmlString"/> containing the &lt;textarea&gt; element.</returns>
+        /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;textarea&gt; element.</returns>
         /// <remarks>
         /// <para>
         /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
@@ -946,7 +947,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <item>Otherwise, <c>string.Empty</c>.</item>
         /// </list>
         /// </remarks>
-        public static HtmlString TextArea(
+        public static IHtmlContent TextArea(
             [NotNull] this IHtmlHelper htmlHelper,
             string expression,
             object htmlAttributes)
@@ -960,7 +961,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="expression">Expression name, relative to the current model.</param>
         /// <param name="value">If non-<c>null</c>, value to include in the element.</param>
-        /// <returns>A new <see cref="HtmlString"/> containing the &lt;textarea&gt; element.</returns>
+        /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;textarea&gt; element.</returns>
         /// <remarks>
         /// <para>
         /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
@@ -987,7 +988,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <item>Otherwise, <c>string.Empty</c>.</item>
         /// </list>
         /// </remarks>
-        public static HtmlString TextArea(
+        public static IHtmlContent TextArea(
             [NotNull] this IHtmlHelper htmlHelper,
             string expression,
             string value)
@@ -1006,7 +1007,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing the HTML
         /// attributes.
         /// </param>
-        /// <returns>A new <see cref="HtmlString"/> containing the &lt;textarea&gt; element.</returns>
+        /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;textarea&gt; element.</returns>
         /// <remarks>
         /// <para>
         /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
@@ -1033,7 +1034,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <item>Otherwise, <c>string.Empty</c>.</item>
         /// </list>
         /// </remarks>
-        public static HtmlString TextArea(
+        public static IHtmlContent TextArea(
             [NotNull] this IHtmlHelper htmlHelper,
             string expression,
             string value,
@@ -1049,7 +1050,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="expression">An expression to be evaluated against the current model.</param>
         /// <typeparam name="TModel">The type of the model.</typeparam>
         /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
-        /// <returns>A new <see cref="HtmlString"/> containing the &lt;textarea&gt; element.</returns>
+        /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;textarea&gt; element.</returns>
         /// <remarks>
         /// <para>
         /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and the string representation of the
@@ -1068,7 +1069,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <item>Otherwise, <c>string.Empty</c>.</item>
         /// </list>
         /// </remarks>
-        public static HtmlString TextAreaFor<TModel, TResult>(
+        public static IHtmlContent TextAreaFor<TModel, TResult>(
             [NotNull] this IHtmlHelper<TModel> htmlHelper,
             [NotNull] Expression<Func<TModel, TResult>> expression)
         {
@@ -1087,7 +1088,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </param>
         /// <typeparam name="TModel">The type of the model.</typeparam>
         /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
-        /// <returns>A new <see cref="HtmlString"/> containing the &lt;textarea&gt; element.</returns>
+        /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;textarea&gt; element.</returns>
         /// <remarks>
         /// <para>
         /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and the string representation of the
@@ -1106,7 +1107,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <item>Otherwise, <c>string.Empty</c>.</item>
         /// </list>
         /// </remarks>
-        public static HtmlString TextAreaFor<TModel, TResult>(
+        public static IHtmlContent TextAreaFor<TModel, TResult>(
             [NotNull] this IHtmlHelper<TModel> htmlHelper,
             [NotNull] Expression<Func<TModel, TResult>> expression,
             object htmlAttributes)

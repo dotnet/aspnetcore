@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Mvc.TestCommon;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Moq;
 using Xunit;
@@ -334,7 +335,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             Assert.Equal(expectedAttributes, output.Attributes);
             Assert.Equal(expectedPreContent, output.PreContent.GetContent());
             Assert.Equal(expectedContent, output.Content.GetContent());
-            Assert.Equal(expectedPostContent, output.PostContent.GetContent());
+            Assert.Equal(expectedPostContent, HtmlContentUtilities.HtmlContentToString(output.PostContent));
             Assert.Equal(expectedTagName, output.TagName);
 
             Assert.NotNull(viewContext.FormContext?.FormData);
@@ -437,7 +438,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             Assert.Equal(expectedAttributes, output.Attributes);
             Assert.Equal(expectedPreContent, output.PreContent.GetContent());
             Assert.Equal(expectedContent, output.Content.GetContent());
-            Assert.Equal(expectedPostContent, output.PostContent.GetContent());
+            Assert.Equal(expectedPostContent, HtmlContentUtilities.HtmlContentToString(output.PostContent));
             Assert.Equal(expectedTagName, output.TagName);
 
             Assert.NotNull(viewContext.FormContext?.FormData);

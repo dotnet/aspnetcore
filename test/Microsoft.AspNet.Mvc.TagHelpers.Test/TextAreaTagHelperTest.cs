@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Mvc.TestCommon;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Xunit;
 
@@ -46,32 +47,32 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 {
                     { null, typeof(Model), null,
                         new NameAndId("Text", "Text"),
-                        Environment.NewLine + "HtmlEncode[[]]" },
+                        Environment.NewLine },
 
                     { modelWithNull, typeof(Model), modelWithNull.Text,
                         new NameAndId("Text", "Text"),
-                        Environment.NewLine + "HtmlEncode[[]]" },
+                        Environment.NewLine },
                     { modelWithText, typeof(Model), modelWithText.Text,
                         new NameAndId("Text", "Text"),
                         Environment.NewLine + "HtmlEncode[[outer text]]" },
 
                     { modelWithNull, typeof(NestedModel), modelWithNull.NestedModel.Text,
                         new NameAndId("NestedModel.Text", "NestedModel_Text"),
-                        Environment.NewLine + "HtmlEncode[[]]" },
+                        Environment.NewLine },
                     { modelWithText, typeof(NestedModel), modelWithText.NestedModel.Text,
                         new NameAndId("NestedModel.Text", "NestedModel_Text"),
                         Environment.NewLine + "HtmlEncode[[inner text]]" },
 
                     { models, typeof(Model), models[0].Text,
                         new NameAndId("[0].Text", "z0__Text"),
-                        Environment.NewLine + "HtmlEncode[[]]" },
+                        Environment.NewLine },
                     { models, typeof(Model), models[1].Text,
                         new NameAndId("[1].Text", "z1__Text"),
                         Environment.NewLine + "HtmlEncode[[outer text]]" },
 
                     { models, typeof(NestedModel), models[0].NestedModel.Text,
                         new NameAndId("[0].NestedModel.Text", "z0__NestedModel_Text"),
-                        Environment.NewLine + "HtmlEncode[[]]" },
+                        Environment.NewLine },
                     { models, typeof(NestedModel), models[1].NestedModel.Text,
                         new NameAndId("[1].NestedModel.Text", "z1__NestedModel_Text"),
                         Environment.NewLine + "HtmlEncode[[inner text]]" },
@@ -151,7 +152,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // Assert
             Assert.True(output.SelfClosing);
             Assert.Equal(expectedAttributes, output.Attributes);
-            Assert.Equal(expectedContent, output.Content.GetContent());
+            Assert.Equal(expectedContent, HtmlContentUtilities.HtmlContentToString(output.Content));
             Assert.Equal(expectedTagName, output.TagName);
         }
 

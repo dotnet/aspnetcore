@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering.Expressions;
 using Microsoft.AspNet.Mvc.ViewFeatures;
@@ -56,7 +57,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public HtmlString CheckBoxFor(
+        public IHtmlContent CheckBoxFor(
             [NotNull] Expression<Func<TModel, bool>> expression,
             object htmlAttributes)
         {
@@ -66,7 +67,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public HtmlString DropDownListFor<TResult>(
+        public IHtmlContent DropDownListFor<TResult>(
             [NotNull] Expression<Func<TModel, TResult>> expression,
             IEnumerable<SelectListItem> selectList,
             string optionLabel,
@@ -79,7 +80,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public HtmlString DisplayFor<TResult>(
+        public IHtmlContent DisplayFor<TResult>(
             [NotNull] Expression<Func<TModel, TResult>> expression,
             string templateName,
             string htmlFieldName,
@@ -127,7 +128,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public HtmlString EditorFor<TResult>(
+        public IHtmlContent EditorFor<TResult>(
             [NotNull] Expression<Func<TModel, TResult>> expression,
             string templateName,
             string htmlFieldName,
@@ -143,7 +144,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public HtmlString HiddenFor<TResult>(
+        public IHtmlContent HiddenFor<TResult>(
             [NotNull] Expression<Func<TModel, TResult>> expression,
             object htmlAttributes)
         {
@@ -163,7 +164,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public HtmlString LabelFor<TResult>(
+        public IHtmlContent LabelFor<TResult>(
             [NotNull] Expression<Func<TModel, TResult>> expression,
             string labelText,
             object htmlAttributes)
@@ -177,7 +178,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public HtmlString ListBoxFor<TResult>(
+        public IHtmlContent ListBoxFor<TResult>(
             [NotNull] Expression<Func<TModel, TResult>> expression,
             IEnumerable<SelectListItem> selectList,
             object htmlAttributes)
@@ -196,7 +197,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public HtmlString PasswordFor<TResult>(
+        public IHtmlContent PasswordFor<TResult>(
             [NotNull] Expression<Func<TModel, TResult>> expression,
             object htmlAttributes)
         {
@@ -209,7 +210,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public HtmlString RadioButtonFor<TResult>(
+        public IHtmlContent RadioButtonFor<TResult>(
             [NotNull] Expression<Func<TModel, TResult>> expression,
             [NotNull] object value,
             object htmlAttributes)
@@ -224,7 +225,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public HtmlString TextAreaFor<TResult>(
+        public IHtmlContent TextAreaFor<TResult>(
             [NotNull] Expression<Func<TModel, TResult>> expression,
             int rows,
             int columns,
@@ -235,7 +236,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public HtmlString TextBoxFor<TResult>(
+        public IHtmlContent TextBoxFor<TResult>(
             [NotNull] Expression<Func<TModel, TResult>> expression,
             string format,
             object htmlAttributes)
@@ -267,7 +268,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public HtmlString ValidationMessageFor<TResult>(
+        public IHtmlContent ValidationMessageFor<TResult>(
             [NotNull] Expression<Func<TModel, TResult>> expression,
             string message,
             object htmlAttributes,

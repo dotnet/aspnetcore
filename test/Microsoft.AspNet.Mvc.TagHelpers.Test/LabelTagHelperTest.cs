@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Mvc.TestCommon;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Xunit;
 
@@ -222,7 +223,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // Assert
             Assert.Equal(expectedAttributes, output.Attributes);
             Assert.Equal(expectedPreContent, output.PreContent.GetContent());
-            Assert.Equal(tagHelperOutputContent.ExpectedContent, output.Content.GetContent());
+            Assert.Equal(
+                tagHelperOutputContent.ExpectedContent,
+                HtmlContentUtilities.HtmlContentToString(output.Content));
             Assert.Equal(expectedPostContent, output.PostContent.GetContent());
             Assert.False(output.SelfClosing);
             Assert.Equal(expectedTagName, output.TagName);

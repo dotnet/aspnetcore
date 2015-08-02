@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq.Expressions;
+using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Rendering
@@ -21,7 +22,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// Expression name, relative to the current model. May identify a single property or an
         /// <see cref="object"/> that contains the properties to edit.
         /// </param>
-        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element(s).</returns>
+        /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element(s).</returns>
         /// <remarks>
         /// <para>
         /// For example the default <see cref="object"/> editor template includes &lt;label&gt; and &lt;input&gt;
@@ -36,7 +37,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// case-sensitive file systems.
         /// </para>
         /// </remarks>
-        public static HtmlString Editor([NotNull] this IHtmlHelper htmlHelper, string expression)
+        public static IHtmlContent Editor([NotNull] this IHtmlHelper htmlHelper, string expression)
         {
             return htmlHelper.Editor(expression, templateName: null, htmlFieldName: null, additionalViewData: null);
         }
@@ -56,7 +57,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// that can contain additional view data that will be merged into the <see cref="ViewDataDictionary{TModel}"/>
         /// instance created for the template.
         /// </param>
-        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element(s).</returns>
+        /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element(s).</returns>
         /// <remarks>
         /// <para>
         /// For example the default <see cref="object"/> editor template includes &lt;label&gt; and &lt;input&gt;
@@ -71,7 +72,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// case-sensitive file systems.
         /// </para>
         /// </remarks>
-        public static HtmlString Editor(
+        public static IHtmlContent Editor(
             [NotNull] this IHtmlHelper htmlHelper,
             string expression,
             object additionalViewData)
@@ -94,7 +95,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <see cref="object"/> that contains the properties to edit.
         /// </param>
         /// <param name="templateName">The name of the template used to create the HTML markup.</param>
-        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element(s).</returns>
+        /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element(s).</returns>
         /// <remarks>
         /// <para>
         /// For example the default <see cref="object"/> editor template includes &lt;label&gt; and &lt;input&gt;
@@ -109,7 +110,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// case-sensitive file systems.
         /// </para>
         /// </remarks>
-        public static HtmlString Editor([NotNull] this IHtmlHelper htmlHelper, string expression, string templateName)
+        public static IHtmlContent Editor([NotNull] this IHtmlHelper htmlHelper, string expression, string templateName)
         {
             return htmlHelper.Editor(expression, templateName, htmlFieldName: null, additionalViewData: null);
         }
@@ -130,7 +131,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// that can contain additional view data that will be merged into the <see cref="ViewDataDictionary{TModel}"/>
         /// instance created for the template.
         /// </param>
-        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element(s).</returns>
+        /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element(s).</returns>
         /// <remarks>
         /// <para>
         /// For example the default <see cref="object"/> editor template includes &lt;label&gt; and &lt;input&gt;
@@ -145,7 +146,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// case-sensitive file systems.
         /// </para>
         /// </remarks>
-        public static HtmlString Editor(
+        public static IHtmlContent Editor(
             [NotNull] this IHtmlHelper htmlHelper,
             string expression,
             string templateName,
@@ -173,7 +174,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// A <see cref="string"/> used to disambiguate the names of HTML elements that are created for
         /// properties that have the same name.
         /// </param>
-        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element(s).</returns>
+        /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element(s).</returns>
         /// <remarks>
         /// <para>
         /// For example the default <see cref="object"/> editor template includes &lt;label&gt; and &lt;input&gt;
@@ -188,7 +189,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// case-sensitive file systems.
         /// </para>
         /// </remarks>
-        public static HtmlString Editor(
+        public static IHtmlContent Editor(
             [NotNull] this IHtmlHelper htmlHelper,
             string expression,
             string templateName,
@@ -205,7 +206,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="expression">An expression to be evaluated against the current model.</param>
         /// <typeparam name="TModel">The type of the model.</typeparam>
         /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
-        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element(s).</returns>
+        /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element(s).</returns>
         /// <remarks>
         /// <para>
         /// For example the default <see cref="object"/> editor template includes &lt;label&gt; and &lt;input&gt;
@@ -216,7 +217,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// case-sensitive file systems.
         /// </para>
         /// </remarks>
-        public static HtmlString EditorFor<TModel, TResult>(
+        public static IHtmlContent EditorFor<TModel, TResult>(
             [NotNull] this IHtmlHelper<TModel> htmlHelper,
             [NotNull] Expression<Func<TModel, TResult>> expression)
         {
@@ -237,7 +238,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </param>
         /// <typeparam name="TModel">The type of the model.</typeparam>
         /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
-        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element(s).</returns>
+        /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element(s).</returns>
         /// <remarks>
         /// <para>
         /// For example the default <see cref="object"/> editor template includes &lt;label&gt; and &lt;input&gt;
@@ -248,7 +249,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// case-sensitive file systems.
         /// </para>
         /// </remarks>
-        public static HtmlString EditorFor<TModel, TResult>(
+        public static IHtmlContent EditorFor<TModel, TResult>(
             [NotNull] this IHtmlHelper<TModel> htmlHelper,
             [NotNull] Expression<Func<TModel, TResult>> expression,
             object additionalViewData)
@@ -270,7 +271,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="templateName">The name of the template that is used to create the HTML markup.</param>
         /// <typeparam name="TModel">The type of the model.</typeparam>
         /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
-        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element(s).</returns>
+        /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element(s).</returns>
         /// <remarks>
         /// <para>
         /// For example the default <see cref="object"/> editor template includes &lt;label&gt; and &lt;input&gt;
@@ -281,7 +282,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// case-sensitive file systems.
         /// </para>
         /// </remarks>
-        public static HtmlString EditorFor<TModel, TResult>(
+        public static IHtmlContent EditorFor<TModel, TResult>(
             [NotNull] this IHtmlHelper<TModel> htmlHelper,
             [NotNull] Expression<Func<TModel, TResult>> expression,
             string templateName)
@@ -304,7 +305,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </param>
         /// <typeparam name="TModel">The type of the model.</typeparam>
         /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
-        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element(s).</returns>
+        /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element(s).</returns>
         /// <remarks>
         /// <para>
         /// For example the default <see cref="object"/> editor template includes &lt;label&gt; and &lt;input&gt;
@@ -315,7 +316,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// case-sensitive file systems.
         /// </para>
         /// </remarks>
-        public static HtmlString EditorFor<TModel, TResult>(
+        public static IHtmlContent EditorFor<TModel, TResult>(
             [NotNull] this IHtmlHelper<TModel> htmlHelper,
             [NotNull] Expression<Func<TModel, TResult>> expression,
             string templateName,
@@ -342,7 +343,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </param>
         /// <typeparam name="TModel">The type of the model.</typeparam>
         /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
-        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element(s).</returns>
+        /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element(s).</returns>
         /// <remarks>
         /// <para>
         /// For example the default <see cref="object"/> editor template includes &lt;label&gt; and &lt;input&gt;
@@ -353,7 +354,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// case-sensitive file systems.
         /// </para>
         /// </remarks>
-        public static HtmlString EditorFor<TModel, TResult>(
+        public static IHtmlContent EditorFor<TModel, TResult>(
             [NotNull] this IHtmlHelper<TModel> htmlHelper,
             [NotNull] Expression<Func<TModel, TResult>> expression,
             string templateName,
@@ -367,7 +368,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// model's <see cref="ModelBinding.ModelMetadata"/>.
         /// </summary>
         /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
-        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element(s).</returns>
+        /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element(s).</returns>
         /// <remarks>
         /// <para>
         /// For example the default <see cref="object"/> editor template includes &lt;label&gt; and &lt;input&gt;
@@ -378,7 +379,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// case-sensitive file systems.
         /// </para>
         /// </remarks>
-        public static HtmlString EditorForModel([NotNull] this IHtmlHelper htmlHelper)
+        public static IHtmlContent EditorForModel([NotNull] this IHtmlHelper htmlHelper)
         {
             return htmlHelper.Editor(
                 expression: null,
@@ -397,7 +398,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// that can contain additional view data that will be merged into the <see cref="ViewDataDictionary{TModel}"/>
         /// instance created for the template.
         /// </param>
-        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element(s).</returns>
+        /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element(s).</returns>
         /// <remarks>
         /// <para>
         /// For example the default <see cref="object"/> editor template includes &lt;label&gt; and &lt;input&gt;
@@ -408,7 +409,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// case-sensitive file systems.
         /// </para>
         /// </remarks>
-        public static HtmlString EditorForModel([NotNull] this IHtmlHelper htmlHelper, object additionalViewData)
+        public static IHtmlContent EditorForModel([NotNull] this IHtmlHelper htmlHelper, object additionalViewData)
         {
             return htmlHelper.Editor(
                 expression: null,
@@ -423,7 +424,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </summary>
         /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="templateName">The name of the template used to create the HTML markup.</param>
-        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element(s).</returns>
+        /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element(s).</returns>
         /// <remarks>
         /// <para>
         /// For example the default <see cref="object"/> editor template includes &lt;label&gt; and &lt;input&gt;
@@ -434,7 +435,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// case-sensitive file systems.
         /// </para>
         /// </remarks>
-        public static HtmlString EditorForModel([NotNull] this IHtmlHelper htmlHelper, string templateName)
+        public static IHtmlContent EditorForModel([NotNull] this IHtmlHelper htmlHelper, string templateName)
         {
             return htmlHelper.Editor(
                 expression: null,
@@ -455,7 +456,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// that can contain additional view data that will be merged into the <see cref="ViewDataDictionary{TModel}"/>
         /// instance created for the template.
         /// </param>
-        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element(s).</returns>
+        /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element(s).</returns>
         /// <remarks>
         /// <para>
         /// For example the default <see cref="object"/> editor template includes &lt;label&gt; and &lt;input&gt;
@@ -466,7 +467,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// case-sensitive file systems.
         /// </para>
         /// </remarks>
-        public static HtmlString EditorForModel(
+        public static IHtmlContent EditorForModel(
             [NotNull] this IHtmlHelper htmlHelper,
             string templateName,
             object additionalViewData)
@@ -489,7 +490,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// A <see cref="string"/> used to disambiguate the names of HTML elements that are created for
         /// properties that have the same name.
         /// </param>
-        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element(s).</returns>
+        /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element(s).</returns>
         /// <remarks>
         /// <para>
         /// For example the default <see cref="object"/> editor template includes &lt;label&gt; and &lt;input&gt;
@@ -500,7 +501,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// case-sensitive file systems.
         /// </para>
         /// </remarks>
-        public static HtmlString EditorForModel(
+        public static IHtmlContent EditorForModel(
             [NotNull] this IHtmlHelper htmlHelper,
             string templateName,
             string htmlFieldName)
@@ -528,7 +529,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// that can contain additional view data that will be merged into the <see cref="ViewDataDictionary{TModel}"/>
         /// instance created for the template.
         /// </param>
-        /// <returns>A new <see cref="HtmlString"/> containing the &lt;input&gt; element(s).</returns>
+        /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element(s).</returns>
         /// <remarks>
         /// <para>
         /// For example the default <see cref="object"/> editor template includes &lt;label&gt; and &lt;input&gt;
@@ -539,7 +540,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// case-sensitive file systems.
         /// </para>
         /// </remarks>
-        public static HtmlString EditorForModel(
+        public static IHtmlContent EditorForModel(
             [NotNull] this IHtmlHelper htmlHelper,
             string templateName,
             string htmlFieldName,

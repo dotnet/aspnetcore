@@ -6,23 +6,15 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.Framework.Internal;
-using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
     public class TagBuilder
     {
-        private string _innerHtml;
-        private readonly IHtmlEncoder _htmlEncoder;
-
         public TagBuilder(string tagName)
-            : this(tagName, HtmlEncoder.Default)
-        {
-        }
-
-        public TagBuilder(string tagName, [NotNull] IHtmlEncoder htmlEncoder)
         {
             if (string.IsNullOrEmpty(tagName))
             {
@@ -31,16 +23,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             TagName = tagName;
             Attributes = new SortedDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            _htmlEncoder = htmlEncoder;
         }
 
         public IDictionary<string, string> Attributes { get; private set; }
 
-        public string InnerHtml
-        {
-            get { return _innerHtml ?? string.Empty; }
-            set { _innerHtml = value; }
-        }
+        public IHtmlContent InnerHtml { get; [param: NotNull] set; } = HtmlString.Empty;
 
         public string TagName { get; private set; }
 
@@ -138,7 +125,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
         }
 
-        private void AppendAttributes(TextWriter textWriter)
+        private void AppendAttributes(BufferedHtmlContent content)
         {
             foreach (var attribute in Attributes)
             {
@@ -149,11 +136,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
                     continue;
                 }
 
-                textWriter.Write(' ');
-                textWriter.Write(key);
-                textWriter.Write("=\"");
-                _htmlEncoder.HtmlEncode(attribute.Value, textWriter);
-                textWriter.Write('"');
+                content.Append(" ");
+                content.Append(key);
+                content.Append("=\"");
+                content.Append(new StringHtmlContent(attribute.Value));
+                content.Append("\"");
             }
         }
 
@@ -195,56 +182,51 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         public void SetInnerText(string innerText)
         {
-            InnerHtml = _htmlEncoder.HtmlEncode(innerText);
+            InnerHtml = new StringHtmlContent(innerText);
         }
 
-        public HtmlString ToHtmlString(TagRenderMode renderMode)
+        /// <summary>
+        /// Converts the <see cref="TagBuilder"/> to <see cref="IHtmlContent"/> with the specified
+        /// <see cref="TagRenderMode"/>.
+        /// </summary>
+        /// <param name="renderMode"><see cref="TagRenderMode"/> with which the <see cref="TagBuilder"/>
+        /// should be written.</param>
+        /// <returns><see cref="IHtmlContent"/> containing the contents of the <see cref="TagBuilder"/>.</returns>
+        public IHtmlContent ToHtmlContent(TagRenderMode renderMode)
         {
-            return new HtmlString(ToString(renderMode));
-        }
-
-        public override string ToString()
-        {
-            return ToString(TagRenderMode.Normal);
-        }
-
-        public string ToString(TagRenderMode renderMode)
-        {
-            using (var stringWriter = new StringWriter())
+            var content = new BufferedHtmlContent();
+            switch (renderMode)
             {
-                switch (renderMode)
-                {
-                    case TagRenderMode.StartTag:
-                        stringWriter.Write('<');
-                        stringWriter.Write(TagName);
-                        AppendAttributes(stringWriter);
-                        stringWriter.Write('>');
-                        break;
-                    case TagRenderMode.EndTag:
-                        stringWriter.Write("</");
-                        stringWriter.Write(TagName);
-                        stringWriter.Write('>');
-                        break;
-                    case TagRenderMode.SelfClosing:
-                        stringWriter.Write('<');
-                        stringWriter.Write(TagName);
-                        AppendAttributes(stringWriter);
-                        stringWriter.Write(" />");
-                        break;
-                    default:
-                        stringWriter.Write('<');
-                        stringWriter.Write(TagName);
-                        AppendAttributes(stringWriter);
-                        stringWriter.Write('>');
-                        stringWriter.Write(InnerHtml);
-                        stringWriter.Write("</");
-                        stringWriter.Write(TagName);
-                        stringWriter.Write('>');
-                        break;
-                }
-
-                return stringWriter.ToString();
+                case TagRenderMode.StartTag:
+                    content.Append("<");
+                    content.Append(TagName);
+                    AppendAttributes(content);
+                    content.Append(">");
+                    break;
+                case TagRenderMode.EndTag:
+                    content.Append("</");
+                    content.Append(TagName);
+                    content.Append(">");
+                    break;
+                case TagRenderMode.SelfClosing:
+                    content.Append("<");
+                    content.Append(TagName);
+                    AppendAttributes(content);
+                    content.Append(" />");
+                    break;
+                default:
+                    content.Append("<");
+                    content.Append(TagName);
+                    AppendAttributes(content);
+                    content.Append(">");
+                    content.Append(InnerHtml);
+                    content.Append("</");
+                    content.Append(TagName);
+                    content.Append(">");
+                    break;
             }
+
+            return content;
         }
 
         private static class Html401IdUtil

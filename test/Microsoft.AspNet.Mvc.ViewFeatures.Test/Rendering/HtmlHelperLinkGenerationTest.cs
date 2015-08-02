@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNet.Mvc.TestCommon;
 using Microsoft.Framework.Internal;
 using Moq;
 using Xunit;
@@ -78,10 +79,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
                                             hostname: hostname,
                                             fragment: fragment,
                                             routeValues: routeValues,
-                                            htmlAttributes: htmlAttributes).ToString();
+                                            htmlAttributes: htmlAttributes);
 
             // Assert
-            Assert.Equal(expectedLink, actualLink);
+            Assert.Equal(expectedLink, HtmlContentUtilities.HtmlContentToString(actualLink));
         }
 
         public static IEnumerable<object[]> RouteLinkGenerationData
@@ -141,10 +142,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
                                             hostName: hostname,
                                             fragment: fragment,
                                             routeValues: routeValues,
-                                            htmlAttributes: htmlAttributes).ToString();
+                                            htmlAttributes: htmlAttributes);
 
             // Assert
-            Assert.Equal(expectedLink, actualLink);
+            Assert.Equal(expectedLink, HtmlContentUtilities.HtmlContentToString(actualLink));
         }
 
         private string GetRouteValuesAsString(object routeValues)

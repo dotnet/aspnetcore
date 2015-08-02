@@ -25,10 +25,10 @@ namespace ActivatorWebSite.TagHelpers
         {
             (HtmlHelper as ICanHasViewContext)?.Contextualize(ViewContext);
 
-            var builder = new TagBuilder("h2", HtmlHelper.HtmlEncoder);
+            var builder = new TagBuilder("h2");
             var title = ViewContext.ViewBag.Title;
-            builder.InnerHtml = HtmlHelper.Encode(title);
-            output.PreContent.SetContent(builder.ToString());
+            builder.SetInnerText(title);
+            output.PreContent.SetContent(builder.ToHtmlContent(TagRenderMode.Normal));
         }
     }
 }

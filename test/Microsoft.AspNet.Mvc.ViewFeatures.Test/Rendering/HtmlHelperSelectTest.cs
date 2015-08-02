@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.TestCommon;
 using Microsoft.AspNet.Testing;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.WebEncoders;
@@ -334,7 +335,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var html = helper.DropDownList("Property1", selectList, optionLabel: null, htmlAttributes: null);
 
             // Assert
-            Assert.Equal(expectedHtml, html.ToString());
+            Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
             Assert.Equal(savedDisabled, selectList.Select(item => item.Disabled));
             Assert.Equal(savedGroup, selectList.Select(item => item.Group));
             Assert.Equal(savedSelected, selectList.Select(item => item.Selected));
@@ -358,7 +359,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var html = helper.DropDownList("Property1", selectList: null, optionLabel: null, htmlAttributes: null);
 
             // Assert
-            Assert.Equal(expectedHtml, html.ToString());
+            Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
             Assert.Equal(savedSelected, selectList.Select(item => item.Selected));
         }
 
@@ -399,7 +400,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var html = helper.DropDownList("Property1", selectList, optionLabel: null, htmlAttributes: null);
 
             // Assert
-            Assert.Equal(expectedHtml, html.ToString());
+            Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
             Assert.Equal(savedSelected, selectList.Select(item => item.Selected));
         }
 
@@ -439,7 +440,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var html = helper.DropDownList("Property1", SourcesSelectList, optionLabel: null, htmlAttributes: null);
 
             // Assert
-            Assert.Equal(expectedHtml, html.ToString());
+            Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
         }
 
         [Fact]
@@ -481,7 +482,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var html = helper.DropDownList("Property1", SourcesSelectList, optionLabel: null, htmlAttributes: null);
 
             // Assert
-            Assert.Equal(expectedHtml, html.ToString());
+            Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
         }
 
         [Fact]
@@ -506,7 +507,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var html = helper.DropDownList("Property1", SourcesSelectList, optionLabel: null, htmlAttributes: null);
 
             // Assert
-            Assert.Equal(expectedHtml, html.ToString());
+            Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
         }
 
         [Fact]
@@ -534,7 +535,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var html = helper.DropDownList("Property1", SourcesSelectList, optionLabel: null, htmlAttributes: null);
 
             // Assert
-            Assert.Equal(expectedHtml, html.ToString());
+            Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
         }
 
         [Fact]
@@ -561,7 +562,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var html = helper.DropDownList("Property1", SourcesSelectList, optionLabel: null, htmlAttributes: null);
 
             // Assert
-            Assert.Equal(expectedHtml, html.ToString());
+            Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
         }
 
         [Fact]
@@ -577,7 +578,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var html = helper.DropDownList("Property1", SourcesSelectList, optionLabel: null, htmlAttributes: null);
 
             // Assert
-            Assert.Equal(expectedHtml, html.ToString());
+            Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
         }
 
         [Fact]
@@ -594,7 +595,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var html = helper.DropDownList("Property1", SourcesSelectList, optionLabel: null, htmlAttributes: null);
 
             // Assert
-            Assert.Equal(expectedHtml, html.ToString());
+            Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
         }
 
         [Theory]
@@ -616,7 +617,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 htmlAttributes: null);
 
             // Assert
-            Assert.Equal(expectedHtml, html.ToString());
+            Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
             Assert.Equal(savedSelected, selectList.Select(item => item.Selected));
         }
 
@@ -640,7 +641,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 htmlAttributes: null);
 
             // Assert
-            Assert.Equal(expectedHtml, html.ToString());
+            Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
             Assert.Equal(savedSelected, selectList.Select(item => item.Selected));
         }
 
@@ -664,7 +665,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 htmlAttributes: null);
 
             // Assert
-            Assert.Equal(expectedHtml, html.ToString());
+            Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
             Assert.Equal(savedSelected, selectList.Select(item => item.Selected));
         }
 
@@ -689,7 +690,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 htmlAttributes: null);
 
             // Assert
-            Assert.Equal(expectedHtml, html.ToString());
+            Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
             Assert.Equal(savedSelected, selectList.Select(item => item.Selected));
         }
 
@@ -717,7 +718,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 htmlAttributes: null);
 
             // Assert
-            Assert.Equal(expectedHtml, html.ToString());
+            Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
             Assert.Equal(savedSelected, selectList.Select(item => item.Selected));
         }
 
@@ -740,7 +741,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var html = helper.DropDownListFor(value => unrelated, selectList, optionLabel: null, htmlAttributes: null);
 
             // Assert
-            Assert.Equal(expectedHtml, html.ToString());
+            Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
             Assert.Equal(savedSelected, selectList.Select(item => item.Selected));
         }
 
@@ -764,7 +765,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var html = helper.ListBox("Property1", selectList, htmlAttributes: null);
 
             // Assert
-            Assert.Equal(expectedHtml, html.ToString());
+            Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
             Assert.Equal(savedDisabled, selectList.Select(item => item.Disabled));
             Assert.Equal(savedGroup, selectList.Select(item => item.Group));
             Assert.Equal(savedSelected, selectList.Select(item => item.Selected));
@@ -789,7 +790,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var html = helper.ListBox("Property1", selectList, htmlAttributes: null);
 
             // Assert
-            Assert.Equal(expectedHtml, html.ToString());
+            Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
             Assert.Equal(savedSelected, selectList.Select(item => item.Selected));
         }
 
@@ -810,7 +811,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var html = helper.ListBox("Property1", selectList, htmlAttributes: null);
 
             // Assert
-            Assert.Equal(expectedHtml, html.ToString());
+            Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
             Assert.Equal(savedSelected, selectList.Select(item => item.Selected));
         }
 
@@ -850,7 +851,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var html = helper.ListBox("Property1", SourcesSelectList, htmlAttributes: null);
 
             // Assert
-            Assert.Equal(expectedHtml, html.ToString());
+            Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
         }
 
         [Fact]
@@ -892,7 +893,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var html = helper.ListBox("Property1", SourcesSelectList, htmlAttributes: null);
 
             // Assert
-            Assert.Equal(expectedHtml, html.ToString());
+            Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
         }
 
         [Fact]
@@ -917,7 +918,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var html = helper.ListBox("Property1", SourcesSelectList, htmlAttributes: null);
 
             // Assert
-            Assert.Equal(expectedHtml, html.ToString());
+            Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
         }
 
         [Fact]
@@ -945,7 +946,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var html = helper.ListBox("Property1", SourcesSelectList, htmlAttributes: null);
 
             // Assert
-            Assert.Equal(expectedHtml, html.ToString());
+            Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
         }
 
         [Fact]
@@ -972,7 +973,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var html = helper.ListBox("Property1", SourcesSelectList, htmlAttributes: null);
 
             // Assert
-            Assert.Equal(expectedHtml, html.ToString());
+            Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
         }
 
         [Fact]
@@ -988,7 +989,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var html = helper.ListBox("Property1", SourcesSelectList, htmlAttributes: null);
 
             // Assert
-            Assert.Equal(expectedHtml, html.ToString());
+            Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
         }
 
         [Fact]
@@ -1005,7 +1006,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var html = helper.ListBox("Property1", SourcesSelectList, htmlAttributes: null);
 
             // Assert
-            Assert.Equal(expectedHtml, html.ToString());
+            Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
         }
 
         [Theory]
@@ -1024,7 +1025,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var html = helper.ListBoxFor(value => value.Property1, selectList, htmlAttributes: null);
 
             // Assert
-            Assert.Equal(expectedHtml, html.ToString());
+            Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
             Assert.Equal(savedSelected, selectList.Select(item => item.Selected));
         }
 
@@ -1045,7 +1046,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var html = helper.ListBoxFor(value => value.Property1, selectList, htmlAttributes: null);
 
             // Assert
-            Assert.Equal(expectedHtml, html.ToString());
+            Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
             Assert.Equal(savedSelected, selectList.Select(item => item.Selected));
         }
 
@@ -1069,7 +1070,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var html = helper.ListBoxFor(value => unrelated, selectList, htmlAttributes: null);
 
             // Assert
-            Assert.Equal(expectedHtml, html.ToString());
+            Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
             Assert.Equal(savedSelected, selectList.Select(item => item.Selected));
         }
 
@@ -1090,7 +1091,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var html = helper.ListBoxFor(value => value.Property1, selectList, htmlAttributes: null);
 
             // Assert
-            Assert.Equal(expectedHtml, html.ToString());
+            Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
             Assert.Equal(savedSelected, selectList.Select(item => item.Selected));
         }
 
@@ -1118,7 +1119,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 htmlAttributes: null);
 
             // Assert
-            Assert.Equal(expectedHtml, html.ToString());
+            Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
             Assert.Equal(savedDisabled, selectList.Select(item => item.Disabled));
             Assert.Equal(savedGroup, selectList.Select(item => item.Group));
             Assert.Equal(savedSelected, selectList.Select(item => item.Selected));
@@ -1146,7 +1147,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 htmlAttributes: null);
 
             // Assert
-            Assert.Equal(expectedHtml, html.ToString());
+            Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
             Assert.Equal(savedSelected, selectList.Select(item => item.Selected));
         }
 
@@ -1166,7 +1167,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var html = helper.DropDownListFor(value => value, selectList, optionLabel: null, htmlAttributes: null);
 
             // Assert
-            Assert.Equal(expectedHtml, html.ToString());
+            Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
             Assert.Equal(savedSelected, selectList.Select(item => item.Selected));
         }
 
@@ -1186,7 +1187,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var html = helper.DropDownListFor(value => value, selectList, optionLabel: null, htmlAttributes: null);
 
             // Assert
-            Assert.Equal(expectedHtml, html.ToString());
+            Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
             Assert.Equal(savedSelected, selectList.Select(item => item.Selected));
         }
 
@@ -1211,7 +1212,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var html = helper.ListBox(expression: string.Empty, selectList: selectList, htmlAttributes: null);
 
             // Assert
-            Assert.Equal(expectedHtml, html.ToString());
+            Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
             Assert.Equal(savedDisabled, selectList.Select(item => item.Disabled));
             Assert.Equal(savedGroup, selectList.Select(item => item.Group));
             Assert.Equal(savedSelected, selectList.Select(item => item.Selected));
@@ -1237,7 +1238,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var html = helper.ListBox(expression: string.Empty, selectList: selectList, htmlAttributes: null);
 
             // Assert
-            Assert.Equal(expectedHtml, html.ToString());
+            Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
             Assert.Equal(savedSelected, selectList.Select(item => item.Selected));
         }
 
@@ -1258,7 +1259,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var html = helper.ListBoxFor(value => value, selectList, htmlAttributes: null);
 
             // Assert
-            Assert.Equal(expectedHtml, html.ToString());
+            Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
             Assert.Equal(savedSelected, selectList.Select(item => item.Selected));
         }
 
@@ -1280,7 +1281,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var html = helper.ListBoxFor(value => value, selectList, htmlAttributes: null);
 
             // Assert
-            Assert.Equal(expectedHtml, html.ToString());
+            Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
             Assert.Equal(savedSelected, selectList.Select(item => item.Selected));
         }
 

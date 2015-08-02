@@ -45,6 +45,7 @@
         "Microsoft.AspNet.TestHost": "1.0.0-*",
         "Microsoft.AspNet.WebUtilities": "1.0.0-*",
         "Microsoft.Framework.Configuration.Json": "1.0.0-*",
+        "Microsoft.Framework.WebEncoders.Testing": "1.0.0-*",
         "ModelBindingWebSite": "1.0.0",
         "MvcSample.Web": "1.0.0",
         "PrecompilationWebSite": "1.0.0",

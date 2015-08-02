@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.Framework.Internal;
@@ -35,8 +36,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// Genrate an &lt;input type="hidden".../&gt; element containing an antiforgery token.
         /// </summary>
         /// <param name="viewContext">The <see cref="ViewContext"/> instance for the current scope.</param>
-        /// <returns>An <see cref="HtmlString"/> instance for the &lt;input type="hidden".../&gt; element.</returns>
-        HtmlString GenerateAntiforgery([NotNull] ViewContext viewContext);
+        /// <returns>An <see cref="IHtmlContent"/> instance for the &lt;input type="hidden".../&gt; element.</returns>
+        IHtmlContent GenerateAntiforgery([NotNull] ViewContext viewContext);
 
         /// <summary>
         /// Generate a &lt;input type="checkbox".../&gt; element. 

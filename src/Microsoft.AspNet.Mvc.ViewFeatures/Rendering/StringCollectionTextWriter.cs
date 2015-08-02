@@ -172,7 +172,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <inheritdoc />
         public override string ToString()
         {
-            return string.Join(string.Empty, Content);
+            using (var writer = new StringWriter())
+            {
+                Content.WriteTo(writer, HtmlEncoder.Default);
+                return writer.ToString();
+            }
         }
     }
 }

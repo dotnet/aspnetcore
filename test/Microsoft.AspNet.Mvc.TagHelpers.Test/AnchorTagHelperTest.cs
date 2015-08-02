@@ -114,7 +114,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     "hello=world",
                     It.IsAny<IDictionary<string, object>>(),
                     null))
-                .Returns(new TagBuilder("a", new CommonTestEncoder()))
+                .Returns(new TagBuilder("a"))
                 .Verifiable();
             var anchorTagHelper = new AnchorTagHelper(generator.Object)
             {
@@ -163,7 +163,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     "hello=world",
                     It.IsAny<IDictionary<string, object>>(),
                     null))
-                .Returns(new TagBuilder("a", new CommonTestEncoder()))
+                .Returns(new TagBuilder("a"))
                 .Verifiable();
             var anchorTagHelper = new AnchorTagHelper(generator.Object)
             {

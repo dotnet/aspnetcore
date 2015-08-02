@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using Microsoft.AspNet.Antiforgery;
 using Microsoft.AspNet.DataProtection;
+using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
@@ -70,9 +71,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             return viewContext;
         }
 
-        public override HtmlString GenerateAntiforgery(ViewContext viewContext)
+        public override IHtmlContent GenerateAntiforgery(ViewContext viewContext)
         {
-            var tagBuilder = new TagBuilder("input", new CommonTestEncoder())
+            var tagBuilder = new TagBuilder("input")
             {
                 Attributes =
                 {
@@ -82,7 +83,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 },
             };
 
-            return tagBuilder.ToHtmlString(TagRenderMode.SelfClosing);
+            return tagBuilder.ToHtmlContent(TagRenderMode.SelfClosing);
         }
 
         protected override IDictionary<string, object> GetValidationAttributes(

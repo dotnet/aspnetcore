@@ -7,6 +7,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Testing;
+using Microsoft.Framework.Internal;
 using Microsoft.Framework.WebEncoders.Testing;
 using Xunit;
 

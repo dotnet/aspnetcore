@@ -121,7 +121,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     It.IsAny<object>(),
                     It.IsAny<string>(),
                     It.IsAny<object>()))
-                .Returns(new TagBuilder("form", new CommonTestEncoder()));
+                .Returns(new TagBuilder("form"));
 
             generator.Setup(mock => mock.GenerateAntiforgery(viewContext))
                      .Returns(new HtmlString("<input />"));
@@ -189,7 +189,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         routeValue = Assert.Single(routeValueDictionary, attr => attr.Key.Equals("-Name"));
                         Assert.Equal("Value", routeValue.Value);
                     })
-                .Returns(new TagBuilder("form", new CommonTestEncoder()))
+                .Returns(new TagBuilder("form"))
                 .Verifiable();
             var formTagHelper = new FormTagHelper(generator.Object)
             {
@@ -244,7 +244,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     It.IsAny<IDictionary<string, object>>(),
                     null,
                     null))
-                .Returns(new TagBuilder("form", new CommonTestEncoder()))
+                .Returns(new TagBuilder("form"))
                 .Verifiable();
             var formTagHelper = new FormTagHelper(generator.Object)
             {
@@ -294,7 +294,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     It.Is<Dictionary<string, object>>(m => string.Equals(m["name"], "value")),
                     null,
                     null))
-                .Returns(new TagBuilder("form", new CommonTestEncoder()))
+                .Returns(new TagBuilder("form"))
                 .Verifiable();
             var formTagHelper = new FormTagHelper(generator.Object)
             {

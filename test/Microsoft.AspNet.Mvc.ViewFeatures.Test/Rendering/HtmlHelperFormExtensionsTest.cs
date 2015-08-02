@@ -276,7 +276,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void BeginFormWithNoParameters_CallsHtmlGeneratorWithExpectedValues()
         {
             // Arrange
-            var tagBuilder = new TagBuilder(tagName: "form", htmlEncoder: new NullTestEncoder());
+            var tagBuilder = new TagBuilder(tagName: "form");
             var htmlGenerator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
             var htmlHelper = DefaultTemplatesUtilities.GetHtmlHelper(htmlGenerator.Object);
             htmlGenerator
@@ -310,7 +310,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void BeginFormWithMethodParameter_CallsHtmlGeneratorWithExpectedValues(FormMethod method)
         {
             // Arrange
-            var tagBuilder = new TagBuilder(tagName: "form", htmlEncoder: new NullTestEncoder());
+            var tagBuilder = new TagBuilder(tagName: "form");
             var htmlGenerator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
             var htmlHelper = DefaultTemplatesUtilities.GetHtmlHelper(htmlGenerator.Object);
             htmlGenerator
@@ -346,7 +346,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             object htmlAttributes)
         {
             // Arrange
-            var tagBuilder = new TagBuilder(tagName: "form", htmlEncoder: new NullTestEncoder());
+            var tagBuilder = new TagBuilder(tagName: "form");
             var htmlGenerator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
             var htmlHelper = DefaultTemplatesUtilities.GetHtmlHelper(htmlGenerator.Object);
             htmlGenerator
@@ -380,7 +380,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void BeginFormWithRouteValuesParameter_CallsHtmlGeneratorWithExpectedValues(object routeValues)
         {
             // Arrange
-            var tagBuilder = new TagBuilder(tagName: "form", htmlEncoder: new NullTestEncoder());
+            var tagBuilder = new TagBuilder(tagName: "form");
             var htmlGenerator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
             var htmlHelper = DefaultTemplatesUtilities.GetHtmlHelper(htmlGenerator.Object);
             htmlGenerator
@@ -416,7 +416,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             string controllerName)
         {
             // Arrange
-            var tagBuilder = new TagBuilder(tagName: "form", htmlEncoder: new NullTestEncoder());
+            var tagBuilder = new TagBuilder(tagName: "form");
             var htmlGenerator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
             var htmlHelper = DefaultTemplatesUtilities.GetHtmlHelper(htmlGenerator.Object);
             htmlGenerator
@@ -453,7 +453,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             object routeValues)
         {
             // Arrange
-            var tagBuilder = new TagBuilder(tagName: "form", htmlEncoder: new NullTestEncoder());
+            var tagBuilder = new TagBuilder(tagName: "form");
             var htmlGenerator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
             var htmlHelper = DefaultTemplatesUtilities.GetHtmlHelper(htmlGenerator.Object);
             htmlGenerator
@@ -490,7 +490,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             FormMethod method)
         {
             // Arrange
-            var tagBuilder = new TagBuilder(tagName: "form", htmlEncoder: new NullTestEncoder());
+            var tagBuilder = new TagBuilder(tagName: "form");
             var htmlGenerator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
             var htmlHelper = DefaultTemplatesUtilities.GetHtmlHelper(htmlGenerator.Object);
             htmlGenerator
@@ -528,7 +528,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             FormMethod method)
         {
             // Arrange
-            var tagBuilder = new TagBuilder(tagName: "form", htmlEncoder: new NullTestEncoder());
+            var tagBuilder = new TagBuilder(tagName: "form");
             var htmlGenerator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
             var htmlHelper = DefaultTemplatesUtilities.GetHtmlHelper(htmlGenerator.Object);
             htmlGenerator
@@ -566,7 +566,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             object htmlAttributes)
         {
             // Arrange
-            var tagBuilder = new TagBuilder(tagName: "form", htmlEncoder: new NullTestEncoder());
+            var tagBuilder = new TagBuilder(tagName: "form");
             var htmlGenerator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
             var htmlHelper = DefaultTemplatesUtilities.GetHtmlHelper(htmlGenerator.Object);
             htmlGenerator
@@ -600,7 +600,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void BeginRouteFormWithRouteValuesParameter_CallsHtmlGeneratorWithExpectedValues(object routeValues)
         {
             // Arrange
-            var tagBuilder = new TagBuilder(tagName: "form", htmlEncoder: new NullTestEncoder());
+            var tagBuilder = new TagBuilder(tagName: "form");
             var htmlGenerator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
             var htmlHelper = DefaultTemplatesUtilities.GetHtmlHelper(htmlGenerator.Object);
             htmlGenerator
@@ -633,7 +633,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void BeginRouteFormWithRouteNameParameter_CallsHtmlGeneratorWithExpectedValues(string routeName)
         {
             // Arrange
-            var tagBuilder = new TagBuilder(tagName: "form", htmlEncoder: new NullTestEncoder());
+            var tagBuilder = new TagBuilder(tagName: "form");
             var htmlGenerator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
             var htmlHelper = DefaultTemplatesUtilities.GetHtmlHelper(htmlGenerator.Object);
             htmlGenerator
@@ -668,7 +668,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             object routeValues)
         {
             // Arrange
-            var tagBuilder = new TagBuilder(tagName: "form", htmlEncoder: new NullTestEncoder());
+            var tagBuilder = new TagBuilder(tagName: "form");
             var htmlGenerator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
             var htmlHelper = DefaultTemplatesUtilities.GetHtmlHelper(htmlGenerator.Object);
             htmlGenerator
@@ -703,7 +703,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             FormMethod method)
         {
             // Arrange
-            var tagBuilder = new TagBuilder(tagName: "form", htmlEncoder: new NullTestEncoder());
+            var tagBuilder = new TagBuilder(tagName: "form");
             var htmlGenerator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
             var htmlHelper = DefaultTemplatesUtilities.GetHtmlHelper(htmlGenerator.Object);
             htmlGenerator
@@ -739,7 +739,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             FormMethod method)
         {
             // Arrange
-            var tagBuilder = new TagBuilder(tagName: "form", htmlEncoder: new NullTestEncoder());
+            var tagBuilder = new TagBuilder(tagName: "form");
             var htmlGenerator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
             var htmlHelper = DefaultTemplatesUtilities.GetHtmlHelper(htmlGenerator.Object);
             htmlGenerator
@@ -775,7 +775,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             object htmlAttributes)
         {
             // Arrange
-            var tagBuilder = new TagBuilder(tagName: "form", htmlEncoder: new NullTestEncoder());
+            var tagBuilder = new TagBuilder(tagName: "form");
             var htmlGenerator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
             var htmlHelper = DefaultTemplatesUtilities.GetHtmlHelper(htmlGenerator.Object);
             htmlGenerator
