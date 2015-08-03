@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Hosting.Builder;
 using Microsoft.AspNet.Hosting.Internal;
 using Microsoft.AspNet.Hosting.Server;
 using Microsoft.AspNet.Hosting.Startup;
@@ -17,7 +17,7 @@ using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Dnx.Runtime.Infrastructure;
 using Microsoft.Framework.Configuration;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Logging;
+using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 using Moq;
 using Xunit;
@@ -254,14 +254,8 @@ namespace Microsoft.AspNet.Hosting
                 httpContext = innerHttpContext;
                 return Task.FromResult(0);
             });
-            var featuresSupportedByHost = new Mock<IFeatureCollection>();
-            featuresSupportedByHost
-                .Setup(fc => fc.Add(It.IsAny<Type>(), It.IsAny<object>()))
-                .Throws(new NotImplementedException());
-            featuresSupportedByHost
-                .Setup(fc => fc.Add(new KeyValuePair<Type, object>(It.IsAny<Type>(), It.IsAny<object>())))
-                .Throws(new NotImplementedException());
-            _featuresSupportedByThisHost = featuresSupportedByHost.Object;
+
+            _featuresSupportedByThisHost = new ReadOnlyFeatureCollection();
 
             var hostingEngine = CreateHostingEngine(requestDelegate);
 
@@ -284,7 +278,7 @@ namespace Microsoft.AspNet.Hosting
                 return Task.FromResult(0);
             });
             var requestIdentifierFeature = new Mock<IHttpRequestIdentifierFeature>().Object;
-            _featuresSupportedByThisHost.Add(typeof(IHttpRequestIdentifierFeature), requestIdentifierFeature);
+            _featuresSupportedByThisHost[typeof(IHttpRequestIdentifierFeature)] = requestIdentifierFeature;
             var hostingEngine = CreateHostingEngine(requestDelegate);
 
             // Act
@@ -346,25 +340,10 @@ namespace Microsoft.AspNet.Hosting
 
         private IHostingEngine CreateHostingEngine(RequestDelegate requestDelegate)
         {
-            var applicationBuilder = new Mock<IApplicationBuilder>();
-            applicationBuilder.Setup(appBuilder => appBuilder.Build()).Returns(requestDelegate);
-            var applicationBuilderFactory = new Mock<IApplicationBuilderFactory>();
-            applicationBuilderFactory
-                .Setup(abf => abf.CreateBuilder(It.IsAny<object>()))
-                .Returns(applicationBuilder.Object);
-
             var host = CreateBuilder()
                 .UseServer(this)
-                .UseServices(s =>
-                {
-                    s.AddInstance(applicationBuilderFactory.Object);
-                    s.AddInstance(new Mock<ILogger<HostingEngine>>().Object);
-                    s.AddSingleton<IHttpContextFactory, HttpContextFactory>();
-                    s.AddInstance(new Mock<IHttpContextAccessor>().Object);
-                    s.AddInstance(new Mock<IHostingEnvironment>().Object);
-                })
                 .UseStartup(
-                    appBuilder => { },
+                    appBuilder => { appBuilder.Run(requestDelegate); },
                     configureServices => configureServices.BuildServiceProvider());
             return host.Build();
         }
@@ -429,6 +408,39 @@ namespace Microsoft.AspNet.Hosting
             public StartupMethods LoadMethods(Type startupType, IList<string> diagnosticMessages)
             {
                 throw new NotImplementedException();
+            }
+        }
+
+        private class ReadOnlyFeatureCollection : IFeatureCollection
+        {
+            public object this[[NotNull] Type key]
+            {
+                get { return null; }
+                set { throw new NotSupportedException(); }
+            }
+
+            public bool IsReadOnly
+            {
+                get { return true; }
+            }
+
+            public int Revision
+            {
+                get { return 0; }
+            }
+
+            public void Dispose()
+            {
+            }
+
+            public IEnumerator<KeyValuePair<Type, object>> GetEnumerator()
+            {
+                yield break;
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                yield break;
             }
         }
     }
