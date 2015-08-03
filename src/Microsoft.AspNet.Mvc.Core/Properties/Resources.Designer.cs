@@ -1035,6 +1035,22 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         /// <summary>
+        /// The key '{0}' is invalid JQuery syntax because it is missing a closing bracket.
+        /// </summary>
+        internal static string JQueryFormValueProviderFactory_MissingClosingBracket
+        {
+            get { return GetString("JQueryFormValueProviderFactory_MissingClosingBracket"); }
+        }
+
+        /// <summary>
+        /// The key '{0}' is invalid JQuery syntax because it is missing a closing bracket.
+        /// </summary>
+        internal static string FormatJQueryFormValueProviderFactory_MissingClosingBracket(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("JQueryFormValueProviderFactory_MissingClosingBracket"), p0);
+        }
+
+        /// <summary>
         /// A value is required.
         /// </summary>
         internal static string KeyValuePair_BothKeyAndValueMustBePresent

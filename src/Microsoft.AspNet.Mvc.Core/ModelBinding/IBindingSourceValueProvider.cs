@@ -6,7 +6,7 @@ using Microsoft.Framework.Internal;
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     /// <summary>
-    /// A value provider which is which can filter its contents based on <see cref="BindingSource"/>.
+    /// A value provider which can filter its contents based on <see cref="BindingSource"/>.
     /// </summary>
     /// <remarks>
     /// Value providers are by-default included. If a model does not specify a <see cref="BindingSource"/>

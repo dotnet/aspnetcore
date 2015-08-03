@@ -3,19 +3,17 @@
 
 using System.Collections.Generic;
 using System.Globalization;
-using Microsoft.AspNet.Http.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
-    public class ReadableStringCollectionValueProviderTest : EnumerableValueProviderTest
+    public class JQueryFormValueProviderTest : EnumerableValueProviderTest
     {
         protected override IEnumerableValueProvider GetEnumerableValueProvider(
             BindingSource bindingSource,
             IDictionary<string, string[]> values,
             CultureInfo culture)
         {
-            var backingStore = new ReadableStringCollection(values);
-            return new ReadableStringCollectionValueProvider(bindingSource, backingStore, culture);
+            return new JQueryFormValueProvider(bindingSource, values, culture);
         }
     }
 }

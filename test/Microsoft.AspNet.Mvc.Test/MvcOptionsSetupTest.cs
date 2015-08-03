@@ -62,10 +62,11 @@ namespace Microsoft.AspNet.Mvc
 
             // Assert
             var valueProviders = options.ValueProviderFactories;
-            Assert.Equal(3, valueProviders.Count);
+            Assert.Equal(4, valueProviders.Count);
             Assert.IsType<RouteValueValueProviderFactory>(valueProviders[0]);
             Assert.IsType<QueryStringValueProviderFactory>(valueProviders[1]);
             Assert.IsType<FormValueProviderFactory>(valueProviders[2]);
+            Assert.IsType<JQueryFormValueProviderFactory>(valueProviders[3]);
         }
 
         [Fact]
@@ -174,7 +175,7 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal(xObjectFilter.ExcludedTypeName, typeof(XObject).FullName);
 
             Assert.IsType(typeof(DefaultTypeNameBasedExcludeFilter), options.ValidationExcludeFilters[i]);
-            var xmlNodeFilter = 
+            var xmlNodeFilter =
                      Assert.IsType<DefaultTypeNameBasedExcludeFilter>(options.ValidationExcludeFilters[i++]);
             Assert.Equal(xmlNodeFilter.ExcludedTypeName, "System.Xml.XmlNode");
         }

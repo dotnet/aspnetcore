@@ -2,17 +2,41 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 #if DNX451
-
 using System;
+#endif
 using System.Collections.Generic;
+using System.Globalization;
+#if DNX451
 using System.Threading.Tasks;
 using Moq;
 using Xunit;
+#endif
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
-    public class CompositeValueProviderTests
+    public class CompositeValueProviderTest : EnumerableValueProviderTest
     {
+        protected override IEnumerableValueProvider GetEnumerableValueProvider(
+            BindingSource bindingSource,
+            IDictionary<string, string[]> values,
+            CultureInfo culture)
+        {
+            var emptyValueProvider =
+                new JQueryFormValueProvider(bindingSource, new Dictionary<string, string[]>(), culture);
+            var valueProvider = new JQueryFormValueProvider(bindingSource, values, culture);
+
+            return new CompositeValueProvider(new[] { emptyValueProvider, valueProvider });
+        }
+
+        protected override void CheckFilterExcludeResult(IValueProvider result)
+        {
+            // CompositeValueProvider returns an empty instance rather than null. CompositeModelBinder and
+            // MutableObjectModelBinder depend on this empty instance.
+            var compositeProvider = Assert.IsType<CompositeValueProvider>(result);
+            Assert.Empty(compositeProvider);
+        }
+
+#if DNX451
         [Fact]
         public async Task GetKeysFromPrefixAsync_ReturnsResultFromFirstValueProviderThatReturnsValues()
         {
@@ -125,6 +149,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 }
             }
         }
+#endif
     }
 }
-#endif

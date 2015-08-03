@@ -14,8 +14,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     /// Represents a <see cref="IValueProvider"/> whose values come from a collection of <see cref="IValueProvider"/>s.
     /// </summary>
     public class CompositeValueProvider :
-        Collection<IValueProvider>, 
-        IEnumerableValueProvider, 
+        Collection<IValueProvider>,
+        IEnumerableValueProvider,
         IBindingSourceValueProvider
     {
         /// <summary>
@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// created.
         /// </returns>
         public static CompositeValueProvider Create(
-            [NotNull] IEnumerable<IValueProviderFactory> factories, 
+            [NotNull] IEnumerable<IValueProviderFactory> factories,
             [NotNull] ValueProviderFactoryContext context)
         {
             var composite = new CompositeValueProvider();
@@ -135,6 +135,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 {
                     filteredValueProviders.Add(result);
                 }
+            }
+
+            if (filteredValueProviders.Count == Count)
+            {
+                // No need for a new CompositeValueProvider.
+                return this;
             }
 
             return new CompositeValueProvider(filteredValueProviders);

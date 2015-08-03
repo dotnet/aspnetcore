@@ -47,6 +47,7 @@ namespace Microsoft.AspNet.Mvc
             options.ValueProviderFactories.Add(new RouteValueValueProviderFactory());
             options.ValueProviderFactories.Add(new QueryStringValueProviderFactory());
             options.ValueProviderFactories.Add(new FormValueProviderFactory());
+            options.ValueProviderFactories.Add(new JQueryFormValueProviderFactory());
 
             // Set up metadata providers
             options.ModelMetadataDetailsProviders.Add(new DefaultBindingMetadataProvider());

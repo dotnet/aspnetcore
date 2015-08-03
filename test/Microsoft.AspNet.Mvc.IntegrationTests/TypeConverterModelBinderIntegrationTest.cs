@@ -3,8 +3,11 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Xunit;
 
@@ -12,16 +15,6 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 {
     public class TypeConverterModelBinderIntegrationTest
     {
-        private class Person
-        {
-            public Address Address { get; set; }
-        }
-
-        private class Address
-        {
-            public int Zip { get; set; }
-        }
-
         [Fact]
         public async Task BindProperty_WithData_WithPrefix_GetsBound()
         {
@@ -266,9 +259,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             };
 
             // No Data.
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
-            {
-            });
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext();
 
             var modelState = new ModelStateDictionary();
 
@@ -283,6 +274,91 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             // ModelState
             Assert.True(modelState.IsValid);
             Assert.Empty(modelState.Keys);
+        }
+
+        public static TheoryData<IDictionary<string, string[]>> PersonStoreData
+        {
+            get
+            {
+                return new TheoryData<IDictionary<string, string[]>>
+                {
+                    new Dictionary<string, string[]>
+                    {
+                        { "name", new[] { "Fred" } },
+                        { "address.zip", new[] { "98052" } },
+                        { "address.lines", new[] { "line 1", "line 2" } },
+                    },
+                    new Dictionary<string, string[]>
+                    {
+                        { "address.lines[]", new[] { "line 1", "line 2" } },
+                        { "address[].zip", new[] { "98052" } },
+                        { "name[]", new[] { "Fred" } },
+                    }
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(PersonStoreData))]
+        public async Task BindParameter_FromFormData_BindsCorrectly(IDictionary<string, string[]> personStore)
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "Parameter1",
+                BindingInfo = new BindingInfo(),
+                ParameterType = typeof(Person),
+            };
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            {
+                request.Form = new FormCollection(personStore);
+            });
+            var modelState = new ModelStateDictionary();
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+
+            // Assert
+            // ModelBindingResult
+            Assert.NotNull(modelBindingResult);
+            Assert.True(modelBindingResult.IsModelSet);
+
+            // Model
+            var boundPerson = Assert.IsType<Person>(modelBindingResult.Model);
+            Assert.NotNull(boundPerson);
+            Assert.Equal("Fred", boundPerson.Name);
+            Assert.NotNull(boundPerson.Address);
+            Assert.Equal(new[] { "line 1", "line 2" }, boundPerson.Address.Lines);
+            Assert.Equal(98052, boundPerson.Address.Zip);
+
+            // ModelState
+            Assert.True(modelState.IsValid);
+
+            Assert.Equal(new[] { "Address.Lines", "Address.Zip", "Name" }, modelState.Keys.ToArray());
+            var entry = modelState["Address.Lines"];
+            Assert.NotNull(entry);
+            Assert.Empty(entry.Errors);
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+            var result = entry.Value;
+            Assert.NotNull(result);
+            Assert.Equal("line 1,line 2", result.AttemptedValue);
+            Assert.Equal(new[] { "line 1", "line 2" }, result.RawValue);
+        }
+
+        private class Person
+        {
+            public Address Address { get; set; }
+
+            public string Name { get; set; }
+        }
+
+        private class Address
+        {
+            public string[] Lines { get; set; }
+
+            public int Zip { get; set; }
         }
     }
 }
