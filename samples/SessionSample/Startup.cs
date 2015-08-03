@@ -31,7 +31,7 @@ namespace SessionSample
 
             // Uncomment the following line to use the Redis implementation of IDistributedCache.
             // This will override any previously registered IDistributedCache service.
-            //services.AddTransient<IDistributedCache, RedisCache>();
+            //services.AddSingleton<IDistributedCache, RedisCache>();
 
             // Adds a default in-memory implementation of IDistributedCache
             services.AddCaching();
