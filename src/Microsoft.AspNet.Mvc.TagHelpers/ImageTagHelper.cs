@@ -56,6 +56,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
         protected IHostingEnvironment HostingEnvironment { get; }
 
+        [HtmlAttributeNotBound]
         [ViewContext]
         public ViewContext ViewContext { get; set; }
 
