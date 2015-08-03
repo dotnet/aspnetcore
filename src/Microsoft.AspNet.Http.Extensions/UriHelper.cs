@@ -71,5 +71,27 @@ namespace Microsoft.AspNet.Http.Extensions
                 return uri.GetComponents(UriComponents.SerializationInfoString, UriFormat.UriEscaped);
             }
         }
+
+        /// <summary>
+        /// Returns the combined components of the request URL in a fully escaped form suitable for use in HTTP headers
+        /// and other HTTP operations.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public static string GetEncodedUrl(this HttpRequest request)
+        {
+            return Encode(request.Scheme, request.Host, request.PathBase, request.Path, request.QueryString);
+        }
+
+        /// <summary>
+        /// Returns the combined components of the request URL in a fully un-escaped form (except for the QueryString)
+        /// suitable only for display. This format should not be used in HTTP headers or other HTTP operations.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public static string GetDisplayUrl(this HttpRequest request)
+        {
+            return request.Scheme + "://" + request.Host.Value + request.PathBase.Value + request.Path.Value + request.QueryString.Value;
+        }
     }
 }
