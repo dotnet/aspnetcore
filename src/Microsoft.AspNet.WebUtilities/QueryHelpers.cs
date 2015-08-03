@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.WebUtilities
         public static string AddQueryString([NotNull] string uri, [NotNull] string name, [NotNull] string value)
         {
             return AddQueryString(
-                uri, new List<KeyValuePair<string, string>> { new KeyValuePair<string, string>(name, value) });
+                uri, new [] { new KeyValuePair<string, string>(name, value) });
         }
 
         /// <summary>
