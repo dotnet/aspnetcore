@@ -3,14 +3,9 @@
 
 using System;
 using System.Reflection;
+using ControllersFromServicesClassLibrary;
 using Microsoft.AspNet.Builder;
 using Microsoft.Framework.DependencyInjection;
-using ControllersFromServicesClassLibrary;
-
-#if DNX451
-using Autofac;
-using Microsoft.Framework.DependencyInjection.Autofac;
-#endif
 
 namespace ControllersFromServicesWebSite
 {
@@ -28,20 +23,7 @@ namespace ControllersFromServicesWebSite
 
             services.AddTransient<QueryValueService>();
 
-#if DNX451
-            // Create the autofac container
-            var builder = new ContainerBuilder();
-
-            // Create the container and use the default application services as a fallback
-            AutofacRegistration.Populate(
-                builder,
-                services);
-
-            return builder.Build()
-                          .Resolve<IServiceProvider>();
-#else
             return services.BuildServiceProvider();
-#endif
         }
 
         public void Configure(IApplicationBuilder app)
