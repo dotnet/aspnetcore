@@ -22,7 +22,7 @@
         },
         "dnxcore50": {
             "dependencies": {
-                "System.Threading": "4.0.10-beta-*"
+                "System.Threading": "4.0.11-beta-*"
             }
         }
     }
