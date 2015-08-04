@@ -1,4 +1,4 @@
-﻿{
+{
     "version": "1.0.0-*",
     "description": "Application localization services.",
     "repository": {
@@ -18,14 +18,14 @@
         "dnx451": { },
         "dnxcore50": {
             "dependencies": {
-                "Microsoft.CSharp": "4.0.0-beta-*",
-                "System.Collections": "4.0.10-beta-*",
-                "System.Collections.Concurrent": "4.0.10-beta-*",
-                "System.Globalization": "4.0.10-beta-*",
-                "System.Linq": "4.0.0-beta-*",
+                "Microsoft.CSharp": "4.0.1-beta-*",
+                "System.Collections": "4.0.11-beta-*",
+                "System.Collections.Concurrent": "4.0.11-beta-*",
+                "System.Globalization": "4.0.11-beta-*",
+                "System.Linq": "4.0.1-beta-*",
                 "System.Resources.ReaderWriter": "4.0.0-beta-*",
-                "System.Resources.ResourceManager": "4.0.0-beta-*",
-                "System.Threading": "4.0.10-beta-*"
+                "System.Resources.ResourceManager": "4.0.1-beta-*",
+                "System.Threading": "4.0.11-beta-*"
             }
         }
     }
