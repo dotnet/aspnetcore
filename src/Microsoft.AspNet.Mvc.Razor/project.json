@@ -30,7 +30,7 @@
     },
     "dnxcore50": {
       "dependencies": {
-        "System.Threading.Tasks.Parallel": "4.0.0-beta-*"
+        "System.Threading.Tasks.Parallel": "4.0.1-beta-*"
       }
     }
   },

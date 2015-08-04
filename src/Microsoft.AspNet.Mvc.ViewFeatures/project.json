@@ -1,4 +1,4 @@
-﻿{
+{
     "description": "View Rendering features for the MVC runtime",
     "version": "6.0.0-*",
     "repository": {
@@ -30,7 +30,7 @@
         },
         "dnxcore50": {
             "dependencies": {
-                "System.ComponentModel.Annotations": "4.0.10-beta-*"
+                "System.ComponentModel.Annotations": "4.0.11-beta-*"
             }
         }
     }
