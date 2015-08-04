@@ -13,7 +13,7 @@
     "dnx451": { },
     "dnxcore50": {
       "dependencies": {
-        "System.Security.Claims": "4.0.0-beta-*"
+        "System.Security.Claims": "4.0.1-beta-*"
       }
     }
   }
