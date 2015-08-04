@@ -250,20 +250,15 @@ namespace Microsoft.AspNet.Diagnostics.Tests
         [Fact]
         public async Task UsesIdentifierFeature_IfAlreadyPresentOnContext()
         {
-            // Arrange
+            var context = new DefaultHttpContext();
             var requestIdentifierFeature = new HttpRequestIdentifierFeature()
             {
                 TraceIdentifier = Guid.NewGuid().ToString()
             };
-            var features = new FeatureCollection();
-            features.Add(typeof(IHttpRequestFeature), new HttpRequestFeature());
-            features.Add(typeof(IHttpRequestIdentifierFeature), requestIdentifierFeature);
-            features.Add(typeof(IHttpResponseFeature), new HttpResponseFeature());
-            var context = new DefaultHttpContext(features);
+            context.SetFeature<IHttpRequestIdentifierFeature>(requestIdentifierFeature);
             var loggerFactory = new LoggerFactory();
             loggerFactory.AddProvider(new ElmLoggerProvider(new ElmStore(), new ElmOptions()));
 
-            // Act & Assert
             var errorPageMiddleware = new ElmCaptureMiddleware((innerContext) =>
             {
                 Assert.Same(requestIdentifierFeature, innerContext.GetFeature<IHttpRequestIdentifierFeature>());
@@ -280,17 +275,12 @@ namespace Microsoft.AspNet.Diagnostics.Tests
         [InlineData("")]
         public async Task UpdatesTraceIdentifier_IfNullOrEmpty(string requestId)
         {
-            // Arrange
+            var context = new DefaultHttpContext();
             var requestIdentifierFeature = new HttpRequestIdentifierFeature() { TraceIdentifier = requestId };
-            var features = new FeatureCollection();
-            features.Add(typeof(IHttpRequestIdentifierFeature), requestIdentifierFeature);
-            features.Add(typeof(IHttpRequestFeature), new HttpRequestFeature());
-            features.Add(typeof(IHttpResponseFeature), new HttpResponseFeature());
-            var context = new DefaultHttpContext(features);
+            context.SetFeature<IHttpRequestIdentifierFeature>(requestIdentifierFeature);
             var loggerFactory = new LoggerFactory();
             loggerFactory.AddProvider(new ElmLoggerProvider(new ElmStore(), new ElmOptions()));
 
-            // Act & Assert
             var errorPageMiddleware = new ElmCaptureMiddleware((innerContext) =>
             {
                 var feature = innerContext.GetFeature<IHttpRequestIdentifierFeature>();
