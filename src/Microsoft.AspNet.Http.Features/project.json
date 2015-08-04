@@ -12,14 +12,14 @@
         "dnx451": { },
         "dnxcore50": {
             "dependencies": {
-                "System.Collections": "4.0.10-beta-*",
-                "System.Linq": "4.0.0-beta-*",
-                "System.Net.Primitives": "4.0.10-beta-*",
+                "System.Collections": "4.0.11-beta-*",
+                "System.Linq": "4.0.1-beta-*",
+                "System.Net.Primitives": "4.0.11-beta-*",
                 "System.Net.WebSockets": "4.0.0-beta-*",
-                "System.Runtime.Extensions": "4.0.10-beta-*",
-                "System.Security.Claims": "4.0.0-beta-*",
+                "System.Runtime.Extensions": "4.0.11-beta-*",
+                "System.Security.Claims": "4.0.1-beta-*",
                 "System.Security.Cryptography.X509Certificates": "4.0.0-beta-*",
-                "System.Security.Principal": "4.0.0-beta-*"
+                "System.Security.Principal": "4.0.1-beta-*"
             }
         }
     }

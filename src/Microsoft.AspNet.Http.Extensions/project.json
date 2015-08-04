@@ -15,9 +15,9 @@
     "dnx451": { },
     "dnxcore50": {
       "dependencies": {
-        "System.IO.FileSystem": "4.0.0-beta-*",
-        "System.Runtime": "4.0.20-beta-*",
-        "System.Resources.ResourceManager": "4.0.0-beta-*"
+        "System.IO.FileSystem": "4.0.1-beta-*",
+        "System.Runtime": "4.0.21-beta-*",
+        "System.Resources.ResourceManager": "4.0.1-beta-*"
       }
     }
   }

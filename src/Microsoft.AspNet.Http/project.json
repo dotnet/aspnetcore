@@ -1,4 +1,4 @@
-﻿{
+{
     "version": "1.0.0-*",
     "description": "ASP.NET 5 HTTP feature implementations.",
     "repository": {
@@ -15,8 +15,8 @@
         "dnx451": { },
         "dnxcore50": {
             "dependencies": {
-                "System.Diagnostics.Debug": "4.0.10-beta-*",
-                "System.Text.Encoding": "4.0.10-beta-*"
+                "System.Diagnostics.Debug": "4.0.11-beta-*",
+                "System.Text.Encoding": "4.0.11-beta-*"
             }
         }
     }

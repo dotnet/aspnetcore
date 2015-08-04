@@ -16,7 +16,7 @@
     "dnx451": { },
     "dnxcore50": {
       "dependencies": {
-        "System.Text.Encoding.Extensions": "4.0.10-beta-*"
+        "System.Text.Encoding.Extensions": "4.0.11-beta-*"
       }
     }
   },
