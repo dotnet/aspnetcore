@@ -24,11 +24,11 @@
             "dependencies": {
                 "System.Diagnostics.Process": "4.0.0-beta-*",
                 "System.IO.FileSystem": "4.0.0-*",
-                "System.Net.Http": "4.0.0-beta-*",
-                "System.Net.Primitives": "4.0.10-beta-*",
-                "System.Runtime.Extensions": "4.0.10-beta-*",
-                "System.Text.RegularExpressions": "4.0.10-beta-*",
-                "System.Threading": "4.0.10-beta-*",
+                "System.Net.Http": "4.0.1-beta-*",
+                "System.Net.Primitives": "4.0.11-beta-*",
+                "System.Runtime.Extensions": "4.0.11-beta-*",
+                "System.Text.RegularExpressions": "4.0.11-beta-*",
+                "System.Threading": "4.0.11-beta-*",
                 "System.Threading.Thread": "4.0.0-*"
             }
         }

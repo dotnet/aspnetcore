@@ -17,8 +17,8 @@
         },
         "dnxcore50": {
             "dependencies": {
-                "System.Diagnostics.Contracts": "4.0.0-beta-*",
-                "System.Net.Http": "4.0.0-beta-*"
+                "System.Diagnostics.Contracts": "4.0.1-beta-*",
+                "System.Net.Http": "4.0.1-beta-*"
             }
         }
     }
