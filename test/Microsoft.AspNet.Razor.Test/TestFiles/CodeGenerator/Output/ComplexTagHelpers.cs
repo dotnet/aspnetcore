@@ -239,15 +239,8 @@ if(true) {
             , StartTagHelperWritingScope, EndTagHelperWritingScope);
             __PTagHelper = CreateTagHelper<PTagHelper>();
             __tagHelperExecutionContext.Add(__PTagHelper);
-            StartTagHelperWritingScope();
-            WriteLiteral("Current Time: ");
-#line 8 "ComplexTagHelpers.cshtml"
-Write(DateTime.Now);
-
-#line default
-#line hidden
-            __tagHelperStringValueBuffer = EndTagHelperWritingScope();
-            __tagHelperExecutionContext.AddHtmlAttribute("time", Html.Raw(__tagHelperStringValueBuffer.ToString()));
+            AddHtmlAttributeValues("time", __tagHelperExecutionContext, Tuple.Create(Tuple.Create("", 148), Tuple.Create("Current", 148), true), Tuple.Create(Tuple.Create(" ", 155), Tuple.Create("Time:", 156), true), 
+            Tuple.Create(Tuple.Create(" ", 161), Tuple.Create<System.Object, System.Int32>(DateTime.Now, 162), false));
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             Instrumentation.BeginContext(139, 531, false);
             await WriteTagHelperAsync(__tagHelperExecutionContext);

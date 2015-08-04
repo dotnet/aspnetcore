@@ -404,25 +404,15 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
 
         private void RenderUnboundAttribute(string attributeName, Chunk attributeValueChunk)
         {
-            string textValue = null;
-            var isPlainTextValue = false;
-
-            // A null attribute value means the HTML attribute is minimized.
-            if (attributeValueChunk != null)
-            {
-                isPlainTextValue = TryGetPlainTextValue(attributeValueChunk, out textValue);
-
-                // HTML attributes are always strings. So if this value is not plain text i.e. if the value contains
-                // C# code, then we need to buffer it.
-                if (!isPlainTextValue)
-                {
-                    BuildBufferedWritingScope(attributeValueChunk, htmlEncodeValues: true);
-                }
-            }
-
-            // Execution contexts are a runtime feature, therefore no need to add anything to them.
+            // Render children to provide IntelliSense at design time. No need for the execution context logic, it's
+            // a runtime feature.
             if (_designTimeMode)
             {
+                if (attributeValueChunk != null)
+                {
+                    _bodyVisitor.Accept(attributeValueChunk);
+                }
+
                 return;
             }
 
@@ -438,27 +428,60 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
             }
             else
             {
-                _writer
-                    .WriteStartInstanceMethodInvocation(
-                        ExecutionContextVariableName,
-                        _tagHelperContext.ExecutionContextAddHtmlAttributeMethodName)
-                    .WriteStringLiteral(attributeName)
-                    .WriteParameterSeparator()
-                    .WriteStartMethodInvocation(_tagHelperContext.MarkAsHtmlEncodedMethodName);
+                string textValue = null;
+                var isPlainTextValue = TryGetPlainTextValue(attributeValueChunk, out textValue);
 
-                // If it's a plain text value then we need to surround the value with quotes.
                 if (isPlainTextValue)
                 {
-                    _writer.WriteStringLiteral(textValue);
+                    // If it's a plain text value then we need to surround the value with quotes.
+                    _writer
+                        .WriteStartInstanceMethodInvocation(
+                            ExecutionContextVariableName,
+                            _tagHelperContext.ExecutionContextAddHtmlAttributeMethodName)
+                        .WriteStringLiteral(attributeName)
+                        .WriteParameterSeparator()
+                        .WriteStartMethodInvocation(_tagHelperContext.MarkAsHtmlEncodedMethodName)
+                        .WriteStringLiteral(textValue)
+                        .WriteEndMethodInvocation(endLine: false)
+                        .WriteEndMethodInvocation();
+                }
+                else if (IsDynamicAttributeValue(attributeValueChunk))
+                {
+                    // Dynamic attribute value should be run through the conditional attribute removal system. It's
+                    // unbound and contains C#.
+
+                    _writer
+                        .WriteStartMethodInvocation(_tagHelperContext.AddHtmlAttributeValuesMethodName)
+                        .WriteStringLiteral(attributeName)
+                        .WriteParameterSeparator()
+                        .Write(ExecutionContextVariableName);
+
+                    _bodyVisitor.Accept(attributeValueChunk);
+
+                    _writer.WriteEndMethodInvocation();
                 }
                 else
                 {
-                    RenderBufferedAttributeValueAccessor(_writer);
-                }
+                    // HTML attributes are always strings. This attribute contains C# but is not dynamic. This occurs
+                    // when the attribute is a data-* attribute.
 
-                _writer
-                    .WriteEndMethodInvocation(endLine: false)
-                    .WriteEndMethodInvocation();
+                    // Attribute value is not plain text, must be buffered to determine its final value.
+                    BuildBufferedWritingScope(attributeValueChunk, htmlEncodeValues: true);
+
+                    _writer
+                        .WriteStartInstanceMethodInvocation(
+                            ExecutionContextVariableName,
+                            _tagHelperContext.ExecutionContextAddHtmlAttributeMethodName)
+                        .WriteStringLiteral(attributeName)
+                        .WriteParameterSeparator()
+                        .WriteStartMethodInvocation(_tagHelperContext.MarkAsHtmlEncodedMethodName);
+
+                    RenderBufferedAttributeValueAccessor(_writer);
+
+                    _writer
+                        .WriteEndMethodInvocation(endLine: false)
+                        .WriteEndMethodInvocation();
+                }
             }
         }
 
@@ -614,6 +637,17 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
                                                      "ToString",
                                                      endLine: false);
             }
+        }
+
+        private static bool IsDynamicAttributeValue(Chunk attributeValueChunk)
+        {
+            var parentChunk = attributeValueChunk as ParentChunk;
+            if (parentChunk != null)
+            {
+                return parentChunk.Children.Any(child => child is DynamicCodeAttributeChunk);
+            }
+
+            return false;
         }
 
         private static bool TryGetPlainTextValue(Chunk chunk, out string plainText)

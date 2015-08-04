@@ -23,13 +23,19 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
             {
                 var factory = CreateDefaultSpanFactory();
                 var blockFactory = new BlockFactory(factory);
-                var dateTimeNow = new MarkupBlock(
-                    new MarkupBlock(
-                        new ExpressionBlock(
-                            factory.CodeTransition(),
-                            factory.Code("DateTime.Now")
-                                .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                .Accepts(AcceptedCharacters.NonWhiteSpace))));
+                var dateTimeNow = new Func<int, SyntaxTreeNode>(index =>
+                     new MarkupBlock(
+                        new MarkupBlock(
+                            new DynamicAttributeBlockChunkGenerator(
+                                new LocationTagged<string>(
+                                    string.Empty,
+                                    new SourceLocation(index, 0, index)),
+                                new SourceLocation(index, 0, index)),
+                            new ExpressionBlock(
+                                factory.CodeTransition(),
+                                factory.Code("DateTime.Now")
+                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
+                                    .Accepts(AcceptedCharacters.NonWhiteSpace)))));
 
                 // documentContent, expectedOutput
                 return new TheoryData<string, MarkupBlock>
@@ -73,7 +79,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                 selfClosing: true,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    new KeyValuePair<string, SyntaxTreeNode>("class", dateTimeNow)
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", dateTimeNow(10))
                                 }))
                     },
                     {
@@ -94,7 +100,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                 "p",
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    new KeyValuePair<string, SyntaxTreeNode>("class", dateTimeNow)
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", dateTimeNow(10))
                                 },
                                 children: factory.Markup("words and spaces")))
                     },
@@ -135,7 +141,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                 selfClosing: true,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    new KeyValuePair<string, SyntaxTreeNode>("catchAll", dateTimeNow)
+                                    new KeyValuePair<string, SyntaxTreeNode>("catchAll", dateTimeNow(18))
                                 }))
                     },
                     {
@@ -156,7 +162,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                 "strong",
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    new KeyValuePair<string, SyntaxTreeNode>("catchAll", dateTimeNow)
+                                    new KeyValuePair<string, SyntaxTreeNode>("catchAll", dateTimeNow(18))
                                 },
                                 children: factory.Markup("words and spaces")))
                     },
@@ -217,7 +223,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                 selfClosing: true,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    new KeyValuePair<string, SyntaxTreeNode>("notRequired", dateTimeNow),
+                                    new KeyValuePair<string, SyntaxTreeNode>("notRequired", dateTimeNow(16)),
                                     new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn"))
                                 }))
                     },
@@ -253,7 +259,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                 selfClosing: true,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    new KeyValuePair<string, SyntaxTreeNode>("style", dateTimeNow),
+                                    new KeyValuePair<string, SyntaxTreeNode>("style", dateTimeNow(12)),
                                     new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn"))
                                 }))
                     },
@@ -276,8 +282,8 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                 "div",
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    new KeyValuePair<string, SyntaxTreeNode>("style", dateTimeNow),
-                                    new KeyValuePair<string, SyntaxTreeNode>("class", dateTimeNow)
+                                    new KeyValuePair<string, SyntaxTreeNode>("style", dateTimeNow(12)),
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", dateTimeNow(34))
                                 },
                                 children: factory.Markup("words and spaces")))
                     },
@@ -376,9 +382,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                 "div",
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    new KeyValuePair<string, SyntaxTreeNode>("style", dateTimeNow),
-                                    new KeyValuePair<string, SyntaxTreeNode>("class", dateTimeNow),
-                                    new KeyValuePair<string, SyntaxTreeNode>("catchAll", dateTimeNow)
+                                    new KeyValuePair<string, SyntaxTreeNode>("style", dateTimeNow(12)),
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", dateTimeNow(34)),
+                                    new KeyValuePair<string, SyntaxTreeNode>("catchAll", dateTimeNow(59))
                                 },
                                 children: factory.Markup("words and spaces")))
                     },

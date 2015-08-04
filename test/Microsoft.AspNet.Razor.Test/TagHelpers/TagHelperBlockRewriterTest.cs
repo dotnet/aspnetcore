@@ -32,17 +32,15 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 {
                     return new MarkupBlock(
                         new MarkupBlock(
+                            new DynamicAttributeBlockChunkGenerator(
+                                new LocationTagged<string>(
+                                    string.Empty,
+                                    new SourceLocation(10, 0, 10)),
+                                new SourceLocation(10, 0, 10)),
                             new StatementBlock(
                                 factory.CodeTransition(),
                                 factory.Code("do {" + extraCode).AsStatement())));
                 };
-                var dateTimeNow = new MarkupBlock(
-                    new MarkupBlock(
-                        new ExpressionBlock(
-                            factory.CodeTransition(),
-                                factory.Code("DateTime.Now")
-                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                    .Accepts(AcceptedCharacters.NonWhiteSpace))));
 
                 return new TheoryData<string, MarkupBlock, RazorError[]>
                 {
@@ -301,7 +299,20 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                             new MarkupTagHelperBlock("p",
                                 new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
-                                    new KeyValuePair<string, SyntaxTreeNode>("class", dateTimeNow)
+                                    new KeyValuePair<string, SyntaxTreeNode>(
+                                        "class",
+                                        new MarkupBlock(
+                                            new MarkupBlock(
+                                                new DynamicAttributeBlockChunkGenerator(
+                                                    new LocationTagged<string>(
+                                                        string.Empty,
+                                                        new SourceLocation(9, 0, 9)),
+                                                    new SourceLocation(9, 0, 9)),
+                                                new ExpressionBlock(
+                                                    factory.CodeTransition(),
+                                                        factory.Code("DateTime.Now")
+                                                            .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
+                                                            .Accepts(AcceptedCharacters.NonWhiteSpace)))))
                                 })),
                         new []
                         {
@@ -803,12 +814,6 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 var blockFactory = new BlockFactory(factory);
                 var malformedErrorFormat = "Found a malformed '{0}' tag helper. Tag helpers must have a start and " +
                                            "end tag or be self closing.";
-                var dateTimeNow = new MarkupBlock(
-                    new ExpressionBlock(
-                        factory.CodeTransition(),
-                            factory.Code("DateTime.Now")
-                                .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                .Accepts(AcceptedCharacters.NonWhiteSpace)));
 
                 yield return new object[]
                 {
@@ -818,7 +823,20 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                             new List<KeyValuePair<string, SyntaxTreeNode>>
                             {
                                 new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("foo")),
-                                new KeyValuePair<string, SyntaxTreeNode>("dynamic", new MarkupBlock(dateTimeNow)),
+                                new KeyValuePair<string, SyntaxTreeNode>(
+                                    "dynamic",
+                                    new MarkupBlock(
+                                        new MarkupBlock(
+                                            new DynamicAttributeBlockChunkGenerator(
+                                                new LocationTagged<string>(
+                                                    string.Empty,
+                                                    new SourceLocation(21, 0, 21)),
+                                                new SourceLocation(21, 0, 21)),
+                                            new ExpressionBlock(
+                                                factory.CodeTransition(),
+                                                    factory.Code("DateTime.Now")
+                                                        .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
+                                                        .Accepts(AcceptedCharacters.NonWhiteSpace))))),
                                 new KeyValuePair<string, SyntaxTreeNode>("style", factory.Markup("color:red;"))
                             },
                             new MarkupTagHelperBlock("strong")),
@@ -991,25 +1009,45 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 var factory = CreateDefaultSpanFactory();
                 var blockFactory = new BlockFactory(factory);
                 var dateTimeNowString = "@DateTime.Now";
-                var dateTimeNow = new MarkupBlock(
-                                    new ExpressionBlock(
-                                        factory.CodeTransition(),
-                                            factory.Code("DateTime.Now")
-                                                .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                                .Accepts(AcceptedCharacters.NonWhiteSpace)));
+                var dateTimeNow = new Func<int, SyntaxTreeNode>(index =>
+                    new MarkupBlock(
+                        new MarkupBlock(
+                            new DynamicAttributeBlockChunkGenerator(
+                                new LocationTagged<string>(
+                                    string.Empty,
+                                    new SourceLocation(index, 0, index)),
+                                new SourceLocation(index, 0, index)),
+                            new ExpressionBlock(
+                                factory.CodeTransition(),
+                                    factory.Code("DateTime.Now")
+                                        .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
+                                        .Accepts(AcceptedCharacters.NonWhiteSpace)))));
                 var doWhileString = "@do { var foo = bar; <text>Foo</text> foo++; } while (foo<bar>);";
-                var doWhile = new MarkupBlock(
-                                new StatementBlock(
-                                    factory.CodeTransition(),
-                                    factory.Code("do { var foo = bar;").AsStatement(),
-                                    new MarkupBlock(
-                                        new MarkupTagBlock(
-                                            factory.MarkupTransition("<text>")),
-                                        factory.Markup("Foo").Accepts(AcceptedCharacters.None),
-                                        new MarkupTagBlock(
-                                            factory.MarkupTransition("</text>")),
-                                        factory.CodeMarkup(" ").With(new StatementChunkGenerator()).Accepts(AcceptedCharacters.None)),
-                                    factory.Code("foo++; } while (foo<bar>);").AsStatement().Accepts(AcceptedCharacters.None)));
+                var doWhile = new Func<int, SyntaxTreeNode>(index =>
+                    new MarkupBlock(
+                        new MarkupBlock(
+                            new DynamicAttributeBlockChunkGenerator(
+                                new LocationTagged<string>(
+                                    string.Empty,
+                                    new SourceLocation(index, 0, index)),
+                                new SourceLocation(index, 0, index)),
+                            new StatementBlock(
+                                factory.CodeTransition(),
+                                factory.Code("do { var foo = bar;").AsStatement(),
+                                new MarkupBlock(
+                                    new MarkupTagBlock(
+                                        factory.MarkupTransition("<text>")),
+                                    factory.Markup("Foo").Accepts(AcceptedCharacters.None),
+                                    new MarkupTagBlock(
+                                        factory.MarkupTransition("</text>")),
+                                    factory
+                                        .CodeMarkup(" ")
+                                        .With(new StatementChunkGenerator())
+                                        .Accepts(AcceptedCharacters.None)),
+                                factory
+                                    .Code("foo++; } while (foo<bar>);")
+                                    .AsStatement()
+                                    .Accepts(AcceptedCharacters.None)))));
 
                 var currentFormattedString = "<p class=\"{0}\" style='{0}'></p>";
                 yield return new object[]
@@ -1019,8 +1057,8 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupTagHelperBlock("p",
                         new List<KeyValuePair<string, SyntaxTreeNode>>
                         {
-                            new KeyValuePair<string, SyntaxTreeNode>("class", new MarkupBlock(dateTimeNow)),
-                            new KeyValuePair<string, SyntaxTreeNode>("style", new MarkupBlock(dateTimeNow))
+                            new KeyValuePair<string, SyntaxTreeNode>("class", dateTimeNow(10)),
+                            new KeyValuePair<string, SyntaxTreeNode>("style", dateTimeNow(32))
                         }))
                 };
                 yield return new object[]
@@ -1030,8 +1068,8 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupTagHelperBlock("p",
                         new List<KeyValuePair<string, SyntaxTreeNode>>
                         {
-                            new KeyValuePair<string, SyntaxTreeNode>("class", new MarkupBlock(doWhile)),
-                            new KeyValuePair<string, SyntaxTreeNode>("style", new MarkupBlock(doWhile))
+                            new KeyValuePair<string, SyntaxTreeNode>("class", doWhile(10)),
+                            new KeyValuePair<string, SyntaxTreeNode>("style", doWhile(83))
                         }))
                 };
 
@@ -1043,8 +1081,8 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupTagHelperBlock("p",
                             new List<KeyValuePair<string, SyntaxTreeNode>>
                             {
-                                new KeyValuePair<string, SyntaxTreeNode>("class", new MarkupBlock(dateTimeNow)),
-                                new KeyValuePair<string, SyntaxTreeNode>("style", new MarkupBlock(dateTimeNow))
+                                new KeyValuePair<string, SyntaxTreeNode>("class", dateTimeNow(10)),
+                                new KeyValuePair<string, SyntaxTreeNode>("style", dateTimeNow(32))
                             },
                             factory.Markup("Hello World")))
                 };
@@ -1055,8 +1093,8 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupTagHelperBlock("p",
                             new List<KeyValuePair<string, SyntaxTreeNode>>
                             {
-                                new KeyValuePair<string, SyntaxTreeNode>("class", new MarkupBlock(doWhile)),
-                                new KeyValuePair<string, SyntaxTreeNode>("style", new MarkupBlock(doWhile))
+                                new KeyValuePair<string, SyntaxTreeNode>("class", doWhile(10)),
+                                new KeyValuePair<string, SyntaxTreeNode>("style", doWhile(83))
                             },
                             factory.Markup("Hello World")))
                 };
@@ -1069,14 +1107,14 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupTagHelperBlock("p",
                             new List<KeyValuePair<string, SyntaxTreeNode>>
                             {
-                                new KeyValuePair<string, SyntaxTreeNode>("class", new MarkupBlock(dateTimeNow))
+                                new KeyValuePair<string, SyntaxTreeNode>("class", dateTimeNow(10))
                             },
                             factory.Markup("Hello")),
                         factory.Markup(" "),
                         new MarkupTagHelperBlock("p",
                             new List<KeyValuePair<string, SyntaxTreeNode>>
                             {
-                                new KeyValuePair<string, SyntaxTreeNode>("style", new MarkupBlock(dateTimeNow))
+                                new KeyValuePair<string, SyntaxTreeNode>("style", dateTimeNow(45))
                             },
                             factory.Markup("World")))
                 };
@@ -1087,14 +1125,14 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupTagHelperBlock("p",
                             new List<KeyValuePair<string, SyntaxTreeNode>>
                             {
-                                new KeyValuePair<string, SyntaxTreeNode>("class", new MarkupBlock(doWhile))
+                                new KeyValuePair<string, SyntaxTreeNode>("class", doWhile(10))
                             },
                             factory.Markup("Hello")),
                         factory.Markup(" "),
                         new MarkupTagHelperBlock("p",
                             new List<KeyValuePair<string, SyntaxTreeNode>>
                             {
-                                new KeyValuePair<string, SyntaxTreeNode>("style", new MarkupBlock(doWhile))
+                                new KeyValuePair<string, SyntaxTreeNode>("style", doWhile(96))
                             },
                             factory.Markup("World")))
                 };
@@ -1108,8 +1146,8 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupTagHelperBlock("p",
                             new List<KeyValuePair<string, SyntaxTreeNode>>
                             {
-                                new KeyValuePair<string, SyntaxTreeNode>("class", new MarkupBlock(dateTimeNow)),
-                                new KeyValuePair<string, SyntaxTreeNode>("style", new MarkupBlock(dateTimeNow))
+                                new KeyValuePair<string, SyntaxTreeNode>("class", dateTimeNow(10)),
+                                new KeyValuePair<string, SyntaxTreeNode>("style", dateTimeNow(32))
                             },
                             factory.Markup("Hello World "),
                             new MarkupTagBlock(
@@ -1977,12 +2015,19 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             {
                 var factory = CreateDefaultSpanFactory();
                 var blockFactory = new BlockFactory(factory);
-                var dateTimeNow = new MarkupBlock(
-                                    new ExpressionBlock(
-                                        factory.CodeTransition(),
-                                            factory.Code("DateTime.Now")
-                                                .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                                .Accepts(AcceptedCharacters.NonWhiteSpace)));
+                var dateTimeNow = new Func<int, SyntaxTreeNode>(index =>
+                    new MarkupBlock(
+                        new MarkupBlock(
+                            new DynamicAttributeBlockChunkGenerator(
+                                new LocationTagged<string>(
+                                    string.Empty,
+                                    new SourceLocation(index, 0, index)),
+                                new SourceLocation(index, 0, index)),
+                            new ExpressionBlock(
+                                factory.CodeTransition(),
+                                    factory.Code("DateTime.Now")
+                                        .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
+                                        .Accepts(AcceptedCharacters.NonWhiteSpace)))));
 
                 yield return new object[]
                 {
@@ -1992,7 +2037,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new List<KeyValuePair<string, SyntaxTreeNode>>
                         {
                             new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("foo")),
-                            new KeyValuePair<string, SyntaxTreeNode>("dynamic", new MarkupBlock(dateTimeNow)),
+                            new KeyValuePair<string, SyntaxTreeNode>("dynamic", dateTimeNow(21)),
                             new KeyValuePair<string, SyntaxTreeNode>("style", factory.Markup("color:red;"))
                         }))
                 };
@@ -2004,7 +2049,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                             new List<KeyValuePair<string, SyntaxTreeNode>>
                             {
                                 new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("foo")),
-                                new KeyValuePair<string, SyntaxTreeNode>("dynamic", new MarkupBlock(dateTimeNow)),
+                                new KeyValuePair<string, SyntaxTreeNode>("dynamic", dateTimeNow(21)),
                                 new KeyValuePair<string, SyntaxTreeNode>("style", factory.Markup("color:red;"))
                             },
                             factory.Markup("Hello World")))
@@ -2017,7 +2062,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                             new List<KeyValuePair<string, SyntaxTreeNode>>
                             {
                                 new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("foo")),
-                                new KeyValuePair<string, SyntaxTreeNode>("dynamic", new MarkupBlock(dateTimeNow)),
+                                new KeyValuePair<string, SyntaxTreeNode>("dynamic", dateTimeNow(21)),
                                 new KeyValuePair<string, SyntaxTreeNode>(
                                     "style",
                                     new MarkupBlock(
@@ -2037,7 +2082,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                             new List<KeyValuePair<string, SyntaxTreeNode>>
                             {
                                 new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("foo")),
-                                new KeyValuePair<string, SyntaxTreeNode>("dynamic", new MarkupBlock(dateTimeNow))
+                                new KeyValuePair<string, SyntaxTreeNode>("dynamic", dateTimeNow(21))
                             },
                             factory.Markup("Hello")),
                         factory.Markup(" "),
@@ -2045,7 +2090,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                             new List<KeyValuePair<string, SyntaxTreeNode>>
                             {
                                 new KeyValuePair<string, SyntaxTreeNode>("style", factory.Markup("color:red;")),
-                                new KeyValuePair<string, SyntaxTreeNode>("dynamic", new MarkupBlock(dateTimeNow))
+                                new KeyValuePair<string, SyntaxTreeNode>("dynamic", dateTimeNow(73))
                             },
                             factory.Markup("World")))
                 };
@@ -2057,7 +2102,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                             new List<KeyValuePair<string, SyntaxTreeNode>>
                             {
                                 new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("foo")),
-                                new KeyValuePair<string, SyntaxTreeNode>("dynamic", new MarkupBlock(dateTimeNow)),
+                                new KeyValuePair<string, SyntaxTreeNode>("dynamic", dateTimeNow(21)),
                                 new KeyValuePair<string, SyntaxTreeNode>("style", factory.Markup("color:red;"))
                             },
                             factory.Markup("Hello World "),
@@ -2394,15 +2439,27 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 var stringType = typeof(string).FullName;
                 var intType = typeof(int).FullName;
                 var expressionString = "@DateTime.Now + 1";
-                var expression = new MarkupBlock(
+                var expression = new Func<int, SyntaxTreeNode>(index =>
                     new MarkupBlock(
-                        new ExpressionBlock(
-                            factory.CodeTransition(),
-                                factory.Code("DateTime.Now")
-                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                    .Accepts(AcceptedCharacters.NonWhiteSpace))),
-                    factory.Markup(" +"),
-                    factory.Markup(" 1"));
+                        new MarkupBlock(
+                            new DynamicAttributeBlockChunkGenerator(
+                                new LocationTagged<string>(
+                                    string.Empty,
+                                    new SourceLocation(index, 0, index)),
+                                new SourceLocation(index, 0, index)),
+                            new ExpressionBlock(
+                                factory.CodeTransition(),
+                                    factory.Code("DateTime.Now")
+                                        .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
+                                        .Accepts(AcceptedCharacters.NonWhiteSpace))),
+                        factory.Markup(" +")
+                            .With(new LiteralAttributeChunkGenerator(
+                                prefix: new LocationTagged<string>(" ", index + 13, 0, index + 13),
+                                value: new LocationTagged<string>("+", index + 14, 0, index + 14))),
+                        factory.Markup(" 1")
+                            .With(new LiteralAttributeChunkGenerator(
+                                prefix: new LocationTagged<string>(" ", index + 15, 0, index + 15),
+                                value: new LocationTagged<string>("1", index + 16, 0, index + 16)))));
 
                 // documentContent, expectedOutput, expectedErrors
                 return new TheoryData<string, MarkupBlock, RazorError[]>
@@ -2933,7 +2990,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                                 selfClosing: true,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
                                 {
-                                    new KeyValuePair<string, SyntaxTreeNode>("class", expression),
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", expression(14)),
                                     new KeyValuePair<string, SyntaxTreeNode>("bound-required-int", null),
                                 })),
                         new[]
@@ -2950,7 +3007,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                                 selfClosing: false,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
                                 {
-                                    new KeyValuePair<string, SyntaxTreeNode>("class", expression),
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", expression(10)),
                                     new KeyValuePair<string, SyntaxTreeNode>("bound-int", null),
                                 })),
                         new[]
@@ -2968,9 +3025,9 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("bound-required-int", null),
-                                    new KeyValuePair<string, SyntaxTreeNode>("class", expression),
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", expression(36)),
                                     new KeyValuePair<string, SyntaxTreeNode>("bound-required-string", null),
-                                    new KeyValuePair<string, SyntaxTreeNode>("class", expression),
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", expression(86)),
                                     new KeyValuePair<string, SyntaxTreeNode>("unbound-required", null),
                                 })),
                         new[]
@@ -2995,9 +3052,9 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("bound-int", null),
-                                    new KeyValuePair<string, SyntaxTreeNode>("class", expression),
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", expression(23)),
                                     new KeyValuePair<string, SyntaxTreeNode>("bound-string", null),
-                                    new KeyValuePair<string, SyntaxTreeNode>("class", expression),
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", expression(64)),
                                     new KeyValuePair<string, SyntaxTreeNode>("bound-string", null),
                                 })),
                         new[]
@@ -3029,10 +3086,85 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                             factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
                         factory.EmptyHtml());
                 };
+                Action<MarkupBlock> updateDynamicChunkGenerators = (block) =>
+                {
+                    var tagHelperBlock = block.Children.First() as MarkupTagHelperBlock;
+
+                    for (var i = 0; i < tagHelperBlock.Attributes.Count; i++)
+                    {
+                        var attribute = tagHelperBlock.Attributes[i];
+                        var holderBlock = attribute.Value as Block;
+
+                        if (holderBlock == null)
+                        {
+                            continue;
+                        }
+
+                        var valueBlock = holderBlock.Children.FirstOrDefault() as Block;
+                        if (valueBlock != null)
+                        {
+                            var chunkGenerator = valueBlock.ChunkGenerator as DynamicAttributeBlockChunkGenerator;
+
+                            if (chunkGenerator != null)
+                            {
+                                var blockBuilder = new BlockBuilder(holderBlock);
+                                var expressionBlockBuilder = new BlockBuilder(valueBlock);
+                                var newChunkGenerator = new DynamicAttributeBlockChunkGenerator(
+                                    new LocationTagged<string>(
+                                        chunkGenerator.Prefix.Value,
+                                        new SourceLocation(
+                                            chunkGenerator.Prefix.Location.AbsoluteIndex + 2,
+                                            chunkGenerator.Prefix.Location.LineIndex,
+                                            chunkGenerator.Prefix.Location.CharacterIndex + 2)),
+                                    new SourceLocation(
+                                        chunkGenerator.ValueStart.AbsoluteIndex + 2,
+                                        chunkGenerator.ValueStart.LineIndex,
+                                        chunkGenerator.ValueStart.CharacterIndex + 2));
+
+                                expressionBlockBuilder.ChunkGenerator = newChunkGenerator;
+                                blockBuilder.Children[0] = expressionBlockBuilder.Build();
+
+                                for (var j = 1; j < blockBuilder.Children.Count; j++)
+                                {
+                                    var span = blockBuilder.Children[j] as Span;
+                                    if (span != null)
+                                    {
+                                        var literalChunkGenerator =
+                                            span.ChunkGenerator as LiteralAttributeChunkGenerator;
+
+                                        var spanBuilder = new SpanBuilder(span);
+                                        spanBuilder.ChunkGenerator = new LiteralAttributeChunkGenerator(
+                                            prefix: new LocationTagged<string>(
+                                                literalChunkGenerator.Prefix.Value,
+                                                new SourceLocation(
+                                                    literalChunkGenerator.Prefix.Location.AbsoluteIndex + 2,
+                                                    literalChunkGenerator.Prefix.Location.LineIndex,
+                                                    literalChunkGenerator.Prefix.Location.CharacterIndex + 2)),
+                                            value: new LocationTagged<string>(
+                                                literalChunkGenerator.Value.Value,
+                                                new SourceLocation(
+                                                    literalChunkGenerator.Value.Location.AbsoluteIndex + 2,
+                                                    literalChunkGenerator.Value.Location.LineIndex,
+                                                    literalChunkGenerator.Value.Location.CharacterIndex + 2)));
+
+                                        blockBuilder.Children[j] = spanBuilder.Build();
+                                    }
+                                }
+
+                                tagHelperBlock.Attributes[i] = new KeyValuePair<string, SyntaxTreeNode>(
+                                    attribute.Key,
+                                    blockBuilder.Build());
+                            }
+                        }
+                    }
+                };
 
                 foreach (var data in documentData)
                 {
                     data[0] = $"@{{{data[0]}}}";
+
+                    updateDynamicChunkGenerators(data[1] as MarkupBlock);
+
                     data[1] = buildStatementBlock(() => data[1] as MarkupBlock);
 
                     var errors = data[2] as RazorError[];

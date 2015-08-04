@@ -13,6 +13,7 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
         /// </summary>
         public GeneratedTagHelperContext()
         {
+            AddHtmlAttributeValuesMethodName = "AddHtmlAttributeValues";
             CreateTagHelperMethodName = "CreateTagHelper";
             RunnerRunAsyncMethodName = "RunAsync";
             ScopeManagerBeginMethodName = "Begin";
@@ -33,6 +34,20 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
             WriteTagHelperAsyncMethodName = "WriteTagHelperAsync";
             WriteTagHelperToAsyncMethodName = "WriteTagHelperToAsync";
         }
+
+        /// <summary>
+        /// The name of the method used to add unbound, complex tag helper attributes to TagHelperExecutionContexts.
+        /// </summary>
+        /// <remarks>
+        /// Method signature should be
+        /// <code>
+        /// public void AddHtmlAttributeValues(
+        ///     string attributeName,
+        ///     TagHelperExecutionContext executionContext,
+        ///     params Microsoft.AspNet.Mvc.Razor.AttributeValue[] values)
+        /// </code>
+        /// </remarks>
+        public string AddHtmlAttributeValuesMethodName { get; set; }
 
         /// <summary>
         /// The name of the method used to create a tag helper.

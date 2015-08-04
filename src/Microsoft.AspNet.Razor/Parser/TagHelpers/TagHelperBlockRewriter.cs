@@ -324,7 +324,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
 
             // We need to rebuild the chunk generators of the builder and its children (this is needed to
             // ensure we don't do special attribute chunk generation since this is a tag helper).
-            block = RebuildChunkGenerators(builder.Build());
+            block = RebuildChunkGenerators(builder.Build(), result.IsBoundAttribute);
 
             // If there's only 1 child at this point its value could be a simple markup span (treated differently than
             // block level elements for attributes).
@@ -376,9 +376,26 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
             return blockBuilder.Build();
         }
 
-        private static Block RebuildChunkGenerators(Block block)
+        private static Block RebuildChunkGenerators(Block block, bool isBound)
         {
             var builder = new BlockBuilder(block);
+
+            // Don't want to rebuild unbound dynamic attributes. They need to run through the conditional attribute
+            // removal system at runtime. A conditional attribute at the parse tree rewriting level is defined by
+            // having at least 1 child with a DynamicAttributeBlockChunkGenerator.
+            if (!isBound &&
+                block.Children.Any(
+                    child => child.IsBlock &&
+                    ((Block)child).ChunkGenerator is DynamicAttributeBlockChunkGenerator))
+            {
+                // The parent chunk generator must be removed because it's normally responsible for conditionally
+                // generating the attribute prefix (class=") and suffix ("). The prefix and suffix concepts aren't
+                // applicable for the TagHelper use case since the attributes are put into a dictionary like object as
+                // name value pairs.
+                builder.ChunkGenerator = ParentChunkGenerator.Null;
+
+                return builder.Build();
+            }
 
             var isDynamic = builder.ChunkGenerator is DynamicAttributeBlockChunkGenerator;
 
@@ -395,7 +412,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                 if (child.IsBlock)
                 {
                     // The child is a block, recurse down into the block to rebuild its children
-                    builder.Children[i] = RebuildChunkGenerators((Block)child);
+                    builder.Children[i] = RebuildChunkGenerators((Block)child, isBound);
                 }
                 else
                 {
