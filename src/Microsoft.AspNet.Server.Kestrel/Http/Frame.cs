@@ -94,7 +94,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         if (input.Buffer.Count == 0 && input.RemoteIntakeFin)
                         {
                             _mode = Mode.Terminated;
-                            return;
+                            break;
                         }
 
                         if (!TakeStartLine(input))
@@ -102,6 +102,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             if (input.RemoteIntakeFin)
                             {
                                 _mode = Mode.Terminated;
+                                break;
                             }
                             return;
                         }
@@ -113,7 +114,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         if (input.Buffer.Count == 0 && input.RemoteIntakeFin)
                         {
                             _mode = Mode.Terminated;
-                            return;
+                            break;
                         }
 
                         var endOfHeaders = false;
@@ -124,9 +125,17 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                                 if (input.RemoteIntakeFin)
                                 {
                                     _mode = Mode.Terminated;
+                                    break;
                                 }
                                 return;
                             }
+                        }
+
+                        if (_mode == Mode.Terminated)
+                        {
+                            // If we broke out of the above while loop in the Terminated
+                            // state, we don't want to transition to the MessageBody state.
+                            break;
                         }
 
                         //var resumeBody = HandleExpectContinue(callback);
@@ -145,6 +154,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         return;
 
                     case Mode.Terminated:
+                        ConnectionControl.End(ProduceEndType.SocketShutdownSend);
+                        ConnectionControl.End(ProduceEndType.SocketDisconnect);
                         return;
                 }
             }

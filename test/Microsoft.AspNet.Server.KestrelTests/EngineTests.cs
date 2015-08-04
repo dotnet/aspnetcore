@@ -468,5 +468,72 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 }
             }
         }
+
+        [Fact]
+        public async Task ConnectionClosesWhenFinReceived()
+        {
+            using (var server = new TestServer(AppChunked))
+            {
+                using (var connection = new TestConnection())
+                {
+                    await connection.SendEnd(
+                        "GET / HTTP/1.1",
+                        "",
+                        "Post / HTTP/1.1",
+                        "Content-Length: 7",
+                        "",
+                        "Goodbye");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 200 OK",
+                        "Content-Length: 0",
+                        "",
+                        "HTTP/1.1 200 OK",
+                        "Content-Length: 7",
+                        "",
+                        "Goodbye");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task ConnectionClosesWhenFinReceivedBeforeRequestCompletes()
+        {
+            using (var server = new TestServer(AppChunked))
+            {
+                using (var connection = new TestConnection())
+                {
+                    await connection.SendEnd(
+                        "GET /");
+                    await connection.ReceiveEnd();
+                }
+
+                using (var connection = new TestConnection())
+                {
+                    await connection.SendEnd(
+                        "GET / HTTP/1.1",
+                        "",
+                        "Post / HTTP/1.1");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 200 OK",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+
+                using (var connection = new TestConnection())
+                {
+                    await connection.SendEnd(
+                        "GET / HTTP/1.1",
+                        "",
+                        "Post / HTTP/1.1",
+                        "Content-Length: 7");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 200 OK",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+            }
+        }
     }
 }
