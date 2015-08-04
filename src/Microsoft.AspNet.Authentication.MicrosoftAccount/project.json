@@ -13,8 +13,8 @@
         "dnx451": { },
         "dnxcore50": {
             "dependencies": {
-                "System.Dynamic.Runtime": "4.0.10-beta-*",
-                "System.ObjectModel": "4.0.10-beta-*"
+                "System.Dynamic.Runtime": "4.0.11-beta-*",
+                "System.ObjectModel": "4.0.11-beta-*"
             }
         }
     }

@@ -20,7 +20,7 @@
         },
         "dnxcore50": {
             "dependencies": {
-                "System.Collections.Specialized": "4.0.0-beta-*",
+                "System.Collections.Specialized": "4.0.1-beta-*",
                 "System.Net.Http.WinHttpHandler": "4.0.0-beta-*"
             }
         }
