@@ -481,6 +481,7 @@
         <MSBuild Projects="dnx.msbuild"
                  Properties="Configuration=$(Configuration);Sign=$(Sign);TestCodeSign=$(TestCodeSign);NativePackageSymbolsBasePath=%(NativePackages.BasePath);
                              NativePackageSymbolsRelativeBinPath=%(NativePackages.RelativeBinPath);NativePackage=%(NativePackages.Identity)"
+                 Condition="'@(NativePackages->Count())' &gt; '0'"
                  Targets="LocateAndCopyNativeSymbolsUsingBuildNumber" />
     </Target>
 
