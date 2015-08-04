@@ -19,13 +19,13 @@
         "dnxcore50": {
             "dependencies": {
                 "Microsoft.Dnx.Runtime.Abstractions": "1.0.0-*",
-                "System.ComponentModel": "4.0.0-beta-*",
-                "System.Diagnostics.Debug": "4.0.10-beta-*",
-                "System.Reflection": "4.0.10-beta-*",
-                "System.Resources.ResourceManager": "4.0.0-beta-*",
-                "System.Runtime.Extensions": "4.0.10-beta-*",
+                "System.ComponentModel": "4.0.1-beta-*",
+                "System.Diagnostics.Debug": "4.0.11-beta-*",
+                "System.Reflection": "4.0.11-beta-*",
+                "System.Resources.ResourceManager": "4.0.1-beta-*",
+                "System.Runtime.Extensions": "4.0.11-beta-*",
                 "System.Security.Cryptography.Encryption": "4.0.0-beta-*",
-                "System.Text.Encoding.Extensions": "4.0.10-beta-*"
+                "System.Text.Encoding.Extensions": "4.0.11-beta-*"
             }
         }
     },
