@@ -13,6 +13,8 @@ default BUILD_DIR='${Path.Combine(TARGET_DIR, "build")}'
 default TEST_DIR='${Path.Combine(TARGET_DIR, "test")}'
 default Configuration='${E("Configuration")}'
 default Quiet='${ false }'
+default PACKAGELIST_JSON_FILENAME = 'packages.json'
+default DNX_TOOLS_FEED = 'https://www.myget.org/F/dnxtools/api/v2'
 
 @{
   if (string.IsNullOrEmpty(E("DNX_BUILD_VERSION")))
@@ -187,6 +189,17 @@ default Quiet='${ false }'
     }
   }
 
+#nuget-verify target='test' if='File.Exists(PACKAGELIST_JSON_FILENAME) && ShouldVerifyNupkgs' description='Verify if all the packages are generated properly'
+  var commandsDirectory = '${Path.Combine(BASE_DIR, "commands")}'
+  exec program='cmd' commandline='/C dnu commands install --source ${DNX_TOOLS_FEED} NuGetPackageVerifier --packages "${commandsDirectory}"'
+  exec program='cmd' commandline='/C ${Path.Combine(commandsDirectory, "nugetverify")} "${BUILD_DIR}" "${Path.Combine(BASE_DIR, PACKAGELIST_JSON_FILENAME)}"'
+  @{
+    if (Directory.Exists(commandsDirectory))
+    {
+      Directory.Delete(commandsDirectory, recursive: true);
+    }
+  }
+
 #make-roslyn-fast
   ngen-roslyn
 
@@ -292,6 +305,11 @@ functions @{
     bool ShouldRunInParallel
     {
         get { return !string.IsNullOrEmpty(E("KOREBUILD_PARALLEL")); }
+    }
+
+    bool ShouldVerifyNupkgs
+    {
+      get { return E("KOREBUILD_VERIFY_NUPKGS") == "1"; }
     }
 }
 
