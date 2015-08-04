@@ -805,7 +805,7 @@ namespace Microsoft.AspNet.Routing
             var request = new Mock<HttpRequest>(MockBehavior.Strict);
 
             var optionsAccessor = new Mock<IOptions<RouteOptions>>(MockBehavior.Strict);
-            optionsAccessor.SetupGet(o => o.Options).Returns(options);
+            optionsAccessor.SetupGet(o => o.Value).Returns(options);
 
             var context = new Mock<HttpContext>(MockBehavior.Strict);
             context.Setup(m => m.RequestServices.GetService(typeof(ILoggerFactory)))
@@ -823,7 +823,7 @@ namespace Microsoft.AspNet.Routing
             string routeName = null)
         {
             var optionsAccessor = new Mock<IOptions<RouteOptions>>(MockBehavior.Strict);
-            optionsAccessor.SetupGet(o => o.Options).Returns(options);
+            optionsAccessor.SetupGet(o => o.Value).Returns(options);
 
             var context = new Mock<HttpContext>(MockBehavior.Strict);
             context.Setup(m => m.RequestServices.GetService(typeof(IOptions<RouteOptions>)))
@@ -857,7 +857,7 @@ namespace Microsoft.AspNet.Routing
             request.SetupGet(r => r.Path).Returns(new PathString(requestPath));
 
             var optionsAccessor = new Mock<IOptions<RouteOptions>>(MockBehavior.Strict);
-            optionsAccessor.SetupGet(o => o.Options).Returns(options);
+            optionsAccessor.SetupGet(o => o.Value).Returns(options);
 
             var context = new Mock<HttpContext>(MockBehavior.Strict);
             context.Setup(m => m.RequestServices.GetService(typeof(ILoggerFactory)))

@@ -181,7 +181,7 @@ namespace Microsoft.AspNet.Routing
         {
             var options = new Mock<IOptions<RouteOptions>>(MockBehavior.Strict);
             options
-                .SetupGet(o => o.Options)
+                .SetupGet(o => o.Value)
                 .Returns(new RouteOptions());
 
             var inlineConstraintResolver = new DefaultInlineConstraintResolver(options.Object);

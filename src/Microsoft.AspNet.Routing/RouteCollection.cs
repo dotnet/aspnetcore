@@ -6,11 +6,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Routing.Logging;
-using Microsoft.AspNet.Routing.Logging.Internal;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
-using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Routing
@@ -238,7 +235,7 @@ namespace Microsoft.AspNet.Routing
         {
             if (_options == null)
             {
-                _options = context.RequestServices.GetRequiredService<IOptions<RouteOptions>>().Options;
+                _options = context.RequestServices.GetRequiredService<IOptions<RouteOptions>>().Value;
             }
         }
     }

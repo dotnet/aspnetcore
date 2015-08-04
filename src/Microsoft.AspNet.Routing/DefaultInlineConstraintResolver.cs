@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Routing
         /// </param>
         public DefaultInlineConstraintResolver(IOptions<RouteOptions> routeOptions)
         {
-            _inlineConstraintMap = routeOptions.Options.ConstraintMap;
+            _inlineConstraintMap = routeOptions.Value.ConstraintMap;
         }
 
         /// <inheritdoc />

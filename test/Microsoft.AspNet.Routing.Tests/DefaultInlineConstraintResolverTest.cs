@@ -327,7 +327,7 @@ namespace Microsoft.AspNet.Routing.Tests
         private IInlineConstraintResolver GetInlineConstraintResolver(RouteOptions routeOptions)
         {
             var optionsAccessor = new Mock<IOptions<RouteOptions>>();
-            optionsAccessor.SetupGet(o => o.Options).Returns(routeOptions);
+            optionsAccessor.SetupGet(o => o.Value).Returns(routeOptions);
             return new DefaultInlineConstraintResolver(optionsAccessor.Object);
         }
 

@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Routing.Tests
 
             // Assert
             var accessor = serviceProvider.GetRequiredService<IOptions<RouteOptions>>();
-            Assert.Equal("TestRouteConstraint", accessor.Options.ConstraintMap["foo"].Name);
+            Assert.Equal("TestRouteConstraint", accessor.Value.ConstraintMap["foo"].Name);
         }
 
         private class TestRouteConstraint : IRouteConstraint
