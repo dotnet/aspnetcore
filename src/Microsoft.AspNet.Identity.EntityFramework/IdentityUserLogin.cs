@@ -5,8 +5,6 @@ using System;
 
 namespace Microsoft.AspNet.Identity.EntityFramework
 {
-    public class IdentityUserLogin : IdentityUserLogin<string> { }
-
     /// <summary>
     ///     Entity type for a user's login (i.e. facebook, google)
     /// </summary>

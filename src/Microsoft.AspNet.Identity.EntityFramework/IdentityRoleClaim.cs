@@ -5,8 +5,6 @@ using System;
 
 namespace Microsoft.AspNet.Identity.EntityFramework
 {
-    public class IdentityRoleClaim : IdentityRoleClaim<string> { }
-
     /// <summary>
     ///     EntityType that represents one specific role claim
     /// </summary>

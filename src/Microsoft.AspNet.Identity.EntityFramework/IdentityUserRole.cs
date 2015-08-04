@@ -5,8 +5,6 @@ using System;
 
 namespace Microsoft.AspNet.Identity.EntityFramework
 {
-    public class IdentityUserRole : IdentityUserRole<string> { }
-
     /// <summary>
     ///     EntityType that represents a user belonging to a role
     /// </summary>

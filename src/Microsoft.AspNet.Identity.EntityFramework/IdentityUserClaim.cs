@@ -5,8 +5,6 @@ using System;
 
 namespace Microsoft.AspNet.Identity.EntityFramework
 {
-    public class IdentityUserClaim : IdentityUserClaim<string> { }
-
     /// <summary>
     ///     EntityType that represents one specific user claim
     /// </summary>
