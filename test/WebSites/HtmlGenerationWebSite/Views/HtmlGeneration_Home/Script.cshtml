@@ -89,6 +89,9 @@
         // Globbed script tag missing include but with static src
     </script>
 
+    <!-- Globbed script tag with comma separated include pattern -->
+    <script asp-src-include="~/*.js, ~/sub/*.js"></script>
+
     <!-- Globbed script tag with missing file -->
     <script asp-src-include="**/notThere.js"></script>
 

@@ -220,15 +220,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             if (mode == Mode.GlobbedSrc || mode == Mode.Fallback && !string.IsNullOrEmpty(SrcInclude))
             {
-                if (TryResolveUrl(SrcInclude, encodeWebRoot: false, resolvedUrl: out resolvedUrl))
-                {
-                    SrcInclude = resolvedUrl;
-                }
-                if (TryResolveUrl(SrcExclude, encodeWebRoot: false, resolvedUrl: out resolvedUrl))
-                {
-                    SrcExclude = resolvedUrl;
-                }
-
                 BuildGlobbedScriptTags(attributes, builder);
                 if (string.IsNullOrEmpty(Src))
                 {
@@ -243,14 +234,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 if (TryResolveUrl(FallbackSrc, encodeWebRoot: false, resolvedUrl: out resolvedUrl))
                 {
                     FallbackSrc = resolvedUrl;
-                }
-                if (TryResolveUrl(FallbackSrcInclude, encodeWebRoot: false, resolvedUrl: out resolvedUrl))
-                {
-                    FallbackSrcInclude = resolvedUrl;
-                }
-                if (TryResolveUrl(FallbackSrcExclude, encodeWebRoot: false, resolvedUrl: out resolvedUrl))
-                {
-                    FallbackSrcExclude = resolvedUrl;
                 }
 
                 BuildFallbackBlock(attributes, builder);

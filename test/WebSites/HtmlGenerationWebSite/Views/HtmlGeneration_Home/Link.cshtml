@@ -12,8 +12,11 @@
     <!-- Globbed link tag with existing file -->
     <link asp-href-include="**/site.css" rel="stylesheet" title="&lt;the title>" />
 
+    <!-- Globbed link tag with comma separated pattern -->
+    <link asp-href-include="~/*.css, ~/sub/*.css" rel="stylesheet" title="&lt;the title" />
+
     <!-- Globbed link tag with existing file and exclude -->
-    <link asp-href-include="**/*.css" asp-href-exclude="**/site3*.css" rel="stylesheet" title='"the" title' />
+    <link asp-href-include=" **/*.css" asp-href-exclude="**/site3*.css" rel="stylesheet" title='"the" title' />
 
     <!-- Globbed link tag missing include -->
     <link asp-href-exclude="**/site2.css" rel="stylesheet" />
@@ -51,7 +54,7 @@
           asp-fallback-test-value="hidden" />
 
     <!-- Fallback from globbed href with exclude to static href -->
-    <link asp-href-include="**/*.min.css" asp-href-exclude="**/site3.min.css" rel="stylesheet" data-extra="test"
+    <link asp-href-include="**/*.min.css" asp-href-exclude=" **/site3.min.css" rel="stylesheet" data-extra="test"
           asp-fallback-href="~/site.css"
           asp-fallback-test-class="hidden"
           asp-fallback-test-property="visibility"

@@ -20,6 +20,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
     {
         private static readonly char[] PatternSeparator = new[] { ',' };
 
+        // Valid whitespace characters defined by the HTML5 spec.
+        private static readonly char[] ValidAttributeWhitespaceChars =
+            new[] { '\t', '\n', '\u000C', '\r', ' ' };
+
         private static readonly PathComparer DefaultPathComparer = new PathComparer();
 
         private readonly FileProviderGlobbingDirectory _baseGlobbingDirectory;
@@ -125,11 +129,11 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
         {
             var matcher = MatcherBuilder != null ? MatcherBuilder() : new Matcher();
 
-            matcher.AddIncludePatterns(includePatterns.Select(pattern => TrimLeadingSlash(pattern)));
+            matcher.AddIncludePatterns(includePatterns.Select(pattern => TrimLeadingTildeSlash(pattern)));
 
             if (excludePatterns != null)
             {
-                matcher.AddExcludePatterns(excludePatterns.Select(pattern => TrimLeadingSlash(pattern)));
+                matcher.AddExcludePatterns(excludePatterns.Select(pattern => TrimLeadingTildeSlash(pattern)));
             }
 
             var matches = matcher.Execute(_baseGlobbingDirectory);
@@ -210,11 +214,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
             }
         }
 
-        private static string TrimLeadingSlash(string value)
+        private static string TrimLeadingTildeSlash(string value)
         {
-            var result = value;
+            var result = value.Trim(ValidAttributeWhitespaceChars);
 
-            if (result.StartsWith("/", StringComparison.Ordinal) ||
+            if (result.StartsWith("~/", StringComparison.Ordinal))
+            {
+                result = result.Substring(2);
+            }
+            else if (result.StartsWith("/", StringComparison.Ordinal) ||
                 result.StartsWith("\\", StringComparison.Ordinal))
             {
                 // Trim the leading slash as the matcher runs from the provided root only anyway

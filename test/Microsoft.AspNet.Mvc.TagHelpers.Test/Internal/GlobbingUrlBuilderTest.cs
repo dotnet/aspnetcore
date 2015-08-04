@@ -86,7 +86,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
                     {
                         /* staticUrl */ "/site.css",
                         /* dirStructure */ new FileNode(null, new [] {
-                            
                             new FileNode("A", new [] {
                                 new FileNode("c.css"),
                                 new FileNode("d.css")
@@ -299,10 +298,68 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
             Mock.Get(cache).VerifyAll();
         }
 
+        public static TheoryData CommaSeparatedPatternData
+        {
+            get
+            {
+                // Include pattern, expected output
+                return new TheoryData<string, string[]>
+                {
+                    {
+                        "~/*.css, ~/*.txt",
+                        new[] { "/site.css", "/site2.txt" }
+                    },
+                    {
+                        "*.css, /*.txt",
+                        new[] { "/site.css", "/site2.txt" }
+                    },
+                    {
+                        "\\*.css,~/*.txt",
+                        new[] { "/site.css", "/site2.txt" }
+                    },
+                    {
+                        "~/*.js, *.txt",
+                        new[] { "/blank.js", "/site.js", "/site2.txt" }
+                    },
+                    {
+                        " ~/*.js,*.txt, /*.css",
+                        new[] { "/blank.js", "/site.css", "/site.js", "/site2.txt" }
+                    },
+                    {
+                        "~/blank.js, blank.js,/blank.js, \\blank.js",
+                        new[] { "/blank.js" }
+                    },
+                };
+            }
+        }
+
         [Theory]
+        [MemberData(nameof(CommaSeparatedPatternData))]
+        public void HandlesCommaSeparatedPatterns(string includePattern, string[] expectedOutput)
+        {
+            // Arrange
+            var fileProvider = MakeFileProvider(MakeDirectoryContents("site.css", "blank.js", "site2.txt", "site.js"));
+            IMemoryCache cache = null;
+            var requestPathBase = PathString.Empty;
+            var globbingUrlBuilder = new GlobbingUrlBuilder(fileProvider, cache, requestPathBase);
+
+            // Act
+            var urlList = globbingUrlBuilder.BuildUrlList(
+                staticUrl: null,
+                includePattern: includePattern,
+                excludePattern: null);
+
+            // Assert
+            Assert.Equal(expectedOutput, urlList, StringComparer.Ordinal);
+        }
+
+        [Theory]
+        [InlineData("")]
         [InlineData("/")]
-        [InlineData("\\")]
-        public void TrimsLeadingSlashFromPatterns(string leadingSlash)
+        [InlineData(" \\")]
+        [InlineData("~/")]
+        [InlineData("  ~/")]
+        public void TrimsLeadingTildeAndSlashFromPatterns(string prefix)
         {
             // Arrange
             var fileProvider = MakeFileProvider(MakeDirectoryContents("site.css", "blank.css"));
@@ -317,8 +374,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
             // Act
             var urlList = globbingUrlBuilder.BuildUrlList(
                 staticUrl: null,
-                includePattern: $"{leadingSlash}**/*.css",
-                excludePattern: $"{leadingSlash}**/*.min.css");
+                includePattern: $"{prefix}**/*.css",
+                excludePattern: $"{prefix}**/*.min.css");
 
             // Assert
             Assert.Collection(includePatterns, pattern => Assert.Equal("**/*.css", pattern));
@@ -326,12 +383,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
         }
 
         [Theory]
+        [InlineData("~/")]
         [InlineData("/")]
         [InlineData("\\")]
-        public void TrimsOnlySingleLeadingSlashFromPatterns(string leadingSlash)
+        public void TrimsOnlySingleLeadingSlashOrTildeSlashFromPatterns(string prefix)
         {
             // Arrange
-            var leadingSlashes = $"{leadingSlash}{leadingSlash}";
+            var leadingSlashes = $"{prefix}{prefix}";
             var fileProvider = MakeFileProvider(MakeDirectoryContents("site.css", "blank.css"));
             IMemoryCache cache = null;
             var requestPathBase = PathString.Empty;
@@ -348,8 +406,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
                 excludePattern: $"{leadingSlashes}**/*.min.css");
 
             // Assert
-            Assert.Collection(includePatterns, pattern => Assert.Equal($"{leadingSlash}**/*.css", pattern));
-            Assert.Collection(excludePatterns, pattern => Assert.Equal($"{leadingSlash}**/*.min.css", pattern));
+            Assert.Collection(includePatterns, pattern => Assert.Equal($"{prefix}**/*.css", pattern));
+            Assert.Collection(excludePatterns, pattern => Assert.Equal($"{prefix}**/*.min.css", pattern));
         }
 
         public class FileNode

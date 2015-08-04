@@ -253,15 +253,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             if (mode == Mode.GlobbedHref || mode == Mode.Fallback && !string.IsNullOrEmpty(HrefInclude))
             {
-                if (TryResolveUrl(HrefInclude, encodeWebRoot: false, resolvedUrl: out resolvedUrl))
-                {
-                    HrefInclude = resolvedUrl;
-                }
-                if (TryResolveUrl(HrefExclude, encodeWebRoot: false, resolvedUrl: out resolvedUrl))
-                {
-                    HrefExclude = resolvedUrl;
-                }
-
                 BuildGlobbedLinkTags(attributes, builder);
                 if (string.IsNullOrEmpty(Href))
                 {
@@ -276,14 +267,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 if (TryResolveUrl(FallbackHref, encodeWebRoot: false, resolvedUrl: out resolvedUrl))
                 {
                     FallbackHref = resolvedUrl;
-                }
-                if (TryResolveUrl(FallbackHrefInclude, encodeWebRoot: false, resolvedUrl: out resolvedUrl))
-                {
-                    FallbackHrefInclude = resolvedUrl;
-                }
-                if (TryResolveUrl(FallbackHrefExclude, encodeWebRoot: false, resolvedUrl: out resolvedUrl))
-                {
-                    FallbackHrefExclude = resolvedUrl;
                 }
 
                 BuildFallbackBlock(builder);
