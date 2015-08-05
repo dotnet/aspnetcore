@@ -9,7 +9,7 @@ using System.Resources;
 using Microsoft.Framework.Localization.Internal;
 using Xunit;
 
-namespace Microsoft.Framework.Localization.Test
+namespace Microsoft.Framework.Localization.Tests
 {
     public class ResourceManagerStringLocalizerTest
     {
