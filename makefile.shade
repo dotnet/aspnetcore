@@ -18,48 +18,10 @@ functions
         static string BASE_DIR = Directory.GetCurrentDirectory();
         static string TARGET_DIR = Path.Combine(BASE_DIR, "artifacts", "build");
         static bool SKIP_NO_CREDENTIALS = Environment.GetEnvironmentVariable("UNIVERSE_SKIP_NO_CREDENTIALS") == "1";
-        string[] repos = new[] {
-            // The repos list is topologically sorted based on build order
-            "Common",
-            "Configuration",
-            "Caching",
-            "DataProtection",
-            "DependencyInjection",
-            "EventNotification",
-            "Options",
-            "Logging",
-            "Testing",
-            "Diagnostics",
-            "Microsoft.Data.Sqlite",
-            "EntityFramework",
-            "FileSystem",
-            "HttpAbstractions",
-            "Hosting",
-            "Helios",
-            "Antiforgery",
-            "Identity",
-            "Localization",
-            "Razor",
-            "RazorTooling",
-            "Routing",
-            "Mvc",
-            "Scaffolding",
-            "Security",
-            "SignalR-Server",
-            "SignalR-SQLServer",
-            "SignalR-Redis",
-            "StaticFiles",
-            "WebListener",
-            "KestrelHttpServer",
-            "WebSockets",
-            "Session",
-            "UserSecrets",
-            "CORS",
-            "Entropy",
-        };
 
         // Doesn't build on Mono since their contracts don't match
         string[] excludeReposOnMono = new[] { "Helios" };
+        IEnumerable<string> repositories = GetRepositoriesToBuild();
 
         static bool useHttps = UseHttps(BASE_DIR);
         static string gitHubUriPrefix = useHttps ? "https://github.com/aspnet/" : "git@github.com:aspnet/";
@@ -68,7 +30,7 @@ functions
 var buildTarget = "compile"
 
 @{
-   var kBuildVersion = Environment.GetEnvironmentVariable("DNX_BUILD_VERSION");
+    var kBuildVersion = Environment.GetEnvironmentVariable("DNX_BUILD_VERSION");
     if (!string.IsNullOrEmpty(kBuildVersion))
     {
         VERSION += "-" + kBuildVersion;
@@ -94,7 +56,7 @@ var buildTarget = "compile"
 
 #git-pull target='pull'
     @{
-        Parallel.ForEach(repos, repo =>
+        Parallel.ForEach(repositories, repo =>
         {
             CloneOrUpdate(repo);
         });
@@ -106,10 +68,10 @@ var buildTarget = "compile"
 
 #fix-project-json
     @{
-        repos = repos.Except(excludeReposOnMono).ToArray();
+        repositories = repositories.Except(excludeReposOnMono).ToArray();
     }
     -// Fix project.json to remove .Net portable references
-    for each='var repo in repos'
+    for each='var repo in repositories'
         for each='var file in Files.Include(repo + "/**"  +  "/project.json")'
             update-file updateFile='${file}'
               @{
@@ -127,7 +89,7 @@ var buildTarget = "compile"
         var templatePath = Path.Combine(BASE_DIR, "build-template");
         var templateFiles = Files.Include(templatePath + Path.DirectorySeparatorChar + "*.*").Select(Path.GetFileName).ToList();
 
-        foreach(var repo in repos)
+        foreach(var repo in repositories)
         {
             foreach (string fileName in templateFiles)
             {
@@ -337,7 +299,7 @@ var buildTarget = "compile"
         var failed = new Dictionary<string, Exception>();
         var skipped = new List<string>();
 
-        foreach(var repo in repos)
+        foreach(var repo in repositories)
         {
             var blockName = string.Format("Building {0}", repo);
             if (IsTeamCity)
@@ -384,7 +346,7 @@ var buildTarget = "compile"
             }
         }
 
-        foreach(var repo in repos)
+        foreach(var repo in repositories)
         {
             Exception ex;
             if (failed.TryGetValue(repo, out ex))
@@ -416,7 +378,7 @@ var buildTarget = "compile"
 
 #only-install target='install'
     @{
-        foreach(var repo in repos)
+        foreach(var repo in repositories)
         {
             if (IsMono)
             {
@@ -440,7 +402,7 @@ var buildTarget = "compile"
 
 #git-status description='Show status of repos known by Universe'
     @{
-        foreach(var repo in repos)
+        foreach(var repo in repositories)
         {
             GitStatus(repo);
         }
@@ -455,7 +417,7 @@ var buildTarget = "compile"
         {
             throw new Exception("git-clean cancelled");
         }
-        foreach(var repo in repos)
+        foreach(var repo in repositories)
         {
             GitClean(repo);
         }
@@ -579,7 +541,7 @@ functions
               "dnvm",
             };
 
-            return Enumerable.Concat(nonDefaultRepos, repos);
+            return Enumerable.Concat(nonDefaultRepos, repositories);
         }
 
         bool ShouldSkipCopyingNugetConfig(string repo)
@@ -698,5 +660,65 @@ functions
             }
 
             return true;
+        }
+        
+        static IEnumerable<string> GetRepositoriesToBuild() 
+        {
+            IEnumerable<string> reposToBuild = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
+                // The repos list is topologically sorted based on build order
+                "Common",
+                "Configuration",
+                "Caching",
+                "DataProtection",
+                "DependencyInjection",
+                "EventNotification",
+                "Options",
+                "Logging",
+                "Testing",
+                "Diagnostics",
+                "Microsoft.Data.Sqlite",
+                "EntityFramework",
+                "FileSystem",
+                "HttpAbstractions",
+                "Hosting",
+                "Helios",
+                "Antiforgery",
+                "Identity",
+                "Localization",
+                "Razor",
+                "RazorTooling",
+                "Routing",
+                "Mvc",
+                "Scaffolding",
+                "Security",
+                "SignalR-Server",
+                "SignalR-SQLServer",
+                "SignalR-Redis",
+                "StaticFiles",
+                "WebListener",
+                "KestrelHttpServer",
+                "WebSockets",
+                "Session",
+                "UserSecrets",
+                "CORS",
+                "Entropy",
+            };
+            
+            var repositoryInclude = Environment.GetEnvironmentVariable("KOREBUILD_REPOSITORY_INCLUDE");
+            if (!string.IsNullOrEmpty(repositoryInclude))
+            {
+                reposToBuild = new HashSet<string>(
+                    repositoryInclude.Split(new string[] {","}, StringSplitOptions.RemoveEmptyEntries),
+                    StringComparer.OrdinalIgnoreCase);
+            }
+            
+            var repositoryExclude = Environment.GetEnvironmentVariable("KOREBUILD_REPOSITORY_EXCLUDE");
+            if (!string.IsNullOrEmpty(repositoryExclude)) 
+            {
+                var reposToExclude = repositoryExclude.Split(new string[] {","}, StringSplitOptions.RemoveEmptyEntries);
+                reposToBuild = reposToBuild.Except(reposToExclude);
+            }
+            
+            return reposToBuild.ToList();
         }
     }
