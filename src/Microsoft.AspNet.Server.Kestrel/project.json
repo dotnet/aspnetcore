@@ -35,8 +35,8 @@
     },
     "scripts": {
         "prepare": [
-            "dnu restore ../Microsoft.AspNet.Server.Kestrel.GeneratedCode",
-            "dnx --appbase ../Microsoft.AspNet.Server.Kestrel.GeneratedCode Microsoft.Dnx.ApplicationHost run Http/FrameHeaders.Generated.cs"
+            "dnu restore ../../tools/Microsoft.AspNet.Server.Kestrel.GeneratedCode",
+            "dnx --appbase ../../tools/Microsoft.AspNet.Server.Kestrel.GeneratedCode Microsoft.Dnx.ApplicationHost run Http/FrameHeaders.Generated.cs"
         ]
     }
 }

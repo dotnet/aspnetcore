@@ -1,10 +1,5 @@
 ﻿{
     "version": "1.0.0-*",
-    "description": "",
-    "authors": [ "" ],
-    "tags": [ "" ],
-    "projectUrl": "",
-    "licenseUrl": "",
 
     "dependencies": {
         "Microsoft.Dnx.Compilation.CSharp.Abstractions": "1.0.0-*"
