@@ -10,7 +10,7 @@
   },
 
   "commands": {
-      "run": "Kestrel",
+      "run": "Microsoft.AspNet.Server.Kestrel",
       "web": "Microsoft.AspNet.Hosting"
   }
 }

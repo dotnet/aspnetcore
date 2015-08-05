@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using Microsoft.AspNet.Hosting.Server;
 using Microsoft.Framework.Configuration;
 
-namespace Kestrel
+namespace Microsoft.AspNet.Server.Kestrel
 {
     public class ServerInformation : IServerInformation, IKestrelServerInformation
     {

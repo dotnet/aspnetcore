@@ -6,6 +6,7 @@
         "url": "git://github.com/aspnet/kestrelhttpserver"
     },
     "dependencies": {
+        "Microsoft.AspNet.Hosting": "1.0.0-*",
         "Microsoft.Dnx.Runtime.Abstractions": "1.0.0-beta7-*"
     },
     "frameworks": {

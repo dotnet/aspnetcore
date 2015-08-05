@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Server.Kestrel.Http;
 
-namespace Kestrel
+namespace Microsoft.AspNet.Server.Kestrel
 {
     public class ServerRequest : IHttpRequestFeature, IHttpResponseFeature, IHttpUpgradeFeature
     {

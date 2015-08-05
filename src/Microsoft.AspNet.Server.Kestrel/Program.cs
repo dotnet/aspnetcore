@@ -4,7 +4,7 @@
 using System;
 using System.Linq;
 
-namespace Kestrel
+namespace Microsoft.AspNet.Server.Kestrel
 {
     public class Program
     {
@@ -23,4 +23,3 @@ namespace Kestrel
         }
     }
 }
-

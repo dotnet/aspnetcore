@@ -4,7 +4,7 @@
 using System;
 using System.Globalization;
 
-namespace Kestrel
+namespace Microsoft.AspNet.Server.Kestrel
 {
     public class ServerAddress
     {

@@ -10,7 +10,7 @@ using Microsoft.AspNet.Server.Kestrel;
 using Microsoft.Dnx.Runtime;
 using Microsoft.Framework.Configuration;
 
-namespace Kestrel
+namespace Microsoft.AspNet.Server.Kestrel
 {
     /// <summary>
     /// Summary description for ServerFactory
