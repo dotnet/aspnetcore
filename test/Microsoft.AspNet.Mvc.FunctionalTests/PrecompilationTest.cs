@@ -41,10 +41,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var applicationEnvironment = serviceProvider.GetRequiredService<IApplicationEnvironment>();
 
             var viewsDirectory = Path.Combine(applicationEnvironment.ApplicationBasePath, "Views", "Home");
-            var layoutContent = File.ReadAllText(Path.Combine(viewsDirectory, "Layout.cshtml"));
             var indexContent = File.ReadAllText(Path.Combine(viewsDirectory, "Index.cshtml"));
-            var viewstartContent = File.ReadAllText(Path.Combine(viewsDirectory, "_ViewStart.cshtml"));
-            var globalContent = File.ReadAllText(Path.Combine(viewsDirectory, "_ViewImports.cshtml"));
 
             // We will render a view that writes the fully qualified name of the Assembly containing the type of
             // the view. If the view is precompiled, this assembly will be PrecompilationWebsite.
@@ -64,103 +61,19 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 Assert.StartsWith(assemblyNamePrefix, parsedResponse1.Index);
 
                 // Act - 2
-                // Touch the Layout file and verify it is now dynamically compiled.
-                await TouchFile(viewsDirectory, "Layout.cshtml");
+                // Touch the Index file and verify it remains unaffected.
+                await TouchFile(viewsDirectory, "Index.cshtml");
                 responseContent = await client.GetStringAsync("http://localhost/Home/Index");
 
                 // Assert - 2
                 var response2 = new ParsedResponse(responseContent);
                 Assert.StartsWith(assemblyNamePrefix, response2.ViewStart);
                 Assert.StartsWith(assemblyNamePrefix, response2.Index);
-                Assert.DoesNotContain(assemblyNamePrefix, response2.Layout);
-
-                // Act - 3
-                // Touch the _ViewStart file and verify it is is dynamically compiled.
-                await TouchFile(viewsDirectory, "_ViewStart.cshtml");
-                responseContent = await client.GetStringAsync("http://localhost/Home/Index");
-
-                // Assert - 3
-                var response3 = new ParsedResponse(responseContent);
-                Assert.NotEqual(assemblyNamePrefix, response3.ViewStart);
-                Assert.Equal(response2.Index, response3.Index);
-                Assert.Equal(response2.Layout, response3.Layout);
-
-                // Act - 4
-                // Touch the _ViewImports file and verify it causes all files to recompile.
-                await TouchFile(viewsDirectory, "_ViewImports.cshtml");
-                responseContent = await client.GetStringAsync("http://localhost/Home/Index");
-
-                // Assert - 4
-                var response4 = new ParsedResponse(responseContent);
-                Assert.NotEqual(response3.ViewStart, response4.ViewStart);
-                Assert.NotEqual(response3.Index, response4.Index);
-                Assert.NotEqual(response3.Layout, response4.Layout);
-
-                // Act - 5
-                // Touch Index file and verify it is the only page that recompiles.
-                await TouchFile(viewsDirectory, "Index.cshtml");
-                responseContent = await client.GetStringAsync("http://localhost/Home/Index");
-
-                // Assert - 5
-                var response5 = new ParsedResponse(responseContent);
-                // Layout and _ViewStart should not have changed.
-                Assert.Equal(response4.Layout, response5.Layout);
-                Assert.Equal(response4.ViewStart, response5.ViewStart);
-                Assert.NotEqual(response4.Index, response5.Index);
-
-                // Act - 6
-                // Touch the _ViewImports file. This time, we'll verify the Non-precompiled -> Non-precompiled workflow.
-                await TouchFile(viewsDirectory, "_ViewImports.cshtml");
-                responseContent = await client.GetStringAsync("http://localhost/Home/Index");
-
-                // Assert - 6
-                var response6 = new ParsedResponse(responseContent);
-                // Everything should've recompiled.
-                Assert.NotEqual(response5.ViewStart, response6.ViewStart);
-                Assert.NotEqual(response5.Index, response6.Index);
-                Assert.NotEqual(response5.Layout, response6.Layout);
-
-                // Act - 7
-                // Add a new _ViewImports file
-                var newViewImports = await TouchFile(Path.GetDirectoryName(viewsDirectory), "_ViewImports.cshtml");
-                responseContent = await client.GetStringAsync("http://localhost/Home/Index");
-
-                // Assert - 7
-                // Everything should've recompiled.
-                var response7 = new ParsedResponse(responseContent);
-                Assert.NotEqual(response6.ViewStart, response7.ViewStart);
-                Assert.NotEqual(response6.Index, response7.Index);
-                Assert.NotEqual(response6.Layout, response7.Layout);
-
-                // Act - 8
-                // Remove new _ViewImports file
-                File.Delete(newViewImports);
-                await Task.Delay(_cacheDelayInterval);
-                responseContent = await client.GetStringAsync("http://localhost/Home/Index");
-
-                // Assert - 8
-                // Everything should've recompiled.
-                var response8 = new ParsedResponse(responseContent);
-                Assert.NotEqual(response7.ViewStart, response8.ViewStart);
-                Assert.NotEqual(response7.Index, response8.Index);
-                Assert.NotEqual(response7.Layout, response8.Layout);
-
-                // Act - 9
-                // Refetch and verify we get cached types
-                responseContent = await client.GetStringAsync("http://localhost/Home/Index");
-
-                // Assert - 9
-                var response9 = new ParsedResponse(responseContent);
-                Assert.Equal(response8.ViewStart, response9.ViewStart);
-                Assert.Equal(response8.Index, response9.Index);
-                Assert.Equal(response8.Layout, response9.Layout);
+                Assert.StartsWith(assemblyNamePrefix, response2.Layout);
             }
             finally
             {
-                File.WriteAllText(Path.Combine(viewsDirectory, "Layout.cshtml"), layoutContent.TrimEnd(' '));
                 File.WriteAllText(Path.Combine(viewsDirectory, "Index.cshtml"), indexContent.TrimEnd(' '));
-                File.WriteAllText(Path.Combine(viewsDirectory, "_ViewStart.cshtml"), viewstartContent.TrimEnd(' '));
-                File.WriteAllText(Path.Combine(viewsDirectory, "_ViewImports.cshtml"), globalContent.TrimEnd(' '));
             }
         }
 
@@ -186,51 +99,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Assert
             Assert.StartsWith(expected, responseContent.Trim());
-        }
-
-        [ConditionalTheory]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        public async Task DeletingPrecompiledGlobalFile_PriorToFirstRequestToAView_CausesViewToBeRecompiled()
-        {
-            // Arrange
-            var expected = GetAssemblyNamePrefix();
-            IServiceCollection serviceCollection = null;
-            var server = TestHelper.CreateServer(_app, SiteName, services =>
-            {
-                _configureServices(services);
-                serviceCollection = services;
-            });
-            var client = server.CreateClient();
-
-            var serviceProvider = serviceCollection.BuildServiceProvider();
-            var applicationEnvironment = serviceProvider.GetRequiredService<IApplicationEnvironment>();
-
-            var viewsDirectory = Path.Combine(applicationEnvironment.ApplicationBasePath,
-                                              "Views",
-                                              "ViewImportsDelete");
-            var globalPath = Path.Combine(viewsDirectory, "_ViewImports.cshtml");
-            var globalContent = File.ReadAllText(globalPath);
-
-            // Act - 1
-            // Query the Test view so we know the compiler cache gets populated.
-            var response = await client.GetStringAsync("/Test");
-
-            // Assert - 1
-            Assert.Equal("Test", response.Trim());
-
-            try
-            {
-                // Act - 2
-                File.Delete(globalPath);
-                var response2 = await client.GetStringAsync("http://localhost/Home/GlobalDeletedPriorToFirstRequest");
-
-                // Assert - 2
-                Assert.DoesNotContain(expected, response2.Trim());
-            }
-            finally
-            {
-                File.WriteAllText(globalPath, globalContent);
-            }
         }
 
         [ConditionalTheory]

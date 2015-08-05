@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
         public string SymbolsResourceName { get; protected set; }
 
         /// <summary>
-        /// Gets the <see cref="IReadOnlyList{T}{T}"/> of <see cref="RazorFileInfo"/>s.
+        /// Gets the <see cref="IReadOnlyList{T}"/> of <see cref="RazorFileInfo"/>s.
         /// </summary>
         public IReadOnlyList<RazorFileInfo> FileInfos { get; protected set; }
 

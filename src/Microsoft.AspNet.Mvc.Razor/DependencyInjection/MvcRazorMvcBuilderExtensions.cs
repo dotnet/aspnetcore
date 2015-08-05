@@ -2,10 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.AspNet.Mvc.Razor.Compilation;
 using Microsoft.AspNet.Mvc.Razor.Directives;
+using Microsoft.AspNet.Mvc.Razor.Precompilation;
 using Microsoft.Framework.Caching.Memory;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
@@ -14,6 +18,8 @@ namespace Microsoft.Framework.DependencyInjection
 {
     public static class MvcRazorMvcBuilderExtensions
     {
+        private static readonly Type RazorFileInfoCollectionType = typeof(RazorFileInfoCollection);
+
         public static IMvcBuilder AddRazorViewEngine([NotNull] this IMvcBuilder builder)
         {
             builder.AddViews();
@@ -34,6 +40,28 @@ namespace Microsoft.Framework.DependencyInjection
             }
 
             return builder;
+        }
+
+        public static IMvcBuilder AddPrecompiledRazorViews(
+            [NotNull] this IMvcBuilder builder,
+            [NotNull] params Assembly[] assemblies)
+        {
+            AddRazorViewEngine(builder);
+
+            var razorFileInfos = GetFileInfoCollections(assemblies);
+            builder.Services.TryAddEnumerable(ServiceDescriptor.Instance(razorFileInfos));
+
+            return builder;
+        }
+
+        public static IServiceCollection AddPrecompiledRazorViews(
+            [NotNull] this IServiceCollection collection,
+            [NotNull] params Assembly[] assemblies)
+        {
+            var razorFileInfos = GetFileInfoCollections(assemblies);
+            collection.TryAddEnumerable(ServiceDescriptor.Instance(razorFileInfos));
+
+            return collection;
         }
 
         public static IMvcBuilder ConfigureRazorViewEngine(
@@ -91,5 +119,17 @@ namespace Microsoft.Framework.DependencyInjection
             // Consumed by the Cache tag helper to cache results across the lifetime of the application.
             services.TryAddSingleton<IMemoryCache, MemoryCache>();
         }
+
+        private static IEnumerable<RazorFileInfoCollection> GetFileInfoCollections(IEnumerable<Assembly> assemblies) =>
+            assemblies
+                .SelectMany(assembly => assembly.ExportedTypes)
+                .Where(IsValidRazorFileInfoCollection)
+                .Select(Activator.CreateInstance)
+                .Cast<RazorFileInfoCollection>();
+
+        internal static bool IsValidRazorFileInfoCollection(Type type) =>
+            RazorFileInfoCollectionType.IsAssignableFrom(type) &&
+            !type.GetTypeInfo().IsAbstract &&
+            !type.GetTypeInfo().ContainsGenericParameters;
     }
 }
