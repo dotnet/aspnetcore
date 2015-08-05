@@ -72,8 +72,7 @@ namespace Microsoft.AspNet.Http.Authentication.Internal
                 await handler.ChallengeAsync(challengeContext);
             }
 
-            // The default Challenge with no scheme is always accepted
-            if (!challengeContext.Accepted && !string.IsNullOrEmpty(authenticationScheme))
+            if (!challengeContext.Accepted)
             {
                 throw new InvalidOperationException($"The following authentication scheme was not accepted: {authenticationScheme}");
             }
@@ -105,7 +104,7 @@ namespace Microsoft.AspNet.Http.Authentication.Internal
                 await handler.SignOutAsync(signOutContext);
             }
 
-            if (!string.IsNullOrWhiteSpace(authenticationScheme) && !signOutContext.Accepted)
+            if (!signOutContext.Accepted)
             {
                 throw new InvalidOperationException($"The following authentication scheme was not accepted: {authenticationScheme}");
             }

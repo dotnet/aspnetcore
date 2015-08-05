@@ -21,13 +21,14 @@ namespace Microsoft.AspNet.Http.Authentication.Internal
             await Assert.ThrowsAsync<InvalidOperationException>(async () => await context.Authentication.AuthenticateAsync("Foo"));
         }
 
-        [Fact]
-        public async Task ChallengeWithNoAuthMiddlewareMayThrow()
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        [InlineData("Foo")]
+        public async Task ChallengeWithNoAuthMiddlewareMayThrow(string scheme)
         {
             var context = CreateContext();
-            await context.Authentication.ChallengeAsync();
-            Assert.Equal(200, context.Response.StatusCode);
-            await Assert.ThrowsAsync<InvalidOperationException>(() => context.Authentication.ChallengeAsync("Foo"));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => context.Authentication.ChallengeAsync(scheme));
         }
 
         [Fact]
