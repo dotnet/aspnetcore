@@ -34,6 +34,9 @@
         "allowUnsafe": true
     },
     "scripts": {
-        "prepare": "dnx --appbase ../Microsoft.AspNet.Server.Kestrel.GeneratedCode Microsoft.Dnx.ApplicationHost run Http/FrameHeaders.Generated.cs"
+        "prepare": [
+            "dnu restore ../Microsoft.AspNet.Server.Kestrel.GeneratedCode",
+            "dnx --appbase ../Microsoft.AspNet.Server.Kestrel.GeneratedCode Microsoft.Dnx.ApplicationHost run Http/FrameHeaders.Generated.cs"
+        ]
     }
 }
