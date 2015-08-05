@@ -7,7 +7,7 @@
     "licenseUrl": "",
 
     "dependencies": {
-        "Microsoft.Framework.Runtime.Roslyn": "1.0.0-beta6-*"
+        "Microsoft.Dnx.Compilation.CSharp.Abstractions": "1.0.0-*"
     },
 
     "commands": {
@@ -17,7 +17,9 @@
     "frameworks": {
         "dnx451": {
             "frameworkAssemblies": {
-                "System.Runtime": "4.0.10.0"
+              "System.Runtime": "4.0.10.0",
+              "System.Text.Encoding": "4.0.0.0",
+              "System.Threading.Tasks": "4.0.0.0"
             }
         }
     }
