@@ -60,6 +60,12 @@ namespace Microsoft.AspNet.Localization
                 queryUICulture = queryCulture;
             }
 
+            if (queryCulture == null && queryUICulture != null)
+            {
+                // Value for UI culture but not for culture so default to UI culture value for both
+                queryCulture = queryUICulture;
+            }
+            
             var culture = CultureInfoCache.GetCultureInfo(queryCulture);
             var uiCulture = CultureInfoCache.GetCultureInfo(queryUICulture);
 
