@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.22823.1
+VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{FB313677-BAB3-4E49-8CDB-4FA4A9564767}"
 EndProject
@@ -27,6 +27,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{B723DB83-A670-4BCB-95FB-195361331AD2}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Localization.Tests", "test\Microsoft.Framework.Localization.Tests\Microsoft.Framework.Localization.Tests.xproj", "{287AD58D-DF34-4F16-8616-FD78FA1CADF9}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Localization.Tests", "test\Microsoft.AspNet.Localization.Tests\Microsoft.AspNet.Localization.Tests.xproj", "{19A2A931-5C60-47A0-816A-0DC9C4CE5736}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -62,6 +64,10 @@ Global
 		{287AD58D-DF34-4F16-8616-FD78FA1CADF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{287AD58D-DF34-4F16-8616-FD78FA1CADF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{287AD58D-DF34-4F16-8616-FD78FA1CADF9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{19A2A931-5C60-47A0-816A-0DC9C4CE5736}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{19A2A931-5C60-47A0-816A-0DC9C4CE5736}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{19A2A931-5C60-47A0-816A-0DC9C4CE5736}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{19A2A931-5C60-47A0-816A-0DC9C4CE5736}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -74,5 +80,6 @@ Global
 		{BD22AE1C-6631-4DA6-874D-0DC0F803CEAB} = {FB313677-BAB3-4E49-8CDB-4FA4A9564767}
 		{F3988D3A-A4C8-4FD7-BAFE-13E0D0A1659A} = {FB313677-BAB3-4E49-8CDB-4FA4A9564767}
 		{287AD58D-DF34-4F16-8616-FD78FA1CADF9} = {B723DB83-A670-4BCB-95FB-195361331AD2}
+		{19A2A931-5C60-47A0-816A-0DC9C4CE5736} = {B723DB83-A670-4BCB-95FB-195361331AD2}
 	EndGlobalSection
 EndGlobal
