@@ -43,6 +43,7 @@ namespace Microsoft.AspNet.Identity.Test
         [InlineData("test_email@foo.com", true)]
         [InlineData("hao", true)]
         [InlineData("test123", true)]
+        [InlineData("hyphen-yes@foo-bar.com", true)]
         [InlineData("!noway", false)]
         [InlineData("foo@boz#.com", false)]
         public async Task DefaultAlphaNumericOnlyUserNameValidation(string userName, bool expectSuccess)
@@ -76,7 +77,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             // Setup
             var manager = MockHelpers.TestUserManager(new NoopUserStore());
-            manager.Options.User.UserNameValidationRegex = null;
+            manager.Options.User.AllowedUserNameCharacters = null;
             var validator = new UserValidator<TestUser>();
             var user = new TestUser {UserName = userName};
 

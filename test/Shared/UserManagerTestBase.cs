@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Identity.Test
                 options.Password.RequireLowercase = false;
                 options.Password.RequireNonLetterOrDigit = false;
                 options.Password.RequireUppercase = false;
-                options.User.UserNameValidationRegex = null;
+                options.User.AllowedUserNameCharacters = null;
             });
         }
 

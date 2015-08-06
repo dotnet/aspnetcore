@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 #if DNX451
 using System.Net.Mail;
 #endif
@@ -65,8 +66,8 @@ namespace Microsoft.AspNet.Identity
             {
                 errors.Add(Describer.InvalidUserName(userName));
             }
-            else if (manager.Options.User.UserNameValidationRegex != null && 
-                !Regex.IsMatch(userName, manager.Options.User.UserNameValidationRegex, RegexOptions.CultureInvariant, manager.Options.User.UserNameValidationRegexTimeout))
+            else if (!string.IsNullOrEmpty(manager.Options.User.AllowedUserNameCharacters) &&
+                userName.Any(c => !manager.Options.User.AllowedUserNameCharacters.Contains(c)))
             {
                 errors.Add(Describer.InvalidUserName(userName));
             }
