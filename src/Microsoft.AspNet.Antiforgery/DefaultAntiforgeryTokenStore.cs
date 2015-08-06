@@ -53,6 +53,14 @@ namespace Microsoft.AspNet.Antiforgery
                     Resources.FormatAntiforgery_CookieToken_MustBeProvided(_options.CookieName));
             }
 
+            if (!httpContext.Request.HasFormContentType)
+            {
+                // Check the content-type before accessing the form collection to make sure
+                // we throw gracefully.
+                throw new InvalidOperationException(
+                    Resources.FormatAntiforgery_FormToken_MustBeProvided(_options.FormFieldName));
+            }
+
             var form = await httpContext.Request.ReadFormAsync();
             var formField = form[_options.FormFieldName];
             if (string.IsNullOrEmpty(formField))

@@ -187,10 +187,43 @@ namespace Microsoft.AspNet.Antiforgery
         }
 
         [Fact]
+        public async Task GetRequestTokens_NonFormContentType_Throws()
+        {
+            // Arrange
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.ContentType = "application/json";
+
+            // Will not be accessed
+            httpContext.Request.Form = null;
+            httpContext.Request.Cookies = new ReadableStringCollection(new Dictionary<string, string[]>()
+            {
+                { "cookie-name", new string[] { "cookie-value" } },
+            });
+
+            var options = new AntiforgeryOptions()
+            {
+                CookieName = "cookie-name",
+                FormFieldName = "form-field-name",
+            };
+
+            var tokenStore = new DefaultAntiforgeryTokenStore(
+                optionsAccessor: new TestOptionsManager(options),
+                tokenSerializer: null);
+
+            // Act
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                async () => await tokenStore.GetRequestTokensAsync(httpContext));
+
+            // Assert         
+            Assert.Equal("The required antiforgery form field \"form-field-name\" is not present.", exception.Message);
+        }
+
+        [Fact]
         public async Task GetRequestTokens_FormFieldIsEmpty_Throws()
         {
             // Arrange
             var httpContext = new DefaultHttpContext();
+            httpContext.Request.ContentType = "application/x-www-form-urlencoded";
             httpContext.Request.Form = new FormCollection(new Dictionary<string, string[]>());
             httpContext.Request.Cookies = new ReadableStringCollection(new Dictionary<string, string[]>()
             {
@@ -220,6 +253,7 @@ namespace Microsoft.AspNet.Antiforgery
         {
             // Arrange
             var httpContext = new DefaultHttpContext();
+            httpContext.Request.ContentType = "application/x-www-form-urlencoded";
             httpContext.Request.Form = new FormCollection(new Dictionary<string, string[]>()
             {
                 { "form-field-name", new string[] { "form-value" } },
