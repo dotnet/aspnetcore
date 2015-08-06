@@ -238,7 +238,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             return Users.FirstOrDefaultAsync(u => u.NormalizedUserName == normalizedUserName, cancellationToken);
         }
 
-        public IQueryable<TUser> Users
+        public virtual IQueryable<TUser> Users
         {
             get { return Context.Set<TUser>(); }
         }

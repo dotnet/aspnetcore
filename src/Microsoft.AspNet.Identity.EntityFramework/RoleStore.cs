@@ -285,7 +285,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             }
         }
 
-        public IQueryable<TRole> Roles
+        public virtual IQueryable<TRole> Roles
         {
             get { return Context.Set<TRole>(); }
         }
