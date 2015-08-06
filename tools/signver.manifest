@@ -93,7 +93,9 @@
     <File Name="System.Runtime.Numerics.dll" Ignore="yes" />
     <File Name="System.Runtime.Serialization.dll" Ignore="yes" />
     <File Name="System.Runtime.Serialization.Primitives.dll" Ignore="yes" />
-    <File Name="System.Security.Cryptography.DeriveBytes.dll" Ignore="yes" />
+    <File Name="System.Security.Cryptography.Algorithms.dll" Ignore="yes" />
+    <File Name="System.Security.Cryptography.Csp.dll" Ignore="yes" />
+    <File Name="System.Security.Cryptography.DeriveBytes.dll" Ignore="yes" />    
     <File Name="System.Security.Cryptography.dll" Ignore="yes" />
     <File Name="System.Security.Cryptography.Encoding.dll" Ignore="yes" />
     <File Name="System.Security.Cryptography.Encryption.Aes.dll" Ignore="yes" />
@@ -101,6 +103,8 @@
     <File Name="System.Security.Cryptography.HashAlgorithms.MD5.dll" Ignore="yes" />
     <File Name="System.Security.Cryptography.HashAlgorithms.SHA1.dll" Ignore="yes" />
     <File Name="System.Security.Cryptography.HashAlgorithms.SHA2.dll" Ignore="yes" />
+    <File Name="System.Security.Cryptography.OpenSsl.dll" Ignore="yes" />
+    <File Name="System.Security.Cryptography.Primitives.dll" Ignore="yes" />
     <File Name="System.Security.Cryptography.RandomNumberGenerator.dll" Ignore="yes" />
     <File Name="System.Security.Cryptography.X509Certificates.dll" Ignore="yes" />
     <File Name="System.Security.Principal.dll" Ignore="yes" />
