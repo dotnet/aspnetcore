@@ -53,12 +53,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
         protected virtual string GenerateFile([NotNull] RazorFileInfo fileInfo)
         {
             return string.Format(FileFormat,
-                                 fileInfo.LastModified.ToFileTime(),
-                                 fileInfo.Length,
                                  fileInfo.RelativePath,
-                                 fileInfo.FullTypeName,
-                                 fileInfo.Hash,
-                                 fileInfo.HashAlgorithmVersion);
+                                 fileInfo.FullTypeName);
         }
 
         protected virtual string TopFormat
@@ -119,12 +115,8 @@ namespace __ASP_ASSEMBLY
          $@"
             info = new {nameof(RazorFileInfo)}
             {{{{
-                {nameof(RazorFileInfo.LastModified)} = DateTime.FromFileTimeUtc({{0:D}}).ToLocalTime(),
-                {nameof(RazorFileInfo.Length)} = {{1:D}},
-                {nameof(RazorFileInfo.RelativePath)} = @""{{2}}"",
-                {nameof(RazorFileInfo.FullTypeName)} = @""{{3}}"",
-                {nameof(RazorFileInfo.Hash)} = ""{{4}}"",
-                {nameof(RazorFileInfo.HashAlgorithmVersion)} = {{5}},
+                {nameof(RazorFileInfo.RelativePath)} = @""{{0}}"",
+                {nameof(RazorFileInfo.FullTypeName)} = @""{{1}}""
             }}}};
             fileInfos.Add(info);
 ";
