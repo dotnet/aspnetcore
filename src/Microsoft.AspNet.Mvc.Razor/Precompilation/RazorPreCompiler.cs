@@ -64,12 +64,11 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
             var result = CreateFileInfoCollection();
             if (result != null)
             {
-                var collectionGenerator = new RazorFileInfoCollectionGenerator(
-                                                result,
-                                                CompilationSettings);
-
-                var tree = collectionGenerator.GenerateCollection();
-                CompileContext.Compilation = CompileContext.Compilation.AddSyntaxTrees(tree);
+                var generatedCode = RazorFileInfoCollectionGenerator.GenerateCode(result);
+                var syntaxTree = CSharpSyntaxTree.ParseText(
+                    generatedCode,
+                    SyntaxTreeGenerator.GetParseOptions(CompilationSettings));
+                CompileContext.Compilation = CompileContext.Compilation.AddSyntaxTrees(syntaxTree);
             }
         }
 
