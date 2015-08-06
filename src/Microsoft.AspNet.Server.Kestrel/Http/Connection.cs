@@ -4,6 +4,7 @@
 using System;
 using Microsoft.AspNet.Server.Kestrel.Networking;
 using System.Diagnostics;
+using System.Threading;
 
 namespace Microsoft.AspNet.Server.Kestrel.Http
 {
@@ -14,6 +15,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         private static readonly Action<UvStreamHandle, int, Exception, object> _readCallback = ReadCallback;
         private static readonly Func<UvStreamHandle, int, object, Libuv.uv_buf_t> _allocCallback = AllocCallback;
+
+        private int _connectionState;
 
         private static Libuv.uv_buf_t AllocCallback(UvStreamHandle handle, int suggestedSize, object state)
         {
@@ -104,6 +107,12 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             switch (endType)
             {
                 case ProduceEndType.SocketShutdownSend:
+                    if (Interlocked.CompareExchange(ref _connectionState, ConnectionState.Shutdown, ConnectionState.Open)
+                            != ConnectionState.Open)
+                    {
+                        return;
+                    }
+
                     KestrelTrace.Log.ConnectionWriteFin(_connectionId, 0);
                     Thread.Post(
                         x =>
@@ -128,6 +137,12 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         _frame);
                     break;
                 case ProduceEndType.SocketDisconnect:
+                    if (Interlocked.Exchange(ref _connectionState, ConnectionState.Disconnected)
+                            == ConnectionState.Disconnected)
+                    {
+                        return;
+                    }
+
                     KestrelTrace.Log.ConnectionDisconnect(_connectionId);
                     Thread.Post(
                         x =>
@@ -138,6 +153,13 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         _socket);
                     break;
             }
+        }
+
+        private static class ConnectionState
+        {
+            public const int Open = 0;
+            public const int Shutdown = 1;
+            public const int Disconnected = 2;
         }
     }
 }
