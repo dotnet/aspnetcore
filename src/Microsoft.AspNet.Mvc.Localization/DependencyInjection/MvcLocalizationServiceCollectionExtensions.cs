@@ -10,10 +10,13 @@ using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.Framework.DependencyInjection
 {
+    /// <summary>
+    /// Extension methods for configuring MVC view localization.
+    /// </summary>
     public static class MvcLocalizationServiceCollectionExtensions
     {
         /// <summary>
-        /// Adds Mvc localization to the application.
+        /// Adds MVC localization to the application.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
         /// <returns>The <see cref="IServiceCollection"/>.</returns>
@@ -23,10 +26,10 @@ namespace Microsoft.Framework.DependencyInjection
         }
 
         /// <summary>
-        ///  Adds Mvc localization to the application.
+        ///  Adds MVC localization to the application.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
-        /// <param name="option">The view format for localized views.</param>
+        /// <param name="format">The view format for localized views.</param>
         /// <returns>The <see cref="IServiceCollection"/>.</returns>
         public static IServiceCollection AddMvcLocalization(
             [NotNull] this IServiceCollection services,
@@ -40,7 +43,7 @@ namespace Microsoft.Framework.DependencyInjection
                 DefaultOrder.DefaultFrameworkSortOrder);
 
             services.TryAdd(ServiceDescriptor.Singleton<IHtmlLocalizerFactory, HtmlLocalizerFactory>());
-            services.TryAdd(ServiceDescriptor.Transient(typeof(IHtmlLocalizer<>), typeof(HtmlLocalizer<>))); 
+            services.TryAdd(ServiceDescriptor.Transient(typeof(IHtmlLocalizer<>), typeof(HtmlLocalizer<>)));
             services.TryAdd(ServiceDescriptor.Transient<IViewLocalizer, ViewLocalizer>());
             if (!services.Any(sd => sd.ServiceType == typeof(IHtmlEncoder)))
             {

@@ -5,15 +5,15 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Microsoft.AspNet.Mvc.Localization;
 using Microsoft.AspNet.Mvc.Razor;
-using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Localization;
 using Microsoft.Framework.OptionsModel;
 using Microsoft.Framework.WebEncoders;
 using Microsoft.Framework.WebEncoders.Testing;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Localization.Test
+namespace Microsoft.Framework.DependencyInjection
 {
     public class MvcLocalizationServiceCollectionExtensionsTest
     {
