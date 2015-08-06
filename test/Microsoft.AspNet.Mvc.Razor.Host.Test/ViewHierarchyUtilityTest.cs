@@ -221,35 +221,5 @@ namespace Microsoft.AspNet.Mvc.Razor
             // Assert
             Assert.Empty(result);
         }
-
-        [ConditionalTheory]
-        // https://github.com/aspnet/Mvc/issues/2745
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        public void GetViewStartLocations_ReturnsEmptySequence_IfPathIsRooted()
-        {
-            // Arrange
-            var absolutePath = Path.Combine(Directory.GetCurrentDirectory(), "Index.cshtml");
-
-            // Act
-            var result = ViewHierarchyUtility.GetViewStartLocations(absolutePath);
-
-            // Assert
-            Assert.Empty(result);
-        }
-
-        [ConditionalTheory]
-        // https://github.com/aspnet/Mvc/issues/2745
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        public void GetViewImportsLocations_ReturnsEmptySequence_IfPathIsRooted()
-        {
-            // Arrange
-            var absolutePath = Path.Combine(Directory.GetCurrentDirectory(), "Index.cshtml");
-
-            // Act
-            var result = ViewHierarchyUtility.GetViewImportsLocations(absolutePath);
-
-            // Assert
-            Assert.Empty(result);
-        }
     }
 }

@@ -68,12 +68,6 @@ namespace Microsoft.AspNet.Mvc.Razor
                 relativePath = relativePath.Substring(1);
             }
 
-            if (Path.IsPathRooted(relativePath))
-            {
-                // If the path looks like it's not app relative, don't attempt to construct paths.
-                return Enumerable.Empty<string>();
-            }
-
             if (string.Equals(Path.GetFileName(relativePath), fileName, StringComparison.OrdinalIgnoreCase))
             {
                 // If the specified path is for the file hierarchy being constructed, then the first file that applies
