@@ -273,11 +273,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var result = provider.Filter(bindingSource);
 
             // Assert
-            CheckFilterExcludeResult(result);
-        }
-
-        protected virtual void CheckFilterExcludeResult(IValueProvider result)
-        {
             Assert.Null(result);
         }
 

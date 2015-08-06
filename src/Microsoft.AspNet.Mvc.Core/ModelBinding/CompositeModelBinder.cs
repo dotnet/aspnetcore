@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
@@ -39,6 +40,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 !string.IsNullOrEmpty(bindingContext.ModelName);
 
             var newBindingContext = CreateNewBindingContext(bindingContext, bindingContext.ModelName);
+            if (newBindingContext == null)
+            {
+                // Unable to find a value provider for this binding source. Binding will fail.
+                return null;
+            }
+
             newBindingContext.IsFirstChanceBinding = isFirstChanceBinding;
             var modelBindingResult = await TryBind(newBindingContext);
 
@@ -46,12 +53,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 // Fall back to empty prefix.
                 newBindingContext = CreateNewBindingContext(bindingContext, modelName: string.Empty);
+                Debug.Assert(newBindingContext != null, "Should have failed on first attempt.");
+
                 modelBindingResult = await TryBind(newBindingContext);
             }
 
             if (modelBindingResult == null)
             {
-                return null; // something went wrong
+                // Unable to bind or something went wrong.
+                return null;
             }
 
             bindingContext.OperationBindingContext.BodyBindingState =
@@ -176,6 +186,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 if (valueProvider != null)
                 {
                     newBindingContext.ValueProvider = valueProvider.Filter(bindingSource);
+                    if (newBindingContext.ValueProvider == null)
+                    {
+                        // Unable to find a value provider for this binding source.
+                        return null;
+                    }
                 }
             }
 

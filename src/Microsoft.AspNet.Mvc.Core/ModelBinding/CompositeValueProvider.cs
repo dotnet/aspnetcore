@@ -137,6 +137,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 }
             }
 
+            if (filteredValueProviders.Count == 0)
+            {
+                // Do not create an empty CompositeValueProvider.
+                return null;
+            }
+
             if (filteredValueProviders.Count == Count)
             {
                 // No need for a new CompositeValueProvider.

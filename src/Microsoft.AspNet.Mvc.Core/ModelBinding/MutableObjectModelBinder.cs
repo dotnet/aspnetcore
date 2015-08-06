@@ -115,7 +115,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         private async Task<bool> CanValueBindAnyModelProperties(MutableObjectBinderContext context)
         {
-            // If there are no properties on the model, there is nothing to bind. We are here means this is not a top 
+            // If there are no properties on the model, there is nothing to bind. We are here means this is not a top
             // level object. So we return false.
             if (context.PropertyMetadata == null || context.PropertyMetadata.Count == 0)
             {
@@ -196,6 +196,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 if (rootValueProvider != null)
                 {
                     valueProvider = rootValueProvider.Filter(bindingSource);
+                    if (valueProvider == null)
+                    {
+                        // Unable to find a value provider for this binding source. Binding will fail.
+                        return false;
+                    }
                 }
             }
 

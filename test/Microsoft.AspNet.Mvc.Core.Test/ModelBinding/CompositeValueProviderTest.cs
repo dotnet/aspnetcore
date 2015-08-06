@@ -28,14 +28,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return new CompositeValueProvider(new[] { emptyValueProvider, valueProvider });
         }
 
-        protected override void CheckFilterExcludeResult(IValueProvider result)
-        {
-            // CompositeValueProvider returns an empty instance rather than null. CompositeModelBinder and
-            // MutableObjectModelBinder depend on this empty instance.
-            var compositeProvider = Assert.IsType<CompositeValueProvider>(result);
-            Assert.Empty(compositeProvider);
-        }
-
 #if DNX451
         [Fact]
         public async Task GetKeysFromPrefixAsync_ReturnsResultFromFirstValueProviderThatReturnsValues()
