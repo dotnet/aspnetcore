@@ -67,12 +67,13 @@
     <File Name="System.Linq.Queryable.dll" Ignore="yes" />
     <File Name="System.Net.NetworkInformation.dll" Ignore="yes" />
     <File Name="System.Net.Primitives.dll" Ignore="yes" />
-	<File Name="System.Net.Requests.dll" Ignore="yes" />
+    <File Name="System.Net.Requests.dll" Ignore="yes" />
     <File Name="System.Net.Sockets.dll" Ignore="yes" />
+    <File Name="System.Numerics.Vectors.WindowsRuntime.dll" Ignore="yes" />
     <File Name="System.ObjectModel.dll" Ignore="yes" />
     <File Name="System.Observable.dll" Ignore="yes" />
-	<File Name="System.Private.CompilerServices.ICastable.dll" Ignore="yes" />
-	<File Name="System.Private.Uri.dll" Ignore="yes" />
+    <File Name="System.Private.CompilerServices.ICastable.dll" Ignore="yes" />
+    <File Name="System.Private.Uri.dll" Ignore="yes" />
     <File Name="System.Reflection.Compatibility.dll" Ignore="yes" />
     <File Name="System.Reflection.dll" Ignore="yes" />
     <File Name="System.Reflection.Emit.dll" Ignore="yes" />
@@ -94,6 +95,7 @@
     <File Name="System.Runtime.Serialization.dll" Ignore="yes" />
     <File Name="System.Runtime.Serialization.Primitives.dll" Ignore="yes" />
     <File Name="System.Security.Cryptography.Algorithms.dll" Ignore="yes" />
+    <File Name="System.Security.Cryptography.Cng.dll" Ignore="yes" />
     <File Name="System.Security.Cryptography.Csp.dll" Ignore="yes" />
     <File Name="System.Security.Cryptography.DeriveBytes.dll" Ignore="yes" />    
     <File Name="System.Security.Cryptography.dll" Ignore="yes" />
