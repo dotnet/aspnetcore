@@ -424,7 +424,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
                         typeof(EnumWithDisplayNames),
                         new List<KeyValuePair<string, string>>
                         {
-                            new KeyValuePair<string, string>("cero", "0"),
+                            new KeyValuePair<string, string>(string.Empty, "0"),
                             new KeyValuePair<string, string>(nameof(EnumWithDisplayNames.One), "1"),
                             new KeyValuePair<string, string>("dos", "2"),
                             new KeyValuePair<string, string>("tres", "3"),
@@ -436,7 +436,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
                         typeof(EnumWithDisplayNames?),
                         new List<KeyValuePair<string, string>>
                         {
-                            new KeyValuePair<string, string>("cero", "0"),
+                            new KeyValuePair<string, string>(string.Empty, "0"),
                             new KeyValuePair<string, string>(nameof(EnumWithDisplayNames.One), "1"),
                             new KeyValuePair<string, string>("dos", "2"),
                             new KeyValuePair<string, string>("tres", "3"),
@@ -708,7 +708,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             [Display(ShortName = "uno")]
             One = 1,
 
-            [Display(Name = "cero")]
+            [Display(Name = "")]
             Zero = 0,
 
             [Display(Name = "menos uno")]

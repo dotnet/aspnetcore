@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
                 displayMetadata.Description = () => displayAttribute.GetDescription();
             }
 
-            // DisplayFormat
+            // DisplayFormatString
             if (displayFormatAttribute != null)
             {
                 displayMetadata.DisplayFormatString = displayFormatAttribute.DataFormatString;
@@ -87,6 +87,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
                 displayMetadata.DisplayName = () => displayAttribute.GetName();
             }
 
+            // EditFormatString
             if (displayFormatAttribute != null && displayFormatAttribute.ApplyFormatInEditMode)
             {
                 displayMetadata.EditFormatString = displayFormatAttribute.DataFormatString;
@@ -233,8 +234,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             var display = field.GetCustomAttribute<DisplayAttribute>(inherit: false);
             if (display != null)
             {
+                // Note [Display(Name = "")] is allowed.
                 var name = display.GetName();
-                if (!string.IsNullOrEmpty(name))
+                if (name != null)
                 {
                     return name;
                 }
