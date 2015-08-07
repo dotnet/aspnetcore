@@ -3,7 +3,7 @@
 @using System.Linq
 @using Microsoft.AspNet.Diagnostics
 @using Microsoft.AspNet.Diagnostics.Views
-@using Microsoft.Framework.Runtime;
+@using Microsoft.Dnx.Runtime;
 
 @functions
 {
@@ -13,6 +13,9 @@
     }
 
     public RuntimeInfoPageModel Model { get; set; }
+}
+@{
+    Response.ContentType = "text/html; charset=utf-8";
 }
 <!DOCTYPE html>
 <html lang="@CultureInfo.CurrentUICulture.TwoLetterISOLanguageName" xmlns="http://www.w3.org/1999/xhtml">
@@ -26,13 +29,13 @@
 <body>
     <h2>@Resources.RuntimeInfoPage_Environment</h2>
     <p>@Resources.RuntimeInfoPage_OperatingSystem @(string.IsNullOrWhiteSpace(Model.OperatingSystem) ? Resources.RuntimeInfoPage_OperatingSystemFail : Model.OperatingSystem)</p>
-    
+
     <p>@Resources.RuntimeInfoPage_RuntimeVersion @(string.IsNullOrWhiteSpace(Model.Version) ? Resources.RuntimeInfoPage_RuntimeVersionFail : Model.Version)</p>
 
     <p>@Resources.RuntimeInfoPage_RuntimeArchitecture @(string.IsNullOrWhiteSpace(Model.RuntimeArchitecture) ? Resources.RuntimeInfoPage_RuntimeArchitectureFail : Model.RuntimeArchitecture)</p>
 
     <p>@Resources.RuntimeInfoPage_RuntimeType @(string.IsNullOrWhiteSpace(Model.RuntimeType) ? Resources.RuntimeInfoPage_RuntimeTypeFail : Model.RuntimeType)</p>
-    
+
     <h2>@Resources.RuntimeInfoPage_Packages</h2>
     @if (@Resources.RuntimeInfoPage_Packages == null)
     {
