@@ -54,6 +54,11 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 Options.SignInScheme = sharedOptions.Options.SignInScheme;
             }
 
+            if (Options.HtmlEncoder == null)
+            {
+                Options.HtmlEncoder = services.GetHtmlEncoder();
+            }
+
             if (Options.StateDataFormat == null)
             {
                 var dataProtector = dataProtectionProvider.CreateProtector(

@@ -11,6 +11,7 @@ using System.Security.Claims;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.Framework.Caching.Distributed;
+using Microsoft.Framework.WebEncoders;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
@@ -191,6 +192,11 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         public bool RefreshOnIssuerKeyNotFound { get; set; } = true;
 
         /// <summary>
+        /// Gets or sets the method used to redirect the user agent to the identity provider.
+        /// </summary>
+        public OpenIdConnectAuthenticationMethod AuthenticationMethod { get; set; }
+
+        /// <summary>
         /// Gets or sets the 'resource'.
         /// </summary>
         public string Resource { get; set; }
@@ -242,5 +248,10 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         /// This is enabled by default.
         /// </summary>
         public bool UseTokenLifetime { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the <see cref="IHtmlEncoder"/> used to sanitize HTML outputs.
+        /// </summary>
+        public IHtmlEncoder HtmlEncoder { get; set; }
     }
 }

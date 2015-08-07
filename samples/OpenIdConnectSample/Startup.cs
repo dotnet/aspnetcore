@@ -31,11 +31,11 @@ namespace OpenIdConnectSample
             });
 
             app.UseOpenIdConnectAuthentication(options =>
-                {
-                    options.ClientId = "fe78e0b4-6fe7-47e6-812c-fb75cee266a4";
-                    options.Authority = "https://login.windows.net/cyrano.onmicrosoft.com";
-                    options.RedirectUri = "http://localhost:42023";
-                });
+            {
+                options.ClientId = "fe78e0b4-6fe7-47e6-812c-fb75cee266a4";
+                options.Authority = "https://login.windows.net/cyrano.onmicrosoft.com";
+                options.RedirectUri = "http://localhost:42023";
+            });
 
             app.Run(async context =>
             {

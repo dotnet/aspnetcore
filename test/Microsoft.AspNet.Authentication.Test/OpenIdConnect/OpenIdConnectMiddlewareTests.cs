@@ -41,6 +41,22 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
         const string Signout = "/signout";
 
         [Fact]
+        public async Task ChallengeWillIssueHtmlFormWhenEnabled()
+        {
+            var server = CreateServer(options =>
+            {
+                options.Authority = DefaultAuthority;
+                options.ClientId = "Test Id";
+                options.Configuration = TestUtilities.DefaultOpenIdConnectConfiguration;
+                options.AuthenticationMethod = OpenIdConnectAuthenticationMethod.FormPost;
+            });
+            var transaction = await SendAsync(server, DefaultHost + Challenge);
+            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
+            transaction.Response.Content.Headers.ContentType.MediaType.ShouldBe("text/html");
+            transaction.ResponseText.ShouldContain("form");
+        }
+
+        [Fact]
         public async Task ChallengeWillSetDefaults()
         {
             var stateDataFormat = new AuthenticationPropertiesFormaterKeyValue();

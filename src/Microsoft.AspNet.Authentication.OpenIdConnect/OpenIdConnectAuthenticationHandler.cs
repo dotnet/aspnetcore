@@ -11,6 +11,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
@@ -19,6 +20,7 @@ using Microsoft.Framework.Caching.Distributed;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.Authentication.OpenIdConnect
@@ -30,6 +32,22 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
     {
         private const string NonceProperty = "N";
         private const string UriSchemeDelimiter = "://";
+
+        private const string InputTagFormat = @"<input type=""hidden"" name=""{0}"" value=""{1}"" />";
+        private const string HtmlFormFormat = @"<!doctype html>
+<html>
+<head>
+    <title>Please wait while you're being redirected to the identity provider</title>
+</head>
+<body>
+    <form name=""form"" method=""post"" action=""{0}"">
+        {1}
+        <noscript>Click here to finish the process: <input type=""submit"" /></noscript>
+    </form>
+    <script>document.form.submit();</script>
+</body>
+</html>";
+
         private OpenIdConnectConfiguration _configuration;
 
         protected HttpClient Backchannel { get; private set; }
@@ -93,13 +111,43 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                     message = redirectToIdentityProviderNotification.ProtocolMessage;
                 }
 
-                var redirectUri = message.CreateLogoutRequestUrl();
-                if (!Uri.IsWellFormedUriString(redirectUri, UriKind.Absolute))
+                if (Options.AuthenticationMethod == OpenIdConnectAuthenticationMethod.RedirectGet)
                 {
-                    Logger.LogWarning(Resources.OIDCH_0051_RedirectUriLogoutIsNotWellFormed, redirectUri);
-                }
+                    var redirectUri = message.CreateLogoutRequestUrl();
+                    if (!Uri.IsWellFormedUriString(redirectUri, UriKind.Absolute))
+                    {
+                        Logger.LogWarning(Resources.OIDCH_0051_RedirectUriLogoutIsNotWellFormed, redirectUri);
+                    }
 
-                Response.Redirect(redirectUri);
+                    Response.Redirect(redirectUri);
+                }
+                else if (Options.AuthenticationMethod == OpenIdConnectAuthenticationMethod.FormPost)
+                {
+                    var inputs = new StringBuilder();
+                    foreach (var parameter in message.Parameters)
+                    {
+                        var name = Options.HtmlEncoder.HtmlEncode(parameter.Key);
+                        var value = Options.HtmlEncoder.HtmlEncode(parameter.Value);
+
+                        var input = string.Format(CultureInfo.InvariantCulture, InputTagFormat, name, value);
+                        inputs.AppendLine(input);
+                    }
+
+                    var issuer = Options.HtmlEncoder.HtmlEncode(message.IssuerAddress);
+
+                    var content = string.Format(CultureInfo.InvariantCulture, HtmlFormFormat, issuer, inputs);
+                    var buffer = Encoding.UTF8.GetBytes(content);
+
+                    Response.ContentLength = buffer.Length;
+                    Response.ContentType = "text/html;charset=UTF-8";
+
+                    // Emit Cache-Control=no-cache to prevent client caching.
+                    Response.Headers.Set(HeaderNames.CacheControl, "no-cache");
+                    Response.Headers.Set(HeaderNames.Pragma, "no-cache");
+                    Response.Headers.Set(HeaderNames.Expires, "-1");
+
+                    await Response.Body.WriteAsync(buffer, 0, buffer.Length);
+                }
             }
         }
 
@@ -218,14 +266,50 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
 
             message.State = Options.StateDataFormat.Protect(properties);
 
-            var redirectUri = message.CreateAuthenticationRequestUrl();
-            if (!Uri.IsWellFormedUriString(redirectUri, UriKind.Absolute))
+            if (Options.AuthenticationMethod == OpenIdConnectAuthenticationMethod.RedirectGet)
             {
-                Logger.LogWarning(Resources.OIDCH_0036_UriIsNotWellFormed, redirectUri);
+                var redirectUri = message.CreateAuthenticationRequestUrl();
+                if (!Uri.IsWellFormedUriString(redirectUri, UriKind.Absolute))
+                {
+                    Logger.LogWarning(Resources.OIDCH_0036_UriIsNotWellFormed, redirectUri);
+                }
+
+                Response.Redirect(redirectUri);
+
+                return true;
+            }
+            else if (Options.AuthenticationMethod == OpenIdConnectAuthenticationMethod.FormPost)
+            {
+                var inputs = new StringBuilder();
+                foreach (var parameter in message.Parameters)
+                {
+                    var name = Options.HtmlEncoder.HtmlEncode(parameter.Key);
+                    var value = Options.HtmlEncoder.HtmlEncode(parameter.Value);
+
+                    var input = string.Format(CultureInfo.InvariantCulture, InputTagFormat, name, value);
+                    inputs.AppendLine(input);
+                }
+
+                var issuer = Options.HtmlEncoder.HtmlEncode(message.IssuerAddress);
+
+                var content = string.Format(CultureInfo.InvariantCulture, HtmlFormFormat, issuer, inputs);
+                var buffer = Encoding.UTF8.GetBytes(content);
+
+                Response.ContentLength = buffer.Length;
+                Response.ContentType = "text/html;charset=UTF-8";
+
+                // Emit Cache-Control=no-cache to prevent client caching.
+                Response.Headers.Set(HeaderNames.CacheControl, "no-cache");
+                Response.Headers.Set(HeaderNames.Pragma, "no-cache");
+                Response.Headers.Set(HeaderNames.Expires, "-1");
+
+                await Response.Body.WriteAsync(buffer, 0, buffer.Length);
+
+                return true;
             }
 
-            Response.Redirect(redirectUri);
-            return true;
+            Logger.LogError("An unsupported authentication method has been configured: {0}", Options.AuthenticationMethod);
+            return false;
         }
 
         /// <summary>
