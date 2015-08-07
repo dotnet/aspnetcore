@@ -92,30 +92,54 @@ default DNX_TOOLS_FEED = 'https://www.myget.org/F/dnxtools/api/v2'
 
 #ci-deep-clean .deep-clean target='clean' if='IsTeamCity'
 
-#build-compile target='compile' if='Directory.Exists("src")'
+#build-compile target='compile' if='!IsBuildV2 && Directory.Exists("src")'
   @{
-    if (IsBuildV2) 
+    var projectFiles = Files.Include("src/**/project.json").ToList();
+    if (ShouldRunInParallel)
     {
-        const string buildPattern = "src/**";
-        DnuPack(buildPattern, BUILD_DIR, Configuration);
+        Parallel.ForEach(projectFiles, projectFile => DnuPack(projectFile, BUILD_DIR, Configuration));
     }
     else
     {
-        var projectFiles = Files.Include("src/**/project.json").ToList();
-        if (ShouldRunInParallel)
-        {
-            Parallel.ForEach(projectFiles, projectFile => DnuPack(projectFile, BUILD_DIR, Configuration));
-        }
-        else
-        {
-            projectFiles.ForEach(projectFile => DnuPack(projectFile, BUILD_DIR, Configuration));
-        }
+        projectFiles.ForEach(projectFile => DnuPack(projectFile, BUILD_DIR, Configuration));
     }
     
     foreach (var nupkg in Files.Include(Path.Combine(BUILD_DIR, "*/*.nupkg")))
     {
         File.Copy(nupkg, Path.Combine(BUILD_DIR, Path.GetFileName(nupkg)), true);
     }
+  }
+
+#build-compile target='compile' if='IsBuildV2'
+  @{
+      // If the src folder, build and create the packages
+      if (Directory.Exists("src")) 
+      {
+          DnuPack("src/**", BUILD_DIR, Configuration);
+          
+          foreach (var nupkg in Files.Include(Path.Combine(BUILD_DIR, "*/*.nupkg")))
+          {
+              File.Copy(nupkg, Path.Combine(BUILD_DIR, Path.GetFileName(nupkg)), true);
+          }
+      }
+      
+      // For test and samples only check if they compile
+      var projectsToBuild = new List<string>();
+      if (Directory.Exists("test")) 
+      {
+          projectsToBuild.Add("test/**");
+      }
+      if (Directory.Exists("samples")) 
+      {
+          projectsToBuild.Add("samples/**");  
+      }
+      
+      if (projectsToBuild.Any()) 
+      {
+          DnuBuild(
+            string.Join(";", projectsToBuild), 
+            Configuration);
+      }
   }
 
 #native-compile target='compile' if='!IsMono && Directory.Exists(Path.Combine(BASE_DIR, "src"))'
@@ -176,7 +200,7 @@ default DNX_TOOLS_FEED = 'https://www.myget.org/F/dnxtools/api/v2'
     }
   }
 
-#build-samples target='test' if='Directory.Exists("samples")'
+#build-samples target='test' if='!IsBuildV2 && Directory.Exists("samples")'
   @{
     var projectFiles = Files.Include("samples/**/project.json").ToList();
     if (ShouldRunInParallel)
