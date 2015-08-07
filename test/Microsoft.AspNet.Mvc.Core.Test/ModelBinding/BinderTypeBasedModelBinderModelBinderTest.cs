@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
             var model = new Person();
             var serviceProvider = new ServiceCollection()
-                .AddSingleton(typeof(IModelBinder))
+                .AddSingleton<IModelBinder, NullModelBinder>()
                 .BuildServiceProvider();
 
             bindingContext.OperationBindingContext.HttpContext.RequestServices = serviceProvider;
