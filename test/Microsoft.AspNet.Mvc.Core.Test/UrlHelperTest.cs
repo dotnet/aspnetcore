@@ -45,6 +45,7 @@ namespace Microsoft.AspNet.Mvc
         [InlineData("/", "~/", "/")]
         [InlineData("/myapproot", "~/", "/myapproot/")]
         [InlineData("", "~/Home/About", "/Home/About")]
+        [InlineData("/", "~", "/")]
         [InlineData("/myapproot", "~/Content/bootstrap.css", "/myapproot/Content/bootstrap.css")]
         public void Content_ReturnsAppRelativePath_WhenItStartsWithToken(string appRoot,
                                                                          string contentPath,

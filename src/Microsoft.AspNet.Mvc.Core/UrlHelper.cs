@@ -122,12 +122,19 @@ namespace Microsoft.AspNet.Mvc
         /// <inheritdoc />
         public virtual string Content(string contentPath)
         {
-            if (contentPath == null)
+            if (string.IsNullOrEmpty(contentPath))
             {
                 return null;
             }
+            else if (contentPath[0] == '~')
+            {
+                var segment = new PathString(contentPath.Substring(1));
+                var applicationPath = _httpContext.Request.PathBase;
 
-            return GenerateClientUrl(_httpContext.Request.PathBase, contentPath);
+                return applicationPath.Add(segment).Value;
+            }
+
+            return contentPath;
         }
 
         /// <inheritdoc />
@@ -140,17 +147,6 @@ namespace Microsoft.AspNet.Mvc
                 Protocol = _httpContext.Request.Scheme,
                 Host = _httpContext.Request.Host.ToUriComponent()
             });
-        }
-
-        private static string GenerateClientUrl([NotNull] PathString applicationPath,
-                                                [NotNull] string path)
-        {
-            if (path.StartsWith("~/", StringComparison.Ordinal))
-            {
-                var segment = new PathString(path.Substring(1));
-                return applicationPath.Add(segment).Value;
-            }
-            return path;
         }
 
         private string GenerateUrl(string protocol, string host, string path, string fragment)
