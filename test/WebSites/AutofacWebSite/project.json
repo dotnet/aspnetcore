@@ -4,7 +4,7 @@
         "kestrel": "Microsoft.AspNet.Hosting --server Kestrel --server.urls http://localhost:5000"
     },
     "dependencies": {
-        "Autofac.Framework.DependencyInjection": "4.0.0-*",
+        "Autofac.Framework.DependencyInjection": "4.0.0-beta6-110",
         "Kestrel": "1.0.0-*",
         "Microsoft.AspNet.Mvc": "6.0.0-*",
         "Microsoft.AspNet.Mvc.TestConfiguration": "1.0.0",
