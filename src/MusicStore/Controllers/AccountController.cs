@@ -97,9 +97,9 @@ namespace MusicStore.Controllers
                 return View(model);
             }
 
-            // The following code protects for brute force attacks against the two factor codes. 
-            // If a user enters incorrect codes for a specified amount of time then the user account 
-            // will be locked out for a specified amount of time. 
+            // The following code protects for brute force attacks against the two factor codes.
+            // If a user enters incorrect codes for a specified amount of time then the user account
+            // will be locked out for a specified amount of time.
             // You can configure the account lockout settings in IdentityConfig
             var result = await SignInManager.TwoFactorSignInAsync(model.Provider, model.Code, model.RememberMe, model.RememberBrowser);
             if (result.Succeeded)
@@ -437,6 +437,9 @@ namespace MusicStore.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> LogOff()
         {
+            // clear all items from the cart
+            Context.Session.Clear();
+
             await SignInManager.SignOutAsync();
 
             // TODO: Currently SignInManager.SignOut does not sign out OpenIdc and does not have a way to pass in a specific
