@@ -451,11 +451,12 @@ namespace Microsoft.Net.Http.Server
             {
                 return _clientCert;
             }
+            cancellationToken.ThrowIfCancellationRequested();
 
-            ClientCertLoader certLoader = new ClientCertLoader(RequestContext);
+            ClientCertLoader certLoader = new ClientCertLoader(RequestContext, cancellationToken);
             try
             {
-                await certLoader.LoadClientCertificateAsync(cancellationToken).SupressContext();
+                await certLoader.LoadClientCertificateAsync().SupressContext();
                 // Populate the environment.
                 if (certLoader.ClientCert != null)
                 {

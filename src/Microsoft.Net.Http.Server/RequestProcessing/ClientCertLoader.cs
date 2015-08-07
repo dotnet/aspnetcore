@@ -50,14 +50,20 @@ namespace Microsoft.Net.Http.Server
         private int _clientCertError;
         private X509Certificate2 _clientCert;
         private Exception _clientCertException;
+        private CancellationTokenRegistration _cancellationRegistration;
 
-        internal ClientCertLoader(RequestContext requestContext)
+        internal ClientCertLoader(RequestContext requestContext, CancellationToken cancellationToken)
         {
             _requestContext = requestContext;
             _tcs = new TaskCompletionSource<object>();
             // we will use this overlapped structure to issue async IO to ul
             // the event handle will be put in by the BeginHttpApi2.ERROR_SUCCESS() method
             Reset(CertBoblSize);
+
+            if (cancellationToken.CanBeCanceled)
+            {
+                _cancellationRegistration = cancellationToken.Register(RequestContext.AbortDelegate, _requestContext);
+            }
         }
 
         internal X509Certificate2 ClientCert
@@ -162,9 +168,8 @@ namespace Microsoft.Net.Http.Server
         // ERROR_NOT_FOUND - which means the client did not provide the cert
         // If this is important, the server should respond with 403 forbidden
         // HTTP.SYS will not do this for you automatically
-        internal Task LoadClientCertificateAsync(CancellationToken cancellationToken)
+        internal Task LoadClientCertificateAsync()
         {
-            // TODO: cancellation support? Abort the request?
             uint size = CertBoblSize;
             bool retry;
             do
@@ -218,14 +223,15 @@ namespace Microsoft.Net.Http.Server
             // May be null
             _clientCert = cert;
             _clientCertError = certErrors;
-            _tcs.TrySetResult(null);
             Dispose();
+            _tcs.TrySetResult(null);
         }
 
         private void Fail(Exception ex)
         {
             // TODO: Log
             _clientCertException = ex;
+            Dispose();
             _tcs.TrySetResult(null);
         }
 
@@ -328,6 +334,7 @@ namespace Microsoft.Net.Http.Server
         {
             if (disposing)
             {
+                _cancellationRegistration.Dispose();
                 if (_overlapped != null)
                 {
                     _memoryBlob = null;
