@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.Identity
         /// Sets the given normalized name for the specified <paramref name="user"/>, as an asynchronous operation.
         /// </summary>
         /// <param name="user">The user whose name should be set.</param>
-        /// <param name="userName">The normalized name to set.</param>
+        /// <param name="normalizedName">The normalized name to set.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
         Task SetNormalizedUserNameAsync(TUser user, string normalizedName, CancellationToken cancellationToken);
