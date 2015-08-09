@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Files>
     <!-- Exclusions -->
+    <File Name="AppCompat.exe" Ignore="yes" />
     <File Name="install.ps1" Ignore="yes" />
     <File Name="dnvm.ps1" Ignore="yes" />
     <File Name="dnx.exe" Ignore="yes" />
