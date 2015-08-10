@@ -8,6 +8,7 @@ using System.Linq;
 using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
+using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Razor.Test.Framework;
 using Microsoft.AspNet.Razor.Test.TagHelpers;
 using Microsoft.AspNet.Razor.Text;
@@ -17,6 +18,195 @@ namespace Microsoft.AspNet.Razor.TagHelpers
 {
     public class TagHelperBlockRewriterTest : TagHelperRewritingTestBase
     {
+        public static TheoryData WithoutEndTagElementData
+        {
+            get
+            {
+                var factory = CreateDefaultSpanFactory();
+                var blockFactory = new BlockFactory(factory);
+
+                // documentContent, expectedOutput
+                return new TheoryData<string, MarkupBlock>
+                {
+                    {
+                        "<input>",
+                        new MarkupBlock(new MarkupTagHelperBlock("input", TagMode.StartTagOnly))
+                    },
+                    {
+                        "<input type='text'>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "input",
+                                TagMode.StartTagOnly,
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
+                                {
+                                    new KeyValuePair<string, SyntaxTreeNode>("type", factory.Markup("text"))
+                                }))
+                    },
+                    {
+                        "<input><input>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("input", TagMode.StartTagOnly),
+                            new MarkupTagHelperBlock("input", TagMode.StartTagOnly))
+                    },
+                    {
+                        "<input type='text'><input>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "input",
+                                TagMode.StartTagOnly,
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
+                                {
+                                    new KeyValuePair<string, SyntaxTreeNode>("type", factory.Markup("text"))
+                                }),
+                            new MarkupTagHelperBlock("input", TagMode.StartTagOnly))
+                    },
+                    {
+                        "<div><input><input></div>",
+                        new MarkupBlock(
+                            blockFactory.MarkupTagBlock("<div>"),
+                            new MarkupTagHelperBlock("input", TagMode.StartTagOnly),
+                            new MarkupTagHelperBlock("input", TagMode.StartTagOnly),
+                            blockFactory.MarkupTagBlock("</div>"))
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(WithoutEndTagElementData))]
+        public void Rewrite_CanHandleWithoutEndTagTagStructure(string documentContent, MarkupBlock expectedOutput)
+        {
+            // Arrange
+            var descriptors = new TagHelperDescriptor[]
+                {
+                    new TagHelperDescriptor(
+                        prefix: string.Empty,
+                        tagName: "input",
+                        typeName: "InputTagHelper",
+                        assemblyName: "SomeAssembly",
+                        attributes: new TagHelperAttributeDescriptor[0],
+                        requiredAttributes: Enumerable.Empty<string>(),
+                        tagStructure: TagStructure.WithoutEndTag,
+                        designTimeDescriptor: null)
+                };
+            var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
+
+            // Act & Assert
+            EvaluateData(descriptorProvider, documentContent, expectedOutput, expectedErrors: new RazorError[0]);
+        }
+
+        public static TheoryData TagStructureCompatibilityData
+        {
+            get
+            {
+                var factory = CreateDefaultSpanFactory();
+                var blockFactory = new BlockFactory(factory);
+
+                // documentContent, structure1, structure2, expectedOutput
+                return new TheoryData<string, TagStructure, TagStructure, MarkupBlock>
+                {
+                    {
+                        "<input></input>",
+                        TagStructure.Unspecified,
+                        TagStructure.Unspecified,
+                        new MarkupBlock(new MarkupTagHelperBlock("input", TagMode.StartTagAndEndTag))
+                    },
+                    {
+                        "<input />",
+                        TagStructure.Unspecified,
+                        TagStructure.Unspecified,
+                        new MarkupBlock(new MarkupTagHelperBlock("input", TagMode.SelfClosing))
+                    },
+                    {
+                        "<input type='text'>",
+                        TagStructure.Unspecified,
+                        TagStructure.WithoutEndTag,
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "input",
+                                TagMode.StartTagOnly,
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
+                                {
+                                    new KeyValuePair<string, SyntaxTreeNode>("type", factory.Markup("text"))
+                                }))
+                    },
+                    {
+                        "<input><input>",
+                        TagStructure.WithoutEndTag,
+                        TagStructure.WithoutEndTag,
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("input", TagMode.StartTagOnly),
+                            new MarkupTagHelperBlock("input", TagMode.StartTagOnly))
+                    },
+                    {
+                        "<input type='text'></input>",
+                        TagStructure.Unspecified,
+                        TagStructure.NormalOrSelfClosing,
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "input",
+                                TagMode.StartTagAndEndTag,
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
+                                {
+                                    new KeyValuePair<string, SyntaxTreeNode>("type", factory.Markup("text"))
+                                }))
+                    },
+                    {
+                        "<input />",
+                        TagStructure.Unspecified,
+                        TagStructure.WithoutEndTag,
+                        new MarkupBlock(new MarkupTagHelperBlock("input", TagMode.SelfClosing))
+                    },
+
+                    {
+                        "<input />",
+                        TagStructure.NormalOrSelfClosing,
+                        TagStructure.Unspecified,
+                        new MarkupBlock(new MarkupTagHelperBlock("input", TagMode.SelfClosing))
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(TagStructureCompatibilityData))]
+        public void Rewrite_AllowsCompatibleTagStructures(
+            string documentContent,
+            TagStructure structure1,
+            TagStructure structure2,
+            MarkupBlock expectedOutput)
+        {
+            // Arrange
+            var factory = CreateDefaultSpanFactory();
+            var blockFactory = new BlockFactory(factory);
+            var descriptors = new TagHelperDescriptor[]
+                {
+                    new TagHelperDescriptor(
+                        prefix: string.Empty,
+                        tagName: "input",
+                        typeName: "InputTagHelper1",
+                        assemblyName: "SomeAssembly",
+                        attributes: new TagHelperAttributeDescriptor[0],
+                        requiredAttributes: Enumerable.Empty<string>(),
+                        tagStructure: structure1,
+                        designTimeDescriptor: null),
+                    new TagHelperDescriptor(
+                        prefix: string.Empty,
+                        tagName: "input",
+                        typeName: "InputTagHelper2",
+                        assemblyName: "SomeAssembly",
+                        attributes: new TagHelperAttributeDescriptor[0],
+                        requiredAttributes: Enumerable.Empty<string>(),
+                        tagStructure: structure2,
+                        designTimeDescriptor: null)
+                };
+            var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
+
+            // Act & Assert
+            EvaluateData(descriptorProvider, documentContent, expectedOutput, expectedErrors: new RazorError[0]);
+        }
+
         public static TheoryData<string, MarkupBlock, RazorError[]> MalformedTagHelperAttributeBlockData
         {
             get
@@ -574,7 +764,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         "<person age=\"12\" />",
                         new MarkupBlock(
                             new MarkupTagHelperBlock("person",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("age", factory.CodeMarkup("12"))
@@ -584,7 +774,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         "<person birthday=\"DateTime.Now\" />",
                         new MarkupBlock(
                             new MarkupTagHelperBlock("person",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>(
@@ -596,7 +786,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         "<person name=\"John\" />",
                         new MarkupBlock(
                             new MarkupTagHelperBlock("person",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("name", factory.Markup("John"))
@@ -606,7 +796,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         "<person name=\"Time: @DateTime.Now\" />",
                         new MarkupBlock(
                             new MarkupTagHelperBlock("person",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>(
@@ -618,7 +808,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         "<person age=\"1 + @value + 2\" birthday='(bool)@Bag[\"val\"] ? @@DateTime : @DateTime.Now'/>",
                         new MarkupBlock(
                             new MarkupTagHelperBlock("person",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>(
@@ -670,7 +860,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         "<person age=\"12\" birthday=\"DateTime.Now\" name=\"Time: @DateTime.Now\" />",
                         new MarkupBlock(
                             new MarkupTagHelperBlock("person",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("age", factory.CodeMarkup("12")),
@@ -686,7 +876,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         "<person age=\"12\" birthday=\"DateTime.Now\" name=\"Time: @@ @DateTime.Now\" />",
                         new MarkupBlock(
                             new MarkupTagHelperBlock("person",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("age", factory.CodeMarkup("12")),
@@ -709,7 +899,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         "<person age=\"12\" birthday=\"DateTime.Now\" name=\"@@BoundStringAttribute\" />",
                         new MarkupBlock(
                             new MarkupTagHelperBlock("person",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("age", factory.CodeMarkup("12")),
@@ -731,7 +921,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         "<person age=\"@@@(11+1)\" birthday=\"DateTime.Now\" name=\"Time: @DateTime.Now\" />",
                         new MarkupBlock(
                             new MarkupTagHelperBlock("person",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>(
@@ -1324,7 +1514,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         "<<p />",
                         new MarkupBlock(
                             blockFactory.MarkupTagBlock("<"),
-                            new MarkupTagHelperBlock("p", selfClosing: true))
+                            new MarkupTagHelperBlock("p", TagMode.SelfClosing))
                     },
                     {
                         "< p />",
@@ -1339,7 +1529,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         "<input <p />",
                         new MarkupBlock(
                             blockFactory.MarkupTagBlock("<input "),
-                            new MarkupTagHelperBlock("p", selfClosing: true))
+                            new MarkupTagHelperBlock("p", TagMode.SelfClosing))
                     },
                     {
                         "< class=\"foo\" <p />",
@@ -1357,7 +1547,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                                         value: new LocationTagged<string>("foo", 9, 0, 9))),
                                     factory.Markup("\"").With(SpanChunkGenerator.Null)),
                                 factory.Markup(" ")),
-                            new MarkupTagHelperBlock("p", selfClosing: true))
+                            new MarkupTagHelperBlock("p", TagMode.SelfClosing))
                     },
                     {
                         "</<<p>/></p>>",
@@ -1468,7 +1658,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         "<p class1='' class2= class3=\"\" />",
                         new MarkupBlock(
                             new MarkupTagHelperBlock("p",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("class1", new MarkupBlock()),
@@ -1482,7 +1672,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         "<p class1=''class2=\"\"class3= />",
                         new MarkupBlock(
                             new MarkupTagHelperBlock("p",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("class1",  new MarkupBlock()),
@@ -1521,7 +1711,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "myth",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("bound", new MarkupBlock())
@@ -1538,7 +1728,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "myth",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("bound", factory.CodeMarkup("    true"))
@@ -1550,7 +1740,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "myth",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("bound", factory.CodeMarkup("    "))
@@ -1567,7 +1757,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "myth",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("bound", new MarkupBlock()),
@@ -1588,7 +1778,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "myth",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("bound", factory.CodeMarkup(" ")),
@@ -1609,7 +1799,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "myth",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("bound", factory.CodeMarkup("true")),
@@ -1629,7 +1819,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "myth",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>(
@@ -1649,7 +1839,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "myth",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>(
@@ -1669,7 +1859,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "myth",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("bound", factory.CodeMarkup("true")),
@@ -1693,7 +1883,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "myth",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("BouND", new MarkupBlock())
@@ -1710,7 +1900,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "myth",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("BOUND", new MarkupBlock()),
@@ -1750,7 +1940,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "myth",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     {
@@ -1774,7 +1964,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "myth",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     {
@@ -1883,7 +2073,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                     "<script class=\"foo\" style=\"color:red;\" />",
                     new MarkupBlock(
                         new MarkupTagHelperBlock("script",
-                            selfClosing: true,
+                            TagMode.SelfClosing,
                             attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                             {
                                 new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("foo")),
@@ -1947,7 +2137,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                     "<p class=\"foo\" style=\"color:red;\" />",
                     new MarkupBlock(
                         new MarkupTagHelperBlock("p",
-                            selfClosing: true,
+                            TagMode.SelfClosing,
                             attributes:  new List<KeyValuePair<string, SyntaxTreeNode>>
                             {
                                 new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("foo")),
@@ -1960,13 +2150,13 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                     new MarkupBlock(
                         new MarkupTagHelperBlock(
                             "p",
-                            selfClosing: false,
+                            TagMode.StartTagAndEndTag,
                             children: new SyntaxTreeNode[]
                             {
                                 factory.Markup("Hello "),
                                 new MarkupTagHelperBlock(
                                     "p",
-                                    selfClosing: true,
+                                    TagMode.SelfClosing,
                                     attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                         {
                                             new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("foo")),
@@ -1983,14 +2173,14 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                     new MarkupBlock(
                         factory.Markup("Hello"),
                         new MarkupTagHelperBlock("p",
-                            selfClosing: true,
+                            TagMode.SelfClosing,
                             attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                             {
                                 new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("foo"))
                             }),
                         factory.Markup(" "),
                         new MarkupTagHelperBlock("p",
-                            selfClosing: true,
+                            TagMode.SelfClosing,
                             attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                             {
                                 new KeyValuePair<string, SyntaxTreeNode>("style", factory.Markup("color:red;"))
@@ -2287,7 +2477,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "input",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>(
@@ -2300,7 +2490,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "input",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("data-required", factory.Markup("value")),
@@ -2311,7 +2501,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "input",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>(
@@ -2324,7 +2514,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "input",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>(
@@ -2337,7 +2527,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "input",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>(
@@ -2353,7 +2543,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "input",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("pre-attribute", value: null),
@@ -2371,7 +2561,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "input",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>(
@@ -2469,7 +2659,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "input",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("unbound-required", null),
@@ -2481,7 +2671,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "p",
-                                selfClosing: false,
+                                TagMode.StartTagAndEndTag,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("bound-string", null),
@@ -2497,7 +2687,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "input",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("bound-required-string", null),
@@ -2513,7 +2703,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "input",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("bound-required-int", null),
@@ -2529,7 +2719,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "p",
-                                selfClosing: false,
+                                TagMode.StartTagAndEndTag,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("bound-int", null),
@@ -2541,7 +2731,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "input",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("int-dictionary", null),
@@ -2561,7 +2751,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "input",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("string-dictionary", null),
@@ -2581,7 +2771,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "input",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("int-prefix-", null),
@@ -2607,7 +2797,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "input",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("string-prefix-", null),
@@ -2633,7 +2823,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "input",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("int-prefix-value", null),
@@ -2653,7 +2843,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "input",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("string-prefix-value", null),
@@ -2673,7 +2863,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "input",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("int-prefix-value", new MarkupBlock()),
@@ -2693,7 +2883,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "input",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("string-prefix-value", new MarkupBlock()),
@@ -2705,7 +2895,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "input",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("int-prefix-value", factory.CodeMarkup("3")),
@@ -2717,7 +2907,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "input",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("string-prefix-value", new MarkupBlock(
@@ -2731,7 +2921,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "input",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("unbound-required", null),
@@ -2752,7 +2942,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "p",
-                                selfClosing: false,
+                                TagMode.StartTagAndEndTag,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("bound-int", null),
@@ -2769,7 +2959,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "input",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("bound-required-int", null),
@@ -2793,7 +2983,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "p",
-                                selfClosing: false,
+                                TagMode.StartTagAndEndTag,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("bound-int", null),
@@ -2812,7 +3002,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "input",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("unbound-required", null),
@@ -2825,7 +3015,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "p",
-                                selfClosing: false,
+                                TagMode.StartTagAndEndTag,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("bound-string", null),
@@ -2846,7 +3036,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "input",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn")),
@@ -2859,7 +3049,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "p",
-                                selfClosing: false,
+                                TagMode.StartTagAndEndTag,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn")),
@@ -2880,7 +3070,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "input",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("bound-required-string", null),
@@ -2901,7 +3091,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "input",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn")),
@@ -2922,7 +3112,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "input",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("bound-required-int", null),
@@ -2939,7 +3129,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "p",
-                                selfClosing: false,
+                                TagMode.StartTagAndEndTag,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("bound-int", null),
@@ -2955,7 +3145,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "input",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn")),
@@ -2971,7 +3161,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "p",
-                                selfClosing: false,
+                                TagMode.StartTagAndEndTag,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn")),
@@ -2987,7 +3177,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "input",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("class", expression(14)),
@@ -3004,7 +3194,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "p",
-                                selfClosing: false,
+                                TagMode.StartTagAndEndTag,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("class", expression(10)),
@@ -3021,7 +3211,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "input",
-                                selfClosing: true,
+                                TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("bound-required-int", null),
@@ -3048,7 +3238,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "p",
-                                selfClosing: false,
+                                TagMode.StartTagAndEndTag,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("bound-int", null),
@@ -3202,7 +3392,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "input",
-                                selfClosing: false,
+                                TagMode.StartTagAndEndTag,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("unbound-required", null),
@@ -3218,7 +3408,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "input",
-                                selfClosing: false,
+                                TagMode.StartTagAndEndTag,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("bound-required-string", null),
@@ -3240,7 +3430,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "input",
-                                selfClosing: false,
+                                TagMode.StartTagAndEndTag,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("bound-required-int", null),
@@ -3262,7 +3452,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "input",
-                                selfClosing: false,
+                                TagMode.StartTagAndEndTag,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("bound-required-int", null),
@@ -3292,7 +3482,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "p",
-                                selfClosing: false,
+                                TagMode.StartTagAndEndTag,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("bound-string", null),
@@ -3310,7 +3500,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "p",
-                                selfClosing: false,
+                                TagMode.StartTagAndEndTag,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("bound-int", null),
@@ -3327,7 +3517,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "p",
-                                selfClosing: false,
+                                TagMode.StartTagAndEndTag,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("bound-int", null),
@@ -3347,7 +3537,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "input",
-                                selfClosing: false,
+                                TagMode.StartTagAndEndTag,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("bound-required-int", null),
@@ -3356,7 +3546,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                                 },
                                 children: new MarkupTagHelperBlock(
                                     "p",
-                                    selfClosing: false,
+                                    TagMode.StartTagAndEndTag,
                                     attributes: new List<KeyValuePair<string, SyntaxTreeNode>>()
                                     {
                                         new KeyValuePair<string, SyntaxTreeNode>("bound-int", null),

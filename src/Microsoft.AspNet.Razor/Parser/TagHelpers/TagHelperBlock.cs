@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
+using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.Framework.Internal;
 
@@ -30,7 +31,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
             Descriptors = source.Descriptors;
             Attributes = new List<KeyValuePair<string, SyntaxTreeNode>>(source.Attributes);
             _start = source.Start;
-            SelfClosing = source.SelfClosing;
+            TagMode = source.TagMode;
             SourceStartTag = source.SourceStartTag;
             SourceEndTag = source.SourceEndTag;
 
@@ -58,9 +59,9 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
         public Block SourceEndTag { get; }
 
         /// <summary>
-        /// Indicates whether or not the tag is self closing.
+        /// Gets the HTML syntax of the element in the Razor source.
         /// </summary>
-        public bool SelfClosing { get; }
+        public TagMode TagMode { get; }
 
         /// <summary>
         /// <see cref="TagHelperDescriptor"/>s for the HTML element.

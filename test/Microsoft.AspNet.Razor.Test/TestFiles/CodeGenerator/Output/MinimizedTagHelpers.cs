@@ -28,11 +28,11 @@ namespace TestOutput
             Instrumentation.BeginContext(33, 2, true);
             WriteLiteral("\r\n");
             Instrumentation.EndContext();
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p", false, "test", async() => {
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p", TagMode.StartTagAndEndTag, "test", async() => {
                 Instrumentation.BeginContext(64, 34, true);
                 WriteLiteral("\r\n    <input nottaghelper />\r\n    ");
                 Instrumentation.EndContext();
-                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", true, "test", async() => {
+                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", TagMode.SelfClosing, "test", async() => {
                 }
                 , StartTagHelperWritingScope, EndTagHelperWritingScope);
                 __CatchAllTagHelper = CreateTagHelper<CatchAllTagHelper>();
@@ -47,7 +47,7 @@ namespace TestOutput
                 Instrumentation.BeginContext(157, 6, true);
                 WriteLiteral("\r\n    ");
                 Instrumentation.EndContext();
-                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", true, "test", async() => {
+                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", TagMode.SelfClosing, "test", async() => {
                 }
                 , StartTagHelperWritingScope, EndTagHelperWritingScope);
                 __InputTagHelper = CreateTagHelper<InputTagHelper>();
@@ -67,7 +67,7 @@ namespace TestOutput
                 Instrumentation.BeginContext(282, 6, true);
                 WriteLiteral("\r\n    ");
                 Instrumentation.EndContext();
-                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", true, "test", async() => {
+                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", TagMode.SelfClosing, "test", async() => {
                 }
                 , StartTagHelperWritingScope, EndTagHelperWritingScope);
                 __InputTagHelper = CreateTagHelper<InputTagHelper>();
@@ -89,7 +89,7 @@ namespace TestOutput
                 Instrumentation.BeginContext(464, 6, true);
                 WriteLiteral("\r\n    ");
                 Instrumentation.EndContext();
-                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", true, "test", async() => {
+                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", TagMode.SelfClosing, "test", async() => {
                 }
                 , StartTagHelperWritingScope, EndTagHelperWritingScope);
                 __InputTagHelper = CreateTagHelper<InputTagHelper>();

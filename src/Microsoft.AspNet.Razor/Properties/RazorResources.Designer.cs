@@ -1482,6 +1482,38 @@ namespace Microsoft.AspNet.Razor
             return string.Format(CultureInfo.CurrentCulture, GetString("SourceLocationFilePathDoesNotMatch"), p0, p1);
         }
 
+        /// <summary>
+        /// Tag helpers '{0}' and '{1}' targeting element '{2}' must not expect different {3} values.
+        /// </summary>
+        internal static string TagHelperParseTreeRewriter_InconsistentTagStructure
+        {
+            get { return GetString("TagHelperParseTreeRewriter_InconsistentTagStructure"); }
+        }
+
+        /// <summary>
+        /// Tag helpers '{0}' and '{1}' targeting element '{2}' must not expect different {3} values.
+        /// </summary>
+        internal static string FormatTagHelperParseTreeRewriter_InconsistentTagStructure(object p0, object p1, object p2, object p3)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelperParseTreeRewriter_InconsistentTagStructure"), p0, p1, p2, p3);
+        }
+
+        /// <summary>
+        /// Found an end tag (&amp;lt;/{0}&amp;gt;) for tag helper '{1}' with tag structure that disallows an end tag ('{2}').
+        /// </summary>
+        internal static string TagHelperParseTreeRewriter_EndTagTagHelperMustNotHaveAnEndTag
+        {
+            get { return GetString("TagHelperParseTreeRewriter_EndTagTagHelperMustNotHaveAnEndTag"); }
+        }
+
+        /// <summary>
+        /// Found an end tag (&amp;lt;/{0}&amp;gt;) for tag helper '{1}' with tag structure that disallows an end tag ('{2}').
+        /// </summary>
+        internal static string FormatTagHelperParseTreeRewriter_EndTagTagHelperMustNotHaveAnEndTag(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelperParseTreeRewriter_EndTagTagHelperMustNotHaveAnEndTag"), p0, p1, p2);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

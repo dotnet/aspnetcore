@@ -22,9 +22,9 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <summary>
         /// Internal for testing purposes only.
         /// </summary>
-        internal TagHelperExecutionContext(string tagName, bool selfClosing)
+        internal TagHelperExecutionContext(string tagName, TagMode tagMode)
             : this(tagName,
-                   selfClosing,
+                   tagMode,
                    items: new Dictionary<object, object>(),
                    uniqueId: string.Empty,
                    executeChildContentAsync: async () => await Task.FromResult(result: true),
@@ -37,8 +37,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// Instantiates a new <see cref="TagHelperExecutionContext"/>.
         /// </summary>
         /// <param name="tagName">The HTML tag name in the Razor source.</param>
-        /// <param name="selfClosing">
-        /// <see cref="bool"/> indicating whether or not the tag in the Razor source was self-closing.</param>
+        /// <param name="tagMode">HTML syntax of the element in the Razor source.</param>
         /// <param name="items">The collection of items used to communicate with other
         /// <see cref="ITagHelper"/>s</param>
         /// <param name="uniqueId">An identifier unique to the HTML element this context is for.</param>
@@ -47,7 +46,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <param name="endTagHelperWritingScope">A delegate used to end a writing scope in a Razor page.</param>
         public TagHelperExecutionContext(
             [NotNull] string tagName,
-            bool selfClosing,
+            TagMode tagMode,
             [NotNull] IDictionary<object, object> items,
             [NotNull] string uniqueId,
             [NotNull] Func<Task> executeChildContentAsync,
@@ -59,7 +58,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             _startTagHelperWritingScope = startTagHelperWritingScope;
             _endTagHelperWritingScope = endTagHelperWritingScope;
 
-            SelfClosing = selfClosing;
+            TagMode = tagMode;
             HTMLAttributes = new TagHelperAttributeList();
             AllAttributes = new TagHelperAttributeList();
             TagName = tagName;
@@ -68,9 +67,9 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         }
 
         /// <summary>
-        /// Gets a value indicating whether or not the tag in the Razor source was self-closing.
+        /// Gets the HTML syntax of the element in the Razor source.
         /// </summary>
-        public bool SelfClosing { get; }
+        public TagMode TagMode { get; }
 
         /// <summary>
         /// Indicates if <see cref="GetChildContentAsync"/> has been called.

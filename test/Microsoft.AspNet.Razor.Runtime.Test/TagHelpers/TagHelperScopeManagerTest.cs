@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
+using Microsoft.AspNet.Razor.TagHelpers;
 using Xunit;
 
 namespace Microsoft.AspNet.Razor.Runtime.Test.TagHelpers
@@ -152,18 +153,19 @@ namespace Microsoft.AspNet.Razor.Runtime.Test.TagHelpers
         }
 
         [Theory]
-        [InlineData("true")]
-        [InlineData("false")]
-        public void Begin_SetExecutionContextSelfClosing(bool selfClosing)
+        [InlineData(TagMode.SelfClosing)]
+        [InlineData(TagMode.StartTagAndEndTag)]
+        [InlineData(TagMode.StartTagOnly)]
+        public void Begin_SetsExecutionContextTagMode(TagMode tagMode)
         {
             // Arrange
             var scopeManager = new TagHelperScopeManager();
 
             // Act
-            var executionContext = BeginDefaultScope(scopeManager, "p", selfClosing);
+            var executionContext = BeginDefaultScope(scopeManager, "p", tagMode);
 
             // Assert
-            Assert.Equal(selfClosing, executionContext.SelfClosing);
+            Assert.Equal(tagMode, executionContext.TagMode);
         }
 
     [Fact]
@@ -218,13 +220,13 @@ namespace Microsoft.AspNet.Razor.Runtime.Test.TagHelpers
         }
 
         private static TagHelperExecutionContext BeginDefaultScope(
-            TagHelperScopeManager scopeManager, 
+            TagHelperScopeManager scopeManager,
             string tagName,
-            bool selfClosing = false)
+            TagMode tagMode = TagMode.StartTagAndEndTag)
         {
             return scopeManager.Begin(
                 tagName,
-                selfClosing,
+                tagMode,
                 uniqueId: string.Empty,
                 executeChildContentAsync: async () => await Task.FromResult(result: true),
                 startTagHelperWritingScope: () => { },

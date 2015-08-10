@@ -7,6 +7,7 @@ using System.Reflection;
 #endif
 using Microsoft.AspNet.Razor.CodeGenerators;
 using Microsoft.AspNet.Razor.CodeGenerators.Visitors;
+using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Xunit;
 
@@ -23,21 +24,27 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             var tagHelperDescriptors = new TagHelperDescriptor[]
             {
                 new TagHelperDescriptor("p", "PTagHelper", "SomeAssembly"),
-                new TagHelperDescriptor("input",
-                                        "InputTagHelper",
-                                        "SomeAssembly",
-                                        new TagHelperAttributeDescriptor[]
-                                        {
-                                            new TagHelperAttributeDescriptor("type", inputTypePropertyInfo)
-                                        }),
-                new TagHelperDescriptor("input",
-                                        "InputTagHelper2",
-                                        "SomeAssembly",
-                                        new TagHelperAttributeDescriptor[]
-                                        {
-                                            new TagHelperAttributeDescriptor("type", inputTypePropertyInfo),
-                                            new TagHelperAttributeDescriptor("checked", checkedPropertyInfo)
-                                        })
+                new TagHelperDescriptor(
+                    prefix: string.Empty,
+                    tagName: "input",
+                    typeName: "InputTagHelper",
+                    assemblyName: "SomeAssembly",
+                    attributes: new TagHelperAttributeDescriptor[]
+                    {
+                        new TagHelperAttributeDescriptor("type", inputTypePropertyInfo)
+                    },
+                    requiredAttributes: new string[0],
+                    tagStructure: TagStructure.WithoutEndTag,
+                    designTimeDescriptor: null),
+                new TagHelperDescriptor(
+                    tagName: "input",
+                    typeName: "InputTagHelper2",
+                    assemblyName: "SomeAssembly",
+                    attributes: new TagHelperAttributeDescriptor[]
+                    {
+                        new TagHelperAttributeDescriptor("type", inputTypePropertyInfo),
+                        new TagHelperAttributeDescriptor("checked", checkedPropertyInfo)
+                    })
             };
 
             // Act & Assert

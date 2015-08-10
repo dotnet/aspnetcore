@@ -1,4 +1,4 @@
-#pragma checksum "BasicTagHelpers.Prefixed.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "da1aeb71c15bd7443662536f58df99382b0a47f2"
+#pragma checksum "BasicTagHelpers.Prefixed.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "44eafd8ba2adb5f9e260d37e87544c018e182eed"
 namespace TestOutput
 {
     using Microsoft.AspNet.Razor.Runtime.TagHelpers;
@@ -29,11 +29,11 @@ namespace TestOutput
             Instrumentation.BeginContext(57, 52, true);
             WriteLiteral("\r\n<THSdiv class=\"randomNonTagHelperAttribute\">\r\n    ");
             Instrumentation.EndContext();
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p", false, "test", async() => {
-                Instrumentation.BeginContext(135, 58, true);
-                WriteLiteral("\r\n        <p></p>\r\n        <input type=\"text\" />\r\n        ");
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p", TagMode.StartTagAndEndTag, "test", async() => {
+                Instrumentation.BeginContext(135, 56, true);
+                WriteLiteral("\r\n        <p></p>\r\n        <input type=\"text\">\r\n        ");
                 Instrumentation.EndContext();
-                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", true, "test", async() => {
+                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", TagMode.StartTagOnly, "test", async() => {
                 }
                 , StartTagHelperWritingScope, EndTagHelperWritingScope);
                 __InputTagHelper = CreateTagHelper<InputTagHelper>();
@@ -50,11 +50,11 @@ namespace TestOutput
 #line hidden
                 __tagHelperExecutionContext.AddTagHelperAttribute("checked", __InputTagHelper2.Checked);
                 __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
-                Instrumentation.BeginContext(193, 43, false);
+                Instrumentation.BeginContext(191, 41, false);
                 await WriteTagHelperAsync(__tagHelperExecutionContext);
                 Instrumentation.EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.End();
-                Instrumentation.BeginContext(236, 6, true);
+                Instrumentation.BeginContext(232, 6, true);
                 WriteLiteral("\r\n    ");
                 Instrumentation.EndContext();
             }
@@ -63,11 +63,11 @@ namespace TestOutput
             __tagHelperExecutionContext.Add(__PTagHelper);
             __tagHelperExecutionContext.AddHtmlAttribute("class", Html.Raw("Hello World"));
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
-            Instrumentation.BeginContext(109, 140, false);
+            Instrumentation.BeginContext(109, 136, false);
             await WriteTagHelperAsync(__tagHelperExecutionContext);
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
-            Instrumentation.BeginContext(249, 11, true);
+            Instrumentation.BeginContext(245, 11, true);
             WriteLiteral("\r\n</THSdiv>");
             Instrumentation.EndContext();
         }

@@ -17,6 +17,106 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         private static readonly string AssemblyName =
             typeof(TagHelperDescriptorFactoryTest).GetTypeInfo().Assembly.GetName().Name;
 
+        public static TheoryData TagStructureData
+        {
+            get
+            {
+                // tagHelperType, expectedDescriptors
+                return new TheoryData<Type, TagHelperDescriptor[]>
+                {
+                    {
+                        typeof(TagStructureTagHelper),
+                        new[]
+                        {
+                            new TagHelperDescriptor(
+                                prefix: string.Empty,
+                                tagName: "input",
+                                typeName: typeof(TagStructureTagHelper).FullName,
+                                assemblyName: AssemblyName,
+                                attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
+                                requiredAttributes: Enumerable.Empty<string>(),
+                                tagStructure: TagStructure.WithoutEndTag,
+                                designTimeDescriptor: null)
+                        }
+                    },
+                    {
+                        typeof(MultiSpecifiedTagStructureTagHelper),
+                        new[]
+                        {
+                            new TagHelperDescriptor(
+                                prefix: string.Empty,
+                                tagName: "input",
+                                typeName: typeof(MultiSpecifiedTagStructureTagHelper).FullName,
+                                assemblyName: AssemblyName,
+                                attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
+                                requiredAttributes: Enumerable.Empty<string>(),
+                                tagStructure: TagStructure.WithoutEndTag,
+                                designTimeDescriptor: null),
+                            new TagHelperDescriptor(
+                                prefix: string.Empty,
+                                tagName: "p",
+                                typeName: typeof(MultiSpecifiedTagStructureTagHelper).FullName,
+                                assemblyName: AssemblyName,
+                                attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
+                                requiredAttributes: Enumerable.Empty<string>(),
+                                tagStructure: TagStructure.NormalOrSelfClosing,
+                                designTimeDescriptor: null),
+                        }
+                    },
+                    {
+                        typeof(MultiWithUnspecifiedTagStructureTagHelper),
+                        new[]
+                        {
+                            new TagHelperDescriptor(
+                                prefix: string.Empty,
+                                tagName: "input",
+                                typeName: typeof(MultiWithUnspecifiedTagStructureTagHelper).FullName,
+                                assemblyName: AssemblyName,
+                                attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
+                                requiredAttributes: Enumerable.Empty<string>(),
+                                tagStructure: TagStructure.WithoutEndTag,
+                                designTimeDescriptor: null),
+                            new TagHelperDescriptor(
+                                prefix: string.Empty,
+                                tagName: "p",
+                                typeName: typeof(MultiWithUnspecifiedTagStructureTagHelper).FullName,
+                                assemblyName: AssemblyName,
+                                attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
+                                requiredAttributes: Enumerable.Empty<string>(),
+                                tagStructure: TagStructure.Unspecified,
+                                designTimeDescriptor: null),
+                        }
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(TagStructureData))]
+        public void CreateDescriptors_CreatesDesignTimeDescriptorsWithTagStructure(
+            Type tagHelperType,
+            TagHelperDescriptor[] expectedDescriptors)
+        {
+            // Arrange
+            var errorSink = new ErrorSink();
+
+            // Act
+            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
+                AssemblyName,
+                tagHelperType,
+                designTime: false,
+                errorSink: errorSink);
+
+            // Assert
+            Assert.Empty(errorSink.Errors);
+
+            // We don't care about order. Mono returns reflected attributes differently so we need to ensure order
+            // doesn't matter by sorting.
+            descriptors = descriptors.OrderBy(descriptor => descriptor.TagName);
+
+            Assert.Equal(expectedDescriptors, descriptors, CaseSensitiveTagHelperDescriptorComparer.Default);
+        }
+
         // TagHelperDesignTimeDescriptors are not created in CoreCLR.
 #if !DNXCORE50
         public static TheoryData OutputElementHintData
@@ -37,6 +137,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                                 assemblyName: AssemblyName,
                                 attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
                                 requiredAttributes: Enumerable.Empty<string>(),
+                                tagStructure: default(TagStructure),
                                 designTimeDescriptor: new TagHelperDesignTimeDescriptor(
                                     summary: null,
                                     remarks: null,
@@ -54,6 +155,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                                 assemblyName: AssemblyName,
                                 attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
                                 requiredAttributes: Enumerable.Empty<string>(),
+                                tagStructure: default(TagStructure),
                                 designTimeDescriptor: new TagHelperDesignTimeDescriptor(
                                     summary: null,
                                     remarks: null,
@@ -65,6 +167,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                                 assemblyName: AssemblyName,
                                 attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
                                 requiredAttributes: Enumerable.Empty<string>(),
+                                tagStructure: default(TagStructure),
                                 designTimeDescriptor: new TagHelperDesignTimeDescriptor(
                                     summary: null,
                                     remarks: null,
@@ -1870,6 +1973,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 assemblyName: assemblyName,
                 attributes: attributes ?? Enumerable.Empty<TagHelperAttributeDescriptor>(),
                 requiredAttributes: requiredAttributes ?? Enumerable.Empty<string>(),
+                tagStructure: default(TagStructure),
                 designTimeDescriptor: null);
         }
 
@@ -1883,6 +1987,23 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 propertyInfo.PropertyType.FullName,
                 isIndexer: false,
                 designTimeDescriptor: null);
+        }
+
+        [TargetElement("input", TagStructure = TagStructure.WithoutEndTag)]
+        private class TagStructureTagHelper : TagHelper
+        {
+        }
+
+        [TargetElement("p", TagStructure = TagStructure.NormalOrSelfClosing)]
+        [TargetElement("input", TagStructure = TagStructure.WithoutEndTag)]
+        private class MultiSpecifiedTagStructureTagHelper : TagHelper
+        {
+        }
+
+        [TargetElement("p")]
+        [TargetElement("input", TagStructure = TagStructure.WithoutEndTag)]
+        private class MultiWithUnspecifiedTagStructureTagHelper : TagHelper
+        {
         }
 
         [EditorBrowsable(EditorBrowsableState.Always)]

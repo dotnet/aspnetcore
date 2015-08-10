@@ -30,11 +30,11 @@ namespace TestOutput
             Instrumentation.BeginContext(30, 2, true);
             WriteLiteral("\r\n");
             Instrumentation.EndContext();
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p", false, "test", async() => {
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p", TagMode.StartTagAndEndTag, "test", async() => {
                 Instrumentation.BeginContext(47, 9, true);
                 WriteLiteral("\r\n    <p>");
                 Instrumentation.EndContext();
-                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("strong", false, "test", async() => {
+                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("strong", TagMode.StartTagAndEndTag, "test", async() => {
                     Instrumentation.BeginContext(78, 5, true);
                     WriteLiteral("Hello");
                     Instrumentation.EndContext();
@@ -51,7 +51,7 @@ namespace TestOutput
                 Instrumentation.BeginContext(92, 62, true);
                 WriteLiteral("<strong>World</strong></p>\r\n    <input checked=\"true\" />\r\n    ");
                 Instrumentation.EndContext();
-                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", true, "test", async() => {
+                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", TagMode.SelfClosing, "test", async() => {
                 }
                 , StartTagHelperWritingScope, EndTagHelperWritingScope);
                 __InputTagHelper = CreateTagHelper<InputTagHelper>();
@@ -75,7 +75,7 @@ namespace TestOutput
                 Instrumentation.BeginContext(194, 6, true);
                 WriteLiteral("\r\n    ");
                 Instrumentation.EndContext();
-                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", true, "test", async() => {
+                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", TagMode.SelfClosing, "test", async() => {
                 }
                 , StartTagHelperWritingScope, EndTagHelperWritingScope);
                 __InputTagHelper = CreateTagHelper<InputTagHelper>();

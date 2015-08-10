@@ -8,6 +8,7 @@ using System.Linq;
 using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
+using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.AspNet.Razor.Test.Framework;
 using Microsoft.AspNet.Razor.Text;
@@ -17,6 +18,110 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
 {
     public class TagHelperParseTreeRewriterTest : TagHelperRewritingTestBase
     {
+        [Fact]
+        public void Rewrite_CanHandleStartTagOnlyTagTagMode()
+        {
+            // Arrange
+            var documentContent = "<input>";
+            var expectedOutput = new MarkupBlock(new MarkupTagHelperBlock("input", TagMode.StartTagOnly));
+            var descriptors = new TagHelperDescriptor[]
+                {
+                    new TagHelperDescriptor(
+                        prefix: string.Empty,
+                        tagName: "input",
+                        typeName: "InputTagHelper",
+                        assemblyName: "SomeAssembly",
+                        attributes: new TagHelperAttributeDescriptor[0],
+                        requiredAttributes: Enumerable.Empty<string>(),
+                        tagStructure: TagStructure.WithoutEndTag,
+                        designTimeDescriptor: null)
+                };
+            var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
+
+            // Act & Assert
+            EvaluateData(descriptorProvider, documentContent, expectedOutput, expectedErrors: new RazorError[0]);
+        }
+
+        [Fact]
+        public void Rewrite_CreatesErrorForWithoutEndTagTagStructureForEndTags()
+        {
+            // Arrange
+            var factory = CreateDefaultSpanFactory();
+            var blockFactory = new BlockFactory(factory);
+            var expectedError = new RazorError(
+                RazorResources.FormatTagHelperParseTreeRewriter_EndTagTagHelperMustNotHaveAnEndTag(
+                    "input",
+                    "InputTagHelper",
+                    TagStructure.WithoutEndTag),
+                absoluteIndex: 0,
+                lineIndex: 0,
+                columnIndex: 0,
+                length: 8);
+            var documentContent = "</input>";
+            var expectedOutput = new MarkupBlock(blockFactory.MarkupTagBlock("</input>"));
+            var descriptors = new TagHelperDescriptor[]
+                {
+                    new TagHelperDescriptor(
+                        prefix: string.Empty,
+                        tagName: "input",
+                        typeName: "InputTagHelper",
+                        assemblyName: "SomeAssembly",
+                        attributes: new TagHelperAttributeDescriptor[0],
+                        requiredAttributes: Enumerable.Empty<string>(),
+                        tagStructure: TagStructure.WithoutEndTag,
+                        designTimeDescriptor: null)
+                };
+            var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
+
+            // Act & Assert
+            EvaluateData(descriptorProvider, documentContent, expectedOutput, expectedErrors: new[] { expectedError });
+        }
+
+        [Fact]
+        public void Rewrite_CreatesErrorForInconsistentTagStructures()
+        {
+            // Arrange
+            var factory = CreateDefaultSpanFactory();
+            var blockFactory = new BlockFactory(factory);
+            var expectedError = new RazorError(
+                RazorResources.FormatTagHelperParseTreeRewriter_InconsistentTagStructure(
+                    "InputTagHelper1",
+                    "InputTagHelper2",
+                    "input",
+                    nameof(TagHelperDescriptor.TagStructure)),
+                absoluteIndex: 0,
+                lineIndex: 0,
+                columnIndex: 0,
+                length: 7);
+            var documentContent = "<input>";
+            var expectedOutput = new MarkupBlock(new MarkupTagHelperBlock("input", TagMode.StartTagOnly));
+            var descriptors = new TagHelperDescriptor[]
+                {
+                    new TagHelperDescriptor(
+                        prefix: string.Empty,
+                        tagName: "input",
+                        typeName: "InputTagHelper1",
+                        assemblyName: "SomeAssembly",
+                        attributes: new TagHelperAttributeDescriptor[0],
+                        requiredAttributes: Enumerable.Empty<string>(),
+                        tagStructure: TagStructure.WithoutEndTag,
+                        designTimeDescriptor: null),
+                    new TagHelperDescriptor(
+                        prefix: string.Empty,
+                        tagName: "input",
+                        typeName: "InputTagHelper2",
+                        assemblyName: "SomeAssembly",
+                        attributes: new TagHelperAttributeDescriptor[0],
+                        requiredAttributes: Enumerable.Empty<string>(),
+                        tagStructure: TagStructure.NormalOrSelfClosing,
+                        designTimeDescriptor: null)
+                };
+            var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
+
+            // Act & Assert
+            EvaluateData(descriptorProvider, documentContent, expectedOutput, expectedErrors: new[] { expectedError });
+        }
+
         public static TheoryData RequiredAttributeData
         {
             get
@@ -65,7 +170,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "p",
-                                selfClosing: true,
+                                tagMode: TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn"))
@@ -76,7 +181,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "p",
-                                selfClosing: true,
+                                tagMode: TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("class", dateTimeNow(10))
@@ -127,7 +232,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "strong",
-                                selfClosing: true,
+                                tagMode: TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("catchAll", factory.Markup("hi"))
@@ -138,7 +243,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "strong",
-                                selfClosing: true,
+                                tagMode: TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("catchAll", dateTimeNow(18))
@@ -208,7 +313,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "p",
-                                selfClosing: true,
+                                tagMode: TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("notRequired", factory.Markup("a")),
@@ -220,7 +325,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "p",
-                                selfClosing: true,
+                                tagMode: TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("notRequired", dateTimeNow(16)),
@@ -244,7 +349,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "div",
-                                selfClosing: true,
+                                tagMode: TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("style", new MarkupBlock()),
@@ -256,7 +361,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "div",
-                                selfClosing: true,
+                                tagMode: TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("style", dateTimeNow(12)),
@@ -311,7 +416,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "p",
-                                selfClosing: true,
+                                tagMode: TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn")),
@@ -335,7 +440,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "div",
-                                selfClosing: true,
+                                tagMode: TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("style", new MarkupBlock()),
@@ -917,6 +1022,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         assemblyName: "SomeAssembly",
                         attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
                         requiredAttributes: Enumerable.Empty<string>(),
+                        tagStructure: default(TagStructure),
                         designTimeDescriptor: null),
                     new TagHelperDescriptor(
                         prefix: "th:",
@@ -933,6 +1039,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                 designTimeDescriptor: null),
                         },
                         requiredAttributes: Enumerable.Empty<string>(),
+                        tagStructure: default(TagStructure),
                         designTimeDescriptor: null)
                 };
                 var availableDescriptorsText = new TagHelperDescriptor[]
@@ -944,6 +1051,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         assemblyName: "SomeAssembly",
                         attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
                         requiredAttributes: Enumerable.Empty<string>(),
+                        tagStructure: default(TagStructure),
                         designTimeDescriptor: null),
                     new TagHelperDescriptor(
                         prefix: "PREFIX",
@@ -960,6 +1068,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                 designTimeDescriptor: null),
                         },
                         requiredAttributes: Enumerable.Empty<string>(),
+                        tagStructure: default(TagStructure),
                         designTimeDescriptor: null)
                 };
                 var availableDescriptorsCatchAll = new TagHelperDescriptor[]
@@ -971,6 +1080,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         assemblyName: "SomeAssembly",
                         attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
                         requiredAttributes: Enumerable.Empty<string>(),
+                        tagStructure: default(TagStructure),
                         designTimeDescriptor: null),
                 };
 
@@ -993,13 +1103,13 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                     {
                         "<th:myth />",
                         new MarkupBlock(
-                            new MarkupTagHelperBlock("th:myth", selfClosing: true)),
+                            new MarkupTagHelperBlock("th:myth", tagMode: TagMode.SelfClosing)),
                         availableDescriptorsColon
                     },
                     {
                         "<PREFIXmyth />",
                         new MarkupBlock(
-                            new MarkupTagHelperBlock("PREFIXmyth", selfClosing: true)),
+                            new MarkupTagHelperBlock("PREFIXmyth", tagMode: TagMode.SelfClosing)),
                         availableDescriptorsText
                     },
                     {
@@ -1063,7 +1173,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "th:myth",
-                                selfClosing: true,
+                                tagMode: TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn"))
@@ -1075,7 +1185,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "PREFIXmyth",
-                                selfClosing: true,
+                                tagMode: TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn"))
@@ -1087,7 +1197,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "th:myth2",
-                                selfClosing: true,
+                                tagMode: TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn"))
@@ -1099,7 +1209,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "PREFIXmyth2",
-                                selfClosing: true,
+                                tagMode: TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("btn"))
@@ -1135,7 +1245,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "th:myth2",
-                                selfClosing: true,
+                                tagMode: TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     {
@@ -1157,7 +1267,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "PREFIXmyth2",
-                                selfClosing: true,
+                                tagMode: TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     {
@@ -1179,7 +1289,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
                                 "PREFIXmyth2",
-                                selfClosing: true,
+                                tagMode: TagMode.SelfClosing,
                                 attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
                                 {
                                     {

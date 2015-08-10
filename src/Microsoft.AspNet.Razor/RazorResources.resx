@@ -413,4 +413,10 @@ Instead, wrap the contents of the block in "{{}}":
   <data name="SourceLocationFilePathDoesNotMatch" xml:space="preserve">
     <value>Cannot perform '{1}' operations on '{0}' instances with different file paths.</value>
   </data>
+  <data name="TagHelperParseTreeRewriter_InconsistentTagStructure" xml:space="preserve">
+    <value>Tag helpers '{0}' and '{1}' targeting element '{2}' must not expect different {3} values.</value>
+  </data>
+  <data name="TagHelperParseTreeRewriter_EndTagTagHelperMustNotHaveAnEndTag" xml:space="preserve">
+    <value>Found an end tag (&amp;lt;/{0}&amp;gt;) for tag helper '{1}' with tag structure that disallows an end tag ('{2}').</value>
+  </data>
 </root>

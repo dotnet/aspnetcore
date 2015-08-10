@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 executionContext.TagName,
                 executionContext.HTMLAttributes)
             {
-                SelfClosing = executionContext.SelfClosing,
+                TagMode = executionContext.TagMode,
             };
             var orderedTagHelpers = executionContext.TagHelpers.OrderBy(tagHelper => tagHelper.Order);
 

@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
+using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
 
@@ -25,9 +26,9 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
             // There will always be at least one child for the '<'.
             var start = tag.Children.First().Start;
             var attributes = GetTagAttributes(tagName, validStructure, tag, descriptors, errorSink);
-            var selfClosing = IsSelfClosing(tag);
+            var tagMode = GetTagMode(tagName, tag, descriptors, errorSink);
 
-            return new TagHelperBlockBuilder(tagName, selfClosing, start, attributes, descriptors);
+            return new TagHelperBlockBuilder(tagName, tagMode, start, attributes, descriptors);
         }
 
         private static IList<KeyValuePair<string, SyntaxTreeNode>> GetTagAttributes(
@@ -108,11 +109,29 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
             return attributes;
         }
 
-        private static bool IsSelfClosing(Block beginTagBlock)
+        private static TagMode GetTagMode(
+            string tagName,
+            Block beginTagBlock,
+            IEnumerable<TagHelperDescriptor> descriptors,
+            ErrorSink errorSink)
         {
             var childSpan = beginTagBlock.FindLastDescendentSpan();
 
-            return childSpan?.Content.EndsWith("/>") ?? false;
+            // Self-closing tags are always valid despite descriptors[X].TagStructure.
+            if (childSpan?.Content.EndsWith("/>") ?? false)
+            {
+                return TagMode.SelfClosing;
+            }
+
+            var baseDescriptor = descriptors.FirstOrDefault(
+                descriptor => descriptor.TagStructure != TagStructure.Unspecified);
+            var resolvedTagStructure = baseDescriptor?.TagStructure ?? TagStructure.Unspecified;
+            if (resolvedTagStructure == TagStructure.WithoutEndTag)
+            {
+                return TagMode.StartTagOnly;
+            }
+
+            return TagMode.StartTagAndEndTag;
         }
 
         // This method handles cases when the attribute is a simple span attribute such as

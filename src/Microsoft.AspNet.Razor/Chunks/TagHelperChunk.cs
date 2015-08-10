@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Razor.TagHelpers;
 
 namespace Microsoft.AspNet.Razor.Chunks
@@ -15,21 +16,19 @@ namespace Microsoft.AspNet.Razor.Chunks
         /// Instantiates a new <see cref="TagHelperChunk"/>.
         /// </summary>
         /// <param name="tagName">The tag name associated with the tag helpers HTML element.</param>
-        /// <param name="selfClosing">
-        /// <see cref="bool"/> indicating whether or not the tag of the tag helpers HTML element is self-closing.
-        /// </param>
+        /// <param name="tagMode">HTML syntax of the element in the Razor source.</param>
         /// <param name="attributes">The attributes associated with the tag helpers HTML element.</param>
         /// <param name="descriptors">
         /// The <see cref="TagHelperDescriptor"/>s associated with this tag helpers HTML element.
         /// </param>
         public TagHelperChunk(
             string tagName,
-            bool selfClosing,
+            TagMode tagMode,
             IList<KeyValuePair<string, Chunk>> attributes,
             IEnumerable<TagHelperDescriptor> descriptors)
         {
             TagName = tagName;
-            SelfClosing = selfClosing;
+            TagMode = tagMode;
             Attributes = attributes;
             Descriptors = descriptors;
         }
@@ -54,8 +53,8 @@ namespace Microsoft.AspNet.Razor.Chunks
         public string TagName { get; set; }
 
         /// <summary>
-        /// Gets a value indicating whether or not the tag of the tag helpers HTML element is self-closing.
+        /// Gets the HTML syntax of the element in the Razor source.
         /// </summary>
-        public bool SelfClosing { get; }
+        public TagMode TagMode { get; }
     }
 }

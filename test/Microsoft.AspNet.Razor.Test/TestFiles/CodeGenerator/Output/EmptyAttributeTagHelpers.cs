@@ -29,7 +29,7 @@ namespace TestOutput
             Instrumentation.BeginContext(27, 13, true);
             WriteLiteral("\r\n<div>\r\n    ");
             Instrumentation.EndContext();
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", true, "test", async() => {
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", TagMode.SelfClosing, "test", async() => {
             }
             , StartTagHelperWritingScope, EndTagHelperWritingScope);
             __InputTagHelper = CreateTagHelper<InputTagHelper>();
@@ -54,11 +54,11 @@ __InputTagHelper2.Checked = ;
             Instrumentation.BeginContext(74, 6, true);
             WriteLiteral("\r\n    ");
             Instrumentation.EndContext();
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p", false, "test", async() => {
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p", TagMode.StartTagAndEndTag, "test", async() => {
                 Instrumentation.BeginContext(90, 10, true);
                 WriteLiteral("\r\n        ");
                 Instrumentation.EndContext();
-                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", true, "test", async() => {
+                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", TagMode.SelfClosing, "test", async() => {
                 }
                 , StartTagHelperWritingScope, EndTagHelperWritingScope);
                 __InputTagHelper = CreateTagHelper<InputTagHelper>();

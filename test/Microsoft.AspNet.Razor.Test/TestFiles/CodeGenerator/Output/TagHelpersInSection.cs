@@ -42,11 +42,11 @@ namespace TestOutput
                 Instrumentation.BeginContext(93, 21, true);
                 WriteLiteralTo(__razor_template_writer, "\r\n    <div>\r\n        ");
                 Instrumentation.EndContext();
-                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("mytaghelper", false, "test", async() => {
+                __tagHelperExecutionContext = __tagHelperScopeManager.Begin("mytaghelper", TagMode.StartTagAndEndTag, "test", async() => {
                     Instrumentation.BeginContext(217, 52, true);
                     WriteLiteral("\r\n            In None ContentBehavior.\r\n            ");
                     Instrumentation.EndContext();
-                    __tagHelperExecutionContext = __tagHelperScopeManager.Begin("nestedtaghelper", false, "test", async() => {
+                    __tagHelperExecutionContext = __tagHelperScopeManager.Begin("nestedtaghelper", TagMode.StartTagAndEndTag, "test", async() => {
                         Instrumentation.BeginContext(286, 26, true);
                         WriteLiteral("Some buffered values with ");
                         Instrumentation.EndContext();

@@ -32,6 +32,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                     assemblyName: AssemblyName,
                     attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
                     requiredAttributes: Enumerable.Empty<string>(),
+                    tagStructure: default(TagStructure),
                     designTimeDescriptor: null);
             }
         }
@@ -47,6 +48,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                     assemblyName: AssemblyName,
                     attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
                     requiredAttributes: Enumerable.Empty<string>(),
+                    tagStructure: default(TagStructure),
                     designTimeDescriptor: null);
             }
         }
@@ -573,6 +575,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         assemblyName: assemblyB,
                         attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
                         requiredAttributes: Enumerable.Empty<string>(),
+                        tagStructure: default(TagStructure),
                         designTimeDescriptor: null);
 
                 return new TheoryData<Dictionary<string, IEnumerable<Type>>, // descriptorAssemblyLookups
@@ -1008,6 +1011,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         assemblyName: assemblyB,
                         attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
                         requiredAttributes: Enumerable.Empty<string>(),
+                        tagStructure: default(TagStructure),
                         designTimeDescriptor: null);
 
                 return new TheoryData<Dictionary<string, IEnumerable<Type>>, // descriptorAssemblyLookups
@@ -1390,6 +1394,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 assemblyName,
                 attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
                 requiredAttributes: Enumerable.Empty<string>(),
+                tagStructure: default(TagStructure),
                 designTimeDescriptor: null);
         }
 

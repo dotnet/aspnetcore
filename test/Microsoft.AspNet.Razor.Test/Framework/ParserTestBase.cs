@@ -10,6 +10,7 @@ using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Parser.TagHelpers;
+using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Razor.Text;
 using Xunit;
 
@@ -411,13 +412,11 @@ namespace Microsoft.AspNet.Razor.Test.Framework
                         actual.TagName);
                 }
 
-                if (expected.SelfClosing != actual.SelfClosing)
+                if (expected.TagMode != actual.TagMode)
                 {
                     collector.AddError(
-                        "{0} - FAILED :: SelfClosing for TagHelperBlock {1} :: ACTUAL: {2}",
-                        expected.SelfClosing,
-                        actual.TagName,
-                        actual.SelfClosing);
+                        $"{expected.TagMode} - FAILED :: {nameof(TagMode)} for {nameof(TagHelperBlock)} " +
+                        $"{actual.TagName} :: ACTUAL: {actual.TagMode}");
                 }
 
                 var expectedAttributes = expected.Attributes.GetEnumerator();

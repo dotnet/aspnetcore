@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Razor.Test.Internal;
 using Newtonsoft.Json;
 using Xunit;
@@ -22,6 +23,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 assemblyName: "assembly name",
                 attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
                 requiredAttributes: new[] { "required attribute one", "required attribute two" },
+                tagStructure: TagStructure.Unspecified,
                 designTimeDescriptor: new TagHelperDesignTimeDescriptor("usage summary", "usage remarks", "some-tag"));
 
             var expectedSerializedDescriptor =
@@ -33,6 +35,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 $"\"{ nameof(TagHelperDescriptor.Attributes) }\":[]," +
                 $"\"{ nameof(TagHelperDescriptor.RequiredAttributes) }\":" +
                 "[\"required attribute one\",\"required attribute two\"]," +
+                $"\"{ nameof(TagHelperDescriptor.TagStructure) }\":0," +
                 $"\"{ nameof(TagHelperDescriptor.DesignTimeDescriptor) }\":{{"+
                 $"\"{ nameof(TagHelperDesignTimeDescriptor.Summary) }\":\"usage summary\"," +
                 $"\"{ nameof(TagHelperDesignTimeDescriptor.Remarks) }\":\"usage remarks\"," +
@@ -70,6 +73,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         designTimeDescriptor: null),
                 },
                 requiredAttributes: Enumerable.Empty<string>(),
+                tagStructure: TagStructure.NormalOrSelfClosing,
                 designTimeDescriptor: null);
             var expectedSerializedDescriptor =
                 $"{{\"{ nameof(TagHelperDescriptor.Prefix) }\":\"prefix:\"," +
@@ -91,6 +95,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 $"\"{ nameof(TagHelperAttributeDescriptor.TypeName) }\":\"{ typeof(string).FullName }\"," +
                 $"\"{ nameof(TagHelperAttributeDescriptor.DesignTimeDescriptor) }\":null}}]," +
                 $"\"{ nameof(TagHelperDescriptor.RequiredAttributes) }\":[]," +
+                $"\"{ nameof(TagHelperDescriptor.TagStructure) }\":1," +
                 $"\"{ nameof(TagHelperDescriptor.DesignTimeDescriptor) }\":null}}";
 
             // Act
@@ -125,6 +130,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         designTimeDescriptor: null),
                 },
                 requiredAttributes: Enumerable.Empty<string>(),
+                tagStructure: default(TagStructure),
                 designTimeDescriptor: null);
             var expectedSerializedDescriptor =
                 $"{{\"{ nameof(TagHelperDescriptor.Prefix) }\":\"prefix:\"," +
@@ -146,6 +152,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 $"\"{ nameof(TagHelperAttributeDescriptor.TypeName) }\":\"{ typeof(string).FullName }\"," +
                 $"\"{ nameof(TagHelperAttributeDescriptor.DesignTimeDescriptor) }\":null}}]," +
                 $"\"{ nameof(TagHelperDescriptor.RequiredAttributes) }\":[]," +
+                $"\"{ nameof(TagHelperDescriptor.TagStructure) }\":0," +
                 $"\"{ nameof(TagHelperDescriptor.DesignTimeDescriptor) }\":null}}";
 
             // Act
@@ -168,6 +175,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 $"\"{nameof(TagHelperDescriptor.Attributes)}\":[]," +
                 $"\"{nameof(TagHelperDescriptor.RequiredAttributes)}\":" +
                 "[\"required attribute one\",\"required attribute two\"]," +
+                $"\"{nameof(TagHelperDescriptor.TagStructure)}\":2," +
                 $"\"{ nameof(TagHelperDescriptor.DesignTimeDescriptor) }\":{{" +
                 $"\"{ nameof(TagHelperDesignTimeDescriptor.Summary) }\":\"usage summary\"," +
                 $"\"{ nameof(TagHelperDesignTimeDescriptor.Remarks) }\":\"usage remarks\"," +
@@ -179,6 +187,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 assemblyName: "assembly name",
                 attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
                 requiredAttributes: new[] { "required attribute one", "required attribute two" },
+                tagStructure: TagStructure.WithoutEndTag,
                 designTimeDescriptor: new TagHelperDesignTimeDescriptor("usage summary", "usage remarks", "some-tag"));
 
             // Act
@@ -223,6 +232,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 $"\"{ nameof(TagHelperAttributeDescriptor.TypeName) }\":\"{ typeof(string).FullName }\"," +
                 $"\"{ nameof(TagHelperAttributeDescriptor.DesignTimeDescriptor) }\":null}}]," +
                 $"\"{ nameof(TagHelperDescriptor.RequiredAttributes) }\":[]," +
+                $"\"{nameof(TagHelperDescriptor.TagStructure)}\":0," +
                 $"\"{ nameof(TagHelperDescriptor.DesignTimeDescriptor) }\":null}}";
             var expectedDescriptor = new TagHelperDescriptor(
                 prefix: "prefix:",
@@ -245,6 +255,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         designTimeDescriptor: null),
                 },
                 requiredAttributes: Enumerable.Empty<string>(),
+                tagStructure: TagStructure.Unspecified,
                 designTimeDescriptor: null);
 
             // Act
@@ -310,6 +321,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 $"\"{ nameof(TagHelperAttributeDescriptor.TypeName) }\":\"{ typeof(string).FullName }\"," +
                 $"\"{ nameof(TagHelperAttributeDescriptor.DesignTimeDescriptor) }\":null}}]," +
                 $"\"{ nameof(TagHelperDescriptor.RequiredAttributes) }\":[]," +
+                $"\"{nameof(TagHelperDescriptor.TagStructure)}\":1," +
                 $"\"{ nameof(TagHelperDescriptor.DesignTimeDescriptor) }\":null}}";
             var expectedDescriptor = new TagHelperDescriptor(
                 prefix: "prefix:",
@@ -332,6 +344,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         designTimeDescriptor: null),
                 },
                 requiredAttributes: Enumerable.Empty<string>(),
+                tagStructure: TagStructure.NormalOrSelfClosing,
                 designTimeDescriptor: null);
 
             // Act

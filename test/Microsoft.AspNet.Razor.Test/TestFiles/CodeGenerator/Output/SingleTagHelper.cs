@@ -27,7 +27,7 @@ namespace TestOutput
             Instrumentation.BeginContext(33, 2, true);
             WriteLiteral("\r\n");
             Instrumentation.EndContext();
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p", false, "test", async() => {
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p", TagMode.StartTagAndEndTag, "test", async() => {
                 Instrumentation.BeginContext(69, 11, true);
                 WriteLiteral("Body of Tag");
                 Instrumentation.EndContext();

@@ -118,6 +118,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         assemblyName,
                         attributeDescriptors,
                         requiredAttributes: Enumerable.Empty<string>(),
+                        tagStructure: default(TagStructure),
                         designTimeDescriptor: typeDesignTimeDescriptor)
                 };
             }
@@ -147,6 +148,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 assemblyName,
                 attributeDescriptors,
                 requiredAttributes,
+                targetElementAttribute.TagStructure,
                 designTimeDescriptor);
         }
 
@@ -156,6 +158,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             string assemblyName,
             IEnumerable<TagHelperAttributeDescriptor> attributeDescriptors,
             IEnumerable<string> requiredAttributes,
+            TagStructure tagStructure,
             TagHelperDesignTimeDescriptor designTimeDescriptor)
         {
             return new TagHelperDescriptor(
@@ -165,6 +168,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 assemblyName: assemblyName,
                 attributes: attributeDescriptors,
                 requiredAttributes: requiredAttributes,
+                tagStructure: tagStructure,
                 designTimeDescriptor: designTimeDescriptor);
         }
 

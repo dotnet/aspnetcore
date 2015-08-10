@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
+using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Razor.TagHelpers;
 
 namespace Microsoft.AspNet.Razor.Parser.TagHelpers
@@ -32,22 +33,20 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
         /// and <see cref="BlockBuilder.Type"/> from the <paramref name="startTag"/>.
         /// </summary>
         /// <param name="tagName">An HTML tag name.</param>
-        /// <param name="selfClosing">
-        /// <see cref="bool"/> indicating whether or not the tag in the Razor source was self-closing.
-        /// </param>
+        /// <param name="tagMode">HTML syntax of the element in the Razor source.</param>
         /// <param name="start">Starting location of the <see cref="TagHelperBlock"/>.</param>
         /// <param name="attributes">Attributes of the <see cref="TagHelperBlock"/>.</param>
         /// <param name="descriptors">The <see cref="TagHelperDescriptor"/>s associated with the current HTML
         /// tag.</param>
         public TagHelperBlockBuilder(
             string tagName,
-            bool selfClosing,
+            TagMode tagMode,
             SourceLocation start,
             IList<KeyValuePair<string, SyntaxTreeNode>> attributes,
             IEnumerable<TagHelperDescriptor> descriptors)
         {
             TagName = tagName;
-            SelfClosing = selfClosing;
+            TagMode = tagMode;
             Start = start;
             Descriptors = descriptors;
             Attributes = new List<KeyValuePair<string, SyntaxTreeNode>>(attributes);
@@ -58,12 +57,12 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
         // Internal for testing
         internal TagHelperBlockBuilder(
             string tagName,
-            bool selfClosing,
+            TagMode tagMode,
             IList<KeyValuePair<string, SyntaxTreeNode>> attributes,
             IEnumerable<SyntaxTreeNode> children)
         {
             TagName = tagName;
-            SelfClosing = selfClosing;
+            TagMode = tagMode;
             Attributes = attributes;
             Type = BlockType.Tag;
             ChunkGenerator = new TagHelperChunkGenerator(tagHelperDescriptors: null);
@@ -88,9 +87,9 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
         public Block SourceEndTag { get; set; }
 
         /// <summary>
-        /// Gets a value indicating whether or not the tag in the Razor source was self-closing.
+        /// Gets the HTML syntax of the element in the Razor source.
         /// </summary>
-        public bool SelfClosing { get; }
+        public TagMode TagMode { get; }
 
         /// <summary>
         /// <see cref="TagHelperDescriptor"/>s for the HTML element.

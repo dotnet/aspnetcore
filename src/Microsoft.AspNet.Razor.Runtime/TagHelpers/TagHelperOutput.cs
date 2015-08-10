@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
@@ -82,9 +80,9 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         }
 
         /// <summary>
-        /// Indicates whether or not the tag is self-closing.
+        /// Syntax of the element in the generated HTML.
         /// </summary>
-        public bool SelfClosing { get; set; }
+        public TagMode TagMode { get; set; }
 
         /// <summary>
         /// The HTML element's attributes.
@@ -100,7 +98,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// Changes <see cref="TagHelperOutput"/> to generate nothing.
         /// </summary>
         /// <remarks>
-        /// Sets <see cref="TagName"/> to <c>null</c>, and clears <see cref="PreElement"/>, <see cref="PreContent"/>, 
+        /// Sets <see cref="TagName"/> to <c>null</c>, and clears <see cref="PreElement"/>, <see cref="PreContent"/>,
         /// <see cref="Content"/>, <see cref="PostContent"/>, and <see cref="PostElement"/> to suppress output.
         /// </remarks>
         public void SuppressOutput()

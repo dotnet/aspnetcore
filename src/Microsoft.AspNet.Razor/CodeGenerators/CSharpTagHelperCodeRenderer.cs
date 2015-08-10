@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using Microsoft.AspNet.Razor.Chunks;
 using Microsoft.AspNet.Razor.CodeGenerators.Visitors;
+using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.Framework.Internal;
 
@@ -65,7 +66,7 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
             // the same TagHelper X many times (instead of once) over a single HTML element.
             var tagHelperDescriptors = chunk.Descriptors.Distinct(TypeBasedTagHelperDescriptorComparer.Default);
 
-            RenderBeginTagHelperScope(chunk.TagName, chunk.SelfClosing, chunk.Children);
+            RenderBeginTagHelperScope(chunk.TagName, chunk.TagMode, chunk.Children);
 
             RenderTagHelpersCreation(chunk, tagHelperDescriptors);
 
@@ -85,7 +86,7 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
             return "__" + descriptor.TypeName.Replace('.', '_');
         }
 
-        private void RenderBeginTagHelperScope(string tagName, bool selfClosing, IList<Chunk> children)
+        private void RenderBeginTagHelperScope(string tagName, TagMode tagMode, IList<Chunk> children)
         {
             // Scopes/execution contexts are a runtime feature.
             if (_designTimeMode)
@@ -105,7 +106,9 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
             // per call site, e.g. if the tag is on the view twice, there should be two IDs.
             _writer.WriteStringLiteral(tagName)
                    .WriteParameterSeparator()
-                   .WriteBooleanLiteral(selfClosing)
+                   .Write(nameof(TagMode))
+                   .Write(".")
+                   .Write(tagMode.ToString())
                    .WriteParameterSeparator()
                    .WriteStringLiteral(GenerateUniqueId())
                    .WriteParameterSeparator();

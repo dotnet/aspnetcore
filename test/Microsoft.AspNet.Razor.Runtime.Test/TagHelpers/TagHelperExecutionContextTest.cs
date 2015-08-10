@@ -13,15 +13,16 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
     {
 
         [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void SelfClosing_ReturnsTrueOrFalseAsExpected(bool selfClosing)
+        [InlineData(TagMode.SelfClosing)]
+        [InlineData(TagMode.StartTagAndEndTag)]
+        [InlineData(TagMode.StartTagOnly)]
+        public void TagMode_ReturnsExpectedValue(TagMode tagMode)
         {
             // Arrange & Act
-            var executionContext = new TagHelperExecutionContext("p", selfClosing);
+            var executionContext = new TagHelperExecutionContext("p", tagMode);
 
             // Assert
-            Assert.Equal(selfClosing, executionContext.SelfClosing);
+            Assert.Equal(tagMode, executionContext.TagMode);
         }
 
         [Fact]
@@ -36,7 +37,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var executionContext = new TagHelperExecutionContext(
                 "p",
-                selfClosing: false,
+                tagMode: TagMode.StartTagAndEndTag,
                 items: expectedItems,
                 uniqueId: string.Empty,
                 executeChildContentAsync: async () => await Task.FromResult(result: true),
@@ -56,7 +57,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var expectedContent = string.Empty;
             var executionContext = new TagHelperExecutionContext(
                 "p",
-                selfClosing: false,
+                tagMode: TagMode.StartTagAndEndTag,
                 items: null,
                 uniqueId: string.Empty,
                 executeChildContentAsync: () =>
@@ -89,7 +90,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var executionCount = 0;
             var executionContext = new TagHelperExecutionContext(
                 "p",
-                selfClosing: false,
+                tagMode: TagMode.StartTagAndEndTag,
                 items: null,
                 uniqueId: string.Empty,
                 executeChildContentAsync: () =>
@@ -118,7 +119,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var defaultTagHelperContent = new DefaultTagHelperContent();
             var executionContext = new TagHelperExecutionContext(
                 "p",
-                selfClosing: false,
+                tagMode: TagMode.StartTagAndEndTag,
                 items: null,
                 uniqueId: string.Empty,
                 executeChildContentAsync: () => { return Task.FromResult(result: true); },
@@ -143,7 +144,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var childContentExecutionCount = 0;
             var executionContext = new TagHelperExecutionContext(
                 "p",
-                selfClosing: false,
+                tagMode: TagMode.StartTagAndEndTag,
                 items: null,
                 uniqueId: string.Empty,
                 executeChildContentAsync: () =>
@@ -182,7 +183,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         public void HtmlAttributes_IgnoresCase(string originalName, string updatedName)
         {
             // Arrange
-            var executionContext = new TagHelperExecutionContext("p", selfClosing: false);
+            var executionContext = new TagHelperExecutionContext("p", TagMode.StartTagAndEndTag);
             executionContext.HTMLAttributes[originalName] = "hello";
 
             // Act
@@ -198,7 +199,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         public void AllAttributes_IgnoresCase(string originalName, string updatedName)
         {
             // Arrange
-            var executionContext = new TagHelperExecutionContext("p", selfClosing: false);
+            var executionContext = new TagHelperExecutionContext("p", tagMode: TagMode.StartTagAndEndTag);
             executionContext.AllAttributes.Add(originalName, value: false);
 
             // Act
@@ -213,7 +214,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         public void AddHtmlAttribute_MaintainsHTMLAttributes()
         {
             // Arrange
-            var executionContext = new TagHelperExecutionContext("p", selfClosing: false);
+            var executionContext = new TagHelperExecutionContext("p", TagMode.StartTagAndEndTag);
             var expectedAttributes = new TagHelperAttributeList
             {
                 { "class", "btn" },
@@ -235,7 +236,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         public void AddMinimizedHtmlAttribute_MaintainsHTMLAttributes()
         {
             // Arrange
-            var executionContext = new TagHelperExecutionContext("input", selfClosing: true);
+            var executionContext = new TagHelperExecutionContext("input", tagMode: TagMode.StartTagOnly);
             var expectedAttributes = new TagHelperAttributeList
             {
                 ["checked"] = new TagHelperAttribute { Name = "checked", Minimized = true },
@@ -257,7 +258,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         public void AddMinimizedHtmlAttribute_MaintainsHTMLAttributes_SomeMinimized()
         {
             // Arrange
-            var executionContext = new TagHelperExecutionContext("input", selfClosing: true);
+            var executionContext = new TagHelperExecutionContext("input", tagMode: TagMode.SelfClosing);
             var expectedAttributes = new TagHelperAttributeList
             {
                 { "class", "btn" },
@@ -283,7 +284,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         public void TagHelperExecutionContext_MaintainsAllAttributes()
         {
             // Arrange
-            var executionContext = new TagHelperExecutionContext("p", selfClosing: false);
+            var executionContext = new TagHelperExecutionContext("p", TagMode.StartTagAndEndTag);
             var expectedAttributes = new TagHelperAttributeList
             {
                 { "class", "btn" },
@@ -307,7 +308,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         public void Add_MaintainsTagHelpers()
         {
             // Arrange
-            var executionContext = new TagHelperExecutionContext("p", selfClosing: false);
+            var executionContext = new TagHelperExecutionContext("p", TagMode.StartTagAndEndTag);
             var tagHelper = new PTagHelper();
 
             // Act
@@ -322,7 +323,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         public void Add_MaintainsMultipleTagHelpers()
         {
             // Arrange
-            var executionContext = new TagHelperExecutionContext("p", selfClosing: false);
+            var executionContext = new TagHelperExecutionContext("p", TagMode.StartTagAndEndTag);
             var tagHelper1 = new PTagHelper();
             var tagHelper2 = new PTagHelper();
 

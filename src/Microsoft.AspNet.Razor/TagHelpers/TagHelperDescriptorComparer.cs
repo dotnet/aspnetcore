@@ -30,8 +30,8 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// <remarks>
         /// Determines equality based on <see cref="TagHelperDescriptor.TypeName"/>,
         /// <see cref="TagHelperDescriptor.AssemblyName"/>, <see cref="TagHelperDescriptor.TagName"/>,
-        /// and <see cref="TagHelperDescriptor.RequiredAttributes"/>. Ignores
-        /// <see cref="TagHelperDescriptor.DesignTimeDescriptor"/> because it can be inferred directly from
+        /// <see cref="TagHelperDescriptor.RequiredAttributes"/>, and <see cref="TagHelperDescriptor.TagStructure"/>.
+        /// Ignores <see cref="TagHelperDescriptor.DesignTimeDescriptor"/> because it can be inferred directly from
         /// <see cref="TagHelperDescriptor.TypeName"/> and <see cref="TagHelperDescriptor.AssemblyName"/>.
         /// </remarks>
         public virtual bool Equals(TagHelperDescriptor descriptorX, TagHelperDescriptor descriptorY)
@@ -48,7 +48,8 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 Enumerable.SequenceEqual(
                     descriptorX.RequiredAttributes.OrderBy(attribute => attribute, StringComparer.OrdinalIgnoreCase),
                     descriptorY.RequiredAttributes.OrderBy(attribute => attribute, StringComparer.OrdinalIgnoreCase),
-                    StringComparer.OrdinalIgnoreCase);
+                    StringComparer.OrdinalIgnoreCase) &&
+                descriptorX.TagStructure == descriptorY.TagStructure;
         }
 
         /// <inheritdoc />
@@ -57,7 +58,8 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             var hashCodeCombiner = HashCodeCombiner.Start()
                 .Add(descriptor.TypeName, StringComparer.Ordinal)
                 .Add(descriptor.TagName, StringComparer.OrdinalIgnoreCase)
-                .Add(descriptor.AssemblyName, StringComparer.Ordinal);
+                .Add(descriptor.AssemblyName, StringComparer.Ordinal)
+                .Add(descriptor.TagStructure);
 
             var attributes = descriptor.RequiredAttributes.OrderBy(
                 attribute => attribute,

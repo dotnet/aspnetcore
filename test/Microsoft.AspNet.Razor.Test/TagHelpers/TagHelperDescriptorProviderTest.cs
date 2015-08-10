@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Xunit;
 
 namespace Microsoft.AspNet.Razor.TagHelpers
@@ -321,6 +322,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 assemblyName: "SomeAssembly",
                 attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
                 requiredAttributes: Enumerable.Empty<string>(),
+                tagStructure: default(TagStructure),
                 designTimeDescriptor: null);
         }
     }
