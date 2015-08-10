@@ -2,7 +2,7 @@
 # Source this file from your .bash-profile or script to use
 
 # "Constants"
-_DNVM_BUILDNUMBER="beta7-10408"
+_DNVM_BUILDNUMBER="beta7-10409"
 _DNVM_AUTHORS="Microsoft Open Technologies, Inc."
 _DNVM_RUNTIME_PACKAGE_NAME="dnx"
 _DNVM_RUNTIME_FRIENDLY_NAME=".NET Execution Environment"
@@ -363,7 +363,7 @@ __dnvm_help() {
     echo "  adds $_DNVM_RUNTIME_SHORT_NAME bin to path of current command line"
     echo "  set installed version as default"
     echo "  -f|forces         force upgrade. Overwrite existing version of $_DNVM_RUNTIME_SHORT_NAME if already installed"
-    echo "  -u|unstable       use unstable feed. Installs the $_DNVM_RUNTIME_SHORT_NAME from the unstable unstable feed"
+    echo "  -u|unstable       use unstable feed. Installs the $_DNVM_RUNTIME_SHORT_NAME from the unstable feed"
     echo "  -r|runtime        The runtime flavor to install [clr or coreclr] (default: clr)"
     echo ""
    printf "%b\n" "${Yel}$_DNVM_COMMAND_NAME install <semver>|<alias>|<nupkg>|latest [-r <runtime>] [-OS <OS>] [-a|-alias <alias>] [-p|-persistent] [-f|-force] [-u|-unstable] ${RCol}"
@@ -374,7 +374,7 @@ __dnvm_help() {
     echo "  -a|-alias <alias> set alias <alias> for requested $_DNVM_RUNTIME_SHORT_NAME on install"
     echo "  -p|-persistent    set installed version as default"
     echo "  -f|force          force install. Overwrite existing version of $_DNVM_RUNTIME_SHORT_NAME if already installed"
-    echo "  -u|unstable       use unstable feed. Installs the $_DNVM_RUNTIME_SHORT_NAME from the unstable unstable feed"
+    echo "  -u|unstable       use unstable feed. Installs the $_DNVM_RUNTIME_SHORT_NAME from the unstable feed"
     echo "  -r|runtime        The runtime flavor to install [mono or coreclr] (default: mono)"
     echo ""
     echo "  adds $_DNVM_RUNTIME_SHORT_NAME bin to path of current command line"
