@@ -173,7 +173,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public CustomReadOnlyCollection<Address> Address { get; set; }
         }
 
-        [Fact(Skip = "Concrete Collection types don't work with GenericModelBinder #2793")]
+        [Fact(Skip = "Validation incorrect for collections when using TryUpdateModel, #2941")]
         public async Task TryUpdateModel_ReadOnlyCollectionModel_EmptyPrefix_DoesNotGetBound()
         {
             // Arrange
@@ -184,6 +184,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             var modelState = new ModelStateDictionary();
             var model = new Person6();
+
             // Act
             var result = await TryUpdateModel(model, string.Empty, operationContext, modelState);
 
@@ -193,12 +194,17 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             // Model
             Assert.NotNull(model.Address);
 
-            // Arrays should not be updated.
-            Assert.Equal(0, model.Address.Count());
+            // Read-only collection should not be updated.
+            Assert.Empty(model.Address);
 
-            // ModelState
+            // ModelState (data is valid but is not copied into Address).
             Assert.True(modelState.IsValid);
-            Assert.Empty(modelState.Keys);
+            var entry = Assert.Single(modelState);
+            Assert.Equal("Address[0].Street", entry.Key);
+            var state = entry.Value;
+            Assert.NotNull(state);
+            Assert.Equal(ModelValidationState.Valid, state.ValidationState);
+            Assert.Equal("SomeStreet", state.Value.RawValue);
         }
 
         private class Person4
@@ -409,7 +415,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState);
         }
 
-        [Fact(Skip = "Concrete Collection types don't work with GenericModelBinder #2793")]
+        [Fact(Skip = "Validation incorrect for collections when using TryUpdateModel, #2941")]
         public async Task TryUpdateModel_ReadOnlyCollectionModel_WithPrefix_DoesNotGetBound()
         {
             // Arrange
@@ -420,6 +426,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             var modelState = new ModelStateDictionary();
             var model = new Person6();
+
             // Act
             var result = await TryUpdateModel(model, "prefix", operationContext, modelState);
 
@@ -429,12 +436,17 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             // Model
             Assert.NotNull(model.Address);
 
-            // Arrays should not be updated.
-            Assert.Equal(0, model.Address.Count());
+            // Read-only collection should not be updated.
+            Assert.Empty(model.Address);
 
-            // ModelState
+            // ModelState (data is valid but is not copied into Address).
             Assert.True(modelState.IsValid);
-            Assert.Empty(modelState.Keys);
+            var entry = Assert.Single(modelState);
+            Assert.Equal("prefix.Address[0].Street", entry.Key);
+            var state = entry.Value;
+            Assert.NotNull(state);
+            Assert.Equal(ModelValidationState.Valid, state.ValidationState);
+            Assert.Equal("SomeStreet", state.Value.RawValue);
         }
 
         [Fact]
@@ -499,11 +511,12 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Empty(modelState.Keys);
         }
 
-        private class CustomReadOnlyCollection<T> : ICollection<T>, IReadOnlyCollection<T>
+        private class CustomReadOnlyCollection<T> : ICollection<T>
         {
             private ICollection<T> _original;
 
-            public CustomReadOnlyCollection() : this(new List<T>())
+            public CustomReadOnlyCollection()
+                : this(new List<T>())
             {
             }
 

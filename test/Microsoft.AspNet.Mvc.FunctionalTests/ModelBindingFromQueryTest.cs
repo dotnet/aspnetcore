@@ -92,9 +92,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
-            var url =
-                "http://localhost/FromQueryAttribute_Company/CreateDepartment?TestEmployees[0].EmployeeId=1234";
-
+            var url = "http://localhost/FromQueryAttribute_Company/CreateDepartment?TestEmployees[0].EmployeeId=1234";
 
             // Act
             var response = await client.GetAsync(url);
@@ -117,7 +115,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             var url =
                 "http://localhost/FromQueryAttribute_Company/ValidateDepartment?TestEmployees[0].Department=contoso";
-
 
             // Act
             var response = await client.GetAsync(url);

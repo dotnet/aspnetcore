@@ -1,7 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Framework.Internal;
@@ -25,15 +27,27 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return base.BindModelAsync(bindingContext);
         }
 
-        protected override object CreateEmptyCollection()
+        /// <inheritdoc />
+        public override bool CanCreateInstance(Type targetType)
         {
+            return targetType == typeof(TElement[]);
+        }
+
+        /// <inheritdoc />
+        protected override object CreateEmptyCollection(Type targetType)
+        {
+            Debug.Assert(targetType == typeof(TElement[]), "GenericModelBinder only creates this binder for arrays.");
+
             return new TElement[0];
         }
 
         /// <inheritdoc />
-        protected override object GetModel(IEnumerable<TElement> newCollection)
+        protected override object ConvertToCollectionType(Type targetType, IEnumerable<TElement> collection)
         {
-            return newCollection?.ToArray();
+            Debug.Assert(targetType == typeof(TElement[]), "GenericModelBinder only creates this binder for arrays.");
+
+            // If non-null, collection is a List<TElement>, never already a TElement[].
+            return collection?.ToArray();
         }
 
         /// <inheritdoc />

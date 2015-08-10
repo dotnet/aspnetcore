@@ -1,9 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+#if DNXCORE50
+using System.Reflection;
+#endif
 using System.Threading.Tasks;
 using Microsoft.Framework.Internal;
 
@@ -27,7 +31,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
 
             Debug.Assert(result.Model != null);
-            var model = (Dictionary<TKey, TValue>)result.Model;
+            var model = (IDictionary<TKey, TValue>)result.Model;
             if (model.Count != 0)
             {
                 // ICollection<KeyValuePair<TKey, TValue>> approach was successful.
@@ -80,15 +84,37 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <inheritdoc />
-        protected override object GetModel(IEnumerable<KeyValuePair<TKey, TValue>> newCollection)
+        protected override object ConvertToCollectionType(
+            Type targetType,
+            IEnumerable<KeyValuePair<TKey, TValue>> collection)
         {
-            return newCollection?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+            if (collection == null)
+            {
+                return null;
+            }
+
+            if (targetType.IsAssignableFrom(typeof(Dictionary<TKey, TValue>)))
+            {
+                // Collection is a List<KeyValuePair<TKey, TValue>>, never already a Dictionary<TKey, TValue>.
+                return collection.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+            }
+
+            var newCollection = CreateInstance(targetType);
+            CopyToModel(newCollection, collection);
+
+            return newCollection;
         }
 
         /// <inheritdoc />
-        protected override object CreateEmptyCollection()
+        protected override object CreateEmptyCollection(Type targetType)
         {
-            return new Dictionary<TKey, TValue>();
+            if (targetType.IsAssignableFrom(typeof(Dictionary<TKey, TValue>)))
+            {
+                // Simple case such as IDictionary<TKey, TValue>.
+                return new Dictionary<TKey, TValue>();
+            }
+
+            return CreateInstance(targetType);
         }
 
         private static TKey ConvertFromString(string keyString)

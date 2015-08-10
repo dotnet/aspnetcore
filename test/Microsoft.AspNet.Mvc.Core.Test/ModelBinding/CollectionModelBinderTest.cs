@@ -1,8 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if DNX451
+using System;
 using System.Collections.Generic;
+#if DNX451
 using System.Globalization;
 using System.Linq;
 #endif
@@ -275,6 +276,44 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.Same(result.ValidationNode.ModelMetadata, context.ModelMetadata);
         }
 
+        // Setup like CollectionModelBinder_CreatesEmptyCollection_IfIsTopLevelObjectAndNotIsFirstChanceBinding  except
+        // Model already has a value.
+        [Fact]
+        public async Task CollectionModelBinder_DoesNotCreateEmptyCollection_IfModelNonNull()
+        {
+            // Arrange
+            var binder = new CollectionModelBinder<string>();
+
+            var context = CreateContext();
+            context.IsTopLevelObject = true;
+
+            var list = new List<string>();
+            context.Model = list;
+
+            // Lack of prefix and non-empty model name both ignored.
+            context.ModelName = "modelName";
+
+            var metadataProvider = context.OperationBindingContext.MetadataProvider;
+            context.ModelMetadata = metadataProvider.GetMetadataForType(typeof(List<string>));
+
+            context.ValueProvider = new TestValueProvider(new Dictionary<string, object>());
+
+            // Act
+            var result = await binder.BindModelAsync(context);
+
+            // Assert
+            Assert.NotNull(result);
+
+            Assert.Same(list, result.Model);
+            Assert.Empty(list);
+            Assert.Equal("modelName", result.Key);
+            Assert.True(result.IsModelSet);
+
+            Assert.Same(result.ValidationNode.Model, result.Model);
+            Assert.Same(result.ValidationNode.Key, result.Key);
+            Assert.Same(result.ValidationNode.ModelMetadata, context.ModelMetadata);
+        }
+
         [Theory]
         [InlineData("")]
         [InlineData("param")]
@@ -298,6 +337,39 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
             // Assert
             Assert.Null(result);
+        }
+
+        // Model type -> can create instance.
+        public static TheoryData<Type, bool> CanCreateInstanceData
+        {
+            get
+            {
+                return new TheoryData<Type, bool>
+                {
+                    { typeof(IEnumerable<int>), true },
+                    { typeof(ICollection<int>), true },
+                    { typeof(IList<int>), true },
+                    { typeof(List<int>), true },
+                    { typeof(LinkedList<int>), true },
+                    { typeof(ISet<int>), false },
+                    { typeof(ListWithInternalConstructor<int>), false },
+                    { typeof(ListWithThrowingConstructor<int>), false },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(CanCreateInstanceData))]
+        public void CanCreateInstance_ReturnsExpectedValue(Type modelType, bool expectedResult)
+        {
+            // Arrange
+            var binder = new CollectionModelBinder<int>();
+
+            // Act
+            var result = binder.CanCreateInstance(modelType);
+
+            // Assert
+            Assert.Equal(expectedResult, result);
         }
 
 #if DNX451
@@ -335,7 +407,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
             var bindingContext = new ModelBindingContext
             {
-                ModelMetadata = metadataProvider.GetMetadataForType(typeof(int)),
+                ModelMetadata = metadataProvider.GetMetadataForType(typeof(IList<int>)),
                 ModelName = "someName",
                 ValueProvider = valueProvider,
                 OperationBindingContext = new OperationBindingContext
@@ -386,6 +458,30 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         private class ModelWithListProperty
         {
             public List<string> ListProperty { get; set; }
+        }
+
+        private class ModelWithSimpleProperties
+        {
+            public int Id { get; set; }
+
+            public string Name { get; set; }
+        }
+
+        private class ListWithInternalConstructor<T> : List<T>
+        {
+            internal ListWithInternalConstructor()
+                : base()
+            {
+            }
+        }
+
+        private class ListWithThrowingConstructor<T> : List<T>
+        {
+            public ListWithThrowingConstructor()
+                : base()
+            {
+                throw new ApplicationException("No, don't do this.");
+            }
         }
     }
 }
