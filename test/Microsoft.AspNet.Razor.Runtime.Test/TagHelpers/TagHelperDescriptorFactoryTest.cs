@@ -86,7 +86,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
                 AssemblyName,
-                tagHelperType,
+                GetTypeInfo(tagHelperType),
                 designTime: false,
                 errorSink: errorSink);
 
@@ -175,7 +175,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
                 AssemblyName,
-                tagHelperType,
+                GetTypeInfo(tagHelperType),
                 designTime: false,
                 errorSink: errorSink);
 
@@ -256,7 +256,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
                 AssemblyName,
-                tagHelperType,
+                GetTypeInfo(tagHelperType),
                 designTime: true,
                 errorSink: errorSink);
 
@@ -493,7 +493,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
                 AssemblyName,
-                tagHelperType,
+                GetTypeInfo(tagHelperType),
                 designTime,
                 errorSink);
 
@@ -695,7 +695,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
                 AssemblyName,
-                tagHelperType,
+                GetTypeInfo(tagHelperType),
                 designTime: false,
                 errorSink: errorSink);
 
@@ -744,7 +744,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
                 AssemblyName,
-                tagHelperType,
+                GetTypeInfo(tagHelperType),
                 designTime: false,
                 errorSink: errorSink);
 
@@ -781,7 +781,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
                 AssemblyName,
-                typeof(OverriddenAttributeTagHelper),
+                GetTypeInfo(typeof(OverriddenAttributeTagHelper)),
                 designTime: false,
                 errorSink: errorSink);
 
@@ -815,7 +815,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
                 AssemblyName,
-                typeof(InheritedOverriddenAttributeTagHelper),
+                GetTypeInfo(typeof(InheritedOverriddenAttributeTagHelper)),
                 designTime: false,
                 errorSink: errorSink);
 
@@ -849,7 +849,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
                 AssemblyName,
-                typeof(InheritedNotOverriddenAttributeTagHelper),
+                GetTypeInfo(typeof(InheritedNotOverriddenAttributeTagHelper)),
                 designTime: false,
                 errorSink: errorSink);
 
@@ -870,7 +870,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
                 objectAssemblyName,
-                typeof(object),
+                GetTypeInfo(typeof(object)),
                 designTime: false,
                 errorSink: errorSink);
 
@@ -902,7 +902,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
                 AssemblyName,
-                typeof(InheritedSingleAttributeTagHelper),
+                GetTypeInfo(typeof(InheritedSingleAttributeTagHelper)),
                 designTime: false,
                 errorSink: errorSink);
 
@@ -930,7 +930,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
                 AssemblyName,
-                typeof(SingleAttributeTagHelper),
+                GetTypeInfo(typeof(SingleAttributeTagHelper)),
                 designTime: false,
                 errorSink: new ErrorSink());
 
@@ -959,7 +959,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
                 AssemblyName,
-                typeof(MissingAccessorTagHelper),
+                GetTypeInfo(typeof(MissingAccessorTagHelper)),
                 designTime: false,
                 errorSink: errorSink);
 
@@ -988,7 +988,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
                 AssemblyName,
-                typeof(NonPublicAccessorTagHelper),
+                GetTypeInfo(typeof(NonPublicAccessorTagHelper)),
                 designTime: false,
                 errorSink: errorSink);
 
@@ -1020,7 +1020,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
                 AssemblyName,
-                typeof(NotBoundAttributeTagHelper),
+                GetTypeInfo(typeof(NotBoundAttributeTagHelper)),
                 designTime: false,
                 errorSink: errorSink);
 
@@ -1039,7 +1039,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
                 AssemblyName,
-                typeof(DuplicateAttributeNameTagHelper),
+                GetTypeInfo(typeof(DuplicateAttributeNameTagHelper)),
                 designTime: false,
                 errorSink: errorSink);
 
@@ -1086,7 +1086,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
                 AssemblyName,
-                typeof(MultiTagTagHelper),
+                GetTypeInfo(typeof(MultiTagTagHelper)),
                 designTime: false,
                 errorSink: errorSink);
 
@@ -1118,7 +1118,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
                 AssemblyName,
-                typeof(InheritedMultiTagTagHelper),
+                GetTypeInfo(typeof(InheritedMultiTagTagHelper)),
                 designTime: false,
                 errorSink: errorSink);
 
@@ -1148,7 +1148,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
                 AssemblyName,
-                typeof(DuplicateTagNameTagHelper),
+                GetTypeInfo(typeof(DuplicateTagNameTagHelper)),
                 designTime: false,
                 errorSink: errorSink);
 
@@ -1178,7 +1178,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
                 AssemblyName,
-                typeof(OverrideNameTagHelper),
+                GetTypeInfo(typeof(OverrideNameTagHelper)),
                 designTime: false,
                 errorSink: errorSink);
 
@@ -1366,7 +1366,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
                 AssemblyName,
-                type,
+                GetTypeInfo(type),
                 designTime: false,
                 errorSink: errorSink);
 
@@ -1597,7 +1597,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
                 AssemblyName,
-                tagHelperType,
+                GetTypeInfo(tagHelperType),
                 designTime: false,
                 errorSink: errorSink);
 
@@ -1651,7 +1651,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var result = TagHelperDescriptorFactory.ValidateTagHelperAttributeDescriptor(
                 descriptor,
-                typeof(MultiTagTagHelper),
+                GetTypeInfo(typeof(MultiTagTagHelper)),
                 errorSink);
 
             // Assert
@@ -1693,7 +1693,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var result = TagHelperDescriptorFactory.ValidateTagHelperAttributeDescriptor(
                 descriptor,
-                typeof(MultiTagTagHelper),
+                GetTypeInfo(typeof(MultiTagTagHelper)),
                 errorSink);
 
             // Assert
@@ -1739,7 +1739,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var result = TagHelperDescriptorFactory.ValidateTagHelperAttributeDescriptor(
                 descriptor,
-                typeof(MultiTagTagHelper),
+                GetTypeInfo(typeof(MultiTagTagHelper)),
                 errorSink);
 
             // Assert
@@ -1794,7 +1794,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var result = TagHelperDescriptorFactory.ValidateTagHelperAttributeDescriptor(
                 descriptor,
-                typeof(MultiTagTagHelper),
+                GetTypeInfo(typeof(MultiTagTagHelper)),
                 errorSink);
 
             // Assert
@@ -2100,6 +2100,9 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 TypeName = propertyInfo.PropertyType.FullName
             };
         }
+
+        private static ITypeInfo GetTypeInfo(Type tagHelperType) =>
+            new RuntimeTypeInfo(tagHelperType.GetTypeInfo());
 
         [RestrictChildren("p")]
         private class RestrictChildrenTagHelper

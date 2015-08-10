@@ -62,7 +62,17 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var types = tagHelperTypeResolver.Resolve("Foo", SourceLocation.Zero, new ErrorSink());
 
             // Assert
-            Assert.Equal(ValidTestableTagHelpers, types);
+            Assert.Collection(types,
+                type =>
+                {
+                    var typeInfo = Assert.IsType<RuntimeTypeInfo>(type);
+                    Assert.Equal(typeof(Valid_PlainTagHelper).GetTypeInfo(), typeInfo.TypeInfo);
+                },
+                type =>
+                {
+                    var typeInfo = Assert.IsType<RuntimeTypeInfo>(type);
+                    Assert.Equal(typeof(Valid_InheritedTagHelper).GetTypeInfo(), typeInfo.TypeInfo);
+                });
         }
 
         [Fact]

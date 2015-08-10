@@ -17,25 +17,16 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         private static readonly TypeInfo ITagHelperTypeInfo = typeof(ITagHelper).GetTypeInfo();
 
         /// <summary>
-        /// Instantiates a new instance of the <see cref="TagHelperTypeResolver"/> class.
-        /// </summary>
-        public TagHelperTypeResolver()
-        {
-        }
-
-        /// <summary>
-        /// Loads an <see cref="Assembly"/> using the given <paramref name="name"/> and resolves
-        /// all valid <see cref="ITagHelper"/> <see cref="Type"/>s.
+        /// Locates valid <see cref="ITagHelper"/> types from the <see cref="Assembly"/> named <paramref name="name"/>.
         /// </summary>
         /// <param name="name">The name of an <see cref="Assembly"/> to search.</param>
         /// <param name="documentLocation">The <see cref="SourceLocation"/> of the associated
         /// <see cref="Parser.SyntaxTree.SyntaxTreeNode"/> responsible for the current <see cref="Resolve"/> call.
         /// </param>
         /// <param name="errorSink">The <see cref="ErrorSink"/> used to record errors found when resolving
-        /// <see cref="ITagHelper"/> <see cref="Type"/>s.</param>
-        /// <returns>An <see cref="IEnumerable{Type}"/> of valid <see cref="ITagHelper"/> <see cref="Type"/>s.
-        /// </returns>
-        public IEnumerable<Type> Resolve(
+        /// <see cref="ITagHelper"/> types.</param>
+        /// <returns>An <see cref="IEnumerable{ITypeInfo}"/> of valid <see cref="ITagHelper"/> types.</returns>
+        public IEnumerable<ITypeInfo> Resolve(
             string name,
             SourceLocation documentLocation,
             [NotNull] ErrorSink errorSink)
@@ -48,15 +39,15 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                     Resources.TagHelperTypeResolver_TagHelperAssemblyNameCannotBeEmptyOrNull,
                     errorLength);
 
-                return Type.EmptyTypes;
+                return Enumerable.Empty<ITypeInfo>();
             }
 
             var assemblyName = new AssemblyName(name);
 
-            IEnumerable<TypeInfo> libraryTypes;
+            IEnumerable<ITypeInfo> libraryTypes;
             try
             {
-                libraryTypes = GetExportedTypes(assemblyName);
+                libraryTypes = GetTopLevelExportedTypes(assemblyName);
             }
             catch (Exception ex)
             {
@@ -67,13 +58,26 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         ex.Message),
                     name.Length);
 
-                return Type.EmptyTypes;
+                return Enumerable.Empty<ITypeInfo>();
             }
 
-            var validTagHelpers = libraryTypes.Where(IsTagHelper);
+            return libraryTypes.Where(IsTagHelper);
+        }
 
-            // Convert from TypeInfo[] to Type[]
-            return validTagHelpers.Select(type => type.AsType());
+        /// <summary>
+        /// Returns all non-nested exported types from the given <paramref name="assemblyName"/>
+        /// </summary>
+        /// <param name="assemblyName">The <see cref="AssemblyName"/> to get <see cref="ITypeInfo"/>s from.</param>
+        /// <returns>
+        /// An <see cref="IEnumerable{ITypeInfo}"/> of types exported from the given <paramref name="assemblyName"/>.
+        /// </returns>
+        protected virtual IEnumerable<ITypeInfo> GetTopLevelExportedTypes([NotNull] AssemblyName assemblyName)
+        {
+            var exportedTypeInfos = GetExportedTypes(assemblyName);
+
+            return exportedTypeInfos
+                .Where(typeInfo => !typeInfo.IsNested)
+                .Select(typeInfo => new RuntimeTypeInfo(typeInfo));
         }
 
         /// <summary>
@@ -91,13 +95,12 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         }
 
         // Internal for testing.
-        internal virtual bool IsTagHelper(TypeInfo typeInfo)
+        internal virtual bool IsTagHelper(ITypeInfo typeInfo)
         {
             return typeInfo.IsPublic &&
                    !typeInfo.IsAbstract &&
                    !typeInfo.IsGenericType &&
-                   !typeInfo.IsNested &&
-                   ITagHelperTypeInfo.IsAssignableFrom(typeInfo);
+                   typeInfo.IsTagHelper;
         }
     }
 }
