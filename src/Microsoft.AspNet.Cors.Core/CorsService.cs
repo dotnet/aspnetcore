@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Cors.Core
         /// <param name="options">The option model representing <see cref="CorsOptions"/>.</param>
         public CorsService([NotNull] IOptions<CorsOptions> options)
         {
-            _options = options.Options;
+            _options = options.Value;
         }
 
         /// <summary>

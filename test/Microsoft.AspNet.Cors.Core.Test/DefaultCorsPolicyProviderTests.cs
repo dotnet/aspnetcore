@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
 
             var mockOptions = new Mock<IOptions<CorsOptions>>();
             mockOptions
-                .SetupGet(o => o.Options)
+                .SetupGet(o => o.Value)
                 .Returns(options);
             var policyProvider = new DefaultCorsPolicyProvider(mockOptions.Object);
 
@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
 
             var mockOptions = new Mock<IOptions<CorsOptions>>();
             mockOptions
-                .SetupGet(o => o.Options)
+                .SetupGet(o => o.Value)
                 .Returns(options);
             var policyProvider = new DefaultCorsPolicyProvider(mockOptions.Object);
 

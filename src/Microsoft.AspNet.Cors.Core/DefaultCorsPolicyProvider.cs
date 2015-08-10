@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Cors.Core
         /// <param name="options">The options configured for the application.</param>
         public DefaultCorsPolicyProvider(IOptions<CorsOptions> options)
         {
-            _options = options.Options;
+            _options = options.Value;
         }
 
         /// <inheritdoc />
