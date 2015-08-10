@@ -164,8 +164,9 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
             else
             {
                 assemblyStream.Position = 0;
+                var assemblyBytes = assemblyStream.ToArray();
                 var assemblyResource = new ResourceDescription(assemblyResourceName,
-                                                               () => assemblyStream,
+                                                               () => new MemoryStream(assemblyBytes),
                                                                isPublic: true);
                 CompileContext.Resources.Add(assemblyResource);
 
@@ -174,9 +175,10 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
                 {
                     symbolsResourceName = resourcePrefix + ".pdb";
                     pdbStream.Position = 0;
+                    var pdbBytes = pdbStream.ToArray();
 
                     var pdbResource = new ResourceDescription(symbolsResourceName,
-                                                              () => pdbStream,
+                                                              () => new MemoryStream(pdbBytes),
                                                               isPublic: true);
 
                     CompileContext.Resources.Add(pdbResource);
