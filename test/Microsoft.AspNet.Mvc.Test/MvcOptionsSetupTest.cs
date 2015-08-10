@@ -114,9 +114,10 @@ namespace Microsoft.AspNet.Mvc
             var options = GetOptions<MvcViewOptions>(AddDnxServices);
 
             // Assert
-            Assert.Equal(2, options.ClientModelValidatorProviders.Count);
+            Assert.Equal(3, options.ClientModelValidatorProviders.Count);
             Assert.IsType<DefaultClientModelValidatorProvider>(options.ClientModelValidatorProviders[0]);
             Assert.IsType<DataAnnotationsClientModelValidatorProvider>(options.ClientModelValidatorProviders[1]);
+            Assert.IsType<NumericClientModelValidatorProvider>(options.ClientModelValidatorProviders[2]);
         }
 
         [Fact]

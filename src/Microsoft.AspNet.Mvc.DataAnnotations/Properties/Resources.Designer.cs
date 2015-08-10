@@ -42,6 +42,22 @@ namespace Microsoft.AspNet.Mvc.DataAnnotations
             return GetString("ArgumentCannotBeNullOrEmpty");
         }
 
+        /// <summary>
+        /// The field {0} must be a number.
+        /// </summary>
+        internal static string NumericClientModelValidator_FieldMustBeNumber
+        {
+            get { return GetString("NumericClientModelValidator_FieldMustBeNumber"); }
+        }
+
+        /// <summary>
+        /// The field {0} must be a number.
+        /// </summary>
+        internal static string FormatNumericClientModelValidator_FieldMustBeNumber(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("NumericClientModelValidator_FieldMustBeNumber"), p0);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

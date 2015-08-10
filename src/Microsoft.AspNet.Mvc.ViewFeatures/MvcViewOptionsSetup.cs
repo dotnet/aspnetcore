@@ -25,6 +25,7 @@ namespace Microsoft.AspNet.Mvc
             // Set up client validators
             options.ClientModelValidatorProviders.Add(new DefaultClientModelValidatorProvider());
             options.ClientModelValidatorProviders.Add(new DataAnnotationsClientModelValidatorProvider());
+            options.ClientModelValidatorProviders.Add(new NumericClientModelValidatorProvider());
         }
     }
 }

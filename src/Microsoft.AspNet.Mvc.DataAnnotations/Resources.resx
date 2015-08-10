@@ -123,4 +123,7 @@
   <data name="ArgumentCannotBeNullOrEmpty" xml:space="preserve">
     <value>Value cannot be null or empty.</value>
   </data>
+  <data name="NumericClientModelValidator_FieldMustBeNumber" xml:space="preserve">
+    <value>The field {0} must be a number.</value>
+  </data>
 </root>
