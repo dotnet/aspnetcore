@@ -8,6 +8,7 @@ using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Authentication;
 using Microsoft.AspNet.Authentication.Cookies;
 using Microsoft.Framework.Configuration;
+using Microsoft.Framework.DependencyInjection.Extensions;
 
 namespace Microsoft.Framework.DependencyInjection
 {

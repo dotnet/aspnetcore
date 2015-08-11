@@ -1,9 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNet.Identity;
 using Microsoft.Data.Entity;
-using System;
+using Microsoft.Framework.DependencyInjection.Extensions;
 
 namespace Microsoft.Framework.DependencyInjection
 {
