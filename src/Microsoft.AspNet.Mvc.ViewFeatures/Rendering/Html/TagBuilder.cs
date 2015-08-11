@@ -9,10 +9,11 @@ using System.Text;
 using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
-    public class TagBuilder
+    public class TagBuilder : IHtmlContent
     {
         public TagBuilder(string tagName)
         {
@@ -30,6 +31,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public IHtmlContent InnerHtml { get; [param: NotNull] set; } = HtmlString.Empty;
 
         public string TagName { get; private set; }
+
+        /// <summary>
+        /// The <see cref="Rendering.TagRenderMode"/> with which the tag is written.
+        /// </summary>
+        /// <remarks>Defaults to <see cref="TagRenderMode.Normal"/>.</remarks>
+        public TagRenderMode TagRenderMode { get; set; } = TagRenderMode.Normal;
 
         public void AddCssClass(string value)
         {
@@ -125,7 +132,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
         }
 
-        private void AppendAttributes(BufferedHtmlContent content)
+        private void AppendAttributes(TextWriter writer, IHtmlEncoder encoder)
         {
             foreach (var attribute in Attributes)
             {
@@ -136,11 +143,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
                     continue;
                 }
 
-                content.Append(" ");
-                content.Append(key);
-                content.Append("=\"");
-                content.Append(new StringHtmlContent(attribute.Value));
-                content.Append("\"");
+                writer.Write(" ");
+                writer.Write(key);
+                writer.Write("=\"");
+                encoder.HtmlEncode(attribute.Value, writer);
+                writer.Write("\"");
             }
         }
 
@@ -185,48 +192,39 @@ namespace Microsoft.AspNet.Mvc.Rendering
             InnerHtml = new StringHtmlContent(innerText);
         }
 
-        /// <summary>
-        /// Converts the <see cref="TagBuilder"/> to <see cref="IHtmlContent"/> with the specified
-        /// <see cref="TagRenderMode"/>.
-        /// </summary>
-        /// <param name="renderMode"><see cref="TagRenderMode"/> with which the <see cref="TagBuilder"/>
-        /// should be written.</param>
-        /// <returns><see cref="IHtmlContent"/> containing the contents of the <see cref="TagBuilder"/>.</returns>
-        public IHtmlContent ToHtmlContent(TagRenderMode renderMode)
+        /// <inheritdoc />
+        public void WriteTo(TextWriter writer, IHtmlEncoder encoder)
         {
-            var content = new BufferedHtmlContent();
-            switch (renderMode)
+            switch (TagRenderMode)
             {
                 case TagRenderMode.StartTag:
-                    content.Append("<");
-                    content.Append(TagName);
-                    AppendAttributes(content);
-                    content.Append(">");
+                    writer.Write("<");
+                    writer.Write(TagName);
+                    AppendAttributes(writer, encoder);
+                    writer.Write(">");
                     break;
                 case TagRenderMode.EndTag:
-                    content.Append("</");
-                    content.Append(TagName);
-                    content.Append(">");
+                    writer.Write("</");
+                    writer.Write(TagName);
+                    writer.Write(">");
                     break;
                 case TagRenderMode.SelfClosing:
-                    content.Append("<");
-                    content.Append(TagName);
-                    AppendAttributes(content);
-                    content.Append(" />");
+                    writer.Write("<");
+                    writer.Write(TagName);
+                    AppendAttributes(writer, encoder);
+                    writer.Write(" />");
                     break;
                 default:
-                    content.Append("<");
-                    content.Append(TagName);
-                    AppendAttributes(content);
-                    content.Append(">");
-                    content.Append(InnerHtml);
-                    content.Append("</");
-                    content.Append(TagName);
-                    content.Append(">");
+                    writer.Write("<");
+                    writer.Write(TagName);
+                    AppendAttributes(writer, encoder);
+                    writer.Write(">");
+                    InnerHtml.WriteTo(writer, encoder);
+                    writer.Write("</");
+                    writer.Write(TagName);
+                    writer.Write(">");
                     break;
             }
-
-            return content;
         }
 
         private static class Html401IdUtil

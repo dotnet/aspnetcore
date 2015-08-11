@@ -41,7 +41,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 inputTag.Attributes["checked"] = "checked";
             }
 
-            return inputTag.ToHtmlContent(TagRenderMode.SelfClosing);
+            inputTag.TagRenderMode = TagRenderMode.SelfClosing;
+            return inputTag;
         }
 
         private static IHtmlContent BooleanTemplateDropDownList(IHtmlHelper htmlHelper, bool? value)
@@ -52,17 +53,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
             selectTag.Attributes["disabled"] = "disabled";
 
             var content = new BufferedHtmlContent();
-            content.Append(selectTag.ToHtmlContent(TagRenderMode.StartTag));
-
             foreach (var item in TriStateValues(value))
             {
-                content.Append(
-                    DefaultHtmlGenerator.GenerateOption(item, item.Text)
-                        .ToHtmlContent(TagRenderMode.Normal));
+                content.Append(DefaultHtmlGenerator.GenerateOption(item, item.Text));
             }
 
-            content.Append(selectTag.ToHtmlContent(TagRenderMode.EndTag));
-            return content;
+            selectTag.InnerHtml = content;
+            return selectTag;
         }
 
         // Will soon need to be shared with the default editor templates implementations.
@@ -208,7 +205,6 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var viewData = htmlHelper.ViewData;
             var templateInfo = viewData.TemplateInfo;
             var modelExplorer = viewData.ModelExplorer;
-            var content = new BufferedHtmlContent();
 
             if (modelExplorer.Model == null)
             {
@@ -229,31 +225,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var serviceProvider = htmlHelper.ViewContext.HttpContext.RequestServices;
             var viewEngine = serviceProvider.GetRequiredService<ICompositeViewEngine>();
 
+            var content = new BufferedHtmlContent();
             foreach (var propertyExplorer in modelExplorer.Properties)
             {
                 var propertyMetadata = propertyExplorer.Metadata;
                 if (!ShouldShow(propertyExplorer, templateInfo))
                 {
                     continue;
-                }
-
-                var divTag = new TagBuilder("div");
-
-                if (!propertyMetadata.HideSurroundingHtml)
-                {
-                    var label = propertyMetadata.GetDisplayName();
-                    if (!string.IsNullOrEmpty(label))
-                    {
-                        divTag.SetInnerText(label);
-                        divTag.AddCssClass("display-label");
-                        content.AppendLine(divTag.ToHtmlContent(TagRenderMode.Normal));
-
-                        // Reset divTag for reuse.
-                        divTag.Attributes.Clear();
-                    }
-
-                    divTag.AddCssClass("display-field");
-                    content.Append(divTag.ToHtmlContent(TagRenderMode.StartTag));
                 }
 
                 var templateBuilder = new TemplateBuilder(
@@ -266,11 +244,26 @@ namespace Microsoft.AspNet.Mvc.Rendering
                     readOnly: true,
                     additionalViewData: null);
 
-                content.Append(templateBuilder.Build());
-
+                var templateBuilderResult = templateBuilder.Build();
                 if (!propertyMetadata.HideSurroundingHtml)
                 {
-                    content.AppendLine(divTag.ToHtmlContent(TagRenderMode.EndTag));
+                    var label = propertyMetadata.GetDisplayName();
+                    if (!string.IsNullOrEmpty(label))
+                    {
+                        var labelTag = new TagBuilder("div");
+                        labelTag.SetInnerText(label);
+                        labelTag.AddCssClass("display-label");
+                        content.AppendLine(labelTag);
+                    }
+
+                    var valueDivTag = new TagBuilder("div");
+                    valueDivTag.AddCssClass("display-field");
+                    valueDivTag.InnerHtml = templateBuilderResult;
+                    content.AppendLine(valueDivTag);
+                }
+                else
+                {
+                    content.Append(templateBuilderResult);
                 }
             }
 
@@ -312,8 +305,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var hyperlinkTag = new TagBuilder("a");
             hyperlinkTag.MergeAttribute("href", uriString);
             hyperlinkTag.SetInnerText(linkedText);
-
-            return hyperlinkTag.ToHtmlContent(TagRenderMode.Normal);
+            return hyperlinkTag;
         }
     }
 }

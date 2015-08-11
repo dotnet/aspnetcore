@@ -9,8 +9,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Mvc.TestCommon;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Routing;
+using Microsoft.Framework.WebEncoders.Testing;
 using Moq;
 using Xunit;
 
@@ -57,7 +59,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var viewContext = TestableHtmlGenerator.GetViewContext(model: null,
                                                                    htmlGenerator: htmlGenerator,
                                                                    metadataProvider: metadataProvider);
-            var expectedPostContent = "Something" + htmlGenerator.GenerateAntiforgery(viewContext);
+            var expectedPostContent = "Something" +
+                HtmlContentUtilities.HtmlContentToString(
+                    htmlGenerator.GenerateAntiforgery(viewContext),
+                    new NullTestEncoder());
             var formTagHelper = new FormTagHelper(htmlGenerator)
             {
                 Action = "index",

@@ -83,7 +83,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 },
             };
 
-            return tagBuilder.ToHtmlContent(TagRenderMode.SelfClosing);
+            tagBuilder.TagRenderMode = TagRenderMode.SelfClosing;
+            return tagBuilder;
         }
 
         protected override IDictionary<string, object> GetValidationAttributes(

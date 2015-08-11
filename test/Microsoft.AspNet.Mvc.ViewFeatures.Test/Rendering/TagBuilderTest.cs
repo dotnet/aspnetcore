@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.IO;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.TestCommon;
 using Microsoft.Framework.WebEncoders.Testing;
@@ -73,36 +74,22 @@ namespace Microsoft.AspNet.Mvc.Core.Rendering
 
         [Theory]
         [MemberData(nameof(RenderingTestingData))]
-        public void ToString_IgnoresIdAttributeCase(TagRenderMode renderingMode, string expectedOutput)
+        public void WriteTo_IgnoresIdAttributeCase(TagRenderMode renderingMode, string expectedOutput)
         {
             // Arrange
             var tagBuilder = new TagBuilder("p");
-
             // An empty value id attribute should not be rendered via ToString.
             tagBuilder.Attributes.Add("ID", string.Empty);
+            tagBuilder.TagRenderMode = renderingMode;
 
             // Act
-            var value = tagBuilder.ToHtmlContent(renderingMode);
+            using (var writer = new StringWriter())
+            {
+                tagBuilder.WriteTo(writer, new NullTestEncoder());
 
-            // Assert
-            Assert.Equal(expectedOutput, HtmlContentUtilities.HtmlContentToString(value, new NullTestEncoder()));
-        }
-
-        [Theory]
-        [MemberData(nameof(RenderingTestingData))]
-        public void ToHtmlString_IgnoresIdAttributeCase(TagRenderMode renderingMode, string expectedOutput)
-        {
-            // Arrange
-            var tagBuilder = new TagBuilder("p");
-
-            // An empty value id attribute should not be rendered via ToHtmlString.
-            tagBuilder.Attributes.Add("ID", string.Empty);
-
-            // Act
-            var value = tagBuilder.ToHtmlContent(renderingMode);
-
-            // Assert
-            Assert.Equal(expectedOutput, HtmlContentUtilities.HtmlContentToString(value, new NullTestEncoder()));
+                // Assert
+                Assert.Equal(expectedOutput, writer.ToString());
+            }
         }
 
         [Fact]

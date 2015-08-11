@@ -282,6 +282,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 {
                     { "class", "form-control" },
                 },
+                TagRenderMode = TagRenderMode.SelfClosing
             };
             htmlGenerator
                 .Setup(mock => mock.GenerateCheckBox(
@@ -297,7 +298,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     tagHelper.ViewContext,
                     tagHelper.For.ModelExplorer,
                     tagHelper.For.Name))
-                .Returns(new TagBuilder("hidden"))
+                .Returns(new TagBuilder("hidden") { TagRenderMode = TagRenderMode.SelfClosing })
                 .Verifiable();
 
             // Act

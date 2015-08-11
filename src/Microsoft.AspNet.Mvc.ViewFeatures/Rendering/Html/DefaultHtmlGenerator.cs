@@ -157,6 +157,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var tagBuilder = new TagBuilder("input");
             tagBuilder.MergeAttribute("type", GetInputTypeString(InputType.Hidden));
             tagBuilder.MergeAttribute("value", "false");
+            tagBuilder.TagRenderMode = TagRenderMode.SelfClosing;
 
             var fullName = GetFullHtmlFieldName(viewContext, expression);
             tagBuilder.MergeAttribute("name", fullName);
@@ -673,7 +674,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 }
                 var messageTag = new TagBuilder(headerTag);
                 messageTag.SetInnerText(message);
-                wrappedMessage.AppendLine(messageTag.ToHtmlContent(TagRenderMode.Normal));
+                wrappedMessage.AppendLine(messageTag);
             }
             else
             {
@@ -696,7 +697,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                     {
                         var listItem = new TagBuilder("li");
                         listItem.SetInnerText(errorText);
-                        htmlSummary.AppendLine(listItem.ToHtmlContent(TagRenderMode.Normal));
+                        htmlSummary.AppendLine(listItem);
                         isHtmlSummaryModified = true;
                     }
                 }
@@ -726,7 +727,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             var innerContent = new BufferedHtmlContent();
             innerContent.Append(wrappedMessage);
-            innerContent.Append(unorderedList.ToHtmlContent(TagRenderMode.Normal));
+            innerContent.Append(unorderedList);
             tagBuilder.InnerHtml = innerContent;
 
             if (formContext != null && !excludePropertyErrors)
@@ -1015,6 +1016,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
 
             var tagBuilder = new TagBuilder("input");
+            tagBuilder.TagRenderMode = TagRenderMode.SelfClosing;
             tagBuilder.MergeAttributes(htmlAttributes);
             tagBuilder.MergeAttribute("type", GetInputTypeString(inputType));
             tagBuilder.MergeAttribute("name", fullName, replaceExisting: true);
@@ -1302,12 +1304,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
             foreach (var group in groupedSelectList)
             {
                 var optGroup = group.First().Group;
-
-                // Wrap if requested.
-                TagBuilder groupBuilder = null;
                 if (optGroup != null)
                 {
-                    groupBuilder = new TagBuilder("optgroup");
+                    var groupBuilder = new TagBuilder("optgroup");
                     if (optGroup.Name != null)
                     {
                         groupBuilder.MergeAttribute("label", optGroup.Name);
@@ -1318,17 +1317,21 @@ namespace Microsoft.AspNet.Mvc.Rendering
                         groupBuilder.MergeAttribute("disabled", "disabled");
                     }
 
-                    listItemBuilder.AppendLine(groupBuilder.ToHtmlContent(TagRenderMode.StartTag));
-                }
+                    var optGroupContent = new BufferedHtmlContent().Append(Environment.NewLine);
+                    foreach (var item in group)
+                    {
+                        optGroupContent.AppendLine(GenerateOption(item));
+                    }
 
-                foreach (var item in group)
-                {
-                    listItemBuilder.AppendLine(GenerateOption(item));
+                    groupBuilder.InnerHtml = optGroupContent;
+                    listItemBuilder.AppendLine(groupBuilder);
                 }
-
-                if (optGroup != null)
+                else
                 {
-                    listItemBuilder.AppendLine(groupBuilder.ToHtmlContent(TagRenderMode.EndTag));
+                    foreach (var item in group)
+                    {
+                        listItemBuilder.AppendLine(GenerateOption(item));
+                    }
                 }
             }
 
@@ -1338,7 +1341,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         private IHtmlContent GenerateOption(SelectListItem item)
         {
             var tagBuilder = GenerateOption(item, item.Text);
-            return tagBuilder.ToHtmlContent(TagRenderMode.Normal);
+            return tagBuilder;
         }
     }
 }

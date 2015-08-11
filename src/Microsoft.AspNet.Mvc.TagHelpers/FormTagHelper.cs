@@ -163,7 +163,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 var antiforgeryTag = Generator.GenerateAntiforgery(ViewContext);
                 if (antiforgeryTag != null)
                 {
-                    output.PostContent.Append(antiforgeryTag.ToString());
+                    output.PostContent.Append(antiforgeryTag);
                 }
             }
         }

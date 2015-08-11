@@ -256,28 +256,6 @@ namespace Microsoft.AspNet.Mvc.Rendering
                     continue;
                 }
 
-                var divTag = new TagBuilder("div");
-
-                if (!propertyMetadata.HideSurroundingHtml)
-                {
-                    var label = htmlHelper.Label(
-                        propertyMetadata.PropertyName,
-                        labelText: null,
-                        htmlAttributes: null);
-                    if (!string.IsNullOrEmpty(label.ToString()))
-                    {
-                        divTag.AddCssClass("editor-label");
-                        divTag.InnerHtml = label; // already escaped
-                        content.AppendLine(divTag.ToHtmlContent(TagRenderMode.Normal));
-
-                        // Reset divTag for reuse.
-                        divTag.Attributes.Clear();
-                    }
-
-                    divTag.AddCssClass("editor-field");
-                    content.Append(divTag.ToHtmlContent(TagRenderMode.StartTag));
-                }
-
                 var templateBuilder = new TemplateBuilder(
                     viewEngine,
                     htmlHelper.ViewContext,
@@ -288,18 +266,36 @@ namespace Microsoft.AspNet.Mvc.Rendering
                     readOnly: false,
                     additionalViewData: null);
 
-                content.Append(templateBuilder.Build());
-
+                var templateBuilderResult = templateBuilder.Build();
                 if (!propertyMetadata.HideSurroundingHtml)
                 {
-                    content.Append(" ");
-                    content.Append(htmlHelper.ValidationMessage(
+                    var label = htmlHelper.Label(propertyMetadata.PropertyName, labelText: null, htmlAttributes: null);
+                    if (!string.IsNullOrEmpty(label.ToString()))
+                    {
+                        var labelTag = new TagBuilder("div");
+                        labelTag.AddCssClass("editor-label");
+                        labelTag.InnerHtml = label;
+                        content.AppendLine(labelTag);
+                    }
+
+                    var valueDivTag = new TagBuilder("div");
+                    valueDivTag.AddCssClass("editor-field");
+
+                    var innerContent = new BufferedHtmlContent();
+                    innerContent.Append(templateBuilderResult);
+                    innerContent.Append(" ");
+                    innerContent.Append(htmlHelper.ValidationMessage(
                         propertyMetadata.PropertyName,
                         message: null,
                         htmlAttributes: null,
                         tag: null));
+                    valueDivTag.InnerHtml = innerContent;
 
-                    content.AppendLine(divTag.ToHtmlContent(TagRenderMode.EndTag));
+                    content.AppendLine(valueDivTag);
+                }
+                else
+                {
+                    content.Append(templateBuilderResult);
                 }
             }
 
