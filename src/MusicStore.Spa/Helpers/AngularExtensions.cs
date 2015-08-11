@@ -5,39 +5,40 @@ using System.Linq;
 using System.Linq.Expressions;
 using Microsoft.AspNet.Mvc.Rendering.Expressions;
 using Microsoft.AspNet.Routing;
+using Microsoft.AspNet.Html.Abstractions;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
     public static class AngularExtensions
     {
-        public static HtmlString ngPasswordFor<TModel, TProperty>(this IHtmlHelper<TModel> html, Expression<Func<TModel, TProperty>> expression)
+        public static IHtmlContent ngPasswordFor<TModel, TProperty>(this IHtmlHelper<TModel> html, Expression<Func<TModel, TProperty>> expression)
         {
             return html.ngPasswordFor(expression, null);
         }
 
-        public static HtmlString ngPasswordFor<TModel, TProperty>(this IHtmlHelper<TModel> html, Expression<Func<TModel, TProperty>> expression, object htmlAttributes)
+        public static IHtmlContent ngPasswordFor<TModel, TProperty>(this IHtmlHelper<TModel> html, Expression<Func<TModel, TProperty>> expression, object htmlAttributes)
         {
             return html.ngPasswordFor(expression, HtmlHelper.AnonymousObjectToHtmlAttributes(htmlAttributes));
         }
 
-        public static HtmlString ngPasswordFor<TModel, TProperty>(this IHtmlHelper<TModel> html, Expression<Func<TModel, TProperty>> expression, IDictionary<string, object> htmlAttributes)
+        public static IHtmlContent ngPasswordFor<TModel, TProperty>(this IHtmlHelper<TModel> html, Expression<Func<TModel, TProperty>> expression, IDictionary<string, object> htmlAttributes)
         {
             return html.ngTextBoxFor(expression, MergeAttributes(
                 new RouteValueDictionary { { "type", "password" } },
                 htmlAttributes));
         }
 
-        public static HtmlString ngTextBoxFor<TModel, TProperty>(this IHtmlHelper<TModel> html, Expression<Func<TModel, TProperty>> expression)
+        public static IHtmlContent ngTextBoxFor<TModel, TProperty>(this IHtmlHelper<TModel> html, Expression<Func<TModel, TProperty>> expression)
         {
             return html.ngTextBoxFor(expression, new RouteValueDictionary());
         }
 
-        public static HtmlString ngTextBoxFor<TModel, TProperty>(this IHtmlHelper<TModel> html, Expression<Func<TModel, TProperty>> expression, object htmlAttributes)
+        public static IHtmlContent ngTextBoxFor<TModel, TProperty>(this IHtmlHelper<TModel> html, Expression<Func<TModel, TProperty>> expression, object htmlAttributes)
         {
             return html.ngTextBoxFor(expression, HtmlHelper.AnonymousObjectToHtmlAttributes(htmlAttributes));
         }
 
-        public static HtmlString ngTextBoxFor<TModel, TProperty>(this IHtmlHelper<TModel> html, Expression<Func<TModel, TProperty>> expression, IDictionary<string, object> htmlAttributes)
+        public static IHtmlContent ngTextBoxFor<TModel, TProperty>(this IHtmlHelper<TModel> html, Expression<Func<TModel, TProperty>> expression, IDictionary<string, object> htmlAttributes)
         {
             var expressionText = ExpressionHelper.GetExpressionText(expression);
             var modelExplorer = ExpressionMetadataProvider.FromLambdaExpression(expression, html.ViewData, html.MetadataProvider);
@@ -140,26 +141,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             var tag = new TagBuilder("input");
             tag.MergeAttributes(MergeAttributes(ngAttributes, htmlAttributes));
-            return tag.ToHtmlString(TagRenderMode.SelfClosing);
+            return tag.ToHtmlContent(TagRenderMode.SelfClosing);
         }
-
-        //private static bool IsNumberType(Type type)
-        //{
-        //    switch (Type.GetTypeCode(type))
-        //    {
-        //        case TypeCode.Int16:
-        //        case TypeCode.Int32:
-        //        case TypeCode.Int64:
-        //        case TypeCode.UInt16:
-        //        case TypeCode.UInt32:
-        //        case TypeCode.UInt64:
-        //        case TypeCode.Decimal:
-        //        case TypeCode.Double:
-        //        case TypeCode.Single:
-        //            return true;
-        //    }
-        //    return false;
-        //}
 
         private static bool IsNumberType(Type type)
         {
@@ -207,12 +190,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return false;
         }
 
-        public static HtmlString ngDropDownListFor<TModel, TProperty, TDisplayProperty>(this IHtmlHelper<TModel> html, Expression<Func<TModel, TProperty>> propertyExpression, Expression<Func<TModel, TDisplayProperty>> displayExpression, string source, string nullOption, object htmlAttributes)
+        public static IHtmlContent ngDropDownListFor<TModel, TProperty, TDisplayProperty>(this IHtmlHelper<TModel> html, Expression<Func<TModel, TProperty>> propertyExpression, Expression<Func<TModel, TDisplayProperty>> displayExpression, string source, string nullOption, object htmlAttributes)
         {
             return ngDropDownListFor(html, propertyExpression, displayExpression, source, nullOption, HtmlHelper.AnonymousObjectToHtmlAttributes(htmlAttributes));
         }
 
-        public static HtmlString ngDropDownListFor<TModel, TProperty, TDisplayProperty>(this IHtmlHelper<TModel> html, Expression<Func<TModel, TProperty>> propertyExpression, Expression<Func<TModel, TDisplayProperty>> displayExpression, string source, string nullOption, IDictionary<string, object> htmlAttributes)
+        public static IHtmlContent ngDropDownListFor<TModel, TProperty, TDisplayProperty>(this IHtmlHelper<TModel> html, Expression<Func<TModel, TProperty>> propertyExpression, Expression<Func<TModel, TDisplayProperty>> displayExpression, string source, string nullOption, IDictionary<string, object> htmlAttributes)
         {
             var propertyExpressionText = ExpressionHelper.GetExpressionText(propertyExpression);
             var displayExpressionText = ExpressionHelper.GetExpressionText(displayExpression);
@@ -238,7 +221,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 var nullOptionTag = new TagBuilder("option");
                 nullOptionTag.Attributes["value"] = string.Empty;
                 nullOptionTag.SetInnerText(nullOption);
-                tag.InnerHtml = nullOptionTag.ToString();
+                tag.InnerHtml = nullOptionTag.ToHtmlContent(TagRenderMode.Normal);
             }
 
             var clientValidators = html.GetClientValidationRules(metadata, null);
@@ -250,20 +233,20 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             tag.MergeAttributes(htmlAttributes, replaceExisting: true);
 
-            return tag.ToHtmlString(TagRenderMode.Normal);
+            return tag.ToHtmlContent(TagRenderMode.Normal);
         }
 
-        public static HtmlString ngValidationMessageFor<TModel, TProperty>(this IHtmlHelper<TModel> htmlHelper, Expression<Func<TModel, TProperty>> expression, string formName)
+        public static IHtmlContent ngValidationMessageFor<TModel, TProperty>(this IHtmlHelper<TModel> htmlHelper, Expression<Func<TModel, TProperty>> expression, string formName)
         {
             return ngValidationMessageFor(htmlHelper, expression, formName, ((IDictionary<string, object>)new RouteValueDictionary()));
         }
 
-        public static HtmlString ngValidationMessageFor<TModel, TProperty>(this IHtmlHelper<TModel> htmlHelper, Expression<Func<TModel, TProperty>> expression, string formName, object htmlAttributes)
+        public static IHtmlContent ngValidationMessageFor<TModel, TProperty>(this IHtmlHelper<TModel> htmlHelper, Expression<Func<TModel, TProperty>> expression, string formName, object htmlAttributes)
         {
             return ngValidationMessageFor(htmlHelper, expression, formName, HtmlHelper.AnonymousObjectToHtmlAttributes(htmlAttributes));
         }
 
-        public static HtmlString ngValidationMessageFor<TModel, TProperty>(this IHtmlHelper<TModel> html, Expression<Func<TModel, TProperty>> expression, string formName, IDictionary<string, object> htmlAttributes)
+        public static IHtmlContent ngValidationMessageFor<TModel, TProperty>(this IHtmlHelper<TModel> html, Expression<Func<TModel, TProperty>> expression, string formName, IDictionary<string, object> htmlAttributes)
         {
             var expressionText = ExpressionHelper.GetExpressionText(expression);
             var metadata = ExpressionMetadataProvider.FromLambdaExpression(expression, html.ViewData, html.MetadataProvider);
@@ -309,7 +292,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 tags.Add(tag);
             }
 
-            return html.Raw(String.Concat(tags.Select(t => t.ToString())));
+            return new HtmlString(String.Concat(tags.Select(t => t.ToString())));
         }
 
         public static string ngValidationClassFor<TModel, TProperty>(this IHtmlHelper<TModel> html, Expression<Func<TModel, TProperty>> expression, string formName, string className)
