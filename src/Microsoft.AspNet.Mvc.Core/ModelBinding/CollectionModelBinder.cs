@@ -62,6 +62,21 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
             else
             {
+                if (valueProviderResult.RawValue == null)
+                {
+                    // Value exists but is null. Handle similarly to fallback case above. This avoids a
+                    // ModelBindingResult with IsModelSet = true but ValidationNode = null.
+                    model = bindingContext.Model ?? CreateEmptyCollection();
+                    var validationNode =
+                        new ModelValidationNode(bindingContext.ModelName, bindingContext.ModelMetadata, model);
+
+                    return new ModelBindingResult(
+                        model,
+                        bindingContext.ModelName,
+                        isModelSet: true,
+                        validationNode: validationNode);
+                }
+
                 result = await BindSimpleCollection(
                     bindingContext,
                     valueProviderResult.RawValue,
@@ -83,7 +98,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 model,
                 bindingContext.ModelName,
                 isModelSet: true,
-                validationNode: result?.ValidationNode);
+                validationNode: result.ValidationNode);
         }
 
         /// <inheritdoc />
@@ -135,11 +150,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             object rawValue,
             CultureInfo culture)
         {
-            if (rawValue == null)
-            {
-                return null; // nothing to do
-            }
-
             var boundCollection = new List<TElement>();
 
             var metadataProvider = bindingContext.OperationBindingContext.MetadataProvider;

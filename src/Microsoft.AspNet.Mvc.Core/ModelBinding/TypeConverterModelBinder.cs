@@ -23,7 +23,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var valueProviderResult = await bindingContext.ValueProvider.GetValueAsync(bindingContext.ModelName);
             if (valueProviderResult == null)
             {
-                return null; // no entry
+                // no entry
+                return null;
             }
 
             object newModel;
@@ -32,13 +33,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 newModel = valueProviderResult.ConvertTo(bindingContext.ModelType);
                 ModelBindingHelper.ReplaceEmptyStringWithNull(bindingContext.ModelMetadata, ref newModel);
-                var validationNode = new ModelValidationNode(
-                   bindingContext.ModelName,
-                   bindingContext.ModelMetadata,
-                   newModel);
                 var isModelSet = true;
 
-                // When converting newModel a null value may indicate a failed conversion for an otherwise required 
+                // When converting newModel a null value may indicate a failed conversion for an otherwise required
                 // model (can't set a ValueType to null). This detects if a null model value is acceptable given the
                 // current bindingContext. If not, an error is logged.
                 if (newModel == null && !AllowsNullValue(bindingContext.ModelType))
@@ -49,6 +46,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
                     isModelSet = false;
                 }
+
+                // Include a ModelValidationNode if binding succeeded.
+                var validationNode = isModelSet ?
+                    new ModelValidationNode(bindingContext.ModelName, bindingContext.ModelMetadata, newModel) :
+                    null;
 
                 return new ModelBindingResult(newModel, bindingContext.ModelName, isModelSet, validationNode);
             }

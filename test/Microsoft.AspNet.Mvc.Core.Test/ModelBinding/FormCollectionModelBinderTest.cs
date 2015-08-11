@@ -34,6 +34,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Assert
             Assert.NotNull(result);
+            Assert.True(result.IsModelSet);
+            Assert.NotNull(result.ValidationNode);
+            Assert.True(result.ValidationNode.SuppressValidation);
+
             var form = Assert.IsAssignableFrom<IFormCollection>(result.Model);
             Assert.Equal(2, form.Count);
             Assert.Equal("value1", form["field1"]);

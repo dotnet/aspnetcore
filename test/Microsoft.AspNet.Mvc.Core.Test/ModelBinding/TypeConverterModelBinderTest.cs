@@ -90,7 +90,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
             // Assert
             Assert.False(result.IsModelSet);
-            Assert.NotNull(result.ValidationNode);
+            Assert.Null(result.Model);
+            Assert.Null(result.ValidationNode);
+
             var error = Assert.Single(bindingContext.ModelState["theModelName"].Errors);
             Assert.Equal(error.ErrorMessage, "The value '' is invalid.", StringComparer.Ordinal);
             Assert.Null(error.Exception);

@@ -181,6 +181,33 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
             Assert.True(modelState.IsValid);
         }
+
+        [Fact]
+        public async Task BindModelAsync_SimpleCollectionWithNullValue_Succeeds()
+        {
+            // Arrange
+            var binder = new CollectionModelBinder<int>();
+            var valueProvider = new SimpleHttpValueProvider
+            {
+                { "someName", null },
+            };
+            var bindingContext = GetModelBindingContext(valueProvider, isReadOnly: false);
+            var modelState = bindingContext.ModelState;
+
+            // Act
+            var result = await binder.BindModelAsync(bindingContext);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.True(result.IsModelSet);
+            Assert.NotNull(result.Model);
+            Assert.NotNull(result.ValidationNode);
+
+            var model = Assert.IsType<List<int>>(result.Model);
+            Assert.Empty(model);
+
+            Assert.True(modelState.IsValid);
+        }
 #endif
 
         [Fact]
@@ -203,19 +230,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             // Assert
             Assert.NotNull(boundCollection.Model);
             Assert.Empty(boundCollection.Model);
-        }
-
-        [Fact]
-        public async Task BindSimpleCollection_RawValueIsNull_ReturnsNull()
-        {
-            // Arrange
-            var binder = new CollectionModelBinder<int>();
-
-            // Act
-            var boundCollection = await binder.BindSimpleCollection(bindingContext: null, rawValue: null, culture: null);
-
-            // Assert
-            Assert.Null(boundCollection);
         }
 
         [Fact]

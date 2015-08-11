@@ -32,6 +32,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Assert
             Assert.NotNull(result);
+            Assert.True(result.IsModelSet);
+            Assert.NotNull(result.ValidationNode);
+            Assert.True(result.ValidationNode.SuppressValidation);
+
             var files = Assert.IsAssignableFrom<IList<IFormFile>>(result.Model);
             Assert.Equal(2, files.Count);
         }

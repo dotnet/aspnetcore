@@ -37,6 +37,7 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             // Add a formatter to write out an HttpResponseMessage to the response
             options.OutputFormatters.Insert(0, new HttpResponseMessageOutputFormatter());
 
+            options.ValidationExcludeFilters.Add(typeof(HttpRequestMessage));
             options.ValidationExcludeFilters.Add(typeof(HttpResponseMessage));
         }
 

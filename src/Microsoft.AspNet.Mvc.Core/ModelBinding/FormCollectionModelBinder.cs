@@ -12,7 +12,7 @@ using Microsoft.Framework.Internal;
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     /// <summary>
-    /// Modelbinder to bind form values to <see cref="IFormCollection"/>.
+    /// <see cref="IModelBinder"/> implementation to bind form values to <see cref="IFormCollection"/>.
     /// </summary>
     public class FormCollectionModelBinder : IModelBinder
     {
@@ -46,7 +46,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
 
             var validationNode =
-                 new ModelValidationNode(bindingContext.ModelName, bindingContext.ModelMetadata, model);
+                 new ModelValidationNode(bindingContext.ModelName, bindingContext.ModelMetadata, model)
+                 {
+                     SuppressValidation = true,
+                 };
+
             return new ModelBindingResult(
                 model,
                 bindingContext.ModelName,

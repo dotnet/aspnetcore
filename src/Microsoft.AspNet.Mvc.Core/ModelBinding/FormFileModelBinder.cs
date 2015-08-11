@@ -15,7 +15,7 @@ using Microsoft.Net.Http.Headers;
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     /// <summary>
-    /// Modelbinder to bind posted files to <see cref="IFormFile"/>.
+    /// <see cref="IModelBinder"/> implementation to bind posted files to <see cref="IFormFile"/>.
     /// </summary>
     public class FormFileModelBinder : IModelBinder
     {
@@ -43,7 +43,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             if (value != null)
             {
                 validationNode =
-                    new ModelValidationNode(bindingContext.ModelName, bindingContext.ModelMetadata, value);
+                    new ModelValidationNode(bindingContext.ModelName, bindingContext.ModelMetadata, value)
+                    {
+                        SuppressValidation = true,
+                    };
 
                 var valueProviderResult = new ValueProviderResult(rawValue: value);
                 bindingContext.ModelState.SetModelValue(bindingContext.ModelName, valueProviderResult);
