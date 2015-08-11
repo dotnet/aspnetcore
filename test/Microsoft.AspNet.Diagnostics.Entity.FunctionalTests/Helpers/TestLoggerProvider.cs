@@ -21,6 +21,10 @@ namespace Microsoft.AspNet.Diagnostics.Entity.FunctionalTests.Helpers
             return _logger;
         }
 
+        public void Dispose()
+        {
+        }
+
         public class TestLogger : ILogger
         {
             private List<string> _messages = new List<string>();
@@ -34,7 +38,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.FunctionalTests.Helpers
             {
                 _messages.Add(formatter(state, exception));
             }
-            
+
             public bool IsEnabled(LogLevel logLevel)
             {
                 return true;
