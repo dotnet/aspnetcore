@@ -5,11 +5,12 @@ using System;
 using Microsoft.AspNet.Cors.Core;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.ApplicationModels;
+using Microsoft.Framework.DependencyInjection.Extensions;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.DependencyInjection
 {
-    public static class MvcJsonMvcBuilderExtensions
+    public static class MvcCorsMvcBuilderExtensions
     {
         public static IMvcBuilder AddCors([NotNull] this IMvcBuilder builder)
         {

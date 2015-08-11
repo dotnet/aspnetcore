@@ -4,6 +4,7 @@
 using System.Net.Http.Formatting;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.WebApiCompatShim;
+using Microsoft.Framework.DependencyInjection.Extensions;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.Framework.DependencyInjection

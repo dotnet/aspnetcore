@@ -8,6 +8,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Razor.Compilation;
 using Microsoft.AspNet.PageExecutionInstrumentation;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.DependencyInjection.Extensions;
 
 namespace RazorPageExecutionInstrumentationWebSite
 {

@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Mvc;
+using Microsoft.Framework.DependencyInjection.Extensions;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 using Newtonsoft.Json;

@@ -14,6 +14,7 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc.TagHelpers;
 using Microsoft.AspNet.Testing;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.DependencyInjection.Extensions;
 using Microsoft.Framework.WebEncoders;
 using Xunit;
 
