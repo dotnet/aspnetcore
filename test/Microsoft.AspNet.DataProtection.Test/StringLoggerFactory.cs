@@ -29,6 +29,10 @@ namespace Microsoft.AspNet.DataProtection
             return new StringLogger(name, this);
         }
 
+        public void Dispose()
+        {
+        }
+
         public override string ToString()
         {
             return _log.ToString();
