@@ -192,6 +192,12 @@ var buildTarget = "compile"
             throw new Exception("COHERENCE_FEED not specified. Usually this is Packages-NoTimestamp directory of Coherence-Signed.");
         }
 
+        var korebuildVersion = Environment.GetEnvironmentVariable("KOREBUILD_VERSION");
+        if (string.IsNullOrEmpty(korebuildVersion))
+        {
+            throw new Exception("KOREBUILD_VERSION environment variable is not specified.");
+        }
+
         var excludeReposForJson = new[]
         {
           "Coherence",
@@ -216,7 +222,7 @@ var buildTarget = "compile"
 
             var repoPath = Path.Combine(Directory.GetCurrentDirectory(), repo);
 
-            Exec("dnx", string.Format(@".\tools\PinVersion run ""{0}"" ""{1}""", repo, coherenceFeed), string.Empty);
+            Exec("dnx", string.Format(@".\tools\PinVersion run ""{0}"" ""{1}"" ""{2}""", repo, coherenceFeed, korebuildVersion), string.Empty);
 
             // Build projects to produce project.lock.json
             Exec("build.cmd", "compile", repo);
@@ -661,8 +667,8 @@ functions
 
             return true;
         }
-        
-        static IEnumerable<string> GetRepositoriesToBuild() 
+
+        static IEnumerable<string> GetRepositoriesToBuild()
         {
             IEnumerable<string> reposToBuild = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
                 // The repos list is topologically sorted based on build order
@@ -703,7 +709,7 @@ functions
                 "CORS",
                 "Entropy",
             };
-            
+
             var repositoryInclude = Environment.GetEnvironmentVariable("KOREBUILD_REPOSITORY_INCLUDE");
             if (!string.IsNullOrEmpty(repositoryInclude))
             {
@@ -711,14 +717,14 @@ functions
                     repositoryInclude.Split(new string[] {","}, StringSplitOptions.RemoveEmptyEntries),
                     StringComparer.OrdinalIgnoreCase);
             }
-            
+
             var repositoryExclude = Environment.GetEnvironmentVariable("KOREBUILD_REPOSITORY_EXCLUDE");
-            if (!string.IsNullOrEmpty(repositoryExclude)) 
+            if (!string.IsNullOrEmpty(repositoryExclude))
             {
                 var reposToExclude = repositoryExclude.Split(new string[] {","}, StringSplitOptions.RemoveEmptyEntries);
                 reposToBuild = reposToBuild.Except(reposToExclude);
             }
-            
+
             return reposToBuild.ToList();
         }
     }

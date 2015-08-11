@@ -14,16 +14,18 @@ namespace PinVersion
     {
         public void Main(string[] args)
         {
-            if (args.Length != 2)
+            if (args.Length != 3)
             {
-                Console.Error.WriteLine("Usage <repository-path> <package source>");
+                Console.Error.WriteLine("Usage <repository-path> <package source> <Korebuild Version>");
             }
 
             var repositoryPath = args[0];
             var packageSource = args[1];
+            var korebuildVersion = args[2];
 
             var packageRepository = PackageRepositoryFactory.Default.CreateRepository(packageSource);
 
+            // Pin project.json files
             foreach (var file in Directory.EnumerateFiles(repositoryPath, "project.json", SearchOption.AllDirectories))
             {
                 var projectJson = JObject.Parse(File.ReadAllText(file));
@@ -69,6 +71,35 @@ namespace PinVersion
                     projectJson.WriteTo(fileWriter);
                 }
             }
+
+            // Pin the build scripts
+            //TODO: handle build.sh files too
+            var dnxPackageName = "dnx-clr-win-x86";
+            var dnxPackage = packageRepository.FindPackage(dnxPackageName);
+            if (dnxPackage == null)
+            {
+                throw new InvalidOperationException(
+                    $"Could not find the DNX package with name '{dnxPackageName}' to " +
+                    "pin the build script");
+            }
+
+            var buildCmdFiles = Directory.GetFiles(repositoryPath, "build.cmd", SearchOption.TopDirectoryOnly);
+            if (buildCmdFiles == null || buildCmdFiles.Length == 0)
+            {
+                throw new InvalidOperationException($"No build.cmd files found at {repositoryPath}");
+            }
+
+            var buildCmdFile = buildCmdFiles[0];
+            var buildCmdFileContent = File.ReadAllText(buildCmdFile);
+            buildCmdFileContent = buildCmdFileContent.Replace(
+                "SET BUILDCMD_KOREBUILD_VERSION=\"\"",
+                $"SET BUILDCMD_KOREBUILD_VERSION={korebuildVersion}");
+            buildCmdFileContent = buildCmdFileContent.Replace(
+                "SET BUILDCMD_DNX_VERSION=\"\"",
+                $"SET BUILDCMD_DNX_VERSION={dnxPackage.Version.ToNormalizedString()}");
+
+            // Replace all content of the file
+            File.WriteAllText(buildCmdFile, buildCmdFileContent);
         }
     }
 }
