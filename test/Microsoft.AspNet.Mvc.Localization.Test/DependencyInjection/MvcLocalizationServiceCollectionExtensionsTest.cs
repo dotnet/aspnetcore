@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using Microsoft.AspNet.Mvc.Localization;
 using Microsoft.AspNet.Mvc.Razor;
+using Microsoft.Framework.DependencyInjection.Extensions;
 using Microsoft.Framework.Localization;
 using Microsoft.Framework.OptionsModel;
 using Microsoft.Framework.WebEncoders;
