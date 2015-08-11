@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Authentication.OAuthBearer
                 Options.SecurityTokenValidators = new List<ISecurityTokenValidator> { new JwtSecurityTokenHandler() };
             }
 
-            if (string.IsNullOrWhiteSpace(Options.TokenValidationParameters.ValidAudience) && !string.IsNullOrWhiteSpace(Options.Audience))
+            if (string.IsNullOrEmpty(Options.TokenValidationParameters.ValidAudience) && !string.IsNullOrEmpty(Options.Audience))
             {
                 Options.TokenValidationParameters.ValidAudience = Options.Audience;
             }
@@ -59,9 +59,9 @@ namespace Microsoft.AspNet.Authentication.OAuthBearer
                 {
                     Options.ConfigurationManager = new StaticConfigurationManager<OpenIdConnectConfiguration>(Options.Configuration);
                 }
-                else if (!(string.IsNullOrWhiteSpace(Options.MetadataAddress) && string.IsNullOrWhiteSpace(Options.Authority)))
+                else if (!(string.IsNullOrEmpty(Options.MetadataAddress) && string.IsNullOrEmpty(Options.Authority)))
                 {
-                    if (string.IsNullOrWhiteSpace(Options.MetadataAddress) && !string.IsNullOrWhiteSpace(Options.Authority))
+                    if (string.IsNullOrEmpty(Options.MetadataAddress) && !string.IsNullOrEmpty(Options.Authority))
                     {
                         Options.MetadataAddress = Options.Authority;
                         if (!Options.MetadataAddress.EndsWith("/", StringComparison.Ordinal))

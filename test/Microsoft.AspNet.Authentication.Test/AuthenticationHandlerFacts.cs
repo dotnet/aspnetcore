@@ -3,9 +3,11 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features.Authentication;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.Framework.Logging;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Authentication
@@ -13,12 +15,12 @@ namespace Microsoft.AspNet.Authentication
     public class AuthenticationHandlerFacts
     {
         [Fact]
-        public void ShouldHandleSchemeAreDeterminedOnlyByMatchingAuthenticationScheme()
+        public async Task ShouldHandleSchemeAreDeterminedOnlyByMatchingAuthenticationScheme()
         {
-            var handler = new TestHandler("Alpha");
+            var handler = await TestHandler.Create("Alpha");
             var passiveNoMatch = handler.ShouldHandleScheme("Beta");
 
-            handler = new TestHandler("Alpha");
+            handler = await TestHandler.Create("Alpha");
             var passiveWithMatch = handler.ShouldHandleScheme("Alpha");
 
             Assert.False(passiveNoMatch);
@@ -26,44 +28,44 @@ namespace Microsoft.AspNet.Authentication
         }
 
         [Fact]
-        public void AutomaticHandlerInAutomaticModeHandlesEmptyChallenges()
+        public async Task AutomaticHandlerInAutomaticModeHandlesEmptyChallenges()
         {
-            var handler = new TestAutoHandler("ignored", true);
+            var handler = await TestAutoHandler.Create("ignored", true);
             Assert.True(handler.ShouldHandleScheme(""));
         }
 
         [Fact]
-        public void AutomaticHandlerHandlesNullScheme()
+        public async Task AutomaticHandlerHandlesNullScheme()
         {
-            var handler = new TestAutoHandler("ignored", true);
+            var handler = await TestAutoHandler.Create("ignored", true);
             Assert.True(handler.ShouldHandleScheme(null));
         }
 
         [Fact]
-        public void AutomaticHandlerIgnoresWhitespaceScheme()
+        public async Task AutomaticHandlerIgnoresWhitespaceScheme()
         {
-            var handler = new TestAutoHandler("ignored", true);
+            var handler = await TestAutoHandler.Create("ignored", true);
             Assert.False(handler.ShouldHandleScheme("    "));
         }
 
         [Fact]
-        public void AutomaticHandlerShouldHandleSchemeWhenSchemeMatches()
+        public async Task AutomaticHandlerShouldHandleSchemeWhenSchemeMatches()
         {
-            var handler = new TestAutoHandler("Alpha", true);
+            var handler = await TestAutoHandler.Create("Alpha", true);
             Assert.True(handler.ShouldHandleScheme("Alpha"));
         }
 
         [Fact]
-        public void AutomaticHandlerShouldNotHandleChallengeWhenSchemeDoesNotMatches()
+        public async Task AutomaticHandlerShouldNotHandleChallengeWhenSchemeDoesNotMatches()
         {
-            var handler = new TestAutoHandler("Dog", true);
+            var handler = await TestAutoHandler.Create("Dog", true);
             Assert.False(handler.ShouldHandleScheme("Alpha"));
         }
 
         [Fact]
-        public void AutomaticHandlerShouldNotHandleChallengeWhenSchemesNotEmpty()
+        public async Task AutomaticHandlerShouldNotHandleChallengeWhenSchemesNotEmpty()
         {
-            var handler = new TestAutoHandler(null, true);
+            var handler = await TestAutoHandler.Create(null, true);
             Assert.False(handler.ShouldHandleScheme("Alpha"));
         }
 
@@ -72,22 +74,31 @@ namespace Microsoft.AspNet.Authentication
         [InlineData("")]
         public async Task AuthHandlerAuthenticateCachesTicket(string scheme)
         {
-            var handler = new CountHandler(scheme);
+            var handler = await CountHandler.Create(scheme);
             var context = new AuthenticateContext(scheme);
             await handler.AuthenticateAsync(context);
             await handler.AuthenticateAsync(context);
             Assert.Equal(1, handler.AuthCount);
         }
 
-        private class CountHandler : AuthenticationHandler<AuthenticationOptions>
+        private class CountOptions : AuthenticationOptions { }
+
+        private class CountHandler : AuthenticationHandler<CountOptions>
         {
             public int AuthCount = 0;
 
-            public CountHandler(string scheme)
+            private CountHandler() { }
+
+            public static async Task<CountHandler> Create(string scheme)
             {
-                Initialize(new TestOptions(), new DefaultHttpContext(), new LoggerFactory().CreateLogger("TestHandler"), Framework.WebEncoders.UrlEncoder.Default);
-                Options.AuthenticationScheme = scheme;
-                Options.AutomaticAuthentication = true;
+                var handler = new CountHandler();
+                var context = new Mock<HttpContext>();
+                context.Setup(c => c.Request).Returns(new Mock<HttpRequest>().Object);
+                context.Setup(c => c.Response).Returns(new Mock<HttpResponse>().Object);
+                await handler.InitializeAsync(new CountOptions(), context.Object, new LoggerFactory().CreateLogger("CountHandler"), Framework.WebEncoders.UrlEncoder.Default);
+                handler.Options.AuthenticationScheme = scheme;
+                handler.Options.AutomaticAuthentication = true;
+                return handler;
             }
 
             protected override Task<AuthenticationTicket> HandleAuthenticateAsync()
@@ -98,17 +109,24 @@ namespace Microsoft.AspNet.Authentication
 
         }
 
-        private class TestHandler : AuthenticationHandler<AuthenticationOptions>
+        private class TestHandler : AuthenticationHandler<TestOptions>
         {
-            public TestHandler(string scheme)
+            private TestHandler() { }
+
+            public static async Task<TestHandler> Create(string scheme)
             {
-                Initialize(new TestOptions(), new DefaultHttpContext(), new LoggerFactory().CreateLogger("TestHandler"), Framework.WebEncoders.UrlEncoder.Default);
-                Options.AuthenticationScheme = scheme;
+                var handler = new TestHandler();
+                var context = new Mock<HttpContext>();
+                context.Setup(c => c.Request).Returns(new Mock<HttpRequest>().Object);
+                context.Setup(c => c.Response).Returns(new Mock<HttpResponse>().Object);
+                await handler.InitializeAsync(new TestOptions(), context.Object, new LoggerFactory().CreateLogger("TestHandler"), Framework.WebEncoders.UrlEncoder.Default);
+                handler.Options.AuthenticationScheme = scheme;
+                return handler;
             }
 
             protected override Task<AuthenticationTicket> HandleAuthenticateAsync()
             {
-                throw new NotImplementedException();
+                return Task.FromResult<AuthenticationTicket>(null);
             }
         }
 
@@ -124,16 +142,23 @@ namespace Microsoft.AspNet.Authentication
 
         private class TestAutoHandler : AuthenticationHandler<TestAutoOptions>
         {
-            public TestAutoHandler(string scheme, bool auto)
+            private TestAutoHandler() { }
+
+            public static async Task<TestAutoHandler> Create(string scheme, bool auto)
             {
-                Initialize(new TestAutoOptions(), new DefaultHttpContext(), new LoggerFactory().CreateLogger("TestHandler"), Framework.WebEncoders.UrlEncoder.Default);
-                Options.AuthenticationScheme = scheme;
-                Options.AutomaticAuthentication = auto;
+                var handler = new TestAutoHandler();
+                var context = new Mock<HttpContext>();
+                context.Setup(c => c.Request).Returns(new Mock<HttpRequest>().Object);
+                context.Setup(c => c.Response).Returns(new Mock<HttpResponse>().Object);
+                await handler.InitializeAsync(new TestAutoOptions(), context.Object, new LoggerFactory().CreateLogger("TestAutoHandler"), Framework.WebEncoders.UrlEncoder.Default);
+                handler.Options.AuthenticationScheme = scheme;
+                handler.Options.AutomaticAuthentication = auto;
+                return handler;
             }
 
             protected override Task<AuthenticationTicket> HandleAuthenticateAsync()
             {
-                throw new NotImplementedException();
+                return Task.FromResult<AuthenticationTicket>(null);
             }
         }
     }

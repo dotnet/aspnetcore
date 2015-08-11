@@ -18,6 +18,12 @@ namespace Microsoft.Framework.DependencyInjection
             return services;
         }
 
+        public static IServiceCollection AddAuthentication([NotNull] this IServiceCollection services, [NotNull] Action<SharedAuthenticationOptions> configureOptions)
+        {
+            services.Configure(configureOptions);
+            return services.AddAuthentication();
+        }
+
         public static IServiceCollection ConfigureClaimsTransformation([NotNull] this IServiceCollection services, [NotNull] Action<ClaimsTransformationOptions> configure)
         {
             return services.Configure(configure);

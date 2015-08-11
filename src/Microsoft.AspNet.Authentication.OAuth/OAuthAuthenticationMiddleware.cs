@@ -38,27 +38,27 @@ namespace Microsoft.AspNet.Authentication.OAuth
             : base(next, options, loggerFactory, encoder, configureOptions)
         {
             // todo: review error handling
-            if (string.IsNullOrWhiteSpace(Options.AuthenticationScheme))
+            if (string.IsNullOrEmpty(Options.AuthenticationScheme))
             {
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, nameof(Options.AuthenticationScheme)));
             }
 
-            if (string.IsNullOrWhiteSpace(Options.ClientId))
+            if (string.IsNullOrEmpty(Options.ClientId))
             {
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, nameof(Options.ClientId)));
             }
 
-            if (string.IsNullOrWhiteSpace(Options.ClientSecret))
+            if (string.IsNullOrEmpty(Options.ClientSecret))
             {
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, nameof(Options.ClientSecret)));
             }
 
-            if (string.IsNullOrWhiteSpace(Options.AuthorizationEndpoint))
+            if (string.IsNullOrEmpty(Options.AuthorizationEndpoint))
             {
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, nameof(Options.AuthorizationEndpoint)));
             }
 
-            if (string.IsNullOrWhiteSpace(Options.TokenEndpoint))
+            if (string.IsNullOrEmpty(Options.TokenEndpoint))
             {
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, nameof(Options.TokenEndpoint)));
             }

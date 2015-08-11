@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Authentication.MicrosoftAccount
             }
 
             var email = MicrosoftAccountAuthenticationHelper.GetEmail(payload);
-            if (!string.IsNullOrWhiteSpace(email))
+            if (!string.IsNullOrEmpty(email))
             {
                 identity.AddClaim(new Claim(ClaimTypes.Email, email, ClaimValueTypes.String, Options.ClaimsIssuer));
             }

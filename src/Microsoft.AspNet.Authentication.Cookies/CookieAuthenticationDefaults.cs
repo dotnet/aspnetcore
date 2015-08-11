@@ -22,18 +22,25 @@ namespace Microsoft.AspNet.Authentication.Cookies
         public const string CookiePrefix = ".AspNet.";
 
         /// <summary>
-        /// The default value used by UseApplicationSignInCookie for the
+        /// The default value used by CookieAuthenticationMiddleware for the
         /// CookieAuthenticationOptions.LoginPath
         /// </summary>
         [SuppressMessage("Microsoft.Naming", "CA1726:UsePreferredTerms", MessageId = "Login", Justification = "By design")]
         public static readonly PathString LoginPath = new PathString("/Account/Login");
 
         /// <summary>
-        /// The default value used by UseApplicationSignInCookie for the
+        /// The default value used by CookieAuthenticationMiddleware for the
         /// CookieAuthenticationOptions.LogoutPath
         /// </summary>
         [SuppressMessage("Microsoft.Naming", "CA1726:UsePreferredTerms", MessageId = "Logout", Justification = "By design")]
         public static readonly PathString LogoutPath = new PathString("/Account/Logout");
+
+        /// <summary>
+        /// The default value used by CookieAuthenticationMiddleware for the
+        /// CookieAuthenticationOptions.AccessDeniedPath
+        /// </summary>
+        [SuppressMessage("Microsoft.Naming", "CA1726:UsePreferredTerms", MessageId = "Login", Justification = "By design")]
+        public static readonly PathString AccessDeniedPath = new PathString("/Account/AccessDenied");
 
         /// <summary>
         /// The default value of the CookieAuthenticationOptions.ReturnUrlParameter

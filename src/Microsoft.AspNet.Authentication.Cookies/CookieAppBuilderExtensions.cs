@@ -28,5 +28,19 @@ namespace Microsoft.AspNet.Builder
                     Name = optionsName
                 });
         }
+
+        /// <summary>
+        /// Adds a cookie-based authentication middleware to your web application pipeline.
+        /// </summary>
+        /// <param name="app">The IApplicationBuilder passed to your configuration method</param>
+        /// <param name="configureOptions">Used to configure the options for the middleware</param>
+        /// <param name="optionsName">The name of the options class that controls the middleware behavior, null will use the default options</param>
+        /// <returns>The original app parameter</returns>
+        public static IApplicationBuilder UseCookieAuthentication([NotNull] this IApplicationBuilder app, IOptions<CookieAuthenticationOptions> options)
+        {
+            return app.UseMiddleware<CookieAuthenticationMiddleware>(options,
+                new ConfigureOptions<CookieAuthenticationOptions>(o => { }));
+        }
+
     }
 }

@@ -376,12 +376,6 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
         protected override Task<bool> HandleForbiddenAsync(ChallengeContext context)
         {
-            // HandleForbidden by redirecting to AccessDeniedPath if set
-            if (!Options.AccessDeniedPath.HasValue)
-            {
-                return base.HandleForbiddenAsync(context);
-            }
-
             try
             {
                 var accessDeniedUri =
@@ -409,11 +403,6 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
         protected override Task<bool> HandleUnauthorizedAsync([NotNull] ChallengeContext context)
         {
-            if (!Options.LoginPath.HasValue)
-            {
-                return base.HandleUnauthorizedAsync(context);
-            }
-
             var redirectUri = new AuthenticationProperties(context.Properties).RedirectUri;
             try
             {

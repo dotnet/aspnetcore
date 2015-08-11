@@ -88,9 +88,6 @@ namespace Microsoft.AspNet.Authentication.Cookies
         /// to the LoginPath as a query string parameter named by the ReturnUrlParameter. Once a request to the
         /// LoginPath grants a new SignIn identity, the ReturnUrlParameter value is used to redirect the browser back  
         /// to the url which caused the original unauthorized status code.
-        /// 
-        /// If the LoginPath is null or empty, the middleware will not look for 401 Unauthorized status codes, and it will
-        /// not redirect automatically when a login occurs.
         /// </summary>
         [SuppressMessage("Microsoft.Naming", "CA1726:UsePreferredTerms", MessageId = "Login", Justification = "By design")]
         public PathString LoginPath { get; set; }
@@ -104,9 +101,6 @@ namespace Microsoft.AspNet.Authentication.Cookies
         /// <summary>
         /// The AccessDeniedPath property informs the middleware that it should change an outgoing 403 Forbidden status
         /// code into a 302 redirection onto the given path.
-        /// 
-        /// If the AccessDeniedPath is null or empty, the middleware will not look for 403 Forbidden status codes, and it will
-        /// not redirect
         /// </summary>
         public PathString AccessDeniedPath { get; set; }
 

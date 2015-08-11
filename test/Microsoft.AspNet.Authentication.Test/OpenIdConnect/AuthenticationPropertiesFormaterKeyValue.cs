@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
 
         AuthenticationProperties ISecureDataFormat<AuthenticationProperties>.Unprotect(string protectedText)
         {
-            if (string.IsNullOrWhiteSpace(protectedText))
+            if (string.IsNullOrEmpty(protectedText))
             {
                 return null;
             }

@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.Authentication
             foreach (var chainElement in chain.ChainElements)
             {
                 string subjectKeyIdentifier = GetSubjectKeyIdentifier(chainElement.Certificate);
-                if (string.IsNullOrWhiteSpace(subjectKeyIdentifier))
+                if (string.IsNullOrEmpty(subjectKeyIdentifier))
                 {
                     continue;
                 }

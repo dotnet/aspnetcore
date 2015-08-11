@@ -97,7 +97,7 @@ namespace Microsoft.AspNet.Authentication.OAuthBearer
                 var validationParameters = Options.TokenValidationParameters.Clone();
                 if (_configuration != null)
                 {
-                    if (validationParameters.ValidIssuer == null && !string.IsNullOrWhiteSpace(_configuration.Issuer))
+                    if (validationParameters.ValidIssuer == null && !string.IsNullOrEmpty(_configuration.Issuer))
                     {
                         validationParameters.ValidIssuer = _configuration.Issuer;
                     }

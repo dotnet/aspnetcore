@@ -57,26 +57,16 @@ namespace Microsoft.AspNet.Authentication.Cookies
             }
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task ProtectedCustomRequestShouldRedirectToCustomRedirectUri(bool auto)
+        [Fact]
+        public async Task ProtectedCustomRequestShouldRedirectToCustomRedirectUri()
         {
-            var server = CreateServer(options =>
-            {
-                options.LoginPath = new PathString("/login");
-                options.AutomaticAuthentication = auto;
-            });
+            var server = CreateServer(options => options.AutomaticAuthentication = true);
 
             var transaction = await SendAsync(server, "http://example.com/protected/CustomRedirect");
 
-            // REVIEW: Now when Cookies are not in auto, noone handles the challenge so the Status stays OK, is that reasonable??
-            transaction.Response.StatusCode.ShouldBe(auto ? HttpStatusCode.Redirect : HttpStatusCode.OK);
-            if (auto)
-            {
-                var location = transaction.Response.Headers.Location;
-                location.ToString().ShouldBe("http://example.com/login?ReturnUrl=%2FCustomRedirect");
-            }
+            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+            var location = transaction.Response.Headers.Location;
+            location.ToString().ShouldBe("http://example.com/Account/Login?ReturnUrl=%2FCustomRedirect");
         }
 
         private Task SignInAsAlice(HttpContext context)
@@ -588,7 +578,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public async Task CookieTurns401To403WithCookie(bool automatic)
+        public async Task CookieTurnsChallengeIntoForbidWithCookie(bool automatic)
         {
             var clock = new TestClock();
             var server = CreateServer(options =>
@@ -603,7 +593,9 @@ namespace Microsoft.AspNet.Authentication.Cookies
             var url = "http://example.com/challenge";
             var transaction2 = await SendAsync(server, url, transaction1.CookieNameValue);
 
-            transaction2.Response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
+            transaction2.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+            var location = transaction2.Response.Headers.Location;
+            location.LocalPath.ShouldBe("/Account/AccessDenied");
         }
 
         [Theory]
@@ -614,9 +606,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
             var clock = new TestClock();
             var server = CreateServer(options =>
             {
-                options.LoginPath = new PathString("/login");
                 options.AutomaticAuthentication = automatic;
-                options.AccessDeniedPath = new PathString("/accessdenied");
                 options.SystemClock = clock;
             },
             SignInAsAlice);
@@ -626,13 +616,13 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
             transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
             var location = transaction.Response.Headers.Location;
-            location.LocalPath.ShouldBe("/login");
+            location.LocalPath.ShouldBe("/Account/Login");
         }
 
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public async Task CookieForbidTurns401To403WithoutCookie(bool automatic)
+        public async Task CookieForbidRedirectsWithoutCookie(bool automatic)
         {
             var clock = new TestClock();
             var server = CreateServer(options =>
@@ -645,7 +635,9 @@ namespace Microsoft.AspNet.Authentication.Cookies
             var url = "http://example.com/forbid";
             var transaction = await SendAsync(server, url);
 
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
+            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+            var location = transaction.Response.Headers.Location;
+            location.LocalPath.ShouldBe("/Account/AccessDenied");
         }
 
         [Fact]
@@ -670,19 +662,20 @@ namespace Microsoft.AspNet.Authentication.Cookies
         }
 
         [Fact]
-        public async Task CookieChallengeDoesNothingIfNotAuthenticated()
+        public async Task CookieChallengeRedirectsWithLoginPath()
         {
             var clock = new TestClock();
             var server = CreateServer(options =>
             {
                 options.SystemClock = clock;
+                options.LoginPath = new PathString("/page");
             });
 
             var transaction1 = await SendAsync(server, "http://example.com/testpath");
 
             var transaction2 = await SendAsync(server, "http://example.com/challenge", transaction1.CookieNameValue);
 
-            transaction2.Response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+            transaction2.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
         }
 
         [Fact]
@@ -692,13 +685,14 @@ namespace Microsoft.AspNet.Authentication.Cookies
             var server = CreateServer(options =>
             {
                 options.SystemClock = clock;
+                options.LoginPath = new PathString("/page");
             });
 
             var transaction1 = await SendAsync(server, "http://example.com/testpath");
 
             var transaction2 = await SendAsync(server, "http://example.com/unauthorized", transaction1.CookieNameValue);
 
-            transaction2.Response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+            transaction2.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
         }
 
         [Fact]
@@ -719,6 +713,53 @@ namespace Microsoft.AspNet.Authentication.Cookies
             location.LocalPath.ShouldBe("/page");
             location.Query.ShouldBe("?ReturnUrl=%2F");
         }
+
+        [Fact]
+        public async Task ChallengeDoesNotSet401OnUnauthorized()
+        {
+            var server = TestServer.Create(app =>
+            {
+                app.UseCookieAuthentication();
+                app.Run(async context => {
+                    await Assert.ThrowsAsync<InvalidOperationException>(() => context.Authentication.ChallengeAsync());
+                });
+            }, services => services.AddAuthentication());
+
+            var transaction = await server.SendAsync("http://example.com");
+            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        }
+
+/*        [Fact]
+        public async Task UseCookieWithInstanceDoesntUseSharedOptions()
+        {
+            var server = TestServer.Create(app =>
+            {
+                app.UseCookieAuthentication(options => options.CookieName = "One");
+                app.UseCookieAuthentication(new CookieAuthenticationOptions());
+                app.Run(context => context.Authentication.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(new ClaimsIdentity())));
+            }, services => services.AddAuthentication());
+
+            var transaction = await server.SendAsync("http://example.com");
+
+            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
+            Assert.True(transaction.SetCookie[0].StartsWith(".AspNet.Cookies="));
+        }
+
+        [Fact]
+        public async Task UseCookieWithOutInstanceDoesUseSharedOptions()
+        {
+            var server = TestServer.Create(app =>
+            {
+                app.UseCookieAuthentication(options => options.CookieName = "One");
+                app.UseCookieAuthentication(options => options.AuthenticationScheme = "Two");
+                app.Run(context => context.Authentication.SignInAsync("Two", new ClaimsPrincipal(new ClaimsIdentity())));
+            }, services => services.AddAuthentication());
+
+            var transaction = await server.SendAsync("http://example.com");
+
+            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
+            Assert.True(transaction.SetCookie[0].StartsWith("One="));
+        }*/
 
         [Fact]
         public async Task MapWithSignInOnlyRedirectToReturnUrlOnLoginPath()
@@ -870,6 +911,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
             var server = TestServer.Create(app =>
             {
                 app.UseCookieAuthentication(configureOptions);
+                // app.UseCookieAuthentication(new CookieAuthenticationOptions { AuthenticationScheme = "Cookie2" });
 
                 if (claimsTransform != null)
                 {
@@ -961,16 +1003,12 @@ namespace Microsoft.AspNet.Authentication.Cookies
             }
         }
 
-        private static async Task<Transaction> SendAsync(TestServer server, string uri, string cookieHeader = null, bool ajaxRequest = false)
+        private static async Task<Transaction> SendAsync(TestServer server, string uri, string cookieHeader = null)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, uri);
             if (!string.IsNullOrEmpty(cookieHeader))
             {
                 request.Headers.Add("Cookie", cookieHeader);
-            }
-            if (ajaxRequest)
-            {
-                request.Headers.Add("X-Requested-With", "XMLHttpRequest");
             }
             var transaction = new Transaction
             {

@@ -251,7 +251,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 // response_mode=query (explicit or not) and a response_type containing id_token
                 // or token are not considered as a safe combination and MUST be rejected.
                 // See http://openid.net/specs/oauth-v2-multiple-response-types-1_0.html#Security
-                if (!string.IsNullOrWhiteSpace(message.IdToken) || !string.IsNullOrWhiteSpace(message.Token))
+                if (!string.IsNullOrEmpty(message.IdToken) || !string.IsNullOrEmpty(message.Token))
                 {
                     Logger.LogError("An OpenID Connect response cannot contain an identity token " +
                                     "or an access token when using response_mode=query");
@@ -260,7 +260,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             }
             // assumption: if the ContentType is "application/x-www-form-urlencoded" it should be safe to read as it is small.
             else if (string.Equals(Request.Method, "POST", StringComparison.OrdinalIgnoreCase)
-              && !string.IsNullOrWhiteSpace(Request.ContentType)
+              && !string.IsNullOrEmpty(Request.ContentType)
               // May have media/type; charset=utf-8, allow partial match.
               && Request.ContentType.StartsWith("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase)
               && Request.Body.CanRead)
@@ -643,7 +643,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         {
             // assume a well formed query string: <a=b&>OpenIdConnectAuthenticationDefaults.AuthenticationPropertiesKey=kasjd;fljasldkjflksdj<&c=d>
             var startIndex = 0;
-            if (string.IsNullOrWhiteSpace(state) || (startIndex = state.IndexOf(OpenIdConnectAuthenticationDefaults.AuthenticationPropertiesKey, StringComparison.Ordinal)) == -1)
+            if (string.IsNullOrEmpty(state) || (startIndex = state.IndexOf(OpenIdConnectAuthenticationDefaults.AuthenticationPropertiesKey, StringComparison.Ordinal)) == -1)
             {
                 return null;
             }
@@ -934,7 +934,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 }
 
                 // Redirect back to the original secured resource, if any.
-                if (!string.IsNullOrWhiteSpace(ticket.Properties.RedirectUri))
+                if (!string.IsNullOrEmpty(ticket.Properties.RedirectUri))
                 {
                     Response.Redirect(ticket.Properties.RedirectUri);
                     return true;

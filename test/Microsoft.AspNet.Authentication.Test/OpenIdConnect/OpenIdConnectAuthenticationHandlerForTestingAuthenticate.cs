@@ -27,15 +27,6 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             return await base.HandleUnauthorizedAsync(context);
         }
 
-        protected override Task HandleSignInAsync(SignInContext context)
-        {
-            return Task.FromResult(0);
-        }
-
-        protected override Task HandleSignOutAsync(SignOutContext context)
-        {
-            return Task.FromResult(0);
-        }
         protected override async Task<OpenIdConnectTokenEndpointResponse> RedeemAuthorizationCodeAsync(string authorizationCode, string redirectUri)
         {
             var jsonResponse = new JObject();
@@ -53,10 +44,5 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             claimsIdentity.AddClaim(new Claim("test claim", "test value"));
             return new AuthenticationTicket(new ClaimsPrincipal(claimsIdentity), ticket.Properties, ticket.AuthenticationScheme);
         }
-
-        //public override bool ShouldHandleScheme(string authenticationScheme)
-        //{
-        //    return true;
-        //}
     }
 }

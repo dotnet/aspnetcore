@@ -116,7 +116,7 @@ namespace Microsoft.AspNet.Authentication.OAuth
 
                 var tokens = await ExchangeCodeAsync(code, BuildRedirectUri(Options.CallbackPath));
 
-                if (string.IsNullOrWhiteSpace(tokens.AccessToken))
+                if (string.IsNullOrEmpty(tokens.AccessToken))
                 {
                     Logger.LogWarning("Access token was not found");
                     return new AuthenticationTicket(properties, Options.AuthenticationScheme);
@@ -279,7 +279,7 @@ namespace Microsoft.AspNet.Authentication.OAuth
         {
             var correlationKey = Constants.CorrelationPrefix + Options.AuthenticationScheme;
             var correlationCookie = Request.Cookies[correlationKey];
-            if (string.IsNullOrWhiteSpace(correlationCookie))
+            if (string.IsNullOrEmpty(correlationCookie))
             {
                 Logger.LogWarning("{0} cookie not found.", correlationKey);
                 return false;

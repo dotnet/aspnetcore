@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.Authentication
         public async Task Invoke(HttpContext context)
         {
             var handler = CreateHandler();
-            await handler.Initialize(Options, context, Logger, UrlEncoder);
+            await handler.InitializeAsync(Options, context, Logger, UrlEncoder);
             try
             {
                 if (!await handler.InvokeAsync())

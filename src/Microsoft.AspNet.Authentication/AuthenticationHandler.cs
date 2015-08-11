@@ -14,11 +14,11 @@ namespace Microsoft.AspNet.Authentication
     /// <summary>
     /// Base class for the per-request work performed by most authentication middleware.
     /// </summary>
-    public abstract class AuthenticationHandler : IAuthenticationHandler
+    /// <typeparam name="TOptions">Specifies which type for of AuthenticationOptions property</typeparam>
+    public abstract class AuthenticationHandler<TOptions> : IAuthenticationHandler where TOptions : AuthenticationOptions
     {
         private Task<AuthenticationTicket> _authenticateTask;
         private bool _finishCalled;
-        private AuthenticationOptions _baseOptions;
 
         protected bool SignInAccepted { get; set; }
         protected bool SignOutAccepted { get; set; }
@@ -44,11 +44,6 @@ namespace Microsoft.AspNet.Authentication
 
         protected IUrlEncoder UrlEncoder { get; private set; }
 
-        internal AuthenticationOptions BaseOptions
-        {
-            get { return _baseOptions; }
-        }
-
         public IAuthenticationHandler PriorHandler { get; set; }
 
         protected string CurrentUri
@@ -59,9 +54,18 @@ namespace Microsoft.AspNet.Authentication
             }
         }
 
-        protected async Task BaseInitializeAsync([NotNull] AuthenticationOptions options, [NotNull] HttpContext context, [NotNull] ILogger logger, [NotNull] IUrlEncoder encoder)
+        protected TOptions Options { get; private set; }
+
+        /// <summary>
+        /// Initialize is called once per request to contextualize this instance with appropriate state.
+        /// </summary>
+        /// <param name="options">The original options passed by the application control behavior</param>
+        /// <param name="context">The utility object to observe the current request and response</param>
+        /// <param name="logger">The logging factory used to create loggers</param>
+        /// <returns>async completion</returns>
+        public async Task InitializeAsync([NotNull] TOptions options, [NotNull] HttpContext context, [NotNull] ILogger logger, [NotNull] IUrlEncoder encoder)
         {
-            _baseOptions = options;
+            Options = options;
             Context = context;
             OriginalPathBase = Request.PathBase;
             OriginalPath = Request.Path;
@@ -90,7 +94,7 @@ namespace Microsoft.AspNet.Authentication
 
         private static async Task OnStartingCallback(object state)
         {
-            var handler = (AuthenticationHandler)state;
+            var handler = (AuthenticationHandler<TOptions>)state;
             await handler.FinishResponseOnce();
         }
 
@@ -115,9 +119,9 @@ namespace Microsoft.AspNet.Authentication
 
         private async Task HandleAutomaticChallengeIfNeeded()
         {
-            if (!ChallengeCalled && BaseOptions.AutomaticAuthentication && Response.StatusCode == 401)
+            if (!ChallengeCalled && Options.AutomaticAuthentication && Response.StatusCode == 401)
             {
-                await HandleUnauthorizedAsync(new ChallengeContext(BaseOptions.AuthenticationScheme));
+                await HandleUnauthorizedAsync(new ChallengeContext(Options.AuthenticationScheme));
             }
         }
 
@@ -152,7 +156,7 @@ namespace Microsoft.AspNet.Authentication
 
         public void GetDescriptions(DescribeSchemesContext describeContext)
         {
-            describeContext.Accept(BaseOptions.Description.Items);
+            describeContext.Accept(Options.Description.Items);
 
             if (PriorHandler != null)
             {
@@ -162,8 +166,8 @@ namespace Microsoft.AspNet.Authentication
 
         public bool ShouldHandleScheme(string authenticationScheme)
         {
-            return string.Equals(BaseOptions.AuthenticationScheme, authenticationScheme, StringComparison.Ordinal) ||
-                (BaseOptions.AutomaticAuthentication && string.IsNullOrEmpty(authenticationScheme));
+            return string.Equals(Options.AuthenticationScheme, authenticationScheme, StringComparison.Ordinal) ||
+                (Options.AutomaticAuthentication && string.IsNullOrEmpty(authenticationScheme));
         }
 
         public async Task AuthenticateAsync(AuthenticateContext context)
@@ -174,7 +178,7 @@ namespace Microsoft.AspNet.Authentication
                 var ticket = await HandleAuthenticateOnceAsync();
                 if (ticket?.Principal != null)
                 {
-                    context.Authenticated(ticket.Principal, ticket.Properties.Items, BaseOptions.Description.Items);
+                    context.Authenticated(ticket.Principal, ticket.Properties.Items, Options.Description.Items);
                 }
                 else
                 {

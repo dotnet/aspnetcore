@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
                 properties = requestToken.Properties;
 
                 var returnedToken = query.Get("oauth_token");
-                if (string.IsNullOrWhiteSpace(returnedToken))
+                if (string.IsNullOrEmpty(returnedToken))
                 {
                     Logger.LogWarning("Missing oauth_token");
                     return new AuthenticationTicket(properties, Options.AuthenticationScheme);
@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
                 }
 
                 var oauthVerifier = query.Get("oauth_verifier");
-                if (string.IsNullOrWhiteSpace(oauthVerifier))
+                if (string.IsNullOrEmpty(oauthVerifier))
                 {
                     Logger.LogWarning("Missing or blank oauth_verifier");
                     return new AuthenticationTicket(properties, Options.AuthenticationScheme);

@@ -40,6 +40,18 @@ namespace Microsoft.AspNet.Authentication.Cookies
             {
                 Options.CookieManager = new ChunkingCookieManager(urlEncoder);
             }
+            if (!Options.LoginPath.HasValue)
+            {
+                Options.LoginPath = CookieAuthenticationDefaults.LoginPath;
+            }
+            if (!Options.LogoutPath.HasValue)
+            {
+                Options.LogoutPath = CookieAuthenticationDefaults.LogoutPath;
+            }
+            if (!Options.AccessDeniedPath.HasValue)
+            {
+                Options.AccessDeniedPath = CookieAuthenticationDefaults.AccessDeniedPath;
+            }
         }
 
         protected override AuthenticationHandler<CookieAuthenticationOptions> CreateHandler()
