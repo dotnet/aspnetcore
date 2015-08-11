@@ -66,7 +66,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 {
                     // Value exists but is null. Handle similarly to fallback case above. This avoids a
                     // ModelBindingResult with IsModelSet = true but ValidationNode = null.
-                    model = bindingContext.Model ?? CreateEmptyCollection();
+                    model = bindingContext.Model ?? CreateEmptyCollection(bindingContext.ModelType);
                     var validationNode =
                         new ModelValidationNode(bindingContext.ModelName, bindingContext.ModelMetadata, model);
 
