@@ -16,7 +16,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     /// <remarks>
     /// The tag helper won't process for cases with just the 'src' attribute.
     /// </remarks>
-    [TargetElement("img", Attributes = AppendVersionAttributeName + "," + SrcAttributeName)]
+    [TargetElement(
+        "img",
+        Attributes = AppendVersionAttributeName + "," + SrcAttributeName,
+        TagStructure = TagStructure.WithoutEndTag)]
     public class ImageTagHelper : UrlResolutionTagHelper
     {
         private static readonly string Namespace = typeof(ImageTagHelper).Namespace;

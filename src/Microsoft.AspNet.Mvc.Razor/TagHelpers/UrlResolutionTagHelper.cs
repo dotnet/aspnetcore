@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
@@ -21,28 +20,28 @@ namespace Microsoft.AspNet.Mvc.Razor.TagHelpers
     [TargetElement("*", Attributes = "itemid")]
     [TargetElement("a", Attributes = "href")]
     [TargetElement("applet", Attributes = "archive")]
-    [TargetElement("area", Attributes = "href")]
+    [TargetElement("area", Attributes = "href", TagStructure = TagStructure.WithoutEndTag)]
     [TargetElement("audio", Attributes = "src")]
-    [TargetElement("base", Attributes = "href")]
+    [TargetElement("base", Attributes = "href", TagStructure = TagStructure.WithoutEndTag)]
     [TargetElement("blockquote", Attributes = "cite")]
     [TargetElement("button", Attributes = "formaction")]
     [TargetElement("del", Attributes = "cite")]
-    [TargetElement("embed", Attributes = "src")]
+    [TargetElement("embed", Attributes = "src", TagStructure = TagStructure.WithoutEndTag)]
     [TargetElement("form", Attributes = "action")]
     [TargetElement("html", Attributes = "manifest")]
     [TargetElement("iframe", Attributes = "src")]
-    [TargetElement("img", Attributes = "src")]
-    [TargetElement("input", Attributes = "src")]
-    [TargetElement("input", Attributes = "formaction")]
+    [TargetElement("img", Attributes = "src", TagStructure = TagStructure.WithoutEndTag)]
+    [TargetElement("input", Attributes = "src", TagStructure = TagStructure.WithoutEndTag)]
+    [TargetElement("input", Attributes = "formaction", TagStructure = TagStructure.WithoutEndTag)]
     [TargetElement("ins", Attributes = "cite")]
-    [TargetElement("link", Attributes = "href")]
+    [TargetElement("link", Attributes = "href", TagStructure = TagStructure.WithoutEndTag)]
     [TargetElement("menuitem", Attributes = "icon")]
     [TargetElement("object", Attributes = "archive")]
     [TargetElement("object", Attributes = "data")]
     [TargetElement("q", Attributes = "cite")]
     [TargetElement("script", Attributes = "src")]
-    [TargetElement("source", Attributes = "src")]
-    [TargetElement("track", Attributes = "src")]
+    [TargetElement("source", Attributes = "src", TagStructure = TagStructure.WithoutEndTag)]
+    [TargetElement("track", Attributes = "src", TagStructure = TagStructure.WithoutEndTag)]
     [TargetElement("video", Attributes = "src")]
     [TargetElement("video", Attributes = "poster")]
     [EditorBrowsable(EditorBrowsableState.Never)]

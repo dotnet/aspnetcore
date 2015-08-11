@@ -833,7 +833,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             page.HtmlEncoder = new CommonTestEncoder();
             var executionContext = new TagHelperExecutionContext(
                 "p",
-                selfClosing: false,
+                tagMode: TagMode.StartTagAndEndTag,
                 items: null,
                 uniqueId: string.Empty,
                 executeChildContentAsync: () => Task.FromResult(result: true),
@@ -868,7 +868,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             page.HtmlEncoder = new CommonTestEncoder();
             var executionContext = new TagHelperExecutionContext(
                 "p",
-                selfClosing: false,
+                tagMode: TagMode.StartTagAndEndTag,
                 items: null,
                 uniqueId: string.Empty,
                 executeChildContentAsync: () => Task.FromResult(result: true),
@@ -900,7 +900,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             page.HtmlEncoder = new CommonTestEncoder();
             var executionContext = new TagHelperExecutionContext(
                 "p",
-                selfClosing: false,
+                tagMode: TagMode.StartTagAndEndTag,
                 items: null,
                 uniqueId: string.Empty,
                 executeChildContentAsync: () => Task.FromResult(result: true),
@@ -1053,7 +1053,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                         GetTagHelperOutput(
                             tagName:     "div",
                             attributes:  new TagHelperAttributeList(),
-                            selfClosing: false,
+                            tagMode: TagMode.StartTagAndEndTag,
                             preElement:  null,
                             preContent:  null,
                             content:     "Hello World!",
@@ -1065,7 +1065,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                         GetTagHelperOutput(
                             tagName:     null,
                             attributes:  new TagHelperAttributeList(),
-                            selfClosing: false,
+                            tagMode: TagMode.StartTagAndEndTag,
                             preElement:  null,
                             preContent:  null,
                             content:     "Hello World!",
@@ -1077,7 +1077,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                         GetTagHelperOutput(
                             tagName:     "  ",
                             attributes:  new TagHelperAttributeList(),
-                            selfClosing: false,
+                            tagMode: TagMode.StartTagAndEndTag,
                             preElement:  null,
                             preContent:  null,
                             content:     "Hello World!",
@@ -1089,7 +1089,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                         GetTagHelperOutput(
                             tagName:     "p",
                             attributes:  new TagHelperAttributeList() { { "test", "testVal" } },
-                            selfClosing: false,
+                            tagMode: TagMode.StartTagAndEndTag,
                             preElement:  null,
                             preContent:  null,
                             content:     "Hello World!",
@@ -1101,7 +1101,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                         GetTagHelperOutput(
                             tagName:     "p",
                             attributes:  new TagHelperAttributeList() { { "test", "testVal" }, { "something", "  spaced  " } },
-                            selfClosing: false,
+                            tagMode: TagMode.StartTagAndEndTag,
                             preElement:  null,
                             preContent:  null,
                             content:     "Hello World!",
@@ -1120,7 +1120,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                                     Minimized = true
                                 },
                             },
-                            selfClosing: false,
+                            tagMode: TagMode.StartTagAndEndTag,
                             preElement:  null,
                             preContent:  null,
                             content:     "Hello World!",
@@ -1144,7 +1144,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                                     Minimized = true
                                 },
                             },
-                            selfClosing: false,
+                            tagMode: TagMode.StartTagAndEndTag,
                             preElement:  null,
                             preContent:  null,
                             content:     "Hello World!",
@@ -1164,7 +1164,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                                     Minimized = true
                                 },
                             },
-                            selfClosing: false,
+                            tagMode: TagMode.StartTagAndEndTag,
                             preElement:  null,
                             preContent:  null,
                             content:     "Hello World!",
@@ -1184,7 +1184,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                                 },
                                 ["last"] = "unminimized",
                             },
-                            selfClosing: false,
+                            tagMode: TagMode.StartTagAndEndTag,
                             preElement:  null,
                             preContent:  null,
                             content:     "Hello World!",
@@ -1196,7 +1196,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                         GetTagHelperOutput(
                             tagName:     "p",
                             attributes:  new TagHelperAttributeList() { { "test", "testVal" } },
-                            selfClosing: true,
+                            tagMode: TagMode.SelfClosing,
                             preElement:  null,
                             preContent:  null,
                             content:     "Hello World!",
@@ -1208,7 +1208,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                         GetTagHelperOutput(
                             tagName:     "p",
                             attributes:  new TagHelperAttributeList() { { "test", "testVal" }, { "something", "  spaced  " } },
-                            selfClosing: true,
+                            tagMode: TagMode.SelfClosing,
                             preElement:  null,
                             preContent:  null,
                             content:     "Hello World!",
@@ -1219,8 +1219,32 @@ namespace Microsoft.AspNet.Mvc.Razor
                     {
                         GetTagHelperOutput(
                             tagName:     "p",
+                            attributes:  new TagHelperAttributeList() { { "test", "testVal" } },
+                            tagMode: TagMode.StartTagOnly,
+                            preElement:  null,
+                            preContent:  null,
+                            content:     "Hello World!",
+                            postContent: null,
+                            postElement: null),
+                        "<p test=\"HtmlEncode[[testVal]]\">"
+                    },
+                    {
+                        GetTagHelperOutput(
+                            tagName:     "p",
+                            attributes:  new TagHelperAttributeList() { { "test", "testVal" }, { "something", "  spaced  " } },
+                            tagMode: TagMode.StartTagOnly,
+                            preElement:  null,
+                            preContent:  null,
+                            content:     "Hello World!",
+                            postContent: null,
+                            postElement: null),
+                        "<p test=\"HtmlEncode[[testVal]]\" something=\"HtmlEncode[[  spaced  ]]\">"
+                    },
+                    {
+                        GetTagHelperOutput(
+                            tagName:     "p",
                             attributes:  new TagHelperAttributeList(),
-                            selfClosing: false,
+                            tagMode: TagMode.StartTagAndEndTag,
                             preElement:  null,
                             preContent:  "Hello World!",
                             content:     null,
@@ -1232,7 +1256,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                         GetTagHelperOutput(
                             tagName:     "p",
                             attributes:  new TagHelperAttributeList(),
-                            selfClosing: false,
+                            tagMode: TagMode.StartTagAndEndTag,
                             preElement:  null,
                             preContent:  null,
                             content:     "Hello World!",
@@ -1244,7 +1268,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                         GetTagHelperOutput(
                             tagName:     "p",
                             attributes:  new TagHelperAttributeList(),
-                            selfClosing: false,
+                            tagMode: TagMode.StartTagAndEndTag,
                             preElement:  null,
                             preContent:  null,
                             content:     null,
@@ -1256,7 +1280,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                         GetTagHelperOutput(
                             tagName:     "p",
                             attributes:  new TagHelperAttributeList(),
-                            selfClosing: false,
+                            tagMode: TagMode.StartTagAndEndTag,
                             preElement:  null,
                             preContent:  "Hello",
                             content:     "Test",
@@ -1268,7 +1292,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                         GetTagHelperOutput(
                             tagName:     "p",
                             attributes:  new TagHelperAttributeList(),
-                            selfClosing: true,
+                            tagMode: TagMode.SelfClosing,
                             preElement:  null,
                             preContent:  "Hello",
                             content:     "Test",
@@ -1278,9 +1302,21 @@ namespace Microsoft.AspNet.Mvc.Razor
                     },
                     {
                         GetTagHelperOutput(
+                            tagName:     "p",
+                            attributes:  new TagHelperAttributeList(),
+                            tagMode: TagMode.StartTagOnly,
+                            preElement:  null,
+                            preContent:  "Hello",
+                            content:     "Test",
+                            postContent: "World!",
+                            postElement: null),
+                        "<p>"
+                    },
+                    {
+                        GetTagHelperOutput(
                             tagName:     "custom",
                             attributes:  new TagHelperAttributeList(),
-                            selfClosing: false,
+                            tagMode: TagMode.StartTagAndEndTag,
                             preElement:  null,
                             preContent:  "Hello",
                             content:     "Test",
@@ -1292,7 +1328,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                         GetTagHelperOutput(
                             tagName:     "random",
                             attributes:  new TagHelperAttributeList(),
-                            selfClosing: true,
+                            tagMode: TagMode.SelfClosing,
                             preElement:  null,
                             preContent:  "Hello",
                             content:     "Test",
@@ -1302,9 +1338,21 @@ namespace Microsoft.AspNet.Mvc.Razor
                     },
                     {
                         GetTagHelperOutput(
+                            tagName:     "random",
+                            attributes:  new TagHelperAttributeList(),
+                            tagMode: TagMode.StartTagOnly,
+                            preElement:  null,
+                            preContent:  "Hello",
+                            content:     "Test",
+                            postContent: "World!",
+                            postElement: null),
+                        "<random>"
+                    },
+                    {
+                        GetTagHelperOutput(
                             tagName:     "custom",
                             attributes:  new TagHelperAttributeList(),
-                            selfClosing: false,
+                            tagMode: TagMode.StartTagAndEndTag,
                             preElement:  "Before",
                             preContent:  null,
                             content:     null,
@@ -1316,7 +1364,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                         GetTagHelperOutput(
                             tagName:     null,
                             attributes:  new TagHelperAttributeList(),
-                            selfClosing: false,
+                            tagMode: TagMode.StartTagAndEndTag,
                             preElement:  "Before",
                             preContent:  null,
                             content:     null,
@@ -1328,7 +1376,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                         GetTagHelperOutput(
                             tagName:     null,
                             attributes:  new TagHelperAttributeList { { "test", "testVal" } },
-                            selfClosing: true,
+                            tagMode: TagMode.SelfClosing,
                             preElement:  "Before",
                             preContent:  null,
                             content:     null,
@@ -1340,7 +1388,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                         GetTagHelperOutput(
                             tagName:     "custom",
                             attributes:  new TagHelperAttributeList { { "test", "testVal" } },
-                            selfClosing: true,
+                            tagMode: TagMode.SelfClosing,
                             preElement:  "Before",
                             preContent:  null,
                             content:     null,
@@ -1352,7 +1400,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                         GetTagHelperOutput(
                             tagName:     "custom",
                             attributes:  new TagHelperAttributeList(),
-                            selfClosing: true,
+                            tagMode: TagMode.SelfClosing,
                             preElement:  "Before",
                             preContent:  null,
                             content:     null,
@@ -1362,9 +1410,45 @@ namespace Microsoft.AspNet.Mvc.Razor
                     },
                     {
                         GetTagHelperOutput(
+                            tagName:     null,
+                            attributes:  new TagHelperAttributeList { { "test", "testVal" } },
+                            tagMode: TagMode.StartTagOnly,
+                            preElement:  "Before",
+                            preContent:  null,
+                            content:     null,
+                            postContent: null,
+                            postElement: null),
+                        "Before"
+                    },
+                    {
+                        GetTagHelperOutput(
+                            tagName:     "custom",
+                            attributes:  new TagHelperAttributeList { { "test", "testVal" } },
+                            tagMode: TagMode.StartTagOnly,
+                            preElement:  "Before",
+                            preContent:  null,
+                            content:     null,
+                            postContent: null,
+                            postElement: null),
+                        "Before<custom test=\"HtmlEncode[[testVal]]\">"
+                    },
+                    {
+                        GetTagHelperOutput(
                             tagName:     "custom",
                             attributes:  new TagHelperAttributeList(),
-                            selfClosing: false,
+                            tagMode: TagMode.StartTagOnly,
+                            preElement:  "Before",
+                            preContent:  null,
+                            content:     null,
+                            postContent: null,
+                            postElement: null),
+                        "Before<custom>"
+                    },
+                    {
+                        GetTagHelperOutput(
+                            tagName:     "custom",
+                            attributes:  new TagHelperAttributeList(),
+                            tagMode: TagMode.StartTagAndEndTag,
                             preElement:  null,
                             preContent:  null,
                             content:     null,
@@ -1376,7 +1460,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                         GetTagHelperOutput(
                             tagName:     null,
                             attributes:  new TagHelperAttributeList(),
-                            selfClosing: false,
+                            tagMode: TagMode.StartTagAndEndTag,
                             preElement:  null,
                             preContent:  null,
                             content:     null,
@@ -1388,7 +1472,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                         GetTagHelperOutput(
                             tagName:     null,
                             attributes:  new TagHelperAttributeList { { "test", "testVal" } },
-                            selfClosing: true,
+                            tagMode: TagMode.SelfClosing,
                             preElement:  null,
                             preContent:  null,
                             content:     null,
@@ -1400,7 +1484,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                         GetTagHelperOutput(
                             tagName:     "custom",
                             attributes:  new TagHelperAttributeList { { "test", "testVal" } },
-                            selfClosing: true,
+                            tagMode: TagMode.SelfClosing,
                             preElement:  null,
                             preContent:  null,
                             content:     null,
@@ -1412,7 +1496,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                         GetTagHelperOutput(
                             tagName:     "custom",
                             attributes:  new TagHelperAttributeList(),
-                            selfClosing: true,
+                            tagMode: TagMode.SelfClosing,
                             preElement:  null,
                             preContent:  null,
                             content:     null,
@@ -1422,9 +1506,45 @@ namespace Microsoft.AspNet.Mvc.Razor
                     },
                     {
                         GetTagHelperOutput(
+                            tagName:     null,
+                            attributes:  new TagHelperAttributeList { { "test", "testVal" } },
+                            tagMode: TagMode.StartTagOnly,
+                            preElement:  null,
+                            preContent:  null,
+                            content:     null,
+                            postContent: null,
+                            postElement: "After"),
+                        "After"
+                    },
+                    {
+                        GetTagHelperOutput(
+                            tagName:     "custom",
+                            attributes:  new TagHelperAttributeList { { "test", "testVal" } },
+                            tagMode: TagMode.StartTagOnly,
+                            preElement:  null,
+                            preContent:  null,
+                            content:     null,
+                            postContent: null,
+                            postElement: "After"),
+                        "<custom test=\"HtmlEncode[[testVal]]\">After"
+                    },
+                    {
+                        GetTagHelperOutput(
                             tagName:     "custom",
                             attributes:  new TagHelperAttributeList(),
-                            selfClosing: false,
+                            tagMode: TagMode.StartTagOnly,
+                            preElement:  null,
+                            preContent:  null,
+                            content:     null,
+                            postContent: null,
+                            postElement: "After"),
+                        "<custom>After"
+                    },
+                    {
+                        GetTagHelperOutput(
+                            tagName:     "custom",
+                            attributes:  new TagHelperAttributeList(),
+                            tagMode: TagMode.StartTagAndEndTag,
                             preElement:  "Before",
                             preContent:  "Hello",
                             content:     "Test",
@@ -1436,7 +1556,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                         GetTagHelperOutput(
                             tagName:     "custom",
                             attributes:  new TagHelperAttributeList { { "test", "testVal" } },
-                            selfClosing: false,
+                            tagMode: TagMode.StartTagAndEndTag,
                             preElement:  "Before",
                             preContent:  "Hello",
                             content:     "Test",
@@ -1448,7 +1568,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                         GetTagHelperOutput(
                             tagName:     "custom",
                             attributes:  new TagHelperAttributeList(),
-                            selfClosing: true,
+                            tagMode: TagMode.SelfClosing,
                             preElement:  "Before",
                             preContent:  "Hello",
                             content:     "Test",
@@ -1460,7 +1580,31 @@ namespace Microsoft.AspNet.Mvc.Razor
                         GetTagHelperOutput(
                             tagName:     null,
                             attributes:  new TagHelperAttributeList(),
-                            selfClosing: true,
+                            tagMode: TagMode.SelfClosing,
+                            preElement:  "Before",
+                            preContent:  "Hello",
+                            content:     "Test",
+                            postContent: "World!",
+                            postElement: "After"),
+                        "BeforeHelloTestWorld!After"
+                    },
+                    {
+                        GetTagHelperOutput(
+                            tagName:     "custom",
+                            attributes:  new TagHelperAttributeList(),
+                            tagMode: TagMode.StartTagOnly,
+                            preElement:  "Before",
+                            preContent:  "Hello",
+                            content:     "Test",
+                            postContent: "World!",
+                            postElement: "After"),
+                        "Before<custom>After"
+                    },
+                    {
+                        GetTagHelperOutput(
+                            tagName:     null,
+                            attributes:  new TagHelperAttributeList(),
+                            tagMode: TagMode.StartTagOnly,
                             preElement:  "Before",
                             preContent:  "Hello",
                             content:     "Test",
@@ -1472,7 +1616,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                         GetTagHelperOutput(
                             tagName:     null,
                             attributes:  new TagHelperAttributeList(),
-                            selfClosing: false,
+                            tagMode: TagMode.StartTagAndEndTag,
                             preElement:  "Before",
                             preContent:  "Hello",
                             content:     "Test",
@@ -1484,7 +1628,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                         GetTagHelperOutput(
                             tagName:     null,
                             attributes:  new TagHelperAttributeList { { "test", "testVal" } },
-                            selfClosing: false,
+                            tagMode: TagMode.StartTagAndEndTag,
                             preElement:  "Before",
                             preContent:  "Hello",
                             content:     "Test",
@@ -1505,7 +1649,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var context = CreateViewContext(writer);
             var tagHelperExecutionContext = new TagHelperExecutionContext(
                 tagName: output.TagName,
-                selfClosing: output.SelfClosing,
+                tagMode: output.TagMode,
                 items: new Dictionary<object, object>(),
                 uniqueId: string.Empty,
                 executeChildContentAsync: () => Task.FromResult(result: true),
@@ -1539,7 +1683,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var context = CreateViewContext(writer);
             var tagHelperExecutionContext = new TagHelperExecutionContext(
                 tagName: "p",
-                selfClosing: false,
+                tagMode: TagMode.StartTagAndEndTag,
                 items: new Dictionary<object, object>(),
                 uniqueId: string.Empty,
                 executeChildContentAsync: () =>
@@ -1575,7 +1719,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var context = CreateViewContext(new StringWriter());
             var tagHelperExecutionContext = new TagHelperExecutionContext(
                 tagName: "p",
-                selfClosing: false,
+                tagMode: TagMode.StartTagAndEndTag,
                 items: new Dictionary<object, object>(),
                 uniqueId: string.Empty,
                 executeChildContentAsync: () => { return Task.FromResult(result: true); },
@@ -1604,7 +1748,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var context = CreateViewContext(new StringWriter());
             var tagHelperExecutionContext = new TagHelperExecutionContext(
                 tagName: output.TagName,
-                selfClosing: output.SelfClosing,
+                tagMode: output.TagMode,
                 items: new Dictionary<object, object>(),
                 uniqueId: string.Empty,
                 executeChildContentAsync: () => Task.FromResult(result: true),
@@ -1627,7 +1771,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         private static TagHelperOutput GetTagHelperOutput(
             string tagName,
             TagHelperAttributeList attributes,
-            bool selfClosing,
+            TagMode tagMode,
             string preElement,
             string preContent,
             string content,
@@ -1636,7 +1780,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             var output = new TagHelperOutput(tagName, attributes)
             {
-                SelfClosing = selfClosing
+                TagMode = tagMode
             };
 
             output.PreElement.SetContent(preElement);

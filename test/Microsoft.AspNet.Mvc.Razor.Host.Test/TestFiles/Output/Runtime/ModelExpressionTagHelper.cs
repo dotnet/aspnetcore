@@ -48,7 +48,7 @@ namespace Asp
             BeginContext(117, 1, true);
             WriteLiteral("\n");
             EndContext();
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input-test", true, "test", async() => {
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input-test", TagMode.SelfClosing, "test", async() => {
             }
             , StartTagHelperWritingScope, EndTagHelperWritingScope);
             __Microsoft_AspNet_Mvc_Razor_InputTestTagHelper = CreateTagHelper<Microsoft.AspNet.Mvc.Razor.InputTestTagHelper>();
@@ -67,7 +67,7 @@ __Microsoft_AspNet_Mvc_Razor_InputTestTagHelper.For = CreateModelExpression(__mo
             BeginContext(142, 1, true);
             WriteLiteral("\n");
             EndContext();
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input-test", true, "test", async() => {
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input-test", TagMode.SelfClosing, "test", async() => {
             }
             , StartTagHelperWritingScope, EndTagHelperWritingScope);
             __Microsoft_AspNet_Mvc_Razor_InputTestTagHelper = CreateTagHelper<Microsoft.AspNet.Mvc.Razor.InputTestTagHelper>();

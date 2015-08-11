@@ -139,7 +139,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             };
             var output = new TagHelperOutput(expectedTagName, htmlAttributes)
             {
-                SelfClosing = true,
+                TagMode = TagMode.SelfClosing,
             };
             output.Content.SetContent("original content");
 
@@ -150,7 +150,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             await tagHelper.ProcessAsync(tagHelperContext, output);
 
             // Assert
-            Assert.True(output.SelfClosing);
+            Assert.Equal(TagMode.SelfClosing, output.TagMode);
             Assert.Equal(expectedAttributes, output.Attributes);
             Assert.Equal(expectedContent, HtmlContentUtilities.HtmlContentToString(output.Content));
             Assert.Equal(expectedTagName, output.TagName);

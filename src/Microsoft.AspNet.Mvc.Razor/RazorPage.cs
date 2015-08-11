@@ -336,7 +336,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     }
                 }
 
-                if (tagHelperOutput.SelfClosing)
+                if (tagHelperOutput.TagMode == TagMode.SelfClosing)
                 {
                     writer.Write(" /");
                 }
@@ -344,7 +344,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 writer.Write('>');
             }
 
-            if (isTagNameNullOrWhitespace || !tagHelperOutput.SelfClosing)
+            if (isTagNameNullOrWhitespace || tagHelperOutput.TagMode == TagMode.StartTagAndEndTag)
             {
                 WriteTo(writer, tagHelperOutput.PreContent);
                 if (tagHelperOutput.IsContentModified)
@@ -364,7 +364,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 WriteTo(writer, tagHelperOutput.PostContent);
             }
 
-            if (!isTagNameNullOrWhitespace && !tagHelperOutput.SelfClosing)
+            if (!isTagNameNullOrWhitespace && tagHelperOutput.TagMode == TagMode.StartTagAndEndTag)
             {
                 writer.Write(string.Format(CultureInfo.InvariantCulture, "</{0}>", tagHelperOutput.TagName));
             }

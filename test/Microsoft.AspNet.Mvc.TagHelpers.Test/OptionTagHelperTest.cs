@@ -407,7 +407,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             var output = new TagHelperOutput(expectedTagHelperOutput.TagName, originalAttributes)
             {
-                SelfClosing = false,
+                TagMode = TagMode.StartTagAndEndTag
             };
 
             output.Content.SetContent(originalContent);
@@ -475,7 +475,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 });
             var output = new TagHelperOutput(originalTagName, originalAttributes)
             {
-                SelfClosing = false,
+                TagMode = TagMode.StartTagAndEndTag,
             };
             output.PreContent.SetContent(originalPreContent);
             output.Content.SetContent(originalContent);
@@ -537,7 +537,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             var output = new TagHelperOutput(originalTagName, originalAttributes)
             {
-                SelfClosing = false,
+                TagMode = TagMode.StartTagAndEndTag,
             };
             output.PreContent.SetContent(originalPreContent);
             output.Content.SetContent(originalContent);

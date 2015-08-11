@@ -9,27 +9,27 @@
 
     <h2>Image Tag Helper Test</h2>
     <!-- Plain image tag -->
-    <img src="/images/red.png" alt="Red block" title="&lt;the title>" />
+    <img src="/images/red.png" alt="Red block" title="&lt;the title>">
 
     <!-- Plain image tag with file version -->
     <img alt="Red versioned" title="Red versioned" src="/images/red.png?v=W2F5D366_nQ2fQqUk3URdgWy2ZekXjHzHJaY5yaiOOk" />
 
     <!-- Plain image tag with file version set to false -->
-    <img alt="Red explicitly not versioned" title="Red versioned" src="/images/red.png" />
+    <img alt="Red explicitly not versioned" title="Red versioned" src="/images/red.png">
 
     <!-- Plain image tag with absolute path and file version -->
-    <img alt="Absolute path versioned" src="http://contoso.com/hello/world" />
+    <img alt="Absolute path versioned" src="http://contoso.com/hello/world">
 
     <!-- Plain image tag with file version and path to file that does not exist -->
     <img alt="Path to non existing file" src="/images/fake.png" />
 
     <!-- Plain image tag with file version and path containing query string -->
-    <img alt="Path with query string" src="/images/red.png?abc=def&amp;v=W2F5D366_nQ2fQqUk3URdgWy2ZekXjHzHJaY5yaiOOk" />
+    <img alt="Path with query string" src="/images/red.png?abc=def&amp;v=W2F5D366_nQ2fQqUk3URdgWy2ZekXjHzHJaY5yaiOOk">
 
     <!-- Plain image tag with file version and path containing fragment -->
     <img alt="Path with query string" src="/images/red.png?v=W2F5D366_nQ2fQqUk3URdgWy2ZekXjHzHJaY5yaiOOk#abc" />
 
     <!-- Plain image tag with file version and path linking to some action -->
-    <img alt="Path linking to some action" src="/controller/action" />
+    <img alt="Path linking to some action" src="/controller/action">
 </body>
 </html>

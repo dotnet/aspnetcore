@@ -4,17 +4,14 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.Rendering.Internal;
 using Microsoft.AspNet.Mvc.TestCommon;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
-using Microsoft.Framework.WebEncoders.Testing;
 using Moq;
 using Xunit;
 
@@ -96,7 +93,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 getChildContentAsync: useCachedResult => Task.FromResult<TagHelperContent>(result: null));
             var output = new TagHelperOutput(originalTagName, outputAttributes)
             {
-                SelfClosing = true,
+                TagMode = TagMode.SelfClosing,
             };
             output.Content.SetContent(originalContent);
             var htmlGenerator = new TestableHtmlGenerator(new EmptyModelMetadataProvider());
@@ -108,7 +105,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // Assert
             Assert.Empty(output.Attributes); // Moved to Content and cleared
             Assert.Equal(expectedContent, HtmlContentUtilities.HtmlContentToString(output.Content));
-            Assert.True(output.SelfClosing);
+            Assert.Equal(TagMode.SelfClosing, output.TagMode);
             Assert.Null(output.TagName); // Cleared
         }
 
@@ -209,7 +206,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             };
             var output = new TagHelperOutput(expectedTagName, originalAttributes)
             {
-                SelfClosing = false,
+                TagMode = TagMode.StartTagOnly,
             };
             output.PreContent.SetContent(expectedPreContent);
             output.Content.SetContent(expectedContent);
@@ -240,7 +237,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             Assert.Equal(expectedPreContent, output.PreContent.GetContent());
             Assert.Equal(expectedContent, output.Content.GetContent());
             Assert.Equal(expectedPostContent, output.PostContent.GetContent());
-            Assert.False(output.SelfClosing);
+            Assert.Equal(TagMode.StartTagOnly, output.TagMode);
             Assert.Equal(expectedTagName, output.TagName);
         }
 
@@ -271,7 +268,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             };
             var output = new TagHelperOutput(originalTagName, originalAttributes)
             {
-                SelfClosing = true,
+                TagMode = TagMode.SelfClosing,
             };
             output.PreContent.SetContent(expectedPreContent);
             output.Content.SetContent(originalContent);
@@ -313,7 +310,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             Assert.Equal(expectedPreContent, output.PreContent.GetContent());
             Assert.Equal(expectedContent, HtmlContentUtilities.HtmlContentToString(output.Content));
             Assert.Equal(expectedPostContent, output.PostContent.GetContent());
-            Assert.True(output.SelfClosing);
+            Assert.Equal(TagMode.SelfClosing, output.TagMode);
             Assert.Null(output.TagName);       // Cleared
         }
 
@@ -367,7 +364,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             };
             var output = new TagHelperOutput(expectedTagName, originalAttributes)
             {
-                SelfClosing = false,
+                TagMode = TagMode.StartTagOnly,
             };
             output.PreContent.SetContent(expectedPreContent);
             output.Content.SetContent(expectedContent);
@@ -408,7 +405,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // Assert
             htmlGenerator.Verify();
 
-            Assert.False(output.SelfClosing);
+            Assert.Equal(TagMode.StartTagOnly, output.TagMode);
             Assert.Equal(expectedAttributes, output.Attributes);
             Assert.Equal(expectedPreContent, output.PreContent.GetContent());
             Assert.Equal(expectedContent, output.Content.GetContent());
@@ -466,7 +463,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             };
             var output = new TagHelperOutput(expectedTagName, originalAttributes)
             {
-                SelfClosing = false,
+                TagMode = TagMode.StartTagOnly,
             };
             output.PreContent.SetContent(expectedPreContent);
             output.Content.SetContent(expectedContent);
@@ -506,7 +503,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // Assert
             htmlGenerator.Verify();
 
-            Assert.False(output.SelfClosing);
+            Assert.Equal(TagMode.StartTagOnly, output.TagMode);
             Assert.Equal(expectedAttributes, output.Attributes);
             Assert.Equal(expectedPreContent, output.PreContent.GetContent());
             Assert.Equal(expectedContent, output.Content.GetContent());
@@ -562,7 +559,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             };
             var output = new TagHelperOutput(expectedTagName, originalAttributes)
             {
-                SelfClosing = false,
+                TagMode = TagMode.StartTagOnly,
             };
             output.PreContent.SetContent(expectedPreContent);
             output.Content.SetContent(expectedContent);
@@ -597,7 +594,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // Assert
             htmlGenerator.Verify();
 
-            Assert.False(output.SelfClosing);
+            Assert.Equal(TagMode.StartTagOnly, output.TagMode);
             Assert.Equal(expectedAttributes, output.Attributes);
             Assert.Equal(expectedPreContent, output.PreContent.GetContent());
             Assert.Equal(expectedContent, output.Content.GetContent());
@@ -669,7 +666,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             };
             var output = new TagHelperOutput(expectedTagName, originalAttributes)
             {
-                SelfClosing = false,
+                TagMode = TagMode.StartTagOnly,
             };
             output.PreContent.SetContent(expectedPreContent);
             output.Content.SetContent(expectedContent);
@@ -710,7 +707,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // Assert
             htmlGenerator.Verify();
 
-            Assert.False(output.SelfClosing);
+            Assert.Equal(TagMode.StartTagOnly, output.TagMode);
             Assert.Equal(expectedAttributes, output.Attributes);
             Assert.Equal(expectedPreContent, output.PreContent.GetContent());
             Assert.Equal(expectedContent, output.Content.GetContent());
@@ -781,7 +778,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             var output = new TagHelperOutput(expectedTagName, attributes: new TagHelperAttributeList())
             {
-                SelfClosing = true,
+                TagMode = TagMode.SelfClosing,
             };
 
             var metadataProvider = new TestModelMetadataProvider();
@@ -821,7 +818,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // Assert
             htmlGenerator.Verify();
 
-            Assert.True(output.SelfClosing);
+            Assert.Equal(TagMode.SelfClosing, output.TagMode);
             Assert.Equal(expectedAttributes, output.Attributes);
             Assert.Empty(output.PreContent.GetContent());
             Assert.Equal(string.Empty, output.Content.GetContent());
@@ -862,7 +859,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             var output = new TagHelperOutput(expectedTagName, attributes: new TagHelperAttributeList())
             {
-                SelfClosing = true,
+                TagMode = TagMode.SelfClosing,
             };
 
             var htmlAttributes = new Dictionary<string, object>
@@ -896,7 +893,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // Assert
             htmlGenerator.Verify();
 
-            Assert.True(output.SelfClosing);
+            Assert.Equal(TagMode.SelfClosing, output.TagMode);
             Assert.Equal(expectedAttributes, output.Attributes);
             Assert.Empty(output.PreContent.GetContent());
             Assert.Equal(string.Empty, output.Content.GetContent());

@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     /// <summary>
     /// <see cref="ITagHelper"/> implementation targeting &lt;input&gt; elements with an <c>asp-for</c> attribute.
     /// </summary>
-    [TargetElement("input", Attributes = ForAttributeName)]
+    [TargetElement("input", Attributes = ForAttributeName, TagStructure = TagStructure.WithoutEndTag)]
     public class InputTagHelper : TagHelper
     {
         private const string ForAttributeName = "asp-for";

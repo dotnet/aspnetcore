@@ -11,7 +11,6 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Routing;
-using Microsoft.Framework.WebEncoders.Testing;
 using Moq;
 using Xunit;
 
@@ -137,7 +136,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             // Assert
             Assert.Equal("form", output.TagName);
-            Assert.False(output.SelfClosing);
+            Assert.Equal(TagMode.StartTagAndEndTag, output.TagMode);
             Assert.Empty(output.Attributes);
             Assert.Empty(output.PreContent.GetContent());
             Assert.True(output.Content.IsEmpty);
@@ -207,7 +206,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             await formTagHelper.ProcessAsync(context, output);
 
             Assert.Equal("form", output.TagName);
-            Assert.False(output.SelfClosing);
+            Assert.Equal(TagMode.StartTagAndEndTag ,output.TagMode);
             var attribute = Assert.Single(output.Attributes);
             Assert.Equal(expectedAttribute, attribute);
             Assert.Empty(output.PreContent.GetContent());
@@ -259,7 +258,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             generator.Verify();
 
             Assert.Equal("form", output.TagName);
-            Assert.False(output.SelfClosing);
+            Assert.Equal(TagMode.StartTagAndEndTag, output.TagMode);
             Assert.Empty(output.Attributes);
             Assert.Empty(output.PreElement.GetContent());
             Assert.Empty(output.PreContent.GetContent());
@@ -312,7 +311,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             generator.Verify();
 
             Assert.Equal("form", output.TagName);
-            Assert.False(output.SelfClosing);
+            Assert.Equal(TagMode.StartTagAndEndTag, output.TagMode);
             Assert.Empty(output.Attributes);
             Assert.Empty(output.PreElement.GetContent());
             Assert.Empty(output.PreContent.GetContent());
@@ -364,7 +363,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             // Assert
             Assert.Equal("form", output.TagName);
-            Assert.False(output.SelfClosing);
+            Assert.Equal(TagMode.StartTagAndEndTag, output.TagMode);
             var attribute = Assert.Single(output.Attributes);
             Assert.Equal(new TagHelperAttribute("aCTiON", "my-action"), attribute);
             Assert.Empty(output.PreContent.GetContent());
