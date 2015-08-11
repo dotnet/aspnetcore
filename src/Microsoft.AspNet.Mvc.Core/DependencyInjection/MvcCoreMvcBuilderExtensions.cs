@@ -5,6 +5,7 @@ using System;
 using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.ApplicationModels;
+using Microsoft.Framework.DependencyInjection.Extensions;
 
 namespace Microsoft.Framework.DependencyInjection
 {

@@ -13,6 +13,7 @@ using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Routing;
+using Microsoft.Framework.DependencyInjection.Extensions;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 
