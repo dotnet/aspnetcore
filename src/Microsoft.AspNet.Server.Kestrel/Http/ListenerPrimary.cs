@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             KestrelThread thread,
             Func<Frame, Task> application)
         {
-            await StartAsync(scheme, host, port, thread, application);
+            await StartAsync(scheme, host, port, thread, application).ConfigureAwait(false);
 
             await Thread.PostAsync(_ =>
             {
@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 ListenPipe.Init(Thread.Loop, false);
                 ListenPipe.Bind(pipeName);
                 ListenPipe.Listen(Constants.ListenBacklog, OnListenPipe, null);
-            }, null);
+            }, null).ConfigureAwait(false);
         }
 
         private void OnListenPipe(UvStreamHandle pipe, int status, Exception error, object state)
