@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Antiforgery;
+using Microsoft.Framework.DependencyInjection.Extensions;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 
