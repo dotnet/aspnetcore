@@ -44,7 +44,7 @@ namespace Microsoft.Framework.DependencyInjection
             return serviceProvider =>
             {
                 var codePointFilter = serviceProvider?.GetService<IOptions<WebEncoderOptions>>()?
-                                                      .Options?
+                                                      .Value?
                                                       .CodePointFilter;
                 return (codePointFilter != null) ? customFilterFactory(codePointFilter) : defaultFactory();
             };
