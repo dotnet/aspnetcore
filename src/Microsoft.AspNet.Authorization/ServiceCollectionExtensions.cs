@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Authorization;
+using Microsoft.Framework.DependencyInjection.Extensions;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.DependencyInjection
