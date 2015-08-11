@@ -396,10 +396,14 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             entry = Assert.Single(modelState, kvp => kvp.Key == "parameter[0].Name").Value;
             Assert.Null(entry.Value);
             Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
+            var error = Assert.Single(entry.Errors);
+            Assert.Equal("A value for the 'Name' property was not provided.", error.ErrorMessage);
 
             entry = Assert.Single(modelState, kvp => kvp.Key == "parameter[1].Name").Value;
             Assert.Null(entry.Value);
             Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
+            error = Assert.Single(entry.Errors);
+            Assert.Equal("A value for the 'Name' property was not provided.", error.ErrorMessage);
         }
 
         [Fact]
@@ -548,6 +552,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
         private class Address4
         {
+            [BindingBehavior(BindingBehavior.Optional)]
             public int Zip { get; set; }
 
             public string Street { get; set; }
@@ -606,7 +611,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
         private class Address5
         {
-            public int Zip { get; set; }
+            public int? Zip { get; set; }
 
             [StringLength(3)]
             public string Street { get; set; }

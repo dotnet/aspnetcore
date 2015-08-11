@@ -122,8 +122,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Assert
             var body = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<Result>(body);
-            var error = Assert.Single(result.ModelStateErrors);
-            Assert.Equal("TestEmployees[0].EmployeeId", error);
+
+            Assert.Collection(
+                result.ModelStateErrors,
+                e => Assert.Equal("TestEmployees[0].EmployeeId", e),
+                e => Assert.Equal("TestEmployees[0].EmployeeTaxId", e),
+                e => Assert.Equal("TestEmployees[0].Age", e));
         }
     }
 }

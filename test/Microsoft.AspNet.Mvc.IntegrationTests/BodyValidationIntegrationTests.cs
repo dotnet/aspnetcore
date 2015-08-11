@@ -108,7 +108,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
         private class Person4
         {
             [FromBody]
-            [Required]
+            [BindingBehavior(BindingBehavior.Optional)]
             public int Address { get; set; }
         }
 

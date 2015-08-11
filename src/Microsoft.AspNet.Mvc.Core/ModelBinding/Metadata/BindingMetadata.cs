@@ -38,9 +38,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         /// <summary>
         /// Gets or sets a value indicating whether or not the request must contain a value for the model.
         /// Will be ignored if the model metadata being created does not represent a property.
-        /// See <see cref="ModelMetadata.IsBindingRequired"/>.
+        /// See <see cref="ModelMetadata.IsBindingRequired"/>. If <c>null</c>, the value of
+        /// <see cref="ModelMetadata.IsBindingRequired"/> will be computed based on
+        /// <see cref="ModelMetadata.ModelType"/>.
         /// </summary>
-        public bool IsBindingRequired { get; set; }
+        public bool? IsBindingRequired { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether or not the model is read-only. Will be ignored

@@ -26,6 +26,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
         private class Order1
         {
+            [BindingBehavior(BindingBehavior.Optional)]
             public int ProductId { get; set; }
 
             public Person1 Customer { get; set; }
@@ -261,7 +262,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
         private class Order2
         {
-            public int ProductId { get; set; }
+            public int? ProductId { get; set; }
 
             public Person2 Customer { get; set; }
         }
@@ -435,6 +436,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
         private class Order3
         {
+            [BindingBehavior(BindingBehavior.Optional)]
             public int ProductId { get; set; }
 
             public Person3 Customer { get; set; }
@@ -578,7 +580,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
         private class Order4
         {
-            public int ProductId { get; set; }
+            public int? ProductId { get; set; }
 
             public Person4 Customer { get; set; }
         }
@@ -1341,6 +1343,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
         {
             public string Name { get; set; }
 
+            [BindingBehavior(BindingBehavior.Optional)]
             public KeyValuePair<string, int> ProductId { get; set; }
         }
 

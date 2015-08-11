@@ -346,7 +346,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             // Arrange
             var attributes = new[] { attribute };
             var provider = CreateProvider(attributes);
-            var metadata = provider.GetMetadataForType(typeof(string));
+            var metadata = provider.GetMetadataForProperty(typeof(CoolUser), nameof(CoolUser.Name));
 
             // Act
             var result = accessor(metadata);
@@ -932,6 +932,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             }
         }
 
+        public class CoolUser
+        {
+            public string Name { get; set; }
+        }
+
         public class TypeBasedBinderAttribute : Attribute, IModelNameProvider
         {
             public string Name { get; set; }
@@ -1037,6 +1042,18 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
                 return new DefaultMetadataDetails(
                     key,
                     new ModelAttributes(_attributes.Concat(entry.ModelAttributes.TypeAttributes).ToArray()));
+            }
+
+            protected override DefaultMetadataDetails[] CreatePropertyDetails([NotNull] ModelMetadataIdentity key)
+            {
+                var entries = base.CreatePropertyDetails(key);
+                return entries.Select(e =>
+                {
+                    return new DefaultMetadataDetails(
+                        e.Key,
+                        new ModelAttributes(_attributes.Concat(e.ModelAttributes.PropertyAttributes), e.ModelAttributes.TypeAttributes));
+                })
+                .ToArray();
             }
         }
     }

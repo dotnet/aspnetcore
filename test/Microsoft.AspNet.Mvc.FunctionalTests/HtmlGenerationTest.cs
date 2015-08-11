@@ -196,11 +196,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/Customer/HtmlGeneration_Customer");
             var nameValueCollection = new List<KeyValuePair<string, string>>
             {
-                new KeyValuePair<string,string>("Number", string.Empty),
+                new KeyValuePair<string,string>("Number", "0"),
                 new KeyValuePair<string,string>("Name", string.Empty),
                 new KeyValuePair<string,string>("Email", string.Empty),
                 new KeyValuePair<string,string>("PhoneNumber", string.Empty),
-                new KeyValuePair<string,string>("Password", string.Empty)
+                new KeyValuePair<string,string>("Password", string.Empty),
+                new KeyValuePair<string, string>("Gender", "Female"),
             };
             request.Content = new FormUrlEncodedContent(nameValueCollection);
 

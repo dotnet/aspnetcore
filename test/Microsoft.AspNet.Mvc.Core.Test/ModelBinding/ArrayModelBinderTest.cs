@@ -211,11 +211,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             bool isReadOnly = false)
         {
             var metadataProvider = new TestModelMetadataProvider();
-            metadataProvider.ForType<int[]>().BindingDetails(bd => bd.IsReadOnly = isReadOnly);
+            metadataProvider.ForProperty(
+                typeof(ModelWithIntArrayProperty),
+                nameof(ModelWithIntArrayProperty.ArrayProperty)).BindingDetails(bd => bd.IsReadOnly = isReadOnly);
 
+            var modelMetadata = metadataProvider.GetMetadataForProperty(
+                typeof(ModelWithIntArrayProperty),
+                nameof(ModelWithIntArrayProperty.ArrayProperty));
             var bindingContext = new ModelBindingContext
             {
-                ModelMetadata = metadataProvider.GetMetadataForType(typeof(int[])),
+                ModelMetadata = modelMetadata,
                 ModelName = "someName",
                 ValueProvider = valueProvider,
                 OperationBindingContext = new OperationBindingContext
@@ -244,6 +249,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         private class ModelWithArrayProperty
         {
             public string[] ArrayProperty { get; set; }
+        }
+
+        private class ModelWithIntArrayProperty
+        {
+            public int[] ArrayProperty { get; set; }
         }
     }
 }

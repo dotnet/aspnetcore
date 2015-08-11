@@ -762,8 +762,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Arrange
             var bindingContext = new ModelBindingContext
             {
-                // Any type, even an otherwise-simple POCO with an indexer property, would do here.
-                ModelMetadata = GetMetadataForType(typeof(List<Person>)),
+                ModelMetadata = GetMetadataForType(typeof(PersonCollection)),
                 OperationBindingContext = new OperationBindingContext
                 {
                     ValidatorProvider = Mock.Of<IModelValidatorProvider>(),
@@ -942,16 +941,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         [Fact]
-        [ReplaceCulture]
-        public void ProcessDto_MissingDataForRequiredFields_NoErrors()
+        public void ProcessDto_ValueTypeProperty_WithBindingOptional_NoValueSet_NoError()
         {
             // Arrange
-            var model = new ModelWithRequired();
+            var model = new BindingOptionalProperty();
             var containerMetadata = GetMetadataForType(model.GetType());
-
             var bindingContext = CreateContext(containerMetadata, model);
 
-            // Set no properties though Age (a non-Nullable struct) and City (a class) properties are required.
             var dto = new ComplexModelDto(containerMetadata, containerMetadata.Properties);
             var testableBinder = new TestableMutableObjectModelBinder();
             var modelValidationNode = new ModelValidationNode(string.Empty, containerMetadata, model);
@@ -962,53 +958,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Assert
             var modelStateDictionary = bindingContext.ModelState;
             Assert.True(modelStateDictionary.IsValid);
-            Assert.Empty(modelStateDictionary);
         }
 
         [Fact]
-        [ReplaceCulture]
-        public void ProcessDto_ValueTypeProperty_WithRequiredAttribute_SetToNull_NoError()
+        public void ProcessDto_NullableValueTypeProperty_NoValueSet_NoError()
         {
             // Arrange
-            var model = new ModelWithRequired();
+            var model = new NullableValueTypeProperty();
             var containerMetadata = GetMetadataForType(model.GetType());
             var bindingContext = CreateContext(containerMetadata, model);
-
-            var dto = new ComplexModelDto(containerMetadata, containerMetadata.Properties);
-            var testableBinder = new TestableMutableObjectModelBinder();
-
-            // Make Age valid and City invalid.
-            var propertyMetadata = dto.PropertyMetadata.Single(p => p.PropertyName == "Age");
-            dto.Results[propertyMetadata] = new ModelBindingResult(
-                23,
-                isModelSet: true,
-                key: "theModel.Age");
-
-            propertyMetadata = dto.PropertyMetadata.Single(p => p.PropertyName == "City");
-            dto.Results[propertyMetadata] = new ModelBindingResult(
-                null,
-                isModelSet: true,
-                key: "theModel.City");
-            var modelValidationNode = new ModelValidationNode(string.Empty, containerMetadata, model);
-
-            // Act
-            testableBinder.ProcessDto(bindingContext, dto, modelValidationNode);
-
-            // Assert
-            var modelStateDictionary = bindingContext.ModelState;
-            Assert.True(modelStateDictionary.IsValid);
-            Assert.Empty(modelStateDictionary);
-        }
-
-        [Fact]
-        public void ProcessDto_PropertyWithRequiredAttribute_NoPropertiesSet_NoError()
-        {
-            // Arrange
-            var model = new Person();
-            var containerMetadata = GetMetadataForType(model.GetType());
-            var bindingContext = CreateContext(containerMetadata, model);
-
-            // Set no properties though ValueTypeRequired (a non-Nullable struct) property is required.
+            
             var dto = new ComplexModelDto(containerMetadata, containerMetadata.Properties);
             var testableBinder = new TestableMutableObjectModelBinder();
             var modelValidationNode = new ModelValidationNode(string.Empty, containerMetadata, model);
@@ -1091,14 +1050,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         [Fact]
-        public void ProcessDto_ValueTypeProperty_NoValue_NoError()
+        public void ProcessDto_ValueTypeProperty_NoValue_Error()
         {
             // Arrange
             var model = new Person();
             var containerMetadata = GetMetadataForType(model.GetType());
 
             var bindingContext = CreateContext(containerMetadata, model);
-            var modelStateDictionary = bindingContext.ModelState;
+            var modelState = bindingContext.ModelState;
 
             var dto = new ComplexModelDto(containerMetadata, containerMetadata.Properties);
             var testableBinder = new TestableMutableObjectModelBinder();
@@ -1124,8 +1083,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             testableBinder.ProcessDto(bindingContext, dto, modelValidationNode);
 
             // Assert
-            Assert.True(modelStateDictionary.IsValid);
-            Assert.Empty(modelStateDictionary);
+            Assert.False(modelState.IsValid);
+
+            var entry = modelState["theModel." + nameof(Person.ValueTypeRequiredWithDefaultValue)];
+            var error = Assert.Single(entry.Errors);
+            Assert.Equal(
+                $"A value for the '{nameof(Person.ValueTypeRequiredWithDefaultValue)}' property was not provided.",
+                error.ErrorMessage);
+            Assert.Null(error.Exception);
         }
 
         [Fact]
@@ -1763,10 +1728,23 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
         }
 
+        private class BindingOptionalProperty
+        {
+            [BindingBehavior(BindingBehavior.Optional)]
+            public int ValueTypeRequired { get; set; }
+        }
+
+        private class NullableValueTypeProperty
+        {
+            [BindingBehavior(BindingBehavior.Optional)]
+            public int? NullableValueType { get; set; }
+        }
+
         private class Person
         {
             private DateTime? _dateOfDeath;
 
+            [BindingBehavior(BindingBehavior.Optional)]
             public DateTime DateOfBirth { get; set; }
 
             public DateTime? DateOfDeath
@@ -1793,6 +1771,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             public string LastName { get; set; }
             public string NonUpdateableProperty { get; private set; }
 
+            [BindingBehavior(BindingBehavior.Optional)]
             [DefaultValue(typeof(decimal), "123.456")]
             public decimal PropertyWithDefaultValue { get; set; }
 
@@ -1818,17 +1797,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             public string FirstName { get; set; }
             public string LastName { get; set; }
             public string NonUpdateableProperty { get; private set; }
-        }
-
-        private class ModelWithRequired
-        {
-            public string Name { get; set; }
-
-            [Required]
-            public int Age { get; set; }
-
-            [Required]
-            public string City { get; set; }
         }
 
         private class ModelWithBindRequired
@@ -1991,6 +1959,17 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private class Simple
         {
             public string Name { get; set; }
+        }
+
+        private class PersonCollection
+        {
+            public Person this[int index]
+            {
+                get
+                {
+                    return null;
+                }
+            }
         }
 
         private class CollectionContainer

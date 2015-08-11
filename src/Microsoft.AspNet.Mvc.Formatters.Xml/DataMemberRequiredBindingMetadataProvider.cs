@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
                 return;
             }
 
-            if (context.BindingMetadata.IsBindingRequired)
+            if (context.BindingMetadata.IsBindingRequired == true)
             {
                 // This value is already required, no need to look at attributes.
                 return;

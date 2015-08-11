@@ -24,6 +24,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         private ReadOnlyDictionary<object, object> _additionalValues;
         private ModelMetadata _elementMetadata;
         private bool _haveCalculatedElementMetadata;
+        private bool? _isBindingRequired;
         private bool? _isReadOnly;
         private bool? _isRequired;
         private ModelPropertyCollection _properties;
@@ -334,14 +335,24 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         {
             get
             {
-                if (MetadataKind == ModelMetadataKind.Property)
+                if (!_isBindingRequired.HasValue)
                 {
-                    return BindingMetadata.IsBindingRequired;
+                    if (MetadataKind == ModelMetadataKind.Type)
+                    {
+                        _isBindingRequired = false;
+                    }
+                    else if (BindingMetadata.IsBindingRequired.HasValue)
+                    {
+                        _isBindingRequired = BindingMetadata.IsBindingRequired;
+                    }
+                    else
+                    {
+                        // Default to IsBindingRequired = true for value types.
+                        _isBindingRequired = !AllowsNullValue(ModelType);
+                    }
                 }
-                else
-                {
-                    return false;
-                }
+
+                return _isBindingRequired.Value;
             }
         }
 
@@ -370,13 +381,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             {
                 if (!_isReadOnly.HasValue)
                 {
-                    if (BindingMetadata.IsReadOnly.HasValue)
-                    {
-                        _isReadOnly = BindingMetadata.IsReadOnly;
-                    }
-                    else if (MetadataKind == ModelMetadataKind.Type)
+                    if (MetadataKind == ModelMetadataKind.Type)
                     {
                         _isReadOnly = false;
+                    }
+                    else if (BindingMetadata.IsReadOnly.HasValue)
+                    {
+                        _isReadOnly = BindingMetadata.IsReadOnly;
                     }
                     else
                     {
@@ -401,6 +412,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
                     }
                     else
                     {
+                        // Default to IsRequired = true for value types.
                         _isRequired = !AllowsNullValue(ModelType);
                     }
                 }
