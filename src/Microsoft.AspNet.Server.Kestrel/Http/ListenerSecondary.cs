@@ -50,8 +50,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
                             try
                             {
-                                var ptr = Marshal.AllocHGlobal(16);
-                                var buf = Thread.Loop.Libuv.buf_init(ptr, 16);
+                                var ptr = Marshal.AllocHGlobal(4);
+                                var buf = Thread.Loop.Libuv.buf_init(ptr, 4);
 
                                 DispatchPipe.ReadStart(
                                     (_1, _2, _3) => buf,
