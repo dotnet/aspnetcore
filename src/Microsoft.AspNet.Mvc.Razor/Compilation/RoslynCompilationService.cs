@@ -182,7 +182,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             // Get the MetadataReference for the executing application. If it's a Roslyn reference,
             // we can copy the references created when compiling the application to the Razor page being compiled.
             // This avoids performing expensive calls to MetadataReference.CreateFromImage.
-            var libraryExport = _libraryExporter.GetLibraryExport(_environment.ApplicationName);
+            var libraryExport = _libraryExporter.GetExport(_environment.ApplicationName);
             if (libraryExport?.MetadataReferences != null && libraryExport.MetadataReferences.Count > 0)
             {
                 Debug.Assert(libraryExport.MetadataReferences.Count == 1,

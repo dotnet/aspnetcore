@@ -4,7 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Microsoft.AspNet.Hosting;
+using Microsoft.AspNet.Http;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc
