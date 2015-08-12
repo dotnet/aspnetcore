@@ -275,22 +275,53 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal(expected, ex.Message);
         }
 
-        [Fact]
-        public void Execute_CallsFindPartialView_WithExpectedPath()
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public void Execute_CallsFindPartialView_WithExpectedPath_WhenViewNameIsNullOrEmpty(string viewName)
+        {
+            // Arrange
+            var shortName = "SomeShortName";
+            var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider());
+            var componentContext = GetViewComponentContext(new Mock<IView>().Object, viewData);
+            componentContext.ViewComponentDescriptor.ShortName = shortName;
+            var expectedViewName = $"Components/{shortName}/Default";
+            var viewEngine = new Mock<ICompositeViewEngine>(MockBehavior.Strict);
+            viewEngine
+                .Setup(v => v.FindPartialView(It.IsAny<ActionContext>(), expectedViewName))
+                .Returns(ViewEngineResult.Found(string.Empty, new Mock<IView>().Object))
+                .Verifiable();
+
+            var componentResult = new ViewViewComponentResult();
+            componentResult.ViewEngine = viewEngine.Object;
+            componentResult.ViewData = viewData;
+            componentResult.ViewName = viewName;
+
+            // Act & Assert
+            componentResult.Execute(componentContext);
+            viewEngine.Verify();
+        }
+
+        [Theory]
+        [InlineData("~/Home/Index/MyViewComponent1.cshtml")]
+        [InlineData("~MyViewComponent2.cshtml")]
+        [InlineData("/MyViewComponent3.cshtml")]
+        public void Execute_CallsFindPartialView_WithExpectedPath_WhenViewNameIsSpecified(string viewName)
         {
             // Arrange
             var viewEngine = new Mock<ICompositeViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(v => v.FindPartialView(It.IsAny<ActionContext>(), 
-                                              It.Is<string>(view => view.Contains("Components"))))
+                .Setup(v => v.FindPartialView(It.IsAny<ActionContext>(), viewName))
                 .Returns(ViewEngineResult.Found(string.Empty, new Mock<IView>().Object))
                 .Verifiable();
-
             var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider());
             var componentContext = GetViewComponentContext(new Mock<IView>().Object, viewData);
-            var componentResult = new ViewViewComponentResult();
-            componentResult.ViewEngine = viewEngine.Object;
-            componentResult.ViewData = viewData;
+            var componentResult = new ViewViewComponentResult
+            {
+                ViewEngine = viewEngine.Object,
+                ViewData = viewData,
+                ViewName = viewName
+            };
 
             // Act & Assert
             componentResult.Execute(componentContext);

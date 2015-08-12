@@ -5,7 +5,6 @@ using System;
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.AspNet.Mvc.ViewComponents;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
 
@@ -18,6 +17,7 @@ namespace Microsoft.AspNet.Mvc
     {
         // {0} is the component name, {1} is the view name.
         private const string ViewPathFormat = "Components/{0}/{1}";
+        private const string DefaultViewName = "Default";
 
         /// <summary>
         /// Gets or sets the view name.
@@ -63,9 +63,11 @@ namespace Microsoft.AspNet.Mvc
         {
             var viewEngine = ViewEngine ?? ResolveViewEngine(context);
             var viewData = ViewData ?? context.ViewData;
+            var isNullOrEmptyViewName = string.IsNullOrEmpty(ViewName);
 
             string qualifiedViewName;
-            if (ViewName != null && ViewName.Length > 0 && ViewName[0] == '/')
+            if (!isNullOrEmptyViewName &&
+                (ViewName[0] == '~' || ViewName[0] == '/'))
             {
                 // View name that was passed in is already a rooted path, the view engine will handle this.
                 qualifiedViewName = ViewName;
@@ -83,11 +85,13 @@ namespace Microsoft.AspNet.Mvc
                 //  Areas/Blog/Views/Shared/Components/Cart/Default.cshtml
                 //
                 // This supports a controller or area providing an override for component views.
+                var viewName = isNullOrEmptyViewName ? DefaultViewName : ViewName;
+
                 qualifiedViewName = string.Format(
                     CultureInfo.InvariantCulture,
                     ViewPathFormat,
                     context.ViewComponentDescriptor.ShortName,
-                    ViewName ?? "Default");
+                    viewName);
             }
 
             var view = FindView(context.ViewContext, viewEngine, qualifiedViewName);
