@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Server.Kestrel
         public void Main(string[] args)
         {
             var program = new Microsoft.AspNet.Hosting.Program(_serviceProvider);
-            var mergedArgs = new[] { "--server", "Kestrel" }.Concat(args).ToArray();
+            var mergedArgs = new[] { "--server", "Microsoft.AspNet.Server.Kestrel" }.Concat(args).ToArray();
             program.Main(mergedArgs);
         }
     }
