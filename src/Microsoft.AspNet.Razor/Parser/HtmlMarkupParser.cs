@@ -134,12 +134,35 @@ namespace Microsoft.AspNet.Razor.Parser
                 {
                     if (last != null)
                     {
+                        // Don't render the whitespace between the start of the line and the razor comment.
+                        if (startOfLine && last.Type == HtmlSymbolType.WhiteSpace)
+                        {
+                            AddMarkerSymbolIfNecessary();
+                            // Output the symbols that may have been accepted prior to the whitespace.
+                            Output(SpanKind.Markup);
+
+                            Span.ChunkGenerator = SpanChunkGenerator.Null;
+                        }
+
                         Accept(last);
                         last = null;
                     }
+
                     AddMarkerSymbolIfNecessary();
                     Output(SpanKind.Markup);
+
                     RazorComment();
+
+                    // Handle the whitespace and newline at the end of a razor comment.
+                    if (startOfLine &&
+                        (At(HtmlSymbolType.NewLine) ||
+                        (At(HtmlSymbolType.WhiteSpace) && NextIs(HtmlSymbolType.NewLine))))
+                    {
+                        AcceptWhile(IsSpacingToken(includeNewLines: false));
+                        AcceptAndMoveNext();
+                        Span.ChunkGenerator = SpanChunkGenerator.Null;
+                        Output(SpanKind.Markup);
+                    }
                 }
                 else
                 {

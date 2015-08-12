@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Test.Framework;
@@ -128,7 +129,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                         new MarkupBlock(
                             new MarkupTagBlock(
                                 Factory.MarkupTransition("<text").Accepts(AcceptedCharacters.Any)),
-                            Factory.Markup(Environment.NewLine + "    ").Accepts(AcceptedCharacters.None),
+                            Factory.Markup(Environment.NewLine).Accepts(AcceptedCharacters.None),
+                            Factory.Markup("    ").With(SpanChunkGenerator.Null),
                             new CommentBlock(
                                 Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition)
                                        .Accepts(AcceptedCharacters.None),
@@ -143,7 +145,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                        .Accepts(AcceptedCharacters.None),
                                 Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition)
                                        .Accepts(AcceptedCharacters.None)),
-                            Factory.Markup(Environment.NewLine + "}")))),
+                            Factory.Markup(Environment.NewLine).With(SpanChunkGenerator.Null),
+                            Factory.Markup("}")))),
                 new RazorError(RazorResources.ParseError_TextTagCannotContainAttributes, 6 + Environment.NewLine.Length, 1, 4),
                 new RazorError(RazorResources.FormatParseError_MissingEndTag("text"), 6 + Environment.NewLine.Length, 1, 4),
                 new RazorError(RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF(RazorResources.BlockName_Code, "}", "{"), 1, 0, 1));
@@ -172,6 +175,228 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                    .Accepts(AcceptedCharacters.Any)))),
                 new RazorError(RazorResources.ParseError_RazorComment_Not_Terminated, 2, 0, 2),
                 new RazorError(RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF(RazorResources.BlockName_Code, "}", "{"), 1, 0, 1));
+        }
+
+        [Fact]
+        public void RazorCommentInMarkup()
+        {
+            ParseDocumentTest(
+                "<p>" + Environment.NewLine
+                + "@**@" + Environment.NewLine
+                + "</p>",
+                new MarkupBlock(
+                    new MarkupTagBlock(
+                        Factory.Markup("<p>")),
+                    Factory.Markup(Environment.NewLine),
+                    new CommentBlock(
+                        Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition)
+                               .Accepts(AcceptedCharacters.None),
+                        Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar)
+                               .Accepts(AcceptedCharacters.None),
+                        Factory.Span(SpanKind.Comment, new HtmlSymbol(
+                            Factory.LocationTracker.CurrentLocation,
+                            string.Empty,
+                            HtmlSymbolType.Unknown))
+                               .Accepts(AcceptedCharacters.Any),
+                        Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar)
+                               .Accepts(AcceptedCharacters.None),
+                        Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition)
+                               .Accepts(AcceptedCharacters.None)),
+                    Factory.Markup(Environment.NewLine).With(SpanChunkGenerator.Null),
+                    new MarkupTagBlock(
+                        Factory.Markup("</p>"))
+                    ));
+        }
+
+        [Fact]
+        public void MultipleRazorCommentInMarkup()
+        {
+            ParseDocumentTest(
+                "<p>" + Environment.NewLine
+                + "  @**@  " + Environment.NewLine
+                + "@**@" + Environment.NewLine
+                + "</p>",
+                new MarkupBlock(
+                    new MarkupTagBlock(
+                        Factory.Markup("<p>")),
+                    Factory.Markup(Environment.NewLine),
+                    Factory.Markup("  ").With(SpanChunkGenerator.Null),
+                    new CommentBlock(
+                        Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition)
+                               .Accepts(AcceptedCharacters.None),
+                        Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar)
+                               .Accepts(AcceptedCharacters.None),
+                        Factory.Span(SpanKind.Comment, new HtmlSymbol(
+                            Factory.LocationTracker.CurrentLocation,
+                            string.Empty,
+                            HtmlSymbolType.Unknown))
+                               .Accepts(AcceptedCharacters.Any),
+                        Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar)
+                               .Accepts(AcceptedCharacters.None),
+                        Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition)
+                               .Accepts(AcceptedCharacters.None)),
+                    Factory.Markup("  " + Environment.NewLine).With(SpanChunkGenerator.Null),
+                    new CommentBlock(
+                        Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition)
+                               .Accepts(AcceptedCharacters.None),
+                        Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar)
+                               .Accepts(AcceptedCharacters.None),
+                        Factory.Span(SpanKind.Comment, new HtmlSymbol(
+                            Factory.LocationTracker.CurrentLocation,
+                            string.Empty,
+                            HtmlSymbolType.Unknown))
+                               .Accepts(AcceptedCharacters.Any),
+                        Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar)
+                               .Accepts(AcceptedCharacters.None),
+                        Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition)
+                               .Accepts(AcceptedCharacters.None)),
+                    Factory.Markup(Environment.NewLine).With(SpanChunkGenerator.Null),
+                    new MarkupTagBlock(
+                        Factory.Markup("</p>"))
+                    ));
+        }
+
+        [Fact]
+        public void MultipleRazorCommentsInSameLineInMarkup()
+        {
+            ParseDocumentTest(
+                "<p>" + Environment.NewLine
+                + "@**@  @**@" + Environment.NewLine
+                + "</p>",
+                new MarkupBlock(
+                    new MarkupTagBlock(
+                        Factory.Markup("<p>")),
+                    Factory.Markup(Environment.NewLine),
+                    new CommentBlock(
+                        Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition)
+                               .Accepts(AcceptedCharacters.None),
+                        Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar)
+                               .Accepts(AcceptedCharacters.None),
+                        Factory.Span(SpanKind.Comment, new HtmlSymbol(
+                            Factory.LocationTracker.CurrentLocation,
+                            string.Empty,
+                            HtmlSymbolType.Unknown))
+                               .Accepts(AcceptedCharacters.Any),
+                        Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar)
+                               .Accepts(AcceptedCharacters.None),
+                        Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition)
+                               .Accepts(AcceptedCharacters.None)),
+                    Factory.EmptyHtml(),
+                    Factory.Markup("  ").With(SpanChunkGenerator.Null),
+                    new CommentBlock(
+                        Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition)
+                               .Accepts(AcceptedCharacters.None),
+                        Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar)
+                               .Accepts(AcceptedCharacters.None),
+                        Factory.Span(SpanKind.Comment, new HtmlSymbol(
+                            Factory.LocationTracker.CurrentLocation,
+                            string.Empty,
+                            HtmlSymbolType.Unknown))
+                               .Accepts(AcceptedCharacters.Any),
+                        Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar)
+                               .Accepts(AcceptedCharacters.None),
+                        Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition)
+                               .Accepts(AcceptedCharacters.None)),
+                    Factory.Markup(Environment.NewLine).With(SpanChunkGenerator.Null),
+                    new MarkupTagBlock(
+                        Factory.Markup("</p>"))
+                    ));
+        }
+
+        [Fact]
+        public void RazorCommentsSurroundingMarkup()
+        {
+            ParseDocumentTest(
+                "<p>" + Environment.NewLine
+                + "@* hello *@ content @* world *@" + Environment.NewLine
+                + "</p>",
+                new MarkupBlock(
+                    new MarkupTagBlock(
+                        Factory.Markup("<p>")),
+                    Factory.Markup(Environment.NewLine),
+                    new CommentBlock(
+                        Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition)
+                               .Accepts(AcceptedCharacters.None),
+                        Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar)
+                               .Accepts(AcceptedCharacters.None),
+                        Factory.Span(SpanKind.Comment, new HtmlSymbol(
+                            Factory.LocationTracker.CurrentLocation,
+                            " hello ",
+                            HtmlSymbolType.RazorComment))
+                               .Accepts(AcceptedCharacters.Any),
+                        Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar)
+                               .Accepts(AcceptedCharacters.None),
+                        Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition)
+                               .Accepts(AcceptedCharacters.None)),
+                    Factory.Markup(" content "),
+                    new CommentBlock(
+                        Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition)
+                               .Accepts(AcceptedCharacters.None),
+                        Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar)
+                               .Accepts(AcceptedCharacters.None),
+                        Factory.Span(SpanKind.Comment, new HtmlSymbol(
+                            Factory.LocationTracker.CurrentLocation,
+                            " world ",
+                            HtmlSymbolType.RazorComment))
+                               .Accepts(AcceptedCharacters.Any),
+                        Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar)
+                               .Accepts(AcceptedCharacters.None),
+                        Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition)
+                               .Accepts(AcceptedCharacters.None)),
+                    Factory.Markup(Environment.NewLine),
+                    new MarkupTagBlock(
+                        Factory.Markup("</p>"))
+                    ));
+        }
+
+        [Fact]
+        public void RazorCommentWithExtraNewLineInMarkup()
+        {
+            ParseDocumentTest(
+                "<p>" + Environment.NewLine + Environment.NewLine
+                + "@* content *@" + Environment.NewLine
+                + "@*" + Environment.NewLine
+                + "content" + Environment.NewLine
+                + "*@" + Environment.NewLine + Environment.NewLine
+                + "</p>",
+                new MarkupBlock(
+                    new MarkupTagBlock(
+                        Factory.Markup("<p>")),
+                    Factory.Markup(Environment.NewLine + Environment.NewLine),
+                    new CommentBlock(
+                        Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition)
+                               .Accepts(AcceptedCharacters.None),
+                        Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar)
+                               .Accepts(AcceptedCharacters.None),
+                        Factory.Span(SpanKind.Comment, new HtmlSymbol(
+                            Factory.LocationTracker.CurrentLocation,
+                            " content ",
+                            HtmlSymbolType.RazorComment))
+                               .Accepts(AcceptedCharacters.Any),
+                        Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar)
+                               .Accepts(AcceptedCharacters.None),
+                        Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition)
+                               .Accepts(AcceptedCharacters.None)),
+                    Factory.Markup(Environment.NewLine).With(SpanChunkGenerator.Null),
+                    new CommentBlock(
+                        Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition)
+                               .Accepts(AcceptedCharacters.None),
+                        Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar)
+                               .Accepts(AcceptedCharacters.None),
+                        Factory.Span(SpanKind.Comment, new HtmlSymbol(
+                            Factory.LocationTracker.CurrentLocation,
+                            Environment.NewLine + "content" + Environment.NewLine,
+                            HtmlSymbolType.RazorComment))
+                               .Accepts(AcceptedCharacters.Any),
+                        Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar)
+                               .Accepts(AcceptedCharacters.None),
+                        Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition)
+                               .Accepts(AcceptedCharacters.None)),
+                    Factory.Markup(Environment.NewLine).With(SpanChunkGenerator.Null),
+                    Factory.Markup(Environment.NewLine),
+                    new MarkupTagBlock(
+                        Factory.Markup("</p>"))
+                    ));
         }
     }
 }

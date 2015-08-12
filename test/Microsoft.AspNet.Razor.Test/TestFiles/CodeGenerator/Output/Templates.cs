@@ -156,9 +156,8 @@ WriteTo(__razor_template_writer, item);
 #line default
 #line hidden
 
-    Instrumentation.BeginContext(574, 93, true);
-    WriteLiteralTo(__razor_template_writer, "\r\n        <ul>\r\n            <li>Child Items... ?</li>\r\n            \r\n        </ul" +
-">\r\n    </li>");
+    Instrumentation.BeginContext(574, 79, true);
+    WriteLiteralTo(__razor_template_writer, "\r\n        <ul>\r\n            <li>Child Items... ?</li>\r\n        </ul>\r\n    </li>");
     Instrumentation.EndContext();
 }
 )
