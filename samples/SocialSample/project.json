@@ -9,11 +9,11 @@
         "Microsoft.AspNet.Server.IIS": "1.0.0-*",
         "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
         "Microsoft.Framework.Logging.Console": "1.0.0-*",
-        "Kestrel": "1.0.0-*"
+        "Microsoft.AspNet.Server.Kestrel": "1.0.0-*"
     },
     "commands": {
         "web": "Microsoft.AspNet.Hosting server=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:54540",
-        "kestrel": "Microsoft.AspNet.Hosting --server Kestrel --server.urls http://localhost:54540"
+        "kestrel": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.Kestrel --server.urls http://localhost:54540"
     },
     "frameworks": {
         "dnx451": {
