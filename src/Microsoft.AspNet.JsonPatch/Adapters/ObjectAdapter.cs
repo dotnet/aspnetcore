@@ -161,7 +161,7 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
                     {
                         // get the actual type
                         var propertyValue = container.GetValueForCaseInsensitiveKey(treeAnalysisResult.PropertyPathInParent);
-                        var typeOfPathProperty = value.GetType();
+                        var typeOfPathProperty = propertyValue.GetType();
 
                         if (!IsNonStringArray(typeOfPathProperty))
                         {
@@ -447,101 +447,240 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
             Remove(operation.path, objectToApplyTo, operation);
         }
 
+
         /// <summary>
         /// Remove is used by various operations (eg: remove, move, ...), yet through different operations;
-        /// This method allows code reuse yet reporting the correct operation on error
+        /// This method allows code reuse yet reporting the correct operation on error.  The return value
+        /// contains the type of the item that has been removed (and a bool possibly signifying an error)
+        /// This can be used by other methods, like replace, to ensure that we can pass in the correctly 
+        /// typed value to whatever method follows.
         /// </summary>
-        private void Remove(
-            [NotNull] string path,
-            [NotNull] object objectToApplyTo,
-            [NotNull] Operation operationToReport)
+        private RemovedPropertyTypeResult Remove(string path, object objectToApplyTo, Operation operationToReport)
         {
-            var removeFromList = false;
-            var positionAsInteger = -1;
-            var actualPathToProperty = path;
+            // get path result
+            var pathResult = GetActualPropertyPath(
+                path,
+                objectToApplyTo,
+                operationToReport);
 
-            if (path.EndsWith("/-"))
+            if (pathResult == null)
             {
-                removeFromList = true;
-                actualPathToProperty = path.Substring(0, path.Length - 2);
+                return new RemovedPropertyTypeResult(null, true);
             }
-            else
-            {
-                positionAsInteger = GetNumericEnd(path);
 
-                if (positionAsInteger > -1)
+            var removeFromList = pathResult.ExecuteAtEnd;
+            var positionAsInteger = pathResult.NumericEnd;
+            var actualPathToProperty = pathResult.PathToProperty;
+
+            var treeAnalysisResult = new ObjectTreeAnalysisResult(
+               objectToApplyTo,
+               actualPathToProperty,
+               ContractResolver);
+
+            if (!treeAnalysisResult.IsValidPathForRemove)
+            {
+                LogError(new JsonPatchError(
+                    objectToApplyTo,
+                    operationToReport,
+                    Resources.FormatPropertyCannotBeRemoved(path)));
+                return new RemovedPropertyTypeResult(null, true);
+            }
+
+            if (treeAnalysisResult.UseDynamicLogic)
+            {
+                // if it's not an array, we can remove the property from
+                // the dictionary.  If it's an array, we need to check the position first.
+                if (removeFromList || positionAsInteger > -1)
                 {
-                    actualPathToProperty = path.Substring(0,
-                        path.IndexOf('/' + positionAsInteger.ToString()));
-                }
-            }
+                    var propertyValue = treeAnalysisResult.Container
+                        .GetValueForCaseInsensitiveKey(treeAnalysisResult.PropertyPathInParent);
 
-            var patchProperty = FindPropertyAndParent(objectToApplyTo, actualPathToProperty);
+                    // we cannot continue when the value is null, because to be able to
+                    // continue we need to be able to check if the array is a non-string array
+                    if (propertyValue == null)
+                    {
+                        LogError(new JsonPatchError(
+                           objectToApplyTo,
+                           operationToReport,
+                           Resources.FormatCannotDeterminePropertyType(path)));
+                        return new RemovedPropertyTypeResult(null, true);
+                    }
 
-            // does the target location exist?
-            if (!CheckIfPropertyExists(patchProperty, objectToApplyTo, operationToReport, path))
-            {
-                return;
-            }
+                    var typeOfPathProperty = propertyValue.GetType();
 
-            // get the property, and remove it - in this case, for DTO's, that means setting
-            // it to null or its default value; in case of an array, remove at provided index
-            // or at the end.
-            if (removeFromList || positionAsInteger > -1)
-            {
-                // what if it's an array but there's no position??
-                if (IsNonStringArray(patchProperty.Property.PropertyType))
-                {
-                    // now, get the generic type of the IList<> from Property type.
-                    var genericTypeOfArray = GetIListType(patchProperty.Property.PropertyType);
+                    if (!IsNonStringArray(typeOfPathProperty))
+                    {
+                        LogError(new JsonPatchError(
+                            objectToApplyTo,
+                            operationToReport,
+                            Resources.FormatInvalidIndexForArrayProperty(operationToReport.op, path)));
+                        return new RemovedPropertyTypeResult(null, true);
+                    }
 
-                    // get value (it can be cast, we just checked that)
-                    var array = (IList)patchProperty.Property.ValueProvider.GetValue(patchProperty.Parent);
+                    // now, get the generic type of the enumerable (we'll return this type)
+                    var genericTypeOfArray = GetIListType(typeOfPathProperty);
+
+                    // get the array
+                    var array = (IList)treeAnalysisResult.Container.GetValueForCaseInsensitiveKey(
+                        treeAnalysisResult.PropertyPathInParent);
+
+                    if (array.Count == 0)
+                    {
+                        // if the array is empty, we should throw an error
+                        LogError(new JsonPatchError(
+                             objectToApplyTo,
+                             operationToReport,
+                             Resources.FormatInvalidIndexForArrayProperty(
+                                 operationToReport.op,
+                                 path)));
+                        return new RemovedPropertyTypeResult(null, true);
+                    }
 
                     if (removeFromList)
                     {
                         array.RemoveAt(array.Count - 1);
+                        treeAnalysisResult.Container.SetValueForCaseInsensitiveKey(
+                            treeAnalysisResult.PropertyPathInParent, array);
+
+                        // return the type of the value that has been removed.
+                        return new RemovedPropertyTypeResult(genericTypeOfArray, false);
                     }
                     else
                     {
-                        if (positionAsInteger < array.Count)
-                        {
-                            array.RemoveAt(positionAsInteger);
-                        }
-                        else
+                        if (positionAsInteger >= array.Count)
                         {
                             LogError(new JsonPatchError(
                                 objectToApplyTo,
                                 operationToReport,
-                                Resources.FormatInvalidIndexForArrayProperty(operationToReport.op, path)));
-
-                            return;
+                                Resources.FormatInvalidIndexForArrayProperty(
+                                    operationToReport.op,
+                                    path)));
+                            return new RemovedPropertyTypeResult(null, true);
                         }
+
+                        array.RemoveAt(positionAsInteger);
+                        treeAnalysisResult.Container.SetValueForCaseInsensitiveKey(
+                            treeAnalysisResult.PropertyPathInParent, array);
+
+                        // return the type of the value that has been removed.
+                        return new RemovedPropertyTypeResult(genericTypeOfArray, false);
                     }
                 }
                 else
                 {
-                    LogError(new JsonPatchError(
-                        objectToApplyTo,
-                        operationToReport,
-                        Resources.FormatInvalidPathForArrayProperty(operationToReport.op, path)));
+                    // get the property
+                    var getResult = treeAnalysisResult.Container.GetValueForCaseInsensitiveKey(
+                        treeAnalysisResult.PropertyPathInParent);
 
-                    return;
+                    // remove the property
+                    treeAnalysisResult.Container.RemoveValueForCaseInsensitiveKey(
+                        treeAnalysisResult.PropertyPathInParent);
+
+                    // value is not null, we can determine the type
+                    if (getResult != null)
+                    {
+                        var actualType = getResult.GetType();
+                        return new RemovedPropertyTypeResult(actualType, false);
+                    }
+                    else
+                    {
+                        return new RemovedPropertyTypeResult(null, false);
+                    }
                 }
             }
             else
             {
-                // setting the value to "null" will use the default value in case of value types, and
-                // null in case of reference types
-                object value = null;
+                // not dynamic                  
+                var patchProperty = treeAnalysisResult.JsonPatchProperty;
 
-                if (patchProperty.Property.PropertyType.GetTypeInfo().IsValueType
-                    && Nullable.GetUnderlyingType(patchProperty.Property.PropertyType) == null)
+                if (removeFromList || positionAsInteger > -1)
                 {
-                    value = Activator.CreateInstance(patchProperty.Property.PropertyType);
-                }
+                    if (!IsNonStringArray(patchProperty.Property.PropertyType))
+                    {
+                        LogError(new JsonPatchError(
+                               objectToApplyTo,
+                               operationToReport,
+                               Resources.FormatInvalidIndexForArrayProperty(operationToReport.op, path)));
+                        return new RemovedPropertyTypeResult(null, true);
+                    }
 
-                patchProperty.Property.ValueProvider.SetValue(patchProperty.Parent, value);
+                    // now, get the generic type of the IList<> from Property type.
+                    var genericTypeOfArray = GetIListType(patchProperty.Property.PropertyType);
+
+                    if (!patchProperty.Property.Readable)
+                    {
+                        LogError(new JsonPatchError(
+                            objectToApplyTo,
+                            operationToReport,
+                            Resources.FormatCannotReadProperty(path)));
+                        return new RemovedPropertyTypeResult(null, true);
+                    }
+
+                    var array = (IList)patchProperty.Property.ValueProvider
+                           .GetValue(patchProperty.Parent);
+
+                    if (array.Count == 0)
+                    {
+                        // if the array is empty, we should throw an error
+                        LogError(new JsonPatchError(
+                            objectToApplyTo,
+                            operationToReport,
+                            Resources.FormatInvalidIndexForArrayProperty(
+                                operationToReport.op,
+                                path)));
+                        return new RemovedPropertyTypeResult(null, true);
+                    }
+
+                    if (removeFromList)
+                    {
+                        array.RemoveAt(array.Count - 1);
+
+                        // return the type of the value that has been removed
+                        return new RemovedPropertyTypeResult(genericTypeOfArray, false);
+                    }
+                    else
+                    {
+                        if (positionAsInteger >= array.Count)
+                        {
+                            LogError(new JsonPatchError(
+                                objectToApplyTo,
+                                operationToReport,
+                                Resources.FormatInvalidIndexForArrayProperty(
+                                    operationToReport.op,
+                                    path)));
+                            return null;
+                        }
+
+                        array.RemoveAt(positionAsInteger);
+
+                        // return the type of the value that has been removed
+                        return new RemovedPropertyTypeResult(genericTypeOfArray, false);
+                    }
+                }
+                else
+                {
+                    if (!patchProperty.Property.Writable)
+                    {
+                        LogError(new JsonPatchError(
+                            objectToApplyTo,
+                            operationToReport,
+                            Resources.FormatCannotUpdateProperty(path)));
+                        return new RemovedPropertyTypeResult(null, true);
+                    }
+
+                    // setting the value to "null" will use the default value in case of value types, and
+                    // null in case of reference types
+                    object value = null;
+
+                    if (patchProperty.Property.PropertyType.GetTypeInfo().IsValueType
+                        && Nullable.GetUnderlyingType(patchProperty.Property.PropertyType) == null)
+                    {
+                        value = Activator.CreateInstance(patchProperty.Property.PropertyType);
+                    }
+
+                    patchProperty.Property.ValueProvider.SetValue(patchProperty.Parent, value);
+                    return new RemovedPropertyTypeResult(patchProperty.Property.PropertyType, false);
+                }
             }
         }
 

@@ -11,6 +11,22 @@ namespace Microsoft.AspNet.JsonPatch
             = new ResourceManager("Microsoft.AspNet.JsonPatch.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
+        /// The type of the property at path '{0}' could not be determined.
+        /// </summary>
+        internal static string CannotDeterminePropertyType
+        {
+            get { return GetString("CannotDeterminePropertyType"); }
+        }
+
+        /// <summary>
+        /// The type of the property at path '{0}' could not be determined.
+        /// </summary>
+        internal static string FormatCannotDeterminePropertyType(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("CannotDeterminePropertyType"), p0);
+        }
+
+        /// <summary>
         /// The property at '{0}' could not be read.
         /// </summary>
         internal static string CannotReadProperty
@@ -43,6 +59,22 @@ namespace Microsoft.AspNet.JsonPatch
         }
 
         /// <summary>
+        /// The key '{0}' was not found.
+        /// </summary>
+        internal static string DictionaryKeyNotFound
+        {
+            get { return GetString("DictionaryKeyNotFound"); }
+        }
+
+        /// <summary>
+        /// The key '{0}' was not found.
+        /// </summary>
+        internal static string FormatDictionaryKeyNotFound(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("DictionaryKeyNotFound"), p0);
+        }
+
+        /// <summary>
         /// For operation '{0}' on array property at path '{1}', the index is larger than the array size.
         /// </summary>
         internal static string InvalidIndexForArrayProperty
@@ -57,23 +89,6 @@ namespace Microsoft.AspNet.JsonPatch
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("InvalidIndexForArrayProperty"), p0, p1);
         }
-
-        /// <summary>
-        ///  For operation '{0}' on array property at path '{1}', the index is negative.
-        /// </summary>
-        internal static string NegativeIndexForArrayProperty
-        {
-            get { return GetString("NegativeIndexForArrayProperty"); }
-        }
-
-        /// <summary>
-        /// For operation '{0}' on array property at path '{1}', the index is negative.
-        /// </summary>
-        internal static string FormatNegativeIndexForArrayProperty(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("NegativeIndexForArrayProperty"), p0, p1);
-        }
-         
 
         /// <summary>
         /// The type '{0}' was malformed and could not be parsed.
@@ -140,6 +155,22 @@ namespace Microsoft.AspNet.JsonPatch
         }
 
         /// <summary>
+        /// For operation '{0}' on array property at path '{1}', the index is negative.
+        /// </summary>
+        internal static string NegativeIndexForArrayProperty
+        {
+            get { return GetString("NegativeIndexForArrayProperty"); }
+        }
+
+        /// <summary>
+        /// For operation '{0}' on array property at path '{1}', the index is negative.
+        /// </summary>
+        internal static string FormatNegativeIndexForArrayProperty(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("NegativeIndexForArrayProperty"), p0, p1);
+        }
+
+        /// <summary>
         /// '{0}' must be of type '{1}'.
         /// </summary>
         internal static string ParameterMustMatchType
@@ -202,23 +233,6 @@ namespace Microsoft.AspNet.JsonPatch
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("PropertyDoesNotExist"), p0);
         }
-
-        /// <summary>
-        /// The key '{0}' was not found.
-        /// </summary>
-        internal static string DictionaryKeyNotFound
-        {
-            get { return GetString("DictionaryKeyNotFound"); }
-        }
-
-        /// <summary>
-        /// The key '{0}' was not found.
-        /// </summary>
-        internal static string FormatDictionaryKeyNotFound(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("DictionaryKeyNotFound"), p0);
-        }
-
 
         /// <summary>
         /// The test operation is not supported.
