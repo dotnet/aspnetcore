@@ -24,7 +24,7 @@
     ]
   },
   "dependencies": {
-    "Kestrel": "1.0.0-*",
+    "Microsoft.AspNet.Server.Kestrel": "1.0.0-*",
     "Microsoft.AspNet.Server.IIS": "1.0.0-*",
     "Microsoft.AspNet.Mvc": "6.0.0-*",
     "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
@@ -40,7 +40,7 @@
   },
   "commands": {
     "WebListener": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls http://localhost:5102",
-    "Kestrel": "Microsoft.AspNet.Hosting --server Kestrel --server.urls http://localhost:5104",
+    "Kestrel": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.Kestrel --server.urls http://localhost:5104",
     "run": "run server.urls=http://localhost:5103"
   },
   "frameworks": {
