@@ -13,11 +13,13 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.DataProtection;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Http.Features.Authentication;
 using Microsoft.AspNet.TestHost;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Internal;
 using Shouldly;
 using Xunit;
 
@@ -883,6 +885,66 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
             var location = transaction.Response.Headers.Location;
             location.LocalPath.ShouldBe("/base/denied");
+        }
+
+        [Fact]
+        public async Task CanSpecifyAndShareDataProtector()
+        {
+
+            var dp = new NoOpDataProtector();
+            var server1 = TestServer.Create(app =>
+            {
+                app.UseCookieAuthentication(options =>
+                {
+                    options.TicketDataFormat = new TicketDataFormat(dp);
+                    options.CookieName = "Cookie";
+                });
+                app.Use((context, next) =>
+                    context.Authentication.SignInAsync("Cookies",
+                                    new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity("Alice", "Cookies"))),
+                                    new AuthenticationProperties()));
+            },
+            services => services.AddAuthentication());
+
+            var transaction = await SendAsync(server1, "http://example.com/stuff");
+            transaction.SetCookie.ShouldNotBe(null);
+
+            var server2 = TestServer.Create(app =>
+            {
+                app.UseCookieAuthentication(options =>
+                {
+                    options.AuthenticationScheme = "Cookies";
+                    options.CookieName = "Cookie";
+                    options.TicketDataFormat = new TicketDataFormat(dp);
+                });
+                app.Use(async (context, next) =>
+                {
+                    var authContext = new AuthenticateContext("Cookies");
+                    await context.Authentication.AuthenticateAsync(authContext);
+                    Describe(context.Response, authContext);
+                });
+            },
+            services => services.AddAuthentication());
+            var transaction2 = await SendAsync(server2, "http://example.com/stuff", transaction.CookieNameValue);
+            FindClaimValue(transaction2, ClaimTypes.Name).ShouldBe("Alice");
+        }
+
+        private class NoOpDataProtector : IDataProtector
+        {
+            public IDataProtector CreateProtector(string purpose)
+            {
+                return this;
+            }
+
+            public byte[] Protect(byte[] plaintext)
+            {
+                return plaintext;
+            }
+
+            public byte[] Unprotect(byte[] protectedData)
+            {
+                return protectedData;
+            }
         }
 
         private static string FindClaimValue(Transaction transaction, string claimType)
