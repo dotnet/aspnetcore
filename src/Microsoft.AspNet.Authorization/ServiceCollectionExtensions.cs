@@ -17,15 +17,16 @@ namespace Microsoft.Framework.DependencyInjection
 
         public static IServiceCollection AddAuthorization([NotNull] this IServiceCollection services)
         {
-            return services.AddAuthorization(configureOptions: null);
-        }
-
-        public static IServiceCollection AddAuthorization([NotNull] this IServiceCollection services, Action<AuthorizationOptions> configureOptions)
-        {
             services.AddOptions();
             services.TryAdd(ServiceDescriptor.Transient<IAuthorizationService, DefaultAuthorizationService>());
             services.AddTransient<IAuthorizationHandler, PassThroughAuthorizationHandler>();
             return services;
+        }
+
+        public static IServiceCollection AddAuthorization([NotNull] this IServiceCollection services, [NotNull] Action<AuthorizationOptions> configureOptions)
+        {
+            services.ConfigureAuthorization(configureOptions);
+            return services.AddAuthorization();
         }
     }
 }

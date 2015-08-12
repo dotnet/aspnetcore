@@ -11,6 +11,11 @@ namespace Microsoft.AspNet.Authorization
     {
         private IDictionary<string, AuthorizationPolicy> PolicyMap { get; } = new Dictionary<string, AuthorizationPolicy>(StringComparer.OrdinalIgnoreCase);
 
+        /// <summary>
+        /// The initial default policy is to require any authenticated user
+        /// </summary>
+        public AuthorizationPolicy DefaultPolicy { get; set; } = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
+
         public void AddPolicy([NotNull] string name, [NotNull] AuthorizationPolicy policy)
         {
             PolicyMap[name] = policy;

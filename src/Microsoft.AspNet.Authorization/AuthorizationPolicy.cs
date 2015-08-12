@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Authorization
             foreach (var authorizeAttribute in attributes.OfType<AuthorizeAttribute>())
             {
                 any = true;
-                var requireAnyAuthenticated = true;
+                var useDefaultPolicy = true;
                 if (!string.IsNullOrWhiteSpace(authorizeAttribute.Policy))
                 {
                     var policy = options.GetPolicy(authorizeAttribute.Policy);
@@ -54,13 +54,13 @@ namespace Microsoft.AspNet.Authorization
                         throw new InvalidOperationException(Resources.FormatException_AuthorizationPolicyNotFound(authorizeAttribute.Policy));
                     }
                     policyBuilder.Combine(policy);
-                    requireAnyAuthenticated = false;
+                    useDefaultPolicy = false;
                 }
                 var rolesSplit = authorizeAttribute.Roles?.Split(',');
                 if (rolesSplit != null && rolesSplit.Any())
                 {
                     policyBuilder.RequireRole(rolesSplit);
-                    requireAnyAuthenticated = false;
+                    useDefaultPolicy = false;
                 }
                 var authTypesSplit = authorizeAttribute.ActiveAuthenticationSchemes?.Split(',');
                 if (authTypesSplit != null && authTypesSplit.Any())
@@ -70,9 +70,9 @@ namespace Microsoft.AspNet.Authorization
                         policyBuilder.ActiveAuthenticationSchemes.Add(authType);
                     }
                 }
-                if (requireAnyAuthenticated)
+                if (useDefaultPolicy)
                 {
-                    policyBuilder.RequireAuthenticatedUser();
+                    policyBuilder.Combine(options.DefaultPolicy);
                 }
             }
             return any ? policyBuilder.Build() : null;
