@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.FileProviders;
+using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.Razor.Compilation;
 using Microsoft.AspNet.Mvc.Razor.Directives;
 using Microsoft.AspNet.Mvc.Razor.Internal;
@@ -92,7 +93,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
                 var file = filesToProcess[index];
 
                 PrecompilationCacheEntry cacheEntry;
-                if(!PreCompilationCache.TryGetValue(file.RelativePath, out cacheEntry))
+                if (!PreCompilationCache.TryGetValue(file.RelativePath, out cacheEntry))
                 {
                     cacheEntry = GetCacheEntry(file);
                     PreCompilationCache.Set(
@@ -163,10 +164,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
             }
             else
             {
-                assemblyStream.Position = 0;
-                var assemblyBytes = assemblyStream.ToArray();
                 var assemblyResource = new ResourceDescription(assemblyResourceName,
-                                                               () => new MemoryStream(assemblyBytes),
+                                                               () => GetNonDisposableStream(assemblyStream),
                                                                isPublic: true);
                 CompileContext.Resources.Add(assemblyResource);
 
@@ -174,11 +173,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
                 if (pdbStream != null)
                 {
                     symbolsResourceName = resourcePrefix + ".pdb";
-                    pdbStream.Position = 0;
-                    var pdbBytes = pdbStream.ToArray();
-
                     var pdbResource = new ResourceDescription(symbolsResourceName,
-                                                              () => new MemoryStream(pdbBytes),
+                                                              () => GetNonDisposableStream(pdbStream),
                                                               isPublic: true);
 
                     CompileContext.Resources.Add(pdbResource);
@@ -277,6 +273,12 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
             {
                 target.Add(diagnostic);
             }
+        }
+
+        private static Stream GetNonDisposableStream(Stream stream)
+        {
+            stream.Position = 0;
+            return new NonDisposableStream(stream);
         }
 
         private class PrecompileRazorFileInfoCollection : RazorFileInfoCollection
