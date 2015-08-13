@@ -6,12 +6,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Testing;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
 using Xunit;
 using System.Linq.Expressions;
+using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Internal;
 
 namespace Microsoft.AspNet.Identity.Test
 {
