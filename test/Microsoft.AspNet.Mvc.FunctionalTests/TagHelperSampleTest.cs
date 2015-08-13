@@ -73,6 +73,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             {
                 return new TestLogger();
             }
+
+            public void Dispose()
+            {
+            }
         }
 
         private class TestLogger : ILogger
