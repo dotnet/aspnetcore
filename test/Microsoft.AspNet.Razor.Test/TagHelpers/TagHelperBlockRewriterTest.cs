@@ -87,6 +87,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         assemblyName: "SomeAssembly",
                         attributes: new TagHelperAttributeDescriptor[0],
                         requiredAttributes: Enumerable.Empty<string>(),
+                        allowedChildren: null,
                         tagStructure: TagStructure.WithoutEndTag,
                         designTimeDescriptor: null)
                 };
@@ -189,6 +190,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         assemblyName: "SomeAssembly",
                         attributes: new TagHelperAttributeDescriptor[0],
                         requiredAttributes: Enumerable.Empty<string>(),
+                        allowedChildren: null,
                         tagStructure: structure1,
                         designTimeDescriptor: null),
                     new TagHelperDescriptor(
@@ -198,6 +200,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         assemblyName: "SomeAssembly",
                         attributes: new TagHelperAttributeDescriptor[0],
                         requiredAttributes: Enumerable.Empty<string>(),
+                        allowedChildren: null,
                         tagStructure: structure2,
                         designTimeDescriptor: null)
                 };

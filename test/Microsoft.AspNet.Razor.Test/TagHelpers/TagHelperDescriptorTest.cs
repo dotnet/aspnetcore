@@ -23,6 +23,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 assemblyName: "assembly name",
                 attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
                 requiredAttributes: new[] { "required attribute one", "required attribute two" },
+                allowedChildren: new[] { "allowed child one" },
                 tagStructure: TagStructure.Unspecified,
                 designTimeDescriptor: new TagHelperDesignTimeDescriptor
                 {
@@ -40,6 +41,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 $"\"{ nameof(TagHelperDescriptor.Attributes) }\":[]," +
                 $"\"{ nameof(TagHelperDescriptor.RequiredAttributes) }\":" +
                 "[\"required attribute one\",\"required attribute two\"]," +
+                $"\"{ nameof(TagHelperDescriptor.AllowedChildren) }\":[\"allowed child one\"]," +
                 $"\"{ nameof(TagHelperDescriptor.TagStructure) }\":0," +
                 $"\"{ nameof(TagHelperDescriptor.DesignTimeDescriptor) }\":{{"+
                 $"\"{ nameof(TagHelperDesignTimeDescriptor.Summary) }\":\"usage summary\"," +
@@ -78,6 +80,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         designTimeDescriptor: null),
                 },
                 requiredAttributes: Enumerable.Empty<string>(),
+                allowedChildren: null,
                 tagStructure: TagStructure.NormalOrSelfClosing,
                 designTimeDescriptor: null);
             var expectedSerializedDescriptor =
@@ -100,6 +103,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 $"\"{ nameof(TagHelperAttributeDescriptor.TypeName) }\":\"{ typeof(string).FullName }\"," +
                 $"\"{ nameof(TagHelperAttributeDescriptor.DesignTimeDescriptor) }\":null}}]," +
                 $"\"{ nameof(TagHelperDescriptor.RequiredAttributes) }\":[]," +
+                $"\"{ nameof(TagHelperDescriptor.AllowedChildren) }\":null," +
                 $"\"{ nameof(TagHelperDescriptor.TagStructure) }\":1," +
                 $"\"{ nameof(TagHelperDescriptor.DesignTimeDescriptor) }\":null}}";
 
@@ -135,6 +139,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         designTimeDescriptor: null),
                 },
                 requiredAttributes: Enumerable.Empty<string>(),
+                allowedChildren: new[] { "allowed child one", "allowed child two" },
                 tagStructure: default(TagStructure),
                 designTimeDescriptor: null);
             var expectedSerializedDescriptor =
@@ -157,6 +162,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 $"\"{ nameof(TagHelperAttributeDescriptor.TypeName) }\":\"{ typeof(string).FullName }\"," +
                 $"\"{ nameof(TagHelperAttributeDescriptor.DesignTimeDescriptor) }\":null}}]," +
                 $"\"{ nameof(TagHelperDescriptor.RequiredAttributes) }\":[]," +
+                $"\"{ nameof(TagHelperDescriptor.AllowedChildren) }\":[\"allowed child one\",\"allowed child two\"]," +
                 $"\"{ nameof(TagHelperDescriptor.TagStructure) }\":0," +
                 $"\"{ nameof(TagHelperDescriptor.DesignTimeDescriptor) }\":null}}";
 
@@ -180,6 +186,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 $"\"{nameof(TagHelperDescriptor.Attributes)}\":[]," +
                 $"\"{nameof(TagHelperDescriptor.RequiredAttributes)}\":" +
                 "[\"required attribute one\",\"required attribute two\"]," +
+                $"\"{ nameof(TagHelperDescriptor.AllowedChildren) }\":[\"allowed child one\",\"allowed child two\"]," +
                 $"\"{nameof(TagHelperDescriptor.TagStructure)}\":2," +
                 $"\"{ nameof(TagHelperDescriptor.DesignTimeDescriptor) }\":{{" +
                 $"\"{ nameof(TagHelperDesignTimeDescriptor.Summary) }\":\"usage summary\"," +
@@ -192,6 +199,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 assemblyName: "assembly name",
                 attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
                 requiredAttributes: new[] { "required attribute one", "required attribute two" },
+                allowedChildren: new[] { "allowed child one", "allowed child two" },
                 tagStructure: TagStructure.WithoutEndTag,
                 designTimeDescriptor: new TagHelperDesignTimeDescriptor
                 {
@@ -242,6 +250,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 $"\"{ nameof(TagHelperAttributeDescriptor.TypeName) }\":\"{ typeof(string).FullName }\"," +
                 $"\"{ nameof(TagHelperAttributeDescriptor.DesignTimeDescriptor) }\":null}}]," +
                 $"\"{ nameof(TagHelperDescriptor.RequiredAttributes) }\":[]," +
+                $"\"{ nameof(TagHelperDescriptor.AllowedChildren) }\":null," +
                 $"\"{nameof(TagHelperDescriptor.TagStructure)}\":0," +
                 $"\"{ nameof(TagHelperDescriptor.DesignTimeDescriptor) }\":null}}";
             var expectedDescriptor = new TagHelperDescriptor(
@@ -265,6 +274,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         designTimeDescriptor: null),
                 },
                 requiredAttributes: Enumerable.Empty<string>(),
+                allowedChildren: null,
                 tagStructure: TagStructure.Unspecified,
                 designTimeDescriptor: null);
 
@@ -331,6 +341,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 $"\"{ nameof(TagHelperAttributeDescriptor.TypeName) }\":\"{ typeof(string).FullName }\"," +
                 $"\"{ nameof(TagHelperAttributeDescriptor.DesignTimeDescriptor) }\":null}}]," +
                 $"\"{ nameof(TagHelperDescriptor.RequiredAttributes) }\":[]," +
+                $"\"{ nameof(TagHelperDescriptor.AllowedChildren) }\":null," +
                 $"\"{nameof(TagHelperDescriptor.TagStructure)}\":1," +
                 $"\"{ nameof(TagHelperDescriptor.DesignTimeDescriptor) }\":null}}";
             var expectedDescriptor = new TagHelperDescriptor(
@@ -354,6 +365,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         designTimeDescriptor: null),
                 },
                 requiredAttributes: Enumerable.Empty<string>(),
+                allowedChildren: null,
                 tagStructure: TagStructure.NormalOrSelfClosing,
                 designTimeDescriptor: null);
 

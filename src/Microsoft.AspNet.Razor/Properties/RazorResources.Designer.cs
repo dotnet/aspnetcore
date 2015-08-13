@@ -1514,6 +1514,38 @@ namespace Microsoft.AspNet.Razor
             return string.Format(CultureInfo.CurrentCulture, GetString("TagHelperParseTreeRewriter_EndTagTagHelperMustNotHaveAnEndTag"), p0, p1, p2);
         }
 
+        /// <summary>
+        /// The parent &amp;lt;{0}&amp;gt; tag helper does not allow non-tag content. Only child tag helper(s) targeting tag name(s) '{1}' are allowed.
+        /// </summary>
+        internal static string TagHelperParseTreeRewriter_CannotHaveNonTagContent
+        {
+            get { return GetString("TagHelperParseTreeRewriter_CannotHaveNonTagContent"); }
+        }
+
+        /// <summary>
+        /// The parent &amp;lt;{0}&amp;gt; tag helper does not allow non-tag content. Only child tag helper(s) targeting tag name(s) '{1}' are allowed.
+        /// </summary>
+        internal static string FormatTagHelperParseTreeRewriter_CannotHaveNonTagContent(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelperParseTreeRewriter_CannotHaveNonTagContent"), p0, p1);
+        }
+
+        /// <summary>
+        /// The &amp;lt;{0}&amp;gt; tag is not allowed by parent &amp;lt;{1}&amp;gt; tag helper. Only child tag helper(s) targeting tag name(s) '{2}' are allowed.
+        /// </summary>
+        internal static string TagHelperParseTreeRewriter_InvalidNestedTag
+        {
+            get { return GetString("TagHelperParseTreeRewriter_InvalidNestedTag"); }
+        }
+
+        /// <summary>
+        /// The &amp;lt;{0}&amp;gt; tag is not allowed by parent &amp;lt;{1}&amp;gt; tag helper. Only child tag helper(s) targeting tag name(s) '{2}' are allowed.
+        /// </summary>
+        internal static string FormatTagHelperParseTreeRewriter_InvalidNestedTag(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelperParseTreeRewriter_InvalidNestedTag"), p0, p1, p2);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

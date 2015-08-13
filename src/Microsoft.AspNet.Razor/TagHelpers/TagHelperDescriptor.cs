@@ -61,6 +61,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 assemblyName: assemblyName,
                 attributes: attributes,
                 requiredAttributes: requiredAttributes,
+                allowedChildren: null,
                 tagStructure: TagStructure.Unspecified,
                 designTimeDescriptor: null)
         {
@@ -84,6 +85,10 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// <param name="requiredAttributes">
         /// The attribute names required for the tag helper to target the HTML tag.
         /// </param>
+        /// <param name="allowedChildren">
+        /// The names of elements allowed as children. Tag helpers must target all such elements.
+        /// </param>
+        /// <param name="tagStructure">The expected tag structure.</param>
         /// <param name="designTimeDescriptor">The <see cref="TagHelperDesignTimeDescriptor"/> that contains design
         /// time information about the tag helper.</param>
         public TagHelperDescriptor(
@@ -93,6 +98,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             [NotNull] string assemblyName,
             [NotNull] IEnumerable<TagHelperAttributeDescriptor> attributes,
             [NotNull] IEnumerable<string> requiredAttributes,
+            IEnumerable<string> allowedChildren,
             TagStructure tagStructure,
             TagHelperDesignTimeDescriptor designTimeDescriptor)
         {
@@ -105,6 +111,11 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             RequiredAttributes = new List<string>(requiredAttributes);
             TagStructure = tagStructure;
             DesignTimeDescriptor = designTimeDescriptor;
+
+            if (allowedChildren != null)
+            {
+                AllowedChildren = new List<string>(allowedChildren);
+            }
         }
 
         /// <summary>
@@ -146,6 +157,12 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// <c>*</c> at the end of an attribute name acts as a prefix match.
         /// </remarks>
         public IReadOnlyList<string> RequiredAttributes { get; }
+
+        /// <summary>
+        /// Get the names of elements allowed as children. Tag helpers must target all such elements.
+        /// </summary>
+        /// <remarks><c>null</c> indicates all children are allowed.</remarks>
+        public IReadOnlyList<string> AllowedChildren { get; }
 
         /// <summary>
         /// The expected tag structure.

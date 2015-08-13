@@ -35,6 +35,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                                 assemblyName: AssemblyName,
                                 attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
                                 requiredAttributes: Enumerable.Empty<string>(),
+                                allowedChildren: null,
                                 tagStructure: TagStructure.WithoutEndTag,
                                 designTimeDescriptor: null)
                         }
@@ -50,6 +51,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                                 assemblyName: AssemblyName,
                                 attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
                                 requiredAttributes: Enumerable.Empty<string>(),
+                                allowedChildren: null,
                                 tagStructure: TagStructure.WithoutEndTag,
                                 designTimeDescriptor: null),
                             new TagHelperDescriptor(
@@ -59,6 +61,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                                 assemblyName: AssemblyName,
                                 attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
                                 requiredAttributes: Enumerable.Empty<string>(),
+                                allowedChildren: null,
                                 tagStructure: TagStructure.NormalOrSelfClosing,
                                 designTimeDescriptor: null),
                         }
@@ -74,6 +77,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                                 assemblyName: AssemblyName,
                                 attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
                                 requiredAttributes: Enumerable.Empty<string>(),
+                                allowedChildren: null,
                                 tagStructure: TagStructure.WithoutEndTag,
                                 designTimeDescriptor: null),
                             new TagHelperDescriptor(
@@ -83,6 +87,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                                 assemblyName: AssemblyName,
                                 attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
                                 requiredAttributes: Enumerable.Empty<string>(),
+                                allowedChildren: null,
                                 tagStructure: TagStructure.Unspecified,
                                 designTimeDescriptor: null),
                         }
@@ -137,6 +142,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                                 assemblyName: AssemblyName,
                                 attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
                                 requiredAttributes: Enumerable.Empty<string>(),
+                                allowedChildren: null,
                                 tagStructure: default(TagStructure),
                                 designTimeDescriptor: new TagHelperDesignTimeDescriptor
                                 {
@@ -155,6 +161,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                                 assemblyName: AssemblyName,
                                 attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
                                 requiredAttributes: Enumerable.Empty<string>(),
+                                allowedChildren: null,
                                 tagStructure: default(TagStructure),
                                 designTimeDescriptor: new TagHelperDesignTimeDescriptor
                                 {
@@ -167,6 +174,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                                 assemblyName: AssemblyName,
                                 attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
                                 requiredAttributes: Enumerable.Empty<string>(),
+                                allowedChildren: null,
                                 tagStructure: default(TagStructure),
                                 designTimeDescriptor: new TagHelperDesignTimeDescriptor
                                 {
@@ -1734,6 +1742,42 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             }
         }
 
+        public static TheoryData<string, string[]> InvalidRestrictChildrenNameData
+        {
+            get
+            {
+                var nullOrWhiteSpaceError =
+                    Resources.FormatTagHelperDescriptorFactory_InvalidRestrictChildrenAttributeNameNullWhitespace(
+                        nameof(RestrictChildrenAttribute),
+                        "SomeTagHelper");
+
+                return GetInvalidNameOrPrefixData(
+                    onNameError: (invalidInput, invalidCharacter) =>
+                        Resources.FormatTagHelperDescriptorFactory_InvalidRestrictChildrenAttributeName(
+                            nameof(RestrictChildrenAttribute),
+                            invalidInput,
+                            "SomeTagHelper",
+                            invalidCharacter),
+                    whitespaceErrorString: nullOrWhiteSpaceError,
+                    onDataError: null);
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(InvalidRestrictChildrenNameData))]
+        public void GetValidAllowedChildren_AddsExpectedErrors(string name, string[] expectedErrorMessages)
+        {
+            // Arrange
+            var errorSink = new ErrorSink();
+            var expectedErrors = expectedErrorMessages.Select(message => new RazorError(message, SourceLocation.Zero));
+
+            // Act
+            TagHelperDescriptorFactory.GetValidAllowedChildren(new[] { name }, "SomeTagHelper", errorSink);
+
+            // Assert
+            Assert.Equal(expectedErrors, errorSink.Errors);
+        }
+
         private static TheoryData<string, string[]> GetInvalidNameOrPrefixData(
             Func<string, string, string> onNameError,
             string whitespaceErrorString,
@@ -1973,6 +2017,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 assemblyName: assemblyName,
                 attributes: attributes ?? Enumerable.Empty<TagHelperAttributeDescriptor>(),
                 requiredAttributes: requiredAttributes ?? Enumerable.Empty<string>(),
+                allowedChildren: null,
                 tagStructure: default(TagStructure),
                 designTimeDescriptor: null);
         }

@@ -34,6 +34,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                         new TagHelperAttributeDescriptor("type", inputTypePropertyInfo)
                     },
                     requiredAttributes: new string[0],
+                    allowedChildren: null,
                     tagStructure: TagStructure.WithoutEndTag,
                     designTimeDescriptor: null),
                 new TagHelperDescriptor(

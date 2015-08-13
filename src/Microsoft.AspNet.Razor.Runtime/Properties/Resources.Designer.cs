@@ -394,6 +394,38 @@ namespace Microsoft.AspNet.Razor.Runtime
             return string.Format(CultureInfo.CurrentCulture, GetString("TagHelperAttributeList_CannotAddAttribute"), p0, p1, p2, p3);
         }
 
+        /// <summary>
+        /// Invalid '{0}' tag name '{1}' for tag helper '{2}'. Tag helpers cannot restrict child elements that contain a '{3}' character.
+        /// </summary>
+        internal static string TagHelperDescriptorFactory_InvalidRestrictChildrenAttributeName
+        {
+            get { return GetString("TagHelperDescriptorFactory_InvalidRestrictChildrenAttributeName"); }
+        }
+
+        /// <summary>
+        /// Invalid '{0}' tag name '{1}' for tag helper '{2}'. Tag helpers cannot restrict child elements that contain a '{3}' character.
+        /// </summary>
+        internal static string FormatTagHelperDescriptorFactory_InvalidRestrictChildrenAttributeName(object p0, object p1, object p2, object p3)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelperDescriptorFactory_InvalidRestrictChildrenAttributeName"), p0, p1, p2, p3);
+        }
+
+        /// <summary>
+        /// Invalid '{0}' tag name for tag helper '{1}'. Name cannot be null or whitespace.
+        /// </summary>
+        internal static string TagHelperDescriptorFactory_InvalidRestrictChildrenAttributeNameNullWhitespace
+        {
+            get { return GetString("TagHelperDescriptorFactory_InvalidRestrictChildrenAttributeNameNullWhitespace"); }
+        }
+
+        /// <summary>
+        /// Invalid '{0}' tag name for tag helper '{1}'. Name cannot be null or whitespace.
+        /// </summary>
+        internal static string FormatTagHelperDescriptorFactory_InvalidRestrictChildrenAttributeNameNullWhitespace(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelperDescriptorFactory_InvalidRestrictChildrenAttributeNameNullWhitespace"), p0, p1);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

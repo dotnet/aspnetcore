@@ -26,14 +26,19 @@ namespace Microsoft.AspNet.Razor.Test.Internal
             }
 
             return base.Equals(descriptorX, descriptorY) &&
-                // Normal comparer doesn't care about the case, required attribute order, attributes or prefixes.
-                // In tests we do.
+                // Normal comparer doesn't care about the case, required attribute order, allowed children order,
+                // attributes or prefixes. In tests we do.
                 string.Equals(descriptorX.TagName, descriptorY.TagName, StringComparison.Ordinal) &&
                 string.Equals(descriptorX.Prefix, descriptorY.Prefix, StringComparison.Ordinal) &&
                 Enumerable.SequenceEqual(
                     descriptorX.RequiredAttributes,
                     descriptorY.RequiredAttributes,
                     StringComparer.Ordinal) &&
+                (descriptorX.AllowedChildren == descriptorY.AllowedChildren ||
+                Enumerable.SequenceEqual(
+                    descriptorX.AllowedChildren,
+                    descriptorY.AllowedChildren,
+                    StringComparer.Ordinal)) &&
                 descriptorX.Attributes.SequenceEqual(
                     descriptorY.Attributes,
                     TagHelperAttributeDescriptorComparer.Default) &&
@@ -58,6 +63,14 @@ namespace Microsoft.AspNet.Razor.Test.Internal
             foreach (var requiredAttribute in descriptor.RequiredAttributes)
             {
                 hashCodeCombiner.Add(requiredAttribute, StringComparer.Ordinal);
+            }
+
+            if (descriptor.AllowedChildren != null)
+            {
+                foreach (var child in descriptor.AllowedChildren)
+                {
+                    hashCodeCombiner.Add(child, StringComparer.Ordinal);
+                }
             }
 
             foreach (var attribute in descriptor.Attributes)

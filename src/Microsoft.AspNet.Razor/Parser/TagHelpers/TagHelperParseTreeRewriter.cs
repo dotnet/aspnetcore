@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
@@ -16,6 +17,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
     {
         private TagHelperDescriptorProvider _provider;
         private Stack<TagHelperBlockTracker> _trackerStack;
+        private TagHelperBlockTracker _currentTagHelperTracker;
         private Stack<BlockBuilder> _blockStack;
         private BlockBuilder _currentBlock;
 
@@ -56,6 +58,11 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                         {
                             continue;
                         }
+                        else
+                        {
+                            // Non-TagHelper tag.
+                            ValidateParentTagHelperAllowsPlainTag(childBlock, context.ErrorSink);
+                        }
 
                         // If we get to here it means that we're a normal html tag.  No need to iterate any deeper into
                         // the children of it because they wont be tag helpers.
@@ -66,6 +73,10 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                         RewriteTags(childBlock, context);
                         continue;
                     }
+                }
+                else
+                {
+                    ValidateParentTagHelperAllowsContent((Span)child, context.ErrorSink);
                 }
 
                 // At this point the child is a Span or Block with Type BlockType.Tag that doesn't happen to be a
@@ -108,7 +119,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                 return false;
             }
 
-            var tracker = _trackerStack.Count > 0 ? _trackerStack.Peek() : null;
+            var tracker = _currentTagHelperTracker;
             var tagNameScope = tracker?.Builder.TagName ?? string.Empty;
 
             if (!IsEndTag(tagBlock))
@@ -135,6 +146,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                     return false;
                 }
 
+                ValidateParentTagHelperAllowsTagHelper(tagName, tagBlock, context.ErrorSink);
                 ValidateDescriptors(descriptors, tagName, tagBlock, context.ErrorSink);
 
                 // We're in a start TagHelper block.
@@ -211,6 +223,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                     // can't recover it means there was no corresponding tag helper start tag.
                     if (TryRecoverTagHelper(tagName, tagBlock, context))
                     {
+                        ValidateParentTagHelperAllowsTagHelper(tagName, tagBlock, context.ErrorSink);
                         ValidateTagSyntax(tagName, tagBlock, context);
 
                         // Successfully recovered, move onto the next element.
@@ -265,6 +278,63 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
             }
 
             return attributeNames;
+        }
+
+        private void ValidateParentTagHelperAllowsContent(Span child, ErrorSink errorSink)
+        {
+            var allowedChildren = _currentTagHelperTracker?.AllowedChildren;
+            if (allowedChildren != null)
+            {
+                var content = child.Content;
+                if (!string.IsNullOrWhiteSpace(content))
+                {
+                    var trimmedStart = content.TrimStart();
+                    var whitespace = content.Substring(0, content.Length - trimmedStart.Length);
+                    var errorStart = SourceLocation.Advance(child.Start, whitespace);
+                    var length = trimmedStart.TrimEnd().Length;
+                    var allowedChildrenString = string.Join(", ", allowedChildren);
+                    errorSink.OnError(
+                        errorStart,
+                        RazorResources.FormatTagHelperParseTreeRewriter_CannotHaveNonTagContent(
+                            _currentTagHelperTracker.Builder.TagName,
+                            allowedChildrenString),
+                        length);
+                }
+            }
+        }
+
+        private void ValidateParentTagHelperAllowsPlainTag(Block tagBlock, ErrorSink errorSink)
+        {
+            if (_currentTagHelperTracker?.AllowedChildren != null)
+            {
+                OnAllowedChildrenTagError(_currentTagHelperTracker, tagBlock, errorSink);
+            }
+        }
+
+        private void ValidateParentTagHelperAllowsTagHelper(string tagName, Block tagBlock, ErrorSink errorSink)
+        {
+            var currentlyAllowedChildren = _currentTagHelperTracker?.AllowedChildren;
+
+            if (currentlyAllowedChildren != null &&
+                !currentlyAllowedChildren.Contains(tagName, StringComparer.OrdinalIgnoreCase))
+            {
+                OnAllowedChildrenTagError(_currentTagHelperTracker, tagBlock, errorSink);
+            }
+        }
+
+        private static void OnAllowedChildrenTagError(
+            TagHelperBlockTracker tracker,
+            Block tagBlock,
+            ErrorSink errorSink)
+        {
+            var tagName = GetTagName(tagBlock);
+            var allowedChildrenString = string.Join(", ", tracker.AllowedChildren);
+            var errorMessage = RazorResources.FormatTagHelperParseTreeRewriter_InvalidNestedTag(
+                tagName,
+                tracker.Builder.TagName,
+                allowedChildrenString);
+
+            errorSink.OnError(tagBlock.Start, errorMessage, tagBlock.Length);
         }
 
         private static void ValidateDescriptors(
@@ -361,6 +431,8 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
             // for formatting.
             _trackerStack.Pop().Builder.SourceEndTag = endTag;
 
+            _currentTagHelperTracker = _trackerStack.Count > 0 ? _trackerStack.Peek() : null;
+
             BuildCurrentlyTrackedBlock();
         }
 
@@ -385,7 +457,8 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
 
         private void TrackTagHelperBlock(TagHelperBlockBuilder builder)
         {
-            _trackerStack.Push(new TagHelperBlockTracker(builder));
+            _currentTagHelperTracker = new TagHelperBlockTracker(builder);
+            _trackerStack.Push(_currentTagHelperTracker);
 
             TrackBlock(builder);
         }
@@ -478,11 +551,20 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
             public TagHelperBlockTracker(TagHelperBlockBuilder builder)
             {
                 Builder = builder;
+
+                if (Builder.Descriptors.Any(descriptor => descriptor.AllowedChildren != null))
+                {
+                    AllowedChildren = Builder.Descriptors
+                        .SelectMany(descriptor => descriptor.AllowedChildren)
+                        .Distinct(StringComparer.OrdinalIgnoreCase);
+                }
             }
 
             public TagHelperBlockBuilder Builder { get; }
 
             public uint OpenMatchingTags { get; set; }
+
+            public IEnumerable<string> AllowedChildren { get; }
         }
     }
 }

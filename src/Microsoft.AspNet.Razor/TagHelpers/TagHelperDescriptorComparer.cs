@@ -30,7 +30,8 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// <remarks>
         /// Determines equality based on <see cref="TagHelperDescriptor.TypeName"/>,
         /// <see cref="TagHelperDescriptor.AssemblyName"/>, <see cref="TagHelperDescriptor.TagName"/>,
-        /// <see cref="TagHelperDescriptor.RequiredAttributes"/>, and <see cref="TagHelperDescriptor.TagStructure"/>.
+        /// <see cref="TagHelperDescriptor.RequiredAttributes"/>, <see cref="TagHelperDescriptor.AllowedChildren"/>,
+        /// and <see cref="TagHelperDescriptor.TagStructure"/>.
         /// Ignores <see cref="TagHelperDescriptor.DesignTimeDescriptor"/> because it can be inferred directly from
         /// <see cref="TagHelperDescriptor.TypeName"/> and <see cref="TagHelperDescriptor.AssemblyName"/>.
         /// </remarks>
@@ -49,6 +50,13 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                     descriptorX.RequiredAttributes.OrderBy(attribute => attribute, StringComparer.OrdinalIgnoreCase),
                     descriptorY.RequiredAttributes.OrderBy(attribute => attribute, StringComparer.OrdinalIgnoreCase),
                     StringComparer.OrdinalIgnoreCase) &&
+                (descriptorX.AllowedChildren == descriptorY.AllowedChildren ||
+                (descriptorX.AllowedChildren != null &&
+                descriptorY.AllowedChildren != null &&
+                Enumerable.SequenceEqual(
+                    descriptorX.AllowedChildren.OrderBy(child => child, StringComparer.OrdinalIgnoreCase),
+                    descriptorY.AllowedChildren.OrderBy(child => child, StringComparer.OrdinalIgnoreCase),
+                    StringComparer.OrdinalIgnoreCase))) &&
                 descriptorX.TagStructure == descriptorY.TagStructure;
         }
 
@@ -67,6 +75,15 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             foreach (var attribute in attributes)
             {
                 hashCodeCombiner.Add(attribute, StringComparer.OrdinalIgnoreCase);
+            }
+
+            if (descriptor.AllowedChildren != null)
+            {
+                var allowedChildren = descriptor.AllowedChildren.OrderBy(child => child, StringComparer.OrdinalIgnoreCase);
+                foreach (var child in allowedChildren)
+                {
+                    hashCodeCombiner.Add(child, StringComparer.OrdinalIgnoreCase);
+                }
             }
 
             return hashCodeCombiner.CombinedHash;

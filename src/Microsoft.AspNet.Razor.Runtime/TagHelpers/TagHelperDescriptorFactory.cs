@@ -61,6 +61,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             var attributeDescriptors = GetAttributeDescriptors(type, designTime, errorSink);
             var targetElementAttributes = GetValidTargetElementAttributes(typeInfo, errorSink);
+            var allowedChildren = GetAllowedChildren(typeInfo, errorSink);
 
             var tagHelperDescriptors =
                 BuildTagHelperDescriptors(
@@ -68,6 +69,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                     assemblyName,
                     attributeDescriptors,
                     targetElementAttributes,
+                    allowedChildren,
                     designTime);
 
             return tagHelperDescriptors.Distinct(TagHelperDescriptorComparer.Default);
@@ -87,6 +89,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             string assemblyName,
             IEnumerable<TagHelperAttributeDescriptor> attributeDescriptors,
             IEnumerable<TargetElementAttribute> targetElementAttributes,
+            IEnumerable<string> allowedChildren,
             bool designTime)
         {
             TagHelperDesignTimeDescriptor typeDesignTimeDescriptor = null;
@@ -118,6 +121,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         assemblyName,
                         attributeDescriptors,
                         requiredAttributes: Enumerable.Empty<string>(),
+                        allowedChildren: allowedChildren,
                         tagStructure: default(TagStructure),
                         designTimeDescriptor: typeDesignTimeDescriptor)
                 };
@@ -130,7 +134,62 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         assemblyName,
                         attributeDescriptors,
                         attribute,
+                        allowedChildren,
                         typeDesignTimeDescriptor));
+        }
+
+        private static IEnumerable<string> GetAllowedChildren(TypeInfo typeInfo, ErrorSink errorSink)
+        {
+            var restrictChildrenAttribute = typeInfo.GetCustomAttribute<RestrictChildrenAttribute>(inherit: false);
+            if (restrictChildrenAttribute == null)
+            {
+                return null;
+            }
+
+            var allowedChildren = restrictChildrenAttribute.ChildTagNames;
+            var validAllowedChildren = GetValidAllowedChildren(allowedChildren, typeInfo.FullName, errorSink);
+
+            if (validAllowedChildren.Any())
+            {
+                return validAllowedChildren;
+            }
+            else
+            {
+                // All allowed children were invalid, return null to indicate that any child is acceptable.
+                return null;
+            }
+        }
+
+        // Internal for unit testing
+        internal static IEnumerable<string> GetValidAllowedChildren(
+            IEnumerable<string> allowedChildren,
+            string tagHelperName,
+            ErrorSink errorSink)
+        {
+            var validAllowedChildren = new List<string>();
+
+            foreach (var name in allowedChildren)
+            {
+                var valid = TryValidateName(
+                    name,
+                    whitespaceError: Resources.FormatTagHelperDescriptorFactory_InvalidRestrictChildrenAttributeNameNullWhitespace(
+                        nameof(RestrictChildrenAttribute),
+                        tagHelperName),
+                    characterErrorBuilder: (invalidCharacter) =>
+                        Resources.FormatTagHelperDescriptorFactory_InvalidRestrictChildrenAttributeName(
+                            nameof(RestrictChildrenAttribute),
+                            name,
+                            tagHelperName,
+                            invalidCharacter),
+                    errorSink: errorSink);
+
+                if (valid)
+                {
+                    validAllowedChildren.Add(name);
+                }
+            }
+
+            return validAllowedChildren;
         }
 
         private static TagHelperDescriptor BuildTagHelperDescriptor(
@@ -138,6 +197,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             string assemblyName,
             IEnumerable<TagHelperAttributeDescriptor> attributeDescriptors,
             TargetElementAttribute targetElementAttribute,
+            IEnumerable<string> allowedChildren,
             TagHelperDesignTimeDescriptor designTimeDescriptor)
         {
             var requiredAttributes = GetCommaSeparatedValues(targetElementAttribute.Attributes);
@@ -148,6 +208,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 assemblyName,
                 attributeDescriptors,
                 requiredAttributes,
+                allowedChildren,
                 targetElementAttribute.TagStructure,
                 designTimeDescriptor);
         }
@@ -158,6 +219,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             string assemblyName,
             IEnumerable<TagHelperAttributeDescriptor> attributeDescriptors,
             IEnumerable<string> requiredAttributes,
+            IEnumerable<string> allowedChildren,
             TagStructure tagStructure,
             TagHelperDesignTimeDescriptor designTimeDescriptor)
         {
@@ -168,6 +230,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 assemblyName: assemblyName,
                 attributes: attributeDescriptors,
                 requiredAttributes: requiredAttributes,
+                allowedChildren: allowedChildren,
                 tagStructure: tagStructure,
                 designTimeDescriptor: designTimeDescriptor);
         }
@@ -230,13 +293,28 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var targetName = targetingAttributes ?
                 Resources.TagHelperDescriptorFactory_Attribute :
                 Resources.TagHelperDescriptorFactory_Tag;
+
+            var validName = TryValidateName(
+                name,
+                whitespaceError: Resources.FormatTargetElementAttribute_NameCannotBeNullOrWhitespace(targetName),
+                characterErrorBuilder: (invalidCharacter) =>
+                    Resources.FormatTargetElementAttribute_InvalidName(targetName.ToLower(), name, invalidCharacter),
+                errorSink: errorSink);
+
+            return validName;
+        }
+
+        private static bool TryValidateName(
+            string name,
+            string whitespaceError,
+            Func<char, string> characterErrorBuilder,
+            ErrorSink errorSink)
+        {
             var validName = true;
 
             if (string.IsNullOrWhiteSpace(name))
             {
-                errorSink.OnError(
-                    SourceLocation.Zero,
-                    Resources.FormatTargetElementAttribute_NameCannotBeNullOrWhitespace(targetName));
+                errorSink.OnError(SourceLocation.Zero, whitespaceError);
 
                 validName = false;
             }
@@ -247,12 +325,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                     if (char.IsWhiteSpace(character) ||
                         InvalidNonWhitespaceNameCharacters.Contains(character))
                     {
-                        errorSink.OnError(
-                            SourceLocation.Zero,
-                            Resources.FormatTargetElementAttribute_InvalidName(
-                                targetName.ToLower(),
-                                name,
-                                character));
+                        var error = characterErrorBuilder(character);
+                        errorSink.OnError(SourceLocation.Zero, error);
 
                         validName = false;
                     }

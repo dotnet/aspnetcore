@@ -1550,6 +1550,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                         new TagHelperAttributeDescriptor("age", pAgePropertyInfo)
                     },
                     requiredAttributes: Enumerable.Empty<string>(),
+                    allowedChildren: null,
                     tagStructure: TagStructure.NormalOrSelfClosing,
                     designTimeDescriptor: null),
                 new TagHelperDescriptor(
@@ -1562,6 +1563,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                         new TagHelperAttributeDescriptor("type", inputTypePropertyInfo)
                     },
                     requiredAttributes: Enumerable.Empty<string>(),
+                    allowedChildren: null,
                     tagStructure: TagStructure.WithoutEndTag,
                     designTimeDescriptor: null),
                 new TagHelperDescriptor(
@@ -1575,6 +1577,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                         new TagHelperAttributeDescriptor("checked", checkedPropertyInfo)
                     },
                     requiredAttributes: Enumerable.Empty<string>(),
+                    allowedChildren: null,
                     tagStructure: TagStructure.Unspecified,
                     designTimeDescriptor: null)
             };

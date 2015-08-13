@@ -19,6 +19,450 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
     public class TagHelperParseTreeRewriterTest : TagHelperRewritingTestBase
     {
         [Fact]
+        public void Rewrite_CanHandleInvalidChildrenWithWhitespace()
+        {
+            // Arrange
+            var factory = CreateDefaultSpanFactory();
+            var blockFactory = new BlockFactory(factory);
+            var documentContent = $"<p>{Environment.NewLine}    <strong>{Environment.NewLine}        Hello" +
+                $"{Environment.NewLine}    </strong>{Environment.NewLine}</p>";
+            var expectedErrors = new[] {
+                new RazorError(
+                    RazorResources.FormatTagHelperParseTreeRewriter_InvalidNestedTag("strong", "p", "br"),
+                    absoluteIndex: 9,
+                    lineIndex: 1,
+                    columnIndex: 9,
+                    length: 8),
+                new RazorError(
+                    RazorResources.FormatTagHelperParseTreeRewriter_CannotHaveNonTagContent("p", "br"),
+                    absoluteIndex: 27,
+                    lineIndex: 2,
+                    columnIndex: 27,
+                    length: 5),
+                new RazorError(
+                    RazorResources.FormatTagHelperParseTreeRewriter_InvalidNestedTag("strong", "p", "br"),
+                    absoluteIndex: 38,
+                    lineIndex: 3,
+                    columnIndex: 38,
+                    length: 9),
+            };
+            var expectedOutput = new MarkupBlock(
+                new MarkupTagHelperBlock("p",
+                    factory.Markup(Environment.NewLine + "    "),
+                    blockFactory.MarkupTagBlock("<strong>"),
+                    factory.Markup(Environment.NewLine + "        Hello" + Environment.NewLine + "    "),
+                    blockFactory.MarkupTagBlock("</strong>"),
+                    factory.Markup(Environment.NewLine)));
+            var descriptors = new TagHelperDescriptor[]
+                {
+                    new TagHelperDescriptor(
+                        prefix: string.Empty,
+                        tagName: "p",
+                        typeName: "PTagHelper",
+                        assemblyName: "SomeAssembly",
+                        attributes: new TagHelperAttributeDescriptor[0],
+                        requiredAttributes: Enumerable.Empty<string>(),
+                        allowedChildren: new[] { "br" },
+                        tagStructure: TagStructure.Unspecified,
+                        designTimeDescriptor: null),
+                };
+            var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
+
+            // Act & Assert
+            EvaluateData(descriptorProvider, documentContent, expectedOutput, expectedErrors);
+        }
+
+        [Fact]
+        public void Rewrite_RecoversWhenRequiredAttributeMismatchAndRestrictedChildren()
+        {
+            // Arrange
+            var factory = CreateDefaultSpanFactory();
+            var blockFactory = new BlockFactory(factory);
+            var documentContent = "<strong required><strong></strong></strong>";
+
+            var expectedErrors = new[] {
+                new RazorError(
+                    RazorResources.FormatTagHelperParseTreeRewriter_InvalidNestedTag("strong", "strong", "br"),
+                    absoluteIndex: 17,
+                    lineIndex: 0,
+                    columnIndex: 17,
+                    length: 8),
+                new RazorError(
+                    RazorResources.FormatTagHelperParseTreeRewriter_InvalidNestedTag("strong", "strong", "br"),
+                    absoluteIndex: 25,
+                    lineIndex: 0,
+                    columnIndex: 25,
+                    length: 9),
+            };
+            var expectedOutput = new MarkupBlock(
+                new MarkupTagHelperBlock("strong",
+                    new List<KeyValuePair<string, SyntaxTreeNode>>
+                    {
+                        new KeyValuePair<string, SyntaxTreeNode>("required", null)
+                    },
+                    blockFactory.MarkupTagBlock("<strong>"),
+                    blockFactory.MarkupTagBlock("</strong>")));
+            var descriptors = new TagHelperDescriptor[]
+                {
+                    new TagHelperDescriptor(
+                        prefix: string.Empty,
+                        tagName: "strong",
+                        typeName: "StrongTagHelper",
+                        assemblyName: "SomeAssembly",
+                        attributes: new TagHelperAttributeDescriptor[0],
+                        requiredAttributes: new[] { "required" },
+                        allowedChildren: new[] { "br" },
+                        tagStructure: TagStructure.Unspecified,
+                        designTimeDescriptor: null),
+                };
+            var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
+
+            // Act & Assert
+            EvaluateData(descriptorProvider, documentContent, expectedOutput, expectedErrors);
+        }
+
+        [Fact]
+        public void Rewrite_CanHandleMultipleTagHelpersWithAllowedChildren_OneNull()
+        {
+            // Arrange
+            var factory = CreateDefaultSpanFactory();
+            var documentContent = "<p><strong>Hello World</strong><br></p>";
+            var expectedOutput = new MarkupBlock(
+                new MarkupTagHelperBlock("p",
+                    new MarkupTagHelperBlock("strong",
+                        factory.Markup("Hello World")),
+                    new MarkupTagHelperBlock("br", TagMode.StartTagOnly)));
+            var descriptors = new TagHelperDescriptor[]
+                {
+                    new TagHelperDescriptor(
+                        prefix: string.Empty,
+                        tagName: "p",
+                        typeName: "PTagHelper1",
+                        assemblyName: "SomeAssembly",
+                        attributes: new TagHelperAttributeDescriptor[0],
+                        requiredAttributes: Enumerable.Empty<string>(),
+                        allowedChildren: new[] { "strong", "br" },
+                        tagStructure: TagStructure.Unspecified,
+                        designTimeDescriptor: null),
+                    new TagHelperDescriptor(
+                        prefix: string.Empty,
+                        tagName: "p",
+                        typeName: "PTagHelper2",
+                        assemblyName: "SomeAssembly",
+                        attributes: new TagHelperAttributeDescriptor[0],
+                        requiredAttributes: Enumerable.Empty<string>(),
+                        allowedChildren: null,
+                        tagStructure: TagStructure.Unspecified,
+                        designTimeDescriptor: null),
+                    new TagHelperDescriptor(
+                        prefix: string.Empty,
+                        tagName: "strong",
+                        typeName: "StrongTagHelper",
+                        assemblyName: "SomeAssembly",
+                        attributes: new TagHelperAttributeDescriptor[0],
+                        requiredAttributes: Enumerable.Empty<string>(),
+                        allowedChildren: null,
+                        tagStructure: TagStructure.Unspecified,
+                        designTimeDescriptor: null),
+                    new TagHelperDescriptor(
+                        prefix: string.Empty,
+                        tagName: "br",
+                        typeName: "BRTagHelper",
+                        assemblyName: "SomeAssembly",
+                        attributes: new TagHelperAttributeDescriptor[0],
+                        requiredAttributes: Enumerable.Empty<string>(),
+                        allowedChildren: null,
+                        tagStructure: TagStructure.WithoutEndTag,
+                        designTimeDescriptor: null),
+                };
+            var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
+
+            // Act & Assert
+            EvaluateData(descriptorProvider, documentContent, expectedOutput, expectedErrors: new RazorError[0]);
+        }
+
+        [Fact]
+        public void Rewrite_CanHandleMultipleTagHelpersWithAllowedChildren()
+        {
+            // Arrange
+            var factory = CreateDefaultSpanFactory();
+            var documentContent = "<p><strong>Hello World</strong><br></p>";
+            var expectedOutput = new MarkupBlock(
+                new MarkupTagHelperBlock("p",
+                    new MarkupTagHelperBlock("strong",
+                        factory.Markup("Hello World")),
+                    new MarkupTagHelperBlock("br", TagMode.StartTagOnly)));
+            var descriptors = new TagHelperDescriptor[]
+                {
+                    new TagHelperDescriptor(
+                        prefix: string.Empty,
+                        tagName: "p",
+                        typeName: "PTagHelper1",
+                        assemblyName: "SomeAssembly",
+                        attributes: new TagHelperAttributeDescriptor[0],
+                        requiredAttributes: Enumerable.Empty<string>(),
+                        allowedChildren: new[] { "strong" },
+                        tagStructure: TagStructure.Unspecified,
+                        designTimeDescriptor: null),
+                    new TagHelperDescriptor(
+                        prefix: string.Empty,
+                        tagName: "p",
+                        typeName: "PTagHelper2",
+                        assemblyName: "SomeAssembly",
+                        attributes: new TagHelperAttributeDescriptor[0],
+                        requiredAttributes: Enumerable.Empty<string>(),
+                        allowedChildren: new[] { "br" },
+                        tagStructure: TagStructure.Unspecified,
+                        designTimeDescriptor: null),
+                    new TagHelperDescriptor(
+                        prefix: string.Empty,
+                        tagName: "strong",
+                        typeName: "StrongTagHelper",
+                        assemblyName: "SomeAssembly",
+                        attributes: new TagHelperAttributeDescriptor[0],
+                        requiredAttributes: Enumerable.Empty<string>(),
+                        allowedChildren: null,
+                        tagStructure: TagStructure.Unspecified,
+                        designTimeDescriptor: null),
+                    new TagHelperDescriptor(
+                        prefix: string.Empty,
+                        tagName: "br",
+                        typeName: "BRTagHelper",
+                        assemblyName: "SomeAssembly",
+                        attributes: new TagHelperAttributeDescriptor[0],
+                        requiredAttributes: Enumerable.Empty<string>(),
+                        allowedChildren: null,
+                        tagStructure: TagStructure.WithoutEndTag,
+                        designTimeDescriptor: null),
+                };
+            var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
+
+            // Act & Assert
+            EvaluateData(descriptorProvider, documentContent, expectedOutput, expectedErrors: new RazorError[0]);
+        }
+
+        public static TheoryData AllowedChildrenData
+        {
+            get
+            {
+                var factory = CreateDefaultSpanFactory();
+                var blockFactory = new BlockFactory(factory);
+                Func<string, string, string, int, int, RazorError> nestedTagError =
+                    (childName, parentName, allowed, location, length) => new RazorError(
+                        RazorResources.FormatTagHelperParseTreeRewriter_InvalidNestedTag(
+                            childName,
+                            parentName,
+                            allowed),
+                        absoluteIndex: location,
+                        lineIndex: 0,
+                        columnIndex: location,
+                        length: length);
+                Func<string, string, int, int, RazorError> nestedContentError =
+                    (parentName, allowed, location, length) => new RazorError(
+                        RazorResources.FormatTagHelperParseTreeRewriter_CannotHaveNonTagContent(parentName, allowed),
+                        absoluteIndex: location,
+                        lineIndex: 0,
+                        columnIndex: location,
+                        length: length);
+
+                return new TheoryData<string, IEnumerable<string>, MarkupBlock, RazorError[]>
+                {
+                    {
+                        "<p><br /></p>",
+                        new[] { "br" },
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p",
+                                new MarkupTagHelperBlock("br", TagMode.SelfClosing))),
+                        new RazorError[0]
+                    },
+                    {
+                        $"<p>{Environment.NewLine}<br />{Environment.NewLine}</p>",
+                        new[] { "br" },
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p",
+                                factory.Markup(Environment.NewLine),
+                                new MarkupTagHelperBlock("br", TagMode.SelfClosing),
+                                factory.Markup(Environment.NewLine))),
+                        new RazorError[0]
+                    },
+                    {
+                        "<p><br></p>",
+                        new[] { "strong" },
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p",
+                                new MarkupTagHelperBlock("br", TagMode.StartTagOnly))),
+                        new[] { nestedTagError("br", "p", "strong", 3, 4) }
+                    },
+                    {
+                        "<p>Hello</p>",
+                        new[] { "strong" },
+                        new MarkupBlock(new MarkupTagHelperBlock("p", factory.Markup("Hello"))),
+                        new[] { nestedContentError("p", "strong", 3, 5) }
+                    },
+                    {
+                        "<p><hr /></p>",
+                        new[] { "br", "strong" },
+                        new MarkupBlock(new MarkupTagHelperBlock("p", blockFactory.MarkupTagBlock("<hr />"))),
+                        new[] { nestedTagError("hr", "p", "br, strong", 3, 6) }
+                    },
+                    {
+                        "<p><br>Hello</p>",
+                        new[] { "strong" },
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p",
+                                new MarkupTagHelperBlock("br", TagMode.StartTagOnly),
+                                factory.Markup("Hello"))),
+                        new[] { nestedTagError("br", "p", "strong", 3, 4), nestedContentError("p", "strong", 7, 5) }
+                    },
+                    {
+                        "<p><strong>Title:</strong><br />Something</p>",
+                        new[] { "strong" },
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p",
+                                new MarkupTagHelperBlock("strong", factory.Markup("Title:")),
+                                new MarkupTagHelperBlock("br", TagMode.SelfClosing),
+                                factory.Markup("Something"))),
+                        new[]
+                        {
+                            nestedContentError("strong", "strong", 11, 6),
+                            nestedTagError("br", "p", "strong", 26, 6),
+                            nestedContentError("p", "strong", 32, 9),
+                        }
+                    },
+                    {
+                        "<p><strong>Title:</strong><br />Something</p>",
+                        new[] { "strong", "br" },
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p",
+                                new MarkupTagHelperBlock("strong", factory.Markup("Title:")),
+                                new MarkupTagHelperBlock("br", TagMode.SelfClosing),
+                                factory.Markup("Something"))),
+                        new[]
+                        {
+                            nestedContentError("strong", "strong, br", 11, 6),
+                            nestedContentError("p", "strong, br", 32, 9),
+                        }
+                    },
+                    {
+                        "<p>  <strong>Title:</strong>  <br />  Something</p>",
+                        new[] { "strong", "br" },
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p",
+                                factory.Markup("  "),
+                                new MarkupTagHelperBlock("strong", factory.Markup("Title:")),
+                                factory.Markup("  "),
+                                new MarkupTagHelperBlock("br", TagMode.SelfClosing),
+                                factory.Markup("  Something"))),
+                        new[]
+                        {
+                            nestedContentError("strong", "strong, br", 13, 6),
+                            nestedContentError("p", "strong, br", 38, 9),
+                        }
+                    },
+                    {
+                        "<p><strong>Title:<br><em>A Very Cool</em></strong><br />Something</p>",
+                        new[] { "strong" },
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p",
+                                new MarkupTagHelperBlock("strong",
+                                    factory.Markup("Title:"),
+                                    new MarkupTagHelperBlock("br", TagMode.StartTagOnly),
+                                    blockFactory.MarkupTagBlock("<em>"),
+                                    factory.Markup("A Very Cool"),
+                                    blockFactory.MarkupTagBlock("</em>")),
+                                new MarkupTagHelperBlock("br", TagMode.SelfClosing),
+                                factory.Markup("Something"))),
+                        new[]
+                        {
+                            nestedContentError("strong", "strong", 11, 6),
+                            nestedTagError("br", "strong", "strong", 17, 4),
+                            nestedTagError("em", "strong", "strong", 21, 4),
+                            nestedContentError("strong", "strong", 25, 11),
+                            nestedTagError("em", "strong", "strong", 36, 5),
+                            nestedTagError("br", "p", "strong", 50, 6),
+                            nestedContentError("p", "strong", 56, 9)
+                        }
+                    },
+                    {
+                        "<p><custom>Title:<br><em>A Very Cool</em></custom><br />Something</p>",
+                        new[] { "custom" },
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p",
+                                blockFactory.MarkupTagBlock("<custom>"),
+                                factory.Markup("Title:"),
+                                new MarkupTagHelperBlock("br", TagMode.StartTagOnly),
+                                blockFactory.MarkupTagBlock("<em>"),
+                                factory.Markup("A Very Cool"),
+                                blockFactory.MarkupTagBlock("</em>"),
+                                blockFactory.MarkupTagBlock("</custom>"),
+                                new MarkupTagHelperBlock("br", TagMode.SelfClosing),
+                                factory.Markup("Something"))),
+                        new[]
+                        {
+                            nestedTagError("custom", "p", "custom", 3, 8),
+                            nestedContentError("p", "custom", 11, 6),
+                            nestedTagError("br", "p", "custom", 17, 4),
+                            nestedTagError("em", "p", "custom", 21, 4),
+                            nestedContentError("p", "custom", 25, 11),
+                            nestedTagError("em", "p", "custom", 36, 5),
+                            nestedTagError("custom", "p", "custom", 41, 9),
+                            nestedTagError("br", "p", "custom", 50, 6),
+                            nestedContentError("p", "custom", 56, 9)
+                        }
+                    }
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(AllowedChildrenData))]
+        public void Rewrite_UnderstandsAllowedChildren(
+            string documentContent,
+            IEnumerable<string> allowedChildren,
+            MarkupBlock expectedOutput,
+            RazorError[] expectedErrors)
+        {
+            // Arrange
+            var descriptors = new TagHelperDescriptor[]
+                {
+                    new TagHelperDescriptor(
+                        prefix: string.Empty,
+                        tagName: "p",
+                        typeName: "PTagHelper",
+                        assemblyName: "SomeAssembly",
+                        attributes: new TagHelperAttributeDescriptor[0],
+                        requiredAttributes: Enumerable.Empty<string>(),
+                        allowedChildren: allowedChildren,
+                        tagStructure: TagStructure.Unspecified,
+                        designTimeDescriptor: null),
+                    new TagHelperDescriptor(
+                        prefix: string.Empty,
+                        tagName: "strong",
+                        typeName: "StrongTagHelper",
+                        assemblyName: "SomeAssembly",
+                        attributes: new TagHelperAttributeDescriptor[0],
+                        requiredAttributes: Enumerable.Empty<string>(),
+                        allowedChildren: allowedChildren,
+                        tagStructure: TagStructure.Unspecified,
+                        designTimeDescriptor: null),
+                    new TagHelperDescriptor(
+                        prefix: string.Empty,
+                        tagName: "br",
+                        typeName: "BRTagHelper",
+                        assemblyName: "SomeAssembly",
+                        attributes: new TagHelperAttributeDescriptor[0],
+                        requiredAttributes: Enumerable.Empty<string>(),
+                        allowedChildren: null,
+                        tagStructure: TagStructure.WithoutEndTag,
+                        designTimeDescriptor: null),
+                };
+            var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
+
+            // Act & Assert
+            EvaluateData(descriptorProvider, documentContent, expectedOutput, expectedErrors);
+        }
+
+        [Fact]
         public void Rewrite_CanHandleStartTagOnlyTagTagMode()
         {
             // Arrange
@@ -33,6 +477,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         assemblyName: "SomeAssembly",
                         attributes: new TagHelperAttributeDescriptor[0],
                         requiredAttributes: Enumerable.Empty<string>(),
+                        allowedChildren: null,
                         tagStructure: TagStructure.WithoutEndTag,
                         designTimeDescriptor: null)
                 };
@@ -68,6 +513,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         assemblyName: "SomeAssembly",
                         attributes: new TagHelperAttributeDescriptor[0],
                         requiredAttributes: Enumerable.Empty<string>(),
+                        allowedChildren: null,
                         tagStructure: TagStructure.WithoutEndTag,
                         designTimeDescriptor: null)
                 };
@@ -104,6 +550,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         assemblyName: "SomeAssembly",
                         attributes: new TagHelperAttributeDescriptor[0],
                         requiredAttributes: Enumerable.Empty<string>(),
+                        allowedChildren: null,
                         tagStructure: TagStructure.WithoutEndTag,
                         designTimeDescriptor: null),
                     new TagHelperDescriptor(
@@ -113,6 +560,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         assemblyName: "SomeAssembly",
                         attributes: new TagHelperAttributeDescriptor[0],
                         requiredAttributes: Enumerable.Empty<string>(),
+                        allowedChildren: null,
                         tagStructure: TagStructure.NormalOrSelfClosing,
                         designTimeDescriptor: null)
                 };
@@ -1022,6 +1470,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         assemblyName: "SomeAssembly",
                         attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
                         requiredAttributes: Enumerable.Empty<string>(),
+                        allowedChildren: null,
                         tagStructure: default(TagStructure),
                         designTimeDescriptor: null),
                     new TagHelperDescriptor(
@@ -1039,6 +1488,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                 designTimeDescriptor: null),
                         },
                         requiredAttributes: Enumerable.Empty<string>(),
+                        allowedChildren: null,
                         tagStructure: default(TagStructure),
                         designTimeDescriptor: null)
                 };
@@ -1051,6 +1501,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         assemblyName: "SomeAssembly",
                         attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
                         requiredAttributes: Enumerable.Empty<string>(),
+                        allowedChildren: null,
                         tagStructure: default(TagStructure),
                         designTimeDescriptor: null),
                     new TagHelperDescriptor(
@@ -1068,6 +1519,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                 designTimeDescriptor: null),
                         },
                         requiredAttributes: Enumerable.Empty<string>(),
+                        allowedChildren: null,
                         tagStructure: default(TagStructure),
                         designTimeDescriptor: null)
                 };
@@ -1080,6 +1532,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         assemblyName: "SomeAssembly",
                         attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
                         requiredAttributes: Enumerable.Empty<string>(),
+                        allowedChildren: null,
                         tagStructure: default(TagStructure),
                         designTimeDescriptor: null),
                 };
