@@ -48,12 +48,30 @@ namespace Microsoft.AspNet.Mvc
         {
             var valuesDictionary = PropertyHelper.ObjectToDictionary(actionContext.Values);
 
-            if (actionContext.Action != null)
+            if (actionContext.Action == null)
+            {
+                object action;
+                if (!valuesDictionary.ContainsKey("action") && 
+                    AmbientValues.TryGetValue("action", out action))
+                {
+                    valuesDictionary["action"] = action;
+                }
+            }
+            else
             {
                 valuesDictionary["action"] = actionContext.Action;
             }
 
-            if (actionContext.Controller != null)
+            if (actionContext.Controller == null)
+            {
+                object controller;
+                if (!valuesDictionary.ContainsKey("controller") && 
+                    AmbientValues.TryGetValue("controller", out controller))
+                {
+                    valuesDictionary["controller"] = controller;
+                }
+            }
+            else
             {
                 valuesDictionary["controller"] = actionContext.Controller;
             }
