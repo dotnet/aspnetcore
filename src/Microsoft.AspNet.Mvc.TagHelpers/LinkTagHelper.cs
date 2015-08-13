@@ -21,15 +21,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     /// <remarks>
     /// The tag helper won't process for cases with just the 'href' attribute.
     /// </remarks>
-    [TargetElement("link", Attributes = HrefIncludeAttributeName)]
-    [TargetElement("link", Attributes = HrefExcludeAttributeName)]
-    [TargetElement("link", Attributes = FallbackHrefAttributeName)]
-    [TargetElement("link", Attributes = FallbackHrefIncludeAttributeName)]
-    [TargetElement("link", Attributes = FallbackHrefExcludeAttributeName)]
-    [TargetElement("link", Attributes = FallbackTestClassAttributeName)]
-    [TargetElement("link", Attributes = FallbackTestPropertyAttributeName)]
-    [TargetElement("link", Attributes = FallbackTestValueAttributeName)]
-    [TargetElement("link", Attributes = AppendVersionAttributeName)]
+    [TargetElement("link", Attributes = HrefIncludeAttributeName, TagStructure = TagStructure.WithoutEndTag)]
+    [TargetElement("link", Attributes = HrefExcludeAttributeName, TagStructure = TagStructure.WithoutEndTag)]
+    [TargetElement("link", Attributes = FallbackHrefAttributeName, TagStructure = TagStructure.WithoutEndTag)]
+    [TargetElement("link", Attributes = FallbackHrefIncludeAttributeName, TagStructure = TagStructure.WithoutEndTag)]
+    [TargetElement("link", Attributes = FallbackHrefExcludeAttributeName, TagStructure = TagStructure.WithoutEndTag)]
+    [TargetElement("link", Attributes = FallbackTestClassAttributeName, TagStructure = TagStructure.WithoutEndTag)]
+    [TargetElement("link", Attributes = FallbackTestPropertyAttributeName, TagStructure = TagStructure.WithoutEndTag)]
+    [TargetElement("link", Attributes = FallbackTestValueAttributeName, TagStructure = TagStructure.WithoutEndTag)]
+    [TargetElement("link", Attributes = AppendVersionAttributeName, TagStructure = TagStructure.WithoutEndTag)]
     public class LinkTagHelper : UrlResolutionTagHelper
     {
         private static readonly string Namespace = typeof(LinkTagHelper).Namespace;

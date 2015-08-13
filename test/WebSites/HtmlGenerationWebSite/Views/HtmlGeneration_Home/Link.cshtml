@@ -19,7 +19,7 @@
     <link asp-href-include=" **/*.css" asp-href-exclude="**/site3*.css" rel="stylesheet" title='"the" title' />
 
     <!-- Globbed link tag missing include -->
-    <link asp-href-exclude="**/site2.css" rel="stylesheet" />
+    <link asp-href-exclude="**/site2.css" rel="stylesheet">
 
     <!-- Globbed link tag missing include but with static href -->
     <link href="~/site.css" asp-href-exclude="**/site2.css" rel="stylesheet" />
@@ -31,7 +31,7 @@
     <link asp-href-include="../**/appRoot.css" rel="stylesheet" />
 
     <!-- Globbed link tag with file outside of webroot -->
-    <link asp-href-include="**/appRoot.css" rel="stylesheet" />
+    <link asp-href-include="**/appRoot.css" rel="stylesheet">
 
     <!-- Globbed link tag with existing file and static href -->
     <link href="~/site.css" asp-href-include="**/site2.css" rel="stylesheet" />
@@ -58,7 +58,7 @@
           asp-fallback-href="~/site.css"
           asp-fallback-test-class="hidden"
           asp-fallback-test-property="visibility"
-          asp-fallback-test-value="hidden" />
+          asp-fallback-test-value="hidden">
 
     <!-- Fallback from globbed and static href to static href -->
     <link href="site.min.css" asp-href-include="site.css" rel="stylesheet" data-extra="test"
@@ -80,7 +80,7 @@
           asp-fallback-href="~/site.css"
           asp-fallback-test-class="hidden"
           asp-fallback-test-property="visibility"
-          asp-fallback-test-value="hidden" />
+          asp-fallback-test-value="hidden">
 
     <!-- Fallback to globbed href -->
     <link href="~/site.min.css" rel="stylesheet" data-extra="test"
@@ -141,7 +141,7 @@
           asp-fallback-href-include="**/site.css"
           asp-fallback-test-class="hidden"
           asp-fallback-test-property="visibility"
-          asp-fallback-test-value="hidden" />
+          asp-fallback-test-value="hidden">
 
     <!-- Kitchen sink, all the attributes -->
     <link href="site.min.css" asp-href-include="**/*.min.css" asp-href-exclude="**/site3.min.css"
@@ -197,7 +197,7 @@
           asp-fallback-test-class="hidden"
           asp-fallback-test-property="visibility"
           asp-fallback-test-value="hidden"
-          asp-append-version="true" />
+          asp-append-version="true">
 
     <!-- Globbed link tag with existing file, static href and file version -->
     <link href="~/site.css" asp-href-include="**/*.css" rel="stylesheet" asp-append-version="true" />
@@ -205,6 +205,6 @@
 <body>
 
     <h2>Link Tag Helper Test</h2>
-    
+
 </body>
 </html>
