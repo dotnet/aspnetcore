@@ -223,7 +223,12 @@ namespace Microsoft.AspNet.Mvc.Razor
             string directiveText,
             TagHelperDirectiveType directiveType)
         {
-            return new TagHelperDirectiveDescriptor(directiveText, SourceLocation.Undefined, directiveType);
+            return new TagHelperDirectiveDescriptor
+            {
+                DirectiveText = directiveText,
+                Location = SourceLocation.Undefined,
+                DirectiveType = directiveType
+            };
         }
 
         private class TestableMvcRazorParser : MvcRazorParser

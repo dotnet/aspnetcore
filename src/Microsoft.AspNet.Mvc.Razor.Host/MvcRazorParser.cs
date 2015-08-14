@@ -100,10 +100,12 @@ namespace Microsoft.AspNet.Mvc.Razor
                 var addTagHelperChunk = chunk as AddTagHelperChunk;
                 if (addTagHelperChunk != null)
                 {
-                    var descriptor = new TagHelperDirectiveDescriptor(
-                        addTagHelperChunk.LookupText,
-                        chunk.Start,
-                        TagHelperDirectiveType.AddTagHelper);
+                    var descriptor = new TagHelperDirectiveDescriptor
+                    {
+                        DirectiveText = addTagHelperChunk.LookupText,
+                        Location = chunk.Start,
+                        DirectiveType = TagHelperDirectiveType.AddTagHelper
+                    };
 
                     descriptors.Add(descriptor);
 
@@ -113,10 +115,12 @@ namespace Microsoft.AspNet.Mvc.Razor
                 var removeTagHelperChunk = chunk as RemoveTagHelperChunk;
                 if (removeTagHelperChunk != null)
                 {
-                    var descriptor = new TagHelperDirectiveDescriptor(
-                        removeTagHelperChunk.LookupText,
-                        chunk.Start,
-                        TagHelperDirectiveType.RemoveTagHelper);
+                    var descriptor = new TagHelperDirectiveDescriptor
+                    {
+                        DirectiveText = removeTagHelperChunk.LookupText,
+                        Location = chunk.Start,
+                        DirectiveType = TagHelperDirectiveType.RemoveTagHelper
+                    };
 
                     descriptors.Add(descriptor);
 
@@ -126,10 +130,12 @@ namespace Microsoft.AspNet.Mvc.Razor
                 var tagHelperPrefixDirectiveChunk = chunk as TagHelperPrefixDirectiveChunk;
                 if (tagHelperPrefixDirectiveChunk != null)
                 {
-                    var descriptor = new TagHelperDirectiveDescriptor(
-                        tagHelperPrefixDirectiveChunk.Prefix,
-                        chunk.Start,
-                        TagHelperDirectiveType.TagHelperPrefix);
+                    var descriptor = new TagHelperDirectiveDescriptor
+                    {
+                        DirectiveText = tagHelperPrefixDirectiveChunk.Prefix,
+                        Location = chunk.Start,
+                        DirectiveType = TagHelperDirectiveType.TagHelperPrefix
+                    };
 
                     descriptors.Add(descriptor);
                 }
