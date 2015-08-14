@@ -27,8 +27,8 @@ namespace MusicStore.Spa
         {
             services.Configure<SiteSettings>(settings =>
             {
-                settings.DefaultAdminUsername = Configuration.Get("DefaultAdminUsername");
-                settings.DefaultAdminPassword = Configuration.Get("DefaultAdminPassword");
+                settings.DefaultAdminUsername = Configuration["DefaultAdminUsername"];
+                settings.DefaultAdminPassword = Configuration["DefaultAdminPassword"];
             });
 
             // Add MVC services to the service container
@@ -39,7 +39,7 @@ namespace MusicStore.Spa
                 .AddSqlServer()
                 .AddDbContext<MusicStoreContext>(options =>
                 {
-                    options.UseSqlServer(Configuration.Get("Data:DefaultConnection:ConnectionString"));
+                    options.UseSqlServer(Configuration["Data:DefaultConnection:ConnectionString"]);
                 });
 
             // Add Identity services to the services container

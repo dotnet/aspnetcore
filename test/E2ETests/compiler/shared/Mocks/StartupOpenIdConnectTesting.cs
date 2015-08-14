@@ -39,7 +39,7 @@ namespace MusicStore
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<AppSettings>(Configuration.GetConfigurationSection("AppSettings"));
+            services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
 
             //Sql client not available on mono
             var useInMemoryStore = _runtimeEnvironment.RuntimeType.Equals("Mono", StringComparison.OrdinalIgnoreCase);
@@ -57,7 +57,7 @@ namespace MusicStore
                 services.AddEntityFramework()
                         .AddSqlServer()
                         .AddDbContext<MusicStoreContext>(options =>
-                            options.UseSqlServer(Configuration.Get("Data:DefaultConnection:ConnectionString")));
+                            options.UseSqlServer(Configuration["Data:DefaultConnection:ConnectionString"]));
             }
 
             // Add Identity services to the services container

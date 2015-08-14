@@ -92,17 +92,17 @@ namespace MusicStore.Models
             //    await roleManager.CreateAsync(new IdentityRole(adminRole));
             //}
 
-            var user = await userManager.FindByNameAsync(configuration.Get(defaultAdminUserName));
+            var user = await userManager.FindByNameAsync(configuration[defaultAdminUserName]);
             if (user == null)
             {
-                user = new ApplicationUser { UserName = configuration.Get(defaultAdminUserName) };
-                await userManager.CreateAsync(user, configuration.Get(defaultAdminPassword));
+                user = new ApplicationUser { UserName = configuration[defaultAdminUserName] };
+                await userManager.CreateAsync(user, configuration[defaultAdminPassword]);
                 //await userManager.AddToRoleAsync(user, adminRole);
                 await userManager.AddClaimAsync(user, new Claim("ManageStore", "Allowed"));
             }
 
 #if TESTING
-            var envPerfLab = configuration.Get("PERF_LAB");
+            var envPerfLab = configuration["PERF_LAB"];
             if (envPerfLab == "true")
             {
                 for (int i = 0; i < 100; ++i)

@@ -46,13 +46,13 @@ namespace MusicStore
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<AppSettings>(Configuration.GetConfigurationSection("AppSettings"));
+            services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
 
             // Add EF services to the services container
             services.AddEntityFramework()
                     .AddSqlServer()
                     .AddDbContext<MusicStoreContext>(options =>
-                            options.UseSqlServer(Configuration.Get("Data:DefaultConnection:ConnectionString")));
+                            options.UseSqlServer(Configuration["Data:DefaultConnection:ConnectionString"]));
 
             services.ConfigureCors(options =>
             {
