@@ -11,6 +11,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using HtmlGenerationWebSite;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.TagHelpers;
 using Microsoft.AspNet.Testing;
 using Microsoft.Framework.DependencyInjection;
@@ -502,7 +503,8 @@ Products: Laptops (3)";
         {
             // Arrange
             var newServices = new ServiceCollection();
-            newServices.InitializeTagHelper<FormTagHelper>((helper, _) => helper.Antiforgery = optionsAntiforgery);
+            var builder = new MvcCoreBuilder(newServices);
+            builder.InitializeTagHelper<FormTagHelper>((helper, _) => helper.Antiforgery = optionsAntiforgery);
             var server = TestHelper.CreateServer(_app, SiteName,
                 services =>
                 {

@@ -9,20 +9,20 @@ using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.Framework.DependencyInjection
 {
-    public static class WebApiCompatShimServiceCollectionExtensions
+    public static class WebApiCompatShimMvcBuilderExtensions
     {
-        public static IServiceCollection AddWebApiConventions(this IServiceCollection services)
+        public static IMvcBuilder AddWebApiConventions(this IMvcBuilder builder)
         {
-            services.TryAddEnumerable(
+            builder.Services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IConfigureOptions<MvcOptions>, WebApiCompatShimOptionsSetup>());
-            services.TryAddEnumerable(
+            builder.Services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IConfigureOptions<WebApiCompatShimOptions>, WebApiCompatShimOptionsSetup>());
 
             // The constructors on DefaultContentNegotiator aren't DI friendly, so just
             // new it up.
-            services.TryAdd(ServiceDescriptor.Instance<IContentNegotiator>(new DefaultContentNegotiator()));
+            builder.Services.TryAdd(ServiceDescriptor.Instance<IContentNegotiator>(new DefaultContentNegotiator()));
 
-            return services;
+            return builder;
         }
     }
 }

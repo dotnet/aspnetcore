@@ -12,8 +12,9 @@ namespace CompositeViewEngineWebSite
         public void ConfigureServices(IServiceCollection services)
         {
             // Add a view engine as the first one in the list.
-            services.AddMvc()
-                .ConfigureMvcViews(options =>
+            services
+                .AddMvc()
+                .AddViewOptions(options =>
                 {
                     options.ViewEngines.Insert(0, new TestViewEngine());
                 });

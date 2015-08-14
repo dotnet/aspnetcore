@@ -8,9 +8,9 @@ using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.Framework.DependencyInjection
 {
-    public static class MvcDataAnnotationsMvcBuilderExtensions
+    public static class MvcDataAnnotationsMvcCoreBuilderExtensions
     {
-        public static IMvcBuilder AddDataAnnotations([NotNull] this IMvcBuilder builder)
+        public static IMvcCoreBuilder AddDataAnnotations([NotNull] this IMvcCoreBuilder builder)
         {
             AddDataAnnotationsServices(builder.Services);
             return builder;

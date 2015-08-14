@@ -9,28 +9,23 @@ namespace FormatterWebSite
 {
     public class Startup
     {
-        // Set up application services
         public void ConfigureServices(IServiceCollection services)
         {
-            // Add MVC services to the services container
-            services.AddMvc();
-
-            services.Configure<MvcOptions>(options =>
+            services.AddMvc(options =>
             {
                 options.ValidationExcludeFilters.Add(typeof(Developer));
                 options.ValidationExcludeFilters.Add(typeof(Supplier));
-
-                options.AddXmlDataContractSerializerFormatter();
+                
                 options.InputFormatters.Add(new StringInputFormatter());
-            });
+            })
+            .AddXmlDataContractSerializerFormatters();
         }
 
 
         public void Configure(IApplicationBuilder app)
         {
             app.UseCultureReplacer();
-
-            // Add MVC to the request pipeline
+            
             app.UseMvc(routes =>
             {
                 routes.MapRoute("ActionAsMethod", "{controller}/{action}",

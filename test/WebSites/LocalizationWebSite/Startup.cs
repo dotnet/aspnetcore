@@ -9,12 +9,9 @@ namespace LocalizationWebSite
 {
     public class Startup
     {
-        // Set up application services
         public void ConfigureServices(IServiceCollection services)
         {
-            // Add MVC services to the services container
-            services.AddMvc();
-            services.AddMvcLocalization();
+            services.AddMvc().AddViewLocalization();
 
             // Adding TestStringLocalizerFactory since ResourceStringLocalizerFactory uses ResourceManager. DNX does
             // not support getting non-enu resources from ResourceManager yet.
@@ -26,8 +23,7 @@ namespace LocalizationWebSite
             app.UseCultureReplacer();
 
             app.UseRequestLocalization();
-
-            // Add MVC to the request pipeline
+            
             app.UseMvcWithDefaultRoute();
         }
     }

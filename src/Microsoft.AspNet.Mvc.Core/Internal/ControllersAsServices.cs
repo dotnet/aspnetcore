@@ -1,0 +1,42 @@
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.DependencyInjection.Extensions;
+
+namespace Microsoft.AspNet.Mvc.Internal
+{
+    public static class ControllersAsServices
+    {
+        public static void AddControllersAsServices(IServiceCollection services, IEnumerable<Type> types)
+        {
+            var controllerTypeProvider = new FixedSetControllerTypeProvider();
+            foreach (var type in types)
+            {
+                services.TryAddTransient(type, type);
+                controllerTypeProvider.ControllerTypes.Add(type.GetTypeInfo());
+            }
+
+            services.Replace(ServiceDescriptor.Transient<IControllerActivator, ServiceBasedControllerActivator>());
+            services.Replace(ServiceDescriptor.Instance<IControllerTypeProvider>(controllerTypeProvider));
+        }
+
+        public static void AddControllersAsServices(IServiceCollection services, IEnumerable<Assembly> assemblies)
+        {
+            var assemblyProvider = new FixedSetAssemblyProvider();
+            foreach (var assembly in assemblies)
+            {
+                assemblyProvider.CandidateAssemblies.Add(assembly);
+            }
+
+            var controllerTypeProvider = new DefaultControllerTypeProvider(assemblyProvider);
+            var controllerTypes = controllerTypeProvider.ControllerTypes;
+
+            AddControllersAsServices(services, controllerTypes.Select(type => type.AsType()));
+        }
+    }
+}

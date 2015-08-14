@@ -13,10 +13,7 @@ namespace ApiExplorerWebSite
         // Set up application services
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc();
-            services.AddSingleton<ApiExplorerDataFilter>();
-
-            services.ConfigureMvc(options =>
+            services.AddMvc(options =>
             {
                 options.Filters.AddService(typeof(ApiExplorerDataFilter));
 
@@ -28,6 +25,8 @@ namespace ApiExplorerWebSite
                 options.OutputFormatters.Add(new JsonOutputFormatter());
                 options.OutputFormatters.Add(new XmlDataContractSerializerOutputFormatter());
             });
+
+            services.AddSingleton<ApiExplorerDataFilter>();
         }
 
 

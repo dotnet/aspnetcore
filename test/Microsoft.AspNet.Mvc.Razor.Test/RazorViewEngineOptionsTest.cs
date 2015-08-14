@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.OptionsModel;
 using Xunit;
@@ -22,14 +23,15 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         [Fact]
-        public void ConfigureRazorViewEngine_ConfiguresOptionsProperly()
+        public void AddRazorOptions_ConfiguresOptionsProperly()
         {
             // Arrange
             var services = new ServiceCollection().AddOptions();
             var fileProvider = new TestFileProvider();
 
             // Act
-            services.ConfigureRazorViewEngine(options =>
+            var builder = new MvcBuilder(services);
+            builder.AddRazorOptions(options =>
             {
                 options.FileProvider = fileProvider;
             });

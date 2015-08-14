@@ -7,9 +7,9 @@ using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.DependencyInjection
 {
-    public static class MvcApiExplorerMvcBuilderExtensions
+    public static class MvcApiExplorerMvcCoreBuilderExtensions
     {
-        public static IMvcBuilder AddApiExplorer([NotNull] this IMvcBuilder builder)
+        public static IMvcCoreBuilder AddApiExplorer([NotNull] this IMvcCoreBuilder builder)
         {
             AddApiExplorerServices(builder.Services);
             return builder;

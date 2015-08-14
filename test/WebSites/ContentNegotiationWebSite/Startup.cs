@@ -12,12 +12,7 @@ namespace ContentNegotiationWebSite
         // Set up application services
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc();
-
-            services.ConfigureMvc(options =>
-            {
-                options.AddXmlDataContractSerializerFormatter();
-            });
+            services.AddMvc().AddXmlDataContractSerializerFormatters();
         }
 
         public void Configure(IApplicationBuilder app)

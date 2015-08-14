@@ -12,9 +12,7 @@ namespace ApplicationModelWebSite
         // Set up application services
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc();
-
-            services.ConfigureMvc(options =>
+            services.AddMvc(options =>
             {
                 options.Conventions.Add(new ApplicationDescription("Common Application Description"));
                 options.Conventions.Add(new ControllerLicenseConvention());

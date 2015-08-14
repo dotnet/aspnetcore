@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
+using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Mvc.Razor;
@@ -134,7 +135,11 @@ namespace Microsoft.AspNet.Mvc
         public void Setup_SetsUpExcludeFromValidationDelegates()
         {
             // Arrange & Act
-            var options = GetOptions<MvcOptions>(_ => _.ConfigureMvc(o => o.AddXmlDataContractSerializerFormatter()));
+            var options = GetOptions<MvcOptions>(services =>
+            {
+                var builder = new MvcCoreBuilder(services);
+                builder.AddXmlDataContractSerializerFormatters();
+            });
 
             // Assert
             Assert.Equal(8, options.ValidationExcludeFilters.Count);

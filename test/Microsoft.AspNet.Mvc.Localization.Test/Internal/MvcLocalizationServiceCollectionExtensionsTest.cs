@@ -5,8 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using Microsoft.AspNet.Mvc.Localization;
 using Microsoft.AspNet.Mvc.Razor;
+using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Extensions;
 using Microsoft.Framework.Localization;
 using Microsoft.Framework.OptionsModel;
@@ -14,18 +14,20 @@ using Microsoft.Framework.WebEncoders;
 using Microsoft.Framework.WebEncoders.Testing;
 using Xunit;
 
-namespace Microsoft.Framework.DependencyInjection
+namespace Microsoft.AspNet.Mvc.Localization.Internal
 {
-    public class MvcLocalizationServiceCollectionExtensionsTest
+    public class MvcLocalizationServicesTest
     {
         [Fact]
-        public void AddMvcLocalization_AddsNeededServices()
+        public void AddLocalizationServices_AddsNeededServices()
         {
             // Arrange
             var collection = new ServiceCollection();
 
             // Act
-            MvcLocalizationServiceCollectionExtensions.AddMvcLocalization(collection);
+            MvcLocalizationServices.AddLocalizationServices(
+                collection,
+                LanguageViewLocationExpanderFormat.Suffix);
 
             // Assert
             var services = collection.ToList();
@@ -59,7 +61,7 @@ namespace Microsoft.Framework.DependencyInjection
         }
 
         [Fact]
-        public void AddCustomLocalizers_BeforeMvcLocalization_AddsNeededServices()
+        public void AddCustomLocalizers_BeforeAddLocalizationServices_AddsNeededServices()
         {
             // Arrange
             var collection = new ServiceCollection();
@@ -70,7 +72,9 @@ namespace Microsoft.Framework.DependencyInjection
             collection.Add(ServiceDescriptor.Transient(typeof(IViewLocalizer), typeof(TestViewLocalizer)));
             collection.Add(ServiceDescriptor.Instance(typeof(IHtmlEncoder), typeof(CommonTestEncoder)));
 
-            MvcLocalizationServiceCollectionExtensions.AddMvcLocalization(collection);
+            MvcLocalizationServices.AddLocalizationServices(
+                collection,
+                LanguageViewLocationExpanderFormat.Suffix);
 
             // Assert
             var services = collection.ToList();
@@ -94,7 +98,7 @@ namespace Microsoft.Framework.DependencyInjection
         }
 
         [Fact]
-        public void AddCustomLocalizers_AfterMvcLocalization_AddsNeededServices()
+        public void AddCustomLocalizers_AfterAddLocalizationServices_AddsNeededServices()
         {
             // Arrange
             var collection = new ServiceCollection();
@@ -105,7 +109,9 @@ namespace Microsoft.Framework.DependencyInjection
             });
 
             // Act
-            MvcLocalizationServiceCollectionExtensions.AddMvcLocalization(collection);
+            MvcLocalizationServices.AddLocalizationServices(
+                collection,
+                LanguageViewLocationExpanderFormat.Suffix);
 
             collection.Add(ServiceDescriptor.Transient(typeof(IHtmlLocalizer<>), typeof(TestHtmlLocalizer<>)));
             collection.Add(ServiceDescriptor.Transient(typeof(IHtmlLocalizer), typeof(TestViewLocalizer)));

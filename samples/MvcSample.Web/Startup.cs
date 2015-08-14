@@ -25,19 +25,18 @@ namespace MvcSample.Web
             services.AddCaching();
             services.AddSession();
 
-            services.AddMvc();
+            services.AddMvc(options =>
+            {
+                options.Filters.Add(typeof(PassThroughAttribute), order: 17);
+                options.Filters.Add(new FormatFilterAttribute());
+            })
+            .AddXmlDataContractSerializerFormatters()
+            .AddViewLocalization(LanguageViewLocationExpanderFormat.SubFolder);
+
             services.AddSingleton<PassThroughAttribute>();
             services.AddSingleton<UserNameService>();
             services.AddTransient<ITestService, TestService>();
-
-            services.ConfigureMvc(options =>
-            {
-                options.Filters.Add(typeof(PassThroughAttribute), order: 17);
-                options.AddXmlDataContractSerializerFormatter();
-                options.Filters.Add(new FormatFilterAttribute());
-            });
-
-            services.AddMvcLocalization(LanguageViewLocationExpanderFormat.SubFolder);
+            
 
             var applicationEnvironment = services.BuildServiceProvider().GetRequiredService<IApplicationEnvironment>();
             var configurationPath = Path.Combine(applicationEnvironment.ApplicationBasePath, "config.json");

@@ -3,48 +3,26 @@
 
 using System;
 using Microsoft.AspNet.Mvc;
-using Microsoft.Framework.DependencyInjection.Extensions;
 using Microsoft.Framework.Internal;
-using Microsoft.Framework.OptionsModel;
-using Newtonsoft.Json;
 
 namespace Microsoft.Framework.DependencyInjection
 {
+    /// <summary>
+    /// Extensions methods for configuring MVC via an <see cref="IMvcBuilder"/>.
+    /// </summary>
     public static class MvcJsonMvcBuilderExtensions
     {
-        public static IMvcBuilder AddJsonFormatters([NotNull] this IMvcBuilder builder)
-        {
-            AddJsonFormatterServices(builder.Services);
-            return builder;
-        }
-
-        public static IMvcBuilder AddJsonFormatters(
-            [NotNull] this IMvcBuilder builder,
-            [NotNull] Action<JsonSerializerSettings> setupAction)
-        {
-            AddJsonFormatterServices(builder.Services);
-
-            if (setupAction != null)
-            {
-                builder.Services.Configure<MvcJsonOptions>((options) => setupAction(options.SerializerSettings));
-            }
-
-            return builder;
-        }
-
-        public static IMvcBuilder ConfigureJson(
+        /// <summary>
+        /// Adds configuration of <see cref="MvcJsonOptions"/> for the application.
+        /// </summary>
+        /// <param name="builder">The <see cref="IMvcBuilder"/>.</param>
+        /// <param name="setupAction">The <see cref="MvcJsonOptions"/> which need to be configured.</param>
+        public static IMvcBuilder AddJsonOptions(
             [NotNull] this IMvcBuilder builder,
             [NotNull] Action<MvcJsonOptions> setupAction)
         {
             builder.Services.Configure(setupAction);
             return builder;
-        }
-
-        // Internal for testing.
-        internal static void AddJsonFormatterServices(IServiceCollection services)
-        {
-            services.TryAddEnumerable(
-                ServiceDescriptor.Transient<IConfigureOptions<MvcOptions>, MvcJsonMvcOptionsSetup>());
         }
     }
 }

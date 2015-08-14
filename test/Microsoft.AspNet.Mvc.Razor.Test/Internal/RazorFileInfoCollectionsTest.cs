@@ -3,12 +3,13 @@
 
 using System;
 using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.Mvc.Razor.Internal;
 using Microsoft.AspNet.Mvc.Razor.Precompilation;
 using Xunit;
 
 namespace Microsoft.Framework.DependencyInjection
 {
-    public class MvcRazorMvcBuilderExtensionsTest
+    public class RazorFileInfoCollectionsTest
     {
         [Fact]
         public void IsValidRazorFileInfoCollection_ReturnsFalse_IfTypeIsAbstract()
@@ -17,7 +18,7 @@ namespace Microsoft.Framework.DependencyInjection
             var type = typeof(AbstractRazorFileInfoCollection);
 
             // Act
-            var result = MvcRazorMvcBuilderExtensions.IsValidRazorFileInfoCollection(type);
+            var result = RazorFileInfoCollections.IsValidRazorFileInfoCollection(type);
 
             // Assert
             Assert.False(result);
@@ -30,7 +31,7 @@ namespace Microsoft.Framework.DependencyInjection
             var type = typeof(GenericRazorFileInfoCollection<>);
 
             // Act
-            var result = MvcRazorMvcBuilderExtensions.IsValidRazorFileInfoCollection(type);
+            var result = RazorFileInfoCollections.IsValidRazorFileInfoCollection(type);
 
             // Assert
             Assert.False(result);
@@ -43,7 +44,7 @@ namespace Microsoft.Framework.DependencyInjection
             var type = typeof(NonSubTypeRazorFileInfoCollection);
 
             // Act
-            var result = MvcRazorMvcBuilderExtensions.IsValidRazorFileInfoCollection(type);
+            var result = RazorFileInfoCollections.IsValidRazorFileInfoCollection(type);
 
             // Assert
             Assert.False(result);
@@ -55,7 +56,7 @@ namespace Microsoft.Framework.DependencyInjection
         public void IsValidRazorFileInfoCollection_ReturnsTrue_IfTypeDerivesFromRazorFileInfoCollection(Type type)
         {
             // Act
-            var result = MvcRazorMvcBuilderExtensions.IsValidRazorFileInfoCollection(type);
+            var result = RazorFileInfoCollections.IsValidRazorFileInfoCollection(type);
 
             // Assert
             Assert.True(result);

@@ -11,34 +11,33 @@ namespace RazorWebSite
 {
     public class Startup
     {
-        // Set up application services
         public void ConfigureServices(IServiceCollection services)
         {
-            // Add MVC services to the services container
-            services.AddMvc();
+            services
+                .AddMvc()
+                .AddRazorOptions(options =>
+                {
+                    options.ViewLocationExpanders.Add(new CustomPartialDirectoryViewLocationExpander());
+                })
+                .AddViewOptions(options =>
+                {
+                    options.HtmlHelperOptions.ClientValidationEnabled = false;
+                    options.HtmlHelperOptions.Html5DateRenderingMode = Microsoft.AspNet.Mvc.Rendering.Html5DateRenderingMode.Rfc3339;
+                    options.HtmlHelperOptions.IdAttributeDotReplacement = "!";
+                    options.HtmlHelperOptions.ValidationMessageElement = "validationMessageElement";
+                    options.HtmlHelperOptions.ValidationSummaryMessageElement = "validationSummaryElement";
+                })
+                .AddViewLocalization(LanguageViewLocationExpanderFormat.SubFolder);
+
             services.AddTransient<InjectedHelper>();
             services.AddTransient<TaskReturningService>();
             services.AddTransient<FrameworkSpecificHelper>();
-            services.Configure<RazorViewEngineOptions>(options =>
-            {
-                options.ViewLocationExpanders.Add(new CustomPartialDirectoryViewLocationExpander());
-            });
-            services.ConfigureMvcViews(options =>
-            {
-                options.HtmlHelperOptions.ClientValidationEnabled = false;
-                options.HtmlHelperOptions.Html5DateRenderingMode = Microsoft.AspNet.Mvc.Rendering.Html5DateRenderingMode.Rfc3339;
-                options.HtmlHelperOptions.IdAttributeDotReplacement = "!";
-                options.HtmlHelperOptions.ValidationMessageElement = "validationMessageElement";
-                options.HtmlHelperOptions.ValidationSummaryMessageElement = "validationSummaryElement";
-            });
-            services.AddMvcLocalization(LanguageViewLocationExpanderFormat.SubFolder);
         }
 
         public void Configure(IApplicationBuilder app)
         {
             app.UseRequestLocalization();
-
-            // Add MVC to the request pipeline
+            
             app.UseMvcWithDefaultRoute();
         }
     }

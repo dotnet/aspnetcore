@@ -15,18 +15,18 @@ namespace ModelBindingWebSite
         public void ConfigureServices(IServiceCollection services)
         {
             // Add MVC services to the services container
-            services.AddMvc()
-                    .Configure<MvcOptions>(m =>
-                    {
-                        m.MaxModelValidationErrors = 8;
-                        m.ModelBinders.Insert(0, new TestBindingSourceModelBinder());
+            services
+                .AddMvc(m =>
+                {
+                    m.MaxModelValidationErrors = 8;
+                    m.ModelBinders.Insert(0, new TestBindingSourceModelBinder());
+                    
+                    m.ValidationExcludeFilters.Add(typeof(Address));
 
-                        m.AddXmlDataContractSerializerFormatter();
-                        m.ValidationExcludeFilters.Add(typeof(Address));
-
-                            // ModelMetadataController relies on additional values AdditionalValuesMetadataProvider provides.
-                            m.ModelMetadataDetailsProviders.Add(new AdditionalValuesMetadataProvider());
-                    });
+                    // ModelMetadataController relies on additional values AdditionalValuesMetadataProvider provides.
+                    m.ModelMetadataDetailsProviders.Add(new AdditionalValuesMetadataProvider());
+                })
+                .AddXmlDataContractSerializerFormatters();
 
             services.AddSingleton<ICalculator, DefaultCalculator>();
             services.AddSingleton<ITestService, TestService>();

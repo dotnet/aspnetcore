@@ -35,6 +35,7 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         public IList<TypeInfo> ControllerTypes { get; }
 
+        /// <inheritdoc />
         IEnumerable<TypeInfo> IControllerTypeProvider.ControllerTypes => ControllerTypes;
     }
 }

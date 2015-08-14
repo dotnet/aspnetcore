@@ -12,13 +12,11 @@ namespace ActionResultsWebSite
         // Set up application services
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc();
-            services.AddInstance(new GuidLookupService());
+            services
+                .AddMvc()
+                .AddXmlDataContractSerializerFormatters();
 
-            services.ConfigureMvc(options =>
-            {
-                options.AddXmlDataContractSerializerFormatter();
-            });
+            services.AddInstance(new GuidLookupService());
         }
 
         public void Configure(IApplicationBuilder app)

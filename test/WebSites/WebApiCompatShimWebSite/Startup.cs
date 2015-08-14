@@ -12,8 +12,7 @@ namespace WebApiCompatShimWebSite
         public void ConfigureServices(IServiceCollection services)
         {
             // Add MVC services to the services container
-            services.AddMvc();
-            services.AddWebApiConventions();
+            services.AddMvc().AddWebApiConventions();
         }
 
         public void Configure(IApplicationBuilder app)

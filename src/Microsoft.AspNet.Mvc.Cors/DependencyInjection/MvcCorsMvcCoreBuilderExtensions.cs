@@ -10,16 +10,16 @@ using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.DependencyInjection
 {
-    public static class MvcCorsMvcBuilderExtensions
+    public static class MvcCorsMvcCoreBuilderExtensions
     {
-        public static IMvcBuilder AddCors([NotNull] this IMvcBuilder builder)
+        public static IMvcCoreBuilder AddCors([NotNull] this IMvcCoreBuilder builder)
         {
             AddCorsServices(builder.Services);
             return builder;
         }
 
-        public static IMvcBuilder AddCors(
-            [NotNull] this IMvcBuilder builder,
+        public static IMvcCoreBuilder AddCors(
+            [NotNull] this IMvcCoreBuilder builder,
             [NotNull] Action<CorsOptions> setupAction)
         {
             AddCorsServices(builder.Services);
@@ -32,8 +32,8 @@ namespace Microsoft.Framework.DependencyInjection
             return builder;
         }
 
-        public static IMvcBuilder ConfigureCors(
-            [NotNull] this IMvcBuilder builder,
+        public static IMvcCoreBuilder ConfigureCors(
+            [NotNull] this IMvcCoreBuilder builder,
             [NotNull] Action<CorsOptions> setupAction)
         {
             builder.Services.Configure(setupAction);

@@ -11,15 +11,14 @@ namespace ControllersFromServicesWebSite
 {
     public class Startup
     {
-        // Set up application services
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc()
-                    .WithControllersAsServices(
-                     new[]
-                     {
-                            typeof(TimeScheduleController).GetTypeInfo().Assembly
-                     });
+            services
+                .AddMvc()
+                .AddControllersAsServices(new[]
+                {
+                    typeof(TimeScheduleController).GetTypeInfo().Assembly
+                });
 
             services.AddTransient<QueryValueService>();
 
