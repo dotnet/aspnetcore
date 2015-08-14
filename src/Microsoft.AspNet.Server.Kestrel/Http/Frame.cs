@@ -257,8 +257,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
                 if (_autoChunk)
                 {
-                    WriteChunkPrefix(numOctets: 0);
-                    WriteChunkSuffix();
+                    WriteChunkedResponseSuffix();
                 }
             }
             catch (Exception ex)
@@ -278,6 +277,12 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
             if (_autoChunk)
             {
+                if (data.Count == 0)
+                {
+                    callback(null, state);
+                    return;
+                }
+
                 WriteChunkPrefix(data.Count);
             }
 
@@ -306,6 +311,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         }
 
         private static readonly ArraySegment<byte> _endChunkBytes = CreateAsciiByteArraySegment("\r\n");
+        private static readonly ArraySegment<byte> _endChunkedResponseBytes = CreateAsciiByteArraySegment("0\r\n\r\n");
 
         private void WriteChunkSuffix()
         {
@@ -315,6 +321,20 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     if (error != null)
                     {
                         Trace.WriteLine("WriteChunkSuffix" + error.ToString());
+                    }
+                },
+                null,
+                immediate: true);
+        }
+
+        private void WriteChunkedResponseSuffix()
+        {
+            SocketOutput.Write(_endChunkedResponseBytes,
+                (error, _) =>
+                {
+                    if (error != null)
+                    {
+                        Trace.WriteLine("WriteChunkedResponseSuffix" + error.ToString());
                     }
                 },
                 null,
