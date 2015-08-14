@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             innerContent.Replace("<", "\u003C").Replace(">", "\u003E");
             builder.InnerHtml = new HtmlString(innerContent);
 
-            return builder.ToHtmlContent(TagRenderMode.Normal);
+            return builder;
         }
 
         public static IHtmlContent InlineData<T>(this IHtmlHelper<T> helper, string actionName, string controllerName)

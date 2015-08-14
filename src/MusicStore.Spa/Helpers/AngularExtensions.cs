@@ -141,7 +141,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             var tag = new TagBuilder("input");
             tag.MergeAttributes(MergeAttributes(ngAttributes, htmlAttributes));
-            return tag.ToHtmlContent(TagRenderMode.SelfClosing);
+            tag.TagRenderMode = TagRenderMode.SelfClosing;
+            return tag;
         }
 
         private static bool IsNumberType(Type type)
@@ -221,7 +222,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 var nullOptionTag = new TagBuilder("option");
                 nullOptionTag.Attributes["value"] = string.Empty;
                 nullOptionTag.SetInnerText(nullOption);
-                tag.InnerHtml = nullOptionTag.ToHtmlContent(TagRenderMode.Normal);
+                tag.InnerHtml = nullOptionTag;
             }
 
             var clientValidators = html.GetClientValidationRules(metadata, null);
@@ -233,7 +234,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             tag.MergeAttributes(htmlAttributes, replaceExisting: true);
 
-            return tag.ToHtmlContent(TagRenderMode.Normal);
+            return tag;
         }
 
         public static IHtmlContent ngValidationMessageFor<TModel, TProperty>(this IHtmlHelper<TModel> htmlHelper, Expression<Func<TModel, TProperty>> expression, string formName)
