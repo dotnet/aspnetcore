@@ -83,11 +83,11 @@ namespace Microsoft.Framework.DependencyInjection
             services.AddAuthentication();
 
             // Identity services
-            services.TryAdd(ServiceDescriptor.Scoped<IUserValidator<TUser>, UserValidator<TUser>>());
-            services.TryAdd(ServiceDescriptor.Scoped<IPasswordValidator<TUser>, PasswordValidator<TUser>>());
-            services.TryAdd(ServiceDescriptor.Scoped<IPasswordHasher<TUser>, PasswordHasher<TUser>>());
+            services.TryAdd(ServiceDescriptor.Scoped<IUserValidator, UserValidator>());
+            services.TryAdd(ServiceDescriptor.Scoped<IPasswordValidator, PasswordValidator>());
+            services.TryAdd(ServiceDescriptor.Scoped<IPasswordHasher, PasswordHasher>());
             services.TryAdd(ServiceDescriptor.Scoped<ILookupNormalizer, UpperInvariantLookupNormalizer>());
-            services.TryAdd(ServiceDescriptor.Scoped<IRoleValidator<TRole>, RoleValidator<TRole>>());
+            services.TryAdd(ServiceDescriptor.Scoped<IRoleValidator, RoleValidator>());
             // No interface for the error describer so we can add errors without rev'ing the interface
             services.TryAdd(ServiceDescriptor.Scoped<IdentityErrorDescriber, IdentityErrorDescriber>());
             services.TryAdd(ServiceDescriptor.Scoped<ISecurityStampValidator, SecurityStampValidator<TUser>>());

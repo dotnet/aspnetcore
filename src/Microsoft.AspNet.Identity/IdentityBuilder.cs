@@ -60,9 +60,10 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         /// <typeparam name="T">The user type to validate.</typeparam>
         /// <returns>The <see cref="IdentityBuilder"/>.</returns>
-        public virtual IdentityBuilder AddUserValidator<T>() where T : class
+        public virtual IdentityBuilder AddUserValidator<TValidator>() where TValidator : class, IUserValidator
         {
-            return AddScoped(typeof(IUserValidator<>).MakeGenericType(UserType), typeof(T));
+            Services.AddScoped<IUserValidator, TValidator>();
+            return this;
         }
 
         /// <summary>
@@ -70,9 +71,10 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         /// <typeparam name="T">The role type to validate.</typeparam>
         /// <returns>The <see cref="IdentityBuilder"/>.</returns>
-        public virtual IdentityBuilder AddRoleValidator<T>() where T : class
+        public virtual IdentityBuilder AddRoleValidator<TValidator>() where TValidator : class, IRoleValidator
         {
-            return AddScoped(typeof(IRoleValidator<>).MakeGenericType(RoleType), typeof(T));
+            Services.AddScoped<IRoleValidator, TValidator>();
+            return this;
         }
 
         /// <summary>
@@ -91,9 +93,10 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         /// <typeparam name="T">The user type whose password will be validated.</typeparam>
         /// <returns>The <see cref="IdentityBuilder"/>.</returns>
-        public virtual IdentityBuilder AddPasswordValidator<T>() where T : class
+        public virtual IdentityBuilder AddPasswordValidator<TValidator>() where TValidator : class,IPasswordValidator
         {
-            return AddScoped(typeof(IPasswordValidator<>).MakeGenericType(UserType), typeof(T));
+            Services.AddScoped<IPasswordValidator, TValidator>();
+            return this;
         }
 
         /// <summary>
@@ -121,19 +124,10 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         /// <typeparam name="TProvider">The type of the token provider to add.</typeparam>
         /// <returns>The <see cref="IdentityBuilder"/>.</returns>
-        public virtual IdentityBuilder AddTokenProvider<TProvider>() where TProvider : class
+        public virtual IdentityBuilder AddTokenProvider<TProvider>() where TProvider : class, IUserTokenProvider
         {
-            return AddTokenProvider(typeof(TProvider));
-        }
-
-        /// <summary>
-        /// Adds a token provider for the <seealso cref="UserType"/>.
-        /// </summary>
-        /// <param name="provider">The type of the <see cref="IUserTokenProvider{TUser}"/> to add.</param>
-        /// <returns>The <see cref="IdentityBuilder"/>.</returns>
-        public virtual IdentityBuilder AddTokenProvider(Type provider)
-        {
-            return AddScoped(typeof(IUserTokenProvider<>).MakeGenericType(UserType), provider);
+            Services.AddScoped<IUserTokenProvider, TProvider>();
+            return this;
         }
 
         /// <summary>
@@ -147,9 +141,9 @@ namespace Microsoft.AspNet.Identity
                 options.Name = Resources.DefaultTokenProvider;
             });
 
-            return AddTokenProvider(typeof(DataProtectorTokenProvider<>).MakeGenericType(UserType))
-                .AddTokenProvider(typeof(PhoneNumberTokenProvider<>).MakeGenericType(UserType))
-                .AddTokenProvider(typeof(EmailTokenProvider<>).MakeGenericType(UserType));
+            return AddTokenProvider<DataProtectorTokenProvider>()
+                .AddTokenProvider<PhoneNumberTokenProvider>()
+                .AddTokenProvider<EmailTokenProvider>();
         }
 
         /// <summary>

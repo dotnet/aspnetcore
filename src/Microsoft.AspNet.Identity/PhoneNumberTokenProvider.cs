@@ -23,8 +23,7 @@ namespace Microsoft.AspNet.Identity
     /// sends them to the user via their phone number.
     /// </summary>
     /// <typeparam name="TUser">The type encapsulating a user.</typeparam>
-    public class PhoneNumberTokenProvider<TUser> : TotpSecurityStampBasedTokenProvider<TUser>
-        where TUser : class
+    public class PhoneNumberTokenProvider : TotpSecurityStampBasedTokenProvider
     {
         /// <summary>
         /// Creates a new instance of <see cref="PhoneNumberTokenProvider{TUser}"/> with the specified <paramref name="options"/>.
@@ -63,7 +62,7 @@ namespace Microsoft.AspNet.Identity
         /// The task will return true if a two factor authentication token could be generated as the user has
         /// a telephone number, otherwise false.
         /// </returns>
-        public override async Task<bool> CanGenerateTwoFactorTokenAsync(UserManager<TUser> manager, TUser user)
+        public override async Task<bool> CanGenerateTwoFactorTokenAsync<TUser>(UserManager<TUser> manager, TUser user)
         {
             if (manager == null)
             {
@@ -83,7 +82,7 @@ namespace Microsoft.AspNet.Identity
         /// The <see cref="Task"/> that represents the asynchronous operation, containing a constant modifier for the specified 
         /// <paramref name="user"/> and <paramref name="purpose"/>.
         /// </returns>
-        public override async Task<string> GetUserModifierAsync(string purpose, UserManager<TUser> manager, TUser user)
+        public override async Task<string> GetUserModifierAsync<TUser>(string purpose, UserManager<TUser> manager, TUser user)
         {
             if (manager == null)
             {

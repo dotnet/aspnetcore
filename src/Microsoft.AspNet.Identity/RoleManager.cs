@@ -4,11 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.Logging;
 
@@ -34,7 +32,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="logger">The logger used to log messages, warnings and errors.</param>
         /// <param name="contextAccessor">The accessor used to access the <see cref="HttpContext"/>.</param>
         public RoleManager(IRoleStore<TRole> store,
-            IEnumerable<IRoleValidator<TRole>> roleValidators,
+            IEnumerable<IRoleValidator> roleValidators,
             ILookupNormalizer keyNormalizer,
             IdentityErrorDescriber errors,
             ILogger<RoleManager<TRole>> logger,
@@ -77,7 +75,7 @@ namespace Microsoft.AspNet.Identity
         /// Gets a list of validators for roles to call before persistence.
         /// </summary>
         /// <value>A list of validators for roles to call before persistence.</value>
-        internal IList<IRoleValidator<TRole>> RoleValidators { get; } = new List<IRoleValidator<TRole>>();
+        internal IList<IRoleValidator> RoleValidators { get; } = new List<IRoleValidator>();
 
         /// <summary>
         /// Gets the <see cref="IdentityErrorDescriber"/> used to provider error messages.

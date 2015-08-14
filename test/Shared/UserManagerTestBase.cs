@@ -163,7 +163,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var manager = CreateManager();
             manager.Options.User.RequireUniqueEmail = true;
-            manager.UserValidators.Add(new UserValidator<TUser>());
+            manager.UserValidators.Add(new UserValidator());
             var random = new Random();
             var email = "foo" + random.Next() + "@example.com";
             var newEmail = "bar" + random.Next() + "@example.com";
@@ -646,26 +646,21 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.False(await manager.IsEmailConfirmedAsync(user));
         }
 
-        private class StaticTokenProvider : IUserTokenProvider<TUser>
+        private class StaticTokenProvider : IUserTokenProvider
         {
             public string Name { get; } = "Static";
 
-            public async Task<string> GenerateAsync(string purpose, UserManager<TUser> manager, TUser user)
+            async Task<string> IUserTokenProvider.GenerateAsync<TUser1>(string purpose, UserManager<TUser1> manager, TUser1 user)
             {
                 return MakeToken(purpose, await manager.GetUserIdAsync(user));
             }
 
-            public async Task<bool> ValidateAsync(string purpose, string token, UserManager<TUser> manager, TUser user)
+            async Task<bool> IUserTokenProvider.ValidateAsync<TUser1>(string purpose, string token, UserManager<TUser1> manager, TUser1 user)
             {
                 return token == MakeToken(purpose, await manager.GetUserIdAsync(user));
             }
-
-            public Task NotifyAsync(string token, UserManager<TUser> manager, TUser user)
-            {
-                return Task.FromResult(0);
-            }
-
-            public Task<bool> CanGenerateTwoFactorTokenAsync(UserManager<TUser> manager, TUser user)
+            
+            Task<bool> IUserTokenProvider.CanGenerateTwoFactorTokenAsync<TUser1>(UserManager<TUser1> manager, TUser1 user)
             {
                 return Task.FromResult(true);
             }
@@ -981,22 +976,21 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.True(await manager.RoleExistsAsync(roleName));
         }
 
-        private class AlwaysBadValidator : IUserValidator<TUser>, IRoleValidator<TRole>,
-            IPasswordValidator<TUser>
+        private class AlwaysBadValidator : IUserValidator, IRoleValidator, IPasswordValidator
         {
             public static readonly IdentityError ErrorMessage = new IdentityError { Description = "I'm Bad.", Code = "BadValidator" };
 
-            public Task<IdentityResult> ValidateAsync(UserManager<TUser> manager, TUser user, string password)
+            Task<IdentityResult> IPasswordValidator.ValidateAsync<T>(UserManager<T> manager, T user, string password)
             {
                 return Task.FromResult(IdentityResult.Failed(ErrorMessage));
             }
 
-            public Task<IdentityResult> ValidateAsync(RoleManager<TRole> manager, TRole role)
+            Task<IdentityResult> IRoleValidator.ValidateAsync<TRole1>(RoleManager<TRole1> manager, TRole1 role)
             {
                 return Task.FromResult(IdentityResult.Failed(ErrorMessage));
             }
 
-            public Task<IdentityResult> ValidateAsync(UserManager<TUser> manager, TUser user)
+            Task<IdentityResult> IUserValidator.ValidateAsync<TUser1>(UserManager<TUser1> manager, TUser1 user)
             {
                 return Task.FromResult(IdentityResult.Failed(ErrorMessage));
             }

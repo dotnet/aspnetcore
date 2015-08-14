@@ -415,7 +415,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             // Setup
             var store = new Mock<IUserPasswordStore<TestUser>>();
-            var hasher = new Mock<IPasswordHasher<TestUser>>();
+            var hasher = new Mock<IPasswordHasher>();
             var user = new TestUser { UserName = "Foo" };
             var pwd = "password";
             var hashed = "hashed";
@@ -630,9 +630,9 @@ namespace Microsoft.AspNet.Identity.Test
             // TODO: Can switch to Mock eventually
             var manager = MockHelpers.TestUserManager(new EmptyStore());
             manager.PasswordValidators.Clear();
-            manager.PasswordValidators.Add(new BadPasswordValidator<TestUser>());
+            manager.PasswordValidators.Add(new BadPasswordValidator());
             IdentityResultAssert.IsFailure(await manager.CreateAsync(new TestUser(), "password"),
-                BadPasswordValidator<TestUser>.ErrorMessage);
+                BadPasswordValidator.ErrorMessage);
         }
 
         [Fact]
@@ -819,11 +819,11 @@ namespace Microsoft.AspNet.Identity.Test
             await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.ConfirmEmailAsync(null, null));
         }
 
-        private class BadPasswordValidator<TUser> : IPasswordValidator<TUser> where TUser : class
+        private class BadPasswordValidator : IPasswordValidator
         {
             public static readonly IdentityError ErrorMessage = new IdentityError { Description = "I'm Bad." };
 
-            public Task<IdentityResult> ValidateAsync(UserManager<TUser> manager, TUser user, string password)
+            Task<IdentityResult> IPasswordValidator.ValidateAsync<TUser>(UserManager<TUser> manager, TUser user, string password)
             {
                 return Task.FromResult(IdentityResult.Failed(ErrorMessage));
             }
@@ -1090,26 +1090,21 @@ namespace Microsoft.AspNet.Identity.Test
             }
         }
 
-        private class NoOpTokenProvider : IUserTokenProvider<TestUser>
+        private class NoOpTokenProvider : IUserTokenProvider
         {
             public string Name { get; } = "Noop";
 
-            public Task<string> GenerateAsync(string purpose, UserManager<TestUser> manager, TestUser user)
+            public Task<string> GenerateAsync<TUser>(string purpose, UserManager<TUser> manager, TUser user) where TUser : class
             {
                 return Task.FromResult("Test");
             }
 
-            public Task<bool> ValidateAsync(string purpose, string token, UserManager<TestUser> manager, TestUser user)
+            public Task<bool> ValidateAsync<TUser>(string purpose, string token, UserManager<TUser> manager, TUser user) where TUser : class
             {
                 return Task.FromResult(true);
             }
 
-            public Task NotifyAsync(string token, UserManager<TestUser> manager, TestUser user)
-            {
-                return Task.FromResult(0);
-            }
-
-            public Task<bool> CanGenerateTwoFactorTokenAsync(UserManager<TestUser> manager, TestUser user)
+            public Task<bool> CanGenerateTwoFactorTokenAsync<TUser>(UserManager<TUser> manager, TUser user) where TUser : class
             {
                 return Task.FromResult(true);
             }

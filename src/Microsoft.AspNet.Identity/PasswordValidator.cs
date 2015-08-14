@@ -12,10 +12,10 @@ namespace Microsoft.AspNet.Identity
     /// Provides the default password policy for Identity.
     /// </summary>
     /// <typeparam name="TUser">The type that represents a user.</typeparam>
-    public class PasswordValidator<TUser> : IPasswordValidator<TUser> where TUser : class
+    public class PasswordValidator : IPasswordValidator
     {
         /// <summary>
-        /// Constructions a new instance of <see cref="PasswordValidator{TUser}"/>.
+        /// Constructions a new instance of <see cref="PasswordValidator"/>.
         /// </summary>
         /// <param name="errors">The <see cref="IdentityErrorDescriber"/> to retrieve error text from.</param>
         public PasswordValidator(IdentityErrorDescriber errors = null)
@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user">The user whose password should be validated.</param>
         /// <param name="password">The password supplied for validation</param>
         /// <returns>The task object representing the asynchronous operation.</returns>
-        public virtual Task<IdentityResult> ValidateAsync(UserManager<TUser> manager, TUser user, string password)
+        public virtual Task<IdentityResult> ValidateAsync<TUser>(UserManager<TUser> manager, TUser user, string password) where TUser : class
         {
             if (password == null)
             {

@@ -13,12 +13,12 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task ValidateThrowsWithNull()
         {
             // Setup
-            var validator = new RoleValidator<TestRole>();
+            var validator = new RoleValidator();
             var manager = MockHelpers.TestRoleManager<TestRole>();
 
             // Act
             // Assert
-            await Assert.ThrowsAsync<ArgumentNullException>("manager", async () => await validator.ValidateAsync(null, null));
+            await Assert.ThrowsAsync<ArgumentNullException>("manager", async () => await validator.ValidateAsync<object>(null, null));
             await Assert.ThrowsAsync<ArgumentNullException>("role", async () => await validator.ValidateAsync(manager, null));
         }
 
@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task ValidateFailsWithTooShortRoleName(string input)
         {
             // Setup
-            var validator = new RoleValidator<TestRole>();
+            var validator = new RoleValidator();
             var manager = MockHelpers.TestRoleManager<TestRole>();
             var user = new TestRole {Name = input};
 

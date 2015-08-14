@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Identity
     /// Provides the default validation of roles.
     /// </summary>
     /// <typeparam name="TRole">The type encapsulating a role.</typeparam>
-    public class RoleValidator<TRole> : IRoleValidator<TRole> where TRole : class
+    public class RoleValidator : IRoleValidator
     {
         /// <summary>
         /// Creates a new instance of <see cref="RoleValidator{TRole}"/>/
@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="manager">The <see cref="RoleManager{TRole}"/> managing the role store.</param>
         /// <param name="role">The role to validate.</param>
         /// <returns>A <see cref="Task{TResult}"/> that represents the <see cref="IdentityResult"/> of the asynchronous validation.</returns>
-        public virtual async Task<IdentityResult> ValidateAsync(RoleManager<TRole> manager, TRole role)
+        public virtual async Task<IdentityResult> ValidateAsync<TRole>(RoleManager<TRole> manager, TRole role) where TRole : class
         {
             if (manager == null)
             {
@@ -49,8 +49,8 @@ namespace Microsoft.AspNet.Identity
             return IdentityResult.Success;
         }
 
-        private async Task ValidateRoleName(RoleManager<TRole> manager, TRole role,
-            ICollection<IdentityError> errors)
+        private async Task ValidateRoleName<TRole>(RoleManager<TRole> manager, TRole role,
+            ICollection<IdentityError> errors) where TRole : class
         {
             var roleName = await manager.GetRoleNameAsync(role);
             if (string.IsNullOrWhiteSpace(roleName))

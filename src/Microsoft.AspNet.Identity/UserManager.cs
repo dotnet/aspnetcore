@@ -23,8 +23,8 @@ namespace Microsoft.AspNet.Identity
     /// <typeparam name="TUser">The type encapsulating a user.</typeparam>
     public class UserManager<TUser> : IDisposable where TUser : class
     {
-        private readonly Dictionary<string, IUserTokenProvider<TUser>> _tokenProviders =
-            new Dictionary<string, IUserTokenProvider<TUser>>();
+        private readonly Dictionary<string, IUserTokenProvider> _tokenProviders =
+            new Dictionary<string, IUserTokenProvider>();
 
         private TimeSpan _defaultLockout = TimeSpan.Zero;
         private bool _disposed;
@@ -46,12 +46,12 @@ namespace Microsoft.AspNet.Identity
         /// <param name="contextAccessor">The accessor used to access the <see cref="HttpContext"/>.</param>
         public UserManager(IUserStore<TUser> store,
             IOptions<IdentityOptions> optionsAccessor,
-            IPasswordHasher<TUser> passwordHasher,
-            IEnumerable<IUserValidator<TUser>> userValidators,
-            IEnumerable<IPasswordValidator<TUser>> passwordValidators,
+            IPasswordHasher passwordHasher,
+            IEnumerable<IUserValidator> userValidators,
+            IEnumerable<IPasswordValidator> passwordValidators,
             ILookupNormalizer keyNormalizer,
             IdentityErrorDescriber errors,
-            IEnumerable<IUserTokenProvider<TUser>> tokenProviders,
+            IEnumerable<IUserTokenProvider> tokenProviders,
             ILogger<UserManager<TUser>> logger,
             IHttpContextAccessor contextAccessor)
         {
@@ -105,11 +105,11 @@ namespace Microsoft.AspNet.Identity
         /// </value>
         protected internal virtual ILogger Logger { get; set; }
 
-        internal IPasswordHasher<TUser> PasswordHasher { get; set; }
+        internal IPasswordHasher PasswordHasher { get; set; }
 
-        internal IList<IUserValidator<TUser>> UserValidators { get; } = new List<IUserValidator<TUser>>();
+        internal IList<IUserValidator> UserValidators { get; } = new List<IUserValidator>();
 
-        internal IList<IPasswordValidator<TUser>> PasswordValidators { get; } = new List<IPasswordValidator<TUser>>();
+        internal IList<IPasswordValidator> PasswordValidators { get; } = new List<IPasswordValidator>();
 
         internal ILookupNormalizer KeyNormalizer { get; set; }
 
@@ -1557,7 +1557,7 @@ namespace Microsoft.AspNet.Identity
         /// Registers a token provider.
         /// </summary>
         /// <param name="provider">The provider to register.</param>
-        public virtual void RegisterTokenProvider(IUserTokenProvider<TUser> provider)
+        public virtual void RegisterTokenProvider(IUserTokenProvider provider)
         {
             ThrowIfDisposed();
             if (provider == null)

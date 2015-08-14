@@ -7,7 +7,7 @@ namespace Microsoft.AspNet.Identity
     /// Provides an abstraction for hashing passwords.
     /// </summary>
     /// <typeparam name="TUser">The type used to represent a user.</typeparam>
-    public interface IPasswordHasher<TUser> where TUser : class
+    public interface IPasswordHasher
     {
         /// <summary>
         /// Returns a hashed representation of the supplied <paramref name="password"/> for the specified <paramref name="user"/>.
@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user">The user whose password is to be hashed.</param>
         /// <param name="password">The password to hash.</param>
         /// <returns>A hashed representation of the supplied <paramref name="password"/> for the specified <paramref name="user"/>.</returns>
-        string HashPassword(TUser user, string password);
+        string HashPassword<TUser>(TUser user, string password) where TUser : class;
 
         /// <summary>
         /// Returns a <see cref="PasswordVerificationResult"/> indicating the result of a password hash comparison.
@@ -25,6 +25,6 @@ namespace Microsoft.AspNet.Identity
         /// <param name="providedPassword">The password supplied for comparison.</param>
         /// <returns>A <see cref="PasswordVerificationResult"/> indicating the result of a password hash comparison.</returns>
         /// <remarks>Implementations of this method should be time consistent.</remarks>
-        PasswordVerificationResult VerifyHashedPassword(TUser user, string hashedPassword, string providedPassword);
+        PasswordVerificationResult VerifyHashedPassword<TUser>(TUser user, string hashedPassword, string providedPassword) where TUser : class;
     }
 }

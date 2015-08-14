@@ -22,8 +22,7 @@ namespace Microsoft.AspNet.Identity
     /// TokenProvider that generates tokens from the user's security stamp and notifies a user via email.
     /// </summary>
     /// <typeparam name="TUser">The type used to represent a user.</typeparam>
-    public class EmailTokenProvider<TUser> : TotpSecurityStampBasedTokenProvider<TUser>
-        where TUser : class
+    public class EmailTokenProvider : TotpSecurityStampBasedTokenProvider
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="EmailTokenProvider{TUser}"/> class.
@@ -61,7 +60,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="manager">The <see cref="UserManager{TUser}"/> to retrieve the <paramref name="user"/> from.</param>
         /// <param name="user">The <see cref="TUser"/> to check for the possibility of generating a two factor authentication token.</param>
         /// <returns>True if the user has an email address set, otherwise false.</returns>
-        public override async Task<bool> CanGenerateTwoFactorTokenAsync(UserManager<TUser> manager, TUser user)
+        public override async Task<bool> CanGenerateTwoFactorTokenAsync<TUser>(UserManager<TUser> manager, TUser user)
         {
             var email = await manager.GetEmailAsync(user);
             return !string.IsNullOrWhiteSpace(email) && await manager.IsEmailConfirmedAsync(user);
@@ -74,8 +73,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="manager">The <see cref="UserManager{TUser}"/> to retrieve the <paramref name="user"/> from.</param>
         /// <param name="user">The <see cref="TUser"/> to check for the possibility of generating a two factor authentication token.</param>
         /// <returns>A string suitable for use as entropy in token generation.</returns>
-        public override async Task<string> GetUserModifierAsync(string purpose, UserManager<TUser> manager,
-            TUser user)
+        public override async Task<string> GetUserModifierAsync<TUser>(string purpose, UserManager<TUser> manager, TUser user)
         {
             var email = await manager.GetEmailAsync(user);
             return "Email:" + purpose + ":" + email;

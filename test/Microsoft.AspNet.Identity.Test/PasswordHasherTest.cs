@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Identity.Test
             // Act & assert
             var ex = Assert.Throws<InvalidOperationException>(() =>
             {
-                new PasswordHasher(compatMode: (PasswordHasherCompatibilityMode)(-1));
+                new TestPasswordHasher(compatMode: (PasswordHasherCompatibilityMode)(-1));
             });
             Assert.Equal("The provided PasswordHasherCompatibilityMode is invalid.", ex.Message);
         }
@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Identity.Test
             // Act & assert
             var ex = Assert.Throws<InvalidOperationException>(() =>
             {
-                new PasswordHasher(iterCount: iterCount);
+                new TestPasswordHasher(iterCount: iterCount);
             });
             Assert.Equal("The iteration count must be a positive integer.", ex.Message);
         }
@@ -40,15 +40,15 @@ namespace Microsoft.AspNet.Identity.Test
         public void FullRoundTrip(PasswordHasherCompatibilityMode compatMode)
         {
             // Arrange
-            var hasher = new PasswordHasher(compatMode: compatMode);
+            var hasher = new TestPasswordHasher(compatMode: compatMode);
 
             // Act & assert - success case
-            var hashedPassword = hasher.HashPassword(null, "password 1");
-            var successResult = hasher.VerifyHashedPassword(null, hashedPassword, "password 1");
+            var hashedPassword = hasher.HashPassword<object>(null, "password 1");
+            var successResult = hasher.VerifyHashedPassword<object>(null, hashedPassword, "password 1");
             Assert.Equal(PasswordVerificationResult.Success, successResult);
 
             // Act & assert - failure case
-            var failedResult = hasher.VerifyHashedPassword(null, hashedPassword, "password 2");
+            var failedResult = hasher.VerifyHashedPassword<object>(null, hashedPassword, "password 2");
             Assert.Equal(PasswordVerificationResult.Failed, failedResult);
         }
 
@@ -56,10 +56,10 @@ namespace Microsoft.AspNet.Identity.Test
         public void HashPassword_DefaultsToVersion3()
         {
             // Arrange
-            var hasher = new PasswordHasher(compatMode: null);
+            var hasher = new TestPasswordHasher(compatMode: null);
 
             // Act
-            string retVal = hasher.HashPassword(null, "my password");
+            string retVal = hasher.HashPassword<object>(null, "my password");
 
             // Assert
             Assert.Equal("AQAAAAEAACcQAAAAEAABAgMEBQYHCAkKCwwNDg+yWU7rLgUwPZb1Itsmra7cbxw2EFpwpVFIEtP+JIuUEw==", retVal);
@@ -69,10 +69,10 @@ namespace Microsoft.AspNet.Identity.Test
         public void HashPassword_Version2()
         {
             // Arrange
-            var hasher = new PasswordHasher(compatMode: PasswordHasherCompatibilityMode.IdentityV2);
+            var hasher = new TestPasswordHasher(compatMode: PasswordHasherCompatibilityMode.IdentityV2);
 
             // Act
-            string retVal = hasher.HashPassword(null, "my password");
+            string retVal = hasher.HashPassword<object>(null, "my password");
 
             // Assert
             Assert.Equal("AAABAgMEBQYHCAkKCwwNDg+ukCEMDf0yyQ29NYubggHIVY0sdEUfdyeM+E1LtH1uJg==", retVal);
@@ -82,10 +82,10 @@ namespace Microsoft.AspNet.Identity.Test
         public void HashPassword_Version3()
         {
             // Arrange
-            var hasher = new PasswordHasher(compatMode: PasswordHasherCompatibilityMode.IdentityV3);
+            var hasher = new TestPasswordHasher(compatMode: PasswordHasherCompatibilityMode.IdentityV3);
 
             // Act
-            string retVal = hasher.HashPassword(null, "my password");
+            string retVal = hasher.HashPassword<object>(null, "my password");
 
             // Assert
             Assert.Equal("AQAAAAEAACcQAAAAEAABAgMEBQYHCAkKCwwNDg+yWU7rLgUwPZb1Itsmra7cbxw2EFpwpVFIEtP+JIuUEw==", retVal);
@@ -106,7 +106,7 @@ namespace Microsoft.AspNet.Identity.Test
             var hasher = new PasswordHasher();
 
             // Act
-            var result = hasher.VerifyHashedPassword(null, hashedPassword, "my password");
+            var result = hasher.VerifyHashedPassword<object>(null, hashedPassword, "my password");
 
             // Assert
             Assert.Equal(PasswordVerificationResult.Failed, result);
@@ -123,10 +123,10 @@ namespace Microsoft.AspNet.Identity.Test
         public void VerifyHashedPassword_Version2CompatMode_SuccessCases(string hashedPassword)
         {
             // Arrange
-            var hasher = new PasswordHasher(compatMode: PasswordHasherCompatibilityMode.IdentityV2);
+            var hasher = new TestPasswordHasher(compatMode: PasswordHasherCompatibilityMode.IdentityV2);
 
             // Act
-            var result = hasher.VerifyHashedPassword(null, hashedPassword, "my password");
+            var result = hasher.VerifyHashedPassword<object>(null, hashedPassword, "my password");
 
             // Assert
             Assert.Equal(PasswordVerificationResult.Success, result);
@@ -143,18 +143,18 @@ namespace Microsoft.AspNet.Identity.Test
         public void VerifyHashedPassword_Version3CompatMode_SuccessCases(string hashedPassword, PasswordVerificationResult expectedResult)
         {
             // Arrange
-            var hasher = new PasswordHasher(compatMode: PasswordHasherCompatibilityMode.IdentityV3);
+            var hasher = new TestPasswordHasher(compatMode: PasswordHasherCompatibilityMode.IdentityV3);
 
             // Act
-            var actualResult = hasher.VerifyHashedPassword(null, hashedPassword, "my password");
+            var actualResult = hasher.VerifyHashedPassword<object>(null, hashedPassword, "my password");
 
             // Assert
             Assert.Equal(expectedResult, actualResult);
         }
 
-        private sealed class PasswordHasher : PasswordHasher<object>
+        private sealed class TestPasswordHasher : PasswordHasher
         {
-            public PasswordHasher(PasswordHasherCompatibilityMode? compatMode = null, int? iterCount = null)
+            public TestPasswordHasher(PasswordHasherCompatibilityMode? compatMode = null, int? iterCount = null)
                 : base(BuildOptions(compatMode, iterCount))
             {
             }
