@@ -41,10 +41,12 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             if (documentationDescriptor != null || outputElementHint != null)
             {
-                return new TagHelperDesignTimeDescriptor(
-                    documentationDescriptor?.Summary,
-                    documentationDescriptor?.Remarks,
-                    outputElementHint);
+                return new TagHelperDesignTimeDescriptor
+                {
+                    Summary = documentationDescriptor?.Summary,
+                    Remarks = documentationDescriptor?.Remarks,
+                    OutputElementHint = outputElementHint
+                };
             }
 
             return null;
@@ -68,9 +70,11 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             if (documentationDescriptor != null)
             {
-                return new TagHelperAttributeDesignTimeDescriptor(
-                   documentationDescriptor.Summary,
-                   documentationDescriptor.Remarks);
+                return new TagHelperAttributeDesignTimeDescriptor
+                {
+                    Summary = documentationDescriptor.Summary,
+                    Remarks = documentationDescriptor.Remarks
+                };
             }
 
             return null;

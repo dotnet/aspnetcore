@@ -545,7 +545,6 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Arrange
             var tagHelperContent = new DefaultTagHelperContent();
             var expected = "First Second Third";
-            var i = 0;
 
             // Act
             tagHelperContent.SetContent("First ").AppendFormat("{0} Third", "Second");
@@ -560,7 +559,6 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Arrange
             var tagHelperContent = new DefaultTagHelperContent();
             var expected = "First Second Third Fourth";
-            var i = 0;
 
             // Act
             tagHelperContent

@@ -68,10 +68,12 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
                     TagHelperDirectiveType.RemoveTagHelper :
                     TagHelperDirectiveType.AddTagHelper;
 
-                var directiveDescriptor = new TagHelperDirectiveDescriptor(
-                    chunkGenerator.LookupText,
-                    span.Start,
-                    directive);
+                var directiveDescriptor = new TagHelperDirectiveDescriptor
+                {
+                    DirectiveText = chunkGenerator.LookupText,
+                    Location = span.Start,
+                    DirectiveType = directive
+                };
 
                 _directiveDescriptors.Add(directiveDescriptor);
             }
@@ -79,10 +81,12 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
             {
                 var chunkGenerator = (TagHelperPrefixDirectiveChunkGenerator)span.ChunkGenerator;
 
-                var directiveDescriptor = new TagHelperDirectiveDescriptor(
-                    chunkGenerator.Prefix,
-                    span.Start,
-                    TagHelperDirectiveType.TagHelperPrefix);
+                var directiveDescriptor = new TagHelperDirectiveDescriptor
+                {
+                    DirectiveText = chunkGenerator.Prefix,
+                    Location = span.Start,
+                    DirectiveType = TagHelperDirectiveType.TagHelperPrefix
+                };
 
                 _directiveDescriptors.Add(directiveDescriptor);
             }

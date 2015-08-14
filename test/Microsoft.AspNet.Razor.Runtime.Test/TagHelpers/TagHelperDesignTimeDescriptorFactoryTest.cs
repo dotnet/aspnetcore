@@ -51,17 +51,17 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                     { typeof(InheritedOutputElementHintTagHelper), null },
                     {
                         typeof(OutputElementHintTagHelper),
-                        new TagHelperDesignTimeDescriptor(
-                            summary: null,
-                            remarks: null,
-                            outputElementHint: "hinted-value")
+                        new TagHelperDesignTimeDescriptor
+                        {
+                            OutputElementHint = "hinted-value"
+                        }
                     },
                     {
                         typeof(OverriddenOutputElementHintTagHelper),
-                        new TagHelperDesignTimeDescriptor(
-                            summary: null,
-                            remarks: null,
-                            outputElementHint: "overridden")
+                        new TagHelperDesignTimeDescriptor
+                        {
+                            OutputElementHint = "overridden"
+                        }
                     },
                 };
             }
@@ -90,10 +90,10 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 var nonExistentCodeBase = defaultCodeBase.Replace("TestFiles", "TestFile");
                 var invalidLocation = defaultLocation + '\0';
                 var invalidCodeBase = defaultCodeBase + '\0';
-                var onlyHint = new TagHelperDesignTimeDescriptor(
-                    summary: null,
-                    remarks: null,
-                    outputElementHint: "p");
+                var onlyHint = new TagHelperDesignTimeDescriptor
+                {
+                    OutputElementHint = "p"
+                };
 
                 // tagHelperType, expectedDesignTimeDescriptor
                 return new TheoryData<Type, TagHelperDesignTimeDescriptor>
@@ -101,18 +101,30 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                     { CreateDocumentationTagHelperType(location: null, codeBase: null), onlyHint },
                     {
                         CreateDocumentationTagHelperType(defaultLocation, codeBase: null),
-                        new TagHelperDesignTimeDescriptor(
-                            TypeSummary,
-                            TypeRemarks,
-                            outputElementHint: "p")
+                        new TagHelperDesignTimeDescriptor
+                        {
+                            Summary = TypeSummary,
+                            Remarks = TypeRemarks,
+                            OutputElementHint = "p"
+                        }
                     },
                     {
                         CreateDocumentationTagHelperType(location: null, codeBase: defaultCodeBase),
-                        new TagHelperDesignTimeDescriptor(TypeSummary, TypeRemarks, outputElementHint: "p")
+                        new TagHelperDesignTimeDescriptor
+                        {
+                            Summary = TypeSummary,
+                            Remarks = TypeRemarks,
+                            OutputElementHint = "p"
+                        }
                     },
                     {
                         CreateDocumentationTagHelperType(defaultLocation, defaultCodeBase),
-                        new TagHelperDesignTimeDescriptor(TypeSummary, TypeRemarks, outputElementHint: "p")
+                        new TagHelperDesignTimeDescriptor
+                        {
+                            Summary = TypeSummary,
+                            Remarks = TypeRemarks,
+                            OutputElementHint = "p"
+                        }
                     },
                     { CreateType<SingleAttributeTagHelper>(defaultLocation, defaultCodeBase), null },
                     { CreateDocumentationTagHelperType(nonExistentLocation, codeBase: null), onlyHint },
@@ -145,42 +157,52 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 {
                     {
                         CreateDocumentationTagHelperType(LocalizedDocumentedAssemblyLocation, codeBase: null),
-                        new TagHelperDesignTimeDescriptor(
-                            summary: "en-GB: " + TypeSummary,
-                            remarks: "en-GB: " + TypeRemarks,
-                            outputElementHint: "p"),
+                        new TagHelperDesignTimeDescriptor
+                        {
+                            Summary = "en-GB: " + TypeSummary,
+                            Remarks = "en-GB: " + TypeRemarks,
+                            OutputElementHint = "p"
+                        },
                         "en-GB"
                     },
                     {
                         CreateDocumentationTagHelperType(LocalizedDocumentedAssemblyLocation, codeBase: null),
-                        new TagHelperDesignTimeDescriptor(
-                            summary: "en: " + TypeSummary,
-                            remarks: "en: " + TypeRemarks,
-                            outputElementHint: "p"),
+                        new TagHelperDesignTimeDescriptor
+                        {
+                            Summary = "en: " + TypeSummary,
+                            Remarks = "en: " + TypeRemarks,
+                            OutputElementHint = "p"
+                        },
                         "en-US"
                     },
                     {
                         CreateDocumentationTagHelperType(LocalizedDocumentedAssemblyLocation, codeBase: null),
-                        new TagHelperDesignTimeDescriptor(
-                            summary: "fr-FR: " + TypeSummary,
-                            remarks: "fr-FR: " + TypeRemarks,
-                            outputElementHint: "p"),
+                        new TagHelperDesignTimeDescriptor
+                        {
+                            Summary = "fr-FR: " + TypeSummary,
+                            Remarks = "fr-FR: " + TypeRemarks,
+                            OutputElementHint = "p"
+                        },
                         "fr-FR"
                     },
                     {
                         CreateDocumentationTagHelperType(LocalizedDocumentedAssemblyLocation, codeBase: null),
-                        new TagHelperDesignTimeDescriptor(
-                            summary: "fr: " + TypeSummary,
-                            remarks: "fr: " + TypeRemarks,
-                            outputElementHint: "p"),
+                        new TagHelperDesignTimeDescriptor
+                        {
+                            Summary = "fr: " + TypeSummary,
+                            Remarks = "fr: " + TypeRemarks,
+                            OutputElementHint = "p"
+                        },
                         "fr-BE"
                     },
                     {
                         CreateDocumentationTagHelperType(LocalizedDocumentedAssemblyLocation, codeBase: null),
-                        new TagHelperDesignTimeDescriptor(
-                            summary: "nl-BE: " + TypeSummary,
-                            remarks: "nl-BE: " + TypeRemarks,
-                            outputElementHint: "p"),
+                        new TagHelperDesignTimeDescriptor
+                        {
+                            Summary = "nl-BE: " + TypeSummary,
+                            Remarks = "nl-BE: " + TypeRemarks,
+                            OutputElementHint = "p"
+                        },
                         "nl-BE"
                     }
                 };
@@ -244,53 +266,77 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                     {
                         CreateDocumentationTagHelperType(defaultLocation, codeBase: null),
                         nameof(DocumentedTagHelper.SummaryProperty),
-                        new TagHelperAttributeDesignTimeDescriptor(PropertySummary, remarks: null)
+                        new TagHelperAttributeDesignTimeDescriptor
+                        {
+                            Summary = PropertySummary
+                        }
                     },
                     {
                         CreateDocumentationTagHelperType(defaultLocation, codeBase: null),
                         nameof(DocumentedTagHelper.RemarksProperty),
-                        new TagHelperAttributeDesignTimeDescriptor(summary: null, remarks: PropertyRemarks)
+                        new TagHelperAttributeDesignTimeDescriptor
+                        {
+                            Remarks = PropertyRemarks
+                        }
                     },
                     {
                         CreateDocumentationTagHelperType(defaultLocation, codeBase: null),
                         nameof(DocumentedTagHelper.RemarksAndSummaryProperty),
-                        new TagHelperAttributeDesignTimeDescriptor(
-                            PropertyWithSummaryAndRemarks_Summary,
-                            PropertyWithSummaryAndRemarks_Remarks)
+                        new TagHelperAttributeDesignTimeDescriptor
+                        {
+                            Summary = PropertyWithSummaryAndRemarks_Summary,
+                            Remarks = PropertyWithSummaryAndRemarks_Remarks
+                        }
                     },
                     {
                         CreateDocumentationTagHelperType(location: null, codeBase: defaultCodeBase),
                         nameof(DocumentedTagHelper.SummaryProperty),
-                        new TagHelperAttributeDesignTimeDescriptor(PropertySummary, remarks: null)
+                        new TagHelperAttributeDesignTimeDescriptor
+                        {
+                            Summary = PropertySummary
+                        }
                     },
                     {
                         CreateDocumentationTagHelperType(location: null, codeBase: defaultCodeBase),
                         nameof(DocumentedTagHelper.RemarksProperty),
-                        new TagHelperAttributeDesignTimeDescriptor(summary: null, remarks: PropertyRemarks)
+                        new TagHelperAttributeDesignTimeDescriptor
+                        {
+                            Remarks = PropertyRemarks
+                        }
                     },
                     {
                         CreateDocumentationTagHelperType(location: null, codeBase: defaultCodeBase),
                         nameof(DocumentedTagHelper.RemarksAndSummaryProperty),
-                        new TagHelperAttributeDesignTimeDescriptor(
-                            PropertyWithSummaryAndRemarks_Summary,
-                            PropertyWithSummaryAndRemarks_Remarks)
+                        new TagHelperAttributeDesignTimeDescriptor
+                        {
+                            Summary = PropertyWithSummaryAndRemarks_Summary,
+                            Remarks = PropertyWithSummaryAndRemarks_Remarks
+                        }
                     },
                     {
                         CreateDocumentationTagHelperType(defaultLocation, defaultCodeBase),
                         nameof(DocumentedTagHelper.SummaryProperty),
-                        new TagHelperAttributeDesignTimeDescriptor(PropertySummary, remarks: null)
+                        new TagHelperAttributeDesignTimeDescriptor
+                        {
+                            Summary = PropertySummary
+                        }
                     },
                     {
                         CreateDocumentationTagHelperType(defaultLocation, defaultCodeBase),
                         nameof(DocumentedTagHelper.RemarksProperty),
-                        new TagHelperAttributeDesignTimeDescriptor(summary: null, remarks: PropertyRemarks)
+                        new TagHelperAttributeDesignTimeDescriptor
+                        {
+                            Remarks = PropertyRemarks
+                        }
                     },
                     {
                         CreateDocumentationTagHelperType(defaultLocation, defaultCodeBase),
                         nameof(DocumentedTagHelper.RemarksAndSummaryProperty),
-                        new TagHelperAttributeDesignTimeDescriptor(
-                            PropertyWithSummaryAndRemarks_Summary,
-                            PropertyWithSummaryAndRemarks_Remarks)
+                        new TagHelperAttributeDesignTimeDescriptor
+                        {
+                            Summary = PropertyWithSummaryAndRemarks_Summary,
+                            Remarks = PropertyWithSummaryAndRemarks_Remarks
+                        }
                     },
                     {
                         CreateDocumentationTagHelperType(nonExistentLocation, codeBase: null),
@@ -348,37 +394,47 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 {
                     {
                         CreateDocumentationTagHelperType(LocalizedDocumentedAssemblyLocation, codeBase: null),
-                        new TagHelperAttributeDesignTimeDescriptor(
-                            summary: "en-GB: " + PropertyWithSummaryAndRemarks_Summary,
-                            remarks: "en-GB: " + PropertyWithSummaryAndRemarks_Remarks),
+                        new TagHelperAttributeDesignTimeDescriptor
+                        {
+                            Summary = "en-GB: " + PropertyWithSummaryAndRemarks_Summary,
+                            Remarks = "en-GB: " + PropertyWithSummaryAndRemarks_Remarks
+                        },
                         "en-GB"
                     },
                     {
                         CreateDocumentationTagHelperType(LocalizedDocumentedAssemblyLocation, codeBase: null),
-                        new TagHelperAttributeDesignTimeDescriptor(
-                            summary: "en: " + PropertyWithSummaryAndRemarks_Summary,
-                            remarks: "en: " + PropertyWithSummaryAndRemarks_Remarks),
+                        new TagHelperAttributeDesignTimeDescriptor
+                        {
+                            Summary = "en: " + PropertyWithSummaryAndRemarks_Summary,
+                            Remarks = "en: " + PropertyWithSummaryAndRemarks_Remarks
+                        },
                         "en-US"
                     },
                     {
                         CreateDocumentationTagHelperType(LocalizedDocumentedAssemblyLocation, codeBase: null),
-                        new TagHelperAttributeDesignTimeDescriptor(
-                            summary: "fr-FR: " + PropertyWithSummaryAndRemarks_Summary,
-                            remarks: "fr-FR: " + PropertyWithSummaryAndRemarks_Remarks),
+                        new TagHelperAttributeDesignTimeDescriptor
+                        {
+                            Summary = "fr-FR: " + PropertyWithSummaryAndRemarks_Summary,
+                            Remarks = "fr-FR: " + PropertyWithSummaryAndRemarks_Remarks
+                        },
                         "fr-FR"
                     },
                     {
                         CreateDocumentationTagHelperType(LocalizedDocumentedAssemblyLocation, codeBase: null),
-                        new TagHelperAttributeDesignTimeDescriptor(
-                            summary: "fr: " + PropertyWithSummaryAndRemarks_Summary,
-                            remarks: "fr: " + PropertyWithSummaryAndRemarks_Remarks),
+                        new TagHelperAttributeDesignTimeDescriptor
+                        {
+                            Summary = "fr: " + PropertyWithSummaryAndRemarks_Summary,
+                            Remarks = "fr: " + PropertyWithSummaryAndRemarks_Remarks
+                        },
                         "fr-BE"
                     },
                     {
                         CreateDocumentationTagHelperType(LocalizedDocumentedAssemblyLocation, codeBase: null),
-                        new TagHelperAttributeDesignTimeDescriptor(
-                            summary: "nl-BE: " + PropertyWithSummaryAndRemarks_Summary,
-                            remarks: "nl-BE: " + PropertyWithSummaryAndRemarks_Remarks),
+                        new TagHelperAttributeDesignTimeDescriptor
+                        {
+                            Summary = "nl-BE: " + PropertyWithSummaryAndRemarks_Summary,
+                            Remarks = "nl-BE: " + PropertyWithSummaryAndRemarks_Remarks
+                        },
                         "nl-BE"
                     }
                 };

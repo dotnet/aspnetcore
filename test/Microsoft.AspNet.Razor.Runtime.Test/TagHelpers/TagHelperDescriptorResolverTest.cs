@@ -82,14 +82,18 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         defaultAssemblyLookups,
                         new[]
                         {
-                            new TagHelperDirectiveDescriptor(
-                                "th:",
-                                directiveLocation1,
-                                TagHelperDirectiveType.TagHelperPrefix),
-                            new TagHelperDirectiveDescriptor(
-                                "different",
-                                directiveLocation2,
-                                TagHelperDirectiveType.TagHelperPrefix)
+                            new TagHelperDirectiveDescriptor
+                            {
+                                DirectiveText = "th:",
+                                Location = directiveLocation1,
+                                DirectiveType = TagHelperDirectiveType.TagHelperPrefix
+                            },
+                            new TagHelperDirectiveDescriptor
+                            {
+                                DirectiveText = "different",
+                                Location = directiveLocation2,
+                                DirectiveType = TagHelperDirectiveType.TagHelperPrefix
+                            }
                         },
                         new TagHelperDescriptor[0],
                         new[]
@@ -103,18 +107,24 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         defaultAssemblyLookups,
                         new[]
                         {
-                            new TagHelperDirectiveDescriptor(
-                                "th:",
-                                directiveLocation1,
-                                TagHelperDirectiveType.TagHelperPrefix),
-                            new TagHelperDirectiveDescriptor(
-                                "different",
-                                directiveLocation2,
-                                TagHelperDirectiveType.TagHelperPrefix),
-                            new TagHelperDirectiveDescriptor(
-                                "*Plain*, " + assemblyA,
-                                directiveLocation1,
-                                TagHelperDirectiveType.AddTagHelper),
+                            new TagHelperDirectiveDescriptor
+                            {
+                                DirectiveText = "th:",
+                                Location = directiveLocation1,
+                                DirectiveType = TagHelperDirectiveType.TagHelperPrefix
+                            },
+                            new TagHelperDirectiveDescriptor
+                            {
+                                DirectiveText = "different",
+                                Location = directiveLocation2,
+                                DirectiveType = TagHelperDirectiveType.TagHelperPrefix
+                            },
+                            new TagHelperDirectiveDescriptor
+                            {
+                                DirectiveText = "*Plain*, " + assemblyA,
+                                Location = directiveLocation1,
+                                DirectiveType = TagHelperDirectiveType.AddTagHelper
+                            }
                         },
                         new[] { CreatePrefixedValidPlainDescriptor("th:") },
                         new[]
@@ -128,22 +138,30 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         defaultAssemblyLookups,
                         new[]
                         {
-                            new TagHelperDirectiveDescriptor(
-                                "th:",
-                                directiveLocation1,
-                                TagHelperDirectiveType.TagHelperPrefix),
-                            new TagHelperDirectiveDescriptor(
-                                "different",
-                                directiveLocation2,
-                                TagHelperDirectiveType.TagHelperPrefix),
-                            new TagHelperDirectiveDescriptor(
-                                "*Plain*, " + assemblyA,
-                                directiveLocation1,
-                                TagHelperDirectiveType.AddTagHelper),
-                            new TagHelperDirectiveDescriptor(
-                                "*String*, " + assemblyB,
-                                directiveLocation1,
-                                TagHelperDirectiveType.AddTagHelper),
+                            new TagHelperDirectiveDescriptor
+                            {
+                                DirectiveText = "th:",
+                                Location = directiveLocation1,
+                                DirectiveType = TagHelperDirectiveType.TagHelperPrefix
+                            },
+                            new TagHelperDirectiveDescriptor
+                            {
+                                DirectiveText = "different",
+                                Location = directiveLocation2,
+                                DirectiveType = TagHelperDirectiveType.TagHelperPrefix
+                            },
+                            new TagHelperDirectiveDescriptor
+                            {
+                                DirectiveText = "*Plain*, " + assemblyA,
+                                Location = directiveLocation1,
+                                DirectiveType = TagHelperDirectiveType.AddTagHelper
+                            },
+                            new TagHelperDirectiveDescriptor
+                            {
+                                DirectiveText = "*String*, " + assemblyB,
+                                Location = directiveLocation1,
+                                DirectiveType = TagHelperDirectiveType.AddTagHelper
+                            }
                         },
                         new[] { CreatePrefixedValidPlainDescriptor("th:"), CreatePrefixedStringDescriptor("th:") },
                         new[]
@@ -157,10 +175,12 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         defaultAssemblyLookups,
                         new[]
                         {
-                            new TagHelperDirectiveDescriptor(
-                                "th ",
-                                directiveLocation1,
-                                TagHelperDirectiveType.TagHelperPrefix),
+                            new TagHelperDirectiveDescriptor
+                            {
+                                DirectiveText = "th ",
+                                Location = directiveLocation1,
+                                DirectiveType = TagHelperDirectiveType.TagHelperPrefix
+                            },
                         },
                         new TagHelperDescriptor[0],
                         new[]
@@ -178,10 +198,12 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         defaultAssemblyLookups,
                         new[]
                         {
-                            new TagHelperDirectiveDescriptor(
-                                "th\t",
-                                directiveLocation1,
-                                TagHelperDirectiveType.TagHelperPrefix),
+                            new TagHelperDirectiveDescriptor
+                            {
+                                DirectiveText = "th\t",
+                                Location = directiveLocation1,
+                                DirectiveType = TagHelperDirectiveType.TagHelperPrefix
+                            }
                         },
                         new TagHelperDescriptor[0],
                         new[]
@@ -199,10 +221,12 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         defaultAssemblyLookups,
                         new[]
                         {
-                            new TagHelperDirectiveDescriptor(
-                                "th" + Environment.NewLine,
-                                directiveLocation1,
-                                TagHelperDirectiveType.TagHelperPrefix),
+                            new TagHelperDirectiveDescriptor
+                            {
+                                DirectiveText = "th" + Environment.NewLine,
+                                Location = directiveLocation1,
+                                DirectiveType = TagHelperDirectiveType.TagHelperPrefix
+                            }
                         },
                         new TagHelperDescriptor[0],
                         new[]
@@ -220,10 +244,12 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         defaultAssemblyLookups,
                         new[]
                         {
-                            new TagHelperDirectiveDescriptor(
-                                " th ",
-                                directiveLocation1,
-                                TagHelperDirectiveType.TagHelperPrefix),
+                            new TagHelperDirectiveDescriptor
+                            {
+                                DirectiveText = " th ",
+                                Location = directiveLocation1,
+                                DirectiveType = TagHelperDirectiveType.TagHelperPrefix
+                            }
                         },
                         new TagHelperDescriptor[0],
                         new[]
@@ -241,10 +267,12 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         defaultAssemblyLookups,
                         new[]
                         {
-                            new TagHelperDirectiveDescriptor(
-                                "@",
-                                directiveLocation1,
-                                TagHelperDirectiveType.TagHelperPrefix),
+                            new TagHelperDirectiveDescriptor
+                            {
+                                DirectiveText = "@",
+                                Location = directiveLocation1,
+                                DirectiveType = TagHelperDirectiveType.TagHelperPrefix
+                            }
                         },
                         new TagHelperDescriptor[0],
                         new[]
@@ -262,10 +290,12 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         defaultAssemblyLookups,
                         new[]
                         {
-                            new TagHelperDirectiveDescriptor(
-                                "t@h",
-                                directiveLocation1,
-                                TagHelperDirectiveType.TagHelperPrefix),
+                            new TagHelperDirectiveDescriptor
+                            {
+                                DirectiveText = "t@h",
+                                Location = directiveLocation1,
+                                DirectiveType = TagHelperDirectiveType.TagHelperPrefix
+                            }
                         },
                         new TagHelperDescriptor[0],
                         new[]
@@ -283,10 +313,12 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         defaultAssemblyLookups,
                         new[]
                         {
-                            new TagHelperDirectiveDescriptor(
-                                "!",
-                                directiveLocation1,
-                                TagHelperDirectiveType.TagHelperPrefix),
+                            new TagHelperDirectiveDescriptor
+                            {
+                                DirectiveText = "!",
+                                Location = directiveLocation1,
+                                DirectiveType = TagHelperDirectiveType.TagHelperPrefix
+                            }
                         },
                         new TagHelperDescriptor[0],
                         new[]
@@ -304,10 +336,12 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         defaultAssemblyLookups,
                         new[]
                         {
-                            new TagHelperDirectiveDescriptor(
-                                "!th",
-                                directiveLocation1,
-                                TagHelperDirectiveType.TagHelperPrefix),
+                            new TagHelperDirectiveDescriptor
+                            {
+                                DirectiveText = "!th",
+                                Location = directiveLocation1,
+                                DirectiveType = TagHelperDirectiveType.TagHelperPrefix
+                            }
                         },
                         new TagHelperDescriptor[0],
                         new[]
@@ -1341,7 +1375,15 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 "format is: \"typeName, assemblyName\".",
                 lookupText);
             var resolutionContext = new TagHelperDescriptorResolutionContext(
-                new[] { new TagHelperDirectiveDescriptor(lookupText, documentLocation, directiveType) },
+                new[]
+                {
+                    new TagHelperDirectiveDescriptor
+                    {
+                        DirectiveText = lookupText,
+                        Location = documentLocation,
+                        DirectiveType = directiveType
+                    }
+                },
                 errorSink);
 
             // Act
@@ -1367,7 +1409,15 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var expectedError = new Exception("A custom exception");
             var tagHelperDescriptorResolver = new ThrowingTagHelperDescriptorResolver(expectedError);
             var resolutionContext = new TagHelperDescriptorResolutionContext(
-                new[] { new TagHelperDirectiveDescriptor("A custom, lookup text", documentLocation, directiveType) },
+                new[]
+                {
+                    new TagHelperDirectiveDescriptor
+                    {
+                        DirectiveText = "A custom, lookup text",
+                        Location = documentLocation,
+                        DirectiveType = directiveType
+                    }
+                },
                 errorSink);
 
 
@@ -1431,7 +1481,12 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             string directiveText,
             TagHelperDirectiveType directiveType)
         {
-            return new TagHelperDirectiveDescriptor(directiveText, SourceLocation.Zero, directiveType);
+            return new TagHelperDirectiveDescriptor
+            {
+                DirectiveText = directiveText,
+                Location = SourceLocation.Zero,
+                DirectiveType = directiveType
+            };
         }
 
         private class TestTagHelperDescriptorResolver : TagHelperDescriptorResolver

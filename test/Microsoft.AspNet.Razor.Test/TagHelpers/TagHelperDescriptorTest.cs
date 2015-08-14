@@ -24,7 +24,12 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
                 requiredAttributes: new[] { "required attribute one", "required attribute two" },
                 tagStructure: TagStructure.Unspecified,
-                designTimeDescriptor: new TagHelperDesignTimeDescriptor("usage summary", "usage remarks", "some-tag"));
+                designTimeDescriptor: new TagHelperDesignTimeDescriptor
+                {
+                    Summary = "usage summary",
+                    Remarks = "usage remarks",
+                    OutputElementHint = "some-tag"
+                });
 
             var expectedSerializedDescriptor =
                 $"{{\"{ nameof(TagHelperDescriptor.Prefix) }\":\"prefix:\"," +
@@ -188,7 +193,12 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
                 requiredAttributes: new[] { "required attribute one", "required attribute two" },
                 tagStructure: TagStructure.WithoutEndTag,
-                designTimeDescriptor: new TagHelperDesignTimeDescriptor("usage summary", "usage remarks", "some-tag"));
+                designTimeDescriptor: new TagHelperDesignTimeDescriptor
+                {
+                    Summary = "usage summary",
+                    Remarks = "usage remarks",
+                    OutputElementHint = "some-tag"
+                });
 
             // Act
             var descriptor = JsonConvert.DeserializeObject<TagHelperDescriptor>(serializedDescriptor);

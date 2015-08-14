@@ -58,10 +58,26 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 Factory.Code("\"four\"").AsTagHelperPrefixDirective("four"));
             var expectedDescriptors = new TagHelperDirectiveDescriptor[]
             {
-                new TagHelperDirectiveDescriptor("one", TagHelperDirectiveType.AddTagHelper),
-                new TagHelperDirectiveDescriptor("two", TagHelperDirectiveType.RemoveTagHelper),
-                new TagHelperDirectiveDescriptor("three", TagHelperDirectiveType.RemoveTagHelper),
-                new TagHelperDirectiveDescriptor("four", TagHelperDirectiveType.TagHelperPrefix),
+                new TagHelperDirectiveDescriptor
+                {
+                    DirectiveText = "one",
+                    DirectiveType = TagHelperDirectiveType.AddTagHelper
+                },
+                new TagHelperDirectiveDescriptor
+                {
+                    DirectiveText = "two",
+                    DirectiveType = TagHelperDirectiveType.RemoveTagHelper
+                },
+                new TagHelperDirectiveDescriptor
+                {
+                    DirectiveText = "three",
+                    DirectiveType = TagHelperDirectiveType.RemoveTagHelper
+                },
+                new TagHelperDirectiveDescriptor
+                {
+                    DirectiveText = "four",
+                    DirectiveType = TagHelperDirectiveType.TagHelperPrefix
+                }
             };
 
             // Act
@@ -81,14 +97,34 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             var resolver = new TestTagHelperDescriptorResolver();
             var expectedInitialDirectiveDescriptors = new TagHelperDirectiveDescriptor[]
             {
-                new TagHelperDirectiveDescriptor("one", TagHelperDirectiveType.AddTagHelper),
-                new TagHelperDirectiveDescriptor("two", TagHelperDirectiveType.RemoveTagHelper),
-                new TagHelperDirectiveDescriptor("three", TagHelperDirectiveType.RemoveTagHelper),
-                new TagHelperDirectiveDescriptor("four", TagHelperDirectiveType.TagHelperPrefix),
+                new TagHelperDirectiveDescriptor
+                {
+                    DirectiveText = "one",
+                    DirectiveType = TagHelperDirectiveType.AddTagHelper
+                },
+                new TagHelperDirectiveDescriptor
+                {
+                    DirectiveText = "two",
+                    DirectiveType = TagHelperDirectiveType.RemoveTagHelper
+                },
+                new TagHelperDirectiveDescriptor
+                {
+                    DirectiveText = "three",
+                    DirectiveType = TagHelperDirectiveType.RemoveTagHelper
+                },
+                new TagHelperDirectiveDescriptor
+                {
+                    DirectiveText = "four",
+                    DirectiveType = TagHelperDirectiveType.TagHelperPrefix
+                }
             };
             var expectedEndDirectiveDescriptors = new TagHelperDirectiveDescriptor[]
             {
-                new TagHelperDirectiveDescriptor("custom", TagHelperDirectiveType.AddTagHelper)
+                new TagHelperDirectiveDescriptor
+                {
+                    DirectiveText = "custom",
+                    DirectiveType = TagHelperDirectiveType.AddTagHelper
+                }
             };
             var tagHelperDirectiveSpanVisitor = new CustomTagHelperDirectiveSpanVisitor(
                 resolver,
@@ -131,7 +167,11 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         .Accepts(AcceptedCharacters.None),
                     Factory.Code("\"something\"").AsTagHelperPrefixDirective("something")));
             var expectedDirectiveDescriptor =
-                new TagHelperDirectiveDescriptor("something", TagHelperDirectiveType.TagHelperPrefix);
+                new TagHelperDirectiveDescriptor
+                {
+                    DirectiveText = "something",
+                    DirectiveType = TagHelperDirectiveType.TagHelperPrefix
+                };
 
             // Act
             tagHelperDirectiveSpanVisitor.GetDescriptors(document);
@@ -157,8 +197,11 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                            .Accepts(AcceptedCharacters.None),
                     Factory.Code("\"something\"").AsAddTagHelper("something"))
             );
-            var expectedRegistration =
-                new TagHelperDirectiveDescriptor("something", TagHelperDirectiveType.AddTagHelper);
+            var expectedRegistration = new TagHelperDirectiveDescriptor
+            {
+                DirectiveText = "something",
+                DirectiveType = TagHelperDirectiveType.AddTagHelper
+            };
 
             // Act
             tagHelperDirectiveSpanVisitor.GetDescriptors(document);
@@ -181,8 +224,11 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                            .Accepts(AcceptedCharacters.None),
                     Factory.Code("\"something\"").AsRemoveTagHelper("something"))
             );
-            var expectedRegistration =
-                new TagHelperDirectiveDescriptor("something", TagHelperDirectiveType.RemoveTagHelper);
+            var expectedRegistration = new TagHelperDirectiveDescriptor
+            {
+                DirectiveText = "something",
+                DirectiveType = TagHelperDirectiveType.RemoveTagHelper
+            };
 
             // Act
             tagHelperDirectiveSpanVisitor.GetDescriptors(document);

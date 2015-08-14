@@ -138,10 +138,10 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                                 attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
                                 requiredAttributes: Enumerable.Empty<string>(),
                                 tagStructure: default(TagStructure),
-                                designTimeDescriptor: new TagHelperDesignTimeDescriptor(
-                                    summary: null,
-                                    remarks: null,
-                                    outputElementHint: "strong"))
+                                designTimeDescriptor: new TagHelperDesignTimeDescriptor
+                                {
+                                    OutputElementHint = "strong"
+                                })
                         }
                     },
                     {
@@ -156,10 +156,10 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                                 attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
                                 requiredAttributes: Enumerable.Empty<string>(),
                                 tagStructure: default(TagStructure),
-                                designTimeDescriptor: new TagHelperDesignTimeDescriptor(
-                                    summary: null,
-                                    remarks: null,
-                                    outputElementHint: "div")),
+                                designTimeDescriptor: new TagHelperDesignTimeDescriptor
+                                {
+                                    OutputElementHint = "div"
+                                }),
                             new TagHelperDescriptor(
                                 prefix: string.Empty,
                                 tagName: "p",
@@ -168,10 +168,10 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                                 attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
                                 requiredAttributes: Enumerable.Empty<string>(),
                                 tagStructure: default(TagStructure),
-                                designTimeDescriptor: new TagHelperDesignTimeDescriptor(
-                                    summary: null,
-                                    remarks: null,
-                                    outputElementHint: "div"))
+                                designTimeDescriptor: new TagHelperDesignTimeDescriptor
+                                {
+                                    OutputElementHint = "div"
+                                })
                         }
                     }
                 };
