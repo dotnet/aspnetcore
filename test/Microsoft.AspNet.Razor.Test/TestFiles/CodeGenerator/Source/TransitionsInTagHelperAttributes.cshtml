@@ -1,0 +1,12 @@
+﻿@addTagHelper "something, nice"
+@{ 
+    var @class = "container-fluid";
+    var @int = 1;
+}
+
+<p class="@class" age="1337">Body of Tag</p>
+<p class="@(@class)" age="42"></p>
+<p class="test" age="42 + @int"></p>
+<p class="test" age="@int"></p>
+<p class="test" age="@(@int)"></p>
+<p class="custom-@(@class)" age="4 * @(@int + 2)"></p>

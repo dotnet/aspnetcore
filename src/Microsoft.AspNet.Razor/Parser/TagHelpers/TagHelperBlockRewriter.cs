@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -271,10 +272,13 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
             var result = CreateTryParseResult(name, descriptors);
 
             // If we're not after an equal then we should treat the value as if it were a minimized attribute.
-            var attributeValueBuilder = afterEquals ? builder : null;
-            result.AttributeValueNode =
-                CreateMarkupAttribute(attributeValueBuilder, result.IsBoundNonStringAttribute);
+            Span attributeValue = null;
+            if (afterEquals)
+            {
+                attributeValue = CreateMarkupAttribute(builder, result.IsBoundNonStringAttribute);
+            }
 
+            result.AttributeValueNode = attributeValue;
             return result;
         }
 
@@ -362,12 +366,58 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                 }
             }
 
-            result.AttributeValueNode = ConvertToMarkupAttributeBlock(block, result.IsBoundNonStringAttribute);
+            var isFirstSpan = true;
+
+            result.AttributeValueNode = ConvertToMarkupAttributeBlock(
+                block,
+                (parentBlock, span) =>
+                {
+                    // If the attribute was requested by a tag helper but the corresponding property was not a
+                    // string, then treat its value as code. A non-string value can be any C# value so we need
+                    // to ensure the SyntaxTreeNode reflects that.
+                    if (result.IsBoundNonStringAttribute)
+                    {
+                        // For bound non-string attributes, we'll only allow a transition span to appear at the very
+                        // beginning of the attribute expression. All later transitions would appear as code so that
+                        // they are part of the generated output. E.g.
+                        // key="@value" -> MyTagHelper.key = value
+                        // key=" @value" -> MyTagHelper.key =  @value
+                        // key="1 + @case" -> MyTagHelper.key = 1 + @case
+                        // key="@int + @case" -> MyTagHelper.key = int + @case
+                        // key="@(a + b) -> MyTagHelper.key = a + b
+                        // key="4 + @(a + b)" -> MyTagHelper.key = 4 + @(a + b)
+                        if (isFirstSpan && span.Kind == SpanKind.Transition)
+                        {
+                            // do nothing.
+                        }
+                        else
+                        {
+                            var spanBuilder = new SpanBuilder(span);
+
+                            if (parentBlock.Type == BlockType.Expression &&
+                                (spanBuilder.Kind == SpanKind.Transition ||
+                                spanBuilder.Kind == SpanKind.MetaCode))
+                            {
+                                // Change to a MarkupChunkGenerator so that the '@' \ parenthesis is generated as part of the output.
+                                spanBuilder.ChunkGenerator = new MarkupChunkGenerator();
+                            }
+
+                            spanBuilder.Kind = SpanKind.Code;
+                            span = spanBuilder.Build();
+                        }
+                    }
+
+                    isFirstSpan = false;
+
+                    return span;
+                });
 
             return result;
         }
 
-        private static Block ConvertToMarkupAttributeBlock(Block block, bool isBoundNonStringAttribute)
+        private static Block ConvertToMarkupAttributeBlock(
+            Block block,
+            Func<Block, Span, Span> createMarkupAttribute)
         {
             var blockBuilder = new BlockBuilder
             {
@@ -381,12 +431,11 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
 
                 if (child.IsBlock)
                 {
-                    markupAttributeChild = ConvertToMarkupAttributeBlock((Block)child, isBoundNonStringAttribute);
+                    markupAttributeChild = ConvertToMarkupAttributeBlock((Block)child, createMarkupAttribute);
                 }
                 else
                 {
-                    var spanBuilder = new SpanBuilder((Span)child);
-                    markupAttributeChild = CreateMarkupAttribute(spanBuilder, isBoundNonStringAttribute);
+                    markupAttributeChild = createMarkupAttribute(block, (Span)child);
                 }
 
                 blockBuilder.Children.Add(markupAttributeChild);
@@ -504,25 +553,19 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
             return nodeStart + firstNonWhitespaceSymbol.Start;
         }
 
-        private static SyntaxTreeNode CreateMarkupAttribute(SpanBuilder builder, bool isBoundNonStringAttribute)
+        private static Span CreateMarkupAttribute(SpanBuilder builder, bool isBoundNonStringAttribute)
         {
-            Span value = null;
+            Debug.Assert(builder != null);
 
-            // Builder will be null in the case of minimized attributes
-            if (builder != null)
+            // If the attribute was requested by a tag helper but the corresponding property was not a string,
+            // then treat its value as code. A non-string value can be any C# value so we need to ensure the
+            // SyntaxTreeNode reflects that.
+            if (isBoundNonStringAttribute)
             {
-                // If the attribute was requested by a tag helper but the corresponding property was not a string,
-                // then treat its value as code. A non-string value can be any C# value so we need to ensure the
-                // SyntaxTreeNode reflects that.
-                if (isBoundNonStringAttribute)
-                {
-                    builder.Kind = SpanKind.Code;
-                }
-
-                value = builder.Build();
+                builder.Kind = SpanKind.Code;
             }
 
-            return value;
+            return builder.Build();
         }
 
         private static bool IsNullOrWhitespaceAttributeValue(SyntaxTreeNode attributeValue)

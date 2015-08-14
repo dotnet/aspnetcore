@@ -152,7 +152,7 @@ __o = DateTime.Now;
             __InputTagHelper = CreateTagHelper<InputTagHelper>();
             __InputTagHelper2 = CreateTagHelper<InputTagHelper2>();
 #line 23 "ComplexTagHelpers.cshtml"
-__InputTagHelper2.Checked = @object;
+__InputTagHelper2.Checked = (@object);
 
 #line default
 #line hidden
@@ -165,13 +165,13 @@ __InputTagHelper2.Checked = @object;
             __InputTagHelper = CreateTagHelper<InputTagHelper>();
             __InputTagHelper2 = CreateTagHelper<InputTagHelper2>();
 #line 26 "ComplexTagHelpers.cshtml"
-                                __InputTagHelper2.Checked = DateTimeOffset.Now.Year > 2014;
+                                __InputTagHelper2.Checked = (DateTimeOffset.Now.Year > 2014);
 
 #line default
 #line hidden
             __PTagHelper = CreateTagHelper<PTagHelper>();
 #line 25 "ComplexTagHelpers.cshtml"
-__PTagHelper.Age = -1970 + DateTimeOffset.Now.Year;
+__PTagHelper.Age = -1970 + @DateTimeOffset.Now.Year;
 
 #line default
 #line hidden
@@ -191,13 +191,13 @@ __PTagHelper.Age = DateTimeOffset.Now.Year - 1970;
             __InputTagHelper = CreateTagHelper<InputTagHelper>();
             __InputTagHelper2 = CreateTagHelper<InputTagHelper2>();
 #line 32 "ComplexTagHelpers.cshtml"
-__InputTagHelper2.Checked =      DateTimeOffset.Now.Year   > 2014   ;
+__InputTagHelper2.Checked =    @(  DateTimeOffset.Now.Year  ) > 2014   ;
 
 #line default
 #line hidden
             __PTagHelper = CreateTagHelper<PTagHelper>();
 #line 31 "ComplexTagHelpers.cshtml"
-__PTagHelper.Age = "My age is this long.".Length;
+__PTagHelper.Age = ("My age is this long.".Length);
 
 #line default
 #line hidden
