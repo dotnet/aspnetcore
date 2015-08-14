@@ -8,7 +8,7 @@ namespace MusicStore.Models
     public class Album
     {
         [ScaffoldColumn(false)]
-        public int AlbumId { get; set; }
+        public int? AlbumId { get; set; }
 
         public int GenreId { get; set; }
 
@@ -38,7 +38,7 @@ namespace MusicStore.Models
         public DateTime Created { get; set; }
 
         /// <summary>
-        /// TODO: Temporary hack to populate the orderdetails until EF does this automatically. 
+        /// TODO: Temporary hack to populate the orderdetails until EF does this automatically.
         /// </summary>
         public Album()
         {
