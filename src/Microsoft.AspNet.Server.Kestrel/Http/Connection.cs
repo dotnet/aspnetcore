@@ -4,7 +4,6 @@
 using System;
 using Microsoft.AspNet.Server.Kestrel.Networking;
 using System.Diagnostics;
-using System.Threading;
 
 namespace Microsoft.AspNet.Server.Kestrel.Http
 {
@@ -15,8 +14,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         private static readonly Action<UvStreamHandle, int, Exception, object> _readCallback = ReadCallback;
         private static readonly Func<UvStreamHandle, int, object, Libuv.uv_buf_t> _allocCallback = AllocCallback;
-
-        private int _connectionState;
 
         private static Libuv.uv_buf_t AllocCallback(UvStreamHandle handle, int suggestedSize, object state)
         {
@@ -31,6 +28,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private readonly UvStreamHandle _socket;
         private Frame _frame;
         long _connectionId = 0;
+
+        private readonly object _stateLock = new object();
+        private ConnectionState _connectionState;
 
         public Connection(ListenerContext context, UvStreamHandle socket) : base(context)
         {
@@ -104,62 +104,70 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         void IConnectionControl.End(ProduceEndType endType)
         {
-            switch (endType)
+            lock (_stateLock)
             {
-                case ProduceEndType.SocketShutdownSend:
-                    if (Interlocked.CompareExchange(ref _connectionState, ConnectionState.Shutdown, ConnectionState.Open)
-                            != ConnectionState.Open)
-                    {
-                        return;
-                    }
-
-                    KestrelTrace.Log.ConnectionWriteFin(_connectionId, 0);
-                    Thread.Post(
-                        x =>
+                switch (endType)
+                {
+                    case ProduceEndType.SocketShutdownSend:
+                        if (_connectionState != ConnectionState.Open)
                         {
-                            KestrelTrace.Log.ConnectionWriteFin(_connectionId, 1);
-                            var self = (Connection)x;
-                            var shutdown = new UvShutdownReq();
-                            shutdown.Init(self.Thread.Loop);
-                            shutdown.Shutdown(self._socket, (req, status, state) =>
+                            return;
+                        }
+                        _connectionState = ConnectionState.Shutdown;
+
+                        KestrelTrace.Log.ConnectionWriteFin(_connectionId, 0);
+                        Thread.Post(
+                            x =>
                             {
                                 KestrelTrace.Log.ConnectionWriteFin(_connectionId, 1);
-                                req.Dispose();
-                            }, null);
-                        },
-                        this);
-                    break;
-                case ProduceEndType.ConnectionKeepAlive:
-                    KestrelTrace.Log.ConnectionKeepAlive(_connectionId);
-                    _frame = new Frame(this);
-                    Thread.Post(
-                        x => ((Frame)x).Consume(),
-                        _frame);
-                    break;
-                case ProduceEndType.SocketDisconnect:
-                    if (Interlocked.Exchange(ref _connectionState, ConnectionState.Disconnected)
-                            == ConnectionState.Disconnected)
-                    {
-                        return;
-                    }
-
-                    KestrelTrace.Log.ConnectionDisconnect(_connectionId);
-                    Thread.Post(
-                        x =>
+                                var self = (Connection)x;
+                                var shutdown = new UvShutdownReq();
+                                shutdown.Init(self.Thread.Loop);
+                                shutdown.Shutdown(self._socket, (req, status, state) =>
+                                {
+                                    KestrelTrace.Log.ConnectionWriteFin(_connectionId, 1);
+                                    req.Dispose();
+                                }, null);
+                            },
+                            this);
+                        break;
+                    case ProduceEndType.ConnectionKeepAlive:
+                        if (_connectionState != ConnectionState.Open)
                         {
-                            KestrelTrace.Log.ConnectionStop(_connectionId);
-                            ((UvHandle)x).Dispose();
-                        },
-                        _socket);
-                    break;
+                            return;
+                        }
+
+                        KestrelTrace.Log.ConnectionKeepAlive(_connectionId);
+                        _frame = new Frame(this);
+                        Thread.Post(
+                            x => ((Frame)x).Consume(),
+                            _frame);
+                        break;
+                    case ProduceEndType.SocketDisconnect:
+                        if (_connectionState == ConnectionState.Disconnected)
+                        {
+                            return;
+                        }
+                        _connectionState = ConnectionState.Disconnected;
+
+                        KestrelTrace.Log.ConnectionDisconnect(_connectionId);
+                        Thread.Post(
+                            x =>
+                            {
+                                KestrelTrace.Log.ConnectionStop(_connectionId);
+                                ((UvHandle)x).Dispose();
+                            },
+                            _socket);
+                        break;
+                }
             }
         }
 
-        private static class ConnectionState
+        private enum ConnectionState
         {
-            public const int Open = 0;
-            public const int Shutdown = 1;
-            public const int Disconnected = 2;
+            Open,
+            Shutdown,
+            Disconnected
         }
     }
 }
