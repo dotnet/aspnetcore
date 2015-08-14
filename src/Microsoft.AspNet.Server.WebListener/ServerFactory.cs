@@ -102,9 +102,9 @@ namespace Microsoft.AspNet.Server.WebListener
         private void ParseAddresses(IConfiguration config, Microsoft.Net.Http.Server.WebListener listener)
         {
             // TODO: Key format?
-            string urls;
-            if (config != null && config.TryGet("server.urls", out urls) && !string.IsNullOrEmpty(urls))
+            if (config != null && !string.IsNullOrEmpty(config["server.urls"]))
             {
+                var urls = config["server.urls"];
                 foreach (var value in urls.Split(';'))
                 {
                     listener.UrlPrefixes.Add(UrlPrefix.Create(value));
