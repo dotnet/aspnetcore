@@ -49,8 +49,8 @@ namespace MvcSample.Web
 
             var configuration = configBuilder.Build();
 
-            string diSystem;
-            if (configuration.TryGet("DependencyInjection", out diSystem) &&
+            var diSystem = configuration["DependencyInjection"];
+            if (!string.IsNullOrEmpty(diSystem) &&
                 diSystem.Equals("AutoFac", StringComparison.OrdinalIgnoreCase))
             {
                 _autoFac = true;
