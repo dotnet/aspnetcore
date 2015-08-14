@@ -31,6 +31,7 @@ namespace Microsoft.AspNet.Mvc.Razor.TagHelpers
     [TargetElement("html", Attributes = "manifest")]
     [TargetElement("iframe", Attributes = "src")]
     [TargetElement("img", Attributes = "src", TagStructure = TagStructure.WithoutEndTag)]
+    [TargetElement("img", Attributes = "srcset", TagStructure = TagStructure.WithoutEndTag)]
     [TargetElement("input", Attributes = "src", TagStructure = TagStructure.WithoutEndTag)]
     [TargetElement("input", Attributes = "formaction", TagStructure = TagStructure.WithoutEndTag)]
     [TargetElement("ins", Attributes = "cite")]
@@ -41,6 +42,7 @@ namespace Microsoft.AspNet.Mvc.Razor.TagHelpers
     [TargetElement("q", Attributes = "cite")]
     [TargetElement("script", Attributes = "src")]
     [TargetElement("source", Attributes = "src", TagStructure = TagStructure.WithoutEndTag)]
+    [TargetElement("source", Attributes = "srcset", TagStructure = TagStructure.WithoutEndTag)]
     [TargetElement("track", Attributes = "src", TagStructure = TagStructure.WithoutEndTag)]
     [TargetElement("video", Attributes = "src")]
     [TargetElement("video", Attributes = "poster")]
@@ -65,7 +67,7 @@ namespace Microsoft.AspNet.Mvc.Razor.TagHelpers
                 { "form", new[] { "action" } },
                 { "html", new[] { "manifest" } },
                 { "iframe", new[] { "src" } },
-                { "img", new[] { "src" } },
+                { "img", new[] { "src", "srcset" } },
                 { "input", new[] { "src", "formaction" } },
                 { "ins", new[] { "cite" } },
                 { "link", new[] { "href" } },
@@ -73,7 +75,7 @@ namespace Microsoft.AspNet.Mvc.Razor.TagHelpers
                 { "object", new[] { "archive", "data" } },
                 { "q", new[] { "cite" } },
                 { "script", new[] { "src" } },
-                { "source", new[] { "src" } },
+                { "source", new[] { "src", "srcset" } },
                 { "track", new[] { "src" } },
                 { "video", new[] { "poster", "src" } },
             };

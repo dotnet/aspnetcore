@@ -15,12 +15,12 @@
     <link href="~/Person/@Model.Name/CSS" rel="stylesheet">
     <video poster=@dynamicUrl src='@dynamicUrl/@("video")' />
     <audio src="@(dynamicUrl)">
-        <source src="~/Person">
+        <source src="~/Person" srcset="~/Person">
         <track src="~/email@(dynamicUrl)">
     </audio>
     <embed src="~/email@dyanmicUrl">
     <iframe src=@(dynamicUrl) />
-    <img src="~/@dynamicUrl">
+    <img src="~/@Model.Name" srcset="~/@Model.Name">
     <script src="~/Person/@Model.Name/JS"></script>
     <input src="~//Person" itemscope itemid="~/Person" formaction=@dynamicUrl>
     <button formaction="~/\Person" />
