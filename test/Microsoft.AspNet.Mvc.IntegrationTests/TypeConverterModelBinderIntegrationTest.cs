@@ -159,6 +159,58 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState);
         }
 
+
+        [Fact]
+        public async Task BindParameter_NonConvertableValue_GetsError()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "Parameter1",
+                BindingInfo = new BindingInfo(),
+
+                ParameterType = typeof(int)
+            };
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            {
+                request.QueryString = QueryString.Create("Parameter1", "abcd");
+            });
+
+            var modelState = new ModelStateDictionary();
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+
+            // Assert
+
+            // ModelBindingResult
+            Assert.NotNull(modelBindingResult);
+            Assert.False(modelBindingResult.IsModelSet);
+
+            // Model
+            Assert.Null(modelBindingResult.Model);
+
+            // ModelState
+            Assert.False(modelState.IsValid);
+            Assert.Equal(1, modelState.Count);
+            Assert.Equal(1, modelState.ErrorCount);
+
+            var key = Assert.Single(modelState.Keys);
+            Assert.Equal("Parameter1", key);
+
+            var entry = modelState[key];
+            Assert.NotNull(entry.Value);
+            Assert.Equal("abcd", entry.Value.AttemptedValue);
+            Assert.Equal("abcd", entry.Value.RawValue);
+            Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
+
+            var error = Assert.Single(entry.Errors);
+            Assert.Null(error.Exception);
+            Assert.Equal("The value 'abcd' is not valid for Parameter1.", error.ErrorMessage);
+        }
+
         [Theory]
         [InlineData(typeof(int))]
         [InlineData(typeof(bool))]

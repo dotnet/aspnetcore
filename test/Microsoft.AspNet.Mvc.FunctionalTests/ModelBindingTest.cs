@@ -2218,7 +2218,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Arrange
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
-            var url = "http://localhost/TryUpdateModel/TryUpdateModel_ClearsModelStateEntries?id=5&price=1";
+            var url = "http://localhost/TryUpdateModel/TryUpdateModel_ClearsModelStateEntries";
 
             // Act
             var response = await client.GetAsync(url);

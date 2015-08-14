@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             Assert.False(metadata.HideSurroundingHtml);
             Assert.True(metadata.HtmlEncode);
             Assert.True(metadata.IsBindingAllowed);
-            Assert.False(metadata.IsBindingRequired); // Defaults to false for reference types
+            Assert.False(metadata.IsBindingRequired);
             Assert.False(metadata.IsComplexType);
             Assert.False(metadata.IsCollectionType);
             Assert.False(metadata.IsEnum);
@@ -221,49 +221,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             
             // Assert
             Assert.False(isBindingRequired);
-        }
-
-        [Theory]
-        [InlineData(typeof(string))]
-        [InlineData(typeof(IDisposable))]
-        [InlineData(typeof(Nullable<int>))]
-        public void IsBindingRequired_ReturnsFalse_ForNullablePropertyTypes(Type modelType)
-        {
-            // Arrange
-            var provider = new EmptyModelMetadataProvider();
-            var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
-
-            var key = ModelMetadataIdentity.ForProperty(modelType, "Test", typeof(string));
-            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0]));
-
-            var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
-
-            // Act
-            var isBindingRequired = metadata.IsBindingRequired;
-
-            // Assert
-            Assert.False(isBindingRequired);
-        }
-
-        [Theory]
-        [InlineData(typeof(int))]
-        [InlineData(typeof(DayOfWeek))]
-        public void IsBindingRequired_ReturnsTrue_ForNonNullablePropertyTypes(Type modelType)
-        {
-            // Arrange
-            var provider = new EmptyModelMetadataProvider();
-            var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
-
-            var key = ModelMetadataIdentity.ForProperty(modelType, "Test", typeof(string));
-            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0]));
-
-            var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
-
-            // Act
-            var isBindingRequired = metadata.IsBindingRequired;
-
-            // Assert
-            Assert.True(isBindingRequired);
         }
 
         [Theory]

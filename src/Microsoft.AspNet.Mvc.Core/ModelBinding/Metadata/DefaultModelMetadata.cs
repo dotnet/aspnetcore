@@ -341,14 +341,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
                     {
                         _isBindingRequired = false;
                     }
-                    else if (BindingMetadata.IsBindingRequired.HasValue)
-                    {
-                        _isBindingRequired = BindingMetadata.IsBindingRequired;
-                    }
                     else
                     {
-                        // Default to IsBindingRequired = true for value types.
-                        _isBindingRequired = !AllowsNullValue(ModelType);
+                        _isBindingRequired = BindingMetadata.IsBindingRequired;
                     }
                 }
 

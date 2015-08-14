@@ -1050,7 +1050,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         [Fact]
-        public void ProcessDto_ValueTypeProperty_NoValue_Error()
+        public void ProcessDto_ValueTypeProperty_NoValue_NoError()
         {
             // Arrange
             var model = new Person();
@@ -1083,14 +1083,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             testableBinder.ProcessDto(bindingContext, dto, modelValidationNode);
 
             // Assert
-            Assert.False(modelState.IsValid);
-
-            var entry = modelState["theModel." + nameof(Person.ValueTypeRequiredWithDefaultValue)];
-            var error = Assert.Single(entry.Errors);
-            Assert.Equal(
-                $"A value for the '{nameof(Person.ValueTypeRequiredWithDefaultValue)}' property was not provided.",
-                error.ErrorMessage);
-            Assert.Null(error.Exception);
+            Assert.True(modelState.IsValid);
         }
 
         [Fact]

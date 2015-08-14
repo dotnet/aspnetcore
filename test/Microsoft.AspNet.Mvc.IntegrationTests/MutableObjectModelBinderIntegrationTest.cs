@@ -26,7 +26,6 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
         private class Order1
         {
-            [BindingBehavior(BindingBehavior.Optional)]
             public int ProductId { get; set; }
 
             public Person1 Customer { get; set; }
@@ -262,7 +261,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
         private class Order2
         {
-            public int? ProductId { get; set; }
+            public int ProductId { get; set; }
 
             public Person2 Customer { get; set; }
         }
@@ -436,7 +435,6 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
         private class Order3
         {
-            [BindingBehavior(BindingBehavior.Optional)]
             public int ProductId { get; set; }
 
             public Person3 Customer { get; set; }
@@ -580,7 +578,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
         private class Order4
         {
-            public int? ProductId { get; set; }
+            public int ProductId { get; set; }
 
             public Person4 Customer { get; set; }
         }
@@ -1343,7 +1341,6 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
         {
             public string Name { get; set; }
 
-            [BindingBehavior(BindingBehavior.Optional)]
             public KeyValuePair<string, int> ProductId { get; set; }
         }
 
@@ -2031,6 +2028,93 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.NotNull(entry.Value);
             Assert.Equal("123", entry.Value.RawValue);
             Assert.Equal("123", entry.Value.AttemptedValue);
+        }
+
+        private class Order14
+        {
+            public int ProductId { get; set; }
+        }
+
+        // This covers the case where a key is present, but has an empty value. The type converter
+        // will report an error.
+        [Fact]
+        public async Task MutableObjectModelBinder_BindsPOCO_TypeConvertedPropertyNonConvertableValue_GetsError()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Order14)
+            };
+
+            // Need to have a key here so that the MutableObjectModelBinder will recurse to bind elements.
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            {
+                request.QueryString = new QueryString("?parameter.ProductId=");
+            });
+
+            var modelState = new ModelStateDictionary();
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+
+            // Assert
+            Assert.NotNull(modelBindingResult);
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Order14>(modelBindingResult.Model);
+            Assert.NotNull(model);
+            Assert.Equal(0, model.ProductId);
+
+            Assert.Equal(1, modelState.Count);
+            Assert.Equal(1, modelState.ErrorCount);
+            Assert.False(modelState.IsValid);
+
+            var entry = Assert.Single(modelState, e => e.Key == "parameter.ProductId").Value;
+            Assert.Equal(string.Empty, entry.Value.AttemptedValue);
+            Assert.Equal(string.Empty, entry.Value.RawValue);
+
+            var error = Assert.Single(entry.Errors);
+            Assert.Equal("The value '' is invalid.", error.ErrorMessage);
+            Assert.Null(error.Exception);
+        }
+
+        // This covers the case where a key is present, but has no value. The type converter
+        // will report an error.
+        [Fact]
+        public async Task MutableObjectModelBinder_BindsPOCO_TypeConvertedPropertyWithNoValue_NoError()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Order14)
+            };
+
+            // Need to have a key here so that the MutableObjectModelBinder will recurse to bind elements.
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            {
+                request.QueryString = new QueryString("?parameter.ProductId");
+            });
+
+            var modelState = new ModelStateDictionary();
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+
+            // Assert
+            Assert.NotNull(modelBindingResult);
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Order14>(modelBindingResult.Model);
+            Assert.NotNull(model);
+            Assert.Equal(0, model.ProductId);
+
+            Assert.Equal(0, modelState.Count);
+            Assert.Equal(0, modelState.ErrorCount);
+            Assert.True(modelState.IsValid);
         }
 
         private static void SetJsonBodyContent(HttpRequest request, string content)

@@ -552,7 +552,6 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
         private class Address4
         {
-            [BindingBehavior(BindingBehavior.Optional)]
             public int Zip { get; set; }
 
             public string Street { get; set; }
@@ -611,7 +610,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
         private class Address5
         {
-            public int? Zip { get; set; }
+            public int Zip { get; set; }
 
             [StringLength(3)]
             public string Street { get; set; }

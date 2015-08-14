@@ -195,7 +195,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
         private class Person3
         {
-            public int? Age { get; set; }
+            public int Age { get; set; }
 
             [Required]
             public string Name { get; set; }
@@ -1018,12 +1018,12 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
         private class Address
         {
-            public int? Street { get; set; }
+            public int Street { get; set; }
 
             public string State { get; set; }
 
             [Range(10000, 99999)]
-            public int? Zip { get; set; }
+            public int Zip { get; set; }
 
             public Country Country { get; set; }
         }
