@@ -36,11 +36,11 @@ namespace IdentitySamples
         {
             services.AddEntityFramework()
                     .AddSqlServer()
-                    .AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Configuration.Get("Data:IdentityConnection:ConnectionString")));
+                    .AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Configuration["Data:IdentityConnection:ConnectionString"]));
             services.Configure<IdentityDbContextOptions>(options =>
             {
-                options.DefaultAdminUserName = Configuration.Get("DefaultAdminUsername");
-                options.DefaultAdminPassword = Configuration.Get("DefaultAdminPassword");
+                options.DefaultAdminUserName = Configuration["DefaultAdminUsername"];
+                options.DefaultAdminPassword = Configuration["DefaultAdminPassword"];
             });
 
             services.AddIdentity<ApplicationUser, IdentityRole>()

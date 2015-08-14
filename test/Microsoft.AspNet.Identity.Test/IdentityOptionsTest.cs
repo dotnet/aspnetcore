@@ -62,11 +62,11 @@ namespace Microsoft.AspNet.Identity.Test
             };
             var builder = new ConfigurationBuilder(new MemoryConfigurationSource(dic));
             var config = builder.Build();
-            Assert.Equal(roleClaimType, config.Get("identity:claimsidentity:roleclaimtype"));
+            Assert.Equal(roleClaimType, config["identity:claimsidentity:roleclaimtype"]);
 
             var services = new ServiceCollection();
             services.AddIdentity<TestUser,TestRole>();
-            services.ConfigureIdentity(config.GetConfigurationSection("identity"));
+            services.ConfigureIdentity(config.GetSection("identity"));
             var accessor = services.BuildServiceProvider().GetRequiredService<IOptions<IdentityOptions>>();
             Assert.NotNull(accessor);
             var options = accessor.Options;
@@ -96,7 +96,7 @@ namespace Microsoft.AspNet.Identity.Test
             var builder = new ConfigurationBuilder(new MemoryConfigurationSource(dic));
             var config = builder.Build();
             var services = new ServiceCollection();
-            services.ConfigureIdentity(config.GetConfigurationSection("identity"));
+            services.ConfigureIdentity(config.GetSection("identity"));
             services.AddIdentity<TestUser, TestRole>(o => { o.User.RequireUniqueEmail = false; o.Lockout.MaxFailedAccessAttempts++; });
             var accessor = services.BuildServiceProvider().GetRequiredService<IOptions<IdentityOptions>>();
             Assert.NotNull(accessor);
