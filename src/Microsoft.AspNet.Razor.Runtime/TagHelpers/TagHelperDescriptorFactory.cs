@@ -223,16 +223,17 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             TagStructure tagStructure,
             TagHelperDesignTimeDescriptor designTimeDescriptor)
         {
-            return new TagHelperDescriptor(
-                prefix: string.Empty,
-                tagName: tagName,
-                typeName: typeName,
-                assemblyName: assemblyName,
-                attributes: attributeDescriptors,
-                requiredAttributes: requiredAttributes,
-                allowedChildren: allowedChildren,
-                tagStructure: tagStructure,
-                designTimeDescriptor: designTimeDescriptor);
+            return new TagHelperDescriptor
+            {
+                TagName = tagName,
+                TypeName = typeName,
+                AssemblyName = assemblyName,
+                Attributes = attributeDescriptors,
+                RequiredAttributes = requiredAttributes,
+                AllowedChildren = allowedChildren,
+                TagStructure = tagStructure,
+                DesignTimeDescriptor = designTimeDescriptor
+            };
         }
 
         /// <summary>
@@ -647,12 +648,14 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             }
 #endif
 
-            return new TagHelperAttributeDescriptor(
-                attributeName,
-                property.Name,
-                typeName,
-                isIndexer,
-                propertyDesignTimeDescriptor);
+            return new TagHelperAttributeDescriptor
+            {
+                Name = attributeName,
+                PropertyName = property.Name,
+                TypeName = typeName,
+                IsIndexer = isIndexer,
+                DesignTimeDescriptor = propertyDesignTimeDescriptor
+            };
         }
 
         private static bool IsAccessibleProperty(PropertyInfo property)

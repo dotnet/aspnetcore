@@ -56,16 +56,13 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                     factory.Markup(Environment.NewLine)));
             var descriptors = new TagHelperDescriptor[]
                 {
-                    new TagHelperDescriptor(
-                        prefix: string.Empty,
-                        tagName: "p",
-                        typeName: "PTagHelper",
-                        assemblyName: "SomeAssembly",
-                        attributes: new TagHelperAttributeDescriptor[0],
-                        requiredAttributes: Enumerable.Empty<string>(),
-                        allowedChildren: new[] { "br" },
-                        tagStructure: TagStructure.Unspecified,
-                        designTimeDescriptor: null),
+                    new TagHelperDescriptor
+                    {
+                        TagName = "p",
+                        TypeName = "PTagHelper",
+                        AssemblyName = "SomeAssembly",
+                        AllowedChildren = new[] { "br" },
+                    }
                 };
             var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
 
@@ -105,16 +102,14 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                     blockFactory.MarkupTagBlock("</strong>")));
             var descriptors = new TagHelperDescriptor[]
                 {
-                    new TagHelperDescriptor(
-                        prefix: string.Empty,
-                        tagName: "strong",
-                        typeName: "StrongTagHelper",
-                        assemblyName: "SomeAssembly",
-                        attributes: new TagHelperAttributeDescriptor[0],
-                        requiredAttributes: new[] { "required" },
-                        allowedChildren: new[] { "br" },
-                        tagStructure: TagStructure.Unspecified,
-                        designTimeDescriptor: null),
+                    new TagHelperDescriptor
+                    {
+                        TagName = "strong",
+                        TypeName = "StrongTagHelper",
+                        AssemblyName = "SomeAssembly",
+                        RequiredAttributes = new[] { "required" },
+                        AllowedChildren = new[] { "br" }
+                    }
                 };
             var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
 
@@ -135,46 +130,32 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                     new MarkupTagHelperBlock("br", TagMode.StartTagOnly)));
             var descriptors = new TagHelperDescriptor[]
                 {
-                    new TagHelperDescriptor(
-                        prefix: string.Empty,
-                        tagName: "p",
-                        typeName: "PTagHelper1",
-                        assemblyName: "SomeAssembly",
-                        attributes: new TagHelperAttributeDescriptor[0],
-                        requiredAttributes: Enumerable.Empty<string>(),
-                        allowedChildren: new[] { "strong", "br" },
-                        tagStructure: TagStructure.Unspecified,
-                        designTimeDescriptor: null),
-                    new TagHelperDescriptor(
-                        prefix: string.Empty,
-                        tagName: "p",
-                        typeName: "PTagHelper2",
-                        assemblyName: "SomeAssembly",
-                        attributes: new TagHelperAttributeDescriptor[0],
-                        requiredAttributes: Enumerable.Empty<string>(),
-                        allowedChildren: null,
-                        tagStructure: TagStructure.Unspecified,
-                        designTimeDescriptor: null),
-                    new TagHelperDescriptor(
-                        prefix: string.Empty,
-                        tagName: "strong",
-                        typeName: "StrongTagHelper",
-                        assemblyName: "SomeAssembly",
-                        attributes: new TagHelperAttributeDescriptor[0],
-                        requiredAttributes: Enumerable.Empty<string>(),
-                        allowedChildren: null,
-                        tagStructure: TagStructure.Unspecified,
-                        designTimeDescriptor: null),
-                    new TagHelperDescriptor(
-                        prefix: string.Empty,
-                        tagName: "br",
-                        typeName: "BRTagHelper",
-                        assemblyName: "SomeAssembly",
-                        attributes: new TagHelperAttributeDescriptor[0],
-                        requiredAttributes: Enumerable.Empty<string>(),
-                        allowedChildren: null,
-                        tagStructure: TagStructure.WithoutEndTag,
-                        designTimeDescriptor: null),
+                    new TagHelperDescriptor
+                    {
+                        TagName = "p",
+                        TypeName = "PTagHelper1",
+                        AssemblyName = "SomeAssembly",
+                        AllowedChildren = new[] { "strong", "br" }
+                    },
+                    new TagHelperDescriptor
+                    {
+                        TagName = "p",
+                        TypeName = "PTagHelper2",
+                        AssemblyName = "SomeAssembly"
+                    },
+                    new TagHelperDescriptor
+                    {
+                        TagName = "strong",
+                        TypeName = "StrongTagHelper",
+                        AssemblyName = "SomeAssembly"
+                    },
+                    new TagHelperDescriptor
+                    {
+                        TagName = "br",
+                        TypeName = "BRTagHelper",
+                        AssemblyName = "SomeAssembly",
+                        TagStructure = TagStructure.WithoutEndTag
+                    }
                 };
             var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
 
@@ -195,46 +176,33 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                     new MarkupTagHelperBlock("br", TagMode.StartTagOnly)));
             var descriptors = new TagHelperDescriptor[]
                 {
-                    new TagHelperDescriptor(
-                        prefix: string.Empty,
-                        tagName: "p",
-                        typeName: "PTagHelper1",
-                        assemblyName: "SomeAssembly",
-                        attributes: new TagHelperAttributeDescriptor[0],
-                        requiredAttributes: Enumerable.Empty<string>(),
-                        allowedChildren: new[] { "strong" },
-                        tagStructure: TagStructure.Unspecified,
-                        designTimeDescriptor: null),
-                    new TagHelperDescriptor(
-                        prefix: string.Empty,
-                        tagName: "p",
-                        typeName: "PTagHelper2",
-                        assemblyName: "SomeAssembly",
-                        attributes: new TagHelperAttributeDescriptor[0],
-                        requiredAttributes: Enumerable.Empty<string>(),
-                        allowedChildren: new[] { "br" },
-                        tagStructure: TagStructure.Unspecified,
-                        designTimeDescriptor: null),
-                    new TagHelperDescriptor(
-                        prefix: string.Empty,
-                        tagName: "strong",
-                        typeName: "StrongTagHelper",
-                        assemblyName: "SomeAssembly",
-                        attributes: new TagHelperAttributeDescriptor[0],
-                        requiredAttributes: Enumerable.Empty<string>(),
-                        allowedChildren: null,
-                        tagStructure: TagStructure.Unspecified,
-                        designTimeDescriptor: null),
-                    new TagHelperDescriptor(
-                        prefix: string.Empty,
-                        tagName: "br",
-                        typeName: "BRTagHelper",
-                        assemblyName: "SomeAssembly",
-                        attributes: new TagHelperAttributeDescriptor[0],
-                        requiredAttributes: Enumerable.Empty<string>(),
-                        allowedChildren: null,
-                        tagStructure: TagStructure.WithoutEndTag,
-                        designTimeDescriptor: null),
+                    new TagHelperDescriptor
+                    {
+                        TagName = "p",
+                        TypeName = "PTagHelper1",
+                        AssemblyName = "SomeAssembly",
+                        AllowedChildren = new[] { "strong" }
+                    },
+                    new TagHelperDescriptor
+                    {
+                        TagName = "p",
+                        TypeName = "PTagHelper2",
+                        AssemblyName = "SomeAssembly",
+                        AllowedChildren = new[] { "br" }
+                    },
+                    new TagHelperDescriptor
+                    {
+                        TagName = "strong",
+                        TypeName = "StrongTagHelper",
+                        AssemblyName = "SomeAssembly"
+                    },
+                    new TagHelperDescriptor
+                    {
+                        TagName = "br",
+                        TypeName = "BRTagHelper",
+                        AssemblyName = "SomeAssembly",
+                        TagStructure = TagStructure.WithoutEndTag
+                    }
                 };
             var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
 
@@ -426,36 +394,27 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
             // Arrange
             var descriptors = new TagHelperDescriptor[]
                 {
-                    new TagHelperDescriptor(
-                        prefix: string.Empty,
-                        tagName: "p",
-                        typeName: "PTagHelper",
-                        assemblyName: "SomeAssembly",
-                        attributes: new TagHelperAttributeDescriptor[0],
-                        requiredAttributes: Enumerable.Empty<string>(),
-                        allowedChildren: allowedChildren,
-                        tagStructure: TagStructure.Unspecified,
-                        designTimeDescriptor: null),
-                    new TagHelperDescriptor(
-                        prefix: string.Empty,
-                        tagName: "strong",
-                        typeName: "StrongTagHelper",
-                        assemblyName: "SomeAssembly",
-                        attributes: new TagHelperAttributeDescriptor[0],
-                        requiredAttributes: Enumerable.Empty<string>(),
-                        allowedChildren: allowedChildren,
-                        tagStructure: TagStructure.Unspecified,
-                        designTimeDescriptor: null),
-                    new TagHelperDescriptor(
-                        prefix: string.Empty,
-                        tagName: "br",
-                        typeName: "BRTagHelper",
-                        assemblyName: "SomeAssembly",
-                        attributes: new TagHelperAttributeDescriptor[0],
-                        requiredAttributes: Enumerable.Empty<string>(),
-                        allowedChildren: null,
-                        tagStructure: TagStructure.WithoutEndTag,
-                        designTimeDescriptor: null),
+                    new TagHelperDescriptor
+                    {
+                        TagName = "p",
+                        TypeName = "PTagHelper",
+                        AssemblyName = "SomeAssembly",
+                        AllowedChildren = allowedChildren
+                    },
+                    new TagHelperDescriptor
+                    {
+                        TagName = "strong",
+                        TypeName = "StrongTagHelper",
+                        AssemblyName = "SomeAssembly",
+                        AllowedChildren = allowedChildren
+                    },
+                    new TagHelperDescriptor
+                    {
+                        TagName = "br",
+                        TypeName = "BRTagHelper",
+                        AssemblyName = "SomeAssembly",
+                        TagStructure = TagStructure.WithoutEndTag
+                    }
                 };
             var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
 
@@ -471,16 +430,13 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
             var expectedOutput = new MarkupBlock(new MarkupTagHelperBlock("input", TagMode.StartTagOnly));
             var descriptors = new TagHelperDescriptor[]
                 {
-                    new TagHelperDescriptor(
-                        prefix: string.Empty,
-                        tagName: "input",
-                        typeName: "InputTagHelper",
-                        assemblyName: "SomeAssembly",
-                        attributes: new TagHelperAttributeDescriptor[0],
-                        requiredAttributes: Enumerable.Empty<string>(),
-                        allowedChildren: null,
-                        tagStructure: TagStructure.WithoutEndTag,
-                        designTimeDescriptor: null)
+                    new TagHelperDescriptor
+                    {
+                        TagName = "input",
+                        TypeName = "InputTagHelper",
+                        AssemblyName = "SomeAssembly",
+                        TagStructure = TagStructure.WithoutEndTag
+                    }
                 };
             var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
 
@@ -507,16 +463,13 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
             var expectedOutput = new MarkupBlock(blockFactory.MarkupTagBlock("</input>"));
             var descriptors = new TagHelperDescriptor[]
                 {
-                    new TagHelperDescriptor(
-                        prefix: string.Empty,
-                        tagName: "input",
-                        typeName: "InputTagHelper",
-                        assemblyName: "SomeAssembly",
-                        attributes: new TagHelperAttributeDescriptor[0],
-                        requiredAttributes: Enumerable.Empty<string>(),
-                        allowedChildren: null,
-                        tagStructure: TagStructure.WithoutEndTag,
-                        designTimeDescriptor: null)
+                    new TagHelperDescriptor
+                    {
+                        TagName = "input",
+                        TypeName = "InputTagHelper",
+                        AssemblyName = "SomeAssembly",
+                        TagStructure = TagStructure.WithoutEndTag
+                    }
                 };
             var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
 
@@ -544,26 +497,20 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
             var expectedOutput = new MarkupBlock(new MarkupTagHelperBlock("input", TagMode.StartTagOnly));
             var descriptors = new TagHelperDescriptor[]
                 {
-                    new TagHelperDescriptor(
-                        prefix: string.Empty,
-                        tagName: "input",
-                        typeName: "InputTagHelper1",
-                        assemblyName: "SomeAssembly",
-                        attributes: new TagHelperAttributeDescriptor[0],
-                        requiredAttributes: Enumerable.Empty<string>(),
-                        allowedChildren: null,
-                        tagStructure: TagStructure.WithoutEndTag,
-                        designTimeDescriptor: null),
-                    new TagHelperDescriptor(
-                        prefix: string.Empty,
-                        tagName: "input",
-                        typeName: "InputTagHelper2",
-                        assemblyName: "SomeAssembly",
-                        attributes: new TagHelperAttributeDescriptor[0],
-                        requiredAttributes: Enumerable.Empty<string>(),
-                        allowedChildren: null,
-                        tagStructure: TagStructure.NormalOrSelfClosing,
-                        designTimeDescriptor: null)
+                    new TagHelperDescriptor
+                    {
+                        TagName = "input",
+                        TypeName = "InputTagHelper1",
+                        AssemblyName = "SomeAssembly",
+                        TagStructure = TagStructure.WithoutEndTag
+                    },
+                    new TagHelperDescriptor
+                    {
+                        TagName = "input",
+                        TypeName = "InputTagHelper2",
+                        AssemblyName = "SomeAssembly",
+                        TagStructure = TagStructure.NormalOrSelfClosing
+                    }
                 };
             var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
 
@@ -975,24 +922,27 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
             // Arrange
             var descriptors = new TagHelperDescriptor[]
                 {
-                    new TagHelperDescriptor(
-                        tagName: "p",
-                        typeName: "pTagHelper",
-                        assemblyName: "SomeAssembly",
-                        attributes: new TagHelperAttributeDescriptor[0],
-                        requiredAttributes: new[] { "class" }),
-                    new TagHelperDescriptor(
-                        tagName: "div",
-                        typeName: "divTagHelper",
-                        assemblyName: "SomeAssembly",
-                        attributes: new TagHelperAttributeDescriptor[0],
-                        requiredAttributes: new[] { "class", "style" }),
-                    new TagHelperDescriptor(
-                        tagName: "*",
-                        typeName: "catchAllTagHelper",
-                        assemblyName: "SomeAssembly",
-                        attributes: new TagHelperAttributeDescriptor[0],
-                        requiredAttributes: new[] { "catchAll" })
+                    new TagHelperDescriptor
+                    {
+                        TagName = "p",
+                        TypeName = "pTagHelper",
+                        AssemblyName = "SomeAssembly",
+                        RequiredAttributes = new[] { "class" }
+                    },
+                    new TagHelperDescriptor
+                    {
+                        TagName = "div",
+                        TypeName = "divTagHelper",
+                        AssemblyName = "SomeAssembly",
+                        RequiredAttributes = new[] { "class", "style" }
+                    },
+                    new TagHelperDescriptor
+                    {
+                        TagName = "*",
+                        TypeName = "catchAllTagHelper",
+                        AssemblyName = "SomeAssembly",
+                        RequiredAttributes = new[] { "catchAll" }
+                    }
                 };
             var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
 
@@ -1235,18 +1185,20 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
             // Arrange
             var descriptors = new TagHelperDescriptor[]
                 {
-                    new TagHelperDescriptor(
-                        tagName: "p",
-                        typeName: "pTagHelper",
-                        assemblyName: "SomeAssembly",
-                        attributes: new TagHelperAttributeDescriptor[0],
-                        requiredAttributes: new[] { "class" }),
-                    new TagHelperDescriptor(
-                        tagName: "*",
-                        typeName: "catchAllTagHelper",
-                        assemblyName: "SomeAssembly",
-                        attributes: new TagHelperAttributeDescriptor[0],
-                        requiredAttributes: new[] { "catchAll" })
+                    new TagHelperDescriptor
+                    {
+                        TagName = "p",
+                        TypeName = "pTagHelper",
+                        AssemblyName = "SomeAssembly",
+                        RequiredAttributes = new[] { "class" }
+                    },
+                    new TagHelperDescriptor
+                    {
+                        TagName = "*",
+                        TypeName = "catchAllTagHelper",
+                        AssemblyName = "SomeAssembly",
+                        RequiredAttributes = new[] { "catchAll" }
+                    }
                 };
             var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
 
@@ -1443,12 +1395,13 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
             // Arrange
             var descriptors = new TagHelperDescriptor[]
                 {
-                    new TagHelperDescriptor(
-                        tagName: "p",
-                        typeName: "pTagHelper",
-                        assemblyName: "SomeAssembly",
-                        attributes: new TagHelperAttributeDescriptor[0],
-                        requiredAttributes: new[] { "class" })
+                    new TagHelperDescriptor
+                    {
+                        TagName = "p",
+                        TypeName = "pTagHelper",
+                        AssemblyName = "SomeAssembly",
+                        RequiredAttributes = new[] { "class" }
+                    }
                 };
             var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
 
@@ -1464,78 +1417,65 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                 var blockFactory = new BlockFactory(factory);
                 var availableDescriptorsColon = new TagHelperDescriptor[]
                 {
-                    new TagHelperDescriptor(
-                        prefix: "th:",
-                        tagName: "myth",
-                        typeName: "mythTagHelper",
-                        assemblyName: "SomeAssembly",
-                        attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
-                        requiredAttributes: Enumerable.Empty<string>(),
-                        allowedChildren: null,
-                        tagStructure: default(TagStructure),
-                        designTimeDescriptor: null),
-                    new TagHelperDescriptor(
-                        prefix: "th:",
-                        tagName: "myth2",
-                        typeName: "mythTagHelper2",
-                        assemblyName: "SomeAssembly",
-                        attributes: new []
+                    new TagHelperDescriptor
+                    {
+                        Prefix = "th:",
+                        TagName = "myth",
+                        TypeName = "mythTagHelper",
+                        AssemblyName = "SomeAssembly"
+                    },
+                    new TagHelperDescriptor
+                    {
+                        Prefix = "th:",
+                        TagName = "myth2",
+                        TypeName = "mythTagHelper2",
+                        AssemblyName = "SomeAssembly",
+                        Attributes = new []
                         {
-                            new TagHelperAttributeDescriptor(
-                                name: "bound",
-                                propertyName: "Bound",
-                                typeName: typeof(bool).FullName,
-                                isIndexer: false,
-                                designTimeDescriptor: null),
-                        },
-                        requiredAttributes: Enumerable.Empty<string>(),
-                        allowedChildren: null,
-                        tagStructure: default(TagStructure),
-                        designTimeDescriptor: null)
+                            new TagHelperAttributeDescriptor
+                            {
+                                Name = "bound",
+                                PropertyName = "Bound",
+                                TypeName = typeof(bool).FullName
+                            }
+                        }
+                    }
                 };
                 var availableDescriptorsText = new TagHelperDescriptor[]
                 {
-                    new TagHelperDescriptor(
-                        prefix: "PREFIX",
-                        tagName: "myth",
-                        typeName: "mythTagHelper",
-                        assemblyName: "SomeAssembly",
-                        attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
-                        requiredAttributes: Enumerable.Empty<string>(),
-                        allowedChildren: null,
-                        tagStructure: default(TagStructure),
-                        designTimeDescriptor: null),
-                    new TagHelperDescriptor(
-                        prefix: "PREFIX",
-                        tagName: "myth2",
-                        typeName: "mythTagHelper2",
-                        assemblyName: "SomeAssembly",
-                        attributes: new []
+                    new TagHelperDescriptor
+                    {
+                        Prefix = "PREFIX",
+                        TagName = "myth",
+                        TypeName = "mythTagHelper",
+                        AssemblyName = "SomeAssembly"
+                    },
+                    new TagHelperDescriptor
+                    {
+                        Prefix = "PREFIX",
+                        TagName = "myth2",
+                        TypeName = "mythTagHelper2",
+                        AssemblyName = "SomeAssembly",
+                        Attributes = new []
                         {
-                            new TagHelperAttributeDescriptor(
-                                name: "bound",
-                                propertyName: "Bound",
-                                typeName: typeof(bool).FullName,
-                                isIndexer: false,
-                                designTimeDescriptor: null),
-                        },
-                        requiredAttributes: Enumerable.Empty<string>(),
-                        allowedChildren: null,
-                        tagStructure: default(TagStructure),
-                        designTimeDescriptor: null)
+                            new TagHelperAttributeDescriptor
+                            {
+                                Name = "bound",
+                                PropertyName = "Bound",
+                                TypeName = typeof(bool).FullName
+                            },
+                        }
+                    }
                 };
                 var availableDescriptorsCatchAll = new TagHelperDescriptor[]
                 {
-                    new TagHelperDescriptor(
-                        prefix: "myth",
-                        tagName: "*",
-                        typeName: "mythTagHelper",
-                        assemblyName: "SomeAssembly",
-                        attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
-                        requiredAttributes: Enumerable.Empty<string>(),
-                        allowedChildren: null,
-                        tagStructure: default(TagStructure),
-                        designTimeDescriptor: null),
+                    new TagHelperDescriptor
+                    {
+                        Prefix = "myth",
+                        TagName = "*",
+                        TypeName = "mythTagHelper",
+                        AssemblyName = "SomeAssembly"
+                    }
                 };
 
                 // documentContent, expectedOutput, availableDescriptors

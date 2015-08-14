@@ -44,7 +44,12 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
             foreach (var tagName in tagNames)
             {
                 descriptors.Add(
-                    new TagHelperDescriptor(tagName, tagName + "taghelper", "SomeAssembly"));
+                    new TagHelperDescriptor
+                    {
+                        TagName = tagName,
+                        TypeName = tagName + "taghelper",
+                        AssemblyName = "SomeAssembly"
+                    });
             }
 
             return new TagHelperDescriptorProvider(descriptors);

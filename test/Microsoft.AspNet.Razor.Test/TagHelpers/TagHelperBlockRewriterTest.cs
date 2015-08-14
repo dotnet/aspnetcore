@@ -80,16 +80,13 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             // Arrange
             var descriptors = new TagHelperDescriptor[]
                 {
-                    new TagHelperDescriptor(
-                        prefix: string.Empty,
-                        tagName: "input",
-                        typeName: "InputTagHelper",
-                        assemblyName: "SomeAssembly",
-                        attributes: new TagHelperAttributeDescriptor[0],
-                        requiredAttributes: Enumerable.Empty<string>(),
-                        allowedChildren: null,
-                        tagStructure: TagStructure.WithoutEndTag,
-                        designTimeDescriptor: null)
+                    new TagHelperDescriptor
+                    {
+                        TagName = "input",
+                        TypeName = "InputTagHelper",
+                        AssemblyName = "SomeAssembly",
+                        TagStructure = TagStructure.WithoutEndTag,
+                    }
                 };
             var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
 
@@ -183,26 +180,20 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             var blockFactory = new BlockFactory(factory);
             var descriptors = new TagHelperDescriptor[]
                 {
-                    new TagHelperDescriptor(
-                        prefix: string.Empty,
-                        tagName: "input",
-                        typeName: "InputTagHelper1",
-                        assemblyName: "SomeAssembly",
-                        attributes: new TagHelperAttributeDescriptor[0],
-                        requiredAttributes: Enumerable.Empty<string>(),
-                        allowedChildren: null,
-                        tagStructure: structure1,
-                        designTimeDescriptor: null),
-                    new TagHelperDescriptor(
-                        prefix: string.Empty,
-                        tagName: "input",
-                        typeName: "InputTagHelper2",
-                        assemblyName: "SomeAssembly",
-                        attributes: new TagHelperAttributeDescriptor[0],
-                        requiredAttributes: Enumerable.Empty<string>(),
-                        allowedChildren: null,
-                        tagStructure: structure2,
-                        designTimeDescriptor: null)
+                    new TagHelperDescriptor
+                    {
+                        TagName = "input",
+                        TypeName = "InputTagHelper1",
+                        AssemblyName = "SomeAssembly",
+                        TagStructure = structure1
+                    },
+                    new TagHelperDescriptor
+                    {
+                        TagName = "input",
+                        TypeName = "InputTagHelper2",
+                        AssemblyName = "SomeAssembly",
+                        TagStructure = structure2
+                    }
                 };
             var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
 
@@ -1024,28 +1015,33 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             // Arrange
             var descriptors = new TagHelperDescriptor[]
             {
-                new TagHelperDescriptor("person", "PersonTagHelper", "personAssembly",
-                    attributes: new[]
+                new TagHelperDescriptor
+                {
+                    TagName = "person",
+                    TypeName = "PersonTagHelper",
+                    AssemblyName = "personAssembly",
+                    Attributes = new[]
                     {
-                        new TagHelperAttributeDescriptor(
-                            name: "age",
-                            propertyName: "Age",
-                            typeName: typeof(int).FullName,
-                            isIndexer: false,
-                            designTimeDescriptor: null),
-                        new TagHelperAttributeDescriptor(
-                            name: "birthday",
-                            propertyName: "BirthDay",
-                            typeName: typeof(DateTime).FullName,
-                            isIndexer: false,
-                            designTimeDescriptor: null),
-                        new TagHelperAttributeDescriptor(
-                            name: "name",
-                            propertyName: "Name",
-                            typeName: typeof(string).FullName,
-                            isIndexer: false,
-                            designTimeDescriptor: null),
-                    })
+                        new TagHelperAttributeDescriptor
+                        {
+                            Name = "age",
+                            PropertyName = "Age",
+                            TypeName = typeof(int).FullName
+                        },
+                        new TagHelperAttributeDescriptor
+                        {
+                            Name = "birthday",
+                            PropertyName = "BirthDay",
+                            TypeName = typeof(DateTime).FullName
+                        },
+                        new TagHelperAttributeDescriptor
+                        {
+                            Name = "name",
+                            PropertyName = "Name",
+                            TypeName = typeof(string).FullName
+                        }
+                    }
+                }
             };
             var providerContext = new TagHelperDescriptorProvider(descriptors);
 
@@ -2067,25 +2063,27 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             // Arrange
             var descriptors = new TagHelperDescriptor[]
                 {
-                    new TagHelperDescriptor(
-                        tagName: "myth",
-                        typeName: "mythTagHelper",
-                        assemblyName: "SomeAssembly",
-                        attributes: new[]
+                    new TagHelperDescriptor
+                    {
+                        TagName = "myth",
+                        TypeName = "mythTagHelper",
+                        AssemblyName = "SomeAssembly",
+                        Attributes = new[]
                         {
-                            new TagHelperAttributeDescriptor(
-                                name: "bound",
-                                propertyName: "Bound",
-                                typeName: typeof(bool).FullName,
-                                isIndexer: false,
-                                designTimeDescriptor: null),
-                            new TagHelperAttributeDescriptor(
-                                name: "name",
-                                propertyName: "Name",
-                                typeName: typeof(string).FullName,
-                                isIndexer: false,
-                                designTimeDescriptor: null)
-                        })
+                            new TagHelperAttributeDescriptor
+                            {
+                                Name = "bound",
+                                PropertyName = "Bound",
+                                TypeName = typeof(bool).FullName
+                            },
+                            new TagHelperAttributeDescriptor
+                            {
+                                Name = "name",
+                                PropertyName = "Name",
+                                TypeName = typeof(string).FullName
+                            }
+                        }
+                    }
                 };
             var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
 
@@ -3657,100 +3655,110 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             // Arrange
             var descriptors = new TagHelperDescriptor[]
                 {
-                    new TagHelperDescriptor(
-                        tagName: "input",
-                        typeName: "InputTagHelper1",
-                        assemblyName: "SomeAssembly",
-                        attributes: new[]
+                    new TagHelperDescriptor
+                    {
+                        TagName = "input",
+                        TypeName = "InputTagHelper1",
+                        AssemblyName = "SomeAssembly",
+                        Attributes = new[]
                         {
-                            new TagHelperAttributeDescriptor(
-                                "bound-required-string",
-                                "BoundRequiredString",
-                                typeof(string).FullName,
-                                isIndexer: false,
-                                designTimeDescriptor: null)
+                            new TagHelperAttributeDescriptor
+                            {
+                                Name = "bound-required-string",
+                                PropertyName = "BoundRequiredString",
+                                TypeName = typeof(string).FullName
+                            }
                         },
-                        requiredAttributes: new[] { "unbound-required" }),
-                    new TagHelperDescriptor(
-                        tagName: "input",
-                        typeName: "InputTagHelper1",
-                        assemblyName: "SomeAssembly",
-                        attributes: new[]
+                        RequiredAttributes = new[] { "unbound-required" }
+                    },
+                    new TagHelperDescriptor
+                    {
+                        TagName = "input",
+                        TypeName = "InputTagHelper1",
+                        AssemblyName = "SomeAssembly",
+                        Attributes = new[]
                         {
-                            new TagHelperAttributeDescriptor(
-                                "bound-required-string",
-                                "BoundRequiredString",
-                                typeof(string).FullName,
-                                isIndexer: false,
-                                designTimeDescriptor: null)
+                            new TagHelperAttributeDescriptor
+                            {
+                                Name = "bound-required-string",
+                                PropertyName = "BoundRequiredString",
+                                TypeName = typeof(string).FullName
+                            }
                         },
-                        requiredAttributes: new[] { "bound-required-string" }),
-                    new TagHelperDescriptor(
-                        tagName: "input",
-                        typeName: "InputTagHelper2",
-                        assemblyName: "SomeAssembly",
-                        attributes: new[]
+                        RequiredAttributes = new[] { "bound-required-string" }
+                    },
+                    new TagHelperDescriptor
+                    {
+                        TagName = "input",
+                        TypeName = "InputTagHelper2",
+                        AssemblyName = "SomeAssembly",
+                        Attributes = new[]
                         {
-                            new TagHelperAttributeDescriptor(
-                                "bound-required-int",
-                                "BoundRequiredInt",
-                                typeof(int).FullName,
-                                isIndexer: false,
-                                designTimeDescriptor: null)
+                            new TagHelperAttributeDescriptor
+                            {
+                                Name = "bound-required-int",
+                                PropertyName = "BoundRequiredInt",
+                                TypeName = typeof(int).FullName
+                            }
                         },
-                        requiredAttributes: new[] { "bound-required-int" }),
-                    new TagHelperDescriptor(
-                        tagName: "input",
-                        typeName: "InputTagHelper3",
-                        assemblyName: "SomeAssembly",
-                        attributes: new[]
+                        RequiredAttributes = new[] { "bound-required-int" }
+                    },
+                    new TagHelperDescriptor
+                    {
+                        TagName = "input",
+                        TypeName = "InputTagHelper3",
+                        AssemblyName = "SomeAssembly",
+                        Attributes = new[]
                         {
-                            new TagHelperAttributeDescriptor(
-                                "int-dictionary",
-                                "DictionaryOfIntProperty",
-                                typeof(IDictionary<string, int>).FullName,
-                                isIndexer: false,
-                                designTimeDescriptor: null),
-                            new TagHelperAttributeDescriptor(
-                                "string-dictionary",
-                                "DictionaryOfStringProperty",
-                                typeof(IDictionary<string, string>).FullName,
-                                isIndexer: false,
-                                designTimeDescriptor: null),
-                            new TagHelperAttributeDescriptor(
-                                "int-prefix-",
-                                "DictionaryOfIntProperty",
-                                typeof(int).FullName,
-                                isIndexer: true,
-                                designTimeDescriptor: null),
-                            new TagHelperAttributeDescriptor(
-                                "string-prefix-",
-                                "DictionaryOfStringProperty",
-                                typeof(string).FullName,
-                                isIndexer: true,
-                                designTimeDescriptor: null),
-                        },
-                        requiredAttributes: Enumerable.Empty<string>()),
-                    new TagHelperDescriptor(
-                        tagName: "p",
-                        typeName: "PTagHelper",
-                        assemblyName: "SomeAssembly",
-                        attributes: new[]
+                            new TagHelperAttributeDescriptor
+                            {
+                                Name = "int-dictionary",
+                                PropertyName ="DictionaryOfIntProperty",
+                                TypeName = typeof(IDictionary<string, int>).FullName
+                            },
+                            new TagHelperAttributeDescriptor
+                            {
+                                Name = "string-dictionary",
+                                PropertyName = "DictionaryOfStringProperty",
+                                TypeName = typeof(IDictionary<string, string>).FullName
+                            },
+                            new TagHelperAttributeDescriptor
+                            {
+                                Name = "int-prefix-",
+                                PropertyName = "DictionaryOfIntProperty",
+                                TypeName = typeof(int).FullName,
+                                IsIndexer = true
+                            },
+                            new TagHelperAttributeDescriptor
+                            {
+                                Name = "string-prefix-",
+                                PropertyName = "DictionaryOfStringProperty",
+                                TypeName = typeof(string).FullName,
+                                IsIndexer = true
+                            }
+                        }
+                    },
+                    new TagHelperDescriptor
+                    {
+                        TagName = "p",
+                        TypeName = "PTagHelper",
+                        AssemblyName = "SomeAssembly",
+                        Attributes = new[]
                         {
-                            new TagHelperAttributeDescriptor(
-                                "bound-string",
-                                "BoundRequiredString",
-                                typeof(string).FullName,
-                                isIndexer: false,
-                                designTimeDescriptor: null),
-                            new TagHelperAttributeDescriptor(
-                                "bound-int",
-                                "BoundRequiredString",
-                                typeof(int).FullName,
-                                isIndexer: false,
-                                designTimeDescriptor: null)
-                        },
-                        requiredAttributes: Enumerable.Empty<string>()),
+                            new TagHelperAttributeDescriptor
+                            {
+                                Name = "bound-string",
+                                PropertyName = "BoundRequiredString",
+                                TypeName = typeof(string).FullName
+                            },
+                            new TagHelperAttributeDescriptor
+                            {
+                                Name = "bound-int",
+                                PropertyName = "BoundRequiredString",
+                                TypeName = typeof(int).FullName
+                            }
+                        }
+                    }
                 };
             var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
 

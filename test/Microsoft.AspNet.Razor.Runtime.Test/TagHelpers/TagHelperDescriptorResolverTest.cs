@@ -25,16 +25,12 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             get
             {
-                return new TagHelperDescriptor(
-                    prefix:  string.Empty,
-                    tagName: "valid_plain",
-                    typeName: Valid_PlainTagHelperType.FullName,
-                    assemblyName: AssemblyName,
-                    attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
-                    requiredAttributes: Enumerable.Empty<string>(),
-                    allowedChildren: null,
-                    tagStructure: default(TagStructure),
-                    designTimeDescriptor: null);
+                return new TagHelperDescriptor
+                {
+                    TagName = "valid_plain",
+                    TypeName = Valid_PlainTagHelperType.FullName,
+                    AssemblyName = AssemblyName
+                };
             }
         }
 
@@ -42,16 +38,12 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             get
             {
-                return new TagHelperDescriptor(
-                    prefix: string.Empty,
-                    tagName: "valid_inherited",
-                    typeName: Valid_InheritedTagHelperType.FullName,
-                    assemblyName: AssemblyName,
-                    attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
-                    requiredAttributes: Enumerable.Empty<string>(),
-                    allowedChildren: null,
-                    tagStructure: default(TagStructure),
-                    designTimeDescriptor: null);
+                return new TagHelperDescriptor
+                {
+                    TagName = "valid_inherited",
+                    TypeName = Valid_InheritedTagHelperType.FullName,
+                    AssemblyName = AssemblyName
+                };
             }
         }
 
@@ -604,16 +596,12 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 // We're treating 'string' as a TagHelper so we can test TagHelpers in multiple assemblies without
                 // building a separate assembly with a single TagHelper.
                 var stringTagHelperDescriptor =
-                    new TagHelperDescriptor(
-                        prefix: string.Empty,
-                        tagName: "string",
-                        typeName: "System.String",
-                        assemblyName: assemblyB,
-                        attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
-                        requiredAttributes: Enumerable.Empty<string>(),
-                        allowedChildren: null,
-                        tagStructure: default(TagStructure),
-                        designTimeDescriptor: null);
+                    new TagHelperDescriptor
+                    {
+                        TagName = "string",
+                        TypeName = "System.String",
+                        AssemblyName = assemblyB
+                    };
 
                 return new TheoryData<Dictionary<string, IEnumerable<Type>>, // descriptorAssemblyLookups
                                       IEnumerable<TagHelperDirectiveDescriptor>, // directiveDescriptors
@@ -1041,16 +1029,12 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
                 var assemblyB = stringType.GetTypeInfo().Assembly.GetName().Name;
                 var stringTagHelperDescriptor =
-                    new TagHelperDescriptor(
-                        prefix: string.Empty,
-                        tagName: "string",
-                        typeName: "System.String",
-                        assemblyName: assemblyB,
-                        attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
-                        requiredAttributes: Enumerable.Empty<string>(),
-                        allowedChildren: null,
-                        tagStructure: default(TagStructure),
-                        designTimeDescriptor: null);
+                    new TagHelperDescriptor
+                    {
+                        TagName = "string",
+                        TypeName = "System.String",
+                        AssemblyName = assemblyB
+                    };
 
                 return new TheoryData<Dictionary<string, IEnumerable<Type>>, // descriptorAssemblyLookups
                                       IEnumerable<TagHelperDirectiveDescriptor>> // directiveDescriptors
@@ -1441,16 +1425,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             string typeName,
             string assemblyName)
         {
-            return new TagHelperDescriptor(
-                prefix,
-                tagName,
-                typeName,
-                assemblyName,
-                attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
-                requiredAttributes: Enumerable.Empty<string>(),
-                allowedChildren: null,
-                tagStructure: default(TagStructure),
-                designTimeDescriptor: null);
+            return new TagHelperDescriptor
+            {
+                Prefix = prefix,
+                TagName = tagName,
+                TypeName = typeName,
+                AssemblyName = assemblyName
+            };
         }
 
         private static TagHelperDescriptor CreatePrefixedValidPlainDescriptor(string prefix)

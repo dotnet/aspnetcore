@@ -26,40 +26,44 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             {
                 return new[]
                 {
-                    new TagHelperDescriptor(
-                        tagName: "*",
-                        typeName: "CatchAllTagHelper",
-                        assemblyName: "SomeAssembly",
-                        attributes: new[]
+                    new TagHelperDescriptor
+                    {
+                        TagName = "*",
+                        TypeName = "CatchAllTagHelper",
+                        AssemblyName = "SomeAssembly",
+                        Attributes = new[]
                         {
-                            new TagHelperAttributeDescriptor(
-                                "catchall-bound-string",
-                                "BoundRequiredString",
-                                typeof(string).FullName,
-                                isIndexer: false,
-                                designTimeDescriptor: null),
+                            new TagHelperAttributeDescriptor
+                            {
+                                Name = "catchall-bound-string",
+                                PropertyName = "BoundRequiredString",
+                                TypeName = typeof(string).FullName
+                            }
                         },
-                        requiredAttributes: new[] { "catchall-unbound-required" }),
-                    new TagHelperDescriptor(
-                        tagName: "input",
-                        typeName: "InputTagHelper",
-                        assemblyName: "SomeAssembly",
-                        attributes: new[]
+                        RequiredAttributes = new[] { "catchall-unbound-required" },
+                    },
+                    new TagHelperDescriptor
+                    {
+                        TagName = "input",
+                        TypeName = "InputTagHelper",
+                        AssemblyName = "SomeAssembly",
+                        Attributes = new[]
                         {
-                            new TagHelperAttributeDescriptor(
-                                "input-bound-required-string",
-                                "BoundRequiredString",
-                                typeof(string).FullName,
-                                isIndexer: false,
-                                designTimeDescriptor: null),
-                            new TagHelperAttributeDescriptor(
-                                "input-bound-string",
-                                "BoundString",
-                                typeof(string).FullName,
-                                isIndexer: false,
-                                designTimeDescriptor: null)
+                            new TagHelperAttributeDescriptor
+                            {
+                                Name = "input-bound-required-string",
+                                PropertyName = "BoundRequiredString",
+                                TypeName = typeof(string).FullName
+                            },
+                            new TagHelperAttributeDescriptor
+                            {
+                                Name = "input-bound-string",
+                                PropertyName = "BoundString",
+                                TypeName = typeof(string).FullName
+                            }
                         },
-                        requiredAttributes: new[] { "input-bound-required-string", "input-unbound-required" }),
+                        RequiredAttributes = new[] { "input-bound-required-string", "input-unbound-required" },
+                    }
                 };
             }
         }
@@ -70,19 +74,21 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             {
                 return new[]
                 {
-                    new TagHelperDescriptor(
-                        tagName: "input",
-                        typeName: "InputTagHelper",
-                        assemblyName: "SomeAssembly",
-                        attributes: new[]
+                    new TagHelperDescriptor
+                    {
+                        TagName = "input",
+                        TypeName = "InputTagHelper",
+                        AssemblyName = "SomeAssembly",
+                        Attributes = new[]
                         {
-                            new TagHelperAttributeDescriptor(
-                                "bound",
-                                "Bound",
-                                typeof(string).FullName,
-                                isIndexer: false,
-                                designTimeDescriptor: null)
-                        }),
+                            new TagHelperAttributeDescriptor
+                            {
+                                Name = "bound",
+                                PropertyName = "Bound",
+                                TypeName = typeof(string).FullName
+                            }
+                        }
+                    }
                 };
             }
         }
@@ -95,46 +101,54 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                 var inputCheckedPropertyInfo = typeof(TestType).GetProperty("Checked");
                 return new[]
                 {
-                    new TagHelperDescriptor(
-                        tagName: "*",
-                        typeName: "CatchAllTagHelper",
-                        assemblyName: "SomeAssembly",
-                        attributes: new TagHelperAttributeDescriptor[]
+                    new TagHelperDescriptor
+                    {
+                        TagName = "*",
+                        TypeName = "CatchAllTagHelper",
+                        AssemblyName = "SomeAssembly",
+                        Attributes = new TagHelperAttributeDescriptor[]
                         {
                             new TagHelperAttributeDescriptor("type", inputTypePropertyInfo),
                             new TagHelperAttributeDescriptor("checked", inputCheckedPropertyInfo)
                         },
-                        requiredAttributes: new[] { "type" }),
-                    new TagHelperDescriptor(
-                        tagName: "*",
-                        typeName: "CatchAllTagHelper",
-                        assemblyName: "SomeAssembly",
-                        attributes: new TagHelperAttributeDescriptor[]
+                        RequiredAttributes = new[] { "type" },
+                    },
+                    new TagHelperDescriptor
+                    {
+                        TagName = "*",
+                        TypeName = "CatchAllTagHelper",
+                        AssemblyName = "SomeAssembly",
+                        Attributes = new TagHelperAttributeDescriptor[]
                         {
                             new TagHelperAttributeDescriptor("type", inputTypePropertyInfo),
                             new TagHelperAttributeDescriptor("checked", inputCheckedPropertyInfo)
                         },
-                        requiredAttributes: new[] { "checked" }),
-                    new TagHelperDescriptor(
-                        tagName: "input",
-                        typeName: "InputTagHelper",
-                        assemblyName: "SomeAssembly",
-                        attributes: new TagHelperAttributeDescriptor[]
+                        RequiredAttributes = new[] { "checked" },
+                    },
+                    new TagHelperDescriptor
+                    {
+                        TagName = "input",
+                        TypeName = "InputTagHelper",
+                        AssemblyName = "SomeAssembly",
+                        Attributes = new TagHelperAttributeDescriptor[]
                         {
                             new TagHelperAttributeDescriptor("type", inputTypePropertyInfo),
                             new TagHelperAttributeDescriptor("checked", inputCheckedPropertyInfo)
                         },
-                        requiredAttributes: new[] { "type" }),
-                    new TagHelperDescriptor(
-                        tagName: "input",
-                        typeName: "InputTagHelper",
-                        assemblyName: "SomeAssembly",
-                        attributes: new TagHelperAttributeDescriptor[]
+                        RequiredAttributes = new[] { "type" },
+                    },
+                    new TagHelperDescriptor
+                    {
+                        TagName = "input",
+                        TypeName = "InputTagHelper",
+                        AssemblyName = "SomeAssembly",
+                        Attributes = new TagHelperAttributeDescriptor[]
                         {
                             new TagHelperAttributeDescriptor("type", inputTypePropertyInfo),
                             new TagHelperAttributeDescriptor("checked", inputCheckedPropertyInfo)
                         },
-                        requiredAttributes: new[] { "checked" })
+                        RequiredAttributes = new[] { "checked" },
+                    }
                 };
             }
         }
@@ -147,37 +161,43 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                 var inputCheckedPropertyInfo = typeof(TestType).GetProperty("Checked");
                 return new[]
                 {
-                    new TagHelperDescriptor(
-                        tagName: "p",
-                        typeName: "PTagHelper",
-                        assemblyName: "SomeAssembly",
-                        attributes: new TagHelperAttributeDescriptor[0],
-                        requiredAttributes: new[] { "class" }),
-                    new TagHelperDescriptor(
-                        tagName: "input",
-                        typeName: "InputTagHelper",
-                        assemblyName: "SomeAssembly",
-                        attributes: new TagHelperAttributeDescriptor[]
+                    new TagHelperDescriptor
+                    {
+                        TagName = "p",
+                        TypeName = "PTagHelper",
+                        AssemblyName = "SomeAssembly",
+                        RequiredAttributes = new[] { "class" },
+                    },
+                    new TagHelperDescriptor
+                    {
+                        TagName = "input",
+                        TypeName = "InputTagHelper",
+                        AssemblyName = "SomeAssembly",
+                        Attributes = new TagHelperAttributeDescriptor[]
                         {
                             new TagHelperAttributeDescriptor("type", inputTypePropertyInfo)
                         },
-                        requiredAttributes: new[] { "type" }),
-                    new TagHelperDescriptor(
-                        tagName: "input",
-                        typeName: "InputTagHelper2",
-                        assemblyName: "SomeAssembly",
-                        attributes: new TagHelperAttributeDescriptor[]
+                        RequiredAttributes = new[] { "type" },
+                    },
+                    new TagHelperDescriptor
+                    {
+                        TagName = "input",
+                        TypeName = "InputTagHelper2",
+                        AssemblyName = "SomeAssembly",
+                        Attributes = new TagHelperAttributeDescriptor[]
                         {
                             new TagHelperAttributeDescriptor("type", inputTypePropertyInfo),
                             new TagHelperAttributeDescriptor("checked", inputCheckedPropertyInfo)
                         },
-                        requiredAttributes: new[] { "type", "checked" }),
-                    new TagHelperDescriptor(
-                        tagName: "*",
-                        typeName: "CatchAllTagHelper",
-                        assemblyName: "SomeAssembly",
-                        attributes: new TagHelperAttributeDescriptor[0],
-                        requiredAttributes: new[] { "catchAll" })
+                        RequiredAttributes = new[] { "type", "checked" },
+                    },
+                    new TagHelperDescriptor
+                    {
+                        TagName = "*",
+                        TypeName = "CatchAllTagHelper",
+                        AssemblyName = "SomeAssembly",
+                        RequiredAttributes = new[] { "catchAll" },
+                    }
                 };
             }
         }
@@ -188,80 +208,88 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             {
                 return new[]
                 {
-                    new TagHelperDescriptor(
-                        tagName: "input",
-                        typeName: "InputTagHelper1",
-                        assemblyName: "SomeAssembly",
-                        attributes: new[]
+                    new TagHelperDescriptor
+                    {
+                        TagName = "input",
+                        TypeName = "InputTagHelper1",
+                        AssemblyName = "SomeAssembly",
+                        Attributes = new[]
                         {
-                            new TagHelperAttributeDescriptor(
-                                name: "int-prefix-grabber",
-                                propertyName: "IntProperty",
-                                typeName: typeof(int).FullName,
-                                isIndexer: false,
-                                designTimeDescriptor: null),
-                            new TagHelperAttributeDescriptor(
-                                name: "int-dictionary",
-                                propertyName: "IntDictionaryProperty",
-                                typeName: typeof(IDictionary<string, int>).FullName,
-                                isIndexer: false,
-                                designTimeDescriptor: null),
-                            new TagHelperAttributeDescriptor(
-                                name: "string-dictionary",
-                                propertyName: "StringDictionaryProperty",
-                                typeName: "Namespace.DictionaryWithoutParameterlessConstructor<string, string>",
-                                isIndexer: false,
-                                designTimeDescriptor: null),
-                            new TagHelperAttributeDescriptor(
-                                name: "string-prefix-grabber",
-                                propertyName: "StringProperty",
-                                typeName: typeof(string).FullName,
-                                isIndexer: false,
-                                designTimeDescriptor: null),
-                            new TagHelperAttributeDescriptor(
-                                name: "int-prefix-",
-                                propertyName: "IntDictionaryProperty",
-                                typeName: typeof(int).FullName,
-                                isIndexer: true,
-                                designTimeDescriptor: null),
-                            new TagHelperAttributeDescriptor(
-                                name: "string-prefix-",
-                                propertyName: "StringDictionaryProperty",
-                                typeName: typeof(string).FullName,
-                                isIndexer: true,
-                                designTimeDescriptor: null),
-                        }),
-                    new TagHelperDescriptor(
-                        tagName: "input",
-                        typeName: "InputTagHelper2",
-                        assemblyName: "SomeAssembly",
-                        attributes: new[]
+                            new TagHelperAttributeDescriptor
+                            {
+                                Name = "int-prefix-grabber",
+                                PropertyName = "IntProperty",
+                                TypeName = typeof(int).FullName
+                            },
+                            new TagHelperAttributeDescriptor
+                            {
+                                Name = "int-dictionary",
+                                PropertyName = "IntDictionaryProperty",
+                                TypeName = typeof(IDictionary<string, int>).FullName
+                            },
+                            new TagHelperAttributeDescriptor
+                            {
+                                Name = "string-dictionary",
+                                PropertyName = "StringDictionaryProperty",
+                                TypeName = "Namespace.DictionaryWithoutParameterlessConstructor<string, string>"
+                            },
+                            new TagHelperAttributeDescriptor
+                            {
+                                Name = "string-prefix-grabber",
+                                PropertyName = "StringProperty",
+                                TypeName = typeof(string).FullName
+                            },
+                            new TagHelperAttributeDescriptor
+                            {
+                                Name = "int-prefix-",
+                                PropertyName = "IntDictionaryProperty",
+                                TypeName = typeof(int).FullName,
+                                IsIndexer = true
+                            },
+                            new TagHelperAttributeDescriptor
+                            {
+                                Name = "string-prefix-",
+                                PropertyName = "StringDictionaryProperty",
+                                TypeName = typeof(string).FullName,
+                                IsIndexer = true
+                            }
+                        }
+                    },
+                    new TagHelperDescriptor
+                    {
+                        TagName = "input",
+                        TypeName = "InputTagHelper2",
+                        AssemblyName = "SomeAssembly",
+                        Attributes = new[]
                         {
-                            new TagHelperAttributeDescriptor(
-                                name: "int-dictionary",
-                                propertyName: "IntDictionaryProperty",
-                                typeName: typeof(IDictionary<string, int>).FullName,
-                                isIndexer: false,
-                                designTimeDescriptor: null),
-                            new TagHelperAttributeDescriptor(
-                                name: "string-dictionary",
-                                propertyName: "StringDictionaryProperty",
-                                typeName: "Namespace.DictionaryWithoutParameterlessConstructor<string, string>",
-                                isIndexer: false,
-                                designTimeDescriptor: null),
-                            new TagHelperAttributeDescriptor(
-                                name: "int-prefix-",
-                                propertyName: "IntDictionaryProperty",
-                                typeName: typeof(int).FullName,
-                                isIndexer: true,
-                                designTimeDescriptor: null),
-                            new TagHelperAttributeDescriptor(
-                                name: "string-prefix-",
-                                propertyName: "StringDictionaryProperty",
-                                typeName: typeof(string).FullName,
-                                isIndexer: true,
-                                designTimeDescriptor: null),
-                        }),
+                            new TagHelperAttributeDescriptor
+                            {
+                                Name = "int-dictionary",
+                                PropertyName = "IntDictionaryProperty",
+                                TypeName = typeof(int).FullName
+                            },
+                            new TagHelperAttributeDescriptor
+                            {
+                                Name = "string-dictionary",
+                                PropertyName = "StringDictionaryProperty",
+                                TypeName = "Namespace.DictionaryWithoutParameterlessConstructor<string, string>"
+                            },
+                            new TagHelperAttributeDescriptor
+                            {
+                                Name = "int-prefix-",
+                                PropertyName = "IntDictionaryProperty",
+                                TypeName = typeof(int).FullName,
+                                IsIndexer = true
+                            },
+                            new TagHelperAttributeDescriptor
+                            {
+                                Name = "string-prefix-",
+                                PropertyName = "StringDictionaryProperty",
+                                TypeName = typeof(string).FullName,
+                                IsIndexer = true
+                            }
+                        }
+                    }
                 };
             }
         }
@@ -1507,7 +1535,12 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                              designTimeMode: true,
                              tagHelperDescriptors: new[]
                              {
-                                new TagHelperDescriptor("p", "pTagHelper", "SomeAssembly")
+                                 new TagHelperDescriptor
+                                 {
+                                     TagName = "p",
+                                     TypeName = "pTagHelper",
+                                     AssemblyName = "SomeAssembly"
+                                 }
                              });
         }
 
@@ -1518,14 +1551,22 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             var propertyInfo = typeof(TestType).GetProperty("BoundProperty");
             var tagHelperDescriptors = new TagHelperDescriptor[]
             {
-                new TagHelperDescriptor("MyTagHelper",
-                                        "MyTagHelper",
-                                        "SomeAssembly",
-                                        new []
-                                        {
-                                            new TagHelperAttributeDescriptor("BoundProperty", propertyInfo)
-                                        }),
-                new TagHelperDescriptor("NestedTagHelper", "NestedTagHelper", "SomeAssembly")
+                new TagHelperDescriptor
+                {
+                    TagName = "MyTagHelper",
+                    TypeName = "MyTagHelper",
+                    AssemblyName = "SomeAssembly",
+                    Attributes = new []
+                    {
+                        new TagHelperAttributeDescriptor("BoundProperty", propertyInfo)
+                    }
+                },
+                new TagHelperDescriptor
+                {
+                    TagName = "NestedTagHelper",
+                    TypeName = "NestedTagHelper",
+                    AssemblyName = "SomeAssembly"
+                }
             };
 
             // Act & Assert
@@ -1540,46 +1581,42 @@ namespace Microsoft.AspNet.Razor.Test.Generator
 
             return new[]
             {
-                new TagHelperDescriptor(
-                    prefix,
-                    tagName: "p",
-                    typeName: "PTagHelper",
-                    assemblyName: "SomeAssembly",
-                    attributes: new []
+                new TagHelperDescriptor
+                {
+                    Prefix = prefix,
+                    TagName = "p",
+                    TypeName = "PTagHelper",
+                    AssemblyName = "SomeAssembly",
+                    Attributes = new TagHelperAttributeDescriptor[]
                     {
                         new TagHelperAttributeDescriptor("age", pAgePropertyInfo)
                     },
-                    requiredAttributes: Enumerable.Empty<string>(),
-                    allowedChildren: null,
-                    tagStructure: TagStructure.NormalOrSelfClosing,
-                    designTimeDescriptor: null),
-                new TagHelperDescriptor(
-                    prefix,
-                    tagName: "input",
-                    typeName: "InputTagHelper",
-                    assemblyName: "SomeAssembly",
-                    attributes: new TagHelperAttributeDescriptor[]
+                    TagStructure = TagStructure.NormalOrSelfClosing
+                },
+                new TagHelperDescriptor
+                {
+                    Prefix = prefix,
+                    TagName = "input",
+                    TypeName = "InputTagHelper",
+                    AssemblyName = "SomeAssembly",
+                    Attributes = new TagHelperAttributeDescriptor[]
                     {
                         new TagHelperAttributeDescriptor("type", inputTypePropertyInfo)
                     },
-                    requiredAttributes: Enumerable.Empty<string>(),
-                    allowedChildren: null,
-                    tagStructure: TagStructure.WithoutEndTag,
-                    designTimeDescriptor: null),
-                new TagHelperDescriptor(
-                    prefix,
-                    tagName: "input",
-                    typeName: "InputTagHelper2",
-                    assemblyName: "SomeAssembly",
-                    attributes: new TagHelperAttributeDescriptor[]
+                    TagStructure = TagStructure.WithoutEndTag
+                },
+                new TagHelperDescriptor
+                {
+                    Prefix = prefix,
+                    TagName = "input",
+                    TypeName = "InputTagHelper2",
+                    AssemblyName = "SomeAssembly",
+                    Attributes = new TagHelperAttributeDescriptor[]
                     {
                         new TagHelperAttributeDescriptor("type", inputTypePropertyInfo),
                         new TagHelperAttributeDescriptor("checked", checkedPropertyInfo)
                     },
-                    requiredAttributes: Enumerable.Empty<string>(),
-                    allowedChildren: null,
-                    tagStructure: TagStructure.Unspecified,
-                    designTimeDescriptor: null)
+                }
             };
         }
 

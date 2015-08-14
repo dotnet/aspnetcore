@@ -14,42 +14,48 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         {
             get
             {
-                var divDescriptor = new TagHelperDescriptor(
-                    tagName: "div",
-                    typeName: "DivTagHelper",
-                    assemblyName: "SomeAssembly",
-                    attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
-                    requiredAttributes: new[] { "style" });
-                var inputDescriptor = new TagHelperDescriptor(
-                    tagName: "input",
-                    typeName: "InputTagHelper",
-                    assemblyName: "SomeAssembly",
-                    attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
-                    requiredAttributes: new[] { "class", "style" });
-                var inputWildcardPrefixDescriptor = new TagHelperDescriptor(
-                    tagName: "input",
-                    typeName: "InputWildCardAttribute",
-                    assemblyName: "SomeAssembly",
-                    attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
-                    requiredAttributes: new[] { "nodashprefix*" });
-                var catchAllDescriptor = new TagHelperDescriptor(
-                    tagName: TagHelperDescriptorProvider.ElementCatchAllTarget,
-                    typeName: "CatchAllTagHelper",
-                    assemblyName: "SomeAssembly",
-                    attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
-                    requiredAttributes: new[] { "class" });
-                var catchAllDescriptor2 = new TagHelperDescriptor(
-                    tagName: TagHelperDescriptorProvider.ElementCatchAllTarget,
-                    typeName: "CatchAllTagHelper",
-                    assemblyName: "SomeAssembly",
-                    attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
-                    requiredAttributes: new[] { "custom", "class" });
-                var catchAllWildcardPrefixDescriptor = new TagHelperDescriptor(
-                    tagName: TagHelperDescriptorProvider.ElementCatchAllTarget,
-                    typeName: "CatchAllWildCardAttribute",
-                    assemblyName: "SomeAssembly",
-                    attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
-                    requiredAttributes: new[] { "prefix-*" });
+                var divDescriptor = new TagHelperDescriptor
+                {
+                    TagName = "div",
+                    TypeName = "DivTagHelper",
+                    AssemblyName = "SomeAssembly",
+                    RequiredAttributes = new[] { "style" }
+                };
+                var inputDescriptor = new TagHelperDescriptor
+                {
+                    TagName = "input",
+                    TypeName = "InputTagHelper",
+                    AssemblyName = "SomeAssembly",
+                    RequiredAttributes = new[] { "class", "style" }
+                };
+                var inputWildcardPrefixDescriptor = new TagHelperDescriptor
+                {
+                    TagName = "input",
+                    TypeName = "InputWildCardAttribute",
+                    AssemblyName = "SomeAssembly",
+                    RequiredAttributes = new[] { "nodashprefix*" }
+                };
+                var catchAllDescriptor = new TagHelperDescriptor
+                {
+                    TagName = TagHelperDescriptorProvider.ElementCatchAllTarget,
+                    TypeName = "CatchAllTagHelper",
+                    AssemblyName = "SomeAssembly",
+                    RequiredAttributes = new[] { "class" }
+                };
+                var catchAllDescriptor2 = new TagHelperDescriptor
+                {
+                    TagName = TagHelperDescriptorProvider.ElementCatchAllTarget,
+                    TypeName = "CatchAllTagHelper",
+                    AssemblyName = "SomeAssembly",
+                    RequiredAttributes = new[] { "custom", "class" }
+                };
+                var catchAllWildcardPrefixDescriptor = new TagHelperDescriptor
+                {
+                    TagName = TagHelperDescriptorProvider.ElementCatchAllTarget,
+                    TypeName = "CatchAllWildCardAttribute",
+                    AssemblyName = "SomeAssembly",
+                    RequiredAttributes = new[] { "prefix-*" }
+                };
                 var defaultAvailableDescriptors =
                     new[] { divDescriptor, inputDescriptor, catchAllDescriptor, catchAllDescriptor2 };
                 var defaultWildcardDescriptors =
@@ -256,8 +262,18 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         public void GetDescriptors_ReturnsNothingForUnregisteredTags()
         {
             // Arrange
-            var divDescriptor = new TagHelperDescriptor("div", "foo1", "SomeAssembly");
-            var spanDescriptor = new TagHelperDescriptor("span", "foo2", "SomeAssembly");
+            var divDescriptor = new TagHelperDescriptor
+            {
+                TagName = "div",
+                TypeName = "foo1",
+                AssemblyName = "SomeAssembly",
+            };
+            var spanDescriptor = new TagHelperDescriptor
+            {
+                TagName = "span",
+                TypeName = "foo2",
+                AssemblyName = "SomeAssembly",
+            };
             var descriptors = new TagHelperDescriptor[] { divDescriptor, spanDescriptor };
             var provider = new TagHelperDescriptorProvider(descriptors);
 
@@ -272,12 +288,24 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         public void GetDescriptors_ReturnsCatchAllsWithEveryTagName()
         {
             // Arrange
-            var divDescriptor = new TagHelperDescriptor("div", "foo1", "SomeAssembly");
-            var spanDescriptor = new TagHelperDescriptor("span", "foo2", "SomeAssembly");
-            var catchAllDescriptor = new TagHelperDescriptor(
-                TagHelperDescriptorProvider.ElementCatchAllTarget,
-                "foo3",
-                "SomeAssembly");
+            var divDescriptor = new TagHelperDescriptor
+            {
+                TagName = "div",
+                TypeName = "foo1",
+                AssemblyName = "SomeAssembly",
+            };
+            var spanDescriptor = new TagHelperDescriptor
+            {
+                TagName = "span",
+                TypeName = "foo2",
+                AssemblyName = "SomeAssembly",
+            };
+            var catchAllDescriptor = new TagHelperDescriptor
+            {
+                TagName = TagHelperDescriptorProvider.ElementCatchAllTarget,
+                TypeName = "foo3",
+                AssemblyName = "SomeAssembly",
+            };
             var descriptors = new TagHelperDescriptor[] { divDescriptor, spanDescriptor, catchAllDescriptor };
             var provider = new TagHelperDescriptorProvider(descriptors);
 
@@ -301,7 +329,12 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         public void GetDescriptors_DuplicateDescriptorsAreNotPartOfTagHelperDescriptorPool()
         {
             // Arrange
-            var divDescriptor = new TagHelperDescriptor("div", "foo1", "SomeAssembly");
+            var divDescriptor = new TagHelperDescriptor
+            {
+                TagName = "div",
+                TypeName = "foo1",
+                AssemblyName = "SomeAssembly",
+            };
             var descriptors = new TagHelperDescriptor[] { divDescriptor, divDescriptor };
             var provider = new TagHelperDescriptorProvider(descriptors);
 
@@ -315,16 +348,13 @@ namespace Microsoft.AspNet.Razor.TagHelpers
 
         private static TagHelperDescriptor CreatePrefixedDescriptor(string prefix, string tagName, string typeName)
         {
-            return new TagHelperDescriptor(
-                prefix,
-                tagName,
-                typeName,
-                assemblyName: "SomeAssembly",
-                attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
-                requiredAttributes: Enumerable.Empty<string>(),
-                allowedChildren: null,
-                tagStructure: default(TagStructure),
-                designTimeDescriptor: null);
+            return new TagHelperDescriptor
+            {
+                Prefix = prefix,
+                TagName = tagName,
+                TypeName = typeName,
+                AssemblyName = "SomeAssembly"
+            };
         }
     }
 }

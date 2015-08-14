@@ -14,141 +14,43 @@ namespace Microsoft.AspNet.Razor.TagHelpers
     public class TagHelperDescriptor
     {
         /// <summary>
-        /// Internal for testing.
-        /// </summary>
-        internal TagHelperDescriptor(
-            [NotNull] string tagName,
-            [NotNull] string typeName,
-            [NotNull] string assemblyName)
-            : this(
-                tagName,
-                typeName,
-                assemblyName,
-                attributes: Enumerable.Empty<TagHelperAttributeDescriptor>())
-        {
-        }
-
-        /// <summary>
-        /// Internal for testing.
-        /// </summary>
-        internal TagHelperDescriptor(
-            [NotNull] string tagName,
-            [NotNull] string typeName,
-            [NotNull] string assemblyName,
-            [NotNull] IEnumerable<TagHelperAttributeDescriptor> attributes)
-            : this(
-                tagName,
-                typeName,
-                assemblyName,
-                attributes,
-                requiredAttributes: Enumerable.Empty<string>())
-        {
-        }
-
-        /// <summary>
-        /// Internal for testing.
-        /// </summary>
-        internal TagHelperDescriptor(
-            [NotNull] string tagName,
-            [NotNull] string typeName,
-            [NotNull] string assemblyName,
-            [NotNull] IEnumerable<TagHelperAttributeDescriptor> attributes,
-            [NotNull] IEnumerable<string> requiredAttributes)
-            : this(
-                prefix: string.Empty,
-                tagName: tagName,
-                typeName: typeName,
-                assemblyName: assemblyName,
-                attributes: attributes,
-                requiredAttributes: requiredAttributes,
-                allowedChildren: null,
-                tagStructure: TagStructure.Unspecified,
-                designTimeDescriptor: null)
-        {
-        }
-
-        /// <summary>
-        /// Instantiates a new instance of the <see cref="TagHelperDescriptor"/> class with the given
-        /// <paramref name="attributes"/>.
-        /// </summary>
-        /// <param name="prefix">
-        /// Text used as a required prefix when matching HTML start and end tags in the Razor source to available
-        /// tag helpers.
-        /// </param>
-        /// <param name="tagName">The tag name that the tag helper targets. '*' indicates a catch-all
-        /// <see cref="TagHelperDescriptor"/> which applies to every HTML tag.</param>
-        /// <param name="typeName">The full name of the tag helper class.</param>
-        /// <param name="assemblyName">The name of the assembly containing the tag helper class.</param>
-        /// <param name="attributes">
-        /// The <see cref="TagHelperAttributeDescriptor"/>s to request from the HTML tag.
-        /// </param>
-        /// <param name="requiredAttributes">
-        /// The attribute names required for the tag helper to target the HTML tag.
-        /// </param>
-        /// <param name="allowedChildren">
-        /// The names of elements allowed as children. Tag helpers must target all such elements.
-        /// </param>
-        /// <param name="tagStructure">The expected tag structure.</param>
-        /// <param name="designTimeDescriptor">The <see cref="TagHelperDesignTimeDescriptor"/> that contains design
-        /// time information about the tag helper.</param>
-        public TagHelperDescriptor(
-            string prefix,
-            [NotNull] string tagName,
-            [NotNull] string typeName,
-            [NotNull] string assemblyName,
-            [NotNull] IEnumerable<TagHelperAttributeDescriptor> attributes,
-            [NotNull] IEnumerable<string> requiredAttributes,
-            IEnumerable<string> allowedChildren,
-            TagStructure tagStructure,
-            TagHelperDesignTimeDescriptor designTimeDescriptor)
-        {
-            Prefix = prefix ?? string.Empty;
-            TagName = tagName;
-            FullTagName = Prefix + TagName;
-            TypeName = typeName;
-            AssemblyName = assemblyName;
-            Attributes = new List<TagHelperAttributeDescriptor>(attributes);
-            RequiredAttributes = new List<string>(requiredAttributes);
-            TagStructure = tagStructure;
-            DesignTimeDescriptor = designTimeDescriptor;
-
-            if (allowedChildren != null)
-            {
-                AllowedChildren = new List<string>(allowedChildren);
-            }
-        }
-
-        /// <summary>
         /// Text used as a required prefix when matching HTML start and end tags in the Razor source to available
         /// tag helpers.
         /// </summary>
-        public string Prefix { get; }
+        public string Prefix { get; [param: NotNull] set; } = string.Empty;
 
         /// <summary>
         /// The tag name that the tag helper should target.
         /// </summary>
-        public string TagName { get; }
+        public string TagName { get; [param: NotNull] set; }
 
         /// <summary>
         /// The full tag name that is required for the tag helper to target an HTML element.
         /// </summary>
         /// <remarks>This is equivalent to <see cref="Prefix"/> and <see cref="TagName"/> concatenated.</remarks>
-        public string FullTagName { get; }
+        public string FullTagName
+        {
+            get
+            {
+                return Prefix + TagName;
+            }
+        }
 
         /// <summary>
         /// The full name of the tag helper class.
         /// </summary>
-        public string TypeName { get; }
+        public string TypeName { get; [param: NotNull] set; }
 
         /// <summary>
         /// The name of the assembly containing the tag helper class.
         /// </summary>
-        public string AssemblyName { get; }
+        public string AssemblyName { get; [param: NotNull] set; }
 
         /// <summary>
         /// The list of attributes the tag helper expects.
         /// </summary>
-        public IReadOnlyList<TagHelperAttributeDescriptor> Attributes { get; }
+        public IEnumerable<TagHelperAttributeDescriptor> Attributes { get; [param: NotNull] set; }
+            = Enumerable.Empty<TagHelperAttributeDescriptor>();
 
         /// <summary>
         /// The list of required attribute names the tag helper expects to target an element.
@@ -156,13 +58,13 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// <remarks>
         /// <c>*</c> at the end of an attribute name acts as a prefix match.
         /// </remarks>
-        public IReadOnlyList<string> RequiredAttributes { get; }
+        public IEnumerable<string> RequiredAttributes { get; [param: NotNull] set; } = Enumerable.Empty<string>();
 
         /// <summary>
         /// Get the names of elements allowed as children. Tag helpers must target all such elements.
         /// </summary>
         /// <remarks><c>null</c> indicates all children are allowed.</remarks>
-        public IReadOnlyList<string> AllowedChildren { get; }
+        public IEnumerable<string> AllowedChildren { get; set; }
 
         /// <summary>
         /// The expected tag structure.
@@ -188,12 +90,12 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// </code>
         /// </para>
         /// </remarks>
-        public TagStructure TagStructure { get; }
+        public TagStructure TagStructure { get; set; }
 
         /// <summary>
         /// The <see cref="TagHelperDesignTimeDescriptor"/> that contains design time information about this
         /// tag helper.
         /// </summary>
-        public TagHelperDesignTimeDescriptor DesignTimeDescriptor { get; }
+        public TagHelperDesignTimeDescriptor DesignTimeDescriptor { get; set; }
     }
 }

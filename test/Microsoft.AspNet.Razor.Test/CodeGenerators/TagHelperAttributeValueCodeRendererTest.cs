@@ -23,29 +23,34 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             var checkedPropertyInfo = typeof(TestType).GetProperty("Checked");
             var tagHelperDescriptors = new TagHelperDescriptor[]
             {
-                new TagHelperDescriptor("p", "PTagHelper", "SomeAssembly"),
-                new TagHelperDescriptor(
-                    prefix: string.Empty,
-                    tagName: "input",
-                    typeName: "InputTagHelper",
-                    assemblyName: "SomeAssembly",
-                    attributes: new TagHelperAttributeDescriptor[]
+                new TagHelperDescriptor
+                {
+                    TagName = "p",
+                    TypeName = "PTagHelper",
+                    AssemblyName = "SomeAssembly"
+                },
+                new TagHelperDescriptor
+                {
+                    TagName = "input",
+                    TypeName = "InputTagHelper",
+                    AssemblyName = "SomeAssembly",
+                    Attributes = new TagHelperAttributeDescriptor[]
                     {
                         new TagHelperAttributeDescriptor("type", inputTypePropertyInfo)
                     },
-                    requiredAttributes: new string[0],
-                    allowedChildren: null,
-                    tagStructure: TagStructure.WithoutEndTag,
-                    designTimeDescriptor: null),
-                new TagHelperDescriptor(
-                    tagName: "input",
-                    typeName: "InputTagHelper2",
-                    assemblyName: "SomeAssembly",
-                    attributes: new TagHelperAttributeDescriptor[]
+                    TagStructure = TagStructure.WithoutEndTag
+                },
+                new TagHelperDescriptor
+                {
+                    TagName = "input",
+                    TypeName = "InputTagHelper2",
+                    AssemblyName = "SomeAssembly",
+                    Attributes = new TagHelperAttributeDescriptor[]
                     {
                         new TagHelperAttributeDescriptor("type", inputTypePropertyInfo),
                         new TagHelperAttributeDescriptor("checked", checkedPropertyInfo)
-                    })
+                    }
+                }
             };
 
             // Act & Assert

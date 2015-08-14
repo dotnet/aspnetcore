@@ -36,12 +36,13 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
             bool expectedIsStringProperty)
         {
             // Arrange
-            var attributeDescriptor = new TagHelperAttributeDescriptor(
-                "someAttribute",
-                "someProperty",
-                attributeType.FullName,
-                isIndexer,
-                designTimeDescriptor: null);
+            var attributeDescriptor = new TagHelperAttributeDescriptor
+            {
+                Name = "someAttribute",
+                PropertyName = "someProperty",
+                TypeName = attributeType.FullName,
+                IsIndexer = isIndexer
+            };
 
             // Assert
             Assert.Equal(expectedIsStringProperty, attributeDescriptor.IsStringProperty);

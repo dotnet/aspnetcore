@@ -12,70 +12,21 @@ namespace Microsoft.AspNet.Razor.TagHelpers
     /// </summary>
     public class TagHelperAttributeDescriptor
     {
-        // Internal for testing i.e. for easy TagHelperAttributeDescriptor creation when PropertyInfo is available.
-        internal TagHelperAttributeDescriptor([NotNull] string name, [NotNull] PropertyInfo propertyInfo)
-            : this(
-                  name,
-                  propertyInfo.Name,
-                  propertyInfo.PropertyType.FullName,
-                  isIndexer: false,
-                  isStringProperty: propertyInfo.PropertyType == typeof(string),
-                  designTimeDescriptor: null)
-        {
-        }
+        private string _typeName;
 
         /// <summary>
         /// Instantiates a new instance of the <see cref="TagHelperAttributeDescriptor"/> class.
         /// </summary>
-        /// <param name="name">
-        /// The HTML attribute name or, if <paramref name="isIndexer"/> is <c>true</c>, the prefix for matching
-        /// attribute names.
-        /// </param>
-        /// <param name="propertyName">The name of the CLR property that corresponds to the HTML attribute.</param>
-        /// <param name="typeName">
-        /// The full name of the named (see <paramref name="propertyName"/>) property's <see cref="Type"/> or,
-        /// if <paramref name="isIndexer"/> is <c>true</c>, the full name of the indexer's value <see cref="Type"/>.
-        /// </param>
-        /// <param name="isIndexer">
-        /// If <c>true</c> this <see cref="TagHelperAttributeDescriptor"/> is used for dictionary indexer assignments.
-        /// Otherwise this <see cref="TagHelperAttributeDescriptor"/> is used for property assignment.
-        /// </param>
-        /// <param name="designTimeDescriptor">The <see cref="TagHelperAttributeDesignTimeDescriptor"/> that contains
-        /// design time information about this attribute.</param>
-        /// <remarks>
-        /// HTML attribute names are matched case-insensitively, regardless of <paramref name="isIndexer"/>.
-        /// </remarks>
-        public TagHelperAttributeDescriptor(
-            [NotNull] string name,
-            [NotNull] string propertyName,
-            [NotNull] string typeName,
-            bool isIndexer,
-            TagHelperAttributeDesignTimeDescriptor designTimeDescriptor)
-            : this(
-                  name,
-                  propertyName,
-                  typeName,
-                  isIndexer,
-                  isStringProperty: string.Equals(typeName, typeof(string).FullName, StringComparison.Ordinal),
-                  designTimeDescriptor: designTimeDescriptor)
+        public TagHelperAttributeDescriptor()
         {
         }
 
-        // Internal for testing i.e. for confirming above constructor sets IsStringProperty as expected.
-        internal TagHelperAttributeDescriptor(
-            [NotNull] string name,
-            [NotNull] string propertyName,
-            [NotNull] string typeName,
-            bool isIndexer,
-            bool isStringProperty,
-            TagHelperAttributeDesignTimeDescriptor designTimeDescriptor)
+        // Internal for testing i.e. for easy TagHelperAttributeDescriptor creation when PropertyInfo is available.
+        internal TagHelperAttributeDescriptor(string name, PropertyInfo propertyInfo)
         {
             Name = name;
-            PropertyName = propertyName;
-            TypeName = typeName;
-            IsIndexer = isIndexer;
-            IsStringProperty = isStringProperty;
-            DesignTimeDescriptor = designTimeDescriptor;
+            PropertyName = propertyInfo.Name;
+            TypeName = propertyInfo.PropertyType.FullName;
         }
 
         /// <summary>
@@ -88,7 +39,10 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// <see cref="TagHelperAttributeDescriptor"/> is used for property assignment and is only associated with an
         /// HTML attribute that has the exact <see cref="Name"/>.
         /// </value>
-        public bool IsIndexer { get; }
+        /// <remarks>
+        /// HTML attribute names are matched case-insensitively, regardless of <see cref="IsIndexer"/>.
+        /// </remarks>
+        public bool IsIndexer { get; set; }
 
         /// <summary>
         /// Gets an indication whether this property is of type <see cref="string"/> or, if <see cref="IsIndexer"/> is
@@ -99,30 +53,41 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// to allow empty values for HTML attributes matching this <see cref="TagHelperAttributeDescriptor"/>. If
         /// <c>false</c> empty values for such matching attributes lead to errors.
         /// </value>
-        public bool IsStringProperty { get; }
+        public bool IsStringProperty { get; private set; }
 
         /// <summary>
         /// The HTML attribute name or, if <see cref="IsIndexer"/> is <c>true</c>, the prefix for matching attribute
         /// names.
         /// </summary>
-        public string Name { get; }
+        public string Name { get; [param: NotNull] set; }
 
         /// <summary>
         /// The name of the CLR property that corresponds to the HTML attribute.
         /// </summary>
-        public string PropertyName { get; }
+        public string PropertyName { get; [param: NotNull] set; }
 
         /// <summary>
         /// The full name of the named (see <see name="PropertyName"/>) property's <see cref="Type"/> or, if
         /// <see cref="IsIndexer"/> is <c>true</c>, the full name of the indexer's value <see cref="Type"/>.
         /// </summary>
-        public string TypeName { get; }
+        public string TypeName
+        {
+            get
+            {
+                return _typeName;
+            }
+            [param: NotNull] set
+            {
+                _typeName = value;
+                IsStringProperty = string.Equals(_typeName, typeof(string).FullName, StringComparison.Ordinal);
+            }
+        }
 
         /// <summary>
         /// The <see cref="TagHelperAttributeDesignTimeDescriptor"/> that contains design time information about
         /// this attribute.
         /// </summary>
-        public TagHelperAttributeDesignTimeDescriptor DesignTimeDescriptor { get; }
+        public TagHelperAttributeDesignTimeDescriptor DesignTimeDescriptor { get; set; }
 
         /// <summary>
         /// Determines whether HTML attribute <paramref name="name"/> matches this
