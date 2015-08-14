@@ -7,6 +7,8 @@ using System.Linq;
 #if DNX451
 using System.Net.Mail;
 #endif
+using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Identity
@@ -15,7 +17,7 @@ namespace Microsoft.AspNet.Identity
     /// Provides validation services for user classes.
     /// </summary>
     /// <typeparam name="TRole">The type encapsulating a user.</typeparam>
-    public class UserValidator : IUserValidator
+    public class UserValidator<TUser> : IUserValidator<TUser> where TUser : class
     {
         /// <summary>
         /// Creates a new instance of <see cref="UserValidator{TUser}"/>/
@@ -38,7 +40,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="manager">The <see cref="UserManager{TUser}"/> that can be used to retrieve user properties.</param>
         /// <param name="user">The user to validate.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/> of the validation operation.</returns>
-        public virtual async Task<IdentityResult> ValidateAsync<TUser>(UserManager<TUser> manager, TUser user) where TUser : class
+        public virtual async Task<IdentityResult> ValidateAsync(UserManager<TUser> manager, TUser user)
         {
             if (manager == null)
             {
@@ -57,7 +59,7 @@ namespace Microsoft.AspNet.Identity
             return errors.Count > 0 ? IdentityResult.Failed(errors.ToArray()) : IdentityResult.Success;
         }
 
-        private async Task ValidateUserName<TUser>(UserManager<TUser> manager, TUser user, ICollection<IdentityError> errors) where TUser : class
+        private async Task ValidateUserName(UserManager<TUser> manager, TUser user, ICollection<IdentityError> errors)
         {
             var userName = await manager.GetUserNameAsync(user);
             if (string.IsNullOrWhiteSpace(userName))
@@ -81,7 +83,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         // make sure email is not empty, valid, and unique
-        private async Task ValidateEmail<TUser>(UserManager<TUser> manager, TUser user, List<IdentityError> errors) where TUser : class
+        private async Task ValidateEmail(UserManager<TUser> manager, TUser user, List<IdentityError> errors)
         {
             var email = await manager.GetEmailAsync(user);
             if (string.IsNullOrWhiteSpace(email))

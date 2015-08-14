@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var services = new ServiceCollection();
             services.AddIdentity<TestUser,TestRole>().AddRoleValidator<MyUberThingy>();
-            var thingy = services.BuildServiceProvider().GetRequiredService<IRoleValidator>() as MyUberThingy;
+            var thingy = services.BuildServiceProvider().GetRequiredService<IRoleValidator<TestRole>>() as MyUberThingy;
             Assert.NotNull(thingy);
         }
 
@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var services = new ServiceCollection();
             services.AddIdentity<TestUser,TestRole>().AddUserValidator<MyUberThingy>();
-            var thingy = services.BuildServiceProvider().GetRequiredService<IUserValidator>() as MyUberThingy;
+            var thingy = services.BuildServiceProvider().GetRequiredService<IUserValidator<TestUser>>() as MyUberThingy;
             Assert.NotNull(thingy);
         }
 
@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var services = new ServiceCollection();
             services.AddIdentity<TestUser,TestRole>().AddPasswordValidator<MyUberThingy>();
-            var thingy = services.BuildServiceProvider().GetRequiredService<IPasswordValidator>() as MyUberThingy;
+            var thingy = services.BuildServiceProvider().GetRequiredService<IPasswordValidator<TestUser>>() as MyUberThingy;
             Assert.NotNull(thingy);
         }
 
@@ -88,13 +88,13 @@ namespace Microsoft.AspNet.Identity.Test
             services.AddIdentity<TestUser,TestRole>();
 
             var provider = services.BuildServiceProvider();
-            var userValidator = provider.GetRequiredService<IUserValidator>() as UserValidator;
+            var userValidator = provider.GetRequiredService<IUserValidator<TestUser>>() as UserValidator<TestUser>;
             Assert.NotNull(userValidator);
 
-            var pwdValidator = provider.GetRequiredService<IPasswordValidator>() as PasswordValidator;
+            var pwdValidator = provider.GetRequiredService<IPasswordValidator<TestUser>>() as PasswordValidator<TestUser>;
             Assert.NotNull(pwdValidator);
 
-            var hasher = provider.GetRequiredService<IPasswordHasher>() as PasswordHasher;
+            var hasher = provider.GetRequiredService<IPasswordHasher<TestUser>>() as PasswordHasher<TestUser>;
             Assert.NotNull(hasher);
         }
 
@@ -105,11 +105,11 @@ namespace Microsoft.AspNet.Identity.Test
             services.AddIdentity<TestUser,TestRole>().AddDefaultTokenProviders();
 
             var provider = services.BuildServiceProvider();
-            var tokenProviders = provider.GetRequiredService<IEnumerable<IUserTokenProvider>>();
+            var tokenProviders = provider.GetRequiredService<IEnumerable<IUserTokenProvider<TestUser>>>();
             Assert.Equal(3, tokenProviders.Count());
         }
 
-        private class MyUberThingy : IUserValidator, IPasswordValidator, IRoleValidator, IUserStore<TestUser>, IRoleStore<TestRole>
+        private class MyUberThingy : IUserValidator<TestUser>, IPasswordValidator<TestUser>, IRoleValidator<TestRole>, IUserStore<TestUser>, IRoleStore<TestRole>
         {
             public Task<IdentityResult> CreateAsync(TestRole role, CancellationToken cancellationToken = default(CancellationToken))
             {
@@ -221,21 +221,6 @@ namespace Microsoft.AspNet.Identity.Test
                 throw new NotImplementedException();
             }
 
-            public Task<IdentityResult> ValidateAsync<TRole>(RoleManager<TRole> manager, TRole role) where TRole : class
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task<IdentityResult> ValidateAsync<TUser>(UserManager<TUser> manager, TUser user) where TUser : class
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task<IdentityResult> ValidateAsync<TUser>(UserManager<TUser> manager, TUser user, string password) where TUser : class
-            {
-                throw new NotImplementedException();
-            }
-
             Task<TestRole> IRoleStore<TestRole>.FindByIdAsync(string roleId, CancellationToken cancellationToken)
             {
                 throw new NotImplementedException();
@@ -255,7 +240,7 @@ namespace Microsoft.AspNet.Identity.Test
         private class MyRoleManager : RoleManager<TestRole>
         {
             public MyRoleManager(IRoleStore<TestRole> store,
-                IEnumerable<IRoleValidator> roleValidators) : base(store, null, null, null, null, null)
+                IEnumerable<IRoleValidator<TestRole>> roleValidators) : base(store, null, null, null, null, null)
             {
 
             }

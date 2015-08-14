@@ -22,16 +22,16 @@ namespace Microsoft.AspNet.Identity.Test
         {
             var store = new Mock<IUserStore<TUser>>();
             var mgr = new Mock<UserManager<TUser>>(store.Object, null, null, null, null, null, null, null, null, null);
-            mgr.Object.UserValidators.Add(new UserValidator());
-            mgr.Object.PasswordValidators.Add(new PasswordValidator());
+            mgr.Object.UserValidators.Add(new UserValidator<TUser>());
+            mgr.Object.PasswordValidators.Add(new PasswordValidator<TUser>());
             return mgr;
         }
 
         public static Mock<RoleManager<TRole>> MockRoleManager<TRole>(IRoleStore<TRole> store = null) where TRole : class
         {
             store = store ?? new Mock<IRoleStore<TRole>>().Object;
-            var roles = new List<IRoleValidator>();
-            roles.Add(new RoleValidator());
+            var roles = new List<IRoleValidator<TRole>>();
+            roles.Add(new RoleValidator<TRole>());
             return new Mock<RoleManager<TRole>>(store, roles, null, null, null, null);
         }
 
@@ -71,14 +71,14 @@ namespace Microsoft.AspNet.Identity.Test
             var idOptions = new IdentityOptions();
             idOptions.Lockout.AllowedForNewUsers = false;
             options.Setup(o => o.Options).Returns(idOptions);
-            var userValidators = new List<IUserValidator>();
-            var validator = new Mock<IUserValidator>();
+            var userValidators = new List<IUserValidator<TUser>>();
+            var validator = new Mock<IUserValidator<TUser>>();
             userValidators.Add(validator.Object);
-            var pwdValidators = new List<PasswordValidator>();
-            pwdValidators.Add(new PasswordValidator());
-            var userManager = new UserManager<TUser>(store, options.Object, new PasswordHasher(),
+            var pwdValidators = new List<PasswordValidator<TUser>>();
+            pwdValidators.Add(new PasswordValidator<TUser>());
+            var userManager = new UserManager<TUser>(store, options.Object, new PasswordHasher<TUser>(),
                 userValidators, pwdValidators, new UpperInvariantLookupNormalizer(),
-                new IdentityErrorDescriber(), Enumerable.Empty<IUserTokenProvider>(),
+                new IdentityErrorDescriber(), Enumerable.Empty<IUserTokenProvider<TUser>>(),
                 new Mock<ILogger<UserManager<TUser>>>().Object,
                 null);
             validator.Setup(v => v.ValidateAsync(userManager, It.IsAny<TUser>()))
@@ -89,8 +89,8 @@ namespace Microsoft.AspNet.Identity.Test
         public static RoleManager<TRole> TestRoleManager<TRole>(IRoleStore<TRole> store = null) where TRole : class
         {
             store = store ?? new Mock<IRoleStore<TRole>>().Object;
-            var roles = new List<IRoleValidator>();
-            roles.Add(new RoleValidator());
+            var roles = new List<IRoleValidator<TRole>>();
+            roles.Add(new RoleValidator<TRole>());
             return new RoleManager<TRole>(store, roles,
                 new UpperInvariantLookupNormalizer(),
                 new IdentityErrorDescriber(),

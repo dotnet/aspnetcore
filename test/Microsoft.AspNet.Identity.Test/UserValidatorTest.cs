@@ -14,11 +14,11 @@ namespace Microsoft.AspNet.Identity.Test
         {
             // Setup
             var manager = MockHelpers.TestUserManager(new NoopUserStore());
-            var validator = new UserValidator();
+            var validator = new UserValidator<TestUser>();
 
             // Act
             // Assert
-            await Assert.ThrowsAsync<ArgumentNullException>("manager", () => validator.ValidateAsync<object>(null, null));
+            await Assert.ThrowsAsync<ArgumentNullException>("manager", () => validator.ValidateAsync(null, null));
             await Assert.ThrowsAsync<ArgumentNullException>("user", () => validator.ValidateAsync(manager, null));
         }
 
@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             // Setup
             var manager = MockHelpers.TestUserManager(new NoopUserStore());
-            var validator = new UserValidator();
+            var validator = new UserValidator<TestUser>();
             var user = new TestUser {UserName = input};
 
             // Act
@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.Identity.Test
         {
             // Setup
             var manager = MockHelpers.TestUserManager(new NoopUserStore());
-            var validator = new UserValidator();
+            var validator = new UserValidator<TestUser>();
             var user = new TestUser {UserName = userName};
 
             // Act
@@ -78,7 +78,7 @@ namespace Microsoft.AspNet.Identity.Test
             // Setup
             var manager = MockHelpers.TestUserManager(new NoopUserStore());
             manager.Options.User.AllowedUserNameCharacters = null;
-            var validator = new UserValidator();
+            var validator = new UserValidator<TestUser>();
             var user = new TestUser {UserName = userName};
 
             // Act

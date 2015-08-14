@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Identity
     /// Implements the standard Identity password hashing.
     /// </summary>
     /// <typeparam name="TUser">The type used to represent a user.</typeparam>
-    public class PasswordHasher: IPasswordHasher
+    public class PasswordHasher<TUser> : IPasswordHasher<TUser> where TUser : class
     {
         /* =======================
          * HASHED PASSWORD FORMATS
@@ -90,7 +90,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="user">The user whose password is to be hashed.</param>
         /// <param name="password">The password to hash.</param>
         /// <returns>A hashed representation of the supplied <paramref name="password"/> for the specified <paramref name="user"/>.</returns>
-        public virtual string HashPassword<TUser>(TUser user, string password) where TUser : class
+        public virtual string HashPassword(TUser user, string password)
         {
             if (password == null)
             {
@@ -168,7 +168,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="providedPassword">The password supplied for comparison.</param>
         /// <returns>A <see cref="PasswordVerificationResult"/> indicating the result of a password hash comparison.</returns>
         /// <remarks>Implementations of this method should be time consistent.</remarks>
-        public virtual PasswordVerificationResult VerifyHashedPassword<TUser>(TUser user, string hashedPassword, string providedPassword) where TUser : class
+        public virtual PasswordVerificationResult VerifyHashedPassword(TUser user, string hashedPassword, string providedPassword)
         {
             if (hashedPassword == null)
             {
