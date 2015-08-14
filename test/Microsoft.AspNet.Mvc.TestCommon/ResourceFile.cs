@@ -66,16 +66,13 @@ namespace Microsoft.AspNet.Mvc
             var stream = assembly.GetManifestResourceStream(fullName);
             if (sourceFile)
             {
-                // Normalize line endings to '\n' (LF). This removes core.autocrlf, core.eol, core.safecrlf, and
-                // .gitattributes from the equation and treats "\r\n", "\r", and "\n" as equivalent. Does not handle
-                // some obscure line endings (e.g. "\n\r") but otherwise ensures checksums and line mappings are
-                // consistent.
+                // Normalize line endings to '\r\n' (CRLF). This removes core.autocrlf, core.eol, core.safecrlf, and
+                // .gitattributes from the equation and treats "\r\n" and "\n" as equivalent. Does not handle
+                // some line endings like "\r" but otherwise ensures checksums and line mappings are consistent.
                 string text;
                 using (var streamReader = new StreamReader(stream))
                 {
-                    text = streamReader.ReadToEnd()
-                        .Replace("\r\n", "\n")  // Windows line endings
-                        .Replace("\r", "\n");   // Older Mac OS line endings
+                    text = streamReader.ReadToEnd().Replace("\r", "").Replace("\n", "\r\n");
                 }
 
                 var bytes = Encoding.UTF8.GetBytes(text);
@@ -186,14 +183,10 @@ namespace Microsoft.AspNet.Mvc
         [Conditional("GENERATE_BASELINES")]
         public static void UpdateFile(Assembly assembly, string resourceName, string previousContent, string content)
         {
-            // Normalize line endings to '\n' for comparison. This removes Environment.NewLine from the equation. Not
+            // Normalize line endings to '\r\n' for comparison. This removes Environment.NewLine from the equation. Not
             // worth updating files just because we generate baselines on a different system.
-            var normalizedPreviousContent = previousContent
-                ?.Replace("\r\n", "\n")
-                .Replace("\r", "\n");
-            var normalizedContent = content
-                .Replace("\r\n", "\n")
-                .Replace("\r", "\n");
+            var normalizedPreviousContent = previousContent?.Replace("\r", "").Replace("\n", "\r\n");
+            var normalizedContent = content.Replace("\r", "").Replace("\n", "\r\n");
 
             if (!string.Equals(normalizedPreviousContent, normalizedContent, StringComparison.Ordinal))
             {

@@ -1,4 +1,4 @@
-#pragma checksum "TestFiles/Input/ModelExpressionTagHelper.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "a866c3c5622349399a04557339d06e12178fb260"
+#pragma checksum "TestFiles/Input/ModelExpressionTagHelper.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "fd1207a6d248f0e3aeabecaa338dca0ffb99d10d"
 namespace Asp
 {
     using Microsoft.AspNet.Razor.Runtime.TagHelpers;
@@ -45,8 +45,8 @@ namespace Asp
         public override async Task ExecuteAsync()
         {
             __tagHelperRunner = __tagHelperRunner ?? new Microsoft.AspNet.Razor.Runtime.TagHelpers.TagHelperRunner();
-            BeginContext(117, 1, true);
-            WriteLiteral("\n");
+            BeginContext(120, 2, true);
+            WriteLiteral("\r\n");
             EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input-test", TagMode.SelfClosing, "test", async() => {
             }
@@ -60,12 +60,12 @@ __Microsoft_AspNet_Mvc_Razor_InputTestTagHelper.For = CreateModelExpression(__mo
 #line hidden
             __tagHelperExecutionContext.AddTagHelperAttribute("for", __Microsoft_AspNet_Mvc_Razor_InputTestTagHelper.For);
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
-            BeginContext(118, 24, false);
+            BeginContext(122, 24, false);
             await WriteTagHelperAsync(__tagHelperExecutionContext);
             EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
-            BeginContext(142, 1, true);
-            WriteLiteral("\n");
+            BeginContext(146, 2, true);
+            WriteLiteral("\r\n");
             EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input-test", TagMode.SelfClosing, "test", async() => {
             }
@@ -79,7 +79,7 @@ __Microsoft_AspNet_Mvc_Razor_InputTestTagHelper.For = CreateModelExpression(__mo
 #line hidden
             __tagHelperExecutionContext.AddTagHelperAttribute("for", __Microsoft_AspNet_Mvc_Razor_InputTestTagHelper.For);
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
-            BeginContext(143, 27, false);
+            BeginContext(148, 27, false);
             await WriteTagHelperAsync(__tagHelperExecutionContext);
             EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
