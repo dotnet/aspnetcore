@@ -108,12 +108,12 @@ namespace Microsoft.AspNet.Hosting
 
             // Only one of these should be set, but they are used in priority
             engine.ServerFactory = _serverFactory;
-            engine.ServerFactoryLocation = _config.Get(ServerKey) ?? _config.Get(OldServerKey) ?? _serverFactoryLocation;
+            engine.ServerFactoryLocation = _config[ServerKey] ?? _config[OldServerKey] ?? _serverFactoryLocation;
 
             // Only one of these should be set, but they are used in priority
             engine.Startup = _startup;
             engine.StartupType = _startupType;
-            engine.StartupAssemblyName = _startupAssemblyName ?? _config.Get(ApplicationKey) ?? _config.Get(OldApplicationKey) ?? appEnvironment.ApplicationName;
+            engine.StartupAssemblyName = _startupAssemblyName ?? _config[ApplicationKey] ?? _config[OldApplicationKey] ?? appEnvironment.ApplicationName;
 
             return engine;
         }
