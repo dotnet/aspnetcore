@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Server.Kestrel
         public void Initialize(IConfiguration configuration)
         {
             var urls = configuration["server.urls"];
-            if (!string.IsNullOrEmpty(urls))
+            if (string.IsNullOrEmpty(urls))
             {
                 urls = "http://+:5000/";
             }
