@@ -26,24 +26,25 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
             var blockFactory = new BlockFactory(factory);
             var documentContent = $"<p>{Environment.NewLine}    <strong>{Environment.NewLine}        Hello" +
                 $"{Environment.NewLine}    </strong>{Environment.NewLine}</p>";
+            var newLineLength = Environment.NewLine.Length;
             var expectedErrors = new[] {
                 new RazorError(
                     RazorResources.FormatTagHelperParseTreeRewriter_InvalidNestedTag("strong", "p", "br"),
-                    absoluteIndex: 9,
+                    absoluteIndex: 7 + newLineLength,
                     lineIndex: 1,
-                    columnIndex: 9,
+                    columnIndex: 9 + newLineLength,
                     length: 8),
                 new RazorError(
                     RazorResources.FormatTagHelperParseTreeRewriter_CannotHaveNonTagContent("p", "br"),
-                    absoluteIndex: 27,
+                    absoluteIndex: 23 + newLineLength * 2,
                     lineIndex: 2,
-                    columnIndex: 27,
+                    columnIndex: 23 + newLineLength * 2,
                     length: 5),
                 new RazorError(
                     RazorResources.FormatTagHelperParseTreeRewriter_InvalidNestedTag("strong", "p", "br"),
-                    absoluteIndex: 38,
+                    absoluteIndex: 32 + newLineLength * 3,
                     lineIndex: 3,
-                    columnIndex: 38,
+                    columnIndex: 32 + newLineLength * 3,
                     length: 9),
             };
             var expectedOutput = new MarkupBlock(
