@@ -9,11 +9,11 @@ namespace Microsoft.AspNet.Hosting.Internal
 {
     public class AutoRequestServicesStartupFilter : IStartupFilter
     {
-        public Action<IApplicationBuilder> Configure(IApplicationBuilder app, Action<IApplicationBuilder> next)
+        public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
         {
             return builder =>
             {
-                app.UseMiddleware<RequestServicesContainerMiddleware>();
+                builder.UseMiddleware<RequestServicesContainerMiddleware>();
                 next(builder);
             };
         }

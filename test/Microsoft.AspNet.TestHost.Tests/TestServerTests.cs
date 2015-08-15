@@ -78,11 +78,11 @@ namespace Microsoft.AspNet.TestHost
 
         public class RequestServicesFilter : IStartupFilter
         {
-            public Action<IApplicationBuilder> Configure(IApplicationBuilder app, Action<IApplicationBuilder> next)
+            public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
             {
                 return builder =>
                 {
-                    app.UseMiddleware<TestRequestServiceMiddleware>();
+                    builder.UseMiddleware<TestRequestServiceMiddleware>();
                     next(builder);
                 };
             }

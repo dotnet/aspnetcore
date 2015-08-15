@@ -151,7 +151,7 @@ namespace Microsoft.AspNet.Hosting.Internal
             var configure = Startup.ConfigureDelegate;
             foreach (var filter in startupFilters)
             {
-                configure = filter.Configure(builder, configure);
+                configure = filter.Configure(configure);
             }
 
             configure(builder);
