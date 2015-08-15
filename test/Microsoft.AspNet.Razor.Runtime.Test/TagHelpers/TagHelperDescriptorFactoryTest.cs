@@ -17,6 +17,101 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         private static readonly string AssemblyName =
             typeof(TagHelperDescriptorFactoryTest).GetTypeInfo().Assembly.GetName().Name;
 
+        public static TheoryData RestrictChildrenData
+        {
+            get
+            {
+                // tagHelperType, expectedDescriptors
+                return new TheoryData<Type, TagHelperDescriptor[]>
+                {
+                    {
+                        typeof(RestrictChildrenTagHelper),
+                        new[]
+                        {
+                            new TagHelperDescriptor(
+                                prefix: string.Empty,
+                                tagName: "restrict-children",
+                                typeName: typeof(RestrictChildrenTagHelper).FullName,
+                                assemblyName: AssemblyName,
+                                attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
+                                requiredAttributes: Enumerable.Empty<string>(),
+                                allowedChildren: new[] { "p" },
+                                tagStructure: TagStructure.Unspecified,
+                                designTimeDescriptor: null)
+                        }
+                    },
+                    {
+                        typeof(DoubleRestrictChildrenTagHelper),
+                        new[]
+                        {
+                            new TagHelperDescriptor(
+                                prefix: string.Empty,
+                                tagName: "double-restrict-children",
+                                typeName: typeof(DoubleRestrictChildrenTagHelper).FullName,
+                                assemblyName: AssemblyName,
+                                attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
+                                requiredAttributes: Enumerable.Empty<string>(),
+                                allowedChildren: new[] { "p", "strong" },
+                                tagStructure: TagStructure.Unspecified,
+                                designTimeDescriptor: null)
+                        }
+                    },
+                    {
+                        typeof(MultiTargetRestrictChildrenTagHelper),
+                        new[]
+                        {
+                            new TagHelperDescriptor(
+                                prefix: string.Empty,
+                                tagName: "div",
+                                typeName: typeof(MultiTargetRestrictChildrenTagHelper).FullName,
+                                assemblyName: AssemblyName,
+                                attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
+                                requiredAttributes: Enumerable.Empty<string>(),
+                                allowedChildren: new[] { "p", "strong" },
+                                tagStructure: TagStructure.Unspecified,
+                                designTimeDescriptor: null),
+                            new TagHelperDescriptor(
+                                prefix: string.Empty,
+                                tagName: "p",
+                                typeName: typeof(MultiTargetRestrictChildrenTagHelper).FullName,
+                                assemblyName: AssemblyName,
+                                attributes: Enumerable.Empty<TagHelperAttributeDescriptor>(),
+                                requiredAttributes: Enumerable.Empty<string>(),
+                                allowedChildren: new[] { "p", "strong" },
+                                tagStructure: TagStructure.Unspecified,
+                                designTimeDescriptor: null),
+                        }
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(RestrictChildrenData))]
+        public void CreateDescriptors_CreatesDescriptorsWithAllowedChildren(
+            Type tagHelperType,
+            TagHelperDescriptor[] expectedDescriptors)
+        {
+            // Arrange
+            var errorSink = new ErrorSink();
+
+            // Act
+            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
+                AssemblyName,
+                tagHelperType,
+                designTime: false,
+                errorSink: errorSink);
+
+            // Assert
+            Assert.Empty(errorSink.Errors);
+
+            // We don't care about order. Mono returns reflected attributes differently so we need to ensure order
+            // doesn't matter by sorting.
+            descriptors = descriptors.OrderBy(descriptor => descriptor.TagName);
+
+            Assert.Equal(expectedDescriptors, descriptors, CaseSensitiveTagHelperDescriptorComparer.Default);
+        }
+
         public static TheoryData TagStructureData
         {
             get
@@ -2032,6 +2127,23 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 propertyInfo.PropertyType.FullName,
                 isIndexer: false,
                 designTimeDescriptor: null);
+        }
+
+        [RestrictChildren("p")]
+        private class RestrictChildrenTagHelper
+        {
+        }
+
+        [RestrictChildren("p", "strong")]
+        private class DoubleRestrictChildrenTagHelper
+        {
+        }
+
+        [TargetElement("p")]
+        [TargetElement("div")]
+        [RestrictChildren("p", "strong")]
+        private class MultiTargetRestrictChildrenTagHelper
+        {
         }
 
         [TargetElement("input", TagStructure = TagStructure.WithoutEndTag)]
