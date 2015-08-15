@@ -9,7 +9,11 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Server.Kestrel.Http
 {
-    public class ListenerPrimary : Listener
+    /// <summary>
+    /// A primary listener waits for incoming connections on a specified socket. Incoming 
+    /// connections may be passed to a secondary listener to handle.
+    /// </summary>
+    abstract public class ListenerPrimary<T> : Listener<T>, IListenerPrimary where T : UvStreamHandle
     {
         UvPipeHandle ListenPipe { get; set; }
 
@@ -17,7 +21,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         int _dispatchIndex;
         ArraySegment<ArraySegment<byte>> _1234 = new ArraySegment<ArraySegment<byte>>(new[] { new ArraySegment<byte>(new byte[] { 1, 2, 3, 4 }) });
 
-        public ListenerPrimary(IMemoryPool memory) : base(memory)
+        protected ListenerPrimary(IMemoryPool memory) : base(memory)
         {
         }
 
@@ -61,7 +65,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             _dispatchPipes.Add(dispatchPipe);
         }
 
-        protected override void DispatchConnection(UvTcpHandle socket)
+        protected override void DispatchConnection(T socket)
         {
             var index = _dispatchIndex++ % (_dispatchPipes.Count + 1);
             if (index == _dispatchPipes.Count)
@@ -80,7 +84,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     (write2, status, error, state) => 
                     {
                         write2.Dispose();
-                        ((UvTcpHandle)state).Dispose();
+                        ((T)state).Dispose();
                     },
                     socket);
             }

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Server.Kestrel.Http;
+using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 using Microsoft.AspNet.Server.Kestrel.Networking;
 using Microsoft.Dnx.Runtime;
 
@@ -69,7 +70,6 @@ namespace Microsoft.AspNet.Server.Kestrel
         {
             AppShutdown = appShutdownService;
             Threads = new List<KestrelThread>();
-            Listeners = new List<Listener>();
             Memory = new MemoryPool();
         }
 
@@ -77,7 +77,6 @@ namespace Microsoft.AspNet.Server.Kestrel
         public IMemoryPool Memory { get; set; }
         public IApplicationShutdown AppShutdown { get; private set; }
         public List<KestrelThread> Threads { get; private set; }
-        public List<Listener> Listeners { get; private set; }
 
         public void Start(int count)
         {
@@ -104,6 +103,7 @@ namespace Microsoft.AspNet.Server.Kestrel
         public IDisposable CreateServer(string scheme, string host, int port, Func<Frame, Task> application)
         {
             var listeners = new List<IDisposable>();
+            var usingPipes = scheme == Constants.UnixScheme;
 
             try
             {
@@ -116,19 +116,26 @@ namespace Microsoft.AspNet.Server.Kestrel
                 {
                     if (single)
                     {
-                        var listener = new Listener(Memory);
+                        var listener = usingPipes ? 
+                            (IListener) new PipeListener(Memory) : 
+                            new TcpListener(Memory);
                         listeners.Add(listener);
                         listener.StartAsync(scheme, host, port, thread, application).Wait();
                     }
                     else if (first)
                     {
-                        var listener = new ListenerPrimary(Memory);
+                        var listener = usingPipes
+                            ? (IListenerPrimary) new PipeListenerPrimary(Memory)
+                            : new TcpListenerPrimary(Memory);
+
                         listeners.Add(listener);
                         listener.StartAsync(pipeName, scheme, host, port, thread, application).Wait();
                     }
                     else
                     {
-                        var listener = new ListenerSecondary(Memory);
+                        var listener = usingPipes
+                            ? (IListenerSecondary) new PipeListenerSecondary(Memory)
+                            : new TcpListenerSecondary(Memory);
                         listeners.Add(listener);
                         listener.StartAsync(pipeName, thread, application).Wait();
                     }
