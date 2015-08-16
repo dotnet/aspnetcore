@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNet.Mvc.TestCommon.Notification
 {
-    public interface IRouteData
+    public interface IProxyRouteData
     {
         IReadOnlyList<object> Routers { get; }
         IDictionary<string, object> DataTokens { get; }

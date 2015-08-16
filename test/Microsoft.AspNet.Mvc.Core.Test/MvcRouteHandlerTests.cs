@@ -169,10 +169,10 @@ namespace Microsoft.AspNet.Mvc
             await handler.RouteAsync(context);
 
             // Assert
-            Assert.NotNull(listener?.ActionSelected.ActionDescriptor);
-            Assert.NotNull(listener?.ActionSelected.HttpContext);
+            Assert.NotNull(listener.BeforeAction?.ActionDescriptor);
+            Assert.NotNull(listener.BeforeAction?.HttpContext);
 
-            var routeValues = listener?.ActionSelected?.RouteData?.Values;
+            var routeValues = listener.BeforeAction?.RouteData?.Values;
             Assert.NotNull(routeValues);
 
             Assert.Equal(1, routeValues.Count);
@@ -193,8 +193,8 @@ namespace Microsoft.AspNet.Mvc
             await handler.RouteAsync(context);
 
             // Assert
-            Assert.NotNull(listener?.ActionInvoked.ActionDescriptor);
-            Assert.NotNull(listener?.ActionInvoked.HttpContext);
+            Assert.NotNull(listener.AfterAction?.ActionDescriptor);
+            Assert.NotNull(listener.AfterAction?.HttpContext);
         }
 
         private RouteContext CreateRouteContext(

@@ -10,6 +10,7 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
+using Microsoft.Framework.Notification;
 
 namespace Microsoft.AspNet.Mvc.Core
 {
@@ -32,6 +33,7 @@ namespace Microsoft.AspNet.Mvc.Core
             [NotNull] IReadOnlyList<IValueProviderFactory> valueProviderFactories,
             [NotNull] IActionBindingContextAccessor actionBindingContextAccessor,
             [NotNull] ILogger logger,
+            [NotNull] INotifier notifier,
             int maxModelValidationErrors)
             : base(
                   actionContext,
@@ -43,6 +45,7 @@ namespace Microsoft.AspNet.Mvc.Core
                   valueProviderFactories,
                   actionBindingContextAccessor,
                   logger,
+                  notifier,
                   maxModelValidationErrors)
         {
             _descriptor = descriptor;

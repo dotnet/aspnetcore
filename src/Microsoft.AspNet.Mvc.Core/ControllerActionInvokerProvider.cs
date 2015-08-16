@@ -7,6 +7,7 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
+using Microsoft.Framework.Notification;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc.Core
@@ -24,6 +25,7 @@ namespace Microsoft.AspNet.Mvc.Core
         private readonly IActionBindingContextAccessor _actionBindingContextAccessor;
         private readonly int _maxModelValidationErrors;
         private readonly ILogger _logger;
+        private readonly INotifier _notifier;
 
         public ControllerActionInvokerProvider(
             IControllerFactory controllerFactory,
@@ -31,7 +33,8 @@ namespace Microsoft.AspNet.Mvc.Core
             IControllerActionArgumentBinder argumentBinder,
             IOptions<MvcOptions> optionsAccessor,
             IActionBindingContextAccessor actionBindingContextAccessor,
-            ILoggerFactory loggerFactory)
+            ILoggerFactory loggerFactory,
+            INotifier notifier)
         {
             _controllerFactory = controllerFactory;
             _filterProviders = filterProviders.OrderBy(item => item.Order).ToArray();
@@ -43,8 +46,8 @@ namespace Microsoft.AspNet.Mvc.Core
             _valueProviderFactories = optionsAccessor.Options.ValueProviderFactories.ToArray();
             _actionBindingContextAccessor = actionBindingContextAccessor;
             _maxModelValidationErrors = optionsAccessor.Options.MaxModelValidationErrors;
-
             _logger = loggerFactory.CreateLogger<ControllerActionInvoker>();
+            _notifier = notifier;
         }
 
         public int Order
@@ -72,6 +75,7 @@ namespace Microsoft.AspNet.Mvc.Core
                                     _valueProviderFactories,
                                     _actionBindingContextAccessor,
                                     _logger,
+                                    _notifier,
                                     _maxModelValidationErrors);
             }
         }

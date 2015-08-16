@@ -7,8 +7,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Mvc.TestCommon.Notification;
 using Microsoft.AspNet.Routing;
+using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
+using Microsoft.Framework.Notification;
 using Microsoft.Framework.OptionsModel;
 using Microsoft.Net.Http.Headers;
 using Moq;
@@ -203,6 +206,8 @@ namespace Microsoft.AspNet.Mvc
                       .Verifiable();
 
             var serviceProvider = new Mock<IServiceProvider>();
+            serviceProvider.Setup(s => s.GetService(typeof(INotifier)))
+                .Returns(new Notifier(new ProxyNotifierMethodAdapter()));
             serviceProvider.Setup(p => p.GetService(typeof(ICompositeViewEngine)))
                            .Returns(viewEngine.Object);
             serviceProvider.Setup(p => p.GetService(typeof(ILogger<ViewResult>)))
@@ -228,6 +233,75 @@ namespace Microsoft.AspNet.Mvc
             viewEngine.Verify();
         }
 
+        [Fact]
+        public async Task ViewResult_NotifiesViewFound()
+        {
+            // Arrange
+            var viewName = "myview";
+            var httpContext = GetHttpContext();
+            var context = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+
+            var listener = new TestNotificationListener();
+            httpContext.RequestServices.GetRequiredService<INotifier>().EnlistTarget(listener);
+
+            var viewEngine = new Mock<IViewEngine>();
+            var view = Mock.Of<IView>();
+
+            viewEngine.Setup(e => e.FindView(context, "myview"))
+                      .Returns(ViewEngineResult.Found("myview", view));
+
+            var viewResult = new ViewResult
+            {
+                ViewName = viewName,
+                ViewEngine = viewEngine.Object,
+            };
+
+            // Act
+            await viewResult.ExecuteResultAsync(context);
+
+            // Assert
+            Assert.NotNull(listener.ViewResultViewFound);
+            Assert.NotNull(listener.ViewResultViewFound.ActionContext);
+            Assert.NotNull(listener.ViewResultViewFound.Result);
+            Assert.NotNull(listener.ViewResultViewFound.View);
+            Assert.Equal("myview", listener.ViewResultViewFound.ViewName);
+        }
+
+        [Fact]
+        public async Task ViewResult_NotifiesViewNotFound()
+        {
+            // Arrange
+            var viewName = "myview";
+            var httpContext = GetHttpContext();
+            var context = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+
+            var listener = new TestNotificationListener();
+            httpContext.RequestServices.GetRequiredService<INotifier>().EnlistTarget(listener);
+
+            var viewEngine = new Mock<IViewEngine>();
+            var view = Mock.Of<IView>();
+
+            viewEngine.Setup(e => e.FindView(context, "myview"))
+                      .Returns(ViewEngineResult.NotFound("myview", new string[] { "location/myview" }));
+
+            var viewResult = new ViewResult
+            {
+                ViewName = viewName,
+                ViewEngine = viewEngine.Object,
+            };
+
+            // Act
+            await Assert.ThrowsAsync<InvalidOperationException>(
+                async () => await viewResult.ExecuteResultAsync(context));
+
+            // Assert
+            Assert.NotNull(listener.ViewResultViewNotFound);
+            Assert.NotNull(listener.ViewResultViewNotFound.ActionContext);
+            Assert.NotNull(listener.ViewResultViewNotFound.Result);
+            Assert.Equal(new string[] { "location/myview" }, listener.ViewResultViewNotFound.SearchedLocations);
+            Assert.Equal("myview", listener.ViewResultViewNotFound.ViewName);
+        }
+
         private HttpContext GetHttpContext()
         {
             var serviceProvider = new Mock<IServiceProvider>();
@@ -240,6 +314,9 @@ namespace Microsoft.AspNet.Mvc
 
             serviceProvider.Setup(s => s.GetService(typeof(IOptions<MvcViewOptions>)))
                 .Returns(optionsAccessor.Object);
+
+            serviceProvider.Setup(s => s.GetService(typeof(INotifier)))
+                .Returns(new Notifier(new ProxyNotifierMethodAdapter()));
 
             var httpContext = new DefaultHttpContext();
             httpContext.RequestServices = serviceProvider.Object;

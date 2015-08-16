@@ -70,10 +70,10 @@ namespace Microsoft.AspNet.Mvc
             {
                 context.RouteData = newRouteData;
 
-                if (_notifier.ShouldNotify("Microsoft.AspNet.Mvc.ActionSelected"))
+                if (_notifier.ShouldNotify("Microsoft.AspNet.Mvc.BeforeAction"))
                 {
                     _notifier.Notify(
-                        "Microsoft.AspNet.Mvc.ActionSelected",
+                        "Microsoft.AspNet.Mvc.BeforeAction",
                         new { actionDescriptor, httpContext = context.HttpContext, routeData = context.RouteData});
                 }
 
@@ -84,16 +84,16 @@ namespace Microsoft.AspNet.Mvc
                     await InvokeActionAsync(context, actionDescriptor);
                     context.IsHandled = true;
                 }
-
-                if (_notifier.ShouldNotify("Microsoft.AspNet.Mvc.ActionInvoked"))
-                {
-                    _notifier.Notify(
-                        "Microsoft.AspNet.Mvc.ActionInvoked",
-                        new { actionDescriptor, httpContext = context.HttpContext });
-                }
             }
             finally
             {
+                if (_notifier.ShouldNotify("Microsoft.AspNet.Mvc.AfterAction"))
+                {
+                    _notifier.Notify(
+                        "Microsoft.AspNet.Mvc.AfterAction",
+                        new { actionDescriptor, httpContext = context.HttpContext });
+                }
+
                 if (!context.IsHandled)
                 {
                     context.RouteData = oldRouteData;

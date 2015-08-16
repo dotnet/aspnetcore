@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNet.Mvc.TestCommon.Notification
 {
-    public interface IHttpContext
+    public interface IProxyActionDescriptor
     {
     }
 }

@@ -9,6 +9,7 @@ using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 using Microsoft.Net.Http.Headers;
 using Microsoft.Framework.OptionsModel;
+using Microsoft.Framework.Notification;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -55,17 +56,31 @@ namespace Microsoft.AspNet.Mvc
         /// <inheritdoc />
         public override async Task ExecuteResultAsync([NotNull] ActionContext context)
         {
-            var viewEngine = ViewEngine ??
-                             context.HttpContext.RequestServices.GetRequiredService<ICompositeViewEngine>();
+            var services = context.HttpContext.RequestServices;
+            var viewEngine = ViewEngine ?? services.GetRequiredService<ICompositeViewEngine>();
 
-            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<ViewResult>>();
+            var logger = services.GetRequiredService<ILogger<ViewResult>>();
+            var notifier = services.GetRequiredService<INotifier>();
 
-            var options = context.HttpContext.RequestServices.GetRequiredService<IOptions<MvcViewOptions>>();
+            var options = services.GetRequiredService<IOptions<MvcViewOptions>>();
 
             var viewName = ViewName ?? context.ActionDescriptor.Name;
             var viewEngineResult = viewEngine.FindView(context, viewName);
             if(!viewEngineResult.Success)
             {
+                if (notifier.ShouldNotify("Microsoft.AspNet.Mvc.ViewResultViewNotFound"))
+                {
+                    notifier.Notify(
+                        "Microsoft.AspNet.Mvc.ViewResultViewNotFound",
+                        new
+                        {
+                            actionContext = context,
+                            result = this,
+                            viewName = viewName,
+                            searchedLocations = viewEngineResult.SearchedLocations
+                        });
+                }
+
                 logger.LogError(
                     "The view '{ViewName}' was not found. Searched locations: {SearchedViewLocations}", 
                     viewName,
@@ -73,6 +88,12 @@ namespace Microsoft.AspNet.Mvc
             }
 
             var view = viewEngineResult.EnsureSuccessful().View;
+            if (notifier.ShouldNotify("Microsoft.AspNet.Mvc.ViewResultViewFound"))
+            {
+                notifier.Notify(
+                    "Microsoft.AspNet.Mvc.ViewResultViewFound",
+                    new { actionContext = context, result = this, viewName, view = view });
+            }
 
             logger.LogVerbose("The view '{ViewName}' was found.", viewName);
 

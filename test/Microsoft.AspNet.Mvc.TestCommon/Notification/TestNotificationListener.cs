@@ -1,21 +1,29 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using Microsoft.Framework.Notification;
 
 namespace Microsoft.AspNet.Mvc.TestCommon.Notification
 {
     public class TestNotificationListener
     {
-        public OnActionSelectedEventData ActionSelected { get; set; }
-
-        [NotificationName("Microsoft.AspNet.Mvc.ActionSelected")]
-        public virtual void OnActionSelected(
-            IHttpContext httpContext,
-            IRouteData routeData,
-            IActionDescriptor actionDescriptor)
+        public class OnBeforeActionEventData
         {
-            ActionSelected = new OnActionSelectedEventData()
+            public IProxyActionDescriptor ActionDescriptor { get; set; }
+            public IProxyHttpContext HttpContext { get; set; }
+            public IProxyRouteData RouteData { get; set; }
+        }
+
+        public OnBeforeActionEventData BeforeAction { get; set; }
+
+        [NotificationName("Microsoft.AspNet.Mvc.BeforeAction")]
+        public virtual void OnBeforeAction(
+            IProxyHttpContext httpContext,
+            IProxyRouteData routeData,
+            IProxyActionDescriptor actionDescriptor)
+        {
+            BeforeAction = new OnBeforeActionEventData()
             {
                 ActionDescriptor = actionDescriptor,
                 HttpContext = httpContext,
@@ -23,31 +31,76 @@ namespace Microsoft.AspNet.Mvc.TestCommon.Notification
             };
         }
 
-        public OnActionInvokedEventData ActionInvoked { get; set; }
-
-        [NotificationName("Microsoft.AspNet.Mvc.ActionInvoked")]
-        public virtual void OnActionInvoked(
-            IHttpContext httpContext,
-            IActionDescriptor actionDescriptor)
+        public class OnAfterActionEventData
         {
-            ActionInvoked = new OnActionInvokedEventData()
+            public IProxyActionDescriptor ActionDescriptor { get; set; }
+            public IProxyHttpContext HttpContext { get; set; }
+        }
+
+        public OnAfterActionEventData AfterAction { get; set; }
+
+        [NotificationName("Microsoft.AspNet.Mvc.AfterAction")]
+        public virtual void OnAfterAction(
+            IProxyHttpContext httpContext,
+            IProxyActionDescriptor actionDescriptor)
+        {
+            AfterAction = new OnAfterActionEventData()
             {
                 ActionDescriptor = actionDescriptor,
                 HttpContext = httpContext,
             };
         }
 
-        public class OnActionSelectedEventData
+        public class OnViewResultViewFoundEventData
         {
-            public IActionDescriptor ActionDescriptor { get; set; }
-            public IHttpContext HttpContext { get; set; }
-            public IRouteData RouteData { get; set; }
+            public IProxyActionContext ActionContext { get; set; }
+            public IProxyActionResult Result { get; set; }
+            public string ViewName { get; set; }
+            public IProxyView View { get; set; }
         }
 
-        public class OnActionInvokedEventData
+        public OnViewResultViewFoundEventData ViewResultViewFound { get; set; }
+
+        [NotificationName("Microsoft.AspNet.Mvc.ViewResultViewFound")]
+        public virtual void OnViewResultViewFound(
+            IProxyActionContext actionContext,
+            IProxyActionResult result,
+            string viewName,
+            IProxyView view)
         {
-            public IActionDescriptor ActionDescriptor { get; set; }
-            public IHttpContext HttpContext { get; set; }
+            ViewResultViewFound = new OnViewResultViewFoundEventData()
+            {
+                ActionContext = actionContext,
+                Result = result,
+                ViewName = viewName,
+                View = view,
+            };
+        }
+
+        public class OnViewResultViewNotFoundEventData
+        {
+            public IProxyActionContext ActionContext { get; set; }
+            public IProxyActionResult Result { get; set; }
+            public string ViewName { get; set; }
+            public IEnumerable<string> SearchedLocations { get; set; }
+        }
+
+        public OnViewResultViewNotFoundEventData ViewResultViewNotFound { get; set; }
+
+        [NotificationName("Microsoft.AspNet.Mvc.ViewResultViewNotFound")]
+        public virtual void OnViewResultViewNotFound(
+            IProxyActionContext actionContext,
+            IProxyActionResult result,
+            string viewName,
+            IEnumerable<string> searchedLocations)
+        {
+            ViewResultViewNotFound = new OnViewResultViewNotFoundEventData()
+            {
+                ActionContext = actionContext,
+                Result = result,
+                ViewName = viewName,
+                SearchedLocations = searchedLocations,
+            };
         }
     }
 }

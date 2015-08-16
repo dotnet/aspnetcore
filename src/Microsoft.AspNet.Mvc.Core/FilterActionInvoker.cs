@@ -11,6 +11,7 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
+using Microsoft.Framework.Notification;
 
 namespace Microsoft.AspNet.Mvc.Core
 {
@@ -24,6 +25,7 @@ namespace Microsoft.AspNet.Mvc.Core
         private readonly IReadOnlyList<IValueProviderFactory> _valueProviderFactories;
         private readonly IActionBindingContextAccessor _actionBindingContextAccessor;
         private readonly ILogger _logger;
+        private readonly INotifier _notifier;
         private readonly int _maxModelValidationErrors;
 
         private IFilterMetadata[] _filters;
@@ -63,6 +65,7 @@ namespace Microsoft.AspNet.Mvc.Core
             [NotNull] IReadOnlyList<IValueProviderFactory> valueProviderFactories,
             [NotNull] IActionBindingContextAccessor actionBindingContextAccessor,
             [NotNull] ILogger logger,
+            [NotNull] INotifier notifier,
             int maxModelValidationErrors)
         {
             ActionContext = actionContext;
@@ -75,6 +78,7 @@ namespace Microsoft.AspNet.Mvc.Core
             _valueProviderFactories = valueProviderFactories;
             _actionBindingContextAccessor = actionBindingContextAccessor;
             _logger = logger;
+            _notifier = notifier;
             _maxModelValidationErrors = maxModelValidationErrors;
         }
 
@@ -127,7 +131,7 @@ namespace Microsoft.AspNet.Mvc.Core
             Debug.Assert(_authorizationContext != null);
             if (_authorizationContext.Result != null)
             {
-                await _authorizationContext.Result.ExecuteResultAsync(ActionContext);
+                await InvokeResultAsync(_authorizationContext.Result);
                 return;
             }
 
@@ -281,7 +285,7 @@ namespace Microsoft.AspNet.Mvc.Core
                                 ResourceFilterShortCircuitLogMessage,
                                 item.FilterAsync.GetType().FullName);
 
-                            await _resourceExecutingContext.Result.ExecuteResultAsync(ActionContext);
+                            await InvokeResultAsync(_resourceExecutingContext.Result);
                         }
 
                         _resourceExecutedContext = new ResourceExecutedContext(_resourceExecutingContext, _filters)
@@ -301,7 +305,7 @@ namespace Microsoft.AspNet.Mvc.Core
 
                         _logger.LogVerbose(ResourceFilterShortCircuitLogMessage, item.Filter.GetType().FullName);
 
-                        await _resourceExecutingContext.Result.ExecuteResultAsync(ActionContext);
+                        await InvokeResultAsync(_resourceExecutingContext.Result);
 
                         _resourceExecutedContext = new ResourceExecutedContext(_resourceExecutingContext, _filters)
                         {
@@ -343,7 +347,7 @@ namespace Microsoft.AspNet.Mvc.Core
                     {
                         // This means that exception filters returned a result to 'handle' an error.
                         // We're not interested in seeing the exception details since it was handled.
-                        await _exceptionContext.Result.ExecuteResultAsync(ActionContext);
+                        await InvokeResultAsync(_exceptionContext.Result);
 
                         _resourceExecutedContext = new ResourceExecutedContext(_resourceExecutingContext, _filters)
                         {
@@ -558,12 +562,35 @@ namespace Microsoft.AspNet.Mvc.Core
                 else
                 {
                     // All action filters have run, execute the action method.
+                    IActionResult result = null;
+
+                    try
+                    {
+                        if (_notifier.ShouldNotify("Microsoft.AspNet.Mvc.BeforeActionMethod"))
+                        {
+                            _notifier.Notify(
+                                "Microsoft.AspNet.Mvc.BeforeActionMethod",
+                                new { actionContext = ActionContext, arguments = _actionExecutingContext.ActionArguments });
+                        }
+
+                        result = await InvokeActionAsync(_actionExecutingContext);
+                    }
+                    finally
+                    {
+                        if (_notifier.ShouldNotify("Microsoft.AspNet.Mvc.AfterActionMethod"))
+                        {
+                            _notifier.Notify(
+                                "Microsoft.AspNet.Mvc.AfterActionMethod",
+                                new { actionContext = ActionContext, result });
+                        }
+                    }
+
                     _actionExecutedContext = new ActionExecutedContext(
                         _actionExecutingContext,
                         _filters,
                         Instance)
                     {
-                        Result = await InvokeActionAsync(_actionExecutingContext),
+                        Result = result
                     };
                 }
             }
@@ -683,7 +710,15 @@ namespace Microsoft.AspNet.Mvc.Core
                 }
                 else
                 {
-                    await InvokeResultAsync();
+                    _cursor.SetStage(FilterStage.ActionResult);
+
+                    // The empty result is always flowed back as the 'executed' result
+                    if (_resultExecutingContext.Result == null)
+                    {
+                        _resultExecutingContext.Result = new EmptyResult();
+                    }
+
+                    await InvokeResultAsync(_resultExecutingContext.Result);
 
                     Debug.Assert(_resultExecutedContext == null);
                     _resultExecutedContext = new ResultExecutedContext(
@@ -708,17 +743,28 @@ namespace Microsoft.AspNet.Mvc.Core
             return _resultExecutedContext;
         }
 
-        private async Task InvokeResultAsync()
+        private async Task InvokeResultAsync(IActionResult result)
         {
-            _cursor.SetStage(FilterStage.ActionResult);
-
-            // The empty result is always flowed back as the 'executed' result
-            if (_resultExecutingContext.Result == null)
+            if (_notifier.ShouldNotify("Microsoft.AspNet.Mvc.BeforeActionResult"))
             {
-                _resultExecutingContext.Result = new EmptyResult();
+                _notifier.Notify(
+                    "Microsoft.AspNet.Mvc.BeforeActionResult",
+                    new { actionContext = ActionContext, result });
             }
 
-            await _resultExecutingContext.Result.ExecuteResultAsync(_resultExecutingContext);
+            try
+            {
+                await result.ExecuteResultAsync(ActionContext);
+            }
+            finally
+            {
+                if (_notifier.ShouldNotify("Microsoft.AspNet.Mvc.AfterActionResult"))
+                {
+                    _notifier.Notify(
+                        "Microsoft.AspNet.Mvc.AfterActionResult",
+                        new { actionContext = ActionContext, result });
+                }
+            }
         }
 
         private enum FilterStage
