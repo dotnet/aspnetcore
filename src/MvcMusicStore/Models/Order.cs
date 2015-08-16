@@ -14,10 +14,10 @@ namespace MvcMusicStore.Models
         }
 
         [ScaffoldColumn(false)]
-        public int? OrderId  { get; set; }
+        public int OrderId  { get; set; }
 
         [ScaffoldColumn(false)]
-        public System.DateTime? OrderDate { get; set; }
+        public System.DateTime OrderDate { get; set; }
 
         [ScaffoldColumn(false)]
         public string Username { get; set; }
@@ -66,7 +66,7 @@ namespace MvcMusicStore.Models
         public string Email { get; set; }
 
         [ScaffoldColumn(false)]
-        public decimal? Total { get; set; }
+        public decimal Total { get; set; }
 
         public List<OrderDetail> OrderDetails { get; set; }
     }

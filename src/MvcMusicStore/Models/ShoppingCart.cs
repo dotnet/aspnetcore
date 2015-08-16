@@ -41,13 +41,13 @@ namespace MvcMusicStore.Models
 
         public async Task AddToCart(Album album)
         {
-            var cartItem = await GetCartItem(album.AlbumId.Value);
+            var cartItem = await GetCartItem(album.AlbumId);
 
             if (cartItem == null)
             {
                 cartItem = new Cart
                 {
-                    AlbumId = album.AlbumId.Value,
+                    AlbumId = album.AlbumId,
                     CartId = _cartId,
                     Count = 1,
                     DateCreated = DateTime.Now
@@ -119,7 +119,7 @@ namespace MvcMusicStore.Models
                 order.OrderDetails.Add(new OrderDetail
                 {
                     AlbumId = item.AlbumId,
-                    OrderId = order.OrderId.Value,
+                    OrderId = order.OrderId,
                     UnitPrice = item.Album.Price,
                     Quantity = item.Count,
                 });
@@ -131,7 +131,7 @@ namespace MvcMusicStore.Models
 
             await EmptyCart();
 
-            return order.OrderId.Value;
+            return order.OrderId;
         }
 
         private async Task EmptyCart()
@@ -142,7 +142,7 @@ namespace MvcMusicStore.Models
                 _storeContext.Carts.Remove(cartItem);
             }
         }
-
+        
         public async Task MigrateCart(string userName)
         {
             var carts = await _storeContext.Carts.Where(c => c.CartId == _cartId).ToListAsync();

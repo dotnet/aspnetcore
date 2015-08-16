@@ -152,7 +152,7 @@ namespace MusicStore.Areas.Admin.Controllers
                 DbContext.Update(album);
                 await DbContext.SaveChangesAsync(requestAborted);
                 //Invalidate the cache entry as it is modified
-                Cache.Remove(GetCacheKey(album.AlbumId.Value));
+                Cache.Remove(GetCacheKey(album.AlbumId));
                 return RedirectToAction("Index");
             }
 

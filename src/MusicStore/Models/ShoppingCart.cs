@@ -36,7 +36,7 @@ namespace MusicStore.Models
                 // Create a new cart item if no cart item exists
                 cartItem = new CartItem
                 {
-                    AlbumId = album.AlbumId.Value,
+                    AlbumId = album.AlbumId,
                     CartId = ShoppingCartId,
                     Count = 1,
                     DateCreated = DateTime.Now
@@ -100,7 +100,7 @@ namespace MusicStore.Models
 
         public async Task<decimal> GetTotal()
         {
-            // Multiply album price by count of that album to get
+            // Multiply album price by count of that album to get 
             // the current price for each of those albums in the cart
             // sum all album price totals to get the cart total
 
@@ -154,7 +154,7 @@ namespace MusicStore.Models
 
             if (cartId == null)
             {
-                //A GUID to hold the cartId.
+                //A GUID to hold the cartId. 
                 cartId = Guid.NewGuid().ToString();
 
                 // Send cart Id as a cookie to the client.

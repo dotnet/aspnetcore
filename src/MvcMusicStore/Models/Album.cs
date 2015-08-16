@@ -2,12 +2,12 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace MvcMusicStore.Models
+namespace MvcMusicStore.Models 
 {
     public class Album {
         [ScaffoldColumn(false)]
 
-        public int? AlbumId { get; set; }
+        public int AlbumId { get; set; }
 
         public int GenreId { get; set; }
 
