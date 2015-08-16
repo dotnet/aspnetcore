@@ -733,9 +733,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             Assert.Equal("<script src=\"HtmlEncode[[/common.js]]\"></script>", output.PostElement.GetContent());
         }
 
-        [ConditionalTheory]
-        // Mono issue - https://github.com/aspnet/External/issues/21
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [Fact]
         public async Task RenderScriptTags_WithFileVersion()
         {
             // Arrange
@@ -772,9 +770,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             Assert.Equal("/js/site.js?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk", output.Attributes["src"].Value);
         }
 
-        [ConditionalTheory]
-        // Mono issue - https://github.com/aspnet/External/issues/21
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [Fact]
         public async Task RenderScriptTags_WithFileVersion_AndRequestPathBase()
         {
             // Arrange
@@ -811,9 +807,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             Assert.Equal("/bar/js/site.js?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk", output.Attributes["src"].Value);
         }
 
-        [ConditionalTheory]
-        // Mono issue - https://github.com/aspnet/External/issues/21
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [Fact]
         public async Task RenderScriptTags_FallbackSrc_WithFileVersion()
         {
             // Arrange
@@ -857,9 +851,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 "<\\/script>\"));</script>", output.PostElement.GetContent());
         }
 
-        [ConditionalTheory]
-        // Mono issue - https://github.com/aspnet/External/issues/21
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [Fact]
         public async Task RenderScriptTags_GlobbedSrc_WithFileVersion()
         {
             // Arrange

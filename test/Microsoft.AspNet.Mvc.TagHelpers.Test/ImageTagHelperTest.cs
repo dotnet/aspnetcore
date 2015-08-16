@@ -135,9 +135,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             }
         }
 
-        [ConditionalTheory]
-        // Mono issue - https://github.com/aspnet/External/issues/21
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [Fact]
         public void RendersImageTag_AddsFileVersion()
         {
             // Arrange
@@ -209,9 +207,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             Assert.Equal("/images/test-image.png", srcAttribute.Value);
         }
 
-        [ConditionalTheory]
-        // Mono issue - https://github.com/aspnet/External/issues/21
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [Fact]
         public void RendersImageTag_AddsFileVersion_WithRequestPathBase()
         {
             // Arrange

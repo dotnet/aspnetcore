@@ -59,12 +59,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [InlineData("AttributesWithBooleanValues", null)]
         public async Task HtmlGenerationWebSite_GeneratesExpectedResults(string action, string antiforgeryPath)
         {
-            // This uses FileVersionProvider which uses Uri.TryCreate - https://github.com/aspnet/External/issues/21
-            if (TestPlatformHelper.IsMono && (action == "Link" || action == "Script" || action == "Image"))
-            {
-                return;
-            }
-
             // Arrange
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
@@ -124,12 +118,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [InlineData("AttributesWithBooleanValues", null)]
         public async Task HtmlGenerationWebSite_GenerateEncodedResults(string action, string antiforgeryPath)
         {
-            // This uses FileVersionProvider which uses Uri.TryCreate - https://github.com/aspnet/External/issues/21
-            if (TestPlatformHelper.IsMono && (action == "Link" || action == "Script"))
-            {
-                return;
-            }
-
             // Arrange
             var server = TestHelper.CreateServer(_app, SiteName, services =>
             {

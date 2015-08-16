@@ -678,9 +678,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 output.PostElement.GetContent());
         }
 
-        [ConditionalTheory]
-        // Mono issue - https://github.com/aspnet/External/issues/21
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [Fact]
         public void RendersLinkTags_AddsFileVersion()
         {
             // Arrange
@@ -720,9 +718,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             Assert.Equal("/css/site.css?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk", output.Attributes["href"].Value);
         }
 
-        [ConditionalTheory]
-        // Mono issue - https://github.com/aspnet/External/issues/21
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [Fact]
         public void RendersLinkTags_AddsFileVersion_WithRequestPathBase()
         {
             // Arrange
@@ -762,9 +758,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             Assert.Equal("/bar/css/site.css?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk", output.Attributes["href"].Value);
         }
 
-        [ConditionalTheory]
-        // Mono issue - https://github.com/aspnet/External/issues/21
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [Fact]
         public void RendersLinkTags_GlobbedHref_AddsFileVersion()
         {
             // Arrange

@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
             }
 
             Uri uri;
-            if (Uri.TryCreate(resolvedPath, UriKind.Absolute, out uri))
+            if (Uri.TryCreate(resolvedPath, UriKind.Absolute, out uri) && !uri.IsFile)
             {
                 // Don't append version if the path is absolute.
                 return path;
