@@ -4,6 +4,7 @@ using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.Net.Http.Server
@@ -12,12 +13,11 @@ namespace Microsoft.Net.Http.Server
     {
         [Theory]
         [InlineData(AuthenticationSchemes.AllowAnonymous)]
-        [InlineData(AuthenticationSchemes.Kerberos)]
         [InlineData(AuthenticationSchemes.Negotiate)]
         [InlineData(AuthenticationSchemes.NTLM)]
         // [InlineData(AuthenticationSchemes.Digest)]
         [InlineData(AuthenticationSchemes.Basic)]
-        [InlineData(AuthenticationSchemes.Kerberos | AuthenticationSchemes.Negotiate | AuthenticationSchemes.NTLM | /*AuthenticationSchemes.Digest |*/ AuthenticationSchemes.Basic)]
+        [InlineData(AuthenticationSchemes.Negotiate | AuthenticationSchemes.NTLM | /*AuthenticationSchemes.Digest |*/ AuthenticationSchemes.Basic)]
         public async Task AuthTypes_AllowAnonymous_NoChallenge(AuthenticationSchemes authType)
         {
             string address;
@@ -45,7 +45,6 @@ namespace Microsoft.Net.Http.Server
         }
 
         [Theory]
-        [InlineData(AuthenticationSchemes.Kerberos)]
         [InlineData(AuthenticationSchemes.Negotiate)]
         [InlineData(AuthenticationSchemes.NTLM)]
         // [InlineData(AuthenticationType.Digest)] // TODO: Not implemented
@@ -66,7 +65,6 @@ namespace Microsoft.Net.Http.Server
         }
 
         [Theory]
-        [InlineData(AuthenticationSchemes.Kerberos)]
         [InlineData(AuthenticationSchemes.Negotiate)]
         [InlineData(AuthenticationSchemes.NTLM)]
         // [InlineData(AuthenticationSchemes.Digest)] // TODO: Not implemented
@@ -96,8 +94,7 @@ namespace Microsoft.Net.Http.Server
         {
             string address;
             AuthenticationSchemes authType =
-                AuthenticationSchemes.Kerberos
-                | AuthenticationSchemes.Negotiate
+                AuthenticationSchemes.Negotiate
                 | AuthenticationSchemes.NTLM
                 /* | AuthenticationSchemes.Digest TODO: Not implemented */
                 | AuthenticationSchemes.Basic;
@@ -114,17 +111,16 @@ namespace Microsoft.Net.Http.Server
 
                 var response = await responseTask;
                 Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-                Assert.Equal("Kerberos, Negotiate, NTLM, basic", response.Headers.WwwAuthenticate.ToString(), StringComparer.OrdinalIgnoreCase);
+                Assert.Equal("Negotiate, NTLM, basic", response.Headers.WwwAuthenticate.ToString(), StringComparer.OrdinalIgnoreCase);
             }
         }
 
         [Theory]
-        [InlineData(AuthenticationSchemes.Kerberos)]
         [InlineData(AuthenticationSchemes.Negotiate)]
         [InlineData(AuthenticationSchemes.NTLM)]
         // [InlineData(AuthenticationSchemes.Digest)] // TODO: Not implemented
         // [InlineData(AuthenticationSchemes.Basic)] // Doesn't work with default creds
-        [InlineData(AuthenticationSchemes.Kerberos | AuthenticationSchemes.Negotiate | AuthenticationSchemes.NTLM | /*AuthenticationType.Digest |*/ AuthenticationSchemes.Basic)]
+        [InlineData(AuthenticationSchemes.Negotiate | AuthenticationSchemes.NTLM | /*AuthenticationType.Digest |*/ AuthenticationSchemes.Basic)]
         public async Task AuthTypes_AllowAnonymousButSpecify401_Success(AuthenticationSchemes authType)
         {
             string address;
@@ -151,12 +147,11 @@ namespace Microsoft.Net.Http.Server
         }
 
         [Theory]
-        [InlineData(AuthenticationSchemes.Kerberos)]
         [InlineData(AuthenticationSchemes.Negotiate)]
         [InlineData(AuthenticationSchemes.NTLM)]
         // [InlineData(AuthenticationSchemes.Digest)] // TODO: Not implemented
         // [InlineData(AuthenticationSchemes.Basic)] // Doesn't work with default creds
-        [InlineData(AuthenticationSchemes.Kerberos | AuthenticationSchemes.Negotiate | AuthenticationSchemes.NTLM | /*AuthenticationType.Digest |*/ AuthenticationSchemes.Basic)]
+        [InlineData(AuthenticationSchemes.Negotiate | AuthenticationSchemes.NTLM | /*AuthenticationType.Digest |*/ AuthenticationSchemes.Basic)]
         public async Task AuthTypes_RequireAuth_Success(AuthenticationSchemes authType)
         {
             string address;
@@ -172,6 +167,48 @@ namespace Microsoft.Net.Http.Server
 
                 var response = await responseTask;
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            }
+        }
+
+        [ConditionalTheory]
+        [SkipOffDomain]
+        public async Task AuthTypes_RequireKerberosAuth_Success()
+        {
+            string address;
+            using (var server = Utilities.CreateHttpAuthServer(AuthenticationSchemes.Kerberos, out address))
+            {
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address, useDefaultCredentials: true);
+
+                var context = await server.GetContextAsync();
+                Assert.NotNull(context.User);
+                Assert.True(context.User.Identity.IsAuthenticated);
+                Assert.Equal(AuthenticationSchemes.Kerberos, context.AuthenticationChallenges);
+                context.Dispose();
+
+                var response = await responseTask;
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            }
+        }
+
+        [ConditionalTheory]
+        [SkipOffDomain]
+        public async Task MultipleAuthTypes_KerberosAllowAnonymousButSpecify401_ChallengesAdded()
+        {
+            string address;
+            using (var server = Utilities.CreateHttpAuthServer(AuthenticationSchemes.Kerberos | AuthenticationSchemes.AllowAnonymous, out address))
+            {
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
+
+                var context = await server.GetContextAsync();
+                Assert.NotNull(context.User);
+                Assert.False(context.User.Identity.IsAuthenticated);
+                Assert.Equal(AuthenticationSchemes.Kerberos, context.AuthenticationChallenges);
+                context.Response.StatusCode = 401;
+                context.Dispose();
+
+                var response = await responseTask;
+                Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+                Assert.Equal("Kerberos", response.Headers.WwwAuthenticate.ToString(), StringComparer.OrdinalIgnoreCase);
             }
         }
 
