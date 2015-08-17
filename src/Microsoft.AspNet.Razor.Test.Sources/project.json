@@ -1,4 +1,4 @@
-﻿{
+{
   "version": "4.0.0-*",
   "shared": "*.cs",
   "dependencies": { },
@@ -6,7 +6,7 @@
     "net45": { },
     "dotnet": {
       "dependencies": {
-        "System.Runtime": "4.0.20-*"
+        "System.Runtime": "4.0.21-beta-*"
       }
     }
   }
