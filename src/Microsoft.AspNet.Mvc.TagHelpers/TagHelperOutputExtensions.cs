@@ -23,9 +23,17 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// <param name="tagHelperOutput">The <see cref="TagHelperOutput"/> this method extends.</param>
         /// <param name="attributeName">The name of the bound attribute.</param>
         /// <param name="context">The <see cref="TagHelperContext"/>.</param>
-        /// <remarks>Only copies the attribute if <paramref name="tagHelperOutput"/>'s
+        /// <remarks>
+        /// <para>
+        /// Only copies the attribute if <paramref name="tagHelperOutput"/>'s
         /// <see cref="TagHelperOutput.Attributes"/> does not contain an attribute with the given
-        /// <paramref name="attributeName"/>.</remarks>
+        /// <paramref name="attributeName"/>.
+        /// </para>
+        /// <para>
+        /// Duplicate attributes same name in <paramref name="context"/>'s <see cref="TagHelperContext.AllAttributes"/>
+        /// or <paramref name="tagHelperOutput"/>'s <see cref="TagHelperOutput.Attributes"/> may result in copied
+        /// attribute order not being maintained.
+        /// </para></remarks>
         public static void CopyHtmlAttribute(
             [NotNull] this TagHelperOutput tagHelperOutput,
             [NotNull] string attributeName,
@@ -33,20 +41,29 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             if (!tagHelperOutput.Attributes.ContainsName(attributeName))
             {
-                IEnumerable<IReadOnlyTagHelperAttribute> entries;
+                var copiedAttribute = false;
 
-                // We look for the original attribute so we can restore the exact attribute name the user typed.
-                // Approach also ignores changes made to tagHelperOutput[attributeName].
-                if (!context.AllAttributes.TryGetAttributes(attributeName, out entries))
+                // We iterate context.AllAttributes backwards since we prioritize TagHelperOutput values occurring
+                // before the current context.AllAttribtes[i].
+                for (var i = context.AllAttributes.Count - 1; i >= 0; i--)
+                {
+                    // We look for the original attribute so we can restore the exact attribute name the user typed in
+                    // approximately the same position where the user wrote it in the Razor source.
+                    if (string.Equals(
+                        attributeName,
+                        context.AllAttributes[i].Name,
+                        StringComparison.OrdinalIgnoreCase))
+                    {
+                        CopyHtmlAttribute(i, tagHelperOutput, context);
+                        copiedAttribute = true;
+                    }
+                }
+
+                if (!copiedAttribute)
                 {
                     throw new ArgumentException(
                         Resources.FormatTagHelperOutput_AttributeDoesNotExist(attributeName, nameof(TagHelperContext)),
                         nameof(attributeName));
-                }
-
-                foreach (var entry in entries)
-                {
-                    tagHelperOutput.Attributes.Add(entry.Name, entry.Value);
                 }
             }
         }
@@ -99,6 +116,62 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             {
                 tagHelperOutput.Attributes.Remove(attribute);
             }
+        }
+
+        private static void CopyHtmlAttribute(
+            int allAttributeIndex,
+            TagHelperOutput tagHelperOutput,
+            TagHelperContext context)
+        {
+            var existingAttribute = context.AllAttributes[allAttributeIndex];
+            var copiedAttribute = new TagHelperAttribute
+            {
+                Name = existingAttribute.Name,
+                Value = existingAttribute.Value,
+                Minimized = existingAttribute.Minimized
+            };
+
+            // Move backwards through context.AllAttributes from the provided index until we find a familiar attribute
+            // in tagHelperOutput where we can insert the copied value after the familiar one.
+            for (var i = allAttributeIndex - 1; i >= 0; i--)
+            {
+                var previousName = context.AllAttributes[i].Name;
+                var index = IndexOfFirstMatch(previousName, tagHelperOutput.Attributes);
+                if (index != -1)
+                {
+                    tagHelperOutput.Attributes.Insert(index + 1, copiedAttribute);
+                    return;
+                }
+            }
+
+            // Move forward through context.AllAttributes from the provided index until we find a familiar attribute in
+            // tagHelperOutput where we can insert the copied value.
+            for (var i = allAttributeIndex + 1; i < context.AllAttributes.Count; i++)
+            {
+                var nextName = context.AllAttributes[i].Name;
+                var index = IndexOfFirstMatch(nextName, tagHelperOutput.Attributes);
+                if (index != -1)
+                {
+                    tagHelperOutput.Attributes.Insert(index, copiedAttribute);
+                    return;
+                }
+            }
+
+            // Couldn't determine the attribute's location, add it to the end.
+            tagHelperOutput.Attributes.Add(copiedAttribute);
+        }
+
+        private static int IndexOfFirstMatch(string name, TagHelperAttributeList attributes)
+        {
+            for (var i = 0; i < attributes.Count; i++)
+            {
+                if (string.Equals(name, attributes[i].Name, StringComparison.OrdinalIgnoreCase))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
         }
     }
 }

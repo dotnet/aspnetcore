@@ -589,8 +589,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             // Assert
             Assert.Equal("data-extra", output.Attributes[0].Name);
-            Assert.Equal("data-more", output.Attributes[1].Name);
-            Assert.Equal("src", output.Attributes[2].Name);
+            Assert.Equal("src", output.Attributes[1].Name);
+            Assert.Equal("data-more", output.Attributes[2].Name);
             Assert.Empty(logger.Logged);
         }
 

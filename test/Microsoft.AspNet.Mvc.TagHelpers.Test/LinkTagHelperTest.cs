@@ -388,8 +388,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             // Assert
             Assert.Equal("rel", output.Attributes[0].Name);
-            Assert.Equal("data-extra", output.Attributes[1].Name);
-            Assert.Equal("href", output.Attributes[2].Name);
+            Assert.Equal("href", output.Attributes[1].Name);
+            Assert.Equal("data-extra", output.Attributes[2].Name);
         }
 
         public static TheoryData DoesNotRunWhenARequiredAttributeIsMissing_Data

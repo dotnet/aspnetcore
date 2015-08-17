@@ -10,15 +10,15 @@
         // Regular script with comment in body, and extra properties.
     </script>
 
-    <script data-foo="foo-data2" title="&lt;the title>" src="HtmlEncode[[/blank.js?a=b&c=d]]">
+    <script src="HtmlEncode[[/blank.js?a=b&c=d]]" data-foo="foo-data2" title="&lt;the title>">
         // TagHelper script with comment in body, and extra properties.
     </script>
-<script>(false||document.write("<script JavaScriptEncode[[data-foo]]=\"JavaScriptEncode[[foo-data2]]\" JavaScriptEncode[[title]]=\"JavaScriptEncode[[&lt;the title>]]\" src=\"JavaScriptEncode[[/site.js?a=b&c=d]]\"><\/script>"));</script>
+<script>(false||document.write("<script src=\"JavaScriptEncode[[/site.js?a=b&c=d]]\" JavaScriptEncode[[data-foo]]=\"JavaScriptEncode[[foo-data2]]\" JavaScriptEncode[[title]]=\"JavaScriptEncode[[&lt;the title>]]\"><\/script>"));</script>
 
-    <script title="&quot;the&quot; title" src="HtmlEncode[[/blank.js]]">
+    <script src="HtmlEncode[[/blank.js]]" title="&quot;the&quot; title">
         // Fallback to globbed src
     </script>
-<script>(false||document.write("<script JavaScriptEncode[[title]]=\"JavaScriptEncode[["the" title]]\" src=\"JavaScriptEncode[[/site.js]]\"><\/script>"));</script>
+<script>(false||document.write("<script src=\"JavaScriptEncode[[/site.js]]\" JavaScriptEncode[[title]]=\"JavaScriptEncode[["the" title]]\"><\/script>"));</script>
 
     <script src="HtmlEncode[[/blank.js]]">
         // Fallback to globbed src with exclude

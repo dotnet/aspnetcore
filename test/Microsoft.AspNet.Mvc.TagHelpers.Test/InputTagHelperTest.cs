@@ -536,8 +536,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedAttributes = new TagHelperAttributeList
             {
                 { "class", "form-control radio-control" },
-                { "type", inputTypeName ?? "radio" },       // Generator restores type attribute; adds "radio" if none.
                 { "value", value },
+                { "type", inputTypeName ?? "radio" },       // Generator restores type attribute; adds "radio" if none.
             };
             var expectedPreContent = "original pre-content";
             var expectedContent = "original content";
