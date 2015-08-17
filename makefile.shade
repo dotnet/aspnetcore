@@ -119,7 +119,8 @@ var buildTarget = "compile"
         }
     }
 
-#check-update-release
+#update-release
+    -// Merge dev branch to release
     @{
         Parallel.ForEach(GetAllRepos(), CloneOrUpdate);
 
@@ -128,27 +129,48 @@ var buildTarget = "compile"
         foreach (var repo in GetAllRepos())
         {
             Log.Info("Checking repo: " + repo);
-            GitCommand(repo, "log origin/dev..origin/release");
+            // Check if the repo previously had a release branch
+            try
+            {
+                GitCommand(repo, "rev-parse --verify --quiet origin/release");
+            }
+            catch
+            {
+                Log.Info("Repository " + repo + " does not have a release branch.");
+                continue;
+            }
+
+            try
+            {
+                GitCommand(repo, "log -1 --exit-code origin/dev..origin/release");
+            }
+            catch
+            {
+                Log.Warn("Unmerged changes in repository " + repo);
+                GitCommand(repo, "log origin/dev..origin/release");
+                throw;
+            }
         }
 
-        Log.Info("If there are no conflicts in the repos, continue with the 'update-release' target");
-    }
-
-#update-release
-    -// Merge dev branch to release
-    @{
+        Log.Info("No conflicts in repos, continuing with creating release branch.");
+    
         foreach (var repo in GetAllRepos())
         {
-            CloneOrUpdate(repo);
-
             GitCommand(repo, "checkout origin/dev -B release");
-
-            if(!ShouldSkipCopyingNugetConfig(repo))
+            
+            // Update NuGet.Config
+            var nugetConfigPath = Path.Combine(repo, "NuGet.config");
+            if (File.Exists(nugetConfigPath))
             {
-                File.Copy(Path.Combine("build-template", "NuGet.release.config"),
-                          Path.Combine(repo, "NuGet.config"),
-                          overwrite: true);
-                GitCommand(repo, "commit -am \"Updating to release NuGet.config\"");
+                var original = File.ReadAllText(nugetConfigPath);
+                var modified = original.Replace("https://www.myget.org/F/aspnetvnext", "https://www.myget.org/F/aspnetrelease");
+
+                if (!string.Equals(original, modified, StringComparison.Ordinal))
+                {
+                    File.WriteAllText(nugetConfigPath, modified);
+                    GitCommand(repo, "add NuGet.Config");
+                    GitCommand(repo, "commit -m \"Updating to release NuGet.config.\"");
+                }
             }
 
             GitCommand(repo, "push origin release:release");
@@ -540,7 +562,7 @@ functions
         {
             var nonDefaultRepos = new[]
             {
-              "XRE",
+              "DNX",
               "MusicStore",
               "Coherence",
               "Coherence-Signed",
