@@ -176,10 +176,13 @@
                     <tbody>
                         @foreach (var kv in Model.Cookies.OrderBy(kv => kv.Key))
                         {
-                            <tr>
-                                <td>@kv.Key</td>
-                                <td>@kv.Value</td>
-                            </tr>
+                            foreach (var v in kv.Value)
+                            {
+                                <tr>
+                                    <td>@kv.Key</td>
+                                    <td>@v</td>
+                                </tr>
+                            }
                         }
                     </tbody>
                 </table>
