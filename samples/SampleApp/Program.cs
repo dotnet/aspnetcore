@@ -17,7 +17,7 @@ namespace SampleApp
         public void Main(string[] args)
         {
             new Microsoft.AspNet.Hosting.Program(_services).Main(new[] {
-                "--server","kestrel"
+                "--server", "Microsoft.AspNet.Server.Kestrel"
             });
         }
     }
