@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Net;
@@ -10,19 +9,14 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics.Entity.FunctionalTests.Helpers;
+using Microsoft.AspNet.Diagnostics.Entity.Tests.Helpers;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.TestHost;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Infrastructure;
-using Microsoft.Data.Entity.Internal;
-using Microsoft.Data.Entity.Migrations;
-using Microsoft.Data.Entity.Migrations.Infrastructure;
-using Microsoft.Data.Entity.Storage;
-using Microsoft.Data.Entity.Utilities;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
 using Xunit;
-using Microsoft.AspNet.Diagnostics.Entity.Tests.Helpers;
 
 namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 {
@@ -162,7 +156,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
             {
                 using (var db = context.ApplicationServices.GetService<BloggingContextWithPendingModelChanges>())
                 {
-                    db.Database.ApplyMigrations();
+                    db.Database.Migrate();
 
                     db.Blogs.Add(new Blog());
                     db.SaveChanges();

@@ -4,9 +4,9 @@
 using System;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Infrastructure;
+using Microsoft.Data.Entity.Metadata;
 using Microsoft.Data.Entity.Migrations;
-using Microsoft.Data.Entity.Migrations.Builders;
-using Microsoft.Data.Entity.Migrations.Infrastructure;
+using Microsoft.Data.Entity.SqlServer.Metadata;
 
 namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 {
@@ -26,10 +26,10 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
             return new BloggingContextWithMigrations(options);
         }
 
-        [ContextType(typeof(BloggingContextWithMigrations))]
+        [DbContext(typeof(BloggingContextWithMigrations))]
         public class BloggingContextWithMigrationsModelSnapshot : ModelSnapshot
         {
-            public override void BuildModel(ModelBuilder builder)
+            protected override void BuildModel(ModelBuilder builder)
             {
                 builder.Entity("Blogging.Models.Blog", b =>
                 {
@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
             }
         }
 
-        [ContextType(typeof(BloggingContextWithMigrations))]
+        [DbContext(typeof(BloggingContextWithMigrations))]
         public class MigrationOne : Migration
         {
             public override string Id
@@ -48,34 +48,26 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
                 get { return "111111111111111_MigrationOne"; }
             }
 
-            public override string ProductVersion
-            {
-                get { return CurrentProductVersion; }
-            }
+            public override IModel TargetModel => new BloggingContextWithMigrationsModelSnapshot().Model;
 
-            public override void BuildTargetModel(ModelBuilder modelBuilder)
-            {
-                new BloggingContextWithMigrationsModelSnapshot().BuildModel(modelBuilder);
-            }
-
-            public override void Up(MigrationBuilder migrationBuilder)
+            protected override void Up(MigrationBuilder migrationBuilder)
             {
                 migrationBuilder.CreateTable("Blog",
                 c => new
                 {
-                    BlogId = c.Column<string>("int").Annotation("SqlServer:ValueGeneration", "Identity"),
-                    Name = c.Column<string>("nvarchar(max)", nullable: true),
+                    BlogId = c.Column<int>().Annotation("SqlServer:ValueGenerationStrategy", SqlServerIdentityStrategy.IdentityColumn),
+                    Name = c.Column<string>(isNullable: true),
                 })
                 .PrimaryKey("PK_Blog", t => t.BlogId);
             }
 
-            public override void Down(MigrationBuilder migrationBuilder)
+            protected override void Down(MigrationBuilder migrationBuilder)
             {
                 migrationBuilder.DropTable("Blog");
             }
         }
 
-        [ContextType(typeof(BloggingContextWithMigrations))]
+        [DbContext(typeof(BloggingContextWithMigrations))]
         public class MigrationTwo : Migration
         {
             public override string Id
@@ -83,20 +75,9 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
                 get { return "222222222222222_MigrationTwo"; }
             }
 
-            public override string ProductVersion
-            {
-                get { return CurrentProductVersion; }
-            }
+            public override IModel TargetModel => new BloggingContextWithMigrationsModelSnapshot().Model;
 
-            public override void BuildTargetModel(ModelBuilder modelBuilder)
-            {
-                new BloggingContextWithMigrationsModelSnapshot().BuildModel(modelBuilder);
-            }
-
-            public override void Up(MigrationBuilder migrationBuilder)
-            { }
-
-            public override void Down(MigrationBuilder migrationBuilder)
+            protected override void Up(MigrationBuilder migrationBuilder)
             { }
         }
     }

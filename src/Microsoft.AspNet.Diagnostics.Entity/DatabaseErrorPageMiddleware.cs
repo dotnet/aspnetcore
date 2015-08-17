@@ -80,11 +80,19 @@ namespace Microsoft.AspNet.Diagnostics.Entity
                             {
                                 var databaseExists = creator.Exists();
 
-                                var migrator = dbContext.GetService<IMigrator>();
+                                var historyRepository = dbContext.GetService<IHistoryRepository>();
+                                var migrationsAssembly = dbContext.GetService<IMigrationsAssembly>();
+                                var modelDiffer = dbContext.GetService<IMigrationsModelDiffer>();
 
-                                var pendingMigrations = migrator.GetUnappliedMigrations().Select(m => m.Id);
+                                var appliedMigrations = historyRepository.GetAppliedMigrations();
+                                var pendingMigrations = (
+                                        from m in migrationsAssembly.Migrations
+                                        where !appliedMigrations.Any(
+                                            r => string.Equals(r.MigrationId, m.Id, StringComparison.OrdinalIgnoreCase))
+                                        select m.Id)
+                                    .ToList();
 
-                                var pendingModelChanges = migrator.HasPendingModelChanges();
+                                var pendingModelChanges = modelDiffer.HasDifferences(migrationsAssembly.ModelSnapshot?.Model, dbContext.Model);
 
                                 if ((!databaseExists && pendingMigrations.Any()) || pendingMigrations.Any() || pendingModelChanges)
                                 {

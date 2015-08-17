@@ -5,8 +5,6 @@ using System;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Infrastructure;
 using Microsoft.Data.Entity.Migrations;
-using Microsoft.Data.Entity.Migrations.Builders;
-using Microsoft.Data.Entity.Migrations.Infrastructure;
 
 namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 {
@@ -16,15 +14,15 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
             : base(provider, options)
         { }
 
-        [ContextType(typeof(BloggingContextWithPendingModelChanges))]
+        [DbContext(typeof(BloggingContextWithPendingModelChanges))]
         public class BloggingModelSnapshot : ModelSnapshot
         {
-            public override void BuildModel(ModelBuilder modelBuilder)
+            protected override void BuildModel(ModelBuilder modelBuilder)
             {
             }
         }
 
-        [ContextType(typeof(BloggingContextWithPendingModelChanges))]
+        [DbContext(typeof(BloggingContextWithPendingModelChanges))]
         public partial class MigrationOne : Migration
         {
             public override string Id
@@ -32,19 +30,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
                 get { return "111111111111111_MigrationOne"; }
             }
 
-            public override string ProductVersion
-            {
-                get { return CurrentProductVersion; }
-            }
-
-            public override void BuildTargetModel(ModelBuilder modelBuilder)
-            {
-            }
-
-            public override void Up(MigrationBuilder migrationBuilder)
-            { }
-
-            public override void Down(MigrationBuilder migrationBuilder)
+            protected override void Up(MigrationBuilder migrationBuilder)
             { }
         }
     }
