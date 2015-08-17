@@ -133,7 +133,7 @@ namespace Microsoft.AspNet.Mvc.Core
         {
             // Arrange
             var vdd = new ViewDataDictionary(new EmptyModelMetadataProvider());
-            
+
             // Act
             vdd.Model = model;
 
@@ -257,12 +257,15 @@ namespace Microsoft.AspNet.Mvc.Core
         {
             get
             {
-                // Instances in this data set must have exactly the same type as the corresponding Type. Otherwise
-                // the copy constructor ignores the source ModelMetadata.
+                // Instances in this data set must have exactly the same type as the corresponding Type or be null.
+                // Otherwise the copy constructor ignores the source ModelMetadata.
                 return new TheoryData<Type, object>
                 {
                     { typeof(int), 23 },
+                    { typeof(ulong?), 24ul },
+                    { typeof(ushort?), null },
                     { typeof(string), "hello" },
+                    { typeof(string), null },
                     { typeof(List<string>), new List<string>() },
                     { typeof(string[]), new string[0] },
                     { typeof(Dictionary<string, object>), new Dictionary<string, object>() },
@@ -357,6 +360,33 @@ namespace Microsoft.AspNet.Mvc.Core
             Assert.Equal(5, viewData.ModelExplorer.Model);
             Assert.Same(originalMetadata, viewData.ModelMetadata);
             Assert.NotSame(originalExplorer, viewData.ModelExplorer);
+        }
+
+        [Fact]
+        public void ModelSetter_SetNullableNonNull_UpdatesModelExplorer()
+        {
+            // Arrange
+            var metadataProvider = new EmptyModelMetadataProvider();
+            var metadata = metadataProvider.GetMetadataForType(typeof(bool?));
+            var explorer = new ModelExplorer(metadataProvider, metadata, model: null);
+            var viewData = new ViewDataDictionary(metadataProvider)
+            {
+                ModelExplorer = explorer,
+            };
+
+            // Act
+            viewData.Model = true;
+
+            // Assert
+            Assert.NotNull(viewData.ModelMetadata);
+            Assert.NotNull(viewData.ModelExplorer);
+            Assert.Same(metadata, viewData.ModelMetadata);
+            Assert.Same(metadata.ModelType, explorer.ModelType);
+            Assert.NotSame(explorer, viewData.ModelExplorer);
+            Assert.Equal(viewData.Model, viewData.ModelExplorer.Model);
+
+            var model = Assert.IsType<bool>(viewData.Model);
+            Assert.True(model);
         }
 
         [Fact]

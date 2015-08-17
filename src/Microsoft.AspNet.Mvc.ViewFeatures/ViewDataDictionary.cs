@@ -186,7 +186,9 @@ namespace Microsoft.AspNet.Mvc
         {
             // This is the core constructor called when Model is known.
             var modelType = GetModelType(model);
-            if (modelType == source.ModelMetadata.ModelType && model == source.ModelExplorer.Model)
+            var metadataModelType =
+                Nullable.GetUnderlyingType(source.ModelMetadata.ModelType) ?? source.ModelMetadata.ModelType;
+            if (modelType == metadataModelType && model == source.ModelExplorer.Model)
             {
                 // Preserve any customizations made to source.ModelExplorer.ModelMetadata if the Type
                 // that will be calculated in SetModel() and source.Model match new instance's values.
@@ -384,7 +386,13 @@ namespace Microsoft.AspNet.Mvc
             // null. When called from the Model setter, ModelMetadata will (temporarily) be null. When called from
             // a constructor, current ModelMetadata may already be set to preserve customizations made in parent scope.
             var modelType = GetModelType(value);
-            if (ModelExplorer?.Metadata.ModelType != modelType)
+            Type metadataModelType = null;
+            if (ModelExplorer != null)
+            {
+                metadataModelType = Nullable.GetUnderlyingType(ModelMetadata.ModelType) ?? ModelMetadata.ModelType;
+            }
+
+            if (metadataModelType != modelType)
             {
                 ModelExplorer = _metadataProvider.GetModelExplorerForType(modelType, value);
             }
