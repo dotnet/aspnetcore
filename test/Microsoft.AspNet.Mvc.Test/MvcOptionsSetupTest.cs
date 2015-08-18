@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Mvc
 
             // Assert
             var i = 0;
-            Assert.Equal(13, options.ModelBinders.Count);
+            Assert.Equal(12, options.ModelBinders.Count);
             Assert.IsType(typeof(BinderTypeBasedModelBinder), options.ModelBinders[i++]);
             Assert.IsType(typeof(ServicesModelBinder), options.ModelBinders[i++]);
             Assert.IsType(typeof(BodyModelBinder), options.ModelBinders[i++]);
@@ -52,7 +52,6 @@ namespace Microsoft.AspNet.Mvc
             Assert.IsType(typeof(FormCollectionModelBinder), options.ModelBinders[i++]);
             Assert.IsType(typeof(GenericModelBinder), options.ModelBinders[i++]);
             Assert.IsType(typeof(MutableObjectModelBinder), options.ModelBinders[i++]);
-            Assert.IsType(typeof(ComplexModelDtoModelBinder), options.ModelBinders[i++]);
         }
 
         [Fact]

@@ -433,7 +433,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 new TypeConverterModelBinder(),
                 new TypeMatchModelBinder(),
                 new MutableObjectModelBinder(),
-                new ComplexModelDtoModelBinder(),
             };
 
             return new CompositeModelBinder(binders);

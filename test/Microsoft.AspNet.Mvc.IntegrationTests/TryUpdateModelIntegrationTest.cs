@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
@@ -16,10 +15,12 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
         private class Address
         {
             public string Street { get; set; }
+
+            public string City { get; set; }
         }
 
         [Fact]
-        public async Task TryUpdateModel_ExistingModel_EmptyPrefix_GetsOverWritten()
+        public async Task TryUpdateModel_ExistingModel_EmptyPrefix_OverwritesBoundValues()
         {
             // Arrange
             var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
@@ -28,7 +29,11 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             });
 
             var modelState = new ModelStateDictionary();
-            var model = new Address { Street = "DefaultStreet" };
+            var model = new Address
+            {
+                Street = "DefaultStreet",
+                City = "Toronto",
+            };
             var oldModel = model;
 
             // Act
@@ -40,17 +45,19 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             // Model
             Assert.Same(oldModel, model);
             Assert.Equal("SomeStreet", model.Street);
+            Assert.Equal("Toronto", model.City);
 
             // ModelState
             Assert.True(modelState.IsValid);
 
-            Assert.Equal(1, modelState.Keys.Count);
-            var key = Assert.Single(modelState.Keys, k => k == "Street");
-            Assert.NotNull(modelState[key].Value);
-            Assert.Equal("SomeStreet", modelState[key].Value.AttemptedValue);
-            Assert.Equal("SomeStreet", modelState[key].Value.RawValue);
-            Assert.Empty(modelState[key].Errors);
-            Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState);
+            var entry = Assert.Single(modelState);
+            Assert.Equal("Street", entry.Key);
+            var state = entry.Value;
+            Assert.NotNull(state.Value);
+            Assert.Equal("SomeStreet", state.Value.AttemptedValue);
+            Assert.Equal("SomeStreet", state.Value.RawValue);
+            Assert.Empty(state.Errors);
+            Assert.Equal(ModelValidationState.Valid, state.ValidationState);
         }
 
         [Fact]
@@ -64,6 +71,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             var modelState = new ModelStateDictionary();
             var model = new Address();
+
             // Act
             var result = await TryUpdateModel(model, string.Empty, operationContext, modelState);
 
@@ -72,17 +80,72 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             // Model
             Assert.Equal("SomeStreet", model.Street);
+            Assert.Null(model.City);
 
             // ModelState
             Assert.True(modelState.IsValid);
 
-            Assert.Equal(1, modelState.Keys.Count);
-            var key = Assert.Single(modelState.Keys, k => k == "Street");
-            Assert.NotNull(modelState[key].Value);
-            Assert.Equal("SomeStreet", modelState[key].Value.AttemptedValue);
-            Assert.Equal("SomeStreet", modelState[key].Value.RawValue);
-            Assert.Empty(modelState[key].Errors);
-            Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState);
+            var entry = Assert.Single(modelState);
+            Assert.Equal("Street", entry.Key);
+            var state = entry.Value;
+            Assert.NotNull(state.Value);
+            Assert.Equal("SomeStreet", state.Value.AttemptedValue);
+            Assert.Equal("SomeStreet", state.Value.RawValue);
+            Assert.Empty(state.Errors);
+            Assert.Equal(ModelValidationState.Valid, state.ValidationState);
+        }
+
+        private class Person1
+        {
+            public string Name { get; set; }
+
+            public Address Address { get; set; }
+        }
+
+        [Fact]
+        public async Task TryUpdateModel_NestedPoco_EmptyPrefix_DoesNotTrounceUnboundValues()
+        {
+            // Arrange
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            {
+                request.QueryString = QueryString.Create("Address.Street", "SomeStreet");
+            });
+
+            var modelState = new ModelStateDictionary();
+            var model = new Person1
+            {
+                Name = "Joe",
+                Address = new Address
+                {
+                    Street = "DefaultStreet",
+                    City = "Toronto",
+                },
+            };
+            var oldModel = model;
+
+            // Act
+            var result = await TryUpdateModel(model, string.Empty, operationContext, modelState);
+
+            // Assert
+            Assert.True(result);
+
+            // Model
+            Assert.Same(oldModel, model);
+            Assert.Equal("Joe", model.Name);
+            Assert.Equal("SomeStreet", model.Address.Street);
+            Assert.Equal("Toronto", model.Address.City);
+
+            // ModelState
+            Assert.True(modelState.IsValid);
+
+            var entry = Assert.Single(modelState);
+            Assert.Equal("Address.Street", entry.Key);
+            var state = entry.Value;
+            Assert.NotNull(state.Value);
+            Assert.Equal("SomeStreet", state.Value.AttemptedValue);
+            Assert.Equal("SomeStreet", state.Value.RawValue);
+            Assert.Empty(state.Errors);
+            Assert.Equal(ModelValidationState.Valid, state.ValidationState);
         }
 
         private class Person2
@@ -91,7 +154,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task TryUpdateModel_SettableCollectionModel_EmptyPrefix_GetsBound()
+        public async Task TryUpdateModel_SettableCollectionModel_EmptyPrefix_CreatesCollection()
         {
             // Arrange
             var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
@@ -101,6 +164,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             var modelState = new ModelStateDictionary();
             var model = new Person2();
+
             // Act
             var result = await TryUpdateModel(model, string.Empty, operationContext, modelState);
 
@@ -111,17 +175,61 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.NotNull(model.Address);
             Assert.Equal(1, model.Address.Count);
             Assert.Equal("SomeStreet", model.Address[0].Street);
+            Assert.Null(model.Address[0].City);
 
             // ModelState
             Assert.True(modelState.IsValid);
 
-            Assert.Equal(1, modelState.Keys.Count);
-            var key = Assert.Single(modelState.Keys, k => k == "Address[0].Street");
-            Assert.NotNull(modelState[key].Value);
-            Assert.Equal("SomeStreet", modelState[key].Value.AttemptedValue);
-            Assert.Equal("SomeStreet", modelState[key].Value.RawValue);
-            Assert.Empty(modelState[key].Errors);
-            Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState);
+            var entry = Assert.Single(modelState);
+            Assert.Equal("Address[0].Street", entry.Key);
+            var state = entry.Value;
+            Assert.NotNull(state.Value);
+            Assert.Equal("SomeStreet", state.Value.AttemptedValue);
+            Assert.Equal("SomeStreet", state.Value.RawValue);
+            Assert.Empty(state.Errors);
+            Assert.Equal(ModelValidationState.Valid, state.ValidationState);
+        }
+
+        [Fact]
+        public async Task TryUpdateModel_SettableCollectionModel_EmptyPrefix_MaintainsCollectionIfNonNull()
+        {
+            // Arrange
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            {
+                request.QueryString = QueryString.Create("Address[0].Street", "SomeStreet");
+            });
+
+            var modelState = new ModelStateDictionary();
+            var model = new Person2
+            {
+                Address = new List<Address>(),
+            };
+            var collection = model.Address;
+
+            // Act
+            var result = await TryUpdateModel(model, string.Empty, operationContext, modelState);
+
+            // Assert
+            Assert.True(result);
+
+            // Model
+            Assert.NotNull(model.Address);
+            Assert.Same(collection, model.Address);
+            Assert.Equal(1, model.Address.Count);
+            Assert.Equal("SomeStreet", model.Address[0].Street);
+            Assert.Null(model.Address[0].City);
+
+            // ModelState
+            Assert.True(modelState.IsValid);
+
+            var entry = Assert.Single(modelState);
+            Assert.Equal("Address[0].Street", entry.Key);
+            var state = entry.Value;
+            Assert.NotNull(state.Value);
+            Assert.Equal("SomeStreet", state.Value.AttemptedValue);
+            Assert.Equal("SomeStreet", state.Value.RawValue);
+            Assert.Empty(state.Errors);
+            Assert.Equal(ModelValidationState.Valid, state.ValidationState);
         }
 
         private class Person3
@@ -144,28 +252,46 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             });
 
             var modelState = new ModelStateDictionary();
-            var model = new Person3();
+            var model = new Person3
+            {
+                Address =
+                {
+                    new Address
+                    {
+                        Street = "Old street",
+                        City = "Redmond",
+                    },
+                    new Address
+                    {
+                        Street = "Older street",
+                        City = "Toronto",
+                    },
+                },
+            };
+
             // Act
             var result = await TryUpdateModel(model, string.Empty, operationContext, modelState);
 
             // Assert
             Assert.True(result);
 
-            // Model
+            // Model (collection is cleared and new members created from scratch).
             Assert.NotNull(model.Address);
             Assert.Equal(1, model.Address.Count);
             Assert.Equal("SomeStreet", model.Address[0].Street);
+            Assert.Null(model.Address[0].City);
 
             // ModelState
             Assert.True(modelState.IsValid);
 
-            Assert.Equal(1, modelState.Keys.Count);
-            var key = Assert.Single(modelState.Keys, k => k == "Address[0].Street");
-            Assert.NotNull(modelState[key].Value);
-            Assert.Equal("SomeStreet", modelState[key].Value.AttemptedValue);
-            Assert.Equal("SomeStreet", modelState[key].Value.RawValue);
-            Assert.Empty(modelState[key].Errors);
-            Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState);
+            var entry = Assert.Single(modelState);
+            Assert.Equal("Address[0].Street", entry.Key);
+            var state = entry.Value;
+            Assert.NotNull(state.Value);
+            Assert.Equal("SomeStreet", state.Value.AttemptedValue);
+            Assert.Equal("SomeStreet", state.Value.RawValue);
+            Assert.Empty(state.Errors);
+            Assert.Equal(ModelValidationState.Valid, state.ValidationState);
         }
 
         private class Person6
@@ -213,7 +339,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task TryUpdateModel_SettableArrayModel_EmptyPrefix_GetsBound()
+        public async Task TryUpdateModel_SettableArrayModel_EmptyPrefix_CreatesArray()
         {
             // Arrange
             var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
@@ -223,6 +349,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             var modelState = new ModelStateDictionary();
             var model = new Person4();
+
             // Act
             var result = await TryUpdateModel(model, string.Empty, operationContext, modelState);
 
@@ -231,19 +358,70 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             // Model
             Assert.NotNull(model.Address);
-            Assert.Equal(1, model.Address.Count());
+            Assert.Equal(1, model.Address.Length);
             Assert.Equal("SomeStreet", model.Address[0].Street);
+            Assert.Null(model.Address[0].City);
 
             // ModelState
             Assert.True(modelState.IsValid);
 
-            Assert.Equal(1, modelState.Keys.Count);
-            var key = Assert.Single(modelState.Keys, k => k == "Address[0].Street");
-            Assert.NotNull(modelState[key].Value);
-            Assert.Equal("SomeStreet", modelState[key].Value.AttemptedValue);
-            Assert.Equal("SomeStreet", modelState[key].Value.RawValue);
-            Assert.Empty(modelState[key].Errors);
-            Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState);
+            var entry = Assert.Single(modelState);
+            Assert.Equal("Address[0].Street", entry.Key);
+            var state = entry.Value;
+            Assert.NotNull(state.Value);
+            Assert.Equal("SomeStreet", state.Value.AttemptedValue);
+            Assert.Equal("SomeStreet", state.Value.RawValue);
+            Assert.Empty(state.Errors);
+            Assert.Equal(ModelValidationState.Valid, state.ValidationState);
+        }
+
+        [Fact]
+        public async Task TryUpdateModel_SettableArrayModel_EmptyPrefix_OverwritesArray()
+        {
+            // Arrange
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            {
+                request.QueryString = QueryString.Create("Address[0].Street", "SomeStreet");
+            });
+
+            var modelState = new ModelStateDictionary();
+            var model = new Person4
+            {
+                Address = new Address[]
+                {
+                    new Address
+                    {
+                        Street = "Old street",
+                        City = "Toronto",
+                    },
+                },
+            };
+            var collection = model.Address;
+
+            // Act
+            var result = await TryUpdateModel(model, string.Empty, operationContext, modelState);
+
+            // Assert
+            Assert.True(result);
+
+            // Model
+            Assert.NotNull(model.Address);
+            Assert.NotSame(collection, model.Address);
+            Assert.Equal(1, model.Address.Length);
+            Assert.Equal("SomeStreet", model.Address[0].Street);
+            Assert.Null(model.Address[0].City);
+
+            // ModelState
+            Assert.True(modelState.IsValid);
+
+            var entry = Assert.Single(modelState);
+            Assert.Equal("Address[0].Street", entry.Key);
+            var state = entry.Value;
+            Assert.NotNull(state.Value);
+            Assert.Equal("SomeStreet", state.Value.AttemptedValue);
+            Assert.Equal("SomeStreet", state.Value.RawValue);
+            Assert.Empty(state.Errors);
+            Assert.Equal(ModelValidationState.Valid, state.ValidationState);
         }
 
         private class Person5
@@ -262,6 +440,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             var modelState = new ModelStateDictionary();
             var model = new Person5();
+
             // Act
             var result = await TryUpdateModel(model, string.Empty, operationContext, modelState);
 
@@ -272,16 +451,16 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.NotNull(model.Address);
 
             // Arrays should not be updated.
-            Assert.Equal(0, model.Address.Count());
+            Assert.Equal(0, model.Address.Length);
 
             // ModelState
             Assert.True(modelState.IsValid);
-            Assert.Empty(modelState.Keys);
+            Assert.Empty(modelState);
         }
 
 
         [Fact]
-        public async Task TryUpdateModel_ExistingModel_WithPrefix_GetsOverWritten()
+        public async Task TryUpdateModel_ExistingModel_WithPrefix_ValuesGetOverwritten()
         {
             // Arrange
             var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
@@ -290,7 +469,11 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             });
 
             var modelState = new ModelStateDictionary();
-            var model = new Address { Street = "DefaultStreet" };
+            var model = new Address
+            {
+                Street = "DefaultStreet",
+                City = "Toronto",
+            };
             var oldModel = model;
 
             // Act
@@ -302,17 +485,19 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             // Model
             Assert.Same(oldModel, model);
             Assert.Equal("SomeStreet", model.Street);
+            Assert.Equal("Toronto", model.City);
 
             // ModelState
             Assert.True(modelState.IsValid);
 
-            Assert.Equal(1, modelState.Keys.Count);
-            var key = Assert.Single(modelState.Keys, k => k == "prefix.Street");
-            Assert.NotNull(modelState[key].Value);
-            Assert.Equal("SomeStreet", modelState[key].Value.AttemptedValue);
-            Assert.Equal("SomeStreet", modelState[key].Value.RawValue);
-            Assert.Empty(modelState[key].Errors);
-            Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState);
+            var entry = Assert.Single(modelState);
+            Assert.Equal("prefix.Street", entry.Key);
+            var state = entry.Value;
+            Assert.NotNull(state.Value);
+            Assert.Equal("SomeStreet", state.Value.AttemptedValue);
+            Assert.Equal("SomeStreet", state.Value.RawValue);
+            Assert.Empty(state.Errors);
+            Assert.Equal(ModelValidationState.Valid, state.ValidationState);
         }
 
         [Fact]
@@ -326,6 +511,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             var modelState = new ModelStateDictionary();
             var model = new Address();
+
             // Act
             var result = await TryUpdateModel(model, "prefix", operationContext, modelState);
 
@@ -334,21 +520,69 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             // Model
             Assert.Equal("SomeStreet", model.Street);
+            Assert.Null(model.City);
 
             // ModelState
             Assert.True(modelState.IsValid);
 
-            Assert.Equal(1, modelState.Keys.Count);
-            var key = Assert.Single(modelState.Keys, k => k == "prefix.Street");
-            Assert.NotNull(modelState[key].Value);
-            Assert.Equal("SomeStreet", modelState[key].Value.AttemptedValue);
-            Assert.Equal("SomeStreet", modelState[key].Value.RawValue);
-            Assert.Empty(modelState[key].Errors);
-            Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState);
+            var entry = Assert.Single(modelState);
+            Assert.Equal("prefix.Street", entry.Key);
+            var state = entry.Value;
+            Assert.NotNull(state.Value);
+            Assert.Equal("SomeStreet", state.Value.AttemptedValue);
+            Assert.Equal("SomeStreet", state.Value.RawValue);
+            Assert.Empty(state.Errors);
+            Assert.Equal(ModelValidationState.Valid, state.ValidationState);
         }
 
         [Fact]
-        public async Task TryUpdateModel_SettableCollectionModel_WithPrefix_GetsBound()
+        public async Task TryUpdateModel_NestedPoco_WithPrefix_DoesNotTrounceUnboundValues()
+        {
+            // Arrange
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            {
+                request.QueryString = QueryString.Create("prefix.Address.Street", "SomeStreet");
+            });
+
+            var modelState = new ModelStateDictionary();
+            var model = new Person1
+            {
+                Name = "Joe",
+                Address = new Address
+                {
+                    Street = "DefaultStreet",
+                    City = "Toronto",
+                },
+            };
+            var oldModel = model;
+
+            // Act
+            var result = await TryUpdateModel(model, "prefix", operationContext, modelState);
+
+            // Assert
+            Assert.True(result);
+
+            // Model
+            Assert.Same(oldModel, model);
+            Assert.Equal("Joe", model.Name);
+            Assert.Equal("SomeStreet", model.Address.Street);
+            Assert.Equal("Toronto", model.Address.City);
+
+            // ModelState
+            Assert.True(modelState.IsValid);
+
+            var entry = Assert.Single(modelState);
+            Assert.Equal("prefix.Address.Street", entry.Key);
+            var state = entry.Value;
+            Assert.NotNull(state.Value);
+            Assert.Equal("SomeStreet", state.Value.AttemptedValue);
+            Assert.Equal("SomeStreet", state.Value.RawValue);
+            Assert.Empty(state.Errors);
+            Assert.Equal(ModelValidationState.Valid, state.ValidationState);
+        }
+
+        [Fact]
+        public async Task TryUpdateModel_SettableCollectionModel_WithPrefix_CreatesCollection()
         {
             // Arrange
             var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
@@ -358,6 +592,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             var modelState = new ModelStateDictionary();
             var model = new Person2();
+
             // Act
             var result = await TryUpdateModel(model, "prefix", operationContext, modelState);
 
@@ -368,17 +603,61 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.NotNull(model.Address);
             Assert.Equal(1, model.Address.Count);
             Assert.Equal("SomeStreet", model.Address[0].Street);
+            Assert.Null(model.Address[0].City);
 
             // ModelState
             Assert.True(modelState.IsValid);
 
-            Assert.Equal(1, modelState.Keys.Count);
-            var key = Assert.Single(modelState.Keys, k => k == "prefix.Address[0].Street");
-            Assert.NotNull(modelState[key].Value);
-            Assert.Equal("SomeStreet", modelState[key].Value.AttemptedValue);
-            Assert.Equal("SomeStreet", modelState[key].Value.RawValue);
-            Assert.Empty(modelState[key].Errors);
-            Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState);
+            var entry = Assert.Single(modelState);
+            Assert.Equal("prefix.Address[0].Street", entry.Key);
+            var state = entry.Value;
+            Assert.NotNull(state.Value);
+            Assert.Equal("SomeStreet", state.Value.AttemptedValue);
+            Assert.Equal("SomeStreet", state.Value.RawValue);
+            Assert.Empty(state.Errors);
+            Assert.Equal(ModelValidationState.Valid, state.ValidationState);
+        }
+
+        [Fact]
+        public async Task TryUpdateModel_SettableCollectionModel_WithPrefix_MaintainsCollectionIfNonNull()
+        {
+            // Arrange
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            {
+                request.QueryString = QueryString.Create("prefix.Address[0].Street", "SomeStreet");
+            });
+
+            var modelState = new ModelStateDictionary();
+            var model = new Person2
+            {
+                Address = new List<Address>(),
+            };
+            var collection = model.Address;
+
+            // Act
+            var result = await TryUpdateModel(model, "prefix", operationContext, modelState);
+
+            // Assert
+            Assert.True(result);
+
+            // Model
+            Assert.NotNull(model.Address);
+            Assert.Same(collection, model.Address);
+            Assert.Equal(1, model.Address.Count);
+            Assert.Equal("SomeStreet", model.Address[0].Street);
+            Assert.Null(model.Address[0].City);
+
+            // ModelState
+            Assert.True(modelState.IsValid);
+
+            var entry = Assert.Single(modelState);
+            Assert.Equal("prefix.Address[0].Street", entry.Key);
+            var state = entry.Value;
+            Assert.NotNull(state.Value);
+            Assert.Equal("SomeStreet", state.Value.AttemptedValue);
+            Assert.Equal("SomeStreet", state.Value.RawValue);
+            Assert.Empty(state.Errors);
+            Assert.Equal(ModelValidationState.Valid, state.ValidationState);
         }
 
         [Fact]
@@ -391,28 +670,46 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             });
 
             var modelState = new ModelStateDictionary();
-            var model = new Person3();
+            var model = new Person3
+            {
+                Address =
+                {
+                    new Address
+                    {
+                        Street = "Old street",
+                        City = "Redmond",
+                    },
+                    new Address
+                    {
+                        Street = "Older street",
+                        City = "Toronto",
+                    },
+                },
+            };
+
             // Act
             var result = await TryUpdateModel(model, "prefix", operationContext, modelState);
 
             // Assert
             Assert.True(result);
 
-            // Model
+            // Model (collection is cleared and new members created from scratch).
             Assert.NotNull(model.Address);
             Assert.Equal(1, model.Address.Count);
             Assert.Equal("SomeStreet", model.Address[0].Street);
+            Assert.Null(model.Address[0].City);
 
             // ModelState
             Assert.True(modelState.IsValid);
 
-            Assert.Equal(1, modelState.Keys.Count);
-            var key = Assert.Single(modelState.Keys, k => k == "prefix.Address[0].Street");
-            Assert.NotNull(modelState[key].Value);
-            Assert.Equal("SomeStreet", modelState[key].Value.AttemptedValue);
-            Assert.Equal("SomeStreet", modelState[key].Value.RawValue);
-            Assert.Empty(modelState[key].Errors);
-            Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState);
+            var entry = Assert.Single(modelState);
+            Assert.Equal("prefix.Address[0].Street", entry.Key);
+            var state = entry.Value;
+            Assert.NotNull(state.Value);
+            Assert.Equal("SomeStreet", state.Value.AttemptedValue);
+            Assert.Equal("SomeStreet", state.Value.RawValue);
+            Assert.Empty(state.Errors);
+            Assert.Equal(ModelValidationState.Valid, state.ValidationState);
         }
 
         [Fact(Skip = "Validation incorrect for collections when using TryUpdateModel, #2941")]
@@ -450,7 +747,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task TryUpdateModel_SettableArrayModel_WithPrefix_GetsBound()
+        public async Task TryUpdateModel_SettableArrayModel_WithPrefix_CreatesArray()
         {
             // Arrange
             var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
@@ -460,6 +757,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             var modelState = new ModelStateDictionary();
             var model = new Person4();
+
             // Act
             var result = await TryUpdateModel(model, "prefix", operationContext, modelState);
 
@@ -468,23 +766,74 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             // Model
             Assert.NotNull(model.Address);
-            Assert.Equal(1, model.Address.Count());
+            Assert.Equal(1, model.Address.Length);
             Assert.Equal("SomeStreet", model.Address[0].Street);
+            Assert.Null(model.Address[0].City);
 
             // ModelState
             Assert.True(modelState.IsValid);
 
-            Assert.Equal(1, modelState.Keys.Count);
-            var key = Assert.Single(modelState.Keys, k => k == "prefix.Address[0].Street");
-            Assert.NotNull(modelState[key].Value);
-            Assert.Equal("SomeStreet", modelState[key].Value.AttemptedValue);
-            Assert.Equal("SomeStreet", modelState[key].Value.RawValue);
-            Assert.Empty(modelState[key].Errors);
-            Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState);
+            var entry = Assert.Single(modelState);
+            Assert.Equal("prefix.Address[0].Street", entry.Key);
+            var state = entry.Value;
+            Assert.NotNull(state.Value);
+            Assert.Equal("SomeStreet", state.Value.AttemptedValue);
+            Assert.Equal("SomeStreet", state.Value.RawValue);
+            Assert.Empty(state.Errors);
+            Assert.Equal(ModelValidationState.Valid, state.ValidationState);
         }
 
         [Fact]
-        public async Task TryUpdateModel_NonSettableArrayModel_WithPrefix_DoesNotGetBound()
+        public async Task TryUpdateModel_SettableArrayModel_WithPrefix_OverwritesArray()
+        {
+            // Arrange
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            {
+                request.QueryString = QueryString.Create("prefix.Address[0].Street", "SomeStreet");
+            });
+
+            var modelState = new ModelStateDictionary();
+            var model = new Person4
+            {
+                Address = new Address[]
+                {
+                    new Address
+                    {
+                        Street = "Old street",
+                        City = "Toronto",
+                    },
+                },
+            };
+            var collection = model.Address;
+
+            // Act
+            var result = await TryUpdateModel(model, "prefix", operationContext, modelState);
+
+            // Assert
+            Assert.True(result);
+
+            // Model
+            Assert.NotNull(model.Address);
+            Assert.NotSame(collection, model.Address);
+            Assert.Equal(1, model.Address.Length);
+            Assert.Equal("SomeStreet", model.Address[0].Street);
+            Assert.Null(model.Address[0].City);
+
+            // ModelState
+            Assert.True(modelState.IsValid);
+
+            var entry = Assert.Single(modelState);
+            Assert.Equal("prefix.Address[0].Street", entry.Key);
+            var state = entry.Value;
+            Assert.NotNull(state.Value);
+            Assert.Equal("SomeStreet", state.Value.AttemptedValue);
+            Assert.Equal("SomeStreet", state.Value.RawValue);
+            Assert.Empty(state.Errors);
+            Assert.Equal(ModelValidationState.Valid, state.ValidationState);
+        }
+
+        [Fact]
+        public async Task TryUpdateModel_NonSettableArrayModel_WithPrefix_GetsBound()
         {
             // Arrange
             var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
@@ -494,6 +843,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             var modelState = new ModelStateDictionary();
             var model = new Person5();
+
             // Act
             var result = await TryUpdateModel(model, "prefix", operationContext, modelState);
 
@@ -504,11 +854,11 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.NotNull(model.Address);
 
             // Arrays should not be updated.
-            Assert.Equal(0, model.Address.Count());
+            Assert.Equal(0, model.Address.Length);
 
             // ModelState
             Assert.True(modelState.IsValid);
-            Assert.Empty(modelState.Keys);
+            Assert.Empty(modelState);
         }
 
         private class CustomReadOnlyCollection<T> : ICollection<T>

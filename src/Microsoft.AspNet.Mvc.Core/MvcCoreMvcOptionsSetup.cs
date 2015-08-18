@@ -36,7 +36,6 @@ namespace Microsoft.AspNet.Mvc
             options.ModelBinders.Add(new FormCollectionModelBinder());
             options.ModelBinders.Add(new GenericModelBinder());
             options.ModelBinders.Add(new MutableObjectModelBinder());
-            options.ModelBinders.Add(new ComplexModelDtoModelBinder());
 
             // Set up default output formatters.
             options.OutputFormatters.Add(new HttpNoContentOutputFormatter());

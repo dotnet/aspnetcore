@@ -55,7 +55,6 @@ namespace Microsoft.AspNet.Mvc.Test
             var binders = new IModelBinder[]
             {
                 new TypeConverterModelBinder(),
-                new ComplexModelDtoModelBinder(),
                 new MutableObjectModelBinder()
             };
 
@@ -95,7 +94,6 @@ namespace Microsoft.AspNet.Mvc.Test
             var binders = new IModelBinder[]
             {
                 new TypeConverterModelBinder(),
-                new ComplexModelDtoModelBinder(),
                 new MutableObjectModelBinder()
             };
 
@@ -168,7 +166,6 @@ namespace Microsoft.AspNet.Mvc.Test
             var binders = new IModelBinder[]
             {
                 new TypeConverterModelBinder(),
-                new ComplexModelDtoModelBinder(),
                 new MutableObjectModelBinder()
             };
 
@@ -256,7 +253,6 @@ namespace Microsoft.AspNet.Mvc.Test
             var binders = new IModelBinder[]
             {
                 new TypeConverterModelBinder(),
-                new ComplexModelDtoModelBinder(),
                 new MutableObjectModelBinder()
             };
 
@@ -309,7 +305,6 @@ namespace Microsoft.AspNet.Mvc.Test
             var binders = new IModelBinder[]
             {
                 new TypeConverterModelBinder(),
-                new ComplexModelDtoModelBinder(),
                 new MutableObjectModelBinder()
             };
 
@@ -513,7 +508,6 @@ namespace Microsoft.AspNet.Mvc.Test
             var binders = new IModelBinder[]
             {
                 new TypeConverterModelBinder(),
-                new ComplexModelDtoModelBinder(),
                 new MutableObjectModelBinder()
             };
 
@@ -603,7 +597,6 @@ namespace Microsoft.AspNet.Mvc.Test
             var binders = new IModelBinder[]
             {
                 new TypeConverterModelBinder(),
-                new ComplexModelDtoModelBinder(),
                 new MutableObjectModelBinder()
             };
 
