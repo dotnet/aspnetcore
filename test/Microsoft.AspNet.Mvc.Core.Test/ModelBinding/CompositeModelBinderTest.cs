@@ -534,7 +534,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 new TypeMatchModelBinder(),
                 new ByteArrayModelBinder(),
                 new GenericModelBinder(),
-                new ComplexModelDtoModelBinder(),
                 new TypeConverterModelBinder(),
                 new MutableObjectModelBinder()
             };
