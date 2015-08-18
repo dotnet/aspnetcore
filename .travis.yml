@@ -2,5 +2,12 @@ language: csharp
 sudo: false
 mono:
   - beta
+env:
+  - MONO_THREADS_PER_CPU=2000 MONO_MANAGED_WATCHER=disabled
+os:
+  - linux
+  - osx
+before_script:
+  - if [ $TRAVIS_OS_NAME == "osx" ] ; then sudo sysctl -w kern.maxfiles=64000 ; sudo sysctl -w kern.maxfilesperproc=64000 ; sudo launchctl limit maxfiles 64000 64000 ; fi ; ulimit -n 64000
 script:
   - ./build.sh --quiet verify
