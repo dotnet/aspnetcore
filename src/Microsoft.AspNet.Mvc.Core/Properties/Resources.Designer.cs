@@ -1162,6 +1162,38 @@ namespace Microsoft.AspNet.Mvc.Core
             return string.Format(CultureInfo.CurrentCulture, GetString("ValidatableObjectAdapter_IncompatibleType"), p0, p1);
         }
 
+        /// <summary>
+        /// Cannot convert value '{0}' to enum type '{1}'.
+        /// </summary>
+        internal static string ValueProviderResult_CannotConvertEnum
+        {
+            get { return GetString("ValueProviderResult_CannotConvertEnum"); }
+        }
+
+        /// <summary>
+        /// Cannot convert value '{0}' to enum type '{1}'.
+        /// </summary>
+        internal static string FormatValueProviderResult_CannotConvertEnum(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ValueProviderResult_CannotConvertEnum"), p0, p1);
+        }
+
+        /// <summary>
+        /// The parameter conversion from type '{0}' to type '{1}' failed because no type converter can convert between these types.
+        /// </summary>
+        internal static string ValueProviderResult_NoConverterExists
+        {
+            get { return GetString("ValueProviderResult_NoConverterExists"); }
+        }
+
+        /// <summary>
+        /// The parameter conversion from type '{0}' to type '{1}' failed because no type converter can convert between these types.
+        /// </summary>
+        internal static string FormatValueProviderResult_NoConverterExists(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ValueProviderResult_NoConverterExists"), p0, p1);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

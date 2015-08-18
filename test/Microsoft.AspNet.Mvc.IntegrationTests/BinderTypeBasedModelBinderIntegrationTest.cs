@@ -190,7 +190,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var key = Assert.Single(modelState.Keys);
             Assert.Equal("CustomParameter", key);
             Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState);
-            Assert.NotNull(modelState[key].Value); // Value is set by test model binder, no need to validate it.
+            Assert.NotNull(modelState[key].RawValue); // Value is set by test model binder, no need to validate it.
         }
 
         private class Person
@@ -239,7 +239,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal(1, modelState.Keys.Count);
             var key = Assert.Single(modelState.Keys, k => k == "Parameter1.Address.Street");
             Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState);
-            Assert.NotNull(modelState[key].Value); // Value is set by test model binder, no need to validate it.
+            Assert.NotNull(modelState[key].RawValue); // Value is set by test model binder, no need to validate it.
         }
 
         [Fact]
@@ -279,7 +279,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal(1, modelState.Keys.Count);
             var key = Assert.Single(modelState.Keys, k => k == "CustomParameter.Address.Street");
             Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState);
-            Assert.NotNull(modelState[key].Value); // Value is set by test model binder, no need to validate it.
+            Assert.NotNull(modelState[key].RawValue); // Value is set by test model binder, no need to validate it.
         }
 
         private class AddressModelBinder : IModelBinder
@@ -294,11 +294,9 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 var address = new Address() { Street = "SomeStreet" };
 
                 bindingContext.ModelState.SetModelValue(
-                  ModelNames.CreatePropertyModelName(bindingContext.ModelName, "Street"),
-                  new ValueProviderResult(
-                      address.Street,
-                      address.Street,
-                      CultureInfo.CurrentCulture));
+                    ModelNames.CreatePropertyModelName(bindingContext.ModelName, "Street"),
+                    new string[] { address.Street },
+                    address.Street);
 
                 var validationNode = new ModelValidationNode(
                   bindingContext.ModelName,
@@ -319,7 +317,8 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 var model = "Success";
                 bindingContext.ModelState.SetModelValue(
                     bindingContext.ModelName,
-                    new ValueProviderResult(model, model, CultureInfo.CurrentCulture));
+                    new string[] { model },
+                    model);
 
                 var modelValidationNode = new ModelValidationNode(
                     bindingContext.ModelName,

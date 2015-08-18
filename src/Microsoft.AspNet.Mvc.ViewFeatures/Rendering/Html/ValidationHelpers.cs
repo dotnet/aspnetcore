@@ -24,8 +24,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 return string.Empty;
             }
 
-            var attemptedValue = (modelState.Value != null) ? modelState.Value.AttemptedValue : "null";
-
+            var attemptedValue = modelState.AttemptedValue ?? "null";
             return Resources.FormatCommon_ValueNotValidForProperty(attemptedValue);
         }
 

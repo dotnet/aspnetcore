@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.Framework.Internal;
@@ -213,6 +214,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 // Convert FormatExceptions to Invalid value messages.
                 ModelState modelState;
                 TryGetValue(key, out modelState);
+
                 string errorMessage;
                 if (modelState == null)
                 {
@@ -221,7 +223,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 else
                 {
                     errorMessage = Resources.FormatModelError_InvalidValue_MessageWithModelValue(
-                        modelState.Value.AttemptedValue,
+                        modelState.AttemptedValue,
                         key);
                 }
 
@@ -359,14 +361,50 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <summary>
-        /// Sets the value for the <see cref="ModelState"/> with the specified <paramref name="key"/> to the
-        /// specified <paramref name="value"/>.
+        /// Sets the of <see cref="ModelState.RawValue"/> and <see cref="ModelState.AttemptedValue"/> for 
+        /// the <see cref="ModelState"/> with the specified <paramref name="key"/>.
         /// </summary>
         /// <param name="key">The key for the <see cref="ModelState"/> entry.</param>
-        /// <param name="value">The value to assign.</param>
-        public void SetModelValue([NotNull] string key, [NotNull] ValueProviderResult value)
+        /// <param name="rawvalue">The raw value for the <see cref="ModelState"/> entry.</param>
+        /// <param name="attemptedValue">
+        /// The values of <param name="rawValue"/> in a comma-separated <see cref="string"/>.
+        /// </param>
+        public void SetModelValue([NotNull] string key, object rawValue, string attemptedValue)
         {
-            GetModelStateForKey(key).Value = value;
+            var modelState = GetModelStateForKey(key);
+            modelState.RawValue = rawValue;
+            modelState.AttemptedValue = attemptedValue;
+        }
+
+        /// <summary>
+        /// Sets the value for the <see cref="ModelState"/> with the specified <paramref name="key"/>.
+        /// </summary>
+        /// <param name="key">The key for the <see cref="ModelState"/> entry</param>
+        /// <param name="valueProviderResult">
+        /// A <see cref="ValueProviderResult"/> with data for the <see cref="ModelState"/> entry.
+        /// </param>
+        public void SetModelValue([NotNull] string key, ValueProviderResult valueProviderResult)
+        {
+            // Avoid creating a new array for rawvalue if there's only one value.
+            object rawValue;
+            if (valueProviderResult == ValueProviderResult.None)
+            {
+                rawValue = null;
+            }
+            else if (valueProviderResult.Value != null)
+            {
+                rawValue = valueProviderResult.Value;
+            }
+            else if (valueProviderResult.Length == 1)
+            {
+                rawValue = valueProviderResult.Values[0];
+            }
+            else
+            {
+                rawValue = valueProviderResult.Values;
+            }
+
+            SetModelValue(key, rawValue, (string)valueProviderResult);
         }
 
         /// <summary>

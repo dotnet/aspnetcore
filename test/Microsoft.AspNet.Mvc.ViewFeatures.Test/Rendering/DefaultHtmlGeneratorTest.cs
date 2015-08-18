@@ -216,17 +216,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         // rawValue, allowMultiple -> expected current values
-        public static TheoryData<object, bool, IReadOnlyCollection<string>> GetCurrentValues_StringAndCollectionData
+        public static TheoryData<string[], bool, IReadOnlyCollection<string>> GetCurrentValues_CollectionData
         {
             get
             {
-                return new TheoryData<object, bool, IReadOnlyCollection<string>>
+                return new TheoryData<string[], bool, IReadOnlyCollection<string>>
                 {
-                    // ModelStateDictionary converts single values to arrays and visa-versa.
-                    { string.Empty, false, new [] { string.Empty } },
-                    { string.Empty, true, new [] { string.Empty } },
-                    { "some string", false,  new [] { "some string" } },
-                    { "some string", true, new [] { "some string" } },
+                    // ModelStateDictionary converts arrays to single values if needed.
                     { new [] { "some string" }, false, new [] { "some string" } },
                     { new [] { "some string" }, true, new [] { "some string" } },
                     { new [] { "some string", "some other string" }, false, new [] { "some string" } },
@@ -261,9 +257,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         [Theory]
-        [MemberData(nameof(GetCurrentValues_StringAndCollectionData))]
+        [MemberData(nameof(GetCurrentValues_CollectionData))]
         public void GetCurrentValues_WithModelStateEntryAndViewData_ReturnsModelStateEntry(
-            object rawValue,
+            string[] rawValue,
             bool allowMultiple,
             IReadOnlyCollection<string> expected)
         {
@@ -274,10 +270,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             var viewContext = GetViewContext<Model>(model, metadataProvider);
             viewContext.ViewData[nameof(Model.Name)] = "ignored ViewData value";
-
-
-            var valueProviderResult = new ValueProviderResult(rawValue);
-            viewContext.ModelState.SetModelValue(nameof(Model.Name), valueProviderResult);
+            viewContext.ModelState.SetModelValue(nameof(Model.Name), rawValue, attemptedValue: null);
 
             // Act
             var result = htmlGenerator.GetCurrentValues(
@@ -292,9 +285,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         [Theory]
-        [MemberData(nameof(GetCurrentValues_StringAndCollectionData))]
+        [MemberData(nameof(GetCurrentValues_CollectionData))]
         public void GetCurrentValues_WithModelStateEntryModelExplorerAndViewData_ReturnsModelStateEntry(
-            object rawValue,
+            string[] rawValue,
             bool allowMultiple,
             IReadOnlyCollection<string> expected)
         {
@@ -305,11 +298,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             var viewContext = GetViewContext<Model>(model, metadataProvider);
             viewContext.ViewData[nameof(Model.Name)] = "ignored ViewData value";
+            viewContext.ModelState.SetModelValue(nameof(Model.Name), rawValue, attemptedValue: null);
 
             var modelExplorer = metadataProvider.GetModelExplorerForType(typeof(string), "ignored model value");
-
-            var valueProviderResult = new ValueProviderResult(rawValue);
-            viewContext.ModelState.SetModelValue(nameof(Model.Name), valueProviderResult);
 
             // Act
             var result = htmlGenerator.GetCurrentValues(
@@ -324,11 +315,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         // rawValue -> expected current values
-        public static TheoryData<string, string[]> GetCurrentValues_StringData
+        public static TheoryData<string[], string[]> GetCurrentValues_StringData
         {
             get
             {
-                return new TheoryData<string, string[]>
+                return new TheoryData<string[], string[]>
                 {
                     // 1. If given a ModelExplorer, GetCurrentValues does not use ViewData even if expression result is
                     // null.
@@ -336,8 +327,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
                     // if entry is null.
                     // 3. Otherwise, GetCurrentValue does not fall back anywhere else even if ViewData.Model is null.
                     { null, null },
-                    { string.Empty, new [] { string.Empty } },
-                    { "some string", new [] { "some string" } },
+                    { new string[] { string.Empty }, new [] { string.Empty } },
+                    { new string[] { "some string" }, new [] { "some string" } },
                 };
             }
         }
@@ -345,7 +336,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         [Theory]
         [MemberData(nameof(GetCurrentValues_StringData))]
         public void GetCurrentValues_WithModelExplorerAndViewData_ReturnsExpressionResult(
-            string rawValue,
+            string[] rawValue,
             IReadOnlyCollection<string> expected)
         {
             // Arrange
@@ -355,11 +346,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             var viewContext = GetViewContext<Model>(model, metadataProvider);
             viewContext.ViewData[nameof(Model.Name)] = "ignored ViewData value";
+            viewContext.ModelState.SetModelValue(nameof(Model.Name), rawValue, attemptedValue: null);
 
             var modelExplorer = metadataProvider.GetModelExplorerForType(typeof(string), rawValue);
-
-            var valueProviderResult = new ValueProviderResult(rawValue: null);
-            viewContext.ModelState.SetModelValue(nameof(Model.Name), valueProviderResult);
 
             // Act
             var result = htmlGenerator.GetCurrentValues(
@@ -375,7 +364,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         [Theory]
         [MemberData(nameof(GetCurrentValues_StringData))]
         public void GetCurrentValues_WithViewData_ReturnsViewDataEntry(
-            object rawValue,
+            string[] rawValue,
             IReadOnlyCollection<string> expected)
         {
             // Arrange
@@ -385,9 +374,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             var viewContext = GetViewContext<Model>(model, metadataProvider);
             viewContext.ViewData[nameof(Model.Name)] = rawValue;
-
-            var valueProviderResult = new ValueProviderResult(rawValue: null);
-            viewContext.ModelState.SetModelValue(nameof(Model.Name), valueProviderResult);
+            viewContext.ModelState.SetModelValue(nameof(Model.Name), rawValue, attemptedValue: null);
 
             // Act
             var result = htmlGenerator.GetCurrentValues(
@@ -402,17 +389,15 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         [Theory]
         [MemberData(nameof(GetCurrentValues_StringData))]
-        public void GetCurrentValues_WithModel_ReturnsModel(string rawValue, IReadOnlyCollection<string> expected)
+        public void GetCurrentValues_WithModel_ReturnsModel(string[] rawValue, IReadOnlyCollection<string> expected)
         {
             // Arrange
             var metadataProvider = new TestModelMetadataProvider();
             var htmlGenerator = GetGenerator(metadataProvider);
-            var model = new Model { Name = rawValue };
+            var model = new Model { Name = rawValue?[0] };
 
             var viewContext = GetViewContext<Model>(model, metadataProvider);
-
-            var valueProviderResult = new ValueProviderResult(rawValue: null);
-            viewContext.ModelState.SetModelValue(nameof(Model.Name), valueProviderResult);
+            viewContext.ModelState.SetModelValue(nameof(Model.Name), rawValue, attemptedValue: null);
 
             // Act
             var result = htmlGenerator.GetCurrentValues(
@@ -467,12 +452,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             var viewContext = GetViewContext<Model>(model, metadataProvider);
             viewContext.ViewData[nameof(Model.Collection)] = new[] { "ignored ViewData value" };
+            viewContext.ModelState.SetModelValue(nameof(Model.Collection), rawValue, attemptedValue: null);
 
             var modelExplorer =
                 metadataProvider.GetModelExplorerForType(typeof(List<string>), new List<string>(rawValue));
-
-            var valueProviderResult = new ValueProviderResult(rawValue: null);
-            viewContext.ModelState.SetModelValue(nameof(Model.Collection), valueProviderResult);
 
             // Act
             var result = htmlGenerator.GetCurrentValues(
@@ -488,7 +471,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         [Theory]
         [MemberData(nameof(GetCurrentValues_StringCollectionData))]
         public void GetCurrentValues_CollectionWithViewData_ReturnsViewDataEntry(
-            object[] rawValue,
+            string[] rawValue,
             IReadOnlyCollection<string> expected)
         {
             // Arrange
@@ -498,9 +481,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             var viewContext = GetViewContext<Model>(model, metadataProvider);
             viewContext.ViewData[nameof(Model.Collection)] = rawValue;
-
-            var valueProviderResult = new ValueProviderResult(rawValue: null);
-            viewContext.ModelState.SetModelValue(nameof(Model.Collection), valueProviderResult);
+            viewContext.ModelState.SetModelValue(nameof(Model.Collection), rawValue, attemptedValue: null);
 
             // Act
             var result = htmlGenerator.GetCurrentValues(
@@ -526,9 +507,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
             model.Collection.AddRange(rawValue);
 
             var viewContext = GetViewContext<Model>(model, metadataProvider);
-
-            var valueProviderResult = new ValueProviderResult(rawValue: null);
-            viewContext.ModelState.SetModelValue(nameof(Model.Collection), valueProviderResult);
+            viewContext.ModelState.SetModelValue(
+                nameof(Model.Collection),
+                rawValue,
+                attemptedValue: null);
 
             // Act
             var result = htmlGenerator.GetCurrentValues(
@@ -637,9 +619,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             var htmlGenerator = GetGenerator(metadataProvider);
             var viewContext = GetViewContext<Model>(model: null, metadataProvider: metadataProvider);
-
-            var valueProviderResult = new ValueProviderResult(rawValue);
-            viewContext.ModelState.SetModelValue(propertyName, valueProviderResult);
+            viewContext.ModelState.SetModelValue(
+                propertyName,
+                new string[] { rawValue.ToString() },
+                attemptedValue: null);
 
             // Act
             var result = htmlGenerator.GetCurrentValues(

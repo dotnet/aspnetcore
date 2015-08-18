@@ -19,9 +19,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             // Arrange
             var culture = new CultureInfo("en-US");
-            var elementalValueProvider = new ElementalValueProvider(elementName,
-                                                                    new object(),
-                                                                    culture);
+            var elementalValueProvider = new ElementalValueProvider(
+                elementName,
+                "hi",
+                culture);
 
             // Act
             var containsPrefix = await elementalValueProvider.ContainsPrefixAsync(prefix);
@@ -39,9 +40,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             // Arrange
             var culture = new CultureInfo("en-US");
-            var elementalValueProvider = new ElementalValueProvider(elementName,
-                                                                    new object(),
-                                                                    culture);
+            var elementalValueProvider = new ElementalValueProvider(
+                elementName,
+                "hi",
+                culture);
 
             // Act
             var containsPrefix = await elementalValueProvider.ContainsPrefixAsync(prefix);
@@ -51,18 +53,17 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         [Fact]
-        public async Task GetValueAsync_NameDoesNotMatch_ReturnsNull()
+        public async Task GetValueAsync_NameDoesNotMatch_ReturnsEmptyResult()
         {
             // Arrange
             var culture = new CultureInfo("fr-FR");
-            var rawValue = new DateTime(2001, 1, 2);
-            var valueProvider = new ElementalValueProvider("foo", rawValue, culture);
+            var valueProvider = new ElementalValueProvider("foo", "hi", culture);
 
             // Act
-            var vpResult = await valueProvider.GetValueAsync("bar");
+            var result = await valueProvider.GetValueAsync("bar");
 
             // Assert
-            Assert.Null(vpResult);
+            Assert.Equal(ValueProviderResult.None, result);
         }
 
         [Theory]
@@ -73,17 +74,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             // Arrange
             var culture = new CultureInfo("fr-FR");
-            var rawValue = new DateTime(2001, 1, 2);
-            var valueProvider = new ElementalValueProvider("foo", rawValue, culture);
+            var valueProvider = new ElementalValueProvider("foo", "hi", culture);
 
             // Act
-            var vpResult = await valueProvider.GetValueAsync(name);
+            var result = await valueProvider.GetValueAsync(name);
 
             // Assert
-            Assert.NotNull(vpResult);
-            Assert.Equal(rawValue, vpResult.RawValue);
-            Assert.Equal("02/01/2001 00:00:00", vpResult.AttemptedValue);
-            Assert.Equal(culture, vpResult.Culture);
+            Assert.NotNull(result);
+            Assert.Equal("hi", (string)result);
+            Assert.Equal(culture, result.Culture);
         }
     }
 }

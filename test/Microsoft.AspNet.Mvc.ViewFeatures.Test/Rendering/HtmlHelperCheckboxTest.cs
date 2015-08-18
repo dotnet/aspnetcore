@@ -134,9 +134,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 @"<input data-val=""HtmlEncode[[true]]"" data-val-required=""HtmlEncode[[The Boolean field is required.]]"" " +
                 @"id=""HtmlEncode[[Property1]]"" name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[checkbox]]"" value=""HtmlEncode[[true]]"" />" +
                 @"<input name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[false]]"" />");
-            var valueProviderResult = new ValueProviderResult("false", "false", CultureInfo.InvariantCulture);
+
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetTestModelViewData());
-            helper.ViewData.ModelState.SetModelValue("Property1", valueProviderResult);
+            helper.ViewData.ModelState.SetModelValue("Property1", new string[] { "false" }, "false");
 
             // Act
             var html = helper.CheckBox("Property1", isChecked: null, htmlAttributes: null);
@@ -438,8 +438,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 @"<input name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[false]]"" />");
             var viewData = GetTestModelViewData();
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(viewData);
-            var valueProviderResult = new ValueProviderResult("false", "false", CultureInfo.InvariantCulture);
-            viewData.ModelState.SetModelValue("Property1", valueProviderResult);
+            viewData.ModelState.SetModelValue("Property1", new string[] { "false" }, "false");
 
             // Act
             var html = helper.CheckBoxFor(m => m.Property1, htmlAttributes: null);
@@ -533,9 +532,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             var viewData = GetTestModelViewData();
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(viewData);
-            var valueProviderResult =
-                new ValueProviderResult(attemptedValue, attemptedValue, CultureInfo.InvariantCulture);
-            viewData.ModelState.SetModelValue("Property1", valueProviderResult);
+            viewData.ModelState.SetModelValue("Property1", new string[] { attemptedValue }, attemptedValue);
 
             // Act
             var html = helper.CheckBoxFor(m => m.Property1, htmlAttributes: null);

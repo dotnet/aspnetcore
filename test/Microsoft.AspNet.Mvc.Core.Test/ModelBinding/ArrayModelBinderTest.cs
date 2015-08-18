@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public async Task BindModelAsync_ValueProviderContainPrefix_Succeeds()
         {
             // Arrange
-            var valueProvider = new SimpleHttpValueProvider
+            var valueProvider = new SimpleValueProvider
             {
                 { "someName[0]", "42" },
                 { "someName[1]", "84" },
@@ -138,7 +138,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public async Task BindModelAsync_ModelMetadataReadOnly_ReturnsNull(int[] model)
         {
             // Arrange
-            var valueProvider = new SimpleHttpValueProvider
+            var valueProvider = new SimpleValueProvider
             {
                 { "someName[0]", "42" },
                 { "someName[1]", "84" },
@@ -161,7 +161,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         {
             // Arrange
             var arrayLength = model.Length;
-            var valueProvider = new SimpleHttpValueProvider
+            var valueProvider = new SimpleValueProvider
             {
                 { "someName[0]", "42" },
                 { "someName[1]", "84" },
@@ -196,7 +196,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 .Returns(async (ModelBindingContext mbc) =>
                 {
                     var value = await mbc.ValueProvider.GetValueAsync(mbc.ModelName);
-                    if (value != null)
+                    if (value != ValueProviderResult.None)
                     {
                         var model = value.ConvertTo(mbc.ModelType);
                         return new ModelBindingResult(model, key: null, isModelSet: true);

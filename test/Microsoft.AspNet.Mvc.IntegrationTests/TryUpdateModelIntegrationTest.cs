@@ -53,9 +53,8 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var entry = Assert.Single(modelState);
             Assert.Equal("Street", entry.Key);
             var state = entry.Value;
-            Assert.NotNull(state.Value);
-            Assert.Equal("SomeStreet", state.Value.AttemptedValue);
-            Assert.Equal("SomeStreet", state.Value.RawValue);
+            Assert.Equal("SomeStreet", state.AttemptedValue);
+            Assert.Equal("SomeStreet", state.RawValue);
             Assert.Empty(state.Errors);
             Assert.Equal(ModelValidationState.Valid, state.ValidationState);
         }
@@ -88,9 +87,8 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var entry = Assert.Single(modelState);
             Assert.Equal("Street", entry.Key);
             var state = entry.Value;
-            Assert.NotNull(state.Value);
-            Assert.Equal("SomeStreet", state.Value.AttemptedValue);
-            Assert.Equal("SomeStreet", state.Value.RawValue);
+            Assert.Equal("SomeStreet", state.AttemptedValue);
+            Assert.Equal("SomeStreet", state.RawValue);
             Assert.Empty(state.Errors);
             Assert.Equal(ModelValidationState.Valid, state.ValidationState);
         }
@@ -199,9 +197,8 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var entry = Assert.Single(modelState);
             Assert.Equal("Address.Street", entry.Key);
             var state = entry.Value;
-            Assert.NotNull(state.Value);
-            Assert.Equal("SomeStreet", state.Value.AttemptedValue);
-            Assert.Equal("SomeStreet", state.Value.RawValue);
+            Assert.Equal("SomeStreet", state.AttemptedValue);
+            Assert.Equal("SomeStreet", state.RawValue);
             Assert.Empty(state.Errors);
             Assert.Equal(ModelValidationState.Valid, state.ValidationState);
         }
@@ -241,9 +238,8 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var entry = Assert.Single(modelState);
             Assert.Equal("Address[0].Street", entry.Key);
             var state = entry.Value;
-            Assert.NotNull(state.Value);
-            Assert.Equal("SomeStreet", state.Value.AttemptedValue);
-            Assert.Equal("SomeStreet", state.Value.RawValue);
+            Assert.Equal("SomeStreet", state.AttemptedValue);
+            Assert.Equal("SomeStreet", state.RawValue);
             Assert.Empty(state.Errors);
             Assert.Equal(ModelValidationState.Valid, state.ValidationState);
         }
@@ -283,9 +279,8 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var entry = Assert.Single(modelState);
             Assert.Equal("Address[0].Street", entry.Key);
             var state = entry.Value;
-            Assert.NotNull(state.Value);
-            Assert.Equal("SomeStreet", state.Value.AttemptedValue);
-            Assert.Equal("SomeStreet", state.Value.RawValue);
+            Assert.Equal("SomeStreet", state.AttemptedValue);
+            Assert.Equal("SomeStreet", state.RawValue);
             Assert.Empty(state.Errors);
             Assert.Equal(ModelValidationState.Valid, state.ValidationState);
         }
@@ -345,9 +340,8 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var entry = Assert.Single(modelState);
             Assert.Equal("Address[0].Street", entry.Key);
             var state = entry.Value;
-            Assert.NotNull(state.Value);
-            Assert.Equal("SomeStreet", state.Value.AttemptedValue);
-            Assert.Equal("SomeStreet", state.Value.RawValue);
+            Assert.Equal("SomeStreet", state.AttemptedValue);
+            Assert.Equal("SomeStreet", state.RawValue);
             Assert.Empty(state.Errors);
             Assert.Equal(ModelValidationState.Valid, state.ValidationState);
         }
@@ -387,7 +381,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var state = entry.Value;
             Assert.NotNull(state);
             Assert.Equal(ModelValidationState.Valid, state.ValidationState);
-            Assert.Equal("SomeStreet", state.Value.RawValue);
+            Assert.Equal("SomeStreet", state.RawValue);
         }
 
         private class Person4
@@ -425,9 +419,8 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var entry = Assert.Single(modelState);
             Assert.Equal("Address[0].Street", entry.Key);
             var state = entry.Value;
-            Assert.NotNull(state.Value);
-            Assert.Equal("SomeStreet", state.Value.AttemptedValue);
-            Assert.Equal("SomeStreet", state.Value.RawValue);
+            Assert.Equal("SomeStreet", state.AttemptedValue);
+            Assert.Equal("SomeStreet", state.RawValue);
             Assert.Empty(state.Errors);
             Assert.Equal(ModelValidationState.Valid, state.ValidationState);
         }
@@ -474,9 +467,8 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var entry = Assert.Single(modelState);
             Assert.Equal("Address[0].Street", entry.Key);
             var state = entry.Value;
-            Assert.NotNull(state.Value);
-            Assert.Equal("SomeStreet", state.Value.AttemptedValue);
-            Assert.Equal("SomeStreet", state.Value.RawValue);
+            Assert.Equal("SomeStreet", state.AttemptedValue);
+            Assert.Equal("SomeStreet", state.RawValue);
             Assert.Empty(state.Errors);
             Assert.Equal(ModelValidationState.Valid, state.ValidationState);
         }
@@ -550,9 +542,8 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var entry = Assert.Single(modelState);
             Assert.Equal("prefix.Street", entry.Key);
             var state = entry.Value;
-            Assert.NotNull(state.Value);
-            Assert.Equal("SomeStreet", state.Value.AttemptedValue);
-            Assert.Equal("SomeStreet", state.Value.RawValue);
+            Assert.Equal("SomeStreet", state.AttemptedValue);
+            Assert.Equal("SomeStreet", state.RawValue);
             Assert.Empty(state.Errors);
             Assert.Equal(ModelValidationState.Valid, state.ValidationState);
         }
@@ -585,9 +576,8 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var entry = Assert.Single(modelState);
             Assert.Equal("prefix.Street", entry.Key);
             var state = entry.Value;
-            Assert.NotNull(state.Value);
-            Assert.Equal("SomeStreet", state.Value.AttemptedValue);
-            Assert.Equal("SomeStreet", state.Value.RawValue);
+            Assert.Equal("SomeStreet", state.AttemptedValue);
+            Assert.Equal("SomeStreet", state.RawValue);
             Assert.Empty(state.Errors);
             Assert.Equal(ModelValidationState.Valid, state.ValidationState);
         }
@@ -689,9 +679,8 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var entry = Assert.Single(modelState);
             Assert.Equal("prefix.Address.Street", entry.Key);
             var state = entry.Value;
-            Assert.NotNull(state.Value);
-            Assert.Equal("SomeStreet", state.Value.AttemptedValue);
-            Assert.Equal("SomeStreet", state.Value.RawValue);
+            Assert.Equal("SomeStreet", state.AttemptedValue);
+            Assert.Equal("SomeStreet", state.RawValue);
             Assert.Empty(state.Errors);
             Assert.Equal(ModelValidationState.Valid, state.ValidationState);
         }
@@ -726,9 +715,8 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var entry = Assert.Single(modelState);
             Assert.Equal("prefix.Address[0].Street", entry.Key);
             var state = entry.Value;
-            Assert.NotNull(state.Value);
-            Assert.Equal("SomeStreet", state.Value.AttemptedValue);
-            Assert.Equal("SomeStreet", state.Value.RawValue);
+            Assert.Equal("SomeStreet", state.AttemptedValue);
+            Assert.Equal("SomeStreet", state.RawValue);
             Assert.Empty(state.Errors);
             Assert.Equal(ModelValidationState.Valid, state.ValidationState);
         }
@@ -768,9 +756,8 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var entry = Assert.Single(modelState);
             Assert.Equal("prefix.Address[0].Street", entry.Key);
             var state = entry.Value;
-            Assert.NotNull(state.Value);
-            Assert.Equal("SomeStreet", state.Value.AttemptedValue);
-            Assert.Equal("SomeStreet", state.Value.RawValue);
+            Assert.Equal("SomeStreet", state.AttemptedValue);
+            Assert.Equal("SomeStreet", state.RawValue);
             Assert.Empty(state.Errors);
             Assert.Equal(ModelValidationState.Valid, state.ValidationState);
         }
@@ -820,9 +807,8 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var entry = Assert.Single(modelState);
             Assert.Equal("prefix.Address[0].Street", entry.Key);
             var state = entry.Value;
-            Assert.NotNull(state.Value);
-            Assert.Equal("SomeStreet", state.Value.AttemptedValue);
-            Assert.Equal("SomeStreet", state.Value.RawValue);
+            Assert.Equal("SomeStreet", state.AttemptedValue);
+            Assert.Equal("SomeStreet", state.RawValue);
             Assert.Empty(state.Errors);
             Assert.Equal(ModelValidationState.Valid, state.ValidationState);
         }
@@ -857,7 +843,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var state = entry.Value;
             Assert.NotNull(state);
             Assert.Equal(ModelValidationState.Valid, state.ValidationState);
-            Assert.Equal("SomeStreet", state.Value.RawValue);
+            Assert.Equal("SomeStreet", state.RawValue);
         }
 
         [Fact]
@@ -890,9 +876,8 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var entry = Assert.Single(modelState);
             Assert.Equal("prefix.Address[0].Street", entry.Key);
             var state = entry.Value;
-            Assert.NotNull(state.Value);
-            Assert.Equal("SomeStreet", state.Value.AttemptedValue);
-            Assert.Equal("SomeStreet", state.Value.RawValue);
+            Assert.Equal("SomeStreet", state.AttemptedValue);
+            Assert.Equal("SomeStreet", state.RawValue);
             Assert.Empty(state.Errors);
             Assert.Equal(ModelValidationState.Valid, state.ValidationState);
         }
@@ -939,9 +924,8 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var entry = Assert.Single(modelState);
             Assert.Equal("prefix.Address[0].Street", entry.Key);
             var state = entry.Value;
-            Assert.NotNull(state.Value);
-            Assert.Equal("SomeStreet", state.Value.AttemptedValue);
-            Assert.Equal("SomeStreet", state.Value.RawValue);
+            Assert.Equal("SomeStreet", state.AttemptedValue);
+            Assert.Equal("SomeStreet", state.RawValue);
             Assert.Empty(state.Errors);
             Assert.Equal(ModelValidationState.Valid, state.ValidationState);
         }

@@ -2086,13 +2086,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Assert
             var result = await ReadValue<UserWithAddress>(response);
-
-            // Though posted content did not contain any valid Addresses, it is bound as a single-element List
-            // containing null. Slightly odd behavior is specific to this unusual error case: CollectionModelBinder
-            // attempted to bind a comma-separated string as a collection and Address lacks a from-string conversion.
-            // MutableObjectModelBinder does not create model when value providers have no data (unless at top level).
-            var address = Assert.Single(result.Addresses);
-            Assert.Null(address);
+            Assert.Empty(result.Addresses);
         }
 
         [Fact]
@@ -2153,12 +2147,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Assert
             var result = await ReadValue<PeopleModel>(response);
 
-            // Though posted content did not contain any valid People, it is bound as a single-element List
-            // containing null. Slightly odd behavior is specific to this unusual error case: CollectionModelBinder
-            // attempted to bind a comma-separated string as a collection and Address lacks a from-string conversion.
-            // MutableObjectModelBinder does not create model when value providers have no data (unless at top level).
-            var person = Assert.Single(result.People);
-            Assert.Null(person);
+            Assert.Empty(result.People);
         }
 
         [Theory]

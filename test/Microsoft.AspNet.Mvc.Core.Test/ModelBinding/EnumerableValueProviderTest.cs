@@ -167,8 +167,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal("someOtherValue", result.RawValue);
-            Assert.Equal("someOtherValue", result.AttemptedValue);
+            Assert.Equal("someOtherValue", (string)result);
             Assert.Equal(culture, result.Culture);
         }
 
@@ -184,8 +183,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(new[] { "someValue1", "someValue2" }, (IList<string>)result.RawValue);
-            Assert.Equal("someValue1,someValue2", result.AttemptedValue);
+            Assert.Equal(new[] { "someValue1", "someValue2" }, result.Values);
+            Assert.Equal("someValue1,someValue2", (string)result);
             Assert.Equal(culture, result.Culture);
         }
 
@@ -202,7 +201,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var result = await valueProvider.GetValueAsync(key);
 
             // Assert
-            Assert.Null(result);
+            Assert.Equal(ValueProviderResult.None, result);
         }
 
         [Fact]
@@ -220,8 +219,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var result = await valueProvider.GetValueAsync("key");
 
             // Assert
-            Assert.Equal(new[] { null, null, "value" }, result.RawValue as IEnumerable<string>);
-            Assert.Equal(",,value", result.AttemptedValue);
+            Assert.Equal(new[] { null, null, "value" }, result.Values);
+            Assert.Equal(",,value", (string)result);
         }
 
         [Fact]
@@ -234,7 +233,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var result = await valueProvider.GetValueAsync("prefix");
 
             // Assert
-            Assert.Null(result);
+            Assert.Equal(ValueProviderResult.None, result);
         }
 
         [Fact]

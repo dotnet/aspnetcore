@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
@@ -68,7 +69,7 @@ namespace Microsoft.AspNet.Mvc.Test
             var expectedMessage = PlatformNormalizer.NormalizeContent("The MyProperty field is required.");
             var binders = new IModelBinder[]
             {
-                new TypeConverterModelBinder(),
+                new SimpleTypeModelBinder(),
                 new MutableObjectModelBinder()
             };
 
@@ -107,7 +108,7 @@ namespace Microsoft.AspNet.Mvc.Test
             // Arrange
             var binders = new IModelBinder[]
             {
-                new TypeConverterModelBinder(),
+                new SimpleTypeModelBinder(),
                 new MutableObjectModelBinder()
             };
 
@@ -181,7 +182,7 @@ namespace Microsoft.AspNet.Mvc.Test
             // Arrange
             var binders = new IModelBinder[]
             {
-                new TypeConverterModelBinder(),
+                new SimpleTypeModelBinder(),
                 new MutableObjectModelBinder()
             };
 
@@ -270,7 +271,7 @@ namespace Microsoft.AspNet.Mvc.Test
             // Arrange
             var binders = new IModelBinder[]
             {
-                new TypeConverterModelBinder(),
+                new SimpleTypeModelBinder(),
                 new MutableObjectModelBinder()
             };
 
@@ -322,7 +323,7 @@ namespace Microsoft.AspNet.Mvc.Test
             // Arrange
             var binders = new IModelBinder[]
             {
-                new TypeConverterModelBinder(),
+                new SimpleTypeModelBinder(),
                 new MutableObjectModelBinder()
             };
 
@@ -528,7 +529,7 @@ namespace Microsoft.AspNet.Mvc.Test
             // Arrange
             var binders = new IModelBinder[]
             {
-                new TypeConverterModelBinder(),
+                new SimpleTypeModelBinder(),
                 new MutableObjectModelBinder()
             };
 
@@ -619,7 +620,7 @@ namespace Microsoft.AspNet.Mvc.Test
             // Arrange
             var binders = new IModelBinder[]
             {
-                new TypeConverterModelBinder(),
+                new SimpleTypeModelBinder(),
                 new MutableObjectModelBinder()
             };
 
@@ -875,6 +876,514 @@ namespace Microsoft.AspNet.Mvc.Test
         {
             public string Name { get; set; }
             public Address Address { get; set; }
+        }
+
+        [Fact]
+        public void ConvertTo_ReturnsNullForReferenceTypes_WhenValueIsNull()
+        {
+            var convertedValue = ModelBindingHelper.ConvertTo(null, typeof(string));
+            Assert.Null(convertedValue);
+        }
+
+        [Fact]
+        public void ConvertTo_ReturnsDefaultForValueTypes_WhenValueIsNull()
+        {
+            var convertedValue = ModelBindingHelper.ConvertTo(null, typeof(int));
+            Assert.Equal(0, convertedValue);
+        }
+
+        [Fact]
+        public void ConvertToCanConvertArraysToSingleElements()
+        {
+            // Arrange
+            var value = new int[] { 1, 20, 42 };
+
+            // Act
+            var converted = ModelBindingHelper.ConvertTo(value, typeof(string));
+
+            // Assert
+            Assert.Equal("1", converted);
+        }
+
+        [Fact]
+        public void ConvertToCanConvertSingleElementsToArrays()
+        {
+            // Arrange
+            var value = 42;
+
+            // Act
+            var converted = ModelBindingHelper.ConvertTo<string[]>(value);
+
+            // Assert
+            Assert.NotNull(converted);
+            var result = Assert.Single(converted);
+            Assert.Equal("42", result);
+        }
+
+        [Fact]
+        public void ConvertToCanConvertSingleElementsToSingleElements()
+        {
+            // Arrange
+
+            // Act
+            var converted = ModelBindingHelper.ConvertTo<string>(42);
+
+            // Assert
+            Assert.NotNull(converted);
+            Assert.Equal("42", converted);
+        }
+
+        [Fact]
+        public void ConvertingNullStringToNullableIntReturnsNull()
+        {
+            // Arrange
+
+            // Act
+            var returned = ModelBindingHelper.ConvertTo<int?>(null);
+
+            // Assert
+            Assert.Equal(returned, null);
+        }
+
+        [Fact]
+        public void ConvertingWhiteSpaceStringToNullableIntReturnsNull()
+        {
+            // Arrange
+            var original = " ";
+
+            // Act
+            var returned = ModelBindingHelper.ConvertTo<int?>(original);
+
+            // Assert
+            Assert.Equal(returned, null);
+        }
+
+        [Fact]
+        public void ConvertToReturnsNullIfArrayElementValueIsNull()
+        {
+            // Arrange
+
+            // Act
+            var outValue = ModelBindingHelper.ConvertTo(new string[] { null }, typeof(int));
+
+            // Assert
+            Assert.Null(outValue);
+        }
+
+        [Fact]
+        public void ConvertToReturnsNullIfTryingToConvertEmptyArrayToSingleElement()
+        {
+            // Arrange
+
+            // Act
+            var outValue = ModelBindingHelper.ConvertTo(new int[0], typeof(int));
+
+            // Assert
+            Assert.Null(outValue);
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(" \t \r\n ")]
+        public void ConvertToReturnsNullIfTrimmedValueIsEmptyString(object value)
+        {
+            // Arrange
+            // Act
+            var outValue = ModelBindingHelper.ConvertTo(value, typeof(int));
+
+            // Assert
+            Assert.Null(outValue);
+        }
+
+        [Fact]
+        public void ConvertToReturnsNullIfTrimmedValueIsEmptyString()
+        {
+            // Arrange
+
+            // Act
+            var outValue = ModelBindingHelper.ConvertTo(null, typeof(int[]));
+
+            // Assert
+            Assert.Null(outValue);
+        }
+
+        [Fact]
+        public void ConvertToReturnsValueIfArrayElementIsIntegerAndDestinationTypeIsEnum()
+        {
+            // Arrange
+
+            // Act
+            var outValue = ModelBindingHelper.ConvertTo(new object[] { 1 }, typeof(IntEnum));
+
+            // Assert
+            Assert.Equal(outValue, IntEnum.Value1);
+        }
+
+        [Theory]
+        [InlineData(1, typeof(IntEnum), IntEnum.Value1)]
+        [InlineData(1L, typeof(LongEnum), LongEnum.Value1)]
+        [InlineData(long.MaxValue, typeof(LongEnum), LongEnum.MaxValue)]
+        [InlineData(1U, typeof(UnsignedIntEnum), UnsignedIntEnum.Value1)]
+        [InlineData(1UL, typeof(IntEnum), IntEnum.Value1)]
+        [InlineData((byte)1, typeof(ByteEnum), ByteEnum.Value1)]
+        [InlineData(byte.MaxValue, typeof(ByteEnum), ByteEnum.MaxValue)]
+        [InlineData((sbyte)1, typeof(ByteEnum), ByteEnum.Value1)]
+        [InlineData((short)1, typeof(IntEnum), IntEnum.Value1)]
+        [InlineData((ushort)1, typeof(IntEnum), IntEnum.Value1)]
+        [InlineData(int.MaxValue, typeof(IntEnum?), IntEnum.MaxValue)]
+        [InlineData(null, typeof(IntEnum?), null)]
+        [InlineData(1L, typeof(LongEnum?), LongEnum.Value1)]
+        [InlineData(null, typeof(LongEnum?), null)]
+        [InlineData(uint.MaxValue, typeof(UnsignedIntEnum?), UnsignedIntEnum.MaxValue)]
+        [InlineData((byte)1, typeof(ByteEnum?), ByteEnum.Value1)]
+        [InlineData(null, typeof(ByteEnum?), null)]
+        [InlineData((ushort)1, typeof(LongEnum?), LongEnum.Value1)]
+        public void ConvertToReturnsValueIfArrayElementIsAnyIntegerTypeAndDestinationTypeIsEnum(
+            object input,
+            Type enumType,
+            object expected)
+        {
+            // Arrange
+
+            // Act
+            var outValue = ModelBindingHelper.ConvertTo(new object[] { input }, enumType);
+
+            // Assert
+            Assert.Equal(expected, outValue);
+        }
+
+        [Fact]
+        public void ConvertToReturnsValueIfArrayElementIsStringValueAndDestinationTypeIsEnum()
+        {
+            // Arrange
+
+            // Act
+            var outValue = ModelBindingHelper.ConvertTo(new object[] { "1" }, typeof(IntEnum));
+
+            // Assert
+            Assert.Equal(outValue, IntEnum.Value1);
+        }
+
+        [Fact]
+        public void ConvertToReturnsValueIfArrayElementIsStringKeyAndDestinationTypeIsEnum()
+        {
+            // Arrange
+
+            // Act
+            var outValue = ModelBindingHelper.ConvertTo(new object[] { "Value1" }, typeof(IntEnum));
+
+            // Assert
+            Assert.Equal(outValue, IntEnum.Value1);
+        }
+
+        [Fact]
+        public void ConvertToReturnsValueIfElementIsStringAndDestinationIsNullableInteger()
+        {
+            // Arrange
+
+            // Act
+            var outValue = ModelBindingHelper.ConvertTo("12", typeof(int?));
+
+            // Assert
+            Assert.Equal(12, outValue);
+        }
+
+        [Fact]
+        public void ConvertToReturnsValueIfElementIsStringAndDestinationIsNullableDouble()
+        {
+            // Arrange
+
+            // Act
+            var outValue = ModelBindingHelper.ConvertTo("12.5", typeof(double?));
+
+            // Assert
+            Assert.Equal(12.5, outValue);
+        }
+
+        [Fact]
+        public void ConvertToReturnsValueIfElementIsDecimalAndDestinationIsNullableInteger()
+        {
+            // Arrange
+
+            // Act
+            var outValue = ModelBindingHelper.ConvertTo(12M, typeof(int?));
+
+            // Assert
+            Assert.Equal(12, outValue);
+        }
+
+        [Fact]
+        public void ConvertToReturnsValueIfElementIsDecimalAndDestinationIsNullableDouble()
+        {
+            // Arrange
+
+            // Act
+            var outValue = ModelBindingHelper.ConvertTo(12.5M, typeof(double?));
+
+            // Assert
+            Assert.Equal(12.5, outValue);
+        }
+
+        [Fact]
+        public void ConvertToReturnsValueIfElementIsDecimalDoubleAndDestinationIsNullableInteger()
+        {
+            // Arrange
+
+            // Act
+            var outValue = ModelBindingHelper.ConvertTo(12M, typeof(int?));
+
+            // Assert
+            Assert.Equal(12, outValue);
+        }
+
+        [Fact]
+        public void ConvertToReturnsValueIfElementIsDecimalDoubleAndDestinationIsNullableLong()
+        {
+            // Arrange
+
+            // Act
+            var outValue = ModelBindingHelper.ConvertTo(12M, typeof(long?));
+
+            // Assert
+            Assert.Equal(12L, outValue);
+        }
+
+        [Fact]
+        public void ConvertToReturnsValueIfArrayElementInstanceOfDestinationType()
+        {
+            // Arrange
+
+            // Act
+            var outValue = ModelBindingHelper.ConvertTo(new object[] { "some string" }, typeof(string));
+
+            // Assert
+            Assert.Equal("some string", outValue);
+        }
+
+        [Theory]
+        [InlineData(new object[] { new[] { 1, 0 } })]
+        [InlineData(new object[] { new[] { "Value1", "Value0" } })]
+        [InlineData(new object[] { new[] { "Value1", "value0" } })]
+        public void ConvertTo_ConvertsEnumArrays(object value)
+        {
+            // Arrange
+
+            // Act
+            var outValue = ModelBindingHelper.ConvertTo(value, typeof(IntEnum[]));
+
+            // Assert
+            var result = Assert.IsType<IntEnum[]>(outValue);
+            Assert.Equal(2, result.Length);
+            Assert.Equal(IntEnum.Value1, result[0]);
+            Assert.Equal(IntEnum.Value0, result[1]);
+        }
+
+        [Theory]
+        [InlineData(new object[] { new[] { 1, 2 }, new[] { FlagsEnum.Value1, FlagsEnum.Value2 } })]
+        [InlineData(new object[] { new[] { "Value1", "Value2" }, new[] { FlagsEnum.Value1, FlagsEnum.Value2 } })]
+        [InlineData(new object[] { new[] { 5, 2 }, new[] { FlagsEnum.Value1 | FlagsEnum.Value4, FlagsEnum.Value2 } })]
+        public void ConvertTo_ConvertsFlagsEnumArrays(object value, FlagsEnum[] expected)
+        {
+            // Arrange
+
+            // Act
+            var outValue = ModelBindingHelper.ConvertTo(value, typeof(FlagsEnum[]));
+
+            // Assert
+            var result = Assert.IsType<FlagsEnum[]>(outValue);
+            Assert.Equal(2, result.Length);
+            Assert.Equal(expected[0], result[0]);
+            Assert.Equal(expected[1], result[1]);
+        }
+
+        [Fact]
+        public void ConvertToReturnsValueIfInstanceOfDestinationType()
+        {
+            // Arrange
+            var original = new[] { "some string" };
+
+            // Act
+            var outValue = ModelBindingHelper.ConvertTo(original, typeof(string[]));
+
+            // Assert
+            Assert.Same(original, outValue);
+        }
+
+        [Theory]
+        [InlineData(typeof(int))]
+        [InlineData(typeof(double?))]
+        [InlineData(typeof(IntEnum?))]
+        public void ConvertToThrowsIfConverterThrows(Type destinationType)
+        {
+            // Arrange
+
+            // Act & Assert
+            var ex = Assert.Throws<FormatException>(
+                () => ModelBindingHelper.ConvertTo("this-is-not-a-valid-value", destinationType));
+        }
+
+        [Fact]
+        public void ConvertToThrowsIfNoConverterExists()
+        {
+            // Arrange
+            var destinationType = typeof(MyClassWithoutConverter);
+
+            // Act & Assert
+            var ex = Assert.Throws<InvalidOperationException>(
+                () => ModelBindingHelper.ConvertTo("x", destinationType));
+            Assert.Equal("The parameter conversion from type 'System.String' to type " +
+                        $"'{typeof(MyClassWithoutConverter).FullName}' " +
+                        "failed because no type converter can convert between these types.",
+                         ex.Message);
+        }
+
+        [Fact]
+        public void ConvertToUsesProvidedCulture()
+        {
+            // Arrange
+
+            // Act
+            var cultureResult = ModelBindingHelper.ConvertTo("12,5", typeof(decimal), new CultureInfo("fr-FR"));
+
+            // Assert
+            Assert.Equal(12.5M, cultureResult);
+            Assert.Throws<FormatException>(
+                () => ModelBindingHelper.ConvertTo("12,5", typeof(decimal), new CultureInfo("en-GB")));
+        }
+
+        [Theory]
+        [MemberData(nameof(IntrinsicConversionData))]
+        public void ConvertToCanConvertIntrinsics<T>(object initialValue, T expectedValue)
+        {
+            // Arrange
+
+            // Act & Assert
+            Assert.Equal(expectedValue, ModelBindingHelper.ConvertTo(initialValue, typeof(T)));
+        }
+
+        public static IEnumerable<object[]> IntrinsicConversionData
+        {
+            get
+            {
+                yield return new object[] { 42, 42L };
+                yield return new object[] { 42, (short)42 };
+                yield return new object[] { 42, (float)42.0 };
+                yield return new object[] { 42, (double)42.0 };
+                yield return new object[] { 42M, 42 };
+                yield return new object[] { 42L, 42 };
+                yield return new object[] { 42, (byte)42 };
+                yield return new object[] { (short)42, 42 };
+                yield return new object[] { (float)42.0, 42 };
+                yield return new object[] { (double)42.0, 42 };
+                yield return new object[] { (byte)42, 42 };
+                yield return new object[] { "2008-01-01", new DateTime(2008, 01, 01) };
+                yield return new object[] { "00:00:20", TimeSpan.FromSeconds(20) };
+                yield return new object[]
+                {
+                    "c6687d3a-51f9-4159-8771-a66d2b7d7038",
+                    Guid.Parse("c6687d3a-51f9-4159-8771-a66d2b7d7038")
+                };
+            }
+        }
+
+        [Theory]
+        [InlineData(typeof(TimeSpan))]
+        [InlineData(typeof(DateTime))]
+        [InlineData(typeof(DateTimeOffset))]
+        [InlineData(typeof(Guid))]
+        [InlineData(typeof(IntEnum))]
+        public void ConvertTo_Throws_IfValueIsNotStringData(Type destinationType)
+        {
+            // Arrange
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(
+                () => ModelBindingHelper.ConvertTo(new MyClassWithoutConverter(), destinationType));
+
+            // Assert
+            var expectedMessage = string.Format("The parameter conversion from type '{0}' to type '{1}' " +
+                                                "failed because no type converter can convert between these types.",
+                                                typeof(MyClassWithoutConverter), destinationType);
+            Assert.Equal(expectedMessage, ex.Message);
+        }
+
+        [Fact]
+        public void ConvertTo_Throws_IfDestinationTypeIsNotConvertible()
+        {
+            // Arrange
+            var value = "Hello world";
+            var destinationType = typeof(MyClassWithoutConverter);
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(
+                () => ModelBindingHelper.ConvertTo(value, destinationType));
+
+            // Assert
+            var expectedMessage = string.Format("The parameter conversion from type '{0}' to type '{1}' " +
+                                                "failed because no type converter can convert between these types.",
+                                                value.GetType(), typeof(MyClassWithoutConverter));
+            Assert.Equal(expectedMessage, ex.Message);
+        }
+
+        [Theory]
+        [InlineData(new object[] { 2, FlagsEnum.Value2 })]
+        [InlineData(new object[] { 5, FlagsEnum.Value1 | FlagsEnum.Value4 })]
+        [InlineData(new object[] { 15, FlagsEnum.Value1 | FlagsEnum.Value2 | FlagsEnum.Value4 | FlagsEnum.Value8 })]
+        [InlineData(new object[] { 16, (FlagsEnum)16 })]
+        [InlineData(new object[] { 0, (FlagsEnum)0 })]
+        [InlineData(new object[] { null, (FlagsEnum)0 })]
+        [InlineData(new object[] { "Value1,Value2", (FlagsEnum)3 })]
+        [InlineData(new object[] { "Value1,Value2,value4, value8", (FlagsEnum)15 })]
+        public void ConvertTo_ConvertsEnumFlags(object value, object expected)
+        {
+            // Arrange
+
+            // Act
+            var outValue = ModelBindingHelper.ConvertTo<FlagsEnum>(value);
+
+            // Assert
+            Assert.Equal(expected, outValue);
+        }
+
+        private class MyClassWithoutConverter
+        {
+        }
+
+        private enum IntEnum
+        {
+            Value0 = 0,
+            Value1 = 1,
+            MaxValue = int.MaxValue
+        }
+
+        private enum LongEnum : long
+        {
+            Value0 = 0L,
+            Value1 = 1L,
+            MaxValue = long.MaxValue
+        }
+
+        private enum UnsignedIntEnum : uint
+        {
+            Value0 = 0U,
+            Value1 = 1U,
+            MaxValue = uint.MaxValue
+        }
+
+        private enum ByteEnum : byte
+        {
+            Value0 = 0,
+            Value1 = 1,
+            MaxValue = byte.MaxValue
+        }
+
+        [Flags]
+        public enum FlagsEnum
+        {
+            Value1 = 1,
+            Value2 = 2,
+            Value4 = 4,
+            Value8 = 8
         }
     }
 }

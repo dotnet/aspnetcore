@@ -21,7 +21,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public async Task BindModel_Succeeds(bool isReadOnly)
         {
             // Arrange
-            var bindingContext = GetModelBindingContext(isReadOnly);
+            var values = new Dictionary<string, KeyValuePair<int, string>>()
+            {
+                { "someName[0]", new KeyValuePair<int, string>(42, "forty-two") },
+                { "someName[1]", new KeyValuePair<int, string>(84, "eighty-four") },
+            };
+
+            var bindingContext = GetModelBindingContext(isReadOnly, values);
             var modelState = bindingContext.ModelState;
             var binder = new DictionaryModelBinder<int, string>();
 
@@ -43,10 +49,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
-        public async Task BindModel_BindingContextModelNonNull_Succeeds(bool isReadOnly)
+        public async Task BindModel_WithExistingModel_Succeeds(bool isReadOnly)
         {
             // Arrange
-            var bindingContext = GetModelBindingContext(isReadOnly);
+            var values = new Dictionary<string, KeyValuePair<int, string>>()
+            {
+                { "someName[0]", new KeyValuePair<int, string>(42, "forty-two") },
+                { "someName[1]", new KeyValuePair<int, string>(84, "eighty-four") },
+            };
+
+            var bindingContext = GetModelBindingContext(isReadOnly, values);
             var modelState = bindingContext.ModelState;
             var dictionary = new Dictionary<int, string>();
             bindingContext.Model = dictionary;
@@ -430,8 +442,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         {
             var binders = new IModelBinder[]
             {
-                new TypeConverterModelBinder(),
-                new TypeMatchModelBinder(),
+                new SimpleTypeModelBinder(),
                 new MutableObjectModelBinder(),
             };
 
@@ -465,47 +476,49 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             return new TestValueProvider(BindingSource.Form, backingStore);
         }
 
-        private static ModelBindingContext GetModelBindingContext(bool isReadOnly)
+        private static ModelBindingContext GetModelBindingContext(
+            bool isReadOnly,
+            IDictionary<string, KeyValuePair<int, string>> values)
         {
             var metadataProvider = new TestModelMetadataProvider();
             metadataProvider.ForType<IDictionary<int, string>>().BindingDetails(bd => bd.IsReadOnly = isReadOnly);
-            var valueProvider = new SimpleHttpValueProvider
+
+            var binder = new Mock<IModelBinder>();
+            binder
+                .Setup(mb => mb.BindModelAsync(It.IsAny<ModelBindingContext>()))
+                .Returns<ModelBindingContext>(mbc =>
+                {
+                    KeyValuePair<int, string> value;
+                    if (values.TryGetValue(mbc.ModelName, out value))
+                    {
+                        return Task.FromResult(new ModelBindingResult(value, mbc.ModelName, isModelSet: true));
+                    }
+                    else
+                    {
+                        return Task.FromResult<ModelBindingResult>(null);
+                    }
+                });
+
+            var valueProvider = new SimpleValueProvider();
+            foreach (var kvp in values)
             {
-                { "someName[0]", new KeyValuePair<int, string>(42, "forty-two") },
-                { "someName[1]", new KeyValuePair<int, string>(84, "eighty-four") },
-            };
+                valueProvider.Add(kvp.Key, string.Empty);
+            }
 
             var bindingContext = new ModelBindingContext
             {
                 ModelMetadata = metadataProvider.GetMetadataForType(typeof(IDictionary<int, string>)),
                 ModelName = "someName",
-                ValueProvider = valueProvider,
                 OperationBindingContext = new OperationBindingContext
                 {
-                    ModelBinder = CreateKvpBinder(),
-                    MetadataProvider = metadataProvider
-                }
+                    ModelBinder = binder.Object,
+                    MetadataProvider = metadataProvider,
+                    ValueProvider = valueProvider,
+                },
+                ValueProvider = valueProvider,
             };
 
             return bindingContext;
-        }
-
-        private static IModelBinder CreateKvpBinder()
-        {
-            Mock<IModelBinder> mockKvpBinder = new Mock<IModelBinder>();
-            mockKvpBinder
-                .Setup(o => o.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                .Returns(async (ModelBindingContext mbc) =>
-                {
-                    var value = await mbc.ValueProvider.GetValueAsync(mbc.ModelName);
-                    if (value != null)
-                    {
-                        var model = value.ConvertTo(mbc.ModelType);
-                        return new ModelBindingResult(model, key: null, isModelSet: true);
-                    }
-                    return null;
-                });
-            return mockKvpBinder.Object;
         }
 
         private class ModelWithDictionaryProperties

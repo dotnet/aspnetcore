@@ -102,7 +102,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.True(modelState.IsValid);
             var entry = Assert.Single(modelState);
             Assert.Empty(entry.Key);
-            Assert.Null(entry.Value.Value.RawValue);
+            Assert.Null(entry.Value.RawValue);
         }
 
         private class Person4
@@ -112,7 +112,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public int Address { get; set; }
         }
 
-        [Fact]
+        [Fact(Skip = "#2722 validation error from formatter is recorded with the wrong key.")]
         public async Task FromBodyAndRequiredOnValueTypeProperty_EmptyBody_JsonFormatterAddsModelStateError()
         {
             // Arrange
@@ -146,7 +146,9 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             Assert.False(modelState.IsValid);
             var entry = Assert.Single(modelState);
-            Assert.Equal(string.Empty, entry.Key);
+            Assert.Equal("CustomParameter.Address", entry.Key);
+            Assert.Null(entry.Value.AttemptedValue);
+            Assert.Same(boundPerson, entry.Value.RawValue);
             var error = Assert.Single(entry.Value.Errors);
             Assert.NotNull(error.Exception);
 

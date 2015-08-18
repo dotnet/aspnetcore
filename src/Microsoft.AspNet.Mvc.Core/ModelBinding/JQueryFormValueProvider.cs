@@ -73,16 +73,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             string[] values;
             if (dictionary.TryGetValue(key, out values) && values != null && values.Length > 0)
             {
-                // Success.
-                if (values.Length == 1)
-                {
-                    return new ValueProviderResult(values[0], values[0], Culture);
-                }
-
-                return new ValueProviderResult(values, string.Join(",", values), Culture);
+                return new ValueProviderResult(values, Culture);
             }
 
-            return null;
+            return ValueProviderResult.None;
         }
 
         private async Task<IDictionary<string, string[]>> GetDictionary()

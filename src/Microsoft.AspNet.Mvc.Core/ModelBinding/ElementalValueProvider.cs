@@ -7,33 +7,36 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
-    // Represents a value provider that contains a single value.
-    internal sealed class ElementalValueProvider : IValueProvider
+    public class ElementalValueProvider : IValueProvider
     {
-        public ElementalValueProvider(string name, object rawValue, CultureInfo culture)
+        public ElementalValueProvider(string key, string value, CultureInfo culture)
         {
-            Name = name;
-            RawValue = rawValue;
+            Key = key;
+            Value = value;
             Culture = culture;
         }
 
-        public CultureInfo Culture { get; private set; }
+        public CultureInfo Culture { get; }
 
-        public string Name { get; private set; }
+        public string Key { get; }
 
-        public object RawValue { get; private set; }
+        public string Value { get; }
 
         public Task<bool> ContainsPrefixAsync(string prefix)
         {
-            return Task.FromResult(PrefixContainer.IsPrefixMatch(prefix, Name));
+            return Task.FromResult(PrefixContainer.IsPrefixMatch(prefix, Key));
         }
 
         public Task<ValueProviderResult> GetValueAsync(string key)
         {
-            var result = string.Equals(key, Name, StringComparison.OrdinalIgnoreCase) ?
-                                new ValueProviderResult(RawValue, Convert.ToString(RawValue, Culture), Culture) :
-                                null;
-            return Task.FromResult(result);
+            if (string.Equals(key, Key, StringComparison.OrdinalIgnoreCase))
+            {
+                return Task.FromResult(new ValueProviderResult(Value, Culture));
+            }
+            else
+            {
+                return Task.FromResult(ValueProviderResult.None);
+            }
         }
     }
 }

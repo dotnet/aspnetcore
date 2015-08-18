@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public async Task BindModel_MissingKey_ReturnsResult_AndAddsModelValidationError()
         {
             // Arrange
-            var valueProvider = new SimpleHttpValueProvider();
+            var valueProvider = new SimpleValueProvider();
 
             // Create string binder to create the value but not the key.
             var bindingContext = GetBindingContext(valueProvider, CreateStringBinder());
@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public async Task BindModel_MissingValue_ReturnsResult_AndAddsModelValidationError()
         {
             // Arrange
-            var valueProvider = new SimpleHttpValueProvider();
+            var valueProvider = new SimpleValueProvider();
 
             // Create int binder to create the value but not the key.
             var bindingContext = GetBindingContext(valueProvider, CreateIntBinder());
@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public async Task BindModel_MissingKeyAndMissingValue_DoNotAddModelStateError()
         {
             // Arrange
-            var valueProvider = new SimpleHttpValueProvider();
+            var valueProvider = new SimpleValueProvider();
 
             // Create int binder to create the value but not the key.
             var bindingContext = GetBindingContext(valueProvider);
@@ -89,7 +89,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         {
             // Arrange
             var innerBinder = new CompositeModelBinder(new[] { CreateStringBinder(), CreateIntBinder() });
-            var valueProvider = new SimpleHttpValueProvider();
+            var valueProvider = new SimpleValueProvider();
             var bindingContext = GetBindingContext(valueProvider, innerBinder);
 
             var binder = new KeyValuePairModelBinder<int, string>();
@@ -134,7 +134,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                     Assert.Equal("someName.key", context.ModelName);
                     return Task.FromResult(innerResult);
                 });
-            var bindingContext = GetBindingContext(new SimpleHttpValueProvider(), innerBinder.Object);
+            var bindingContext = GetBindingContext(new SimpleValueProvider(), innerBinder.Object);
 
             var binder = new KeyValuePairModelBinder<int, string>();
             var modelValidationNodeList = new List<ModelValidationNode>();
@@ -238,7 +238,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 {
                     HttpContext = new DefaultHttpContext(),
                     MetadataProvider = new TestModelMetadataProvider(),
-                    ModelBinder = new TypeMatchModelBinder(),
+                    ModelBinder = new SimpleTypeModelBinder(),
                 }
             };
 

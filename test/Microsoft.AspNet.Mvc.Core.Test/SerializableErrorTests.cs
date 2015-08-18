@@ -72,10 +72,10 @@ namespace Microsoft.AspNet.Mvc
             var modelState = new ModelStateDictionary();
             modelState.Add(
                 "key1",
-                new ModelState() { Value = new ValueProviderResult("foo", "foo", CultureInfo.InvariantCulture) });
+                new ModelState());
             modelState.Add(
                 "key2",
-                new ModelState() { Value = new ValueProviderResult("bar", "bar", CultureInfo.InvariantCulture) });
+                new ModelState());
 
             // Act
             var serializableError = new SerializableError(modelState);

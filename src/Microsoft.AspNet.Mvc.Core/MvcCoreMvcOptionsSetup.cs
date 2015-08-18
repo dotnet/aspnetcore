@@ -28,8 +28,7 @@ namespace Microsoft.AspNet.Mvc
             options.ModelBinders.Add(new ServicesModelBinder());
             options.ModelBinders.Add(new BodyModelBinder());
             options.ModelBinders.Add(new HeaderModelBinder());
-            options.ModelBinders.Add(new TypeConverterModelBinder());
-            options.ModelBinders.Add(new TypeMatchModelBinder());
+            options.ModelBinders.Add(new SimpleTypeModelBinder());
             options.ModelBinders.Add(new CancellationTokenModelBinder());
             options.ModelBinders.Add(new ByteArrayModelBinder());
             options.ModelBinders.Add(new FormFileModelBinder());

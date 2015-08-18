@@ -3,17 +3,29 @@
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
+    /// <summary>
+    /// An entry in a <see cref="ModelStateDictionary"/>.
+    /// </summary>
     public class ModelState
     {
-        private readonly ModelErrorCollection _errors = new ModelErrorCollection();
+        /// <summary>
+        /// Gets the raw value from the request associated with this entry.
+        /// </summary>
+        public object RawValue { get; set; }
 
-        public ValueProviderResult Value { get; set; }
+        /// <summary>
+        /// Gets the set of values contained in <see cref="RawValue"/>, joined into a comma-separated string.
+        /// </summary>
+        public string AttemptedValue { get; set; }
 
-        public ModelErrorCollection Errors
-        {
-            get { return _errors; }
-        }
+        /// <summary>
+        /// Gets the <see cref="ModelErrorCollection"/> for this entry.
+        /// </summary>
+        public ModelErrorCollection Errors { get; } = new ModelErrorCollection();
 
+        /// <summary>
+        /// Gets or sets the <see cref="ModelValidationState"/> for this entry.
+        /// </summary>
         public ModelValidationState ValidationState { get; set; }
     }
 }

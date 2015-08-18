@@ -109,8 +109,8 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("prefix.Address.Header", entry.Key);
             Assert.Empty(entry.Value.Errors);
             Assert.Equal(ModelValidationState.Valid, entry.Value.ValidationState);
-            Assert.Equal("someValue", entry.Value.Value.AttemptedValue);
-            Assert.Equal("someValue", entry.Value.Value.RawValue);
+            Assert.Equal("someValue", entry.Value.AttemptedValue);
+            Assert.Equal(new string[] { "someValue" }, entry.Value.RawValue);
         }
 
         // The scenario is interesting as we to bind the top level model we fallback to empty prefix,
@@ -152,8 +152,8 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("Address.Header", entry.Key);
             Assert.Empty(entry.Value.Errors);
             Assert.Equal(ModelValidationState.Valid, entry.Value.ValidationState);
-            Assert.Equal("someValue", entry.Value.Value.AttemptedValue);
-            Assert.Equal("someValue", entry.Value.Value.RawValue);
+            Assert.Equal("someValue", entry.Value.AttemptedValue);
+            Assert.Equal(new string[] { "someValue" }, entry.Value.RawValue);
         }
 
         [Theory]
@@ -162,9 +162,18 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
         public async Task BindParameterFromHeader_WithData_WithPrefix_ModelGetsBound(Type modelType, string value)
         {
             // Arrange
-            var expectedValue = modelType == typeof(string) ?
-                (object)value :
-                (object)value.Split(',').Select(v => v.Trim()).ToArray();
+            object expectedValue;
+            object expectedRawValue;
+            if (modelType == typeof(string))
+            {
+                expectedValue = value;
+                expectedRawValue = new string[] { value };
+            }
+            else
+            {
+                expectedValue = value.Split(',').Select(v => v.Trim()).ToArray();
+                expectedRawValue = expectedValue;
+            }
 
             var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
             var parameter = new ParameterDescriptor
@@ -204,8 +213,8 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("CustomParameter", entry.Key);
             Assert.Empty(entry.Value.Errors);
             Assert.Equal(ModelValidationState.Valid, entry.Value.ValidationState);
-            Assert.Equal(value, entry.Value.Value.AttemptedValue);
-            Assert.Equal(expectedValue, entry.Value.Value.RawValue);
+            Assert.Equal(value, entry.Value.AttemptedValue);
+            Assert.Equal(expectedRawValue, entry.Value.RawValue);
         }
     }
 }

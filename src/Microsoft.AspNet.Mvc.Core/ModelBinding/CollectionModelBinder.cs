@@ -56,31 +56,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var valueProviderResult = await bindingContext.ValueProvider.GetValueAsync(bindingContext.ModelName);
 
             CollectionResult result;
-            if (valueProviderResult == null)
+            if (valueProviderResult == ValueProviderResult.None)
             {
                 result = await BindComplexCollection(bindingContext);
             }
             else
             {
-                if (valueProviderResult.RawValue == null)
-                {
-                    // Value exists but is null. Handle similarly to fallback case above. This avoids a
-                    // ModelBindingResult with IsModelSet = true but ValidationNode = null.
-                    model = bindingContext.Model ?? CreateEmptyCollection(bindingContext.ModelType);
-                    var validationNode =
-                        new ModelValidationNode(bindingContext.ModelName, bindingContext.ModelMetadata, model);
-
-                    return new ModelBindingResult(
-                        model,
-                        bindingContext.ModelName,
-                        isModelSet: true,
-                        validationNode: validationNode);
-                }
-
-                result = await BindSimpleCollection(
-                    bindingContext,
-                    valueProviderResult.RawValue,
-                    valueProviderResult.Culture);
+                result = await BindSimpleCollection(bindingContext, valueProviderResult);
             }
 
             var boundCollection = result.Model;
@@ -92,6 +74,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 // Special case for TryUpdateModelAsync(collection, ...) scenarios. Model is null in all other cases.
                 CopyToModel(model, boundCollection);
+            }
+
+            if (valueProviderResult != ValueProviderResult.None)
+            {
+                // If we did simple binding, then modelstate should be updated to reflect what we bound for ModelName. 
+                // If we did complex binding, there will already be an entry for each index.
+                bindingContext.ModelState.SetModelValue(
+                    bindingContext.ModelName,
+                    valueProviderResult);
             }
 
             return new ModelBindingResult(
@@ -147,8 +138,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         // Internal for testing.
         internal async Task<CollectionResult> BindSimpleCollection(
             ModelBindingContext bindingContext,
-            object rawValue,
-            CultureInfo culture)
+            ValueProviderResult values)
         {
             var boundCollection = new List<TElement>();
 
@@ -159,8 +149,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 bindingContext.ModelName,
                 bindingContext.ModelMetadata,
                 boundCollection);
-            var rawValueArray = RawValueToObjectArray(rawValue);
-            foreach (var rawValueElement in rawValueArray)
+            foreach (var value in values)
             {
                 var innerBindingContext = ModelBindingContext.GetChildModelBindingContext(
                     bindingContext,
@@ -169,7 +158,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 innerBindingContext.ValueProvider = new CompositeValueProvider
                 {
                     // our temporary provider goes at the front of the list
-                    new ElementalValueProvider(bindingContext.ModelName, rawValueElement, culture),
+                    new ElementalValueProvider(bindingContext.ModelName, value, values.Culture),
                     bindingContext.ValueProvider
                 };
 
@@ -183,8 +172,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     {
                         validationNode.ChildNodes.Add(result.ValidationNode);
                     }
+
+                    boundCollection.Add(ModelBindingHelper.CastOrDefault<TElement>(boundValue));
                 }
-                boundCollection.Add(ModelBindingHelper.CastOrDefault<TElement>(boundValue));
             }
 
             return new CollectionResult
@@ -364,7 +354,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             IEnumerable<string> indexNames = null;
             if (valueProviderResult != null)
             {
-                var indexes = (string[])valueProviderResult.ConvertTo(typeof(string[]));
+                var indexes = (string[])valueProviderResult;
                 if (indexes != null && indexes.Length > 0)
                 {
                     indexNames = indexes;

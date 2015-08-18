@@ -31,7 +31,7 @@ namespace ValueProvidersWebSite
             public Task<ValueProviderResult> GetValueAsync(string key)
             {
                 var value = "custom-value-provider-value";
-                var result = new ValueProviderResult(value, value, CultureInfo.CurrentCulture);
+                var result = new ValueProviderResult(value, CultureInfo.CurrentCulture);
                 return Task.FromResult(result);
             }
         }

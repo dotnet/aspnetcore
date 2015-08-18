@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal(2, modelState.Count);
             Assert.Single(modelState.Keys, k => k == "Address.Zip");
             var key = Assert.Single(modelState.Keys, k => k == "Address.File");
-            Assert.NotNull(modelState[key].Value);
+            Assert.Null(modelState[key].RawValue);
             Assert.Empty(modelState[key].Errors);
             Assert.Equal(ModelValidationState.Skipped, modelState[key].ValidationState);
         }
@@ -122,8 +122,8 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("CustomParameter", entry.Key);
             Assert.Empty(entry.Value.Errors);
             Assert.Equal(ModelValidationState.Skipped, entry.Value.ValidationState);
-            Assert.Null(entry.Value.Value.AttemptedValue);
-            Assert.Equal(file, entry.Value.Value.RawValue);
+            Assert.Null(entry.Value.AttemptedValue);
+            Assert.Null(entry.Value.RawValue);
         }
 
         [Fact]

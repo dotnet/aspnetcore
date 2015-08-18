@@ -86,12 +86,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 var valueProvider = Items[i];
                 var result = await valueProvider.GetValueAsync(key);
-                if (result != null)
+                if (result != ValueProviderResult.None)
                 {
                     return result;
                 }
             }
-            return null;
+
+            return ValueProviderResult.None;
         }
 
         /// <inheritdoc />

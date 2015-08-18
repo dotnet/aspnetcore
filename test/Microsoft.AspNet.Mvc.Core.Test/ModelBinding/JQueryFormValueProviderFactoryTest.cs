@@ -110,10 +110,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var result = await valueProvider.GetValueAsync(key);
 
             // Assert
-            Assert.NotNull(result);
-            Assert.NotNull(result.RawValue);
-            var value = Assert.IsType<string>(result.RawValue);
-            Assert.Equal("found", value);
+            Assert.Equal("found", (string)result);
         }
 
         private static ValueProviderFactoryContext CreateContext(

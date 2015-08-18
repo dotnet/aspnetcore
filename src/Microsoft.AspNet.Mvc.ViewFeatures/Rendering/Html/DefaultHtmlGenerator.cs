@@ -506,9 +506,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
             viewContext.ViewData.ModelState.TryGetValue(fullName, out modelState);
 
             var value = string.Empty;
-            if (modelState != null && modelState.Value != null)
+            if (modelState != null && modelState.AttemptedValue != null)
             {
-                value = modelState.Value.AttemptedValue;
+                value = modelState.AttemptedValue;
             }
             else if (modelExplorer.Model != null)
             {
@@ -940,9 +940,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
         internal static object GetModelStateValue(ViewContext viewContext, string key, Type destinationType)
         {
             ModelState modelState;
-            if (viewContext.ViewData.ModelState.TryGetValue(key, out modelState) && modelState.Value != null)
+            if (viewContext.ViewData.ModelState.TryGetValue(key, out modelState) && modelState.RawValue != null)
             {
-                return modelState.Value.ConvertTo(destinationType, culture: null);
+                return ModelBindingHelper.ConvertTo(modelState.RawValue, destinationType, culture: null);
             }
 
             return null;

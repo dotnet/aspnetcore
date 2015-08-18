@@ -218,7 +218,7 @@ namespace ModelBindingWebSite.Controllers
 
             public Task<ValueProviderResult> GetValueAsync(string key)
             {
-                return Task.FromResult<ValueProviderResult>(null);
+                return Task.FromResult<ValueProviderResult>(ValueProviderResult.None);
             }
         }
     }

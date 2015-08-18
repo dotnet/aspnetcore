@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Check for missing data case 1: There was no <input ... /> element containing this data.
             var valueProviderResult = await bindingContext.ValueProvider.GetValueAsync(bindingContext.ModelName);
-            if (valueProviderResult == null)
+            if (valueProviderResult == ValueProviderResult.None)
             {
                 return new ModelBindingResult(model: null, key: bindingContext.ModelName, isModelSet: false);
             }
@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             bindingContext.ModelState.SetModelValue(bindingContext.ModelName, valueProviderResult);
 
             // Check for missing data case 2: There was an <input ... /> element but it was left blank.
-            var value = valueProviderResult.AttemptedValue;
+            var value = valueProviderResult.FirstValue;
             if (string.IsNullOrEmpty(value))
             {
                 return new ModelBindingResult(model: null, key: bindingContext.ModelName, isModelSet: false);

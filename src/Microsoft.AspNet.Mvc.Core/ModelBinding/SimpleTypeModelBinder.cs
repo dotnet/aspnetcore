@@ -8,12 +8,10 @@ using Microsoft.AspNet.Mvc.Core;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
-    public sealed class TypeConverterModelBinder : IModelBinder
+    public class SimpleTypeModelBinder : IModelBinder
     {
         public async Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
         {
-            ModelBindingHelper.ValidateBindingContext(bindingContext);
-
             if (bindingContext.ModelMetadata.IsComplexType)
             {
                 // this type cannot be converted
@@ -21,38 +19,48 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
 
             var valueProviderResult = await bindingContext.ValueProvider.GetValueAsync(bindingContext.ModelName);
-            if (valueProviderResult == null)
+            if (valueProviderResult == ValueProviderResult.None)
             {
                 // no entry
                 return null;
             }
 
-            object newModel;
             bindingContext.ModelState.SetModelValue(bindingContext.ModelName, valueProviderResult);
+
             try
             {
-                newModel = valueProviderResult.ConvertTo(bindingContext.ModelType);
-                ModelBindingHelper.ReplaceEmptyStringWithNull(bindingContext.ModelMetadata, ref newModel);
+                var model = valueProviderResult.ConvertTo(bindingContext.ModelType);
+
+                if (bindingContext.ModelType == typeof(string))
+                {
+                    var modelAsString = model as string;
+                    if (bindingContext.ModelMetadata.ConvertEmptyStringToNull &&
+                        string.IsNullOrWhiteSpace(modelAsString))
+                    {
+                        model = null;
+                    }
+                }
+
                 var isModelSet = true;
 
                 // When converting newModel a null value may indicate a failed conversion for an otherwise required
                 // model (can't set a ValueType to null). This detects if a null model value is acceptable given the
                 // current bindingContext. If not, an error is logged.
-                if (newModel == null && !AllowsNullValue(bindingContext.ModelType))
+                if (model == null && !AllowsNullValue(bindingContext.ModelType))
                 {
                     bindingContext.ModelState.TryAddModelError(
                         bindingContext.ModelName,
-                        Resources.FormatCommon_ValueNotValidForProperty(newModel));
+                        Resources.FormatCommon_ValueNotValidForProperty(model));
 
                     isModelSet = false;
                 }
 
                 // Include a ModelValidationNode if binding succeeded.
                 var validationNode = isModelSet ?
-                    new ModelValidationNode(bindingContext.ModelName, bindingContext.ModelMetadata, newModel) :
+                    new ModelValidationNode(bindingContext.ModelName, bindingContext.ModelMetadata, model) :
                     null;
 
-                return new ModelBindingResult(newModel, bindingContext.ModelName, isModelSet, validationNode);
+                return new ModelBindingResult(model, bindingContext.ModelName, isModelSet, validationNode);
             }
             catch (Exception ex)
             {

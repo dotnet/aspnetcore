@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(int)),
                 ModelName = "someName",
                 ModelState = new ModelStateDictionary(),
-                ValueProvider = new SimpleHttpValueProvider
+                ValueProvider = new SimpleValueProvider
                 {
                     { "someName", "dummyValue" }
                 },
@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(List<int>)),
                 ModelName = "someName",
                 ModelState = new ModelStateDictionary(),
-                ValueProvider = new SimpleHttpValueProvider
+                ValueProvider = new SimpleValueProvider
                 {
                     { "someOtherName", "dummyValue" }
                 },
@@ -121,7 +121,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(List<int>)),
                 ModelName = "someName",
                 ModelState = new ModelStateDictionary(),
-                ValueProvider = new SimpleHttpValueProvider
+                ValueProvider = new SimpleValueProvider
                 {
                     { "someOtherName", "dummyValue" }
                 },
@@ -155,7 +155,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(List<int>)),
                 ModelName = "someName",
                 ModelState = new ModelStateDictionary(),
-                ValueProvider = new SimpleHttpValueProvider
+                ValueProvider = new SimpleValueProvider
                 {
                     { "someOtherName", "dummyValue" }
                 },
@@ -201,7 +201,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(List<int>)),
                 ModelName = "someName",
                 ModelState = new ModelStateDictionary(),
-                ValueProvider = new SimpleHttpValueProvider
+                ValueProvider = new SimpleValueProvider
                 {
                     { "someOtherName", "dummyValue" }
                 },
@@ -238,7 +238,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(List<int>)),
                 ModelName = "someName",
                 ModelState = new ModelStateDictionary(),
-                ValueProvider = new SimpleHttpValueProvider
+                ValueProvider = new SimpleValueProvider
                 {
                     { "someOtherName", "dummyValue" }
                 },
@@ -276,7 +276,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(List<int>)),
                 ModelName = "someName",
                 ModelState = new ModelStateDictionary(),
-                ValueProvider = new SimpleHttpValueProvider
+                ValueProvider = new SimpleValueProvider
                 {
                     { "someOtherName", "dummyValue" }
                 },
@@ -357,7 +357,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             // Arrange
             var binder = CreateBinderWithDefaults();
 
-            var valueProvider = new SimpleHttpValueProvider
+            var valueProvider = new SimpleValueProvider
             {
                 { "firstName", "firstName-value"},
                 { "lastName", "lastName-value"}
@@ -400,7 +400,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             // Arrange
             var binder = CreateBinderWithDefaults();
 
-            var valueProvider = new SimpleHttpValueProvider
+            var valueProvider = new SimpleValueProvider
             {
                 { "firstName", "firstName-value"},
                 { "lastName", "lastName-value"},
@@ -436,7 +436,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public async Task BindModel_DoesNotAddAValidationNode_IfModelIsNotSet()
         {
             // Arrange
-            var valueProvider = new SimpleHttpValueProvider();
+            var valueProvider = new SimpleValueProvider();
             var mockBinder = new Mock<IModelBinder>();
             mockBinder
                 .Setup(o => o.BindModelAsync(It.IsAny<ModelBindingContext>()))
@@ -465,7 +465,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 .Setup(o => o.BindModelAsync(It.IsAny<ModelBindingContext>()))
                 .Returns(Task.FromResult<ModelBindingResult>(null));
             var binder = CreateCompositeBinder(mockBinder.Object);
-            var valueProvider = new SimpleHttpValueProvider();
+            var valueProvider = new SimpleValueProvider();
             var bindingContext = CreateBindingContext(binder, valueProvider, typeof(SimplePropertiesModel));
 
             // Act
@@ -479,7 +479,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public async Task BindModel_UsesTheValidationNodeOnModelBindingResult_IfPresent()
         {
             // Arrange
-            var valueProvider = new SimpleHttpValueProvider();
+            var valueProvider = new SimpleValueProvider();
             ModelValidationNode validationNode = null;
 
             var mockBinder = new Mock<IModelBinder>();
@@ -531,10 +531,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         {
             var binders = new IModelBinder[]
             {
-                new TypeMatchModelBinder(),
                 new ByteArrayModelBinder(),
                 new GenericModelBinder(),
-                new TypeConverterModelBinder(),
+                new SimpleTypeModelBinder(),
                 new MutableObjectModelBinder()
             };
 

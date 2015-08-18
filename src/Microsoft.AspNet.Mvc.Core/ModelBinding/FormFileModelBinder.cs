@@ -48,8 +48,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                         SuppressValidation = true,
                     };
 
-                var valueProviderResult = new ValueProviderResult(rawValue: value);
-                bindingContext.ModelState.SetModelValue(bindingContext.ModelName, valueProviderResult);
+                bindingContext.ModelState.SetModelValue(
+                    bindingContext.ModelName,
+                    rawValue: null,
+                    attemptedValue: null);
             }
 
             return new ModelBindingResult(

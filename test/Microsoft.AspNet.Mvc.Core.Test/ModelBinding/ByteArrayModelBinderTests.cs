@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public async Task BindModelSetsModelToNullOnNullOrEmptyString(string value)
         {
             // Arrange
-            var valueProvider = new SimpleHttpValueProvider()
+            var valueProvider = new SimpleValueProvider()
             {
                 { "foo", value }
             };
@@ -36,15 +36,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
             var modelState = Assert.Single(bindingContext.ModelState);
             Assert.Equal("foo", modelState.Key);
-            Assert.NotNull(modelState.Value.Value);
-            Assert.Equal(value, modelState.Value.Value.RawValue);
+            Assert.Equal(string.Empty, modelState.Value.RawValue);
         }
 
         [Fact]
         public async Task BindModel()
         {
             // Arrange
-            var valueProvider = new SimpleHttpValueProvider()
+            var valueProvider = new SimpleValueProvider()
             {
                 { "foo", "Fys1" }
             };
@@ -67,7 +66,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             // Arrange
             var expected = "The value '\"Fys1\"' is not valid for foo.";
 
-            var valueProvider = new SimpleHttpValueProvider()
+            var valueProvider = new SimpleValueProvider()
             {
                 { "foo", "\"Fys1\"" }
             };
@@ -89,7 +88,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public async Task BindModel_ReturnsWithIsModelSetFalse_WhenValueNotFound()
         {
             // Arrange
-            var valueProvider = new SimpleHttpValueProvider()
+            var valueProvider = new SimpleValueProvider()
             {
                 { "someName", "" }
             };

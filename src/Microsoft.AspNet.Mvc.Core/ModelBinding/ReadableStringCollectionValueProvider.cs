@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.Internal;
@@ -85,16 +86,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             ValueProviderResult result;
             if (values == null)
             {
-                result = null;
-            }
-            else if (values.Count == 1)
-            {
-                var value = (string)values[0];
-                result = new ValueProviderResult(value, value, _culture);
+                result = ValueProviderResult.None;
             }
             else
             {
-                result = new ValueProviderResult(values, _values.Get(key), _culture);
+                result = new ValueProviderResult(values.ToArray(), _culture);
             }
 
             return result;

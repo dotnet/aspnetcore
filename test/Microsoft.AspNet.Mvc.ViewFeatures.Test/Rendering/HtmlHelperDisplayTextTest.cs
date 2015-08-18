@@ -261,10 +261,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
             viewData.TemplateInfo.HtmlFieldPrefix = "FieldPrefix";
 
             var modelState = new ModelState();
-            modelState.Value = new ValueProviderResult(
-                rawValue: new string[] { "Attempted name value" },
-                attemptedValue: "Attempted name value",
-                culture: CultureInfo.InvariantCulture);
+            modelState.RawValue = new string[] { "Attempted name value" };
+            modelState.AttemptedValue = "Attempted name value";
             viewData.ModelState["FieldPrefix.Name"] = modelState;
 
             // Act
@@ -288,10 +286,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
             viewData.TemplateInfo.HtmlFieldPrefix = "FieldPrefix";
 
             var modelState = new ModelState();
-            modelState.Value = new ValueProviderResult(
-                rawValue: new string[] { "Attempted name value" },
-                attemptedValue: "Attempted name value",
-                culture: CultureInfo.InvariantCulture);
+            modelState.RawValue = new string[] { "Attempted name value" };
+            modelState.AttemptedValue = "Attempted name value";
             viewData.ModelState["FieldPrefix.Name"] = modelState;
 
             // Act

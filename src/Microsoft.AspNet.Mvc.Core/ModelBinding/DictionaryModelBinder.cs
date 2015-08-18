@@ -65,15 +65,18 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var modelBinder = bindingContext.OperationBindingContext.ModelBinder;
             var validationNode = result.ValidationNode;
 
-            foreach (var key in keys)
+            foreach (var kvp in keys)
             {
-                var dictionaryKey = ConvertFromString(key.Key);
-                valueBindingContext.ModelName = key.Value;
+                // Use InvariantCulture to convert the key since ExpressionHelper.GetExpressionText() would use
+                // that culture when rendering a form.
+                var convertedKey = ModelBindingHelper.ConvertTo<TKey>(kvp.Key, culture: null);
+
+                valueBindingContext.ModelName = kvp.Value;
 
                 var valueResult = await modelBinder.BindModelAsync(valueBindingContext);
 
                 // Always add an entry to the dictionary but validate only if binding was successful.
-                model[dictionaryKey] = ModelBindingHelper.CastOrDefault<TValue>(valueResult?.Model);
+                model[convertedKey] = ModelBindingHelper.CastOrDefault<TValue>(valueResult?.Model);
                 if (valueResult != null && valueResult.IsModelSet)
                 {
                     validationNode.ChildNodes.Add(valueResult.ValidationNode);
@@ -115,15 +118,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
 
             return CreateInstance(targetType);
-        }
-
-        private static TKey ConvertFromString(string keyString)
-        {
-            // Use InvariantCulture to convert string since ExpressionHelper.GetExpressionText() used that culture.
-            var keyResult = new ValueProviderResult(keyString);
-            var keyObject = keyResult.ConvertTo(typeof(TKey));
-
-            return ModelBindingHelper.CastOrDefault<TKey>(keyObject);
         }
     }
 }

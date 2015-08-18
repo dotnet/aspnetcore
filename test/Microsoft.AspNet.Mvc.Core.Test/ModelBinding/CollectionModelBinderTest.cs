@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public async Task BindComplexCollectionFromIndexes_FiniteIndexes()
         {
             // Arrange
-            var valueProvider = new SimpleHttpValueProvider
+            var valueProvider = new SimpleValueProvider
             {
                 { "someName[foo]", "42" },
                 { "someName[baz]", "200" }
@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public async Task BindComplexCollectionFromIndexes_InfiniteIndexes()
         {
             // Arrange
-            var valueProvider = new SimpleHttpValueProvider
+            var valueProvider = new SimpleValueProvider
             {
                 { "someName[0]", "42" },
                 { "someName[1]", "100" },
@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public async Task BindModel_ComplexCollection_Succeeds(bool isReadOnly)
         {
             // Arrange
-            var valueProvider = new SimpleHttpValueProvider
+            var valueProvider = new SimpleValueProvider
             {
                 { "someName.index", new[] { "foo", "bar", "baz" } },
                 { "someName[foo]", "42" },
@@ -100,7 +100,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public async Task BindModel_ComplexCollection_BindingContextModelNonNull_Succeeds(bool isReadOnly)
         {
             // Arrange
-            var valueProvider = new SimpleHttpValueProvider
+            var valueProvider = new SimpleValueProvider
             {
                 { "someName.index", new[] { "foo", "bar", "baz" } },
                 { "someName[foo]", "42" },
@@ -132,7 +132,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public async Task BindModel_SimpleCollection_Succeeds(bool isReadOnly)
         {
             // Arrange
-            var valueProvider = new SimpleHttpValueProvider
+            var valueProvider = new SimpleValueProvider
             {
                 { "someName", new[] { "42", "100", "200" } }
             };
@@ -149,8 +149,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
             var list = Assert.IsAssignableFrom<IList<int>>(result.Model);
             Assert.Equal(new[] { 42, 100, 200 }, list.ToArray());
-
-            Assert.True(modelState.IsValid);
         }
 
         [Theory]
@@ -159,7 +157,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public async Task BindModel_SimpleCollection_BindingContextModelNonNull_Succeeds(bool isReadOnly)
         {
             // Arrange
-            var valueProvider = new SimpleHttpValueProvider
+            var valueProvider = new SimpleValueProvider
             {
                 { "someName", new[] { "42", "100", "200" } }
             };
@@ -178,8 +176,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
             Assert.Same(list, result.Model);
             Assert.Equal(new[] { 42, 100, 200 }, list.ToArray());
-
-            Assert.True(modelState.IsValid);
         }
 
         [Fact]
@@ -187,7 +183,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         {
             // Arrange
             var binder = new CollectionModelBinder<int>();
-            var valueProvider = new SimpleHttpValueProvider
+            var valueProvider = new SimpleValueProvider
             {
                 { "someName", null },
             };
@@ -205,8 +201,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
             var model = Assert.IsType<List<int>>(result.Model);
             Assert.Empty(model);
-
-            Assert.True(modelState.IsValid);
         }
 #endif
 
@@ -225,7 +219,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             };
 
             // Act
-            var boundCollection = await binder.BindSimpleCollection(context, rawValue: new object[0], culture: null);
+            var boundCollection = await binder.BindSimpleCollection(context, new ValueProviderResult(new string[0]));
 
             // Assert
             Assert.NotNull(boundCollection.Model);
@@ -392,7 +386,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         {
             // Arrange
             var culture = new CultureInfo("fr-FR");
-            var bindingContext = GetModelBindingContext(new SimpleHttpValueProvider());
+            var bindingContext = GetModelBindingContext(new SimpleValueProvider());
             ModelValidationNode childValidationNode = null;
             Mock.Get<IModelBinder>(bindingContext.OperationBindingContext.ModelBinder)
                 .Setup(o => o.BindModelAsync(It.IsAny<ModelBindingContext>()))
@@ -405,7 +399,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var modelBinder = new CollectionModelBinder<int>();
 
             // Act
-            var boundCollection = await modelBinder.BindSimpleCollection(bindingContext, new int[1], culture);
+            var boundCollection = await modelBinder.BindSimpleCollection(
+                bindingContext,
+                new ValueProviderResult(new string[] { "0" }));
 
             // Assert
             Assert.Equal(new[] { 42 }, boundCollection.Model.ToArray());
@@ -442,11 +438,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 .Returns(async (ModelBindingContext mbc) =>
                 {
                     var value = await mbc.ValueProvider.GetValueAsync(mbc.ModelName);
-                    if (value != null)
+                    if (value != ValueProviderResult.None)
                     {
                         var model = value.ConvertTo(mbc.ModelType);
                         var modelValidationNode = new ModelValidationNode(mbc.ModelName, mbc.ModelMetadata, model);
-                        return new ModelBindingResult(model, mbc.ModelName, true, modelValidationNode);
+                        return new ModelBindingResult(model, mbc.ModelName, model != null, modelValidationNode);
                     }
 
                     return null;

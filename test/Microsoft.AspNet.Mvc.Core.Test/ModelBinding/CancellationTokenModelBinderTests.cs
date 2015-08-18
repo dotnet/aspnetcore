@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             {
                 ModelMetadata = metadataProvider.GetMetadataForType(modelType),
                 ModelName = "someName",
-                ValueProvider = new SimpleHttpValueProvider(),
+                ValueProvider = new SimpleValueProvider(),
                 OperationBindingContext = new OperationBindingContext
                 {
                     ModelBinder = new CancellationTokenModelBinder(),

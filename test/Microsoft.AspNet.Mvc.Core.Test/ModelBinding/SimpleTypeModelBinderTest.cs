@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 {
-    public class TypeConverterModelBinderTest
+    public class SimpleTypeModelBinderTest
     {
         [Theory]
         [InlineData(typeof(object))]
@@ -19,12 +19,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         {
             // Arrange
             var bindingContext = GetBindingContext(destinationType);
-            bindingContext.ValueProvider = new SimpleHttpValueProvider
+            bindingContext.ValueProvider = new SimpleValueProvider
             {
                 { "theModelName", "some-value" }
             };
 
-            var binder = new TypeConverterModelBinder();
+            var binder = new SimpleTypeModelBinder();
 
             // Act
             var retVal = await binder.BindModelAsync(bindingContext);
@@ -53,12 +53,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
             // Arrange
             var bindingContext = GetBindingContext(destinationType);
-            bindingContext.ValueProvider = new SimpleHttpValueProvider
+            bindingContext.ValueProvider = new SimpleValueProvider
             {
                 { "theModelName", "some-value" }
             };
 
-            var binder = new TypeConverterModelBinder();
+            var binder = new SimpleTypeModelBinder();
 
             // Act
             var retVal = await binder.BindModelAsync(bindingContext);
@@ -79,11 +79,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         {
             // Arrange
             var bindingContext = GetBindingContext(destinationType);
-            bindingContext.ValueProvider = new SimpleHttpValueProvider
+            bindingContext.ValueProvider = new SimpleValueProvider
             {
                 { "theModelName", string.Empty }
             };
-            var binder = new TypeConverterModelBinder();
+            var binder = new SimpleTypeModelBinder();
 
             // Act
             var result = await binder.BindModelAsync(bindingContext);
@@ -104,19 +104,19 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             // Arrange
             var message = "The value 'not an integer' is not valid for theModelName.";
             var bindingContext = GetBindingContext(typeof(int));
-            bindingContext.ValueProvider = new SimpleHttpValueProvider
+            bindingContext.ValueProvider = new SimpleValueProvider
             {
                 { "theModelName", "not an integer" }
             };
 
-            var binder = new TypeConverterModelBinder();
+            var binder = new SimpleTypeModelBinder();
 
             // Act
-            var retVal = await binder.BindModelAsync(bindingContext);
+            var result = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.NotNull(retVal);
-            Assert.Null(retVal.Model);
+            Assert.NotNull(result);
+            Assert.Null(result.Model);
             Assert.False(bindingContext.ModelState.IsValid);
             var error = Assert.Single(bindingContext.ModelState["theModelName"].Errors);
             Assert.Equal(message, error.ErrorMessage);
@@ -127,7 +127,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         {
             // Arrange
             var bindingContext = GetBindingContext(typeof(int));
-            var binder = new TypeConverterModelBinder();
+            var binder = new SimpleTypeModelBinder();
 
             // Act
             var retVal = await binder.BindModelAsync(bindingContext);
@@ -142,12 +142,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         {
             // Arrange
             var bindingContext = GetBindingContext(typeof(string));
-            bindingContext.ValueProvider = new SimpleHttpValueProvider
+            bindingContext.ValueProvider = new SimpleValueProvider
             {
                 { "theModelName", string.Empty }
             };
 
-            var binder = new TypeConverterModelBinder();
+            var binder = new SimpleTypeModelBinder();
 
             // Act
             var retVal = await binder.BindModelAsync(bindingContext);
@@ -163,12 +163,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         {
             // Arrange
             var bindingContext = GetBindingContext(typeof(int));
-            bindingContext.ValueProvider = new SimpleHttpValueProvider
+            bindingContext.ValueProvider = new SimpleValueProvider
             {
                 { "theModelName", "42" }
             };
 
-            var binder = new TypeConverterModelBinder();
+            var binder = new SimpleTypeModelBinder();
 
             // Act
             var retVal = await binder.BindModelAsync(bindingContext);
@@ -185,7 +185,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             {
                 ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(modelType),
                 ModelName = "theModelName",
-                ValueProvider = new SimpleHttpValueProvider() // empty
+                ValueProvider = new SimpleValueProvider() // empty
             };
         }
 

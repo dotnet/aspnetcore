@@ -495,8 +495,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             var validationContext = testValidationContext.ModelValidationContext;
 
             // Set the value on model state as a model binder would.
-            var valueProviderResult = new ValueProviderResult(rawValue: "password");
-            validationContext.ModelState.SetModelValue("user.Password", valueProviderResult);
+            validationContext.ModelState.SetModelValue("user.Password", new string[] { "password" }, "password");
             var validator = new DefaultObjectValidator(
                 testValidationContext.ExcludeFilters,
                 testValidationContext.ModelMetadataProvider);
@@ -517,7 +516,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             Assert.Equal("user.Password", entry.Key);
             Assert.Empty(entry.Value.Errors);
             Assert.Equal(entry.Value.ValidationState, ModelValidationState.Skipped);
-            Assert.Same(valueProviderResult, entry.Value.Value);
+            Assert.Equal(new string[] { "password" }, entry.Value.RawValue);
+            Assert.Same("password", entry.Value.AttemptedValue);
         }
 
         private class Person2

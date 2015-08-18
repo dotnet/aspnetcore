@@ -30,21 +30,23 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             _values = values;
         }
 
+        protected PrefixContainer PrefixContainer
+        {
+            get
+            {
+                if (_prefixContainer == null)
+                {
+                    _prefixContainer = new PrefixContainer(_values.Keys);
+                }
+
+                return _prefixContainer;
+            }
+        }
+
         /// <inheritdoc />
         public override Task<bool> ContainsPrefixAsync(string key)
         {
-            var prefixContainer = GetOrCreatePrefixContainer();
-            return Task.FromResult(prefixContainer.ContainsPrefix(key));
-        }
-
-        private PrefixContainer GetOrCreatePrefixContainer()
-        {
-            if (_prefixContainer == null)
-            {
-                _prefixContainer = new PrefixContainer(_values.Keys);
-            }
-
-            return _prefixContainer;
+            return Task.FromResult(PrefixContainer.ContainsPrefix(key));
         }
 
         /// <inheritdoc />
@@ -54,12 +56,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             ValueProviderResult result;
             if (_values.TryGetValue(key, out value))
             {
-                var attemptedValue = value != null ? value.ToString() : null;
-                result = new ValueProviderResult(value, attemptedValue, CultureInfo.InvariantCulture);
+                var stringValue = value as string ?? value?.ToString() ?? string.Empty;
+                result = new ValueProviderResult(stringValue, CultureInfo.InvariantCulture);
             }
             else
             {
-                result = null;
+                result = ValueProviderResult.None;
             }
 
             return Task.FromResult(result);

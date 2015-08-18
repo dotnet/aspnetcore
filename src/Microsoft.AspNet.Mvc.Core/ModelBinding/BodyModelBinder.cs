@@ -57,6 +57,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 var previousCount = bindingContext.ModelState.ErrorCount;
                 var model = await formatter.ReadAsync(formatterContext);
+                
+                bindingContext.ModelState.SetModelValue(modelBindingKey, rawValue: model, attemptedValue: null);
 
                 if (bindingContext.ModelState.ErrorCount != previousCount)
                 {
@@ -64,9 +66,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     // system to skip other model binders and never to fall back.
                     return new ModelBindingResult(modelBindingKey);
                 }
-
-                var valueProviderResult = new ValueProviderResult(rawValue: model);
-                bindingContext.ModelState.SetModelValue(modelBindingKey, valueProviderResult);
 
                 var validationNode = new ModelValidationNode(modelBindingKey, bindingContext.ModelMetadata, model)
                 {

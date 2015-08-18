@@ -371,7 +371,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             return new ModelState
             {
-                Value = new ValueProviderResult(value, value, CultureInfo.InvariantCulture)
+                RawValue = new string[] { value },
+                AttemptedValue = value,
             };
         }
 

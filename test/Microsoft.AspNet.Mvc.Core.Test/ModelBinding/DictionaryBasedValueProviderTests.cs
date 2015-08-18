@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var result = await provider.GetValueAsync("not-test-key");
 
             // Assert
-            Assert.Null(result);
+            Assert.Equal(ValueProviderResult.None, result);
         }
 
         [Fact]
@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var result = await provider.GetValueAsync("test-key");
 
             // Assert
-            Assert.Equal("test-value", result.RawValue);
+            Assert.Equal("test-value", (string)result);
         }
 
         [Fact]
@@ -58,9 +58,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var result = await provider.GetValueAsync("test-key");
 
             // Assert
-            Assert.NotNull(result);
-            Assert.Null(result.RawValue);
-            Assert.Null(result.AttemptedValue);
+            Assert.Equal(string.Empty, (string)result);
         }
 
         [Theory]
@@ -103,7 +101,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var result = await valueProvider.GetValueAsync(prefix);
 
             // Assert
-            Assert.Equal(expectedValue, (string)result.AttemptedValue);
+            Assert.Equal(expectedValue, (string)result);
         }
 
         [Fact]
@@ -121,7 +119,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var result = await valueProvider.GetValueAsync("bar");
 
             // Assert
-            Assert.Null(result);
+            Assert.Equal(ValueProviderResult.None, result);
         }
 
         [Fact]
