@@ -163,7 +163,9 @@ var buildTarget = "compile"
             if (File.Exists(nugetConfigPath))
             {
                 var original = File.ReadAllText(nugetConfigPath);
-                var modified = original.Replace("https://www.myget.org/F/aspnetvnext", "https://www.myget.org/F/aspnetrelease");
+                var modified = original
+                    .Replace("https://www.myget.org/F/aspnetlitedev", "https://www.myget.org/F/aspnetliterelease")
+                    .Replace("https://www.myget.org/F/azureadwebstacknightly", "https://www.myget.org/F/azureadwebstackrelease");
 
                 if (!string.Equals(original, modified, StringComparison.Ordinal))
                 {
