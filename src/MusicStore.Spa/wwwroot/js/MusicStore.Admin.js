@@ -1,12 +1,14 @@
-﻿var MusicStore;
-(function (MusicStore) {
-    (function (AlbumApi) {
-        angular.module("MusicStore.AlbumApi", []);
-    })(MusicStore.AlbumApi || (MusicStore.AlbumApi = {}));
-    var AlbumApi = MusicStore.AlbumApi;
-})(MusicStore || (MusicStore = {}));
 var MusicStore;
 (function (MusicStore) {
+    var AlbumApi;
+    (function (AlbumApi) {
+        angular.module("MusicStore.AlbumApi", []);
+    })(AlbumApi = MusicStore.AlbumApi || (MusicStore.AlbumApi = {}));
+})(MusicStore || (MusicStore = {}));
+/// <reference path="..\..\MusicStore.AlbumApi.ng.ts" />
+var MusicStore;
+(function (MusicStore) {
+    var AlbumApi;
     (function (AlbumApi) {
         var AlbumApiService = (function () {
             function AlbumApiService($cacheFactory, $q, $http, urlResolver) {
@@ -17,19 +19,15 @@ var MusicStore;
             }
             AlbumApiService.prototype.getAlbums = function (page, pageSize, sortBy) {
                 var url = this._urlResolver.resolveUrl("~/api/albums"), query = {}, querySeparator = "?", inlineData;
-
                 if (page) {
                     query.page = page;
                 }
-
                 if (pageSize) {
                     query.pageSize = pageSize;
                 }
-
                 if (sortBy) {
                     query.sortBy = sortBy;
                 }
-
                 for (var key in query) {
                     if (query.hasOwnProperty(key)) {
                         url += querySeparator + key + "=" + encodeURIComponent(query[key]);
@@ -38,77 +36,65 @@ var MusicStore;
                         }
                     }
                 }
-
                 inlineData = this._inlineData ? this._inlineData.get(url) : null;
-
                 if (inlineData) {
                     return this._q.when(inlineData);
-                } else {
-                    return this._http.get(url).then(function (result) {
-                        return result.data;
-                    });
+                }
+                else {
+                    return this._http.get(url).then(function (result) { return result.data; });
                 }
             };
-
             AlbumApiService.prototype.getAlbumDetails = function (albumId) {
                 var url = this._urlResolver.resolveUrl("~/api/albums/" + albumId);
-                return this._http.get(url).then(function (result) {
-                    return result.data;
-                });
+                return this._http.get(url).then(function (result) { return result.data; });
             };
-
             AlbumApiService.prototype.getMostPopularAlbums = function (count) {
                 var url = this._urlResolver.resolveUrl("~/api/albums/mostPopular"), inlineData = this._inlineData ? this._inlineData.get(url) : null;
-
                 if (inlineData) {
                     return this._q.when(inlineData);
-                } else {
+                }
+                else {
                     if (count && count > 0) {
                         url += "?count=" + count;
                     }
-
-                    return this._http.get(url).then(function (result) {
-                        return result.data;
-                    });
+                    return this._http.get(url).then(function (result) { return result.data; });
                 }
             };
-
             AlbumApiService.prototype.createAlbum = function (album, config) {
                 var url = this._urlResolver.resolveUrl("api/albums");
                 return this._http.post(url, album, config || { timeout: 10000 });
             };
-
             AlbumApiService.prototype.updateAlbum = function (album, config) {
                 var url = this._urlResolver.resolveUrl("api/albums/" + album.AlbumId + "/update");
                 return this._http.put(url, album, config || { timeout: 10000 });
             };
-
             AlbumApiService.prototype.deleteAlbum = function (albumId, config) {
                 var url = this._urlResolver.resolveUrl("api/albums/" + albumId);
                 return this._http.delete(url, config || { timeout: 10000 });
             };
             return AlbumApiService;
         })();
-
-        angular.module("MusicStore.AlbumApi").service("MusicStore.AlbumApi.IAlbumApiService", [
+        angular.module("MusicStore.AlbumApi")
+            .service("MusicStore.AlbumApi.IAlbumApiService", [
             "$cacheFactory",
             "$q",
             "$http",
             "MusicStore.UrlResolver.IUrlResolverService",
             AlbumApiService
         ]);
-    })(MusicStore.AlbumApi || (MusicStore.AlbumApi = {}));
-    var AlbumApi = MusicStore.AlbumApi;
+    })(AlbumApi = MusicStore.AlbumApi || (MusicStore.AlbumApi = {}));
 })(MusicStore || (MusicStore = {}));
 var MusicStore;
 (function (MusicStore) {
+    var ArtistApi;
     (function (ArtistApi) {
         angular.module("MusicStore.ArtistApi", []);
-    })(MusicStore.ArtistApi || (MusicStore.ArtistApi = {}));
-    var ArtistApi = MusicStore.ArtistApi;
+    })(ArtistApi = MusicStore.ArtistApi || (MusicStore.ArtistApi = {}));
 })(MusicStore || (MusicStore = {}));
+/// <reference path="..\..\MusicStore.ArtistApi.ng.ts" />
 var MusicStore;
 (function (MusicStore) {
+    var ArtistApi;
     (function (ArtistApi) {
         var ArtistsApiService = (function () {
             function ArtistsApiService($cacheFactory, $q, $http, urlResolver) {
@@ -119,37 +105,36 @@ var MusicStore;
             }
             ArtistsApiService.prototype.getArtistsLookup = function () {
                 var url = this._urlResolver.resolveUrl("~/api/artists/lookup"), inlineData = this._inlineData ? this._inlineData.get(url) : null;
-
                 if (inlineData) {
                     return this._q.when(inlineData);
-                } else {
-                    return this._http.get(url).then(function (result) {
-                        return result.data;
-                    });
+                }
+                else {
+                    return this._http.get(url).then(function (result) { return result.data; });
                 }
             };
             return ArtistsApiService;
         })();
-
-        angular.module("MusicStore.ArtistApi").service("MusicStore.ArtistApi.IArtistApiService", [
+        angular.module("MusicStore.ArtistApi")
+            .service("MusicStore.ArtistApi.IArtistApiService", [
             "$cacheFactory",
             "$q",
             "$http",
             "MusicStore.UrlResolver.IUrlResolverService",
             ArtistsApiService
         ]);
-    })(MusicStore.ArtistApi || (MusicStore.ArtistApi = {}));
-    var ArtistApi = MusicStore.ArtistApi;
+    })(ArtistApi = MusicStore.ArtistApi || (MusicStore.ArtistApi = {}));
 })(MusicStore || (MusicStore = {}));
 var MusicStore;
 (function (MusicStore) {
+    var GenreApi;
     (function (GenreApi) {
         angular.module("MusicStore.GenreApi", []);
-    })(MusicStore.GenreApi || (MusicStore.GenreApi = {}));
-    var GenreApi = MusicStore.GenreApi;
+    })(GenreApi = MusicStore.GenreApi || (MusicStore.GenreApi = {}));
 })(MusicStore || (MusicStore = {}));
+/// <reference path="..\..\MusicStore.GenreApi.ng.ts" />
 var MusicStore;
 (function (MusicStore) {
+    var GenreApi;
     (function (GenreApi) {
         var GenreApiService = (function () {
             function GenreApiService($cacheFactory, $q, $http, urlResolver) {
@@ -160,84 +145,78 @@ var MusicStore;
             }
             GenreApiService.prototype.getGenresLookup = function () {
                 var url = this._urlResolver.resolveUrl("~/api/genres/lookup"), inlineData = this._inlineData ? this._inlineData.get(url) : null;
-
                 if (inlineData) {
                     return this._q.when(inlineData);
-                } else {
-                    return this._http.get(url).then(function (result) {
-                        return result.data;
-                    });
+                }
+                else {
+                    return this._http.get(url).then(function (result) { return result.data; });
                 }
             };
-
             GenreApiService.prototype.getGenresMenu = function () {
                 var url = this._urlResolver.resolveUrl("~/api/genres/menu"), inlineData = this._inlineData ? this._inlineData.get(url) : null;
-
                 if (inlineData) {
                     return this._q.when(inlineData);
-                } else {
-                    return this._http.get(url).then(function (result) {
-                        return result.data;
-                    });
+                }
+                else {
+                    return this._http.get(url).then(function (result) { return result.data; });
                 }
             };
-
             GenreApiService.prototype.getGenresList = function () {
                 var url = this._urlResolver.resolveUrl("~/api/genres");
                 return this._http.get(url);
             };
-
             GenreApiService.prototype.getGenreAlbums = function (genreId) {
                 var url = this._urlResolver.resolveUrl("~/api/genres/" + genreId + "/albums");
                 return this._http.get(url);
             };
             return GenreApiService;
         })();
-
-        angular.module("MusicStore.GenreApi").service("MusicStore.GenreApi.IGenreApiService", [
+        angular.module("MusicStore.GenreApi")
+            .service("MusicStore.GenreApi.IGenreApiService", [
             "$cacheFactory",
             "$q",
             "$http",
             "MusicStore.UrlResolver.IUrlResolverService",
             GenreApiService
         ]);
-    })(MusicStore.GenreApi || (MusicStore.GenreApi = {}));
-    var GenreApi = MusicStore.GenreApi;
+    })(GenreApi = MusicStore.GenreApi || (MusicStore.GenreApi = {}));
 })(MusicStore || (MusicStore = {}));
 var MusicStore;
 (function (MusicStore) {
+    var GenreMenu;
     (function (GenreMenu) {
         angular.module("MusicStore.GenreMenu", []);
-    })(MusicStore.GenreMenu || (MusicStore.GenreMenu = {}));
-    var GenreMenu = MusicStore.GenreMenu;
+    })(GenreMenu = MusicStore.GenreMenu || (MusicStore.GenreMenu = {}));
 })(MusicStore || (MusicStore = {}));
+/// <reference path="..\..\MusicStore.GenreMenu.ng.ts" />
 var MusicStore;
 (function (MusicStore) {
+    var GenreMenu;
     (function (GenreMenu) {
         var GenreMenuController = (function () {
             function GenreMenuController(genreApi, urlResolver) {
                 var viewModel = this;
-
                 genreApi.getGenresMenu().then(function (genres) {
                     viewModel.genres = genres;
                 });
-
                 viewModel.urlBase = urlResolver.base;
             }
             return GenreMenuController;
         })();
-
-        angular.module("MusicStore.GenreMenu").controller("MusicStore.GenreMenu.GenreMenuController", [
+        angular.module("MusicStore.GenreMenu")
+            .controller("MusicStore.GenreMenu.GenreMenuController", [
             "MusicStore.GenreApi.IGenreApiService",
             "MusicStore.UrlResolver.IUrlResolverService",
             GenreMenuController
         ]);
-    })(MusicStore.GenreMenu || (MusicStore.GenreMenu = {}));
-    var GenreMenu = MusicStore.GenreMenu;
+    })(GenreMenu = MusicStore.GenreMenu || (MusicStore.GenreMenu = {}));
 })(MusicStore || (MusicStore = {}));
+/// <reference path="..\..\MusicStore.GenreMenu.ng.ts" />
 var MusicStore;
 (function (MusicStore) {
+    var GenreMenu;
     (function (GenreMenu) {
+        //@NgDirective('appGenreMenu')
         var GenreMenuDirective = (function () {
             function GenreMenuDirective(urlResolver) {
                 this.replace = true;
@@ -251,26 +230,28 @@ var MusicStore;
             }
             return GenreMenuDirective;
         })();
-
-        angular.module("MusicStore.GenreMenu").directive("appGenreMenu", [
+        angular.module("MusicStore.GenreMenu")
+            .directive("appGenreMenu", [
             "MusicStore.UrlResolver.IUrlResolverService",
             function (a) {
                 return new GenreMenuDirective(a);
             }
         ]);
-    })(MusicStore.GenreMenu || (MusicStore.GenreMenu = {}));
-    var GenreMenu = MusicStore.GenreMenu;
+    })(GenreMenu = MusicStore.GenreMenu || (MusicStore.GenreMenu = {}));
 })(MusicStore || (MusicStore = {}));
 var MusicStore;
 (function (MusicStore) {
+    var InlineData;
     (function (InlineData) {
         angular.module("MusicStore.InlineData", []);
-    })(MusicStore.InlineData || (MusicStore.InlineData = {}));
-    var InlineData = MusicStore.InlineData;
+    })(InlineData = MusicStore.InlineData || (MusicStore.InlineData = {}));
 })(MusicStore || (MusicStore = {}));
+/// <reference path="..\..\MusicStore.InlineData.ng.ts" />
 var MusicStore;
 (function (MusicStore) {
+    var InlineData;
     (function (InlineData) {
+        //@NgDirective('appInlineData')
         var InlineDataDirective = (function () {
             function InlineDataDirective($cacheFactory, $log) {
                 this.restrict = "A";
@@ -283,35 +264,38 @@ var MusicStore;
                 this._log = $log;
             }
             InlineDataDirective.prototype.link = function (scope, element, attrs) {
-                var data = attrs.type === "application/json" ? angular.fromJson(element.text()) : element.text();
-
+                var data = attrs.type === "application/json"
+                    ? angular.fromJson(element.text())
+                    : element.text();
                 this._log.info("appInlineData: Inline data element found for " + attrs.for);
-
                 this._cache.put(attrs.for, data);
+                //element.remove();
             };
             return InlineDataDirective;
         })();
-
-        angular.module("MusicStore.InlineData").directive("appInlineData", [
+        angular.module("MusicStore.InlineData")
+            .directive("appInlineData", [
             "$cacheFactory",
             "$log",
             function (a, b) {
                 return new InlineDataDirective(a, b);
             }
         ]);
-    })(MusicStore.InlineData || (MusicStore.InlineData = {}));
-    var InlineData = MusicStore.InlineData;
+    })(InlineData = MusicStore.InlineData || (MusicStore.InlineData = {}));
 })(MusicStore || (MusicStore = {}));
 var MusicStore;
 (function (MusicStore) {
+    var LoginLink;
     (function (LoginLink) {
         angular.module("MusicStore.LoginLink", []);
-    })(MusicStore.LoginLink || (MusicStore.LoginLink = {}));
-    var LoginLink = MusicStore.LoginLink;
+    })(LoginLink = MusicStore.LoginLink || (MusicStore.LoginLink = {}));
 })(MusicStore || (MusicStore = {}));
+/// <reference path="..\..\MusicStore.LoginLink.ng.ts" />
 var MusicStore;
 (function (MusicStore) {
+    var LoginLink;
     (function (LoginLink) {
+        //@NgDirective('appLoginLink')
         var LoginLinkDirective = (function () {
             function LoginLinkDirective(urlResolver, $window) {
                 this.restrict = "A";
@@ -327,30 +311,29 @@ var MusicStore;
                 if (!element.is("a[href]")) {
                     return;
                 }
-
+                // Grab the original login URL
                 var loginUrl = attrs.href;
-
                 element.click(function (event) {
+                    // Update the returnUrl querystring value to current path
                     var currentUrl = _this._window.location.pathname + _this._window.location.search + _this._window.location.hash, newUrl = loginUrl + "?returnUrl=" + encodeURIComponent(currentUrl);
-
                     element.prop("href", newUrl);
                 });
             };
             return LoginLinkDirective;
         })();
-
-        angular.module("MusicStore.LoginLink").directive("appLoginLink", [
+        angular.module("MusicStore.LoginLink")
+            .directive("appLoginLink", [
             "MusicStore.UrlResolver.IUrlResolverService",
             "$window",
             function (a, b) {
                 return new LoginLinkDirective(a, b);
             }
         ]);
-    })(MusicStore.LoginLink || (MusicStore.LoginLink = {}));
-    var LoginLink = MusicStore.LoginLink;
+    })(LoginLink = MusicStore.LoginLink || (MusicStore.LoginLink = {}));
 })(MusicStore || (MusicStore = {}));
 var MusicStore;
 (function (MusicStore) {
+    var Models;
     (function (Models) {
         var AlertType = (function () {
             function AlertType(value) {
@@ -359,7 +342,7 @@ var MusicStore;
             AlertType.prototype.toString = function () {
                 return this.value;
             };
-
+            // Values
             AlertType.success = new AlertType("success");
             AlertType.info = new AlertType("info");
             AlertType.warning = new AlertType("warning");
@@ -367,19 +350,21 @@ var MusicStore;
             return AlertType;
         })();
         Models.AlertType = AlertType;
-    })(MusicStore.Models || (MusicStore.Models = {}));
-    var Models = MusicStore.Models;
+    })(Models = MusicStore.Models || (MusicStore.Models = {}));
 })(MusicStore || (MusicStore = {}));
 var MusicStore;
 (function (MusicStore) {
+    var PreventSubmit;
     (function (PreventSubmit) {
         angular.module("MusicStore.PreventSubmit", []);
-    })(MusicStore.PreventSubmit || (MusicStore.PreventSubmit = {}));
-    var PreventSubmit = MusicStore.PreventSubmit;
+    })(PreventSubmit = MusicStore.PreventSubmit || (MusicStore.PreventSubmit = {}));
 })(MusicStore || (MusicStore = {}));
+/// <reference path="..\..\MusicStore.PreventSubmit.ng.ts" />
 var MusicStore;
 (function (MusicStore) {
+    var PreventSubmit;
     (function (PreventSubmit) {
+        //@NgDirective('appPreventSubmit')
         var PreventSubmitDirective = (function () {
             function PreventSubmitDirective() {
                 this.restrict = "A";
@@ -390,6 +375,7 @@ var MusicStore;
                 }
             }
             PreventSubmitDirective.prototype.link = function (scope, element, attrs) {
+                // TODO: Just make this directive apply to all <form> tags and no-op if no action attr
                 element.submit(function (e) {
                     if (scope.$eval(attrs.appPreventSubmit)) {
                         e.preventDefault();
@@ -399,85 +385,85 @@ var MusicStore;
             };
             return PreventSubmitDirective;
         })();
-
-        angular.module("MusicStore.PreventSubmit").directive("appPreventSubmit", [
+        angular.module("MusicStore.PreventSubmit")
+            .directive("appPreventSubmit", [
             function () {
                 return new PreventSubmitDirective();
             }
         ]);
-    })(MusicStore.PreventSubmit || (MusicStore.PreventSubmit = {}));
-    var PreventSubmit = MusicStore.PreventSubmit;
+    })(PreventSubmit = MusicStore.PreventSubmit || (MusicStore.PreventSubmit = {}));
 })(MusicStore || (MusicStore = {}));
 var MusicStore;
 (function (MusicStore) {
+    var TitleCase;
     (function (TitleCase) {
         angular.module("MusicStore.TitleCase", []);
-    })(MusicStore.TitleCase || (MusicStore.TitleCase = {}));
-    var TitleCase = MusicStore.TitleCase;
+    })(TitleCase = MusicStore.TitleCase || (MusicStore.TitleCase = {}));
 })(MusicStore || (MusicStore = {}));
+/// <reference path="..\..\MusicStore.TitleCase.ng.ts" />
 var MusicStore;
 (function (MusicStore) {
+    var TitleCase;
     (function (TitleCase) {
+        //@NgFilter('titlecase')
         function titleCase(input) {
             var out = "", lastChar = "";
-
             for (var i = 0; i < input.length; i++) {
-                out = out + (lastChar === " " || lastChar === "" ? input.charAt(i).toUpperCase() : input.charAt(i));
-
+                out = out + (lastChar === " " || lastChar === ""
+                    ? input.charAt(i).toUpperCase()
+                    : input.charAt(i));
                 lastChar = input.charAt(i);
             }
-
             return out;
         }
-
-        angular.module("MusicStore.TitleCase").filter("titlecase", function () {
-            return titleCase;
-        });
-    })(MusicStore.TitleCase || (MusicStore.TitleCase = {}));
-    var TitleCase = MusicStore.TitleCase;
+        angular.module("MusicStore.TitleCase")
+            .filter("titlecase", function () { return titleCase; });
+    })(TitleCase = MusicStore.TitleCase || (MusicStore.TitleCase = {}));
 })(MusicStore || (MusicStore = {}));
 var MusicStore;
 (function (MusicStore) {
+    var Truncate;
     (function (Truncate) {
         angular.module("MusicStore.Truncate", []);
-    })(MusicStore.Truncate || (MusicStore.Truncate = {}));
-    var Truncate = MusicStore.Truncate;
+    })(Truncate = MusicStore.Truncate || (MusicStore.Truncate = {}));
 })(MusicStore || (MusicStore = {}));
+/// <reference path="..\..\MusicStore.Truncate.ng.ts" />
 var MusicStore;
 (function (MusicStore) {
+    var Truncate;
     (function (Truncate) {
+        //@NgFilter
         function truncate(input, length) {
             if (!input) {
                 return input;
             }
-
             if (input.length <= length) {
                 return input;
-            } else {
+            }
+            else {
                 return input.substr(0, length).trim() + "…";
             }
         }
-
-        angular.module("MusicStore.Truncate").filter("truncate", function () {
-            return truncate;
-        });
-    })(MusicStore.Truncate || (MusicStore.Truncate = {}));
-    var Truncate = MusicStore.Truncate;
+        angular.module("MusicStore.Truncate")
+            .filter("truncate", function () { return truncate; });
+    })(Truncate = MusicStore.Truncate || (MusicStore.Truncate = {}));
 })(MusicStore || (MusicStore = {}));
 var MusicStore;
 (function (MusicStore) {
+    var UrlResolver;
     (function (UrlResolver) {
         angular.module("MusicStore.UrlResolver", []);
-    })(MusicStore.UrlResolver || (MusicStore.UrlResolver = {}));
-    var UrlResolver = MusicStore.UrlResolver;
+    })(UrlResolver = MusicStore.UrlResolver || (MusicStore.UrlResolver = {}));
 })(MusicStore || (MusicStore = {}));
+/// <reference path="..\..\MusicStore.UrlResolver.ng.ts" />
 var MusicStore;
 (function (MusicStore) {
+    var UrlResolver;
     (function (UrlResolver) {
         var UrlResolverService = (function () {
             function UrlResolverService($rootElement) {
                 this._base = $rootElement.attr("data-url-base");
-
+                // Add trailing slash if not present
                 if (this._base === "" || this._base.substr(this._base.length - 1) !== "/") {
                     this._base = this._base + "/";
                 }
@@ -489,54 +475,51 @@ var MusicStore;
                 enumerable: true,
                 configurable: true
             });
-
             UrlResolverService.prototype.resolveUrl = function (relativeUrl) {
                 var firstChar = relativeUrl.substr(0, 1);
-
                 if (firstChar === "~") {
                     relativeUrl = relativeUrl.substr(1);
                 }
-
                 firstChar = relativeUrl.substr(0, 1);
-
                 if (firstChar === "/") {
                     relativeUrl = relativeUrl.substr(1);
                 }
-
                 return this._base + relativeUrl;
             };
             return UrlResolverService;
         })();
-
-        angular.module("MusicStore.UrlResolver").service("MusicStore.UrlResolver.IUrlResolverService", [
+        angular.module("MusicStore.UrlResolver")
+            .service("MusicStore.UrlResolver.IUrlResolverService", [
             "$rootElement",
             UrlResolverService
         ]);
-    })(MusicStore.UrlResolver || (MusicStore.UrlResolver = {}));
-    var UrlResolver = MusicStore.UrlResolver;
+    })(UrlResolver = MusicStore.UrlResolver || (MusicStore.UrlResolver = {}));
 })(MusicStore || (MusicStore = {}));
 var MusicStore;
 (function (MusicStore) {
+    var UserDetails;
     (function (UserDetails) {
         angular.module("MusicStore.UserDetails", []);
-    })(MusicStore.UserDetails || (MusicStore.UserDetails = {}));
-    var UserDetails = MusicStore.UserDetails;
+    })(UserDetails = MusicStore.UserDetails || (MusicStore.UserDetails = {}));
 })(MusicStore || (MusicStore = {}));
+/// <reference path="..\..\MusicStore.UserDetails.ng.ts" />
 var MusicStore;
 (function (MusicStore) {
+    var UserDetails;
     (function (UserDetails) {
         var UserDetailsService = (function () {
             function UserDetailsService($document) {
                 this._document = $document;
             }
             UserDetailsService.prototype.getUserDetails = function (elementId) {
-                if (typeof elementId === "undefined") { elementId = "userDetails"; }
+                if (elementId === void 0) { elementId = "userDetails"; }
                 if (!this._userDetails) {
+                    //var el = this._document.querySelector("[data-json-id='" + elementId + "']");
                     var el = this._document.find("#" + elementId + "[type='application/json']");
-
                     if (el.length) {
                         this._userDetails = angular.fromJson(el.text());
-                    } else {
+                    }
+                    else {
                         this._userDetails = {
                             isAuthenticated: false,
                             userId: null,
@@ -549,46 +532,50 @@ var MusicStore;
             };
             return UserDetailsService;
         })();
-
-        angular.module("MusicStore.UserDetails").service("MusicStore.UserDetails.IUserDetailsService", [
+        angular.module("MusicStore.UserDetails")
+            .service("MusicStore.UserDetails.IUserDetailsService", [
             "$document",
             UserDetailsService
         ]);
-    })(MusicStore.UserDetails || (MusicStore.UserDetails = {}));
-    var UserDetails = MusicStore.UserDetails;
+    })(UserDetails = MusicStore.UserDetails || (MusicStore.UserDetails = {}));
 })(MusicStore || (MusicStore = {}));
 var MusicStore;
 (function (MusicStore) {
+    var ViewAlert;
     (function (ViewAlert) {
         angular.module("MusicStore.ViewAlert", []);
-    })(MusicStore.ViewAlert || (MusicStore.ViewAlert = {}));
-    var ViewAlert = MusicStore.ViewAlert;
+    })(ViewAlert = MusicStore.ViewAlert || (MusicStore.ViewAlert = {}));
 })(MusicStore || (MusicStore = {}));
+/// <reference path="..\..\MusicStore.ViewAlert.ng.ts" />
 var MusicStore;
 (function (MusicStore) {
+    var ViewAlert;
     (function (ViewAlert) {
         var ViewAlertService = (function () {
             function ViewAlertService() {
             }
             return ViewAlertService;
         })();
-
-        angular.module("MusicStore.ViewAlert").service("MusicStore.ViewAlert.IViewAlertService", [
+        angular.module("MusicStore.ViewAlert")
+            .service("MusicStore.ViewAlert.IViewAlertService", [
             ViewAlertService
         ]);
-    })(MusicStore.ViewAlert || (MusicStore.ViewAlert = {}));
-    var ViewAlert = MusicStore.ViewAlert;
+    })(ViewAlert = MusicStore.ViewAlert || (MusicStore.ViewAlert = {}));
 })(MusicStore || (MusicStore = {}));
 var MusicStore;
 (function (MusicStore) {
+    var Visited;
     (function (Visited) {
         angular.module("MusicStore.Visited", []);
-    })(MusicStore.Visited || (MusicStore.Visited = {}));
-    var Visited = MusicStore.Visited;
+    })(Visited = MusicStore.Visited || (MusicStore.Visited = {}));
 })(MusicStore || (MusicStore = {}));
+/// <reference path="..\..\MusicStore.Visited.ng.ts" />
 var MusicStore;
 (function (MusicStore) {
+    var Visited;
     (function (Visited) {
+        //@NgDirective('input')
+        //@NgDirective('select')
         var VisitedDirective = (function () {
             function VisitedDirective($window) {
                 this.restrict = "E";
@@ -604,14 +591,10 @@ var MusicStore;
                 if (!ctrl) {
                     return;
                 }
-
                 element.on("focus", function (event) {
                     element.addClass("has-focus");
-                    scope.$apply(function () {
-                        return ctrl.focus = true;
-                    });
+                    scope.$apply(function () { return ctrl.focus = true; });
                 });
-
                 element.on("blur", function (event) {
                     element.removeClass("has-focus");
                     element.addClass("has-visited");
@@ -620,10 +603,8 @@ var MusicStore;
                         ctrl.visited = true;
                     });
                 });
-
                 element.closest("form").on("submit", function () {
                     element.addClass("has-visited");
-
                     scope.$apply(function () {
                         ctrl.focus = false;
                         ctrl.visited = true;
@@ -632,25 +613,30 @@ var MusicStore;
             };
             return VisitedDirective;
         })();
-
-        angular.module("MusicStore.Visited").directive("input", [
+        angular.module("MusicStore.Visited")
+            .directive("input", [
             "$window",
             function (a) {
                 return new VisitedDirective(a);
             }
-        ]).directive("select", [
+        ])
+            .directive("select", [
             "$window",
             function (a) {
                 return new VisitedDirective(a);
             }
         ]);
-    })(MusicStore.Visited || (MusicStore.Visited = {}));
-    var Visited = MusicStore.Visited;
+    })(Visited = MusicStore.Visited || (MusicStore.Visited = {}));
 })(MusicStore || (MusicStore = {}));
 var MusicStore;
 (function (MusicStore) {
+    var Admin;
     (function (Admin) {
+        var Catalog;
         (function (Catalog) {
+            // We don't register this controller with Angular's DI system because the $modal service
+            // will create and resolve its dependencies directly
+            //@NgController(skip=true)
             var AlbumDeleteModalController = (function () {
                 function AlbumDeleteModalController($modalInstance, album) {
                     this._modalInstance = $modalInstance;
@@ -659,31 +645,31 @@ var MusicStore;
                 AlbumDeleteModalController.prototype.ok = function () {
                     this._modalInstance.close(true);
                 };
-
                 AlbumDeleteModalController.prototype.cancel = function () {
                     this._modalInstance.dismiss("cancel");
                 };
                 return AlbumDeleteModalController;
             })();
             Catalog.AlbumDeleteModalController = AlbumDeleteModalController;
-        })(Admin.Catalog || (Admin.Catalog = {}));
-        var Catalog = Admin.Catalog;
-    })(MusicStore.Admin || (MusicStore.Admin = {}));
-    var Admin = MusicStore.Admin;
+        })(Catalog = Admin.Catalog || (Admin.Catalog = {}));
+    })(Admin = MusicStore.Admin || (MusicStore.Admin = {}));
 })(MusicStore || (MusicStore = {}));
 var MusicStore;
 (function (MusicStore) {
+    var Admin;
     (function (Admin) {
+        var Catalog;
         (function (Catalog) {
             angular.module("MusicStore.Admin.Catalog", []);
-        })(Admin.Catalog || (Admin.Catalog = {}));
-        var Catalog = Admin.Catalog;
-    })(MusicStore.Admin || (MusicStore.Admin = {}));
-    var Admin = MusicStore.Admin;
+        })(Catalog = Admin.Catalog || (Admin.Catalog = {}));
+    })(Admin = MusicStore.Admin || (MusicStore.Admin = {}));
 })(MusicStore || (MusicStore = {}));
+/// <reference path="..\..\MusicStore.Admin.Catalog.ng.ts" />
 var MusicStore;
 (function (MusicStore) {
+    var Admin;
     (function (Admin) {
+        var Catalog;
         (function (Catalog) {
             var AlbumDetailsController = (function () {
                 function AlbumDetailsController($routeParams, $modal, $location, albumApi, viewAlert) {
@@ -692,10 +678,7 @@ var MusicStore;
                     this._location = $location;
                     this._albumApi = albumApi;
                     this._viewAlert = viewAlert;
-
-                    albumApi.getAlbumDetails($routeParams.albumId).then(function (album) {
-                        return _this.album = album;
-                    });
+                    albumApi.getAlbumDetails($routeParams.albumId).then(function (album) { return _this.album = album; });
                 }
                 AlbumDetailsController.prototype.deleteAlbum = function () {
                     var _this = this;
@@ -703,18 +686,15 @@ var MusicStore;
                         templateUrl: "ng-apps/MusicStore.Admin/Catalog/AlbumDeleteModal.cshtml",
                         controller: "MusicStore.Admin.Catalog.AlbumDeleteModalController as viewModel",
                         resolve: {
-                            album: function () {
-                                return _this.album;
-                            }
+                            album: function () { return _this.album; }
                         }
                     });
-
                     deleteModal.result.then(function (shouldDelete) {
                         if (!shouldDelete) {
                             return;
                         }
-
                         _this._albumApi.deleteAlbum(_this.album.AlbumId).then(function (result) {
+                            // Navigate back to the list
                             _this._viewAlert.alert = {
                                 type: MusicStore.Models.AlertType.success,
                                 message: result.data.Message
@@ -725,8 +705,8 @@ var MusicStore;
                 };
                 return AlbumDetailsController;
             })();
-
-            angular.module("MusicStore.Admin.Catalog").controller("MusicStore.Admin.Catalog.AlbumDetailsController", [
+            angular.module("MusicStore.Admin.Catalog")
+                .controller("MusicStore.Admin.Catalog.AlbumDetailsController", [
                 "$routeParams",
                 "$modal",
                 "$location",
@@ -734,14 +714,15 @@ var MusicStore;
                 "MusicStore.ViewAlert.IViewAlertService",
                 AlbumDetailsController
             ]);
-        })(Admin.Catalog || (Admin.Catalog = {}));
-        var Catalog = Admin.Catalog;
-    })(MusicStore.Admin || (MusicStore.Admin = {}));
-    var Admin = MusicStore.Admin;
+        })(Catalog = Admin.Catalog || (Admin.Catalog = {}));
+    })(Admin = MusicStore.Admin || (MusicStore.Admin = {}));
 })(MusicStore || (MusicStore = {}));
+/// <reference path="..\..\MusicStore.Admin.Catalog.ng.ts" />
 var MusicStore;
 (function (MusicStore) {
+    var Admin;
     (function (Admin) {
+        var Catalog;
         (function (Catalog) {
             var AlbumEditController = (function () {
                 function AlbumEditController($routeParams, albumApi, artistApi, genreApi, viewAlert, $modal, $location, $timeout, $q, $log) {
@@ -755,87 +736,91 @@ var MusicStore;
                     this._location = $location;
                     this._timeout = $timeout;
                     this._log = $log;
-
                     this.mode = $routeParams.mode;
-
                     this.alert = viewAlert.alert;
-
-                    artistApi.getArtistsLookup().then(function (artists) {
-                        return _this.artists = artists;
-                    });
-                    genreApi.getGenresLookup().then(function (genres) {
-                        return _this.genres = genres;
-                    });
-
+                    artistApi.getArtistsLookup().then(function (artists) { return _this.artists = artists; });
+                    genreApi.getGenresLookup().then(function (genres) { return _this.genres = genres; });
                     if (this.mode.toLowerCase() === "edit") {
+                        // TODO: Handle album load failure
                         albumApi.getAlbumDetails($routeParams.albumId).then(function (album) {
                             _this.album = album;
-
+                            // Pre-load the lookup arrays with the current values if not set yet
                             _this.genres = _this.genres || [album.Genre];
                             _this.artists = _this.artists || [album.Artist];
-
                             _this.disabled = false;
                         });
-                    } else {
+                    }
+                    else {
                         this.disabled = false;
                     }
                 }
                 AlbumEditController.prototype.save = function () {
                     var _this = this;
                     this.disabled = true;
-
                     var apiMethod = this.mode.toLowerCase() === "edit" ? this._albumApi.updateAlbum : this._albumApi.createAlbum;
                     apiMethod = apiMethod.bind(this._albumApi);
-
-                    apiMethod(this.album).then(function (response) {
+                    apiMethod(this.album).then(
+                    // Success
+                    function (response) {
                         var alert = {
                             type: MusicStore.Models.AlertType.success,
                             message: response.data.Message
                         };
-
-                        _this._timeout(function () {
-                            return _this.alert !== alert || _this.clearAlert();
-                        }, 3000);
-
+                        // TODO: Do we need to destroy this timeout on controller unload?
+                        _this._timeout(function () { return _this.alert !== alert || _this.clearAlert(); }, 3000);
                         if (_this.mode.toLowerCase() === "new") {
                             _this._log.info("Created album successfully!");
-
                             var albumId = response.data.Data;
-
                             _this._viewAlert.alert = alert;
-
+                            // Reload the view with the new album ID
                             _this._location.path("/albums/" + albumId + "/edit").replace();
-                        } else {
+                        }
+                        else {
                             _this.alert = alert;
                             _this.disabled = false;
                             _this._log.info("Updated album " + _this.album.AlbumId + " successfully!");
                         }
-                    }, function (response) {
+                    }, 
+                    // Error
+                    function (response) {
+                        // TODO: Make this common logic, e.g. base controller class, injected helper service, etc.
                         if (response.status === 400) {
+                            // We made a bad request
                             if (response.data && response.data.ModelErrors) {
+                                // The server says the update failed validation
+                                // TODO: Map errors back to client validators and/or summary
                                 _this.alert = {
                                     type: MusicStore.Models.AlertType.danger,
                                     message: response.data.Message,
                                     modelErrors: response.data.ModelErrors
                                 };
                                 _this.disabled = false;
-                            } else {
+                            }
+                            else {
+                                // Some other bad request, just show the message
                                 _this.alert = {
                                     type: MusicStore.Models.AlertType.danger,
                                     message: response.data.Message
                                 };
                             }
-                        } else if (response.status === 404) {
+                        }
+                        else if (response.status === 404) {
+                            // The album wasn't found, probably deleted. Leave the form disabled and show error message.
                             _this.alert = {
                                 type: MusicStore.Models.AlertType.danger,
                                 message: response.data.Message
                             };
-                        } else if (response.status === 401) {
+                        }
+                        else if (response.status === 401) {
+                            // We need to authenticate again
+                            // TODO: Should we just redirect to login page, show a message with a link, or something else
                             _this.alert = {
                                 type: MusicStore.Models.AlertType.danger,
                                 message: "Your session has timed out. Please log in and try again."
                             };
-                        } else if (!response.status) {
+                        }
+                        else if (!response.status) {
+                            // Request timed out or no response from server or worse
                             _this._log.error("Error updating album " + _this.album.AlbumId);
                             _this._log.error(response);
                             _this.alert = { type: MusicStore.Models.AlertType.danger, message: "An unexpected error occurred. Please try again." };
@@ -843,25 +828,21 @@ var MusicStore;
                         }
                     });
                 };
-
                 AlbumEditController.prototype.deleteAlbum = function () {
                     var _this = this;
                     var deleteModal = this._modal.open({
                         templateUrl: "ng-apps/MusicStore.Admin/Catalog/AlbumDeleteModal.cshtml",
                         controller: "MusicStore.Admin.Catalog.AlbumDeleteModalController as viewModel",
                         resolve: {
-                            album: function () {
-                                return _this.album;
-                            }
+                            album: function () { return _this.album; }
                         }
                     });
-
                     deleteModal.result.then(function (shouldDelete) {
                         if (!shouldDelete) {
                             return;
                         }
-
                         _this._albumApi.deleteAlbum(_this.album.AlbumId).then(function (result) {
+                            // Navigate back to the list
                             _this._viewAlert.alert = {
                                 type: MusicStore.Models.AlertType.success,
                                 message: result.data.Message
@@ -870,14 +851,13 @@ var MusicStore;
                         });
                     });
                 };
-
                 AlbumEditController.prototype.clearAlert = function () {
                     this.alert = null;
                 };
                 return AlbumEditController;
             })();
-
-            angular.module("MusicStore.Admin.Catalog").controller("MusicStore.Admin.Catalog.AlbumEditController", [
+            angular.module("MusicStore.Admin.Catalog")
+                .controller("MusicStore.Admin.Catalog.AlbumEditController", [
                 "$routeParams",
                 "MusicStore.AlbumApi.IAlbumApiService",
                 "MusicStore.ArtistApi.IArtistApiService",
@@ -890,14 +870,15 @@ var MusicStore;
                 "$log",
                 AlbumEditController
             ]);
-        })(Admin.Catalog || (Admin.Catalog = {}));
-        var Catalog = Admin.Catalog;
-    })(MusicStore.Admin || (MusicStore.Admin = {}));
-    var Admin = MusicStore.Admin;
+        })(Catalog = Admin.Catalog || (Admin.Catalog = {}));
+    })(Admin = MusicStore.Admin || (MusicStore.Admin = {}));
 })(MusicStore || (MusicStore = {}));
+/// <reference path="..\..\MusicStore.Admin.Catalog.ng.ts" />
 var MusicStore;
 (function (MusicStore) {
+    var Admin;
     (function (Admin) {
+        var Catalog;
         (function (Catalog) {
             var AlbumListController = (function () {
                 function AlbumListController(albumApi, viewAlert, $modal, $timeout, $log) {
@@ -905,13 +886,10 @@ var MusicStore;
                     this._modal = $modal;
                     this._timeout = $timeout;
                     this._log = $log;
-
                     this.currentPage = 1;
                     this.pageSize = 50;
                     this.sortColumn = "Title";
-
                     this.loadPage(1);
-
                     this.showAlert(viewAlert.alert, 3000);
                     viewAlert.alert = null;
                 }
@@ -925,38 +903,32 @@ var MusicStore;
                         _this.totalCount = result.TotalCount;
                     });
                 };
-
                 AlbumListController.prototype.sortBy = function (column) {
                     if (this.sortColumn === column) {
+                        // Just flip the direction
                         this.sortDescending = !this.sortDescending;
-                    } else {
+                    }
+                    else {
                         this.sortColumn = column;
                         this.sortDescending = false;
                     }
-
                     this.loadPage();
                 };
-
                 AlbumListController.prototype.deleteAlbum = function (album) {
                     var _this = this;
                     var deleteModal = this._modal.open({
                         templateUrl: "ng-apps/MusicStore.Admin/Catalog/AlbumDeleteModal.cshtml",
                         controller: "MusicStore.Admin.Catalog.AlbumDeleteModalController as viewModel",
                         resolve: {
-                            album: function () {
-                                return album;
-                            }
+                            album: function () { return album; }
                         }
                     });
-
                     deleteModal.result.then(function (shouldDelete) {
                         if (!shouldDelete) {
                             return;
                         }
-
                         _this._albumApi.deleteAlbum(album.AlbumId).then(function (result) {
                             _this.loadPage();
-
                             _this.showAlert({
                                 type: MusicStore.Models.AlertType.success,
                                 message: result.data.Message
@@ -964,26 +936,20 @@ var MusicStore;
                         });
                     });
                 };
-
                 AlbumListController.prototype.clearAlert = function () {
                     this.alert = null;
                 };
-
                 AlbumListController.prototype.showAlert = function (alert, closeAfter) {
                     var _this = this;
                     if (!alert) {
                         return;
                     }
-
                     this.alert = alert;
-
+                    // TODO: Do we need to destroy this timeout on controller unload?
                     if (closeAfter) {
-                        this._timeout(function () {
-                            return _this.alert !== alert || _this.clearAlert();
-                        }, closeAfter);
+                        this._timeout(function () { return _this.alert !== alert || _this.clearAlert(); }, closeAfter);
                     }
                 };
-
                 AlbumListController.prototype.getSortByExpression = function () {
                     if (this.sortDescending) {
                         return this.sortColumn + " DESC";
@@ -992,8 +958,8 @@ var MusicStore;
                 };
                 return AlbumListController;
             })();
-
-            angular.module("MusicStore.Admin.Catalog").controller("MusicStore.Admin.Catalog.AlbumListController", [
+            angular.module("MusicStore.Admin.Catalog")
+                .controller("MusicStore.Admin.Catalog.AlbumListController", [
                 "MusicStore.AlbumApi.IAlbumApiService",
                 "MusicStore.ViewAlert.IViewAlertService",
                 "$modal",
@@ -1001,13 +967,16 @@ var MusicStore;
                 "$log",
                 AlbumListController
             ]);
-        })(Admin.Catalog || (Admin.Catalog = {}));
-        var Catalog = Admin.Catalog;
-    })(MusicStore.Admin || (MusicStore.Admin = {}));
-    var Admin = MusicStore.Admin;
+        })(Catalog = Admin.Catalog || (Admin.Catalog = {}));
+    })(Admin = MusicStore.Admin || (MusicStore.Admin = {}));
 })(MusicStore || (MusicStore = {}));
+/// <reference path="../bower_components/dt-angular/angular.d.ts" /> 
+/// <reference path="../bower_components/dt-angular/angular-route.d.ts" />
+/// <reference path="../bower_components/dt-angular-ui-bootstrap/angular-ui-bootstrap.d.ts" /> 
+/// <reference path="../references.ts" />
 var MusicStore;
 (function (MusicStore) {
+    var Admin;
     (function (Admin) {
         angular.module("MusicStore.Admin", [
             "ngRoute",
@@ -1024,7 +993,7 @@ var MusicStore;
             "MusicStore.AlbumApi",
             "MusicStore.ArtistApi",
             "MusicStore.ViewAlert",
-            "MusicStore.Admin.Catalog"
+            "MusicStore.Admin.Catalog",
         ]).config([
             "$routeProvider",
             "$logProvider",
@@ -1034,7 +1003,6 @@ var MusicStore;
             "MusicStore.UserDetails.IUserDetailsService",
             run
         ]);
-
         var dependencies = [
             "ngRoute",
             "ui.bootstrap",
@@ -1052,16 +1020,23 @@ var MusicStore;
             MusicStore.ViewAlert,
             MusicStore.Admin.Catalog
         ];
-
+        // Use this method to register work which needs to be performed on module loading.
+        // Note only providers can be injected as dependencies here.
         function configuration($routeProvider, $logProvider) {
+            // TODO: Enable debug logging based on server config
+            // TODO: Capture all logged errors and send back to server
             $logProvider.debugEnabled(true);
-
-            $routeProvider.when("/albums/:albumId/details", { templateUrl: "ng-apps/MusicStore.Admin/Catalog/AlbumDetails.cshtml" }).when("/albums/:albumId/:mode", { templateUrl: "ng-apps/MusicStore.Admin/Catalog/AlbumEdit.cshtml" }).when("/albums/:mode", { templateUrl: "ng-apps/MusicStore.Admin/Catalog/AlbumEdit.cshtml" }).when("/albums", { templateUrl: "ng-apps/MusicStore.Admin/Catalog/AlbumList.cshtml" }).otherwise({ redirectTo: "/albums" });
+            // Configure routes
+            $routeProvider
+                .when("/albums/:albumId/details", { templateUrl: "ng-apps/MusicStore.Admin/Catalog/AlbumDetails.cshtml" })
+                .when("/albums/:albumId/:mode", { templateUrl: "ng-apps/MusicStore.Admin/Catalog/AlbumEdit.cshtml" })
+                .when("/albums/:mode", { templateUrl: "ng-apps/MusicStore.Admin/Catalog/AlbumEdit.cshtml" })
+                .when("/albums", { templateUrl: "ng-apps/MusicStore.Admin/Catalog/AlbumList.cshtml" })
+                .otherwise({ redirectTo: "/albums" });
         }
-
+        // Use this method to register work which should be performed when the injector is done loading all modules.
         function run($log, userDetails) {
             $log.log(userDetails.getUserDetails());
         }
-    })(MusicStore.Admin || (MusicStore.Admin = {}));
-    var Admin = MusicStore.Admin;
+    })(Admin = MusicStore.Admin || (MusicStore.Admin = {}));
 })(MusicStore || (MusicStore = {}));
