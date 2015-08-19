@@ -263,8 +263,16 @@ namespace Microsoft.AspNet.Owin
 
         ClaimsPrincipal IHttpAuthenticationFeature.User
         {
-            get { return Utilities.MakeClaimsPrincipal(Prop<IPrincipal>(OwinConstants.Security.User)); }
-            set { Prop(OwinConstants.Security.User, value); }
+            get
+            {
+                return Prop<ClaimsPrincipal>(OwinConstants.RequestUser)
+                    ?? Utilities.MakeClaimsPrincipal(Prop<IPrincipal>(OwinConstants.Security.User));
+            }
+            set
+            {
+                Prop(OwinConstants.RequestUser, value);
+                Prop(OwinConstants.Security.User, value);
+            }
         }
 
         IAuthenticationHandler IHttpAuthenticationFeature.Handler { get; set; }

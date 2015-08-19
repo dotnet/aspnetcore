@@ -20,11 +20,12 @@ namespace Microsoft.AspNet.Owin
 
         #endregion
 
-        #region OWIN v1.1.0 - 3.2.1 Request Data
+        #region OWIN v1.0.1 - 3.2.1 Request Data
 
-        // OWIN 1.1.0 http://owin.org/html/owin.html
+        // OWIN 1.0.1 http://owin.org/html/owin.html
 
         public const string RequestId = "owin.RequestId";
+        public const string RequestUser = "owin.RequestUser";
 
         #endregion
 
