@@ -26,15 +26,20 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
     {
         public RazorPreCompiler(
             [NotNull] BeforeCompileContext compileContext,
-            [NotNull] IAssemblyLoadContextAccessor loadContextAccessor,
+            [NotNull] IAssemblyLoadContext loadContext,
             [NotNull] IFileProvider fileProvider,
-            [NotNull] IMemoryCache precompilationCache,
-            [NotNull] CompilationSettings compilationSettings)
+            [NotNull] IMemoryCache precompilationCache)
         {
             CompileContext = compileContext;
-            LoadContext = loadContextAccessor.GetLoadContext(GetType().GetTypeInfo().Assembly);
+            LoadContext = loadContext;
             FileProvider = fileProvider;
-            CompilationSettings = compilationSettings;
+            CompilationSettings = new CompilationSettings
+            {
+                CompilationOptions = compileContext.Compilation.Options,
+                // REVIEW: There should always be a syntax tree even if there are no files (we generate one)
+                Defines = compileContext.Compilation.SyntaxTrees[0].Options.PreprocessorSymbolNames,
+                LanguageVersion = compileContext.Compilation.LanguageVersion
+            };
             PreCompilationCache = precompilationCache;
             TagHelperTypeResolver = new PrecompilationTagHelperTypeResolver(CompileContext, LoadContext);
         }

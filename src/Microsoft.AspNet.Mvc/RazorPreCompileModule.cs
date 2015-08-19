@@ -4,7 +4,6 @@
 using System;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Mvc.Razor.Precompilation;
-using Microsoft.Dnx.Compilation;
 using Microsoft.Dnx.Compilation.CSharp;
 using Microsoft.Dnx.Runtime;
 using Microsoft.Framework.Caching.Memory;
@@ -17,7 +16,7 @@ namespace Microsoft.AspNet.Mvc
     /// </summary>
     public abstract class RazorPreCompileModule : ICompileModule
     {
-        private readonly IServiceProvider _appServices;
+        private readonly IAssemblyLoadContext _loadContext;
         private readonly IMemoryCache _memoryCache;
 
         /// <summary>
@@ -26,7 +25,7 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="services">The <see cref="IServiceProvider"/> for the application.</param>
         public RazorPreCompileModule(IServiceProvider services)
         {
-            _appServices = services;
+            _loadContext = services.GetRequiredService<IAssemblyLoadContext>();
 
             // When CompactOnMemoryPressure is true, the MemoryCache evicts items at every gen2 collection.
             // In DTH, gen2 happens frequently enough to make it undesirable for caching precompilation results. We'll
@@ -43,17 +42,13 @@ namespace Microsoft.AspNet.Mvc
         /// <remarks>Pre-compiles all Razor views in the application.</remarks>
         public virtual void BeforeCompile(BeforeCompileContext context)
         {
-            var compilerOptionsProvider = _appServices.GetRequiredService<ICompilerOptionsProvider>();
-            var loadContextAccessor = _appServices.GetRequiredService<IAssemblyLoadContextAccessor>();
-            var compilationSettings = GetCompilationSettings(compilerOptionsProvider, context.ProjectContext);
             var fileProvider = new PhysicalFileProvider(context.ProjectContext.ProjectDirectory);
 
             var viewCompiler = new RazorPreCompiler(
                 context,
-                loadContextAccessor,
+                _loadContext,
                 fileProvider,
-                _memoryCache,
-                compilationSettings)
+                _memoryCache)
             {
                 GenerateSymbols = GenerateSymbols
             };
@@ -64,16 +59,6 @@ namespace Microsoft.AspNet.Mvc
         /// <inheritdoc />
         public void AfterCompile(AfterCompileContext context)
         {
-        }
-
-        private static CompilationSettings GetCompilationSettings(
-            ICompilerOptionsProvider compilerOptionsProvider,
-            ProjectContext projectContext)
-        {
-            return compilerOptionsProvider.GetCompilerOptions(projectContext.Name,
-                                                              projectContext.TargetFramework,
-                                                              projectContext.Configuration)
-                                          .ToCompilationSettings(projectContext.TargetFramework);
         }
     }
 }
