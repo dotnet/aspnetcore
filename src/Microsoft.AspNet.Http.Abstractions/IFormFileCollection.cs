@@ -5,12 +5,12 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNet.Http
 {
-    public interface IFormFileCollection : IList<IFormFile>
+    public interface IFormFileCollection : IReadOnlyList<IFormFile>
     {
         IFormFile this[string name] { get; }
 
         IFormFile GetFile(string name);
 
-        IList<IFormFile> GetFiles(string name);
+        IReadOnlyList<IFormFile> GetFiles(string name);
     }
 }

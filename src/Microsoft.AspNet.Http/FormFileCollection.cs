@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Http.Internal
             return Find(file => string.Equals(name, GetName(file.ContentDisposition)));
         }
 
-        public IList<IFormFile> GetFiles(string name)
+        public IReadOnlyList<IFormFile> GetFiles(string name)
         {
             return FindAll(file => string.Equals(name, GetName(file.ContentDisposition)));
         }
