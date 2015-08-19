@@ -4,6 +4,7 @@
     "Microsoft.AspNet.Mvc.Core": "6.0.0-*",
     "Microsoft.AspNet.Mvc.DataAnnotations": "6.0.0-*",
     "Microsoft.AspNet.Mvc.Formatters.Xml": "6.0.0-*",
+    "Microsoft.AspNet.Mvc.Razor": "6.0.0-*",
     "Microsoft.AspNet.Mvc.Razor.Host": "6.0.0-*",
     "Microsoft.AspNet.Mvc.ViewFeatures": "6.0.0-*",
     "Microsoft.AspNet.Mvc.TestCommon": { "version": "6.0.0-*", "type": "build" },
