@@ -140,6 +140,23 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             Assert.Equal(typeof(string), propertyMetadata.ModelType);
         }
 
+        [Fact]
+        public void GetMetadataForProperties_PropertyGetter_IsNullSafe()
+        {
+            // Arrange
+            var provider = CreateProvider();
+
+            // Act
+            var metadata = provider.GetMetadataForProperties(typeof(ModelType));
+
+            // Assert
+            foreach (var property in metadata)
+            {
+                Assert.NotNull(property.PropertyGetter);
+                Assert.Null(property.PropertyGetter(null));
+            }
+        }
+
         private static DefaultModelMetadataProvider CreateProvider()
         {
             return new DefaultModelMetadataProvider(new EmptyCompositeMetadataDetailsProvider());
@@ -149,7 +166,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         private class ModelType
         {
             [Model("OnProperty")]
-            public PropertyType Property1 { get; }
+            public PropertyType Property1 { get; } = new PropertyType();
 
             public PropertyType Property2 { get; set; }
         }

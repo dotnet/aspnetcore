@@ -122,7 +122,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
                 var propertyEntry = new DefaultMetadataDetails(propertyKey, attributes);
                 if (propertyHelper.Property.CanRead && propertyHelper.Property.GetMethod?.IsPublic == true)
                 {
-                    propertyEntry.PropertyGetter = propertyHelper.ValueGetter;
+                    var getter = PropertyHelper.MakeNullSafeFastPropertyGetter(propertyHelper.Property);
+                    propertyEntry.PropertyGetter = getter;
                 }
 
                 if (propertyHelper.Property.CanWrite &&

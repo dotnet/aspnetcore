@@ -287,10 +287,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 // instances or overwrite inner properties that are not bound. No need for this with simple values
                 // because they will be overwritten if binding succeeds. Arrays are never reused because they cannot
                 // be resized.
-                //
-                // ModelMetadata.PropertyGetter is not null safe; use it only if Model is non-null.
-                if (bindingContext.Model != null &&
-                    propertyMetadata.PropertyGetter != null &&
+                if (propertyMetadata.PropertyGetter != null &&
                     propertyMetadata.IsComplexType &&
                     !propertyMetadata.ModelType.IsArray)
                 {
