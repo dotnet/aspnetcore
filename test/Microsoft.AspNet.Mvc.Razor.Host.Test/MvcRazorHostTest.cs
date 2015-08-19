@@ -486,11 +486,11 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             public string InheritedChunkTreePagePath { get; private set; }
 
-            public override IReadOnlyList<ChunkTree> GetInheritedChunkTrees([NotNull] string pagePath)
+            public override IReadOnlyList<ChunkTreeResult> GetInheritedChunkTreeResults([NotNull] string pagePath)
             {
                 InheritedChunkTreePagePath = pagePath;
 
-                return new ChunkTree[0];
+                return new ChunkTreeResult[0];
             }
         }
 
@@ -533,7 +533,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
                 protected override CSharpCodeWriter CreateCodeWriter()
                 {
-                    // We normalize newlines so no matter what platform we're on 
+                    // We normalize newlines so no matter what platform we're on
                     // they're consistent (for code generation tests).
                     var codeWriter = base.CreateCodeWriter();
                     codeWriter.NewLine = "\r\n";

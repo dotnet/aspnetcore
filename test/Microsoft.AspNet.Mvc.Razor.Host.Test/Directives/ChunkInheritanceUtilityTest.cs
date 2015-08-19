@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNet.Razor.Chunks;
-using Microsoft.AspNet.Testing;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Razor.Directives
@@ -36,14 +35,15 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             var utility = new ChunkInheritanceUtility(host, cache, defaultChunks);
 
             // Act
-            var chunkTrees = utility.GetInheritedChunkTrees(PlatformNormalizer.NormalizePath(@"Views\home\Index.cshtml"));
+            var chunkTreeResults = utility.GetInheritedChunkTreeResults(
+                PlatformNormalizer.NormalizePath(@"Views\home\Index.cshtml"));
 
             // Assert
-            Assert.Collection(chunkTrees,
-                chunkTree =>
+            Assert.Collection(chunkTreeResults,
+                chunkTreeResult =>
                 {
                     var viewImportsPath = PlatformNormalizer.NormalizePath(@"Views\home\_ViewImports.cshtml");
-                    Assert.Collection(chunkTree.Chunks,
+                    Assert.Collection(chunkTreeResult.ChunkTree.Chunks,
                         chunk =>
                         {
                             Assert.IsType<LiteralChunk>(chunk);
@@ -60,11 +60,12 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
                             Assert.IsType<LiteralChunk>(chunk);
                             Assert.Equal(viewImportsPath, chunk.Start.FilePath);
                         });
+                    Assert.Equal(viewImportsPath, chunkTreeResult.FilePath);
                 },
-                chunkTree =>
+                chunkTreeResult =>
                 {
                     var viewImportsPath = PlatformNormalizer.NormalizePath(@"Views\_ViewImports.cshtml");
-                    Assert.Collection(chunkTree.Chunks,
+                    Assert.Collection(chunkTreeResult.ChunkTree.Chunks,
                         chunk =>
                         {
                             Assert.IsType<LiteralChunk>(chunk);
@@ -104,6 +105,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
                             Assert.IsType<LiteralChunk>(chunk);
                             Assert.Equal(viewImportsPath, chunk.Start.FilePath);
                         });
+                    Assert.Equal(viewImportsPath, chunkTreeResult.FilePath);
                 });
         }
 
@@ -125,7 +127,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             var utility = new ChunkInheritanceUtility(host, cache, defaultChunks);
 
             // Act
-            var chunkTrees = utility.GetInheritedChunkTrees(PlatformNormalizer.NormalizePath(@"Views\home\Index.cshtml"));
+            var chunkTrees = utility.GetInheritedChunkTreeResults(PlatformNormalizer.NormalizePath(@"Views\home\Index.cshtml"));
 
             // Assert
             Assert.Empty(chunkTrees);
@@ -168,9 +170,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             var chunkTree = new ChunkTree();
 
             // Act
-            utility.MergeInheritedChunkTrees(chunkTree,
-                                            inheritedChunkTrees,
-                                            "dynamic");
+            utility.MergeInheritedChunkTrees(chunkTree, inheritedChunkTrees, "dynamic");
 
             // Assert
             Assert.Equal(3, chunkTree.Chunks.Count);

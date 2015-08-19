@@ -40,17 +40,18 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
         }
 
         /// <summary>
-        /// Gets an ordered <see cref="IReadOnlyList{T}"/> of parsed <see cref="ChunkTree"/> for each
-        /// <c>_ViewImports</c> that is applicable to the page located at <paramref name="pagePath"/>. The list is
-        /// ordered so that the <see cref="ChunkTree"/> for the <c>_ViewImports</c> closest to the
+        /// Gets an ordered <see cref="IReadOnlyList{ChunkTreeResult}"/> of parsed <see cref="ChunkTree"/>s and
+        /// file paths for each <c>_ViewImports</c> that is applicable to the page located at
+        /// <paramref name="pagePath"/>. The list is ordered so that the <see cref="ChunkTreeResult"/>'s
+        /// <see cref="ChunkTreeResult.ChunkTree"/> for the <c>_ViewImports</c> closest to the
         /// <paramref name="pagePath"/> in the file system appears first.
         /// </summary>
         /// <param name="pagePath">The path of the page to locate inherited chunks for.</param>
-        /// <returns>A <see cref="IReadOnlyList{ChunkTree}"/> of parsed <c>_ViewImports</c>
-        /// <see cref="ChunkTree"/>s.</returns>
-        public virtual IReadOnlyList<ChunkTree> GetInheritedChunkTrees([NotNull] string pagePath)
+        /// <returns>A <see cref="IReadOnlyList{ChunkTreeResult}"/> of parsed <c>_ViewImports</c>
+        /// <see cref="ChunkTree"/>s and their file paths.</returns>
+        public virtual IReadOnlyList<ChunkTreeResult> GetInheritedChunkTreeResults([NotNull] string pagePath)
         {
-            var inheritedChunkTrees = new List<ChunkTree>();
+            var inheritedChunkTreeResults = new List<ChunkTreeResult>();
             var templateEngine = new RazorTemplateEngine(_razorHost);
             foreach (var viewImportsPath in ViewHierarchyUtility.GetViewImportsLocations(pagePath))
             {
@@ -67,11 +68,12 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
 
                 if (chunkTree != null)
                 {
-                    inheritedChunkTrees.Add(chunkTree);
+                    var result = new ChunkTreeResult(chunkTree, viewImportsPath);
+                    inheritedChunkTreeResults.Add(result);
                 }
             }
 
-            return inheritedChunkTrees;
+            return inheritedChunkTreeResults;
         }
 
         /// <summary>

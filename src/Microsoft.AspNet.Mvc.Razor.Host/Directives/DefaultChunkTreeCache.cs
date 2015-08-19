@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             ChunkTree chunkTree;
             if (!_chunkTreeCache.TryGetValue(pagePath, out chunkTree))
             {
-                // GetOrAdd is invoked for each _GlobalImport that might potentially exist in the path.
+                // GetOrAdd is invoked for each _ViewImport that might potentially exist in the path.
                 // We can avoid performing file system lookups for files that do not exist by caching
                 // negative results and adding a Watch for that file.
 
@@ -57,7 +57,6 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
 
                 var file = _fileProvider.GetFileInfo(pagePath);
                 chunkTree = file.Exists ? getChunkTree(file) : null;
-
 
                 _chunkTreeCache.Set(pagePath, chunkTree, options);
             }
