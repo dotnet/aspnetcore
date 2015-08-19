@@ -133,7 +133,7 @@ namespace Microsoft.AspNet.Mvc.Routing
                     continue;
                 }
 
-                _logger.LogInformation(
+                _logger.LogVerbose(
                     "Request successfully matched the route with name '{RouteName}' and template '{RouteTemplate}'.",
                     matchingEntry.RouteName,
                     matchingEntry.RouteTemplate);
