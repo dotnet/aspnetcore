@@ -3,13 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using Microsoft.AspNet.FileProviders;
-using Microsoft.AspNet.Mvc.Razor.Precompilation;
-using Microsoft.Dnx.Runtime;
 using Microsoft.Framework.Caching.Memory;
 using Microsoft.Framework.Internal;
-using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc.Razor.Compilation
 {
@@ -18,46 +14,36 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
     /// </summary>
     public class CompilerCache : ICompilerCache
     {
-        private static readonly Assembly RazorHostAssembly = typeof(CompilerCache).GetTypeInfo().Assembly;
         private readonly IFileProvider _fileProvider;
         private readonly IMemoryCache _cache;
 
         /// <summary>
-        /// Initializes a new instance of <see cref="CompilerCache"/> populated with precompiled views
-        /// discovered using <paramref name="provider"/>.
+        /// Initializes a new instance of <see cref="CompilerCache"/>.
         /// </summary>
-        /// <param name="razorFileInfoCollections">The sequence of <see cref="RazorFileInfoCollection"/> that provides
-        /// information for precompiled view discovery.</param>
-        /// <param name="loaderContextAccessor">The <see cref="IAssemblyLoadContextAccessor"/>.</param>
-        /// <param name="optionsAccessor">An accessor to the <see cref="RazorViewEngineOptions"/>.</param>
-        public CompilerCache(
-            IEnumerable<RazorFileInfoCollection> razorFileInfoCollections,
-            IAssemblyLoadContextAccessor loadContextAccessor,
-            IOptions<RazorViewEngineOptions> optionsAccessor)
-            : this(razorFileInfoCollections,
-                  loadContextAccessor.GetLoadContext(RazorHostAssembly),
-                  optionsAccessor.Options.FileProvider)
-        {
-        }
-
-        internal CompilerCache(
-            IEnumerable<RazorFileInfoCollection> razorFileInfoCollections,
-            IAssemblyLoadContext loadContext,
-            IFileProvider fileProvider)
+        /// <param name="fileProvider"><see cref="IFileProvider"/> used to locate Razor views.</param>
+        public CompilerCache([NotNull] IFileProvider fileProvider)
         {
             _fileProvider = fileProvider;
             _cache = new MemoryCache(new MemoryCacheOptions { CompactOnMemoryPressure = false });
+        }
 
-            foreach (var viewCollection in razorFileInfoCollections)
+        /// <summary>
+        /// Initializes a new instance of <see cref="CompilerCache"/> populated with precompiled views
+        /// specified by <paramref name="precompiledViews"/>.
+        /// </summary>
+        /// <param name="fileProvider"><see cref="IFileProvider"/> used to locate Razor views.</param>
+        /// <param name="precompiledViews">A mapping of application relative paths of view to the precompiled view
+        /// <see cref="Type"/>s.</param>
+        public CompilerCache(
+            [NotNull] IFileProvider fileProvider,
+            [NotNull] IDictionary<string, Type> precompiledViews)
+            : this(fileProvider)
+        {
+            foreach (var item in precompiledViews)
             {
-                var containingAssembly = viewCollection.LoadAssembly(loadContext);
-                foreach (var fileInfo in viewCollection.FileInfos)
-                {
-                    var viewType = containingAssembly.GetType(fileInfo.FullTypeName);
-                    var cacheEntry = new CompilerCacheResult(CompilationResult.Successful(viewType));
-                    var normalizedPath = NormalizePath(fileInfo.RelativePath);
-                    _cache.Set(normalizedPath, cacheEntry);
-                }
+                var cacheEntry = new CompilerCacheResult(CompilationResult.Successful(item.Value));
+                var normalizedPath = NormalizePath(item.Key);
+                _cache.Set(normalizedPath, cacheEntry);
             }
         }
 

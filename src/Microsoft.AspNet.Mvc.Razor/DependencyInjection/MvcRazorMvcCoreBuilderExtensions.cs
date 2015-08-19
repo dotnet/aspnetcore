@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.AspNet.Mvc.Razor.Compilation;
 using Microsoft.AspNet.Mvc.Razor.Directives;
-using Microsoft.AspNet.Mvc.Razor.Internal;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.Framework.Caching.Memory;
 using Microsoft.Framework.DependencyInjection.Extensions;
@@ -46,8 +46,11 @@ namespace Microsoft.Framework.DependencyInjection
         {
             AddRazorViewEngine(builder);
 
-            var razorFileInfos = RazorFileInfoCollections.GetFileInfoCollections(assemblies);
-            builder.Services.TryAddEnumerable(ServiceDescriptor.Instance(razorFileInfos));
+            builder.Services.Replace(
+                ServiceDescriptor.Singleton<ICompilerCacheProvider>(serviceProvider =>
+                    ActivatorUtilities.CreateInstance<PrecompiledViewsCompilerCacheProvider>(
+                        serviceProvider,
+                        assemblies.AsEnumerable())));
 
             return builder;
         }
@@ -97,7 +100,7 @@ namespace Microsoft.Framework.DependencyInjection
             services.TryAddTransient<IMvcRazorHost, MvcRazorHost>();
 
             // Caches compilation artifacts across the lifetime of the application.
-            services.TryAddSingleton<ICompilerCache, CompilerCache>();
+            services.TryAddSingleton<ICompilerCacheProvider, DefaultCompilerCacheProvider>();
 
             // This caches compilation related details that are valid across the lifetime of the application
             // and is required to be a singleton.

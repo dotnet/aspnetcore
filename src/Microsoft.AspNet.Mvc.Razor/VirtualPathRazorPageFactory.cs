@@ -15,14 +15,21 @@ namespace Microsoft.AspNet.Mvc.Razor
     public class VirtualPathRazorPageFactory : IRazorPageFactory
     {
         private readonly IServiceProvider _serviceProvider;
-        private readonly ICompilerCache _compilerCache;
+        private readonly ICompilerCacheProvider _compilerCacheProvider;
         private IRazorCompilationService _razorcompilationService;
+        private ICompilerCache _compilerCache;
 
-        public VirtualPathRazorPageFactory(IServiceProvider serviceProvider,
-                                           ICompilerCache compilerCache)
+        /// <summary>
+        /// Initializes a new instance of <see cref="VirtualPathRazorPageFactory"/>.
+        /// </summary>
+        /// <param name="serviceProvider">The request specific <see cref="IServiceProvider"/>.</param>
+        /// <param name="compilerCacheProvider">The <see cref="ICompilerCacheProvider"/>.</param>
+        public VirtualPathRazorPageFactory(
+            IServiceProvider serviceProvider,
+            ICompilerCacheProvider compilerCacheProvider)
         {
             _serviceProvider = serviceProvider;
-            _compilerCache = compilerCache;
+            _compilerCacheProvider = compilerCacheProvider;
         }
 
         private IRazorCompilationService RazorCompilationService
@@ -41,6 +48,19 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
         }
 
+        private ICompilerCache CompilerCache
+        {
+            get
+            {
+                if (_compilerCache == null)
+                {
+                    _compilerCache = _compilerCacheProvider.Cache;
+                }
+
+                return _compilerCache;
+            }
+        }
+
         /// <inheritdoc />
         public IRazorPage CreateInstance([NotNull] string relativePath)
         {
@@ -50,7 +70,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 relativePath = relativePath.Substring(1);
             }
 
-            var result = _compilerCache.GetOrAdd(
+            var result = CompilerCache.GetOrAdd(
                 relativePath,
                 RazorCompilationService.Compile);
 

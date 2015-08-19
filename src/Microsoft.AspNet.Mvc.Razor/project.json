@@ -6,7 +6,7 @@
     "url": "git://github.com/aspnet/mvc"
   },
   "compilationOptions": {
-    "warningsAsErrors": false
+    "warningsAsErrors": true
   },
   "dependencies": {
     "Microsoft.AspNet.Mvc.Razor.Host": "6.0.0-*",

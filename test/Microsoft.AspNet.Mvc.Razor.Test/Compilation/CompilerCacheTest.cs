@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Mvc.Razor.Precompilation;
 using Microsoft.Dnx.Runtime;
@@ -17,7 +16,10 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
     {
         private const string ViewPath = "Views/Home/Index.cshtml";
         private const string PrecompiledViewsPath = "Views/Home/Precompiled.cshtml";
-        private readonly IAssemblyLoadContext TestLoadContext = Mock.Of<IAssemblyLoadContext>();
+        private readonly IDictionary<string, Type> _precompiledViews = new Dictionary<string, Type>
+        {
+            { PrecompiledViewsPath, typeof(PreCompile) }
+        };
 
         public static TheoryData ViewImportsPaths =>
             new TheoryData<string>
@@ -32,7 +34,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         {
             // Arrange
             var fileProvider = new TestFileProvider();
-            var cache = new CompilerCache(Enumerable.Empty<RazorFileInfoCollection>(), TestLoadContext, fileProvider);
+            var cache = new CompilerCache(fileProvider);
 
             // Act
             var result = cache.GetOrAdd("/some/path", ThrowsIfCalled);
@@ -48,7 +50,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             // Arrange
             var fileProvider = new TestFileProvider();
             fileProvider.AddFile(ViewPath, "some content");
-            var cache = new CompilerCache(Enumerable.Empty<RazorFileInfoCollection>(), TestLoadContext, fileProvider);
+            var cache = new CompilerCache(fileProvider);
             var type = typeof(TestView);
             var expected = UncachedCompilationResult.Successful(type, "hello world");
 
@@ -70,7 +72,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             // Arrange
             var fileProvider = new TestFileProvider();
             fileProvider.AddFile(ViewPath, "some content");
-            var cache = new CompilerCache(Enumerable.Empty<RazorFileInfoCollection>(), TestLoadContext, fileProvider);
+            var cache = new CompilerCache(fileProvider);
             var type = typeof(TestView);
             var expected = UncachedCompilationResult.Successful(type, "hello world");
 
@@ -98,7 +100,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             // Arrange
             var fileProvider = new TestFileProvider();
             fileProvider.AddFile(ViewPath, "some content");
-            var cache = new CompilerCache(Enumerable.Empty<RazorFileInfoCollection>(), TestLoadContext, fileProvider);
+            var cache = new CompilerCache(fileProvider);
             var expected1 = UncachedCompilationResult.Successful(typeof(TestView), "hello world");
             var expected2 = UncachedCompilationResult.Successful(typeof(DifferentView), "different content");
 
@@ -133,7 +135,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             // Arrange
             var fileProvider = new TestFileProvider();
             fileProvider.AddFile(ViewPath, "some content");
-            var cache = new CompilerCache(Enumerable.Empty<RazorFileInfoCollection>(), TestLoadContext, fileProvider);
+            var cache = new CompilerCache(fileProvider);
             var expected1 = UncachedCompilationResult.Successful(typeof(TestView), "hello world");
             var expected2 = UncachedCompilationResult.Successful(typeof(DifferentView), "different content");
 
@@ -168,7 +170,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             var mockFileProvider = new Mock<TestFileProvider> { CallBase = true };
             var fileProvider = mockFileProvider.Object;
             fileProvider.AddFile(ViewPath, "some content");
-            var cache = new CompilerCache(Enumerable.Empty<RazorFileInfoCollection>(), TestLoadContext, fileProvider);
+            var cache = new CompilerCache(fileProvider);
             var type = typeof(TestView);
             var expected = UncachedCompilationResult.Successful(type, "hello world");
 
@@ -194,7 +196,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         {
             // Arrange
             var fileProvider = new TestFileProvider();
-            var cache = new CompilerCache(new[] { new TestViewCollection() }, TestLoadContext, fileProvider);
+            var cache = new CompilerCache(fileProvider, _precompiledViews);
 
             // Act
             var result = cache.GetOrAdd(PrecompiledViewsPath, ThrowsIfCalled);
@@ -209,7 +211,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         {
             // Arrange
             var fileProvider = new TestFileProvider();
-            var cache = new CompilerCache(new[] { new TestViewCollection() }, TestLoadContext, fileProvider);
+            var cache = new CompilerCache(fileProvider, _precompiledViews);
 
             // Act
             fileProvider.Watch(PrecompiledViewsPath);
@@ -227,7 +229,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         {
             // Arrange
             var fileProvider = new TestFileProvider();
-            var cache = new CompilerCache(new[] { new TestViewCollection() }, TestLoadContext, fileProvider);
+            var cache = new CompilerCache(fileProvider, _precompiledViews);
 
             // Act
             fileProvider.Watch(globalImportPath);
@@ -245,7 +247,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             // Arrange
             var fileProvider = new TestFileProvider();
             fileProvider.AddFile(ViewPath, "some content");
-            var cache = new CompilerCache(new[] { new TestViewCollection() }, TestLoadContext, fileProvider);
+            var cache = new CompilerCache(fileProvider, _precompiledViews);
             var expected = CompilationResult.Successful(typeof(TestView));
 
             // Act 1
@@ -284,26 +286,6 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         private CompilationResult ThrowsIfCalled(RelativeFileInfo file)
         {
             throw new Exception("Shouldn't be called");
-        }
-
-        private class TestViewCollection : RazorFileInfoCollection
-        {
-            public TestViewCollection()
-            {
-                FileInfos = new List<RazorFileInfo>
-                {
-                    new RazorFileInfo
-                    {
-                        FullTypeName = typeof(PreCompile).FullName,
-                        RelativePath = PrecompiledViewsPath,
-                    }
-                };
-            }
-
-            public override Assembly LoadAssembly(IAssemblyLoadContext loadContext)
-            {
-                return typeof(TestViewCollection).Assembly;
-            }
         }
     }
 }

@@ -2,10 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Razor;
-using Microsoft.AspNet.Mvc.Razor.Internal;
+using Microsoft.AspNet.Mvc.Razor.Compilation;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.Framework.DependencyInjection.Extensions;
 using Microsoft.Framework.Internal;
@@ -53,13 +54,17 @@ namespace Microsoft.Framework.DependencyInjection
 
             return builder;
         }
-        
+
         public static IMvcBuilder AddPrecompiledRazorViews(
             [NotNull] this IMvcBuilder builder,
             [NotNull] params Assembly[] assemblies)
         {
-            var razorFileInfos = RazorFileInfoCollections.GetFileInfoCollections(assemblies);
-            builder.Services.TryAddEnumerable(ServiceDescriptor.Instance(razorFileInfos));
+            builder.Services.Replace(
+                ServiceDescriptor.Singleton<ICompilerCacheProvider>(serviceProvider =>
+                    ActivatorUtilities.CreateInstance<PrecompiledViewsCompilerCacheProvider>(
+                        serviceProvider,
+                        assemblies.AsEnumerable())));
+
             return builder;
         }
     }

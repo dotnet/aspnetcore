@@ -49,7 +49,6 @@
         "ModelBindingWebSite": "1.0.0",
         "MvcSample.Web": "1.0.0",
         "PrecompilationWebSite": "1.0.0",
-        "RazorCompilerCacheWebSite": "1.0.0",
         "RazorEmbeddedViewsWebSite": "1.0.0",
         "RazorPageExecutionInstrumentationWebSite": "1.0.0",
         "RazorWebSite": "1.0.0",
