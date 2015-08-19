@@ -194,7 +194,7 @@ __dnvm_update_self() {
     if [ ! -e $dnvmFileLocation ]; then
         local formattedDnvmFileLocation=`(echo $dnvmFileLocation | sed s=$HOME=~=g)`
         local formattedDnvmHome=`(echo $_DNVM_DNVM_DIR | sed s=$HOME=~=g)`
-        printf "%b\n" "${Red}$formattedDnvmFileLocation doesn't exist. This command assumes you have installed dnvm in the usual location and are trying to update it. If you want to use update-self then dnvm.sh should be sourced from $formattedDnvmHome ${RCol}"
+        printf "%b\n" "${Red}$formattedDnvmFileLocation doesn't exist. This command assumes you have installed dnvm in the usual location and are trying to update it. If you want to use update-self then dnvm.sh should be sourced from $formattedDnvmHome. dnvm is currently sourced from $BASH_SOURCE ${RCol}"
         return 1
     fi
     printf "%b\n" "${Cya}Downloading dnvm.sh from $_DNVM_UPDATE_LOCATION ${RCol}"
