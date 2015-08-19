@@ -29,61 +29,62 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         };
 
         [Fact]
-        public async Task ContainsPrefixAsync_WithEmptyCollection_ReturnsFalseForEmptyPrefix()
+        public void ContainsPrefix_WithEmptyCollection_ReturnsFalseForEmptyPrefix()
         {
             // Arrange
             var backingStore = new Dictionary<string, string[]>();
             var valueProvider = GetEnumerableValueProvider(BindingSource.Query, backingStore, culture: null);
 
             // Act
-            var result = await valueProvider.ContainsPrefixAsync(string.Empty);
+            var result = valueProvider.ContainsPrefix(string.Empty);
 
             // Assert
             Assert.False(result);
         }
 
         [Fact]
-        public async Task ContainsPrefixAsync_WithNonEmptyCollection_ReturnsTrueForEmptyPrefix()
+        public void ContainsPrefix_WithNonEmptyCollection_ReturnsTrueForEmptyPrefix()
         {
             // Arrange
             var valueProvider = GetEnumerableValueProvider(BindingSource.Query, _backingStore, culture: null);
 
             // Act
-            var result = await valueProvider.ContainsPrefixAsync(string.Empty);
+            var result = valueProvider.ContainsPrefix(string.Empty);
 
             // Assert
             Assert.True(result);
         }
 
-        [Fact]
-        public async Task ContainsPrefixAsync_WithNonEmptyCollection_ReturnsTrueForKnownPrefixes()
+        [Theory]
+        [InlineData("some")]
+        [InlineData("prefix")]
+        [InlineData("prefix.name")]
+        [InlineData("[index]")]
+        [InlineData("prefix[index1]")]
+        public void ContainsPrefix_WithNonEmptyCollection_ReturnsTrueForKnownPrefixes(string prefix)
         {
             // Arrange
             var valueProvider = GetEnumerableValueProvider(BindingSource.Query, _backingStore, culture: null);
 
             // Act & Assert
-            Assert.True(await valueProvider.ContainsPrefixAsync("some"));
-            Assert.True(await valueProvider.ContainsPrefixAsync("prefix"));
-            Assert.True(await valueProvider.ContainsPrefixAsync("prefix.name"));
-            Assert.True(await valueProvider.ContainsPrefixAsync("[index]"));
-            Assert.True(await valueProvider.ContainsPrefixAsync("prefix[index1]"));
+            Assert.True(valueProvider.ContainsPrefix(prefix));
         }
 
         [Fact]
-        public async Task ContainsPrefixAsync_WithNonEmptyCollection_ReturnsFalseForUnknownPrefix()
+        public void ContainsPrefix_WithNonEmptyCollection_ReturnsFalseForUnknownPrefix()
         {
             // Arrange
             var valueProvider = GetEnumerableValueProvider(BindingSource.Query, _backingStore, culture: null);
 
             // Act
-            var result = await valueProvider.ContainsPrefixAsync("biff");
+            var result = valueProvider.ContainsPrefix("biff");
 
             // Assert
             Assert.False(result);
         }
 
         [Fact]
-        public async Task GetKeysFromPrefixAsync_EmptyPrefix_ReturnsAllPrefixes()
+        public void GetKeysFromPrefix_EmptyPrefix_ReturnsAllPrefixes()
         {
             // Arrange
             var expected = new Dictionary<string, string>
@@ -96,27 +97,27 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var valueProvider = GetEnumerableValueProvider(BindingSource.Query, _backingStore, culture: null);
 
             // Act
-            var result = await valueProvider.GetKeysFromPrefixAsync(string.Empty);
+            var result = valueProvider.GetKeysFromPrefix(string.Empty);
 
             // Assert
             Assert.Equal(expected, result.OrderBy(kvp => kvp.Key));
         }
 
         [Fact]
-        public async Task GetKeysFromPrefixAsync_UnknownPrefix_ReturnsEmptyDictionary()
+        public void GetKeysFromPrefix_UnknownPrefix_ReturnsEmptyDictionary()
         {
             // Arrange
             var valueProvider = GetEnumerableValueProvider(BindingSource.Query, _backingStore, culture: null);
 
             // Act
-            var result = await valueProvider.GetKeysFromPrefixAsync("abc");
+            var result = valueProvider.GetKeysFromPrefix("abc");
 
             // Assert
             Assert.Empty(result);
         }
 
         [Fact]
-        public async Task GetKeysFromPrefixAsync_KnownPrefix_ReturnsMatchingItems()
+        public void GetKeysFromPrefix_KnownPrefix_ReturnsMatchingItems()
         {
             // Arrange
             var expected = new Dictionary<string, string>
@@ -131,14 +132,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var valueProvider = GetEnumerableValueProvider(BindingSource.Query, _backingStore, culture: null);
 
             // Act
-            var result = await valueProvider.GetKeysFromPrefixAsync("prefix");
+            var result = valueProvider.GetKeysFromPrefix("prefix");
 
             // Assert
             Assert.Equal(expected, result);
         }
 
         [Fact]
-        public async Task GetKeysFromPrefixAsync_IndexPrefix_ReturnsMatchingItems()
+        public void GetKeysFromPrefix_IndexPrefix_ReturnsMatchingItems()
         {
             // Arrange
             var expected = new Dictionary<string, string>
@@ -149,21 +150,21 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var valueProvider = GetEnumerableValueProvider(BindingSource.Query, _backingStore, culture: null);
 
             // Act
-            var result = await valueProvider.GetKeysFromPrefixAsync("[index]");
+            var result = valueProvider.GetKeysFromPrefix("[index]");
 
             // Assert
             Assert.Equal(expected, result);
         }
 
         [Fact]
-        public async Task GetValueAsync_SingleValue()
+        public void GetValue_SingleValue()
         {
             // Arrange
             var culture = new CultureInfo("fr-FR");
             var valueProvider = GetEnumerableValueProvider(BindingSource.Query, _backingStore, culture);
 
             // Act
-            var result = await valueProvider.GetValueAsync("prefix.name");
+            var result = valueProvider.GetValue("prefix.name");
 
             // Assert
             Assert.NotNull(result);
@@ -172,14 +173,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         [Fact]
-        public async Task GetValueAsync_MultiValue()
+        public void GetValue_MultiValue()
         {
             // Arrange
             var culture = new CultureInfo("fr-FR");
             var valueProvider = GetEnumerableValueProvider(BindingSource.Query, _backingStore, culture);
 
             // Act
-            var result = await valueProvider.GetValueAsync("some");
+            var result = valueProvider.GetValue("some");
 
             // Assert
             Assert.NotNull(result);
@@ -191,21 +192,21 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         [Theory]
         [InlineData("null_value")]
         [InlineData("prefix.null_value")]
-        public async Task GetValue_NullValue(string key)
+        public void GetValue_NullValue(string key)
         {
             // Arrange
             var culture = new CultureInfo("fr-FR");
             var valueProvider = GetEnumerableValueProvider(BindingSource.Query, _backingStore, culture);
 
             // Act
-            var result = await valueProvider.GetValueAsync(key);
+            var result = valueProvider.GetValue(key);
 
             // Assert
             Assert.Equal(ValueProviderResult.None, result);
         }
 
         [Fact]
-        public async Task GetValueAsync_NullMultipleValue()
+        public void GetValue_NullMultipleValue()
         {
             // Arrange
             var backingStore = new Dictionary<string, string[]>
@@ -216,7 +217,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var valueProvider = GetEnumerableValueProvider(BindingSource.Query, backingStore, culture);
 
             // Act
-            var result = await valueProvider.GetValueAsync("key");
+            var result = valueProvider.GetValue("key");
 
             // Assert
             Assert.Equal(new[] { null, null, "value" }, result.Values);
@@ -224,13 +225,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         [Fact]
-        public async Task GetValueAsync_ReturnsNullIfKeyNotFound()
+        public void GetValue_ReturnsNullIfKeyNotFound()
         {
             // Arrange
             var valueProvider = GetEnumerableValueProvider(BindingSource.Query, _backingStore, culture: null);
 
             // Act
-            var result = await valueProvider.GetValueAsync("prefix");
+            var result = valueProvider.GetValue("prefix");
 
             // Assert
             Assert.Equal(ValueProviderResult.None, result);

@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         [InlineData(true, false, "prefix", "dummyModelName", true)]
         [InlineData(false, true, "prefix", "dummyModelName", false)]
         [InlineData(false, false, "prefix", "dummyModelName", false)]
-        public async Task CanCreateModel_ReturnsTrue_IfIsTopLevelObjectAndNotIsFirstChanceBinding(
+        public void CanCreateModel_ReturnsTrue_IfIsTopLevelObjectAndNotIsFirstChanceBinding(
             bool isTopLevelObject,
             bool isFirstChanceBinding,
             string binderModelName,
@@ -45,8 +45,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             var mockValueProvider = new Mock<IValueProvider>();
             mockValueProvider
-                .Setup(o => o.ContainsPrefixAsync(It.IsAny<string>()))
-                .Returns(Task.FromResult(false));
+                .Setup(o => o.ContainsPrefix(It.IsAny<string>()))
+                .Returns(false);
 
             var metadataProvider = new TestModelMetadataProvider();
             var bindingContext = new MutableObjectBinderContext
@@ -77,14 +77,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 mutableBinder.GetMetadataForProperties(bindingContext.ModelBindingContext).ToArray();
 
             // Act
-            var canCreate = await mutableBinder.CanCreateModel(bindingContext);
+            var canCreate = mutableBinder.CanCreateModel(bindingContext);
 
             // Assert
             Assert.Equal(expectedCanCreate, canCreate);
         }
 
         [Fact]
-        public async Task CanCreateModel_ReturnsFalse_IfNotIsTopLevelObjectAndModelIsMarkedWithBinderMetadata()
+        public void CanCreateModel_ReturnsFalse_IfNotIsTopLevelObjectAndModelIsMarkedWithBinderMetadata()
         {
             // Get the property metadata so that it is not a top level object.
             var modelMetadata = GetMetadataForType(typeof(Document))
@@ -107,14 +107,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var mutableBinder = new MutableObjectModelBinder();
 
             // Act
-            var canCreate = await mutableBinder.CanCreateModel(bindingContext);
+            var canCreate = mutableBinder.CanCreateModel(bindingContext);
 
             // Assert
             Assert.False(canCreate);
         }
 
         [Fact]
-        public async Task CanCreateModel_ReturnsTrue_IfIsTopLevelObjectAndModelIsMarkedWithBinderMetadata()
+        public void CanCreateModel_ReturnsTrue_IfIsTopLevelObjectAndModelIsMarkedWithBinderMetadata()
         {
             var bindingContext = new MutableObjectBinderContext
             {
@@ -134,18 +134,19 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var mutableBinder = new MutableObjectModelBinder();
 
             // Act
-            var canCreate = await mutableBinder.CanCreateModel(bindingContext);
+            var canCreate = mutableBinder.CanCreateModel(bindingContext);
 
             // Assert
             Assert.True(canCreate);
         }
 
         [Fact]
-        public async Task CanCreateModel_CreatesModel_IfTheModelIsBinderPoco()
+        public void CanCreateModel_CreatesModel_IfTheModelIsBinderPoco()
         {
             var mockValueProvider = new Mock<IValueProvider>();
-            mockValueProvider.Setup(o => o.ContainsPrefixAsync(It.IsAny<string>()))
-                             .Returns(Task.FromResult(false));
+            mockValueProvider
+                .Setup(o => o.ContainsPrefix(It.IsAny<string>()))
+                .Returns(false);
 
             var bindingContext = new MutableObjectBinderContext
             {
@@ -170,23 +171,23 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 mutableBinder.GetMetadataForProperties(bindingContext.ModelBindingContext).ToArray();
 
             // Act
-            var retModel = await mutableBinder.CanCreateModel(bindingContext);
+            var canCreate = mutableBinder.CanCreateModel(bindingContext);
 
             // Assert
-            Assert.True(retModel);
+            Assert.True(canCreate);
         }
 
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public async Task CanCreateModel_ReturnsTrue_IfNotIsTopLevelObject_BasedOnValueAvailability(
+        public void CanCreateModel_ReturnsTrue_IfNotIsTopLevelObject_BasedOnValueAvailability(
             bool valueAvailable)
         {
             // Arrange
             var mockValueProvider = new Mock<IValueProvider>(MockBehavior.Strict);
             mockValueProvider
-                .Setup(provider => provider.ContainsPrefixAsync("SimpleContainer.Simple.Name"))
-                .Returns(Task.FromResult(valueAvailable));
+                .Setup(provider => provider.ContainsPrefix("SimpleContainer.Simple.Name"))
+                .Returns(valueAvailable);
 
             var typeMetadata = GetMetadataForType(typeof(SimpleContainer));
             var modelMetadata = typeMetadata.Properties[nameof(SimpleContainer.Simple)];
@@ -210,15 +211,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var mutableBinder = new MutableObjectModelBinder();
 
             // Act
-            var result = await mutableBinder.CanCreateModel(bindingContext);
+            var canCreate = mutableBinder.CanCreateModel(bindingContext);
 
             // Assert
             // Result matches whether first Simple property can bind.
-            Assert.Equal(valueAvailable, result);
+            Assert.Equal(valueAvailable, canCreate);
         }
 
         [Fact]
-        public async Task CanCreateModel_ReturnsFalse_IfNotIsTopLevelObjectAndModelHasNoProperties()
+        public void CanCreateModel_ReturnsFalse_IfNotIsTopLevelObjectAndModelHasNoProperties()
         {
             // Arrange
             var bindingContext = new MutableObjectBinderContext
@@ -236,14 +237,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 mutableBinder.GetMetadataForProperties(bindingContext.ModelBindingContext).ToArray();
 
             // Act
-            var canCreate = await mutableBinder.CanCreateModel(bindingContext);
+            var canCreate = mutableBinder.CanCreateModel(bindingContext);
 
             // Assert
             Assert.False(canCreate);
         }
 
         [Fact]
-        public async Task CanCreateModel_ReturnsTrue_IfIsTopLevelObjectAndModelHasNoProperties()
+        public void CanCreateModel_ReturnsTrue_IfIsTopLevelObjectAndModelHasNoProperties()
         {
             // Arrange
             var bindingContext = new MutableObjectBinderContext
@@ -260,10 +261,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 mutableBinder.GetMetadataForProperties(bindingContext.ModelBindingContext).ToArray();
 
             // Act
-            var retModel = await mutableBinder.CanCreateModel(bindingContext);
+            var canCreate = mutableBinder.CanCreateModel(bindingContext);
 
             // Assert
-            Assert.True(retModel);
+            Assert.True(canCreate);
         }
 
         [Theory]
@@ -273,13 +274,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         [InlineData(typeof(TypeWithAtLeastOnePropertyMarkedUsingValueBinderMetadata), true)]
         [InlineData(typeof(TypeWithUnmarkedAndBinderMetadataMarkedProperties), false)]
         [InlineData(typeof(TypeWithUnmarkedAndBinderMetadataMarkedProperties), true)]
-        public async Task
-            CanCreateModel_CreatesModelForValueProviderBasedBinderMetadatas_IfAValueProviderProvidesValue
-                (Type modelType, bool valueProviderProvidesValue)
+        public void CanCreateModel_CreatesModelForValueProviderBasedBinderMetadatas_IfAValueProviderProvidesValue(
+            Type modelType, 
+            bool valueProviderProvidesValue)
         {
             var mockValueProvider = new Mock<IValueProvider>();
-            mockValueProvider.Setup(o => o.ContainsPrefixAsync(It.IsAny<string>()))
-                             .Returns(Task.FromResult(valueProviderProvidesValue));
+            mockValueProvider.Setup(o => o.ContainsPrefix(It.IsAny<string>()))
+                             .Returns(valueProviderProvidesValue);
 
             var bindingContext = new MutableObjectBinderContext
             {
@@ -303,27 +304,28 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 mutableBinder.GetMetadataForProperties(bindingContext.ModelBindingContext).ToArray();
 
             // Act
-            var retModel = await mutableBinder.CanCreateModel(bindingContext);
+            var canCreate = mutableBinder.CanCreateModel(bindingContext);
 
             // Assert
-            Assert.Equal(valueProviderProvidesValue, retModel);
+            Assert.Equal(valueProviderProvidesValue, canCreate);
         }
 
         [Theory]
         [InlineData(typeof(TypeWithAtLeastOnePropertyMarkedUsingValueBinderMetadata), false)]
         [InlineData(typeof(TypeWithAtLeastOnePropertyMarkedUsingValueBinderMetadata), true)]
-        public async Task CanCreateModel_ForExplicitValueProviderMetadata_UsesOriginalValueProvider(
+        public void CanCreateModel_ForExplicitValueProviderMetadata_UsesOriginalValueProvider(
             Type modelType,
             bool originalValueProviderProvidesValue)
         {
             var mockValueProvider = new Mock<IValueProvider>();
-            mockValueProvider.Setup(o => o.ContainsPrefixAsync(It.IsAny<string>()))
-                             .Returns(Task.FromResult(false));
+            mockValueProvider
+                .Setup(o => o.ContainsPrefix(It.IsAny<string>()))
+                .Returns(false);
 
             var mockOriginalValueProvider = new Mock<IBindingSourceValueProvider>();
             mockOriginalValueProvider
-                .Setup(o => o.ContainsPrefixAsync(It.IsAny<string>()))
-                .Returns(Task.FromResult(originalValueProviderProvidesValue));
+                .Setup(o => o.ContainsPrefix(It.IsAny<string>()))
+                .Returns(originalValueProviderProvidesValue);
 
             mockOriginalValueProvider
                 .Setup(o => o.Filter(It.IsAny<BindingSource>()))
@@ -363,10 +365,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 mutableBinder.GetMetadataForProperties(bindingContext.ModelBindingContext).ToArray();
 
             // Act
-            var retModel = await mutableBinder.CanCreateModel(bindingContext);
+            var canCreate = mutableBinder.CanCreateModel(bindingContext);
 
             // Assert
-            Assert.Equal(originalValueProviderProvidesValue, retModel);
+            Assert.Equal(originalValueProviderProvidesValue, canCreate);
         }
 
         [Theory]
@@ -374,17 +376,17 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         [InlineData(typeof(TypeWithUnmarkedAndBinderMetadataMarkedProperties), true)]
         [InlineData(typeof(TypeWithNoBinderMetadata), false)]
         [InlineData(typeof(TypeWithNoBinderMetadata), true)]
-        public async Task CanCreateModel_UnmarkedProperties_UsesCurrentValueProvider(
+        public void CanCreateModel_UnmarkedProperties_UsesCurrentValueProvider(
             Type modelType,
             bool valueProviderProvidesValue)
         {
             var mockValueProvider = new Mock<IValueProvider>();
-            mockValueProvider.Setup(o => o.ContainsPrefixAsync(It.IsAny<string>()))
-                             .Returns(Task.FromResult(valueProviderProvidesValue));
+            mockValueProvider.Setup(o => o.ContainsPrefix(It.IsAny<string>()))
+                             .Returns(valueProviderProvidesValue);
 
             var mockOriginalValueProvider = new Mock<IValueProvider>();
-            mockOriginalValueProvider.Setup(o => o.ContainsPrefixAsync(It.IsAny<string>()))
-                                     .Returns(Task.FromResult(false));
+            mockOriginalValueProvider.Setup(o => o.ContainsPrefix(It.IsAny<string>()))
+                                     .Returns(false);
 
             var bindingContext = new MutableObjectBinderContext
             {
@@ -408,10 +410,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 mutableBinder.GetMetadataForProperties(bindingContext.ModelBindingContext).ToArray();
 
             // Act
-            var retModel = await mutableBinder.CanCreateModel(bindingContext);
+            var canCreate = mutableBinder.CanCreateModel(bindingContext);
 
             // Assert
-            Assert.Equal(valueProviderProvidesValue, retModel);
+            Assert.Equal(valueProviderProvidesValue, canCreate);
         }
 
         [Fact]
@@ -420,8 +422,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Arrange
             var mockValueProvider = new Mock<IValueProvider>();
             mockValueProvider
-                .Setup(o => o.ContainsPrefixAsync(It.IsAny<string>()))
-                .Returns(Task.FromResult(true));
+                .Setup(o => o.ContainsPrefix(It.IsAny<string>()))
+                .Returns(true);
 
             // Mock binder fails to bind all properties.
             var mockBinder = new Mock<IModelBinder>();
@@ -470,8 +472,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Arrange
             var mockValueProvider = new Mock<IValueProvider>();
             mockValueProvider
-                .Setup(o => o.ContainsPrefixAsync(It.IsAny<string>()))
-                .Returns(Task.FromResult(false));
+                .Setup(o => o.ContainsPrefix(It.IsAny<string>()))
+                .Returns(false);
 
             // Mock binder fails to bind all properties.
             var mockBinder = new Mock<IModelBinder>();
@@ -567,10 +569,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var testableBinder = new TestableMutableObjectModelBinder();
 
             // Act
-            var retModel = testableBinder.CreateModelPublic(bindingContext);
+            var model = testableBinder.CreateModelPublic(bindingContext);
 
             // Assert
-            Assert.IsType<Person>(retModel);
+            Assert.IsType<Person>(model);
         }
 
         [Fact]

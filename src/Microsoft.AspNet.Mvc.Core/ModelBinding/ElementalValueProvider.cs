@@ -3,7 +3,6 @@
 
 using System;
 using System.Globalization;
-using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -22,20 +21,20 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         public string Value { get; }
 
-        public Task<bool> ContainsPrefixAsync(string prefix)
+        public bool ContainsPrefix(string prefix)
         {
-            return Task.FromResult(PrefixContainer.IsPrefixMatch(prefix, Key));
+            return PrefixContainer.IsPrefixMatch(prefix, Key);
         }
 
-        public Task<ValueProviderResult> GetValueAsync(string key)
+        public ValueProviderResult GetValue(string key)
         {
             if (string.Equals(key, Key, StringComparison.OrdinalIgnoreCase))
             {
-                return Task.FromResult(new ValueProviderResult(Value, Culture));
+                return new ValueProviderResult(Value, Culture);
             }
             else
             {
-                return Task.FromResult(ValueProviderResult.None);
+                return ValueProviderResult.None;
             }
         }
     }

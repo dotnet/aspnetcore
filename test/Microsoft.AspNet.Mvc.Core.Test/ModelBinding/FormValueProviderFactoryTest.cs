@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Internal;
 using Xunit;
 
@@ -12,14 +13,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
     public class FormValueProviderFactoryTest
     {
         [Fact]
-        public void GetValueProvider_ReturnsNull_WhenContentTypeIsNotFormUrlEncoded()
+        public async Task GetValueProviderAsync_ReturnsNull_WhenContentTypeIsNotFormUrlEncoded()
         {
             // Arrange
             var context = CreateContext("some-content-type");
             var factory = new FormValueProviderFactory();
 
             // Act
-            var result = factory.GetValueProvider(context);
+            var result = await factory.GetValueProviderAsync(context);
 
             // Assert
             Assert.Null(result);
@@ -30,14 +31,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         [InlineData("application/x-www-form-urlencoded;charset=utf-8")]
         [InlineData("multipart/form-data; boundary=----WebKitFormBoundarymx2fSWqWSd0OxQqq")]
         [InlineData("multipart/form-data; boundary=----WebKitFormBoundarymx2fSWqWSd0OxQqq; charset=utf-8")]
-        public void GetValueProvider_ReturnsValueProviderInstanceWithCurrentCulture(string contentType)
+        public async Task GetValueProviderAsync_ReturnsValueProvider_WithCurrentCulture(string contentType)
         {
             // Arrange
             var context = CreateContext(contentType);
             var factory = new FormValueProviderFactory();
 
             // Act
-            var result = factory.GetValueProvider(context);
+            var result = await factory.GetValueProviderAsync(context);
 
             // Assert
             var valueProvider = Assert.IsType<ReadableStringCollectionValueProvider>(result);
@@ -48,6 +49,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         {
             var context = new DefaultHttpContext();
             context.Request.ContentType = contentType;
+
+            if (context.Request.HasFormContentType)
+            {
+                context.Request.Form = new FormCollection(new Dictionary<string, string[]>());
+            }
 
             return new ValueProviderFactoryContext(
                 context,

@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
 
             // Attempt to bind dictionary from a set of prefix[key]=value entries. Get the short and long keys first.
-            var keys = await enumerableValueProvider.GetKeysFromPrefixAsync(bindingContext.ModelName);
+            var keys = enumerableValueProvider.GetKeysFromPrefix(bindingContext.ModelName);
             if (!keys.Any())
             {
                 // No entries with the expected keys.

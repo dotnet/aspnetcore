@@ -211,14 +211,14 @@ namespace ModelBindingWebSite.Controllers
 
         public class CustomValueProvider : IValueProvider
         {
-            public Task<bool> ContainsPrefixAsync(string prefix)
+            public bool ContainsPrefix(string prefix)
             {
-                return Task.FromResult(false);
+                return false;
             }
 
-            public Task<ValueProviderResult> GetValueAsync(string key)
+            public ValueProviderResult GetValue(string key)
             {
-                return Task.FromResult<ValueProviderResult>(ValueProviderResult.None);
+                return ValueProviderResult.None;
             }
         }
     }

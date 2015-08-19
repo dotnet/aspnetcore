@@ -10,29 +10,27 @@ namespace ValueProvidersWebSite
 {
     public class CustomValueProviderFactory : IValueProviderFactory
     {
-        public IValueProvider GetValueProvider(ValueProviderFactoryContext context)
+        public Task<IValueProvider> GetValueProviderAsync(ValueProviderFactoryContext context)
         {
             if (context.HttpContext.Request.Path.Value.Contains("TestValueProvider"))
             {
-                return new CustomValueProvider();
+                return Task.FromResult<IValueProvider>(new CustomValueProvider());
             }
 
-            return null;
+            return Task.FromResult<IValueProvider>(null);
         }
 
         private class CustomValueProvider : IValueProvider
         {
-            public Task<bool> ContainsPrefixAsync(string prefix)
+            public bool ContainsPrefix(string prefix)
             {
-                var result = string.Equals(prefix, "test", StringComparison.OrdinalIgnoreCase);
-                return Task.FromResult(result);
+                return string.Equals(prefix, "test", StringComparison.OrdinalIgnoreCase);
             }
 
-            public Task<ValueProviderResult> GetValueAsync(string key)
+            public ValueProviderResult GetValue(string key)
             {
                 var value = "custom-value-provider-value";
-                var result = new ValueProviderResult(value, CultureInfo.CurrentCulture);
-                return Task.FromResult(result);
+                return new ValueProviderResult(value, CultureInfo.CurrentCulture);
             }
         }
     }

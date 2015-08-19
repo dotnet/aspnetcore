@@ -83,12 +83,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
             }
 
-            public override Task<bool> ContainsPrefixAsync(string prefix)
+            public override bool ContainsPrefix(string prefix)
             {
                 throw new NotImplementedException();
             }
 
-            public override Task<ValueProviderResult> GetValueAsync(string key)
+            public override ValueProviderResult GetValue(string key)
             {
                 throw new NotImplementedException();
             }

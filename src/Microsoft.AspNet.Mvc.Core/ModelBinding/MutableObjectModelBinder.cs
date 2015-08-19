@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 PropertyMetadata = GetMetadataForProperties(bindingContext).ToArray(),
             };
 
-            if (!(await CanCreateModel(mutableObjectBinderContext)))
+            if (!(CanCreateModel(mutableObjectBinderContext)))
             {
                 return null;
             }
@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return CanUpdatePropertyInternal(propertyMetadata);
         }
 
-        internal async Task<bool> CanCreateModel(MutableObjectBinderContext context)
+        internal bool CanCreateModel(MutableObjectBinderContext context)
         {
             var bindingContext = context.ModelBindingContext;
             var isTopLevelObject = bindingContext.IsTopLevelObject;
@@ -109,7 +109,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
 
             // 3. Any of the model properties can be bound using a value provider.
-            if (await CanValueBindAnyModelProperties(context))
+            if (CanValueBindAnyModelProperties(context))
             {
                 return true;
             }
@@ -117,7 +117,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return false;
         }
 
-        private async Task<bool> CanValueBindAnyModelProperties(MutableObjectBinderContext context)
+        private bool CanValueBindAnyModelProperties(MutableObjectBinderContext context)
         {
             // If there are no properties on the model, there is nothing to bind. We are here means this is not a top
             // level object. So we return false.
@@ -170,7 +170,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                         propertyMetadata);
 
                     // If any property can return a true value.
-                    if (await CanBindValue(propertyModelBindingContext))
+                    if (CanBindValue(propertyModelBindingContext))
                     {
                         return true;
                     }
@@ -189,7 +189,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return false;
         }
 
-        private async Task<bool> CanBindValue(ModelBindingContext bindingContext)
+        private bool CanBindValue(ModelBindingContext bindingContext)
         {
             var valueProvider = bindingContext.ValueProvider;
 
@@ -209,7 +209,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 }
             }
 
-            if (await valueProvider.ContainsPrefixAsync(bindingContext.ModelName))
+            if (valueProvider.ContainsPrefix(bindingContext.ModelName))
             {
                 return true;
             }

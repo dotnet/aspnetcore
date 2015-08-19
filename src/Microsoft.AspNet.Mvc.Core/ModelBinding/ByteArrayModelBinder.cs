@@ -13,7 +13,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     public class ByteArrayModelBinder : IModelBinder
     {
         /// <inheritdoc />
-        public async Task<ModelBindingResult> BindModelAsync([NotNull] ModelBindingContext bindingContext)
+        public Task<ModelBindingResult> BindModelAsync([NotNull] ModelBindingContext bindingContext)
+        {
+            return Task.FromResult(BindModel(bindingContext));
+        }
+
+        private ModelBindingResult BindModel(ModelBindingContext bindingContext)
         {
             // Check if this binder applies.
             if (bindingContext.ModelType != typeof(byte[]))
@@ -22,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
 
             // Check for missing data case 1: There was no <input ... /> element containing this data.
-            var valueProviderResult = await bindingContext.ValueProvider.GetValueAsync(bindingContext.ModelName);
+            var valueProviderResult = bindingContext.ValueProvider.GetValue(bindingContext.ModelName);
             if (valueProviderResult == ValueProviderResult.None)
             {
                 return new ModelBindingResult(model: null, key: bindingContext.ModelName, isModelSet: false);

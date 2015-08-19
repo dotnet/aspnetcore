@@ -85,7 +85,7 @@ namespace ModelBindingWebSite.Controllers
 
         private class ProductModelBinder : IModelBinder
         {
-            public async Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
+            public Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
             {
                 if (typeof(Product).IsAssignableFrom(bindingContext.ModelType))
                 {
@@ -97,16 +97,16 @@ namespace ModelBindingWebSite.Controllers
                         string.IsNullOrEmpty(bindingContext.ModelName) ?
                         "productId" :
                         bindingContext.ModelName + "." + "productId";
-
-                    var value = await bindingContext.ValueProvider.GetValueAsync(key);
+                    
+                    var value = bindingContext.ValueProvider.GetValue(key);
                     model.ProductId = value.ConvertTo<int>();
 
                     var validationNode =
                         new ModelValidationNode(bindingContext.ModelName, bindingContext.ModelMetadata, value);
-                    return new ModelBindingResult(model, key, true, validationNode);
+                    return Task.FromResult(new ModelBindingResult(model, key, true, validationNode));
                 }
 
-                return null;
+                return Task.FromResult<ModelBindingResult>(null);
             }
         }
     }

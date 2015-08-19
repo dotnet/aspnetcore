@@ -23,44 +23,21 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             _culture = culture ?? CultureInfo.InvariantCulture;
         }
 
-        // copied from ValueProviderUtil
-        public Task<bool> ContainsPrefixAsync(string prefix)
+        public bool ContainsPrefix(string prefix)
         {
             foreach (string key in Keys)
             {
-                if (key != null)
+                if (PrefixContainer.IsPrefixMatch(prefix, key))
                 {
-                    if (prefix.Length == 0)
-                    {
-                        return Task.FromResult(true); // shortcut - non-null key matches empty prefix
-                    }
-
-                    if (key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
-                    {
-                        if (key.Length == prefix.Length)
-                        {
-                            return Task.FromResult(true); // exact match
-                        }
-                        else
-                        {
-                            switch (key[prefix.Length])
-                            {
-                                case '.': // known separator characters
-                                case '[':
-                                    return Task.FromResult(true);
-                            }
-                        }
-                    }
+                    return true;
                 }
             }
 
-            return Task.FromResult(false); // nothing found
+            return false;
         }
 
-        public Task<ValueProviderResult> GetValueAsync(string key)
+        public ValueProviderResult GetValue(string key)
         {
-            ValueProviderResult result = ValueProviderResult.None;
-
             object rawValue;
             if (TryGetValue(key, out rawValue))
             {
@@ -74,16 +51,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                         stringValues[i] = array.GetValue(i) as string ?? Convert.ToString(array.GetValue(i), _culture);
                     }
 
-                    result = new ValueProviderResult(stringValues, _culture);
+                    return new ValueProviderResult(stringValues, _culture);
                 }
                 else
                 {
                     var stringValue = rawValue as string ?? Convert.ToString(rawValue, _culture) ?? string.Empty;
-                    result = new ValueProviderResult(stringValue, _culture);
+                    return new ValueProviderResult(stringValue, _culture);
                 }
             }
 
-            return Task.FromResult(result);
+            return ValueProviderResult.None;
         }
     }
 }

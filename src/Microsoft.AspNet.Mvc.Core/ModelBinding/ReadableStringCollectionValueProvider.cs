@@ -18,7 +18,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     public class ReadableStringCollectionValueProvider : BindingSourceValueProvider, IEnumerableValueProvider
     {
         private readonly CultureInfo _culture;
-        private readonly Func<Task<IReadableStringCollection>> _valuesFactory;
         private PrefixContainer _prefixContainer;
         private IReadableStringCollection _values;
 
@@ -38,23 +37,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             _culture = culture;
         }
 
-        /// <summary>
-        /// Creates a provider for <see cref="IReadableStringCollection"/> wrapping an
-        /// existing set of key value pairs provided by the delegate.
-        /// </summary>
-        /// <param name="bindingSource">The <see cref="BindingSource"/> for the data.</param>
-        /// <param name="values">The delegate that provides the key value pairs to wrap.</param>
-        /// <param name="culture">The culture to return with ValueProviderResult instances.</param>
-        public ReadableStringCollectionValueProvider(
-            [NotNull] BindingSource bindingSource,
-            [NotNull] Func<Task<IReadableStringCollection>> valuesFactory,
-            CultureInfo culture)
-            : base(bindingSource)
-        {
-            _valuesFactory = valuesFactory;
-            _culture = culture;
-        }
-
         public CultureInfo Culture
         {
             get
@@ -63,59 +45,43 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
         }
 
-        /// <inheritdoc />
-        public override async Task<bool> ContainsPrefixAsync(string prefix)
+        protected PrefixContainer PrefixContainer
         {
-            var prefixContainer = await GetPrefixContainerAsync();
-            return prefixContainer.ContainsPrefix(prefix);
+            get
+            {
+                if (_prefixContainer == null)
+                {
+                    _prefixContainer = new PrefixContainer(_values.Keys);
+                }
+
+                return _prefixContainer;
+            }
         }
 
         /// <inheritdoc />
-        public virtual async Task<IDictionary<string, string>> GetKeysFromPrefixAsync([NotNull] string prefix)
+        public override bool ContainsPrefix(string prefix)
         {
-            var prefixContainer = await GetPrefixContainerAsync();
-            return prefixContainer.GetKeysFromPrefix(prefix);
+            return PrefixContainer.ContainsPrefix(prefix);
         }
 
         /// <inheritdoc />
-        public override async Task<ValueProviderResult> GetValueAsync([NotNull] string key)
+        public virtual IDictionary<string, string> GetKeysFromPrefix([NotNull] string prefix)
         {
-            var collection = await GetValueCollectionAsync();
-            var values = collection.GetValues(key);
+            return PrefixContainer.GetKeysFromPrefix(prefix);
+        }
 
-            ValueProviderResult result;
+        /// <inheritdoc />
+        public override ValueProviderResult GetValue([NotNull] string key)
+        {
+            var values = _values.GetValues(key);
             if (values == null)
             {
-                result = ValueProviderResult.None;
+                return ValueProviderResult.None;
             }
             else
             {
-                result = new ValueProviderResult(values.ToArray(), _culture);
+                return new ValueProviderResult(values.ToArray(), _culture);
             }
-
-            return result;
-        }
-
-        private async Task<IReadableStringCollection> GetValueCollectionAsync()
-        {
-            if (_values == null)
-            {
-                Debug.Assert(_valuesFactory != null);
-                _values = await _valuesFactory();
-            }
-
-            return _values;
-        }
-
-        private async Task<PrefixContainer> GetPrefixContainerAsync()
-        {
-            if (_prefixContainer == null)
-            {
-                // Initialization race is OK providing data remains read-only and object identity is not significant
-                var collection = await GetValueCollectionAsync();
-                _prefixContainer = new PrefixContainer(collection.Keys);
-            }
-            return _prefixContainer;
         }
     }
 }

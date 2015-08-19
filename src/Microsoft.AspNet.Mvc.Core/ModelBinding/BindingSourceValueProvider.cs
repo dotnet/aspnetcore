@@ -60,10 +60,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         protected BindingSource BindingSource { get; }
 
         /// <inheritdoc />
-        public abstract Task<bool> ContainsPrefixAsync(string prefix);
+        public abstract bool ContainsPrefix(string prefix);
 
         /// <inheritdoc />
-        public abstract Task<ValueProviderResult> GetValueAsync(string key);
+        public abstract ValueProviderResult GetValue(string key);
 
         /// <inheritdoc />
         public virtual IValueProvider Filter(BindingSource bindingSource)

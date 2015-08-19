@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Globalization;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.Internal;
 
@@ -9,7 +10,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public class FormValueProviderFactory : IValueProviderFactory
     {
-        public IValueProvider GetValueProvider([NotNull] ValueProviderFactoryContext context)
+        public async Task<IValueProvider> GetValueProviderAsync([NotNull] ValueProviderFactoryContext context)
         {
             var request = context.HttpContext.Request;
 
@@ -19,7 +20,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
                 return new ReadableStringCollectionValueProvider(
                     BindingSource.Form,
-                    async () => await request.ReadFormAsync(),
+                    await request.ReadFormAsync(),
                     culture);
             }
 

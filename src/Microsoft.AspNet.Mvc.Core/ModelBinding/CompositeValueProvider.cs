@@ -46,14 +46,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// A <see cref="CompositeValueProvider"/> containing all <see cref="IValueProvider"/> instances
         /// created.
         /// </returns>
-        public static CompositeValueProvider Create(
+        public static async Task<CompositeValueProvider> CreateAsync(
             [NotNull] IEnumerable<IValueProviderFactory> factories,
             [NotNull] ValueProviderFactoryContext context)
         {
             var composite = new CompositeValueProvider();
             foreach (var valueProvidersFactory in factories)
             {
-                var valueProvider = valueProvidersFactory.GetValueProvider(context);
+                var valueProvider = await valueProvidersFactory.GetValueProviderAsync(context);
                 if (valueProvider != null)
                 {
                     composite.Add(valueProvider);
@@ -64,11 +64,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <inheritdoc />
-        public virtual async Task<bool> ContainsPrefixAsync(string prefix)
+        public virtual bool ContainsPrefix(string prefix)
         {
             for (var i = 0; i < Count; i++)
             {
-                if (await this[i].ContainsPrefixAsync(prefix))
+                if (this[i].ContainsPrefix(prefix))
                 {
                     return true;
                 }
@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <inheritdoc />
-        public virtual async Task<ValueProviderResult> GetValueAsync(string key)
+        public virtual ValueProviderResult GetValue(string key)
         {
             // Performance-sensitive
             // Caching the count is faster for IList<T>
@@ -85,7 +85,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             for (var i = 0; i < itemCount; i++)
             {
                 var valueProvider = Items[i];
-                var result = await valueProvider.GetValueAsync(key);
+                var result = valueProvider.GetValue(key);
                 if (result != ValueProviderResult.None)
                 {
                     return result;
@@ -96,14 +96,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <inheritdoc />
-        public virtual async Task<IDictionary<string, string>> GetKeysFromPrefixAsync(string prefix)
+        public virtual IDictionary<string, string> GetKeysFromPrefix(string prefix)
         {
             foreach (var valueProvider in this)
             {
                 var enumeratedProvider = valueProvider as IEnumerableValueProvider;
                 if (enumeratedProvider != null)
                 {
-                    var result = await enumeratedProvider.GetKeysFromPrefixAsync(prefix);
+                    var result = enumeratedProvider.GetKeysFromPrefix(prefix);
                     if (result != null && result.Count > 0)
                     {
                         return result;

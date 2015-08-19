@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
 #if DNX451
         [Fact]
-        public async Task GetKeysFromPrefixAsync_ReturnsResultFromFirstValueProviderThatReturnsValues()
+        public void GetKeysFromPrefixAsync_ReturnsResultFromFirstValueProviderThatReturnsValues()
         {
             // Arrange
             var provider1 = Mock.Of<IValueProvider>();
@@ -39,13 +39,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 { "prefix-test", "some-value" },
             };
             var provider2 = new Mock<IEnumerableValueProvider>();
-            provider2.Setup(p => p.GetKeysFromPrefixAsync("prefix"))
-                     .Returns(Task.FromResult<IDictionary<string, string>>(dictionary))
+            provider2.Setup(p => p.GetKeysFromPrefix("prefix"))
+                     .Returns(dictionary)
                      .Verifiable();
             var provider = new CompositeValueProvider(new[] { provider1, provider2.Object });
 
             // Act
-            var values = await provider.GetKeysFromPrefixAsync("prefix");
+            var values = provider.GetKeysFromPrefix("prefix");
 
             // Assert
             var result = Assert.Single(values);
@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         [Fact]
-        public async Task GetKeysFromPrefixAsync_ReturnsEmptyDictionaryIfNoValueProviderReturnsValues()
+        public void GetKeysFromPrefixAsync_ReturnsEmptyDictionaryIfNoValueProviderReturnsValues()
         {
             // Arrange
             var provider1 = Mock.Of<IValueProvider>();
@@ -63,7 +63,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var provider = new CompositeValueProvider(new[] { provider1, provider2 });
 
             // Act
-            var values = await provider.GetKeysFromPrefixAsync("prefix");
+            var values = provider.GetKeysFromPrefix("prefix");
 
             // Assert
             Assert.Empty(values);

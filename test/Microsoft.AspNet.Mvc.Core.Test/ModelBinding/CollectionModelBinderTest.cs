@@ -435,17 +435,21 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Mock<IModelBinder> mockIntBinder = new Mock<IModelBinder>();
             mockIntBinder
                 .Setup(o => o.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                .Returns(async (ModelBindingContext mbc) =>
+                .Returns((ModelBindingContext mbc) =>
                 {
-                    var value = await mbc.ValueProvider.GetValueAsync(mbc.ModelName);
+                    var value = mbc.ValueProvider.GetValue(mbc.ModelName);
                     if (value != ValueProviderResult.None)
                     {
                         var model = value.ConvertTo(mbc.ModelType);
                         var modelValidationNode = new ModelValidationNode(mbc.ModelName, mbc.ModelMetadata, model);
-                        return new ModelBindingResult(model, mbc.ModelName, model != null, modelValidationNode);
+                        return Task.FromResult(new ModelBindingResult(
+                            model, 
+                            mbc.ModelName, 
+                            model != null, 
+                            modelValidationNode));
                     }
 
-                    return null;
+                    return Task.FromResult<ModelBindingResult>(null);
                 });
             return mockIntBinder.Object;
         }

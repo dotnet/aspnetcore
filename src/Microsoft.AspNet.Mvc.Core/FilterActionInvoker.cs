@@ -333,7 +333,7 @@ namespace Microsoft.AspNet.Mvc.Core
                         ActionContext.HttpContext,
                         ActionContext.RouteData.Values);
 
-                    ActionBindingContext.ValueProvider = CompositeValueProvider.Create(
+                    ActionBindingContext.ValueProvider = await CompositeValueProvider.CreateAsync(
                         _resourceExecutingContext.ValueProviderFactories,
                         valueProviderFactoryContext);
 

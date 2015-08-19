@@ -44,27 +44,24 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <inheritdoc />
-        public override Task<bool> ContainsPrefixAsync(string key)
+        public override bool ContainsPrefix(string key)
         {
-            return Task.FromResult(PrefixContainer.ContainsPrefix(key));
+            return PrefixContainer.ContainsPrefix(key);
         }
 
         /// <inheritdoc />
-        public override Task<ValueProviderResult> GetValueAsync([NotNull] string key)
+        public override ValueProviderResult GetValue([NotNull] string key)
         {
             object value;
-            ValueProviderResult result;
             if (_values.TryGetValue(key, out value))
             {
                 var stringValue = value as string ?? value?.ToString() ?? string.Empty;
-                result = new ValueProviderResult(stringValue, CultureInfo.InvariantCulture);
+                return new ValueProviderResult(stringValue, CultureInfo.InvariantCulture);
             }
             else
             {
-                result = ValueProviderResult.None;
+                return ValueProviderResult.None;
             }
-
-            return Task.FromResult(result);
         }
     }
 }

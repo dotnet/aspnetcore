@@ -11,7 +11,7 @@ using Microsoft.Framework.Internal;
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     /// <summary>
-    /// Result of an <see cref="IValueProvider.GetValueAsync(string)"/> operation.
+    /// Result of an <see cref="IValueProvider.GetValue(string)"/> operation.
     /// </summary>
     /// <remarks>
     /// <para>

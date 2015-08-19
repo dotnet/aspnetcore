@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public class JQueryFormValueProviderFactory : IValueProviderFactory
     {
-        public IValueProvider GetValueProvider([NotNull] ValueProviderFactoryContext context)
+        public async Task<IValueProvider> GetValueProviderAsync([NotNull] ValueProviderFactoryContext context)
         {
             var request = context.HttpContext.Request;
 
@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 return new JQueryFormValueProvider(
                     BindingSource.Form,
-                    () => GetValueCollectionAsync(request),
+                    await GetValueCollectionAsync(request),
                     CultureInfo.CurrentCulture);
             }
 

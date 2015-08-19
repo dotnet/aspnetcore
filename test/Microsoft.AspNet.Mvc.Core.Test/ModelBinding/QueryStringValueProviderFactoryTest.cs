@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Moq;
 using Xunit;
@@ -18,7 +19,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
 #if DNX451
         [Fact]
-        public void GetValueProvider_ReturnsQueryStringValueProviderInstanceWithInvariantCulture()
+        public async Task GetValueProvider_ReturnsQueryStringValueProviderInstanceWithInvariantCulture()
         {
             // Arrange
             var request = new Mock<HttpRequest>();
@@ -31,7 +32,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase));
 
             // Act
-            var result = _factory.GetValueProvider(factoryContext);
+            var result = await _factory.GetValueProviderAsync(factoryContext);
 
             // Assert
             var valueProvider = Assert.IsType<ReadableStringCollectionValueProvider>(result);

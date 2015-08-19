@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             ModelBindingHelper.ValidateBindingContext(bindingContext);
 
             var model = bindingContext.Model;
-            if (!await bindingContext.ValueProvider.ContainsPrefixAsync(bindingContext.ModelName))
+            if (!bindingContext.ValueProvider.ContainsPrefix(bindingContext.ModelName))
             {
                 // If this is the fallback case and we failed to find data for a top-level model, then generate a
                 // default 'empty' model (or use existing Model) and return it.
@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 return null;
             }
 
-            var valueProviderResult = await bindingContext.ValueProvider.GetValueAsync(bindingContext.ModelName);
+            var valueProviderResult = bindingContext.ValueProvider.GetValue(bindingContext.ModelName);
 
             CollectionResult result;
             if (valueProviderResult == ValueProviderResult.None)
@@ -188,7 +188,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private async Task<CollectionResult> BindComplexCollection(ModelBindingContext bindingContext)
         {
             var indexPropertyName = ModelNames.CreatePropertyModelName(bindingContext.ModelName, "index");
-            var valueProviderResultIndex = await bindingContext.ValueProvider.GetValueAsync(indexPropertyName);
+            var valueProviderResultIndex = bindingContext.ValueProvider.GetValue(indexPropertyName);
             var indexNames = GetIndexNamesFromValueProviderResult(valueProviderResultIndex);
 
             return await BindComplexCollectionFromIndexes(bindingContext, indexNames);

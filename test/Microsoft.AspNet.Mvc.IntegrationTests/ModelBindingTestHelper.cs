@@ -97,9 +97,9 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 actionContext.HttpContext,
                 actionContext.RouteData.Values);
 
-            var valueProvider = CompositeValueProvider.Create(
+            var valueProvider = CompositeValueProvider.CreateAsync(
                 options.ValueProviderFactories,
-                valueProviderFactoryContext);
+                valueProviderFactoryContext).Result;
 
             return new ActionBindingContext()
             {
