@@ -39,7 +39,9 @@ namespace Microsoft.AspNet.Owin
 
             IDictionary<string, object> env = new OwinEnvironment(context);
             Assert.Equal("SomeMethod", Get<string>(env, "owin.RequestMethod"));
+            // User property should set both server.User (non-standard) and owin.RequestUser.
             Assert.Equal("Foo", Get<ClaimsPrincipal>(env, "server.User").Identity.AuthenticationType);
+            Assert.Equal("Foo", Get<ClaimsPrincipal>(env, "owin.RequestUser").Identity.AuthenticationType);
             Assert.Same(Stream.Null, Get<Stream>(env, "owin.RequestBody"));
             var requestHeaders = Get<IDictionary<string, string[]>>(env, "owin.RequestHeaders");
             Assert.NotNull(requestHeaders);
@@ -65,6 +67,10 @@ namespace Microsoft.AspNet.Owin
 
             env["owin.RequestMethod"] = "SomeMethod";
             env["server.User"] = new ClaimsPrincipal(new ClaimsIdentity("Foo"));
+            Assert.Equal("Foo", context.User.Identity.AuthenticationType);
+            // User property should fall back from owin.RequestUser to server.User.
+            env["owin.RequestUser"] = new ClaimsPrincipal(new ClaimsIdentity("Bar"));
+            Assert.Equal("Bar", context.User.Identity.AuthenticationType);
             env["owin.RequestBody"] = Stream.Null;
             var requestHeaders = Get<IDictionary<string, string[]>>(env, "owin.RequestHeaders");
             Assert.NotNull(requestHeaders);
@@ -81,7 +87,6 @@ namespace Microsoft.AspNet.Owin
             env["owin.ResponseStatusCode"] = 201;
 
             Assert.Equal("SomeMethod", context.Request.Method);
-            Assert.Equal("Foo", context.User.Identity.AuthenticationType);
             Assert.Same(Stream.Null, context.Request.Body);
             Assert.Equal("CustomRequestValue", context.Request.Headers["CustomRequestHeader"]);
             Assert.Equal("/path", context.Request.Path.Value);
