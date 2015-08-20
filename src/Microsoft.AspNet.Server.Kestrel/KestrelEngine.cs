@@ -117,7 +117,7 @@ namespace Microsoft.AspNet.Server.Kestrel
                     if (single)
                     {
                         var listener = usingPipes ? 
-                            (IListener) new PipeListener(Memory) : 
+                            (Listener) new PipeListener(Memory) : 
                             new TcpListener(Memory);
                         listeners.Add(listener);
                         listener.StartAsync(scheme, host, port, thread, application).Wait();
@@ -125,7 +125,7 @@ namespace Microsoft.AspNet.Server.Kestrel
                     else if (first)
                     {
                         var listener = usingPipes
-                            ? (IListenerPrimary) new PipeListenerPrimary(Memory)
+                            ? (ListenerPrimary) new PipeListenerPrimary(Memory)
                             : new TcpListenerPrimary(Memory);
 
                         listeners.Add(listener);
@@ -134,7 +134,7 @@ namespace Microsoft.AspNet.Server.Kestrel
                     else
                     {
                         var listener = usingPipes
-                            ? (IListenerSecondary) new PipeListenerSecondary(Memory)
+                            ? (ListenerSecondary) new PipeListenerSecondary(Memory)
                             : new TcpListenerSecondary(Memory);
                         listeners.Add(listener);
                         listener.StartAsync(pipeName, thread, application).Wait();

@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     /// <summary>
     /// Base class for listeners in Kestrel. Listens for incoming connections
     /// </summary>
-    public abstract class Listener : ListenerContext, IListener
+    public abstract class Listener : ListenerContext, IDisposable
     {
         protected UvStreamHandle ListenSocket { get; private set; }
 

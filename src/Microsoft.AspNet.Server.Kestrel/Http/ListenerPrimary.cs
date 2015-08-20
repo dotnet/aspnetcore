@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     /// A primary listener waits for incoming connections on a specified socket. Incoming 
     /// connections may be passed to a secondary listener to handle.
     /// </summary>
-    abstract public class ListenerPrimary : Listener, IListenerPrimary
+    abstract public class ListenerPrimary : Listener
     {
         UvPipeHandle ListenPipe { get; set; }
 

@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     /// A secondary listener is delegated requests from a primary listener via a named pipe or 
     /// UNIX domain socket.
     /// </summary>
-    public abstract class ListenerSecondary : ListenerContext, IListenerSecondary
+    public abstract class ListenerSecondary : ListenerContext, IDisposable
     {
         UvPipeHandle DispatchPipe { get; set; }
 
