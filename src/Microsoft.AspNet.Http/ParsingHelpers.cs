@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Http.Internal
@@ -76,9 +77,9 @@ namespace Microsoft.AspNet.Http.Internal
     [System.CodeDom.Compiler.GeneratedCode("App_Packages", "")]
     internal struct HeaderSegmentCollection : IEnumerable<HeaderSegment>, IEquatable<HeaderSegmentCollection>
     {
-        private readonly string[] _headers;
+        private readonly StringValues _headers;
 
-        public HeaderSegmentCollection(string[] headers)
+        public HeaderSegmentCollection(StringValues headers)
         {
             _headers = headers;
         }
@@ -102,7 +103,7 @@ namespace Microsoft.AspNet.Http.Internal
 
         public override int GetHashCode()
         {
-            return (_headers != null ? _headers.GetHashCode() : 0);
+            return (!StringValues.IsNullOrEmpty(_headers) ? _headers.GetHashCode() : 0);
         }
 
         public static bool operator ==(HeaderSegmentCollection left, HeaderSegmentCollection right)
@@ -134,7 +135,7 @@ namespace Microsoft.AspNet.Http.Internal
 
         internal struct Enumerator : IEnumerator<HeaderSegment>
         {
-            private readonly string[] _headers;
+            private readonly StringValues _headers;
             private int _index;
 
             private string _header;
@@ -149,11 +150,9 @@ namespace Microsoft.AspNet.Http.Internal
 
             private Mode _mode;
 
-            private static readonly string[] NoHeaders = new string[0];
-
-            public Enumerator(string[] headers)
+            public Enumerator(StringValues headers)
             {
-                _headers = headers ?? NoHeaders;
+                _headers = headers;
                 _header = string.Empty;
                 _headerLength = -1;
                 _index = -1;
@@ -237,7 +236,7 @@ namespace Microsoft.AspNet.Http.Internal
                         _trailingStart = -1;
 
                         // if that was the last string
-                        if (_index == _headers.Length)
+                        if (_index == _headers.Count)
                         {
                             // no more move nexts
                             return false;
@@ -496,19 +495,19 @@ namespace Microsoft.AspNet.Http.Internal
 
     internal static class ParsingHelpers
     {
-        public static string GetHeader(IDictionary<string, string[]> headers, string key)
+        public static StringValues GetHeader(IDictionary<string, StringValues> headers, string key)
         {
-            string[] values = GetHeaderUnmodified(headers, key);
-            return values == null ? null : string.Join(",", values);
+            StringValues value;
+            return headers.TryGetValue(key, out value) ? value : StringValues.Empty;
         }
 
-        public static IEnumerable<string> GetHeaderSplit(IDictionary<string, string[]> headers, string key)
+        public static StringValues GetHeaderSplit(IDictionary<string, StringValues> headers, string key)
         {
-            string[] values = GetHeaderUnmodified(headers, key);
-            return values == null ? null : GetHeaderSplitImplementation(values);
+            var values = GetHeaderUnmodified(headers, key);
+            return new StringValues(GetHeaderSplitImplementation(values).ToArray());
         }
 
-        private static IEnumerable<string> GetHeaderSplitImplementation(string[] values)
+        private static IEnumerable<string> GetHeaderSplitImplementation(StringValues values)
         {
             foreach (var segment in new HeaderSegmentCollection(values))
             {
@@ -519,41 +518,41 @@ namespace Microsoft.AspNet.Http.Internal
             }
         }
 
-        public static string[] GetHeaderUnmodified([NotNull] IDictionary<string, string[]> headers, string key)
+        public static StringValues GetHeaderUnmodified([NotNull] IDictionary<string, StringValues> headers, string key)
         {
-            string[] values;
-            return headers.TryGetValue(key, out values) ? values : null;
+            StringValues values;
+            return headers.TryGetValue(key, out values) ? values : StringValues.Empty;
         }
 
-        public static void SetHeader([NotNull] IDictionary<string, string[]> headers, [NotNull] string key, string value)
+        public static void SetHeader([NotNull] IDictionary<string, StringValues> headers, [NotNull] string key, StringValues value)
         {
             if (string.IsNullOrWhiteSpace(key))
             {
                 throw new ArgumentNullException(nameof(key));
             }
-            if (string.IsNullOrWhiteSpace(value))
+            if (StringValues.IsNullOrEmpty(value))
             {
                 headers.Remove(key);
             }
             else
             {
-                headers[key] = new[] { value };
+                headers[key] = value;
             }
         }
 
-        public static void SetHeaderJoined([NotNull] IDictionary<string, string[]> headers, [NotNull] string key, params string[] values)
+        public static void SetHeaderJoined([NotNull] IDictionary<string, StringValues> headers, [NotNull] string key, StringValues value)
         {
             if (string.IsNullOrWhiteSpace(key))
             {
                 throw new ArgumentNullException(nameof(key));
             }
-            if (values == null || values.Length == 0)
+            if (StringValues.IsNullOrEmpty(value))
             {
                 headers.Remove(key);
             }
             else
             {
-                headers[key] = new[] { string.Join(",", values.Select(value => QuoteIfNeeded(value))) };
+                headers[key] = string.Join(",", value.Select(QuoteIfNeeded));
             }
         }
 
@@ -589,46 +588,23 @@ namespace Microsoft.AspNet.Http.Internal
             return value;
         }
 
-        public static void SetHeaderUnmodified([NotNull] IDictionary<string, string[]> headers, [NotNull] string key, params string[] values)
+        public static void SetHeaderUnmodified([NotNull] IDictionary<string, StringValues> headers, [NotNull] string key, StringValues? values)
         {
             if (string.IsNullOrWhiteSpace(key))
             {
                 throw new ArgumentNullException(nameof(key));
             }
-            if (values == null || values.Length == 0)
+            if (!values.HasValue || StringValues.IsNullOrEmpty(values.Value))
             {
                 headers.Remove(key);
             }
             else
             {
-                headers[key] = values;
+                headers[key] = values.Value;
             }
         }
 
-        public static void SetHeaderUnmodified([NotNull] IDictionary<string, string[]> headers, [NotNull] string key, [NotNull] IEnumerable<string> values)
-        {
-            headers[key] = values.ToArray();
-        }
-
-        public static void AppendHeader([NotNull] IDictionary<string, string[]> headers, [NotNull] string key, string values)
-        {
-            if (string.IsNullOrWhiteSpace(values))
-            {
-                return;
-            }
-
-            string existing = GetHeader(headers, key);
-            if (existing == null)
-            {
-                SetHeader(headers, key, values);
-            }
-            else
-            {
-                headers[key] = new[] { existing + "," + values };
-            }
-        }
-
-        public static void AppendHeaderJoined([NotNull] IDictionary<string, string[]> headers, [NotNull] string key, params string[] values)
+        public static void AppendHeaderJoined([NotNull] IDictionary<string, StringValues> headers, [NotNull] string key, params string[] values)
         {
             if (values == null || values.Length == 0)
             {
@@ -642,35 +618,29 @@ namespace Microsoft.AspNet.Http.Internal
             }
             else
             {
-                headers[key] = new[] { existing + "," + string.Join(",", values.Select(value => QuoteIfNeeded(value))) };
+                headers[key] = existing + "," + string.Join(",", values.Select(value => QuoteIfNeeded(value)));
             }
         }
 
-        public static void AppendHeaderUnmodified([NotNull] IDictionary<string, string[]> headers, [NotNull] string key, params string[] values)
+        public static void AppendHeaderUnmodified([NotNull] IDictionary<string, StringValues> headers, [NotNull] string key, StringValues values)
         {
-            if (values == null || values.Length == 0)
+            if (values.Count == 0)
             {
                 return;
             }
 
-            string[] existing = GetHeaderUnmodified(headers, key);
-            if (existing == null)
-            {
-                SetHeaderUnmodified(headers, key, values);
-            }
-            else
-            {
-                SetHeaderUnmodified(headers, key, existing.Concat(values));
-            }
+            var existing = GetHeaderUnmodified(headers, key);
+            SetHeaderUnmodified(headers, key, StringValues.Concat(existing, values));
         }
 
         public static long? GetContentLength([NotNull] IHeaderDictionary headers)
         {
             const NumberStyles styles = NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite;
             long value;
-            string rawValue = headers.Get(HeaderNames.ContentLength);
-            if (!string.IsNullOrWhiteSpace(rawValue) &&
-                long.TryParse(rawValue, styles, CultureInfo.InvariantCulture, out value))
+            var rawValue = headers[HeaderNames.ContentLength];
+            if (rawValue.Count == 1 &&
+                !string.IsNullOrWhiteSpace(rawValue[0]) &&
+                long.TryParse(rawValue[0], styles, CultureInfo.InvariantCulture, out value))
             {
                 return value;
             }

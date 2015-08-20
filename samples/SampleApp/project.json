@@ -1,0 +1,15 @@
+﻿{
+  "version": "1.0.0-*",
+
+  "dependencies": {
+    "Microsoft.AspNet.Http": "1.0.0-*"
+  },
+
+  "commands": {
+    "SampleApp": "SampleApp"
+  },
+
+  "frameworks": {
+    "dnx451": { }
+  }
+}

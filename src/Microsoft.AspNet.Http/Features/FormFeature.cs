@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.WebUtilities;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Http.Features.Internal
@@ -87,7 +88,7 @@ namespace Microsoft.AspNet.Http.Features.Internal
 
             _request.EnableRewind();
 
-            IDictionary<string, string[]> formFields = null;
+            IDictionary<string, StringValues> formFields = null;
             var files = new FormFileCollection();
 
             // Some of these code paths use StreamReader which does not support cancellation tokens.
@@ -102,7 +103,7 @@ namespace Microsoft.AspNet.Http.Features.Internal
                 }
                 else if (HasMultipartFormContentType(contentType))
                 {
-                    var formAccumulator = new KeyValueAccumulator<string, string>(StringComparer.OrdinalIgnoreCase);
+                    var formAccumulator = new KeyValueAccumulator();
 
                     var boundary = GetBoundary(contentType);
                     var multipartReader = new MultipartReader(boundary, _request.Body);
@@ -111,7 +112,7 @@ namespace Microsoft.AspNet.Http.Features.Internal
                     {
                         var headers = new HeaderDictionary(section.Headers);
                         ContentDispositionHeaderValue contentDisposition;
-                        ContentDispositionHeaderValue.TryParse(headers.Get(HeaderNames.ContentDisposition), out contentDisposition);
+                        ContentDispositionHeaderValue.TryParse(headers[HeaderNames.ContentDisposition], out contentDisposition);
                         if (HasFileContentDisposition(contentDisposition))
                         {
                             // Find the end
@@ -131,7 +132,7 @@ namespace Microsoft.AspNet.Http.Features.Internal
 
                             var key = HeaderUtilities.RemoveQuotes(contentDisposition.Name);
                             MediaTypeHeaderValue mediaType;
-                            MediaTypeHeaderValue.TryParse(headers.Get(HeaderNames.ContentType), out mediaType);
+                            MediaTypeHeaderValue.TryParse(headers[HeaderNames.ContentType], out mediaType);
                             var encoding = FilterEncoding(mediaType?.Encoding);
                             using (var reader = new StreamReader(section.Body, encoding, detectEncodingFromByteOrderMarks: true, bufferSize: 1024, leaveOpen: true))
                             {
@@ -141,7 +142,7 @@ namespace Microsoft.AspNet.Http.Features.Internal
                         }
                         else
                         {
-                            System.Diagnostics.Debug.Assert(false, "Unrecognized content-disposition for this section: " + headers.Get(HeaderNames.ContentDisposition));
+                            System.Diagnostics.Debug.Assert(false, "Unrecognized content-disposition for this section: " + headers[HeaderNames.ContentDisposition]);
                         }
 
                         section = await multipartReader.ReadNextSectionAsync(cancellationToken);

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.WebUtilities;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.Primitives;
 
 namespace Microsoft.AspNet.Http.Features.Internal
 {
@@ -13,17 +14,18 @@ namespace Microsoft.AspNet.Http.Features.Internal
     {
         private readonly IFeatureCollection _features;
         private FeatureReference<IHttpRequestFeature> _request = FeatureReference<IHttpRequestFeature>.Default;
-        private string _queryString;
-        private IReadableStringCollection _query;
 
-        public QueryFeature([NotNull] IDictionary<string, string[]> query)
-            : this (new ReadableStringCollection(query))
+        private string _original;
+        private IReadableStringCollection _parsedValues;
+
+        public QueryFeature([NotNull] IDictionary<string, StringValues> query)
+            : this(new ReadableStringCollection(query))
         {
         }
 
         public QueryFeature([NotNull] IReadableStringCollection query)
         {
-            _query = query;
+            _parsedValues = query;
         }
 
         public QueryFeature([NotNull] IFeatureCollection features)
@@ -37,24 +39,32 @@ namespace Microsoft.AspNet.Http.Features.Internal
             {
                 if (_features == null)
                 {
-                    return _query;
+                    return _parsedValues ?? ReadableStringCollection.Empty;
                 }
 
-                var queryString = _request.Fetch(_features).QueryString;
-                if (_query == null || !string.Equals(_queryString, queryString, StringComparison.Ordinal))
+                var current = _request.Fetch(_features).QueryString;
+                if (_parsedValues == null || !string.Equals(_original, current, StringComparison.Ordinal))
                 {
-                    _queryString = queryString;
-                    _query = new ReadableStringCollection(QueryHelpers.ParseQuery(queryString));
+                    _original = current;
+                    _parsedValues = new ReadableStringCollection(QueryHelpers.ParseQuery(current));
                 }
-                return _query;
+                return _parsedValues;
             }
             set
             {
-                _query = value;
+                _parsedValues = value;
                 if (_features != null)
                 {
-                    _queryString = _query == null ? string.Empty : QueryString.Create(_query).ToString();
-                    _request.Fetch(_features).QueryString = _queryString;
+                    if (value == null)
+                    {
+                        _original = string.Empty;
+                        _request.Fetch(_features).QueryString = string.Empty;
+                    }
+                    else
+                    {
+                        _original = QueryString.Create(_parsedValues).ToString();
+                        _request.Fetch(_features).QueryString = _original;
+                    }
                 }
             }
         }

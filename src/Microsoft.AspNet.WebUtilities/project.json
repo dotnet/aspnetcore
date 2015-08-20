@@ -7,13 +7,13 @@
     },
     "dependencies": {
         "Microsoft.Framework.NotNullAttribute.Sources": { "type": "build", "version": "1.0.0-*" },
+        "Microsoft.Framework.Primitives": "1.0.0-*",
         "Microsoft.Framework.WebEncoders.Core": "1.0.0-*"
     },
     "frameworks": {
         "dnx451": { },
         "dnxcore50": {
             "dependencies": {
-                "System.Collections": "4.0.11-beta-*",
                 "System.Diagnostics.Debug": "4.0.11-beta-*",
                 "System.IO": "4.0.11-beta-*",
                 "System.IO.FileSystem": "4.0.1-beta-*",

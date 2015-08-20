@@ -8,6 +8,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.Primitives;
 
 namespace Microsoft.AspNet.WebUtilities
 {
@@ -64,10 +65,10 @@ namespace Microsoft.AspNet.WebUtilities
             return new MultipartSection() { Headers = headers, Body = _currentStream, BaseStreamOffset = baseStreamOffset };
         }
 
-        private async Task<IDictionary<string, string[]>> ReadHeadersAsync(CancellationToken cancellationToken)
+        private async Task<IDictionary<string, StringValues>> ReadHeadersAsync(CancellationToken cancellationToken)
         {
             int totalSize = 0;
-            var accumulator = new KeyValueAccumulator<string, string>(StringComparer.OrdinalIgnoreCase);
+            var accumulator = new KeyValueAccumulator();
             var line = await _stream.ReadLineAsync(HeaderLengthLimit, cancellationToken);
             while (!string.IsNullOrEmpty(line))
             {

@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.Framework.Primitives;
 
 namespace Microsoft.AspNet.WebUtilities
 {
@@ -12,10 +13,10 @@ namespace Microsoft.AspNet.WebUtilities
         {
             get
             {
-                string[] values;
+                StringValues values;
                 if (Headers.TryGetValue("Content-Type", out values))
                 {
-                    return string.Join(", ", values);
+                    return values;
                 }
                 return null;
             }
@@ -25,16 +26,16 @@ namespace Microsoft.AspNet.WebUtilities
         {
             get
             {
-                string[] values;
+                StringValues values;
                 if (Headers.TryGetValue("Content-Disposition", out values))
                 {
-                    return string.Join(", ", values);
+                    return values;
                 }
                 return null;
             }
         }
 
-        public IDictionary<string, string[]> Headers { get; set; }
+        public IDictionary<string, StringValues> Headers { get; set; }
 
         public Stream Body { get; set; }
 

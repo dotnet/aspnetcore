@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.Primitives;
 using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.WebUtilities
@@ -72,13 +73,13 @@ namespace Microsoft.AspNet.WebUtilities
         /// </summary>
         /// <param name="text">The raw query string value, with or without the leading '?'.</param>
         /// <returns>A collection of parsed keys and values.</returns>
-        public static IDictionary<string, string[]> ParseQuery(string queryString)
+        public static IDictionary<string, StringValues> ParseQuery(string queryString)
         {
             if (!string.IsNullOrEmpty(queryString) && queryString[0] == '?')
             {
                 queryString = queryString.Substring(1);
             }
-            var accumulator = new KeyValueAccumulator<string, string>(StringComparer.OrdinalIgnoreCase);
+            var accumulator = new KeyValueAccumulator();
 
             int textLength = queryString.Length;
             int equalIndex = queryString.IndexOf('=');

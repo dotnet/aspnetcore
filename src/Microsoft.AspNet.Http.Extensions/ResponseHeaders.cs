@@ -182,7 +182,7 @@ namespace Microsoft.AspNet.Http.Headers
 
         public void AppendList<T>([NotNull] string name, [NotNull] IList<T> values)
         {
-            Headers.AppendValues(name, values.Select(value => value.ToString()).ToArray());
+            Headers.Append(name, values.Select(value => value.ToString()).ToArray());
         }
     }
 }

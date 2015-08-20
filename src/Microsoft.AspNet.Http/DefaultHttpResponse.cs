@@ -68,8 +68,7 @@ namespace Microsoft.AspNet.Http.Internal
         {
             get
             {
-                var contentType = Headers[HeaderNames.ContentType];
-                return contentType;
+                return Headers[HeaderNames.ContentType];
             }
             set
             {
@@ -79,7 +78,7 @@ namespace Microsoft.AspNet.Http.Internal
                 }
                 else
                 {
-                    HttpResponseFeature.Headers[HeaderNames.ContentType] = new[] { value };
+                    HttpResponseFeature.Headers[HeaderNames.ContentType] = value;
                 }
             }
         }
@@ -115,7 +114,7 @@ namespace Microsoft.AspNet.Http.Internal
                 HttpResponseFeature.StatusCode = 302;
             }
 
-            Headers.Set(HeaderNames.Location, location);
+            Headers[HeaderNames.Location] = location;
         }
     }
 }

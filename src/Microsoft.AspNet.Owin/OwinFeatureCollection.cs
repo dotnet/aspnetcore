@@ -14,8 +14,10 @@ using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Features.Authentication;
+using Microsoft.Framework.Primitives;
 
 namespace Microsoft.AspNet.Owin
 {
@@ -104,10 +106,10 @@ namespace Microsoft.AspNet.Owin
             set { Prop(OwinConstants.RequestQueryString, Utilities.RemoveQuestionMark(value)); }
         }
 
-        IDictionary<string, string[]> IHttpRequestFeature.Headers
+        IDictionary<string, StringValues> IHttpRequestFeature.Headers
         {
-            get { return Prop<IDictionary<string, string[]>>(OwinConstants.RequestHeaders); }
-            set { Prop(OwinConstants.RequestHeaders, value); }
+            get { return Utilities.MakeDictionaryStringValues(Prop<IDictionary<string, string[]>>(OwinConstants.RequestHeaders)); }
+            set { Prop(OwinConstants.RequestHeaders, Utilities.MakeDictionaryStringArray(value)); }
         }
 
         string IHttpRequestIdentifierFeature.TraceIdentifier
@@ -134,10 +136,10 @@ namespace Microsoft.AspNet.Owin
             set { Prop(OwinConstants.ResponseReasonPhrase, value); }
         }
 
-        IDictionary<string, string[]> IHttpResponseFeature.Headers
+        IDictionary<string, StringValues> IHttpResponseFeature.Headers
         {
-            get { return Prop<IDictionary<string, string[]>>(OwinConstants.ResponseHeaders); }
-            set { Prop(OwinConstants.ResponseHeaders, value); }
+            get { return Utilities.MakeDictionaryStringValues(Prop<IDictionary<string, string[]>>(OwinConstants.ResponseHeaders)); }
+            set { Prop(OwinConstants.ResponseHeaders, Utilities.MakeDictionaryStringArray(value)); }
         }
 
         Stream IHttpResponseFeature.Body

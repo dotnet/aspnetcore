@@ -12,8 +12,6 @@ namespace Microsoft.AspNet.Http.Internal
 {
     public class DefaultWebSocketManager : WebSocketManager
     {
-        private static IList<string> EmptyList = new List<string>();
-
         private IFeatureCollection _features;
         private FeatureReference<IHttpRequestFeature> _request = FeatureReference<IHttpRequestFeature>.Default;
         private FeatureReference<IHttpWebSocketFeature> _webSockets = FeatureReference<IHttpWebSocketFeature>.Default;
@@ -45,8 +43,7 @@ namespace Microsoft.AspNet.Http.Internal
         {
             get
             {
-                return ParsingHelpers.GetHeaderUnmodified(HttpRequestFeature.Headers,
-                    HeaderNames.WebSocketSubProtocols) ?? EmptyList;
+                return ParsingHelpers.GetHeaderSplit(HttpRequestFeature.Headers, HeaderNames.WebSocketSubProtocols);
             }
         }
 

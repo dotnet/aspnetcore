@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.Primitives;
 using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.Http
@@ -143,7 +144,7 @@ namespace Microsoft.AspNet.Http
         /// </summary>
         /// <param name="parameters"></param>
         /// <returns>The resulting QueryString</returns>
-        public static QueryString Create(IEnumerable<KeyValuePair<string, string[]>> parameters)
+        public static QueryString Create(IEnumerable<KeyValuePair<string, StringValues>> parameters)
         {
             var builder = new StringBuilder();
             bool first = true;

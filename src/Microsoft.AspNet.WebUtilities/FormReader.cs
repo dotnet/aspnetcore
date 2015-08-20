@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.Primitives;
 
 namespace Microsoft.AspNet.WebUtilities
 {
@@ -150,11 +151,11 @@ namespace Microsoft.AspNet.WebUtilities
         /// </summary>
         /// <param name="text">The HTTP form body to parse.</param>
         /// <returns>The collection containing the parsed HTTP form body.</returns>
-        public static IDictionary<string, string[]> ReadForm(string text)
+        public static IDictionary<string, StringValues> ReadForm(string text)
         {
             var reader = new FormReader(text);
 
-            var accumulator = new KeyValueAccumulator<string, string>(StringComparer.OrdinalIgnoreCase);
+            var accumulator = new KeyValueAccumulator();
             var pair = reader.ReadNextPair();
             while (pair.HasValue)
             {
@@ -170,7 +171,7 @@ namespace Microsoft.AspNet.WebUtilities
         /// </summary>
         /// <param name="stream">The HTTP form body to parse.</param>
         /// <returns>The collection containing the parsed HTTP form body.</returns>
-        public static Task<IDictionary<string, string[]>> ReadFormAsync(Stream stream, CancellationToken cancellationToken = new CancellationToken())
+        public static Task<IDictionary<string, StringValues>> ReadFormAsync(Stream stream, CancellationToken cancellationToken = new CancellationToken())
         {
             return ReadFormAsync(stream, Encoding.UTF8, cancellationToken);
         }
@@ -180,11 +181,11 @@ namespace Microsoft.AspNet.WebUtilities
         /// </summary>
         /// <param name="stream">The HTTP form body to parse.</param>
         /// <returns>The collection containing the parsed HTTP form body.</returns>
-        public static async Task<IDictionary<string, string[]>> ReadFormAsync(Stream stream, Encoding encoding, CancellationToken cancellationToken = new CancellationToken())
+        public static async Task<IDictionary<string, StringValues>> ReadFormAsync(Stream stream, Encoding encoding, CancellationToken cancellationToken = new CancellationToken())
         {
             var reader = new FormReader(stream, encoding);
 
-            var accumulator = new KeyValueAccumulator<string, string>(StringComparer.OrdinalIgnoreCase);
+            var accumulator = new KeyValueAccumulator();
             var pair = await reader.ReadNextPairAsync(cancellationToken);
             while (pair.HasValue)
             {

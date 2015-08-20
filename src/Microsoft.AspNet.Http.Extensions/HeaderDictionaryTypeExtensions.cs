@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Http.Headers;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Http
@@ -50,7 +51,7 @@ namespace Microsoft.AspNet.Http
             }
             else
             {
-                headers.SetValues(name, values.Select(value => value.ToString()).ToArray());
+                headers[name] = values.Select(value => value.ToString()).ToArray();
             }
         }
 
@@ -98,7 +99,7 @@ namespace Microsoft.AspNet.Http
             }
 
             var value = headers[name];
-            if (string.IsNullOrWhiteSpace(value))
+            if (StringValues.IsNullOrEmpty(value))
             {
                 return default(T);
             }
@@ -112,11 +113,11 @@ namespace Microsoft.AspNet.Http
             if (KnownListParsers.TryGetValue(typeof(T), out temp))
             {
                 var func = (Func<IList<string>, IList<T>>)temp;
-                return func(headers.GetValues(name));
+                return func(headers[name]);
             }
 
-            var values = headers.GetValues(name);
-            if (values == null || !values.Any())
+            var values = headers[name];
+            if (StringValues.IsNullOrEmpty(values))
             {
                 return null;
             }
@@ -158,7 +159,7 @@ namespace Microsoft.AspNet.Http
             return default(T);
         }
 
-        private static IList<T> GetListViaReflection<T>(IList<string> values)
+        private static IList<T> GetListViaReflection<T>(StringValues values)
         {
             // TODO: Cache the reflected type for later? Only if success?
             var type = typeof(T);

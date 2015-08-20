@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.Primitives;
 using Microsoft.Framework.WebEncoders;
 using Microsoft.Net.Http.Headers;
 
@@ -33,11 +33,14 @@ namespace Microsoft.AspNet.Http.Internal
         /// <param name="value"></param>
         public void Append(string key, string value)
         {
-            Headers.AppendValues(HeaderNames.SetCookie,
-                new SetCookieHeaderValue(
+            var setCookieHeaderValue = new SetCookieHeaderValue(
                     UrlEncoder.Default.UrlEncode(key),
                     UrlEncoder.Default.UrlEncode(value))
-                    { Path = "/" }.ToString());
+            {
+                Path = "/"
+            };
+
+            Headers[HeaderNames.SetCookie] = StringValues.Concat(Headers[HeaderNames.SetCookie], setCookieHeaderValue.ToString());
         }
 
         /// <summary>
@@ -48,17 +51,18 @@ namespace Microsoft.AspNet.Http.Internal
         /// <param name="options"></param>
         public void Append(string key, string value, [NotNull] CookieOptions options)
         {
-            Headers.AppendValues(HeaderNames.SetCookie,
-                new SetCookieHeaderValue(
+            var setCookieHeaderValue = new SetCookieHeaderValue(
                     UrlEncoder.Default.UrlEncode(key),
                     UrlEncoder.Default.UrlEncode(value))
-                {
-                    Domain = options.Domain,
-                    Path = options.Path,
-                    Expires = options.Expires,
-                    Secure = options.Secure,
-                    HttpOnly = options.HttpOnly,
-                }.ToString());
+            {
+                Domain = options.Domain,
+                Path = options.Path,
+                Expires = options.Expires,
+                Secure = options.Secure,
+                HttpOnly = options.HttpOnly,
+            };
+
+            Headers[HeaderNames.SetCookie] = StringValues.Concat(Headers[HeaderNames.SetCookie], setCookieHeaderValue.ToString());
         }
 
         /// <summary>
@@ -70,15 +74,15 @@ namespace Microsoft.AspNet.Http.Internal
             var encodedKeyPlusEquals = UrlEncoder.Default.UrlEncode(key) + "=";
             Func<string, bool> predicate = value => value.StartsWith(encodedKeyPlusEquals, StringComparison.OrdinalIgnoreCase);
 
-            var deleteCookies = new[] { encodedKeyPlusEquals + "; expires=Thu, 01-Jan-1970 00:00:00 GMT" };
-            IList<string> existingValues = Headers.GetValues(HeaderNames.SetCookie);
-            if (existingValues == null || existingValues.Count == 0)
+            StringValues deleteCookies = encodedKeyPlusEquals + "; expires=Thu, 01-Jan-1970 00:00:00 GMT";
+            var existingValues = Headers[HeaderNames.SetCookie];
+            if (StringValues.IsNullOrEmpty(existingValues))
             {
-                Headers.SetValues(HeaderNames.SetCookie, deleteCookies);
+                Headers[HeaderNames.SetCookie] = deleteCookies;
             }
             else
             {
-                Headers.SetValues(HeaderNames.SetCookie, existingValues.Where(value => !predicate(value)).Concat(deleteCookies).ToArray());
+                Headers[HeaderNames.SetCookie] = existingValues.Where(value => !predicate(value)).Concat(deleteCookies).ToArray();
             }
         }
 
@@ -111,10 +115,10 @@ namespace Microsoft.AspNet.Http.Internal
                 rejectPredicate = value => value.StartsWith(encodedKeyPlusEquals, StringComparison.OrdinalIgnoreCase);
             }
 
-            IList<string> existingValues = Headers.GetValues(HeaderNames.SetCookie);
-            if (existingValues != null)
+            var existingValues = Headers[HeaderNames.SetCookie];
+            if (!StringValues.IsNullOrEmpty(existingValues))
             {
-                Headers.SetValues(HeaderNames.SetCookie, existingValues.Where(value => !rejectPredicate(value)).ToArray());
+                Headers[HeaderNames.SetCookie] = existingValues.Where(value => !rejectPredicate(value)).ToArray();
             }
 
             Append(key, string.Empty, new CookieOptions

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.Framework.Primitives;
 
 namespace Microsoft.AspNet.Http.Features.Internal
 {
@@ -13,7 +14,7 @@ namespace Microsoft.AspNet.Http.Features.Internal
         public HttpResponseFeature()
         {
             StatusCode = 200;
-            Headers = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
+            Headers = new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase);
             Body = Stream.Null;
         }
 
@@ -21,7 +22,7 @@ namespace Microsoft.AspNet.Http.Features.Internal
 
         public string ReasonPhrase { get; set; }
 
-        public IDictionary<string, string[]> Headers { get; set; }
+        public IDictionary<string, StringValues> Headers { get; set; }
 
         public Stream Body { get; set; }
 

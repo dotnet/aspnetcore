@@ -4,6 +4,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.Primitives;
 
 namespace Microsoft.AspNet.Http.Internal
 {
@@ -12,16 +13,18 @@ namespace Microsoft.AspNet.Http.Internal
     /// </summary>
     public class ReadableStringCollection : IReadableStringCollection
     {
+        public static readonly IReadableStringCollection Empty = new ReadableStringCollection(new Dictionary<string, StringValues>(0));
+
         /// <summary>
         /// Create a new wrapper
         /// </summary>
         /// <param name="store"></param>
-        public ReadableStringCollection([NotNull] IDictionary<string, string[]> store)
+        public ReadableStringCollection([NotNull] IDictionary<string, StringValues> store)
         {
             Store = store;
         }
 
-        private IDictionary<string, string[]> Store { get; set; }
+        private IDictionary<string, StringValues> Store { get; set; }
 
         /// <summary>
         /// Gets the number of elements contained in the collection.
@@ -42,13 +45,21 @@ namespace Microsoft.AspNet.Http.Internal
 
         /// <summary>
         /// Get the associated value from the collection.  Multiple values will be merged.
-        /// Returns null if the key is not present.
+        /// Returns StringValues.Empty if the key is not present.
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public string this[string key]
+        public StringValues this[string key]
         {
-            get { return Get(key); }
+            get
+            {
+                StringValues value;
+                if (Store.TryGetValue(key, out value))
+                {
+                    return value;
+                }
+                return StringValues.Empty;
+            }
         }
 
         /// <summary>
@@ -61,35 +72,12 @@ namespace Microsoft.AspNet.Http.Internal
             return Store.ContainsKey(key);
         }
 
-        /// <summary>
-        /// Get the associated value from the collection.  Multiple values will be merged.
-        /// Returns null if the key is not present.
-        /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        public string Get(string key)
-        {
-            return GetJoinedValue(Store, key);
-        }
-
-        /// <summary>
-        /// Get the associated values from the collection in their original format.
-        /// Returns null if the key is not present.
-        /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        public IList<string> GetValues(string key)
-        {
-            string[] values;
-            Store.TryGetValue(key, out values);
-            return values;
-        }
 
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public IEnumerator<KeyValuePair<string, string[]>> GetEnumerator()
+        public IEnumerator<KeyValuePair<string, StringValues>> GetEnumerator()
         {
             return Store.GetEnumerator();
         }
@@ -101,16 +89,6 @@ namespace Microsoft.AspNet.Http.Internal
         IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
-        }
-
-        private static string GetJoinedValue(IDictionary<string, string[]> store, string key)
-        {
-            string[] values;
-            if (store.TryGetValue(key, out values))
-            {
-                return string.Join(",", values);
-            }
-            return null;
         }
     }
 }

@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Microsoft.Framework.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Http.Internal
@@ -17,7 +18,7 @@ namespace Microsoft.AspNet.Http.Internal
             _dictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
 
-        public string this[string key]
+        public StringValues this[string key]
         {
             get { return Get(key); }
         }
@@ -88,11 +89,11 @@ namespace Microsoft.AspNet.Http.Internal
             }
         }
 
-        public IEnumerator<KeyValuePair<string, string[]>> GetEnumerator()
+        public IEnumerator<KeyValuePair<string, StringValues>> GetEnumerator()
         {
             foreach (var pair in _dictionary)
             {
-                yield return new KeyValuePair<string, string[]>(pair.Key, new[] { pair.Value });
+                yield return new KeyValuePair<string, StringValues>(pair.Key, pair.Value);
             }
         }
 

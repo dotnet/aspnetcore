@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.Framework.Primitives;
 
 namespace Microsoft.AspNet.Http.Features.Internal
 {
@@ -11,7 +12,7 @@ namespace Microsoft.AspNet.Http.Features.Internal
     {
         public HttpRequestFeature()
         {
-            Headers = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
+            Headers = new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase);
             Body = Stream.Null;
             Protocol = string.Empty;
             Scheme = string.Empty;
@@ -27,7 +28,7 @@ namespace Microsoft.AspNet.Http.Features.Internal
         public string PathBase { get; set; }
         public string Path { get; set; }
         public string QueryString { get; set; }
-        public IDictionary<string, string[]> Headers { get; set; }
+        public IDictionary<string, StringValues> Headers { get; set; }
         public Stream Body { get; set; }
     }
 }

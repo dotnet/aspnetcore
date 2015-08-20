@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.Primitives;
 
 namespace Microsoft.AspNet.Http.Internal
 {
@@ -11,12 +12,12 @@ namespace Microsoft.AspNet.Http.Internal
     /// </summary>
     public class FormCollection : ReadableStringCollection, IFormCollection
     {
-        public FormCollection([NotNull] IDictionary<string, string[]> store)
+        public FormCollection([NotNull] IDictionary<string, StringValues> store)
             : this(store, new FormFileCollection())
         {
         }
 
-        public FormCollection([NotNull] IDictionary<string, string[]> store, [NotNull] IFormFileCollection files)
+        public FormCollection([NotNull] IDictionary<string, StringValues> store, [NotNull] IFormFileCollection files)
             : base(store)
         {
             Files = files;

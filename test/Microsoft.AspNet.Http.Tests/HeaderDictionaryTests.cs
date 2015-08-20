@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Framework.Primitives;
 using Xunit;
 
 namespace Microsoft.AspNet.Http.Internal
@@ -13,9 +14,9 @@ namespace Microsoft.AspNet.Http.Internal
         public void PropertiesAreAccessible()
         {
             var headers = new HeaderDictionary(
-                new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
+                new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase)
                 {
-                    { "Header1", new[] { "Value1" } }
+                    { "Header1", "Value1" }
                 });
 
             Assert.Equal(1, headers.Count);
@@ -23,8 +24,7 @@ namespace Microsoft.AspNet.Http.Internal
             Assert.True(headers.ContainsKey("header1"));
             Assert.False(headers.ContainsKey("header2"));
             Assert.Equal("Value1", headers["header1"]);
-            Assert.Equal("Value1", headers.Get("header1"));
-            Assert.Equal(new[] { "Value1" }, headers.GetValues("header1"));
+            Assert.Equal(new[] { "Value1" }, headers["header1"].ToArray());
         }
     }
 }

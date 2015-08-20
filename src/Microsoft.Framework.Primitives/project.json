@@ -1,0 +1,23 @@
+﻿{
+  "version": "1.0.0-*",
+  "description": "Contains primitive types such as StringValues.",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/aspnet/httpabstractions"
+  },
+  "dependencies": {
+    "Microsoft.Framework.NotNullAttribute.Sources": {
+      "type": "build",
+      "version": "1.0.0-*"
+    }
+  },
+  "frameworks": {
+    "net451": { },
+    "dnx451": { },
+    "dnxcore50": {
+      "dependencies": {
+        "System.Collections": "4.0.11-beta-*"
+      }
+    }
+  }
+}

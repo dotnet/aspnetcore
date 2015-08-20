@@ -1,38 +1,37 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
-using Microsoft.Framework.Internal;
+using Microsoft.Framework.Primitives;
 
 namespace Microsoft.AspNet.WebUtilities
 {
-    public class KeyValueAccumulator<TKey, TValue>
+    public class KeyValueAccumulator
     {
-        private Dictionary<TKey, List<TValue>> _accumulator;
-        IEqualityComparer<TKey> _comparer;
+        private Dictionary<string, List<string>> _accumulator;
 
-        public KeyValueAccumulator([NotNull] IEqualityComparer<TKey> comparer)
+        public KeyValueAccumulator()
         {
-            _comparer = comparer;
-            _accumulator = new Dictionary<TKey, List<TValue>>(comparer);
+            _accumulator = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
         }
 
-        public void Append(TKey key, TValue value)
+        public void Append(string key, string value)
         {
-            List<TValue> values;
+            List<string> values;
             if (_accumulator.TryGetValue(key, out values))
             {
                 values.Add(value);
             }
             else
             {
-                _accumulator[key] = new List<TValue>(1) { value };
+                _accumulator[key] = new List<string>(1) { value };
             }
         }
 
-        public IDictionary<TKey, TValue[]> GetResults()
+        public IDictionary<string, StringValues> GetResults()
         {
-            var results = new Dictionary<TKey, TValue[]>(_comparer);
+            var results = new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase);
             foreach (var kv in _accumulator)
             {
                 results.Add(kv.Key, kv.Value.ToArray());
