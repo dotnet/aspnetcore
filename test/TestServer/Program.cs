@@ -19,7 +19,7 @@ namespace TestServer
         private static async Task RunEchoServer()
         {
             HttpListener listener = new HttpListener();
-            listener.Prefixes.Add("http://*:12345/");
+            listener.Prefixes.Add("http://localhost:12345/");
             listener.Start();
             Console.WriteLine("Started");
 
