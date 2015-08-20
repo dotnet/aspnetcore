@@ -16,6 +16,11 @@
                 "System.Text.Encoding": "",
                 "System.Threading.Tasks": ""
             }
+        },
+        "dnxcore50": {
+            "dependencies": {
+                "System.Console": "4.0.0-beta-*"
+            }
         }
     }
 }
