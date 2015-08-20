@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.Session
         {
             var isNewSessionKey = false;
             Func<bool> tryEstablishSession = ReturnTrue;
-            var sessionKey = context.Request.Cookies.Get(_options.CookieName);
+            string sessionKey = context.Request.Cookies[_options.CookieName];
             if (string.IsNullOrWhiteSpace(sessionKey) || sessionKey.Length != SessionKeyLength)
             {
                 // No valid cookie, new session.
@@ -129,17 +129,9 @@ namespace Microsoft.AspNet.Session
 
                 _context.Response.Cookies.Append(_options.CookieName, _sessionKey, cookieOptions);
 
-                _context.Response.Headers.Set(
-                    "Cache-Control",
-                    "no-cache");
-
-                _context.Response.Headers.Set(
-                    "Pragma",
-                    "no-cache");
-
-                _context.Response.Headers.Set(
-                    "Expires",
-                    "-1");
+                _context.Response.Headers["Cache-Control"] = "no-cache";
+                _context.Response.Headers["Pragma"] = "no-cache";
+                _context.Response.Headers["Expires"] = "-1";
             }
 
             // Returns true if the session has already been established, or if it still can be because the response has not been sent.
