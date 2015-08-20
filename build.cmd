@@ -23,7 +23,7 @@ IF %BUILDCMD_KOREBUILD_VERSION%=="" (
 ) ELSE (
 	.nuget\NuGet.exe install KoreBuild -version %BUILDCMD_KOREBUILD_VERSION% -ExcludeVersion -o packages -nocache -pre
 )
-.nuget\NuGet.exe install Sake -version 0.2 -o packages -ExcludeVersion
+.nuget\NuGet.exe install Sake -ExcludeVersion -Source https://www.nuget.org/api/v2/ -Out packages
 
 IF "%SKIP_DNX_INSTALL%"=="1" goto run
 IF %BUILDCMD_DNX_VERSION%=="" (
