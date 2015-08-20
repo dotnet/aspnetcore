@@ -48,6 +48,7 @@
                 Include="$(DropSource)**\CultureInfoGenerator*.nupkg;
                          $(DropSource)**\EntityFramework*.nupkg;
                          $(DropSource)**\Microsoft.Data.Sqlite*.nupkg;
+                         $(DropSource)**\Microsoft.VisualStudio.Web.BrowserLink*.nupkg;
                          $(DropSource)**\Kestrel*.nupkg;
                          $(DropSource)**\dnx*.nupkg;
                          $(DropSource)**\KoreBuild*.nupkg;
@@ -62,6 +63,7 @@
                 Include="$(SymbolPackagePath)**\CultureInfoGenerator*.nupkg;
                          $(SymbolPackagePath)**\EntityFramework*.nupkg;
                          $(SymbolPackagePath)**\Microsoft.Data.Sqlite*.nupkg;
+                         $(SymbolPackagePath)**\Microsoft.VisualStudio.Web.BrowserLink*.nupkg;
                          $(SymbolPackagePath)**\Kestrel*.nupkg;
                          $(SymbolPackagePath)**\KoreBuild*.nupkg;
                          $(SymbolPackagePath)**\dnx*.nupkg;
@@ -97,6 +99,7 @@
                          $(UnsignedPackagesPath)**\EntityFramework*\**\init.ps1;
                          $(UnsignedPackagesPath)**\EntityFramework*\**\install.ps1;
                          $(UnsignedPackagesPath)**\Microsoft.Data.Sqlite*.dll;
+                         $(UnsignedPackagesPath)**\Microsoft.VisualStudio.Web.BrowserLink*.dll;
                          $(UnsignedPackagesPath)**\Kestrel*.dll;
                          $(UnsignedPackagesPath)**\dnx*.dll;
                          $(UnsignedPackagesPath)**\Microsoft.AspNet*.dll;
@@ -172,6 +175,7 @@
             <NuSpecEULA Include="$(UnsignedPackagesPath)**\CultureInfoGenerator*.nuspec;
                                  $(UnsignedPackagesPath)**\EntityFramework*.nuspec;
                                  $(UnsignedPackagesPath)**\Microsoft.Data.Sqlite*.nuspec;
+                                 $(UnsignedPackagesPath)**\Microsoft.VisualStudio.Web.BrowserLink*.nuspec;
                                  $(UnsignedPackagesPath)**\Kestrel*.nuspec;
                                  $(UnsignedPackagesPath)**\dnvm.*.nuspec;
                                  $(UnsignedPackagesPath)**\KoreBuild*.nuspec;
@@ -253,6 +257,7 @@
                                         $(SymbolPackagePath)Microsoft.Dnx*.symbols.nupkg;
                                         $(SymbolPackagePath)Microsoft.Framework*.symbols.nupkg;
                                         $(SymbolPackagePath)Microsoft.Net*.symbols.nupkg;
+                                        $(SymbolPackagePath)Microsoft.VisualStudio*.symbols.nupkg;
                                         $(SymbolPackagePath)NuGet.*.symbols.nupkg;
                                         $(SymbolPackagePath)PageGenerator.*.symbols.nupkg;
                                         $(SymbolPackagePath)StyleCop.KRules*.symbols.nupkg"/>
