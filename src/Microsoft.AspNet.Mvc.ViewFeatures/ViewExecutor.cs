@@ -36,17 +36,16 @@ namespace Microsoft.AspNet.Mvc
         {
             var response = actionContext.HttpContext.Response;
 
-            contentType = contentType ?? DefaultContentType;
-            if (contentType.Encoding == null)
+            if (contentType != null && contentType.Encoding == null)
             {
                 // Do not modify the user supplied content type, so copy it instead
                 contentType = contentType.Copy();
                 contentType.Encoding = Encoding.UTF8;
             }
 
-            response.ContentType = contentType.ToString();
+            response.ContentType = contentType?.ToString() ?? response.ContentType ?? DefaultContentType.ToString();
 
-            using (var writer = new HttpResponseStreamWriter(response.Body, contentType.Encoding))
+            using (var writer = new HttpResponseStreamWriter(response.Body, contentType?.Encoding ?? DefaultContentType.Encoding))
             {
                 var viewContext = new ViewContext(
                     actionContext,

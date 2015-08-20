@@ -2,14 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Routing;
-using Microsoft.AspNet.Testing;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
@@ -18,32 +16,60 @@ namespace Microsoft.AspNet.Mvc
 {
     public class ViewExecutorTest
     {
-        public static TheoryData<MediaTypeHeaderValue, string, byte[]> ViewExecutorSetsContentTypeAndEncodingData
+        public static TheoryData<MediaTypeHeaderValue, string, string, byte[]> ViewExecutorSetsContentTypeAndEncodingData
         {
             get
             {
-                return new TheoryData<MediaTypeHeaderValue, string, byte[]>
+                return new TheoryData<MediaTypeHeaderValue, string, string, byte[]>
                 {
                     {
+                        null,
                         null,
                         "text/html; charset=utf-8",
                         new byte[] { 97, 98, 99, 100 }
                     },
                     {
                         new MediaTypeHeaderValue("text/foo"),
+                        null,
                         "text/foo; charset=utf-8",
                         new byte[] { 97, 98, 99, 100 }
                     },
                     {
                         MediaTypeHeaderValue.Parse("text/foo; p1=p1-value"),
+                        null,
                         "text/foo; p1=p1-value; charset=utf-8",
                         new byte[] { 97, 98, 99, 100 }
                     },
                     {
                         new MediaTypeHeaderValue("text/foo") { Charset = "us-ascii" },
+                        null,
                         "text/foo; charset=us-ascii",
                         new byte[] { 97, 98, 99, 100 }
-                    }
+                    },
+                    {
+                        null,
+                        "text/bar",
+                        "text/bar",
+                        new byte[] { 97, 98, 99, 100 }
+                    },
+                    {
+                        null,
+                        "application/xml; charset=us-ascii",
+                        "application/xml; charset=us-ascii",
+                        new byte[] { 97, 98, 99, 100 }
+                    },
+                    {
+                        null,
+                        "Invalid content type",
+                        "Invalid content type",
+                        new byte[] { 97, 98, 99, 100 }
+                    },
+                    {
+                        new MediaTypeHeaderValue("text/foo") { Charset = "us-ascii" },
+                        "text/bar",
+                        "text/foo; charset=us-ascii",
+                        new byte[] { 97, 98, 99, 100 }
+                    },
                 };
             }
         }
@@ -52,6 +78,7 @@ namespace Microsoft.AspNet.Mvc
         [MemberData(nameof(ViewExecutorSetsContentTypeAndEncodingData))]
         public async Task ExecuteAsync_SetsContentTypeAndEncoding(
             MediaTypeHeaderValue contentType,
+            string responseContentType,
             string expectedContentType,
             byte[] expectedContentData)
         {
@@ -68,6 +95,7 @@ namespace Microsoft.AspNet.Mvc
             var context = new DefaultHttpContext();
             var memoryStream = new MemoryStream();
             context.Response.Body = memoryStream;
+            context.Response.ContentType = responseContentType;
 
             var actionContext = new ActionContext(context,
                                                   new RouteData(),

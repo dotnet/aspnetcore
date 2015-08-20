@@ -34,31 +34,18 @@ namespace Microsoft.AspNet.Mvc
         public override async Task ExecuteResultAsync([NotNull] ActionContext context)
         {
             var response = context.HttpContext.Response;
-
             var contentTypeHeader = ContentType;
-            Encoding encoding;
-            if (contentTypeHeader == null)
-            {
-                contentTypeHeader = DefaultContentType;
-                encoding = Encoding.UTF8;
-            }
-            else
-            {
-                if (contentTypeHeader.Encoding == null)
-                {
-                    // Do not modify the user supplied content type, so copy it instead
-                    contentTypeHeader = contentTypeHeader.Copy();
-                    contentTypeHeader.Encoding = Encoding.UTF8;
 
-                    encoding = Encoding.UTF8;
-                }
-                else
-                {
-                    encoding = contentTypeHeader.Encoding;
-                }
+            if (contentTypeHeader != null && contentTypeHeader.Encoding == null)
+            {
+                // Do not modify the user supplied content type, so copy it instead
+                contentTypeHeader = contentTypeHeader.Copy();
+                contentTypeHeader.Encoding = Encoding.UTF8;
             }
-
-            response.ContentType = contentTypeHeader.ToString();
+            
+            response.ContentType = contentTypeHeader?.ToString()
+                ?? response.ContentType
+                ?? DefaultContentType.ToString();
 
             if (StatusCode != null)
             {
@@ -67,7 +54,7 @@ namespace Microsoft.AspNet.Mvc
 
             if (Content != null)
             {
-                await response.WriteAsync(Content, encoding);
+                await response.WriteAsync(Content, contentTypeHeader?.Encoding ?? DefaultContentType.Encoding);
             }
         }
     }
