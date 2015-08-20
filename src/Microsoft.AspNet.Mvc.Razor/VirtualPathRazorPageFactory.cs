@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNet.Mvc.Razor.Compilation;
-using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Razor
@@ -14,38 +13,24 @@ namespace Microsoft.AspNet.Mvc.Razor
     /// </summary>
     public class VirtualPathRazorPageFactory : IRazorPageFactory
     {
-        private readonly IServiceProvider _serviceProvider;
+        /// <remarks>
+        /// This delegate holds on to an instance of <see cref="IRazorCompilationService"/>.
+        /// </remarks>
+        private readonly Func<RelativeFileInfo, CompilationResult> _compileDelegate;
         private readonly ICompilerCacheProvider _compilerCacheProvider;
-        private IRazorCompilationService _razorcompilationService;
         private ICompilerCache _compilerCache;
 
         /// <summary>
         /// Initializes a new instance of <see cref="VirtualPathRazorPageFactory"/>.
         /// </summary>
-        /// <param name="serviceProvider">The request specific <see cref="IServiceProvider"/>.</param>
+        /// <param name="razorCompilationService">The <see cref="IRazorCompilationService"/>.</param>
         /// <param name="compilerCacheProvider">The <see cref="ICompilerCacheProvider"/>.</param>
         public VirtualPathRazorPageFactory(
-            IServiceProvider serviceProvider,
+            IRazorCompilationService razorCompilationService,
             ICompilerCacheProvider compilerCacheProvider)
         {
-            _serviceProvider = serviceProvider;
+            _compileDelegate = razorCompilationService.Compile;
             _compilerCacheProvider = compilerCacheProvider;
-        }
-
-        private IRazorCompilationService RazorCompilationService
-        {
-            get
-            {
-                if (_razorcompilationService == null)
-                {
-                    // it is ok to use the cached service provider because both this, and the
-                    // resolved service are in a lifetime of Scoped.
-                    // We don't want to get it upfront because it will force Roslyn to load.
-                    _razorcompilationService = _serviceProvider.GetRequiredService<IRazorCompilationService>();
-                }
-
-                return _razorcompilationService;
-            }
         }
 
         private ICompilerCache CompilerCache
@@ -70,9 +55,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 relativePath = relativePath.Substring(1);
             }
 
-            var result = CompilerCache.GetOrAdd(
-                relativePath,
-                RazorCompilationService.Compile);
+            var result = CompilerCache.GetOrAdd(relativePath, _compileDelegate);
 
             if (result == CompilerCacheResult.FileNotFound)
             {

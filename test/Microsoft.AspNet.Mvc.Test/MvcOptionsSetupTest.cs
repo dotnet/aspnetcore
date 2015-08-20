@@ -9,6 +9,7 @@ using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Mvc.Razor;
+using Microsoft.Dnx.Compilation;
 using Microsoft.Dnx.Runtime;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.OptionsModel;
@@ -232,6 +233,8 @@ namespace Microsoft.AspNet.Mvc
         private static void AddDnxServices(IServiceCollection serviceCollection)
         {
             serviceCollection.AddInstance(Mock.Of<ILibraryManager>());
+            serviceCollection.AddInstance(Mock.Of<ILibraryExporter>());
+            serviceCollection.AddInstance(Mock.Of<ICompilerOptionsProvider>());
             serviceCollection.AddInstance(Mock.Of<IAssemblyLoadContextAccessor>());
             var applicationEnvironment = new Mock<IApplicationEnvironment>();
 

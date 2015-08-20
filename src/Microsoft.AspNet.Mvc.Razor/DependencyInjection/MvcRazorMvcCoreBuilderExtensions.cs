@@ -96,28 +96,22 @@ namespace Microsoft.Framework.DependencyInjection
                 return new DefaultChunkTreeCache(cachedFileProvider.Options.FileProvider);
             }));
 
-            // The host is designed to be discarded after consumption and is very inexpensive to initialize.
-            services.TryAddTransient<IMvcRazorHost, MvcRazorHost>();
-
             // Caches compilation artifacts across the lifetime of the application.
             services.TryAddSingleton<ICompilerCacheProvider, DefaultCompilerCacheProvider>();
 
-            // This caches compilation related details that are valid across the lifetime of the application
-            // and is required to be a singleton.
+            // This caches compilation related details that are valid across the lifetime of the application.
             services.TryAddSingleton<ICompilationService, RoslynCompilationService>();
 
-            // Both the compiler cache and roslyn compilation service hold on the compilation related
-            // caches. RazorCompilation service is just an adapter service, and it is transient to ensure
-            // the IMvcRazorHost dependency does not maintain state.
-            services.TryAddTransient<IRazorCompilationService, RazorCompilationService>();
-
-            // The ViewStartProvider needs to be able to consume scoped instances of IRazorPageFactory
-            services.TryAddScoped<IViewStartProvider, ViewStartProvider>();
+            // In the default scenario the following services are singleton by virtue of being initialized as part of
+            // creating the singleton RazorViewEngine instance.
             services.TryAddTransient<IRazorViewFactory, RazorViewFactory>();
-            services.TryAddSingleton<IRazorPageActivator, RazorPageActivator>();
+            services.TryAddTransient<IRazorPageFactory, VirtualPathRazorPageFactory>();
+            services.TryAddTransient<IRazorCompilationService, RazorCompilationService>();
+            services.TryAddTransient<IViewStartProvider, ViewStartProvider>();
+            services.TryAddTransient<IMvcRazorHost, MvcRazorHost>();
 
-            // Virtual path view factory needs to stay scoped so views can get get scoped services.
-            services.TryAddScoped<IRazorPageFactory, VirtualPathRazorPageFactory>();
+            // This caches Razor page activation details that are valid for the lifetime of the application.
+            services.TryAddSingleton<IRazorPageActivator, RazorPageActivator>();
 
             // Only want one ITagHelperActivator so it can cache Type activation information. Types won't conflict.
             services.TryAddSingleton<ITagHelperActivator, DefaultTagHelperActivator>();
