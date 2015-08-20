@@ -26,7 +26,7 @@ namespace TestClient
         private static async Task RunTestAsync()
         {
             WebSocketClient client = new WebSocketClient();
-            WebSocket socket = await client.ConnectAsync(new Uri("ws://localhost:8080/"), CancellationToken.None);
+            WebSocket socket = await client.ConnectAsync(new Uri("ws://localhost:12345/"), CancellationToken.None);
             byte[] data = new byte[100]; // Encoding.UTF8.GetBytes(
                 // TODO: Hangs after 10 seconds 
                 // "Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World, Hello World"
