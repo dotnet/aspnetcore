@@ -7,9 +7,9 @@ using Microsoft.AspNet.Server.Kestrel.Networking;
 namespace Microsoft.AspNet.Server.Kestrel.Http
 {
     /// <summary>
-    /// Implementation of <see cref="Listener{T}"/> that uses UNIX domain sockets as its transport.
+    /// Implementation of <see cref="Listener"/> that uses UNIX domain sockets as its transport.
     /// </summary>
-    public class PipeListener : Listener<UvPipeHandle>
+    public class PipeListener : Listener
     {
         public PipeListener(IMemoryPool memory) : base(memory)
         {
@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         /// <summary>
         /// Creates the socket used to listen for incoming connections
         /// </summary>
-        protected override UvPipeHandle CreateListenSocket(string host, int port)
+        protected override UvStreamHandle CreateListenSocket(string host, int port)
         {
             var socket = new UvPipeHandle();
             socket.Init(Thread.Loop, false);
@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         /// </summary>
         /// <param name="listenSocket">Socket being used to listen on</param>
         /// <param name="status">Connection status</param>
-        protected override void OnConnection(UvPipeHandle listenSocket, int status)
+        protected override void OnConnection(UvStreamHandle listenSocket, int status)
         {
             var acceptSocket = new UvPipeHandle();
             acceptSocket.Init(Thread.Loop, false);

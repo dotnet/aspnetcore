@@ -11,10 +11,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     /// <summary>
     /// Base class for listeners in Kestrel. Listens for incoming connections
     /// </summary>
-    /// <typeparam name="T">Type of socket used by this listener</typeparam>
-    public abstract class Listener<T> : ListenerContext, IListener where T : UvStreamHandle
+    public abstract class Listener : ListenerContext, IListener
     {
-        protected T ListenSocket { get; private set; }
+        protected UvStreamHandle ListenSocket { get; private set; }
 
         protected static void ConnectionCallback(UvStreamHandle stream, int status, Exception error, object state)
         {
@@ -24,7 +23,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
             else
             {
-                ((Listener<T>)state).OnConnection((T)stream, status);
+                ((Listener)state).OnConnection(stream, status);
             }
         }
 
@@ -62,16 +61,16 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         /// <summary>
         /// Creates the socket used to listen for incoming connections
         /// </summary>
-        protected abstract T CreateListenSocket(string host, int port);
+        protected abstract UvStreamHandle CreateListenSocket(string host, int port);
 
         /// <summary>
         /// Handles an incoming connection
         /// </summary>
         /// <param name="listenSocket">Socket being used to listen on</param>
         /// <param name="status">Connection status</param>
-        protected abstract void OnConnection(T listenSocket, int status);
+        protected abstract void OnConnection(UvStreamHandle listenSocket, int status);
 
-        protected virtual void DispatchConnection(T socket)
+        protected virtual void DispatchConnection(UvStreamHandle socket)
         {
             var connection = new Connection(this, socket);
             connection.Start();

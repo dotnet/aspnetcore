@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     /// A primary listener waits for incoming connections on a specified socket. Incoming 
     /// connections may be passed to a secondary listener to handle.
     /// </summary>
-    abstract public class ListenerPrimary<T> : Listener<T>, IListenerPrimary where T : UvStreamHandle
+    abstract public class ListenerPrimary : Listener, IListenerPrimary
     {
         UvPipeHandle ListenPipe { get; set; }
 
@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             _dispatchPipes.Add(dispatchPipe);
         }
 
-        protected override void DispatchConnection(T socket)
+        protected override void DispatchConnection(UvStreamHandle socket)
         {
             var index = _dispatchIndex++ % (_dispatchPipes.Count + 1);
             if (index == _dispatchPipes.Count)
@@ -84,7 +84,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     (write2, status, error, state) => 
                     {
                         write2.Dispose();
-                        ((T)state).Dispose();
+                        ((UvStreamHandle)state).Dispose();
                     },
                     socket);
             }

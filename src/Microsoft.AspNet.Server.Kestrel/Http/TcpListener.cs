@@ -8,9 +8,9 @@ using Microsoft.AspNet.Server.Kestrel.Networking;
 namespace Microsoft.AspNet.Server.Kestrel.Http
 {
     /// <summary>
-    /// Implementation of <see cref="Listener{T}"/> that uses TCP sockets as its transport.
+    /// Implementation of <see cref="Listener"/> that uses TCP sockets as its transport.
     /// </summary>
-    public class TcpListener : Listener<UvTcpHandle>
+    public class TcpListener : Listener
     {
         public TcpListener(IMemoryPool memory) : base(memory)
         {
@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         /// <summary>
         /// Creates the socket used to listen for incoming connections
         /// </summary>
-        protected override UvTcpHandle CreateListenSocket(string host, int port)
+        protected override UvStreamHandle CreateListenSocket(string host, int port)
         {
             var socket = new UvTcpHandle();
             socket.Init(Thread.Loop, Thread.QueueCloseHandle);
@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         /// </summary>
         /// <param name="listenSocket">Socket being used to listen on</param>
         /// <param name="status">Connection status</param>
-        protected override void OnConnection(UvTcpHandle listenSocket, int status)
+        protected override void OnConnection(UvStreamHandle listenSocket, int status)
         {
             var acceptSocket = new UvTcpHandle();
             acceptSocket.Init(Thread.Loop, Thread.QueueCloseHandle);

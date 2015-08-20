@@ -6,9 +6,9 @@ using Microsoft.AspNet.Server.Kestrel.Networking;
 namespace Microsoft.AspNet.Server.Kestrel.Http
 {
     /// <summary>
-    /// An implementation of <see cref="ListenerSecondary{T}"/> using UNIX sockets.
+    /// An implementation of <see cref="ListenerSecondary"/> using UNIX sockets.
     /// </summary>
-    public class PipeListenerSecondary : ListenerSecondary<UvPipeHandle>
+    public class PipeListenerSecondary : ListenerSecondary
     {
         public PipeListenerSecondary(IMemoryPool memory) : base(memory)
         {
@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         /// <summary>
         /// Creates a socket which can be used to accept an incoming connection
         /// </summary>
-        protected override UvPipeHandle CreateAcceptSocket()
+        protected override UvStreamHandle CreateAcceptSocket()
         {
             var acceptSocket = new UvPipeHandle();
             acceptSocket.Init(Thread.Loop, false);
