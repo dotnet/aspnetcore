@@ -13,6 +13,7 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics.Views;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Features;
 using Microsoft.Dnx.Compilation;
 using Microsoft.Dnx.Runtime;
 using Microsoft.Framework.Internal;
@@ -63,8 +64,23 @@ namespace Microsoft.AspNet.Diagnostics
             catch (Exception ex)
             {
                 _logger.LogError("An unhandled exception has occurred while executing the request", ex);
+                if (context.Response.HasStarted)
+                {
+                    _logger.LogWarning("The response has already started, the error page middleware will not be executed.");
+                    throw;
+                }
+
                 try
                 {
+                    context.Response.StatusCode = 500;
+                    context.Response.Headers.Clear();
+
+                    // if buffering is enabled, then clear it as data could have been written into it.
+                    if (context.Response.Body.CanSeek)
+                    {
+                        context.Response.Body.SetLength(0);
+                    }
+
                     await DisplayException(context, ex);
                     return;
                 }

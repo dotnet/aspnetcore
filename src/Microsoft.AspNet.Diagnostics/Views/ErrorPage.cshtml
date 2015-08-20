@@ -13,10 +13,8 @@
     public ErrorPageModel Model { get; set; }
 }
 @{
-    Response.StatusCode = 500;
     // TODO: Response.ReasonPhrase = "Internal Server Error";
     Response.ContentType = "text/html; charset=utf-8";
-    Response.ContentLength = null; // Clear any prior Content-Length
     string location = string.Empty;
 }
 <!DOCTYPE html>
@@ -72,7 +70,7 @@
                 @Resources.ErrorPageHtml_HeadersButton
             </li>
         </ul>
-    
+
         <div id="stackpage" class="page">
             <ul>
                 @{ int tabIndex = 6; }
@@ -105,7 +103,7 @@
                                                     <li><span>@line</span></li>
                                                 }
                                             </ol>
-                                        } 
+                                        }
 
                                         <ol start="@frame.Line" class="highlight">
                                             @foreach (var line in frame.ContextCode)
@@ -122,9 +120,9 @@
                                                     <li><span>@line</span></li>
                                                 }
                                             </ol>
-                                        } 
+                                        }
                                     </div>
-                                } 
+                                }
                             </li>
                         }
                         </ul>
@@ -132,7 +130,7 @@
                 }
             </ul>
         </div>
-       
+
         <div id="querypage" class="page">
             @if (Model.Query.Any())
             {
@@ -162,7 +160,7 @@
                 <p>@Resources.ErrorPageHtml_NoQueryStringData</p>
             }
         </div>
-        
+
         <div id="cookiespage" class="page">
             @if (Model.Cookies.Any())
             {

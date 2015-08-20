@@ -5,6 +5,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Features;
 using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Diagnostics
@@ -60,7 +61,12 @@ namespace Microsoft.AspNet.Diagnostics
                     context.Response.Headers.Clear();
                     context.Response.OnStarting(_clearCacheHeadersDelegate, context.Response);
 
-                    // TODO: Try clearing any buffered data. The buffering feature/middleware has not been designed yet.
+                    // if buffering is enabled, then clear it as data could have been written into it.
+                    if (context.Response.Body.CanSeek)
+                    {
+                        context.Response.Body.SetLength(0);
+                    }
+
                     await _options.ErrorHandler(context);
                     // TODO: Optional re-throw? We'll re-throw the original exception by default if the error handler throws.
                     return;

@@ -3,12 +3,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.TestHost;
 using Xunit;
 
@@ -91,6 +93,74 @@ namespace Microsoft.AspNet.Diagnostics
                 var response = await client.GetAsync(string.Empty);
                 response.EnsureSuccessStatusCode();
                 Assert.Equal("Hello", await response.Content.ReadAsStringAsync());
+            }
+        }
+
+        [Fact]
+        public async Task ClearsResponseBuffer_BeforeRequestIsReexecuted()
+        {
+            var expectedResponseBody = "New response body";
+            using (var server = TestServer.Create(app =>
+            {
+                // add response buffering
+                app.Use(async (httpContext, next) =>
+                {
+                    var response = httpContext.Response;
+                    var originalResponseBody = response.Body;
+                    var bufferingStream = new MemoryStream();
+                    response.Body = bufferingStream;
+
+                    try
+                    {
+                        await next();
+
+                        response.Body = originalResponseBody;
+                        bufferingStream.Seek(0, SeekOrigin.Begin);
+                        await bufferingStream.CopyToAsync(response.Body);
+                    }
+                    finally
+                    {
+                        response.Body = originalResponseBody;
+                    }
+                });
+
+                app.UseErrorHandler("/handle-errors");
+
+                app.Map("/handle-errors", (innerAppBuilder) =>
+                {
+                    innerAppBuilder.Run(async (httpContext) =>
+                    {
+                        Assert.True(httpContext.Response.Body.CanSeek);
+                        Assert.Equal(0, httpContext.Response.Body.Position);
+
+                        await httpContext.Response.WriteAsync(expectedResponseBody);
+                    });
+                });
+
+                app.Run(async (context) =>
+                {
+                    // Write some content into the response before throwing exception
+                    await context.Response.WriteAsync(new string('a', 100));
+
+                    throw new InvalidOperationException("Invalid input provided.");
+                });
+            }))
+            {
+                var client = server.CreateClient();
+                var response = await client.GetAsync(string.Empty);
+                Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+                Assert.Equal(expectedResponseBody, await response.Content.ReadAsStringAsync());
+                IEnumerable<string> values;
+                Assert.True(response.Headers.TryGetValues("Cache-Control", out values));
+                Assert.Single(values);
+                Assert.Equal("no-cache", values.First());
+                Assert.True(response.Headers.TryGetValues("Pragma", out values));
+                Assert.Single(values);
+                Assert.Equal("no-cache", values.First());
+                Assert.True(response.Content.Headers.TryGetValues("Expires", out values));
+                Assert.Single(values);
+                Assert.Equal("-1", values.First());
+                Assert.False(response.Headers.TryGetValues("ETag", out values));
             }
         }
 
