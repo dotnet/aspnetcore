@@ -169,6 +169,10 @@
     <value>A user with this login already exists.</value>
     <comment>Error when a login already linked</comment>
   </data>
+  <data name="MustCallAddIdentity" xml:space="preserve">
+    <value>AddIdentity must be called on the service collection.</value>
+    <comment>Error when AddIdentity is not called</comment>
+  </data>
   <data name="NoTokenProvider" xml:space="preserve">
     <value>No IUserTokenProvider named '{0}' is registered.</value>
     <comment>Error when there is no IUserTokenProvider</comment>

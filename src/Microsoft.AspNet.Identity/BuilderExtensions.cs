@@ -4,6 +4,7 @@
 using System;
 
 using Microsoft.AspNet.Identity;
+using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Builder
 {
@@ -23,6 +24,13 @@ namespace Microsoft.AspNet.Builder
             {
                 throw new ArgumentNullException(nameof(app));
             }
+
+            var marker = app.ApplicationServices.GetService<IdentityMarkerService>();
+            if (marker == null)
+            {
+                throw new InvalidOperationException(Resources.MustCallAddIdentity);
+            }
+
             app.UseCookieAuthentication(null, IdentityOptions.ExternalCookieAuthenticationScheme);
             app.UseCookieAuthentication(null, IdentityOptions.TwoFactorRememberMeCookieAuthenticationScheme);
             app.UseCookieAuthentication(null, IdentityOptions.TwoFactorUserIdCookieAuthenticationScheme);

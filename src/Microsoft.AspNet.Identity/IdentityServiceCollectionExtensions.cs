@@ -83,18 +83,19 @@ namespace Microsoft.Framework.DependencyInjection
             services.AddAuthentication();
 
             // Identity services
-            services.TryAdd(ServiceDescriptor.Scoped<IUserValidator<TUser>, UserValidator<TUser>>());
-            services.TryAdd(ServiceDescriptor.Scoped<IPasswordValidator<TUser>, PasswordValidator<TUser>>());
-            services.TryAdd(ServiceDescriptor.Scoped<IPasswordHasher<TUser>, PasswordHasher<TUser>>());
-            services.TryAdd(ServiceDescriptor.Scoped<ILookupNormalizer, UpperInvariantLookupNormalizer>());
-            services.TryAdd(ServiceDescriptor.Scoped<IRoleValidator<TRole>, RoleValidator<TRole>>());
+            services.TryAddSingleton<IdentityMarkerService>();
+            services.TryAddScoped<IUserValidator<TUser>, UserValidator<TUser>>();
+            services.TryAddScoped<IPasswordValidator<TUser>, PasswordValidator<TUser>>();
+            services.TryAddScoped<IPasswordHasher<TUser>, PasswordHasher<TUser>>();
+            services.TryAddScoped<ILookupNormalizer, UpperInvariantLookupNormalizer>();
+            services.TryAddScoped<IRoleValidator<TRole>, RoleValidator<TRole>>();
             // No interface for the error describer so we can add errors without rev'ing the interface
-            services.TryAdd(ServiceDescriptor.Scoped<IdentityErrorDescriber, IdentityErrorDescriber>());
-            services.TryAdd(ServiceDescriptor.Scoped<ISecurityStampValidator, SecurityStampValidator<TUser>>());
-            services.TryAdd(ServiceDescriptor.Scoped<IUserClaimsPrincipalFactory<TUser>, UserClaimsPrincipalFactory<TUser, TRole>>());
-            services.TryAdd(ServiceDescriptor.Scoped<UserManager<TUser>, UserManager<TUser>>());
-            services.TryAdd(ServiceDescriptor.Scoped<SignInManager<TUser>, SignInManager<TUser>>());
-            services.TryAdd(ServiceDescriptor.Scoped<RoleManager<TRole>, RoleManager<TRole>>());
+            services.TryAddScoped<IdentityErrorDescriber>();
+            services.TryAddScoped<ISecurityStampValidator, SecurityStampValidator<TUser>>();
+            services.TryAddScoped<IUserClaimsPrincipalFactory<TUser>, UserClaimsPrincipalFactory<TUser, TRole>>();
+            services.TryAddScoped<UserManager<TUser>, UserManager<TUser>>();
+            services.TryAddScoped<SignInManager<TUser>, SignInManager<TUser>>();
+            services.TryAddScoped<RoleManager<TRole>, RoleManager<TRole>>();
 
             if (setupAction != null)
             {

@@ -219,6 +219,22 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
+        /// AddIdentity must be called on the service collection.
+        /// </summary>
+        internal static string MustCallAddIdentity
+        {
+            get { return GetString("MustCallAddIdentity"); }
+        }
+
+        /// <summary>
+        /// AddIdentity must be called on the service collection.
+        /// </summary>
+        internal static string FormatMustCallAddIdentity()
+        {
+            return GetString("MustCallAddIdentity");
+        }
+
+        /// <summary>
         /// No IUserTokenProvider named '{0}' is registered.
         /// </summary>
         internal static string NoTokenProvider

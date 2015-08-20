@@ -28,6 +28,12 @@ namespace Microsoft.AspNet.Identity.InMemory
         const string TestPassword = "1qaz!QAZ";
 
         [Fact]
+        public void UseIdentityThrowsWithoutAddIdentity()
+        {
+            Assert.Throws<InvalidOperationException>(() => TestServer.Create(app => app.UseIdentity()));
+        }
+
+        [Fact]
         public async Task CanChangePasswordOptions()
         {
             var clock = new TestClock();
