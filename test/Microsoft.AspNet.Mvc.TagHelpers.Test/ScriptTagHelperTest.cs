@@ -30,6 +30,60 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     public class ScriptTagHelperTest
     {
         [Theory]
+        [InlineData(null, "test.js", "test.js")]
+        [InlineData("abcd.js", "test.js", "test.js")]
+        [InlineData(null, "~/test.js", "/virtualRoot/test.js")]
+        [InlineData("abcd.js", "~/test.js", "/virtualRoot/test.js")]
+        public void Process_SrcDefaultsToTagHelperOutputSrcAttributeAddedByOtherTagHelper(
+            string src,
+            string srcOutput,
+            string expectedSrcPrefix)
+        {
+            // Arrange
+            var allAttributes = new TagHelperAttributeList(
+                new TagHelperAttributeList
+                {
+                    { "type", new HtmlString("text/javascript") },
+                    { "asp-append-version", true },
+                });
+            var context = MakeTagHelperContext(allAttributes);
+            var outputAttributes = new TagHelperAttributeList
+                {
+                    { "type", new HtmlString("text/javascript") },
+                    { "src", srcOutput },
+                };
+            var output = MakeTagHelperOutput("script", outputAttributes);
+            var logger = new Mock<ILogger<ScriptTagHelper>>();
+            var hostingEnvironment = MakeHostingEnvironment();
+            var viewContext = MakeViewContext();
+            var urlHelper = new Mock<IUrlHelper>();
+            urlHelper
+                .Setup(urlhelper => urlhelper.Content(It.IsAny<string>()))
+                .Returns(new Func<string, string>(url => url.Replace("~/", "/virtualRoot/")));
+            var helper = new ScriptTagHelper(
+                logger.Object,
+                hostingEnvironment,
+                MakeCache(),
+                new CommonTestEncoder(),
+                new CommonTestEncoder(),
+                urlHelper.Object)
+            {
+                ViewContext = viewContext,
+                AppendVersion = true,
+                Src = src,
+            };
+
+            // Act
+            helper.Process(context, output);
+
+            // Assert
+            Assert.Equal(
+                expectedSrcPrefix + "?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk",
+                (string)output.Attributes["src"].Value,
+                StringComparer.Ordinal);
+        }
+
+        [Theory]
         [MemberData(nameof(LinkTagHelperTest.MultiAttributeSameNameData), MemberType = typeof(LinkTagHelperTest))]
         public async Task HandlesMultipleAttributesSameNameCorrectly(TagHelperAttributeList outputAttributes)
         {

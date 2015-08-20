@@ -179,14 +179,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             if (Src != null)
             {
                 output.CopyHtmlAttribute(SrcAttributeName, context);
-
-                if (TryResolveUrl(Src, encodeWebRoot: false, resolvedUrl: out resolvedUrl))
-                {
-                    Src = resolvedUrl;
-                }
-
-                ProcessUrlAttribute(SrcAttributeName, output);
             }
+
+            // If there's no "src" attribute in output.Attributes this will noop.
+            ProcessUrlAttribute(SrcAttributeName, output);
+
+            // Retrieve the TagHelperOutput variation of the "src" attribute in case other TagHelpers in the
+            // pipeline have touched the value. If the value is already encoded this ScriptTagHelper may
+            // not function properly.
+            Src = output.Attributes[SrcAttributeName]?.Value as string;
 
             var modeResult = AttributeMatcher.DetermineMode(context, ModeDetails);
 
@@ -205,11 +206,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             {
                 EnsureFileVersionProvider();
 
-                var attributeStringValue = output.Attributes[SrcAttributeName]?.Value as string;
-                if (attributeStringValue != null)
+                if (Src != null)
                 {
-                    output.Attributes[SrcAttributeName].Value =
-                        _fileVersionProvider.AddFileVersionToPath(attributeStringValue);
+                    output.Attributes[SrcAttributeName].Value = _fileVersionProvider.AddFileVersionToPath(Src);
                 }
             }
 

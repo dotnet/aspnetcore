@@ -75,22 +75,19 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// <inheritdoc />
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
+            output.CopyHtmlAttribute(SrcAttributeName, context);
+            ProcessUrlAttribute(SrcAttributeName, output);
+
             if (AppendVersion)
             {
                 EnsureFileVersionProvider();
 
-                string resolvedUrl;
-                if (TryResolveUrl(Src, encodeWebRoot: false, resolvedUrl: out resolvedUrl))
-                {
-                    Src = resolvedUrl;
-                }
+                // Retrieve the TagHelperOutput variation of the "src" attribute in case other TagHelpers in the
+                // pipeline have touched the value. If the value is already encoded this ImageTagHelper may
+                // not function properly.
+                Src = output.Attributes[SrcAttributeName].Value as string;
+
                 output.Attributes[SrcAttributeName] = _fileVersionProvider.AddFileVersionToPath(Src);
-            }
-            else
-            {
-                // Pass through attribute that is also a well-known HTML attribute.
-                output.CopyHtmlAttribute(SrcAttributeName, context);
-                ProcessUrlAttribute(SrcAttributeName, output);
             }
         }
 

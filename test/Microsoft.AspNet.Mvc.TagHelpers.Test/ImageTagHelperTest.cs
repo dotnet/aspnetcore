@@ -25,6 +25,56 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 {
     public class ImageTagHelperTest
     {
+        [Theory]
+        [InlineData(null, "test.jpg", "test.jpg")]
+        [InlineData("abcd.jpg", "test.jpg", "test.jpg")]
+        [InlineData(null, "~/test.jpg", "/virtualRoot/test.jpg")]
+        [InlineData("abcd.jpg", "~/test.jpg", "/virtualRoot/test.jpg")]
+        public void Process_SrcDefaultsToTagHelperOutputSrcAttributeAddedByOtherTagHelper(
+            string src,
+            string srcOutput,
+            string expectedSrcPrefix)
+        {
+            // Arrange
+            var allAttributes = new TagHelperAttributeList(
+                new TagHelperAttributeList
+                {
+                    { "alt", new HtmlString("Testing") },
+                    { "asp-append-version", true },
+                });
+            var context = MakeTagHelperContext(allAttributes);
+            var outputAttributes = new TagHelperAttributeList
+                {
+                    { "alt", new HtmlString("Testing") },
+                    { "src", srcOutput },
+                };
+            var output = new TagHelperOutput("img", outputAttributes);
+            var hostingEnvironment = MakeHostingEnvironment();
+            var viewContext = MakeViewContext();
+            var urlHelper = new Mock<IUrlHelper>();
+            urlHelper
+                .Setup(urlhelper => urlhelper.Content(It.IsAny<string>()))
+                .Returns(new Func<string, string>(url => url.Replace("~/", "/virtualRoot/")));
+            var helper = new ImageTagHelper(
+                hostingEnvironment,
+                MakeCache(),
+                new CommonTestEncoder(),
+                urlHelper.Object)
+            {
+                ViewContext = viewContext,
+                AppendVersion = true,
+                Src = src,
+            };
+
+            // Act
+            helper.Process(context, output);
+
+            // Assert
+            Assert.Equal(
+                expectedSrcPrefix + "?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk",
+                (string)output.Attributes["src"].Value,
+                StringComparer.Ordinal);
+        }
 
         [Fact]
         public void PreservesOrderOfSourceAttributesWhenRun()

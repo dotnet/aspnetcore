@@ -211,15 +211,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             if (Href != null)
             {
                 output.CopyHtmlAttribute(HrefAttributeName, context);
-
-                // Resolve any application relative URLs (~/) now so they can be used in comparisons later.
-                if (TryResolveUrl(Href, encodeWebRoot: false, resolvedUrl: out resolvedUrl))
-                {
-                    Href = resolvedUrl;
-                }
-
-                ProcessUrlAttribute(HrefAttributeName, output);
             }
+
+            // If there's no "href" attribute in output.Attributes this will noop.
+            ProcessUrlAttribute(HrefAttributeName, output);
+
+            // Retrieve the TagHelperOutput variation of the "href" attribute in case other TagHelpers in the
+            // pipeline have touched the value. If the value is already encoded this LinkTagHelper may
+            // not function properly.
+            Href = output.Attributes[HrefAttributeName]?.Value as string;
 
             var modeResult = AttributeMatcher.DetermineMode(context, ModeDetails);
 
@@ -238,11 +238,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             {
                 EnsureFileVersionProvider();
 
-                var attributeStringValue = output.Attributes[HrefAttributeName]?.Value as string;
-                if (attributeStringValue != null)
+                if (Href != null)
                 {
-                    output.Attributes[HrefAttributeName].Value =
-                        _fileVersionProvider.AddFileVersionToPath(attributeStringValue);
+                    output.Attributes[HrefAttributeName].Value = _fileVersionProvider.AddFileVersionToPath(Href);
                 }
             }
 

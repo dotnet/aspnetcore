@@ -28,6 +28,60 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 {
     public class LinkTagHelperTest
     {
+        [Theory]
+        [InlineData(null, "test.css", "test.css")]
+        [InlineData("abcd.css", "test.css", "test.css")]
+        [InlineData(null, "~/test.css", "/virtualRoot/test.css")]
+        [InlineData("abcd.css", "~/test.css", "/virtualRoot/test.css")]
+        public void Process_HrefDefaultsToTagHelperOutputHrefAttributeAddedByOtherTagHelper(
+            string href,
+            string hrefOutput,
+            string expectedHrefPrefix)
+        {
+            // Arrange
+            var allAttributes = new TagHelperAttributeList(
+                new TagHelperAttributeList
+                {
+                    { "rel", new HtmlString("stylesheet") },
+                    { "asp-append-version", true },
+                });
+            var context = MakeTagHelperContext(allAttributes);
+            var outputAttributes = new TagHelperAttributeList
+                {
+                    { "rel", new HtmlString("stylesheet") },
+                    { "href", hrefOutput },
+                };
+            var output = MakeTagHelperOutput("link", outputAttributes);
+            var logger = new Mock<ILogger<LinkTagHelper>>();
+            var hostingEnvironment = MakeHostingEnvironment();
+            var viewContext = MakeViewContext();
+            var urlHelper = new Mock<IUrlHelper>();
+            urlHelper
+                .Setup(urlhelper => urlhelper.Content(It.IsAny<string>()))
+                .Returns(new Func<string, string>(url => url.Replace("~/", "/virtualRoot/")));
+            var helper = new LinkTagHelper(
+                logger.Object,
+                hostingEnvironment,
+                MakeCache(),
+                new CommonTestEncoder(),
+                new CommonTestEncoder(),
+                urlHelper.Object)
+            {
+                ViewContext = viewContext,
+                AppendVersion = true,
+                Href = href,
+            };
+
+            // Act
+            helper.Process(context, output);
+
+            // Assert
+            Assert.Equal(
+                expectedHrefPrefix + "?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk",
+                (string)output.Attributes["href"].Value,
+                StringComparer.Ordinal);
+        }
+
         public static TheoryData MultiAttributeSameNameData
         {
             get
