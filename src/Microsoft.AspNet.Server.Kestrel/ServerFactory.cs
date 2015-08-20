@@ -8,7 +8,6 @@ using Microsoft.AspNet.Hosting.Server;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.Dnx.Runtime;
 using Microsoft.Framework.Configuration;
-using Constants = Microsoft.AspNet.Server.Kestrel.Infrastructure.Constants;
 
 namespace Microsoft.AspNet.Server.Kestrel
 {
@@ -43,8 +42,7 @@ namespace Microsoft.AspNet.Server.Kestrel
             {
                 disposables.Add(engine.CreateServer(
                     address.Scheme,
-                    // Unix sockets use a file path, not a hostname.
-                    address.Scheme == Constants.UnixScheme ? address.Path : address.Host,
+                    address.Host,
                     address.Port,
                     async frame =>
                     {

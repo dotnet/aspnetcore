@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 
 namespace Microsoft.AspNet.Server.Kestrel
 {
@@ -17,51 +18,74 @@ namespace Microsoft.AspNet.Server.Kestrel
         {
             url = url ?? string.Empty;
 
-            int delimiterStart1 = url.IndexOf("://", StringComparison.Ordinal);
-            if (delimiterStart1 < 0)
+            int schemeDelimiterStart = url.IndexOf("://", StringComparison.Ordinal);
+            if (schemeDelimiterStart < 0)
             {
                 return null;
             }
-            int delimiterEnd1 = delimiterStart1 + "://".Length;
+            int schemeDelimiterEnd = schemeDelimiterStart + "://".Length;
 
-            int delimiterStart3 = url.IndexOf("/", delimiterEnd1, StringComparison.Ordinal);
-            if (delimiterStart3 < 0)
+            var isUnixPipe = url.IndexOf(Constants.UnixPipeHostPrefix, schemeDelimiterEnd, StringComparison.Ordinal) == schemeDelimiterEnd;
+
+            int pathDelimiterStart;
+            int pathDelimiterEnd;
+            if (!isUnixPipe)
             {
-                delimiterStart3 = url.Length;
-            }
-            int delimiterStart2 = url.LastIndexOf(":", delimiterStart3 - 1, delimiterStart3 - delimiterEnd1, StringComparison.Ordinal);
-            int delimiterEnd2 = delimiterStart2 + ":".Length;
-            if (delimiterStart2 < 0)
-            {
-                delimiterStart2 = delimiterStart3;
-                delimiterEnd2 = delimiterStart3;
-            }
-            var serverAddress = new ServerAddress();
-            serverAddress.Scheme = url.Substring(0, delimiterStart1);
-            string portString = url.Substring(delimiterEnd2, delimiterStart3 - delimiterEnd2);
-            int portNumber;
-            if (int.TryParse(portString, NumberStyles.Integer, CultureInfo.InvariantCulture, out portNumber))
-            {
-                serverAddress.Host = url.Substring(delimiterEnd1, delimiterStart2 - delimiterEnd1);
-                serverAddress.Port = portNumber;
+                pathDelimiterStart = url.IndexOf("/", schemeDelimiterEnd, StringComparison.Ordinal);
+                pathDelimiterEnd = pathDelimiterStart;
             }
             else
             {
-                if (string.Equals(serverAddress.Scheme, "http", StringComparison.OrdinalIgnoreCase))
-                {
-                    serverAddress.Port = 80;
-                }
-                else if (string.Equals(serverAddress.Scheme, "https", StringComparison.OrdinalIgnoreCase))
-                {
-                    serverAddress.Port = 443;
-                }
-                else
-                {
-                    serverAddress.Port = 0;
-                }
-                serverAddress.Host = url.Substring(delimiterEnd1, delimiterStart3 - delimiterEnd1);
+                pathDelimiterStart = url.IndexOf(":", schemeDelimiterEnd + Constants.UnixPipeHostPrefix.Length, StringComparison.Ordinal);
+                pathDelimiterEnd = pathDelimiterStart + ":".Length;
             }
-            serverAddress.Path = url.Substring(delimiterStart3);
+
+            if (pathDelimiterStart < 0)
+            {
+                pathDelimiterStart = pathDelimiterEnd = url.Length;
+            }
+
+            var serverAddress = new ServerAddress();
+            serverAddress.Scheme = url.Substring(0, schemeDelimiterStart);
+
+            var hasSpecifiedPort = false;
+            if (!isUnixPipe)
+            {
+                int portDelimiterStart = url.LastIndexOf(":", pathDelimiterStart - 1, pathDelimiterStart - schemeDelimiterEnd, StringComparison.Ordinal);
+                if (portDelimiterStart >= 0)
+                {
+                    int portDelimiterEnd = portDelimiterStart + ":".Length;
+
+                    string portString = url.Substring(portDelimiterEnd, pathDelimiterStart - portDelimiterEnd);
+                    int portNumber;
+                    if (int.TryParse(portString, NumberStyles.Integer, CultureInfo.InvariantCulture, out portNumber))
+                    {
+                        hasSpecifiedPort = true;
+                        serverAddress.Host = url.Substring(schemeDelimiterEnd, portDelimiterStart - schemeDelimiterEnd);
+                        serverAddress.Port = portNumber;
+                    }
+                }
+
+                if (!hasSpecifiedPort)
+                {
+                    if (string.Equals(serverAddress.Scheme, "http", StringComparison.OrdinalIgnoreCase))
+                    {
+                        serverAddress.Port = 80;
+                    }
+                    else if (string.Equals(serverAddress.Scheme, "https", StringComparison.OrdinalIgnoreCase))
+                    {
+                        serverAddress.Port = 443;
+                    }
+                }
+            }
+
+            if (!hasSpecifiedPort)
+            {
+                serverAddress.Host = url.Substring(schemeDelimiterEnd, pathDelimiterStart - schemeDelimiterEnd);
+            }
+
+            serverAddress.Path = url.Substring(pathDelimiterEnd);
+
             return serverAddress;
         }
     }

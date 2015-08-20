@@ -8,8 +8,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
         public const int ListenBacklog = 128;
 
         /// <summary>
-        /// URL scheme for specifying Unix sockets in the configuration.
+        /// Prefix of host name used to specify Unix sockets in the configuration.
         /// </summary>
-        public const string UnixScheme = "unix";
+        public const string UnixPipeHostPrefix = "unix:/";
     }
 }

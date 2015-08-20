@@ -103,7 +103,12 @@ namespace Microsoft.AspNet.Server.Kestrel
         public IDisposable CreateServer(string scheme, string host, int port, Func<Frame, Task> application)
         {
             var listeners = new List<IDisposable>();
-            var usingPipes = scheme == Constants.UnixScheme;
+            var usingPipes = host.StartsWith(Constants.UnixPipeHostPrefix);
+            if (usingPipes)
+            {
+                // Subtract one because we want to include the '/' character that starts the path.
+                host = host.Substring(Constants.UnixPipeHostPrefix.Length - 1);
+            }
 
             try
             {
