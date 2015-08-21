@@ -38,7 +38,7 @@ namespace MusicStore
         {
             services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
 
-            var useInMemoryStore = _platform.IsRunningOnMono || _platform.IsRunningOnNanoServer;
+            var useInMemoryStore = !_platform.IsRunningOnWindows || _platform.IsRunningOnMono || _platform.IsRunningOnNanoServer;
 
             // Add EF services to the services container
             if (useInMemoryStore)
