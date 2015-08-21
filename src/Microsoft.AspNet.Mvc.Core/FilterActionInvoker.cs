@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.Framework.Internal;
@@ -241,11 +242,11 @@ namespace Microsoft.AspNet.Mvc.Core
 
             var context = new ResourceExecutingContext(ActionContext, _filters);
 
-            context.InputFormatters = new List<IInputFormatter>(_inputFormatters);
-            context.OutputFormatters = new List<IOutputFormatter>(_outputFormatters);
-            context.ModelBinders = new List<IModelBinder>(_modelBinders);
-            context.ValidatorProviders = new List<IModelValidatorProvider>(_modelValidatorProviders);
-            context.ValueProviderFactories = new List<IValueProviderFactory>(_valueProviderFactories);
+            context.InputFormatters = new CopyOnWriteList<IInputFormatter>(_inputFormatters);
+            context.OutputFormatters = new CopyOnWriteList<IOutputFormatter>(_outputFormatters);
+            context.ModelBinders = new CopyOnWriteList<IModelBinder>(_modelBinders);
+            context.ValidatorProviders = new CopyOnWriteList<IModelValidatorProvider>(_modelValidatorProviders);
+            context.ValueProviderFactories = new CopyOnWriteList<IValueProviderFactory>(_valueProviderFactories);
 
             _resourceExecutingContext = context;
             await InvokeResourceFilterAsync();
