@@ -12,14 +12,13 @@ using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.AspNet.Testing.xunit;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Routing;
-using Microsoft.Framework.Caching;
+using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Framework.Caching.Memory;
+using Microsoft.Framework.WebEncoders.Testing;
 using Moq;
 using Xunit;
-using Microsoft.Framework.WebEncoders.Testing;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers
 {
@@ -28,8 +27,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         [Theory]
         [InlineData(null, "test.jpg", "test.jpg")]
         [InlineData("abcd.jpg", "test.jpg", "test.jpg")]
-        [InlineData(null, "~/test.jpg", "/virtualRoot/test.jpg")]
-        [InlineData("abcd.jpg", "~/test.jpg", "/virtualRoot/test.jpg")]
+        [InlineData(null, "~/test.jpg", "virtualRoot/test.jpg")]
+        [InlineData("abcd.jpg", "~/test.jpg", "virtualRoot/test.jpg")]
         public void Process_SrcDefaultsToTagHelperOutputSrcAttributeAddedByOtherTagHelper(
             string src,
             string srcOutput,
@@ -52,9 +51,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
             var urlHelper = new Mock<IUrlHelper>();
+
+            // Ensure expanded path does not look like an absolute path on Linux, avoiding
+            // https://github.com/aspnet/External/issues/21
             urlHelper
                 .Setup(urlhelper => urlhelper.Content(It.IsAny<string>()))
-                .Returns(new Func<string, string>(url => url.Replace("~/", "/virtualRoot/")));
+                .Returns(new Func<string, string>(url => url.Replace("~/", "virtualRoot/")));
+
             var helper = new ImageTagHelper(
                 hostingEnvironment,
                 MakeCache(),

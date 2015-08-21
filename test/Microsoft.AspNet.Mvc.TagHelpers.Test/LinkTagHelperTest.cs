@@ -16,10 +16,9 @@ using Microsoft.AspNet.Mvc.TagHelpers.Internal;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing.xunit;
-using Microsoft.Framework.Caching;
+using Microsoft.Dnx.Runtime;
 using Microsoft.Framework.Caching.Memory;
 using Microsoft.Framework.Logging;
-using Microsoft.Dnx.Runtime;
 using Microsoft.Framework.WebEncoders.Testing;
 using Moq;
 using Xunit;
@@ -31,8 +30,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         [Theory]
         [InlineData(null, "test.css", "test.css")]
         [InlineData("abcd.css", "test.css", "test.css")]
-        [InlineData(null, "~/test.css", "/virtualRoot/test.css")]
-        [InlineData("abcd.css", "~/test.css", "/virtualRoot/test.css")]
+        [InlineData(null, "~/test.css", "virtualRoot/test.css")]
+        [InlineData("abcd.css", "~/test.css", "virtualRoot/test.css")]
         public void Process_HrefDefaultsToTagHelperOutputHrefAttributeAddedByOtherTagHelper(
             string href,
             string hrefOutput,
@@ -56,9 +55,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
             var urlHelper = new Mock<IUrlHelper>();
+
+            // Ensure expanded path does not look like an absolute path on Linux, avoiding
+            // https://github.com/aspnet/External/issues/21
             urlHelper
                 .Setup(urlhelper => urlhelper.Content(It.IsAny<string>()))
-                .Returns(new Func<string, string>(url => url.Replace("~/", "/virtualRoot/")));
+                .Returns(new Func<string, string>(url => url.Replace("~/", "virtualRoot/")));
+
             var helper = new LinkTagHelper(
                 logger.Object,
                 hostingEnvironment,
