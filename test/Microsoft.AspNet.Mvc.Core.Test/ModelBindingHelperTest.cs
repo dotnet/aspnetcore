@@ -17,15 +17,29 @@ namespace Microsoft.AspNet.Mvc.Test
 {
     public class ModelBindingHelperTest
     {
-        [Fact]
-        public async Task TryUpdateModel_ReturnsFalse_IfBinderReturnsNull()
+        public static TheoryData<ModelBindingResult> UnsuccessfulModelBindingData
+        {
+            get
+            {
+                return new TheoryData<ModelBindingResult>
+                {
+                    null,
+                    new ModelBindingResult("someKey"), // IsFatalError true as well as IsModelSet false.
+                    new ModelBindingResult(model: null, key: "someKey", isModelSet: false),
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(UnsuccessfulModelBindingData))]
+        public async Task TryUpdateModel_ReturnsFalse_IfBinderIsUnsuccessful(ModelBindingResult binderResult)
         {
             // Arrange
             var metadataProvider = new EmptyModelMetadataProvider();
-
             var binder = new Mock<IModelBinder>();
-            binder.Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                  .Returns(Task.FromResult<ModelBindingResult>(null));
+            binder
+                .Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
+                .Returns(Task.FromResult<ModelBindingResult>(binderResult));
             var model = new MyModel();
 
             // Act
@@ -126,18 +140,20 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.Equal("MyPropertyValue", model.MyProperty);
         }
 
-        [Fact]
-        public async Task TryUpdateModel_UsingIncludePredicateOverload_ReturnsFalse_IfBinderReturnsNull()
+        [Theory]
+        [MemberData(nameof(UnsuccessfulModelBindingData))]
+        public async Task TryUpdateModel_UsingIncludePredicateOverload_ReturnsFalse_IfBinderIsUnsuccessful(
+            ModelBindingResult binderResult)
         {
             // Arrange
             var metadataProvider = new EmptyModelMetadataProvider();
-
             var binder = new Mock<IModelBinder>();
-            binder.Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                  .Returns(Task.FromResult<ModelBindingResult>(null));
+            binder
+                .Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
+                .Returns(Task.FromResult<ModelBindingResult>(binderResult));
             var model = new MyModel();
-            Func<ModelBindingContext, string, bool> includePredicate =
-               (context, propertyName) => true;
+            Func<ModelBindingContext, string, bool> includePredicate = (context, propertyName) => true;
+
             // Act
             var result = await ModelBindingHelper.TryUpdateModelAsync(
                 model,
@@ -214,15 +230,17 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.Equal("Old-ExcludedPropertyValue", model.ExcludedProperty);
         }
 
-        [Fact]
-        public async Task TryUpdateModel_UsingIncludeExpressionOverload_ReturnsFalse_IfBinderReturnsNull()
+        [Theory]
+        [MemberData(nameof(UnsuccessfulModelBindingData))]
+        public async Task TryUpdateModel_UsingIncludeExpressionOverload_ReturnsFalse_IfBinderIsUnsuccessful(
+            ModelBindingResult binderResult)
         {
             // Arrange
             var metadataProvider = new EmptyModelMetadataProvider();
-
             var binder = new Mock<IModelBinder>();
-            binder.Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                  .Returns(Task.FromResult<ModelBindingResult>(null));
+            binder
+                .Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
+                .Returns(Task.FromResult<ModelBindingResult>(binderResult));
             var model = new MyModel();
 
             // Act
@@ -468,17 +486,20 @@ namespace Microsoft.AspNet.Mvc.Test
                          ex.Message);
         }
 
-        [Fact]
-        public async Task TryUpdateModelNonGeneric_PredicateOverload_ReturnsFalse_IfBinderReturnsNull()
+        [Theory]
+        [MemberData(nameof(UnsuccessfulModelBindingData))]
+        public async Task TryUpdateModelNonGeneric_PredicateOverload_ReturnsFalse_IfBinderIsUnsuccessful(
+            ModelBindingResult binderResult)
         {
             // Arrange
             var metadataProvider = new EmptyModelMetadataProvider();
             var binder = new Mock<IModelBinder>();
-            binder.Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                  .Returns(Task.FromResult<ModelBindingResult>(null));
+            binder
+                .Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
+                .Returns(Task.FromResult<ModelBindingResult>(binderResult));
             var model = new MyModel();
-            Func<ModelBindingContext, string, bool> includePredicate =
-               (context, propertyName) => true;
+            Func<ModelBindingContext, string, bool> includePredicate = (context, propertyName) => true;
+
             // Act
             var result = await ModelBindingHelper.TryUpdateModelAsync(
                                                     model,
@@ -560,15 +581,17 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.Equal("Old-ExcludedPropertyValue", model.ExcludedProperty);
         }
 
-        [Fact]
-        public async Task TryUpdateModelNonGeneric_ModelTypeOverload_ReturnsFalse_IfBinderReturnsNull()
+        [Theory]
+        [MemberData(nameof(UnsuccessfulModelBindingData))]
+        public async Task TryUpdateModelNonGeneric_ModelTypeOverload_ReturnsFalse_IfBinderIsUnsuccessful(
+            ModelBindingResult binderResult)
         {
             // Arrange
             var metadataProvider = new EmptyModelMetadataProvider();
-
             var binder = new Mock<IModelBinder>();
-            binder.Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                  .Returns(Task.FromResult<ModelBindingResult>(null));
+            binder
+                .Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
+                .Returns(Task.FromResult<ModelBindingResult>(binderResult));
             var model = new MyModel();
 
             // Act

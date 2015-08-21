@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -306,16 +307,18 @@ namespace Microsoft.AspNet.Mvc
             };
 
             var modelBindingResult = await modelBinder.BindModelAsync(modelBindingContext);
-            if (modelBindingResult != null)
+            if (modelBindingResult != null && modelBindingResult.IsModelSet)
             {
                 var modelExplorer = new ModelExplorer(metadataProvider, modelMetadata, modelBindingResult.Model);
                 var modelValidationContext = new ModelValidationContext(modelBindingContext, modelExplorer);
-                objectModelValidator.Validate(
-                    modelValidationContext,
-                    new ModelValidationNode(prefix, modelBindingContext.ModelMetadata, modelBindingResult.Model)
-                    {
-                        ValidateAllProperties = true
-                    });
+
+                var validationNode = modelBindingResult.ValidationNode;
+                Debug.Assert(
+                    validationNode != null,
+                    "ValidationNode should never be null in a successful ModelBindingResult.");
+
+                objectModelValidator.Validate(modelValidationContext, validationNode);
+
                 return modelState.IsValid;
             }
 
