@@ -29,9 +29,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var model = bindingContext.Model;
             if (!bindingContext.ValueProvider.ContainsPrefix(bindingContext.ModelName))
             {
-                // If this is the fallback case and we failed to find data for a top-level model, then generate a
+                // If we failed to find data for a top-level model, then generate a
                 // default 'empty' model (or use existing Model) and return it.
-                if (!bindingContext.IsFirstChanceBinding && bindingContext.IsTopLevelObject)
+                if (bindingContext.IsTopLevelObject)
                 {
                     if (model == null)
                     {

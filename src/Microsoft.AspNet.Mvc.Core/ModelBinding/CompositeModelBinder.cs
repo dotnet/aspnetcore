@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
@@ -35,29 +34,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         public virtual async Task<ModelBindingResult> BindModelAsync([NotNull] ModelBindingContext bindingContext)
         {
-            // Will there be a last chance (fallback) binding attempt?
-            var isFirstChanceBinding = bindingContext.FallbackToEmptyPrefix &&
-                !string.IsNullOrEmpty(bindingContext.ModelName);
-
-            var newBindingContext = CreateNewBindingContext(bindingContext, bindingContext.ModelName);
+            var newBindingContext = CreateNewBindingContext(bindingContext);
             if (newBindingContext == null)
             {
                 // Unable to find a value provider for this binding source. Binding will fail.
                 return null;
             }
 
-            newBindingContext.IsFirstChanceBinding = isFirstChanceBinding;
-            var modelBindingResult = await TryBind(newBindingContext);
-
-            if (modelBindingResult == null && isFirstChanceBinding)
-            {
-                // Fall back to empty prefix.
-                newBindingContext = CreateNewBindingContext(bindingContext, modelName: string.Empty);
-                Debug.Assert(newBindingContext != null, "Should have failed on first attempt.");
-
-                modelBindingResult = await TryBind(newBindingContext);
-            }
-
+            var modelBindingResult = await RunModelBinders(newBindingContext);
             if (modelBindingResult == null)
             {
                 // Unable to bind or something went wrong.
@@ -99,7 +83,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 modelBindingResult.ValidationNode);
         }
 
-        private async Task<ModelBindingResult> TryBind(ModelBindingContext bindingContext)
+        private async Task<ModelBindingResult> RunModelBinders(ModelBindingContext bindingContext)
         {
             RuntimeHelpers.EnsureSufficientExecutionStack();
 
@@ -108,18 +92,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 var result = await binder.BindModelAsync(bindingContext);
                 if (result != null)
                 {
-                    // Use returned ModelBindingResult if it indicates the model was set, indicates the binder
-                    // encountered a fatal error, or is related to a ModelState entry.
-                    //
-                    // The second condition is necessary because the BodyModelBinder unconditionally binds during the
-                    // first attempt and does not always create ModelState values using ModelName.
-                    //
-                    // The third condition is necessary because the ModelState entry would never be validated if
+                    // This condition is necessary because the ModelState entry would never be validated if
                     // caller fell back to the empty prefix, leading to an possibly-incorrect !IsValid. In most
                     // (hopefully all) cases, the ModelState entry exists because some binders add errors before
                     // returning a result with !IsModelSet. Those binders often cannot run twice anyhow.
-                    if (result.IsFatalError ||
-                        result.IsModelSet ||
+                    if (result.IsModelSet ||
                         bindingContext.ModelState.ContainsKey(bindingContext.ModelName))
                     {
                         return result;
@@ -136,26 +113,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return null;
         }
 
-        private static ModelBindingContext CreateNewBindingContext(
-            ModelBindingContext oldBindingContext,
-            string modelName)
+        private static ModelBindingContext CreateNewBindingContext(ModelBindingContext oldBindingContext)
         {
-            var newBindingContext = new ModelBindingContext
-            {
-                Model = oldBindingContext.Model,
-                ModelMetadata = oldBindingContext.ModelMetadata,
-                ModelName = modelName,
-                FieldName = oldBindingContext.FieldName,
-                ModelState = oldBindingContext.ModelState,
-                ValueProvider = oldBindingContext.ValueProvider,
-                OperationBindingContext = oldBindingContext.OperationBindingContext,
-                PropertyFilter = oldBindingContext.PropertyFilter,
-                BinderModelName = oldBindingContext.BinderModelName,
-                BindingSource = oldBindingContext.BindingSource,
-                BinderType = oldBindingContext.BinderType,
-                IsTopLevelObject = oldBindingContext.IsTopLevelObject,
-            };
-
             // If the property has a specified data binding sources, we need to filter the set of value providers
             // to just those that match. We can skip filtering when IsGreedy == true, because that can't use
             // value providers.
@@ -174,20 +133,50 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // public IActionResult UpdatePerson([FromForm] Person person) { }
             //
             // In this example, [FromQuery] overrides the ambient data source (form).
+            IValueProvider valueProvider = oldBindingContext.ValueProvider;
             var bindingSource = oldBindingContext.BindingSource;
             if (bindingSource != null && !bindingSource.IsGreedy)
             {
-                var valueProvider =
-                    oldBindingContext.OperationBindingContext.ValueProvider as IBindingSourceValueProvider;
-                if (valueProvider != null)
+                var bindingSourceValueProvider = valueProvider as IBindingSourceValueProvider;
+                if (bindingSourceValueProvider != null)
                 {
-                    newBindingContext.ValueProvider = valueProvider.Filter(bindingSource);
-                    if (newBindingContext.ValueProvider == null)
+                    valueProvider = bindingSourceValueProvider.Filter(bindingSource);
+                    if (valueProvider == null)
                     {
                         // Unable to find a value provider for this binding source.
                         return null;
                     }
                 }
+            }
+
+            var newBindingContext = new ModelBindingContext
+            {
+                Model = oldBindingContext.Model,
+                ModelMetadata = oldBindingContext.ModelMetadata,
+                FieldName = oldBindingContext.FieldName,
+                ModelState = oldBindingContext.ModelState,
+                ValueProvider = valueProvider,
+                OperationBindingContext = oldBindingContext.OperationBindingContext,
+                PropertyFilter = oldBindingContext.PropertyFilter,
+                BinderModelName = oldBindingContext.BinderModelName,
+                BindingSource = oldBindingContext.BindingSource,
+                BinderType = oldBindingContext.BinderType,
+                IsTopLevelObject = oldBindingContext.IsTopLevelObject,
+            };
+
+            if (bindingSource != null && bindingSource.IsGreedy)
+            {
+                newBindingContext.ModelName = oldBindingContext.ModelName;
+            }
+            else if (
+                !oldBindingContext.FallbackToEmptyPrefix ||
+                newBindingContext.ValueProvider.ContainsPrefix(oldBindingContext.ModelName))
+            {
+                newBindingContext.ModelName = oldBindingContext.ModelName;
+            }
+            else
+            {
+                newBindingContext.ModelName = string.Empty;
             }
 
             return newBindingContext;

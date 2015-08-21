@@ -15,7 +15,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public ModelBindingResult(string key)
         {
             Key = key;
-            IsFatalError = true;
         }
 
         /// <summary>
@@ -61,12 +60,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// </para>
         /// </summary>
         public string Key { get; }
-
-        /// <summary>
-        /// Gets a value indicating the caller should not attempt binding again. This attempt encountered a fatal
-        /// error.
-        /// </summary>
-        public bool IsFatalError { get; }
 
         /// <summary>
         /// <para>

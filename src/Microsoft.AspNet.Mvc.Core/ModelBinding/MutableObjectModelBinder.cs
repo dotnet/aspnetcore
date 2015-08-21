@@ -96,8 +96,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
 
             // Create the object if:
-            // 1. It is a top level model and no later fallback (to empty prefix) will occur.
-            if (isTopLevelObject && !bindingContext.IsFirstChanceBinding)
+            // 1. It is a top level model.
+            if (isTopLevelObject)
             {
                 return true;
             }

@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Mvc.Test
                 return new TheoryData<ModelBindingResult>
                 {
                     null,
-                    new ModelBindingResult("someKey"), // IsFatalError true as well as IsModelSet false.
+                    new ModelBindingResult("someKey"), // IsModelSet false.
                     new ModelBindingResult(model: null, key: "someKey", isModelSet: false),
                 };
             }

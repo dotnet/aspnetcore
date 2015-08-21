@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Moq;
 using Xunit;
 
@@ -65,6 +64,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var bindingContext = new ModelBindingContext
             {
                 FallbackToEmptyPrefix = true,
+                IsTopLevelObject = true,
                 ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(List<int>)),
                 ModelName = "someName",
                 ModelState = new ModelStateDictionary(),
@@ -134,49 +134,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
             // Assert
             Assert.Null(result);
-        }
-
-        [Fact]
-        public async Task ModelBinder_FallsBackToEmpty_IfBinderMatchesButDoesNotSetModel()
-        {
-            // Arrange
-            var bindingContext = new ModelBindingContext
-            {
-                FallbackToEmptyPrefix = true,
-                ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(List<int>)),
-                ModelName = "someName",
-                ModelState = new ModelStateDictionary(),
-                OperationBindingContext = new OperationBindingContext(),
-                ValueProvider = new SimpleValueProvider
-                {
-                    { "someOtherName", "dummyValue" }
-                },
-            };
-
-            var count = 0;
-            var modelBinder = new Mock<IModelBinder>();
-            modelBinder
-                .Setup(mb => mb.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                .Callback<ModelBindingContext>(context =>
-                {
-                    // Expect two calls; the second with empty ModelName.
-                    Assert.InRange(count, 0, 1);
-                    count++;
-                    if (count == 1)
-                    {
-                        Assert.Equal("someName", context.ModelName);
-                    }
-                    else
-                    {
-                        Assert.Empty(context.ModelName);
-                    }
-                })
-                .Returns(Task.FromResult(new ModelBindingResult(model: null, key: "someName", isModelSet: false)));
-
-            var composite = CreateCompositeBinder(modelBinder.Object);
-
-            // Act & Assert
-            var result = await composite.BindModelAsync(bindingContext);
         }
 
         [Fact]
@@ -322,6 +279,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(int)),
                 ModelState = new ModelStateDictionary(),
                 OperationBindingContext = new OperationBindingContext(),
+                ValueProvider = new SimpleValueProvider(),
             };
 
             // Act
@@ -493,6 +451,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var bindingContext = new ModelBindingContext
             {
                 FallbackToEmptyPrefix = true,
+                IsTopLevelObject = true,
                 ModelMetadata = metadataProvider.GetMetadataForType(type),
                 ModelName = "parameter",
                 ModelState = new ModelStateDictionary(),

@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
+using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
 
@@ -114,6 +115,37 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Assert
             Assert.NotNull(result);
             Assert.Null(result.Model);
+        }
+
+        [Theory]
+        [InlineData(true, "FieldName")]
+        [InlineData(false, "ModelName")]
+        public async Task FormFileModelBinder_UsesFieldNameForTopLevelObject(bool isTopLevel, string expected)
+        {
+            // Arrange
+            var formFiles = new FormFileCollection();
+            formFiles.Add(GetMockFormFile("FieldName", "file1.txt"));
+            formFiles.Add(GetMockFormFile("ModelName", "file1.txt"));
+            var httpContext = GetMockHttpContext(GetMockFormCollection(formFiles));
+
+            var bindingContext = GetBindingContext(typeof(IFormFile), httpContext);
+            bindingContext.IsTopLevelObject = isTopLevel;
+            bindingContext.FieldName = "FieldName";
+            bindingContext.ModelName = "ModelName";
+
+            var binder = new FormFileModelBinder();
+
+            // Act
+            var result = await binder.BindModelAsync(bindingContext);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.True(result.IsModelSet);
+            var file = Assert.IsAssignableFrom<IFormFile>(result.Model);
+            
+            ContentDispositionHeaderValue contentDisposition;
+            ContentDispositionHeaderValue.TryParse(file.ContentDisposition, out contentDisposition);
+            Assert.Equal(expected, contentDisposition.Name);
         }
 
         [Fact]

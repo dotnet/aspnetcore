@@ -20,27 +20,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     public class MutableObjectModelBinderTest
     {
         [Theory]
-        [InlineData(true, true, "", "", false)]
-        [InlineData(true, false, "", "", true)]
-        [InlineData(false, true, "", "", false)] // !isTopLevelObject && isFirstChanceBinding cases are unexpected
-        [InlineData(false, false, "", "", false)]
-        [InlineData(true, true, "prefix", "", false)]
-        [InlineData(true, false, "prefix", "", true)]
-        [InlineData(false, true, "prefix", "", false)]
-        [InlineData(false, false, "prefix", "", false)]
-        [InlineData(true, true, "", "dummyModelName", false)]
-        [InlineData(true, false, "", "dummyModelName", true)]
-        [InlineData(false, true, "", "dummyModelName", false)]
-        [InlineData(false, false, "", "dummyModelName", false)]
-        [InlineData(true, true, "prefix", "dummyModelName", false)]
-        [InlineData(true, false, "prefix", "dummyModelName", true)]
-        [InlineData(false, true, "prefix", "dummyModelName", false)]
-        [InlineData(false, false, "prefix", "dummyModelName", false)]
-        public void CanCreateModel_ReturnsTrue_IfIsTopLevelObjectAndNotIsFirstChanceBinding(
+        [InlineData(true, true)]
+        [InlineData(false, false)]
+        public void CanCreateModel_ReturnsTrue_IfIsTopLevelObject(
             bool isTopLevelObject,
-            bool isFirstChanceBinding,
-            string binderModelName,
-            string modelName,
             bool expectedCanCreate)
         {
             var mockValueProvider = new Mock<IValueProvider>();
@@ -54,7 +37,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 ModelBindingContext = new ModelBindingContext
                 {
                     IsTopLevelObject = isTopLevelObject,
-                    IsFirstChanceBinding = isFirstChanceBinding,
 
                     // Random type.
                     ModelMetadata = metadataProvider.GetMetadataForType(typeof(Person)),
@@ -65,10 +47,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                         MetadataProvider = metadataProvider,
                         ValidatorProvider = Mock.Of<IModelValidatorProvider>(),
                     },
-
-                    // CanCreateModel() ignores the BinderModelName and ModelName properties.
-                    BinderModelName = binderModelName,
-                    ModelName = modelName,
                 },
             };
 
@@ -467,7 +445,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         [Fact]
-        public async Task BindModel_InitsInstance_IfIsTopLevelObjectAndNotIsFirstChanceBinding()
+        public async Task BindModel_InitsInstance_IfIsTopLevelObject()
         {
             // Arrange
             var mockValueProvider = new Mock<IValueProvider>();

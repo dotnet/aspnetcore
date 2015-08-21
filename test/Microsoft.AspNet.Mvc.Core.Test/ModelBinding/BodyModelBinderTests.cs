@@ -76,7 +76,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Returns non-null because it understands the metadata type.
             Assert.NotNull(binderResult);
-            Assert.True(binderResult.IsFatalError);
             Assert.False(binderResult.IsModelSet);
             Assert.Null(binderResult.ValidationNode);
             Assert.Null(binderResult.Model);
@@ -103,7 +102,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Assert
             Assert.NotNull(binderResult);
-            Assert.True(binderResult.IsFatalError);
             Assert.False(binderResult.IsModelSet);
             Assert.Null(binderResult.ValidationNode);
         }
@@ -172,7 +170,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Returns non-null because it understands the metadata type.
             Assert.NotNull(binderResult);
-            Assert.True(binderResult.IsFatalError);
             Assert.False(binderResult.IsModelSet);
             Assert.Null(binderResult.ValidationNode);
             Assert.Null(binderResult.Model);
@@ -209,7 +206,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Returns non-null result because it understands the metadata type.
             Assert.NotNull(binderResult);
-            Assert.True(binderResult.IsFatalError);
             Assert.False(binderResult.IsModelSet);
             Assert.Null(binderResult.Model);
             Assert.Null(binderResult.ValidationNode);

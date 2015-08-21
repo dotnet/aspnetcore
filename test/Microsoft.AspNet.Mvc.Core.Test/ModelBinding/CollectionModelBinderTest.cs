@@ -227,33 +227,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         }
 
         [Fact]
-        public async Task CollectionModelBinder_DoesNotCreateCollection_IfIsTopLevelObjectAndIsFirstChanceBinding()
-        {
-            // Arrange
-            var binder = new CollectionModelBinder<string>();
-
-            var context = CreateContext();
-            context.IsTopLevelObject = true;
-            context.IsFirstChanceBinding = true;
-
-            // Explicit prefix and empty model name both ignored.
-            context.BinderModelName = "prefix";
-            context.ModelName = string.Empty;
-
-            var metadataProvider = context.OperationBindingContext.MetadataProvider;
-            context.ModelMetadata = metadataProvider.GetMetadataForType(typeof(List<string>));
-
-            context.ValueProvider = new TestValueProvider(new Dictionary<string, object>());
-
-            // Act
-            var result = await binder.BindModelAsync(context);
-
-            // Assert
-            Assert.Null(result);
-        }
-
-        [Fact]
-        public async Task CollectionModelBinder_CreatesEmptyCollection_IfIsTopLevelObjectAndNotIsFirstChanceBinding()
+        public async Task CollectionModelBinder_CreatesEmptyCollection_IfIsTopLevelObject()
         {
             // Arrange
             var binder = new CollectionModelBinder<string>();
@@ -284,7 +258,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.Same(result.ValidationNode.ModelMetadata, context.ModelMetadata);
         }
 
-        // Setup like CollectionModelBinder_CreatesEmptyCollection_IfIsTopLevelObjectAndNotIsFirstChanceBinding  except
+        // Setup like CollectionModelBinder_CreatesEmptyCollection_IfIsTopLevelObject  except
         // Model already has a value.
         [Fact]
         public async Task CollectionModelBinder_DoesNotCreateEmptyCollection_IfModelNonNull()

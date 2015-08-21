@@ -62,9 +62,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
             else
             {
-                // If this is the fallback case and we failed to find data for a top-level model, then generate a
+                // If we failed to find data for a top-level model, then generate a
                 // default 'empty' model and return it.
-                if (!bindingContext.IsFirstChanceBinding && bindingContext.IsTopLevelObject)
+                if (bindingContext.IsTopLevelObject)
                 {
                     var model = new KeyValuePair<TKey, TValue>();
 

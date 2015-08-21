@@ -226,7 +226,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             // ModelBindingResult
             Assert.NotNull(modelBindingResult);
-            Assert.Equal("Parameter1", modelBindingResult.Key);
+            Assert.Equal(string.Empty, modelBindingResult.Key);
 
             // Model
             var boundPerson = Assert.IsType<Person>(modelBindingResult.Model);
@@ -237,7 +237,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.True(modelState.IsValid);
 
             Assert.Equal(1, modelState.Keys.Count);
-            var key = Assert.Single(modelState.Keys, k => k == "Parameter1.Address.Street");
+            var key = Assert.Single(modelState.Keys, k => k == "Address.Street");
             Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState);
             Assert.NotNull(modelState[key].RawValue); // Value is set by test model binder, no need to validate it.
         }

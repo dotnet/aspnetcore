@@ -46,7 +46,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.Same(newModelMetadata.BindingSource, newBindingContext.BindingSource);
             Assert.False(newBindingContext.FallbackToEmptyPrefix);
             Assert.Equal("fieldName", newBindingContext.FieldName);
-            Assert.False(newBindingContext.IsFirstChanceBinding);
             Assert.False(newBindingContext.IsTopLevelObject);
             Assert.Null(newBindingContext.Model);
             Assert.Same(newModelMetadata, newBindingContext.ModelMetadata);
