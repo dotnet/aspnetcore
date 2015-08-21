@@ -24,7 +24,7 @@ fi
 
 if test ! -d packages/KoreBuild; then
     mono .nuget/nuget.exe install KoreBuild -ExcludeVersion -o packages -nocache -pre
-    mono .nuget/nuget.exe install Sake -version 0.2 -o packages -ExcludeVersion
+    mono .nuget/nuget.exe install Sake -ExcludeVersion -Source https://www.nuget.org/api/v2/ -Out packages
 fi
 
 if ! type dnvm > /dev/null 2>&1; then
