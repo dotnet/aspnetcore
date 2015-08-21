@@ -20,7 +20,7 @@ namespace ModelBindingWebSite
                 {
                     m.MaxModelValidationErrors = 8;
                     m.ModelBinders.Insert(0, new TestBindingSourceModelBinder());
-                    
+
                     m.ValidationExcludeFilters.Add(typeof(Address));
 
                     // ModelMetadataController relies on additional values AdditionalValuesMetadataProvider provides.

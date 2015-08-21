@@ -14,11 +14,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     public class OperationBindingContext
     {
         /// <summary>
-        /// Represents if there has been a body bound model found during the current model binding process.
-        /// </summary>
-        public BodyBindingState BodyBindingState { get; set; } = BodyBindingState.NotBodyBased;
-
-        /// <summary>
         /// Gets or sets the <see cref="HttpContext"/> for the current request.
         /// </summary>
         public HttpContext HttpContext { get; set; }

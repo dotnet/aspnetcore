@@ -21,10 +21,5 @@ namespace ModelBindingWebSite.Controllers
         {
             return customer;
         }
-
-        // Will throw as a controller property and a parameter name are being read from body.
-        public void AddUser([FromBody] User user)
-        {
-        }
     }
 }

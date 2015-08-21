@@ -50,22 +50,5 @@ namespace ModelBindingWebSite.Controllers
             user.HomeAddress = defaultAddress;
             return user;
         }
-
-        public void FromBodyParametersThrows([FromBody] int id, [FromBody] string emp)
-        {
-        }
-
-        // Customer has a FromBody Property.
-        public void FromBodyParameterAndPropertyThrows([FromBody] Person p, Customer customer)
-        {
-        }
-
-        public void FormAndBody_Throws([FromForm] Person p, Customer customer)
-        {
-        }
-
-        public void FormAndBody_AsParameters_Throws([FromBody] int id, [FromForm] string emp)
-        {
-        }
     }
 }

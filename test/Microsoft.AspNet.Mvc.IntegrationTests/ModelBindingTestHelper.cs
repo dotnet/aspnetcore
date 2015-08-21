@@ -39,7 +39,6 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             return new OperationBindingContext()
             {
-                BodyBindingState = BodyBindingState.NotBodyBased,
                 HttpContext = httpContext,
                 InputFormatters = actionBindingContext.InputFormatters,
                 MetadataProvider = TestModelMetadataProvider.CreateDefaultProvider(),

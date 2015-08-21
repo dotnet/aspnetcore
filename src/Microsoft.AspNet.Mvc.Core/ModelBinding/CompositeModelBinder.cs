@@ -64,9 +64,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 return null;
             }
 
-            bindingContext.OperationBindingContext.BodyBindingState =
-                newBindingContext.OperationBindingContext.BodyBindingState;
-
             var bindingKey = bindingContext.ModelName;
             if (modelBindingResult.IsModelSet)
             {
@@ -159,8 +156,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 IsTopLevelObject = oldBindingContext.IsTopLevelObject,
             };
 
-            newBindingContext.OperationBindingContext.BodyBindingState = GetBodyBindingState(oldBindingContext);
-
             // If the property has a specified data binding sources, we need to filter the set of value providers
             // to just those that match. We can skip filtering when IsGreedy == true, because that can't use
             // value providers.
@@ -196,39 +191,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
 
             return newBindingContext;
-        }
-
-        private static BodyBindingState GetBodyBindingState(ModelBindingContext oldBindingContext)
-        {
-            var bindingSource = oldBindingContext.BindingSource;
-
-            var willReadBodyWithFormatter = bindingSource == BindingSource.Body;
-            var willReadBodyAsFormData = bindingSource == BindingSource.Form;
-
-            var currentModelNeedsToReadBody = willReadBodyWithFormatter || willReadBodyAsFormData;
-            var oldState = oldBindingContext.OperationBindingContext.BodyBindingState;
-
-            // We need to throw if there are multiple models which can cause body to be read multiple times.
-            // Reading form data multiple times is ok since we cache form data. For the models marked to read using
-            // formatters, multiple reads are not allowed.
-            if (oldState == BodyBindingState.FormatterBased && currentModelNeedsToReadBody ||
-                oldState == BodyBindingState.FormBased && willReadBodyWithFormatter)
-            {
-                throw new InvalidOperationException(Resources.MultipleBodyParametersOrPropertiesAreNotAllowed);
-            }
-
-            var state = oldBindingContext.OperationBindingContext.BodyBindingState;
-            if (willReadBodyWithFormatter)
-            {
-                state = BodyBindingState.FormatterBased;
-            }
-            else if (willReadBodyAsFormData && oldState != BodyBindingState.FormatterBased)
-            {
-                // Only update the model binding state if we have not discovered formatter based state already.
-                state = BodyBindingState.FormBased;
-            }
-
-            return state;
         }
     }
 }
