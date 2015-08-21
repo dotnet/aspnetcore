@@ -31,5 +31,6 @@
         <p age="@("My age is this long.".Length)">
             <input checked="   @(  DateTimeOffset.Now.Year  ) > 2014   " />
         </p>
+        @someMethod(@<p age="123" class="hello"><input checked=@checked /></p>)
     </div>
 }

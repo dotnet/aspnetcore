@@ -36,7 +36,7 @@ namespace TestOutput
 #line default
 #line hidden
 
-            item => new Template((__razor_template_writer) => {
+            item => new Template(async(__razor_template_writer) => {
                 Instrumentation.BeginContext(325, 11, true);
                 WriteLiteralTo(__razor_template_writer, "This works ");
                 Instrumentation.EndContext();
@@ -77,7 +77,7 @@ Write(foo(""));
             Instrumentation.EndContext();
             Instrumentation.BeginContext(379, 11, false);
 #line 17 "Templates.cshtml"
-Write(Repeat(10, item => new Template((__razor_template_writer) => {
+Write(Repeat(10, item => new Template(async(__razor_template_writer) => {
     Instrumentation.BeginContext(391, 10, true);
     WriteLiteralTo(__razor_template_writer, "<li>Item #");
     Instrumentation.EndContext();
@@ -104,7 +104,7 @@ WriteTo(__razor_template_writer, item);
             Instrumentation.BeginContext(430, 16, false);
 #line 21 "Templates.cshtml"
 Write(Repeat(10,
-    item => new Template((__razor_template_writer) => {
+    item => new Template(async(__razor_template_writer) => {
     Instrumentation.BeginContext(448, 14, true);
     WriteLiteralTo(__razor_template_writer, " This is line#");
     Instrumentation.EndContext();
@@ -130,7 +130,7 @@ WriteTo(__razor_template_writer, item);
             Instrumentation.EndContext();
             Instrumentation.BeginContext(506, 11, false);
 #line 27 "Templates.cshtml"
-Write(Repeat(10, item => new Template((__razor_template_writer) => {
+Write(Repeat(10, item => new Template(async(__razor_template_writer) => {
     Instrumentation.BeginContext(518, 20, true);
     WriteLiteralTo(__razor_template_writer, "<li>\r\n        Item #");
     Instrumentation.EndContext();

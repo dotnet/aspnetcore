@@ -297,13 +297,59 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                 tabTest: TabTest.NoTabs,
                 expectedDesignTimePragmas: new List<LineMapping>()
             {
-                BuildLineMapping(20, 1, 13, 526, 22, 12, 36),
-                BuildLineMapping(74, 2, 22, 648, 29, 22, 1),
-                BuildLineMapping(79, 2, 27, 739, 34, 27, 15),
-                BuildLineMapping(113, 7, 2, 824, 41, 6, 12),
-                BuildLineMapping(129, 8, 1, 905, 46, 6, 4),
-                BuildLineMapping(142, 8, 1005, 48, 14, 3),
-                BuildLineMapping(204, 13, 5, 1192, 60, 6, 3)
+                BuildLineMapping(
+                    documentAbsoluteIndex: 20,
+                    documentLineIndex: 1,
+                    documentCharacterOffsetIndex: 13,
+                    generatedAbsoluteIndex: 526,
+                    generatedLineIndex: 22,
+                    generatedCharacterOffsetIndex: 12,
+                    contentLength: 36),
+                BuildLineMapping(
+                    documentAbsoluteIndex: 74,
+                    documentLineIndex: 2,
+                    generatedAbsoluteIndex: 648,
+                    generatedLineIndex: 29,
+                    characterOffsetIndex: 22,
+                    contentLength: 1),
+                BuildLineMapping(
+                    documentAbsoluteIndex: 79,
+                    documentLineIndex: 2,
+                    generatedAbsoluteIndex: 739,
+                    generatedLineIndex: 34,
+                    characterOffsetIndex: 27,
+                    contentLength: 15),
+                BuildLineMapping(
+                    documentAbsoluteIndex: 113,
+                    documentLineIndex: 7,
+                    documentCharacterOffsetIndex: 2,
+                    generatedAbsoluteIndex: 824,
+                    generatedLineIndex: 41,
+                    generatedCharacterOffsetIndex: 6,
+                    contentLength: 12),
+                BuildLineMapping(
+                    documentAbsoluteIndex: 129,
+                    documentLineIndex: 8,
+                    documentCharacterOffsetIndex: 1,
+                    generatedAbsoluteIndex: 905,
+                    generatedLineIndex: 46,
+                    generatedCharacterOffsetIndex: 6,
+                    contentLength: 4),
+                BuildLineMapping(
+                    documentAbsoluteIndex: 142,
+                    documentLineIndex: 8,
+                    generatedAbsoluteIndex: 1010,
+                    generatedLineIndex: 48,
+                    characterOffsetIndex: 14,
+                    contentLength: 3),
+                BuildLineMapping(
+                    documentAbsoluteIndex: 204,
+                    documentLineIndex: 13,
+                    documentCharacterOffsetIndex: 5,
+                    generatedAbsoluteIndex: 1197,
+                    generatedLineIndex: 60,
+                    generatedCharacterOffsetIndex: 6,
+                    contentLength: 3),
             });
         }
 

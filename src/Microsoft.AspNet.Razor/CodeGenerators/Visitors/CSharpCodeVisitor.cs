@@ -84,7 +84,7 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
             var currentTargetWriterName = Context.TargetWriterName;
             Context.TargetWriterName = TemplateWriterName;
 
-            using (Writer.BuildLambda(endLine: false, parameterNames: TemplateWriterName))
+            using (Writer.BuildAsyncLambda(endLine: false, parameterNames: TemplateWriterName))
             {
                 Accept(chunk.Children);
             }

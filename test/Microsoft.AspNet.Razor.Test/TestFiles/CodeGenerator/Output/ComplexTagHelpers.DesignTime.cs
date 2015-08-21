@@ -201,7 +201,28 @@ __PTagHelper.Age = ("My age is this long.".Length);
 
 #line default
 #line hidden
-#line 35 "ComplexTagHelpers.cshtml"
+#line 34 "ComplexTagHelpers.cshtml"
+   __o = someMethod(item => new Template(async(__razor_template_writer) => {
+    __InputTagHelper = CreateTagHelper<InputTagHelper>();
+    __InputTagHelper2 = CreateTagHelper<InputTagHelper2>();
+#line 34 "ComplexTagHelpers.cshtml"
+                                   __InputTagHelper2.Checked = checked;
+
+#line default
+#line hidden
+    __PTagHelper = CreateTagHelper<PTagHelper>();
+#line 34 "ComplexTagHelpers.cshtml"
+          __PTagHelper.Age = 123;
+
+#line default
+#line hidden
+}
+)
+);
+
+#line default
+#line hidden
+#line 36 "ComplexTagHelpers.cshtml"
 }
 
 #line default

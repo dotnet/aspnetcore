@@ -44,7 +44,7 @@ __o = Foo(Bar.Baz);
 #line default
 #line hidden
 #line 9 "DesignTime.cshtml"
-__o = Foo(item => new Template((__razor_template_writer) => {
+__o = Foo(item => new Template(async(__razor_template_writer) => {
 #line 9 "DesignTime.cshtml"
         __o = baz;
 

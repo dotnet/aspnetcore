@@ -1,4 +1,4 @@
-#pragma checksum "ComplexTagHelpers.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "29efbebdd0277d2835528479690b48268c1dc03b"
+#pragma checksum "ComplexTagHelpers.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "7e06587198159a7cdea48c42e64a766a79a12cf7"
 namespace TestOutput
 {
     using Microsoft.AspNet.Razor.Runtime.TagHelpers;
@@ -437,10 +437,58 @@ __PTagHelper.Age = ("My age is this long.".Length);
             await WriteTagHelperAsync(__tagHelperExecutionContext);
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
-            Instrumentation.BeginContext(1295, 14, true);
+            Instrumentation.BeginContext(1295, 10, true);
+            WriteLiteral("\r\n        ");
+            Instrumentation.EndContext();
+            Instrumentation.BeginContext(1306, 11, false);
+#line 34 "ComplexTagHelpers.cshtml"
+   Write(someMethod(item => new Template(async(__razor_template_writer) => {
+    __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p", TagMode.StartTagAndEndTag, "test", async() => {
+        __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", TagMode.SelfClosing, "test", async() => {
+        }
+        , StartTagHelperWritingScope, EndTagHelperWritingScope);
+        __InputTagHelper = CreateTagHelper<InputTagHelper>();
+        __tagHelperExecutionContext.Add(__InputTagHelper);
+        __InputTagHelper2 = CreateTagHelper<InputTagHelper2>();
+        __tagHelperExecutionContext.Add(__InputTagHelper2);
+#line 34 "ComplexTagHelpers.cshtml"
+                                   __InputTagHelper2.Checked = checked;
+
+#line default
+#line hidden
+        __tagHelperExecutionContext.AddTagHelperAttribute("checked", __InputTagHelper2.Checked);
+        __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+        Instrumentation.BeginContext(1345, 26, false);
+        await WriteTagHelperAsync(__tagHelperExecutionContext);
+        Instrumentation.EndContext();
+        __tagHelperExecutionContext = __tagHelperScopeManager.End();
+    }
+    , StartTagHelperWritingScope, EndTagHelperWritingScope);
+    __PTagHelper = CreateTagHelper<PTagHelper>();
+    __tagHelperExecutionContext.Add(__PTagHelper);
+#line 34 "ComplexTagHelpers.cshtml"
+          __PTagHelper.Age = 123;
+
+#line default
+#line hidden
+    __tagHelperExecutionContext.AddTagHelperAttribute("age", __PTagHelper.Age);
+    __tagHelperExecutionContext.AddHtmlAttribute("class", Html.Raw("hello"));
+    __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+    Instrumentation.BeginContext(1318, 57, false);
+    await WriteTagHelperToAsync(__razor_template_writer, __tagHelperExecutionContext);
+    Instrumentation.EndContext();
+    __tagHelperExecutionContext = __tagHelperScopeManager.End();
+}
+)
+));
+
+#line default
+#line hidden
+            Instrumentation.EndContext();
+            Instrumentation.BeginContext(1376, 14, true);
             WriteLiteral("\r\n    </div>\r\n");
             Instrumentation.EndContext();
-#line 35 "ComplexTagHelpers.cshtml"
+#line 36 "ComplexTagHelpers.cshtml"
 }
 
 #line default

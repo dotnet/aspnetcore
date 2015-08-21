@@ -22,7 +22,7 @@ namespace TestOutput
 #line default
 #line hidden
 
-            item => new Template((__razor_template_writer) => {
+            item => new Template(async(__razor_template_writer) => {
                 Instrumentation.BeginContext(35, 10, true);
                 WriteLiteralTo(__razor_template_writer, "<p>Bar</p>");
                 Instrumentation.EndContext();
