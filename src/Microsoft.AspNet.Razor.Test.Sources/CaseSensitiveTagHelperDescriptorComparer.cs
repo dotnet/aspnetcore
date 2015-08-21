@@ -60,22 +60,25 @@ namespace Microsoft.AspNet.Razor.Test.Internal
                     TagHelperDesignTimeDescriptorComparer.Default.GetHashCode(descriptor.DesignTimeDescriptor));
             }
 
-            foreach (var requiredAttribute in descriptor.RequiredAttributes)
+            foreach (var requiredAttribute in descriptor.RequiredAttributes.OrderBy(attribute => attribute))
             {
                 hashCodeCombiner.Add(requiredAttribute, StringComparer.Ordinal);
             }
 
             if (descriptor.AllowedChildren != null)
             {
-                foreach (var child in descriptor.AllowedChildren)
+                foreach (var child in descriptor.AllowedChildren.OrderBy(child => child))
                 {
                     hashCodeCombiner.Add(child, StringComparer.Ordinal);
                 }
             }
 
-            foreach (var attribute in descriptor.Attributes)
+            var orderedAttributeHashCodes = descriptor.Attributes
+                .Select(attribute => TagHelperAttributeDescriptorComparer.Default.GetHashCode(attribute))
+                .OrderBy(hashcode => hashcode);
+            foreach (var attributeHashCode in orderedAttributeHashCodes)
             {
-                hashCodeCombiner.Add(TagHelperAttributeDescriptorComparer.Default.GetHashCode(attribute));
+                hashCodeCombiner.Add(attributeHashCode);
             }
 
             return hashCodeCombiner.CombinedHash;
