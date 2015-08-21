@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.Mvc.Test
                 GetCompositeBinder(binder.Object),
                 Mock.Of<IValueProvider>(),
                 new List<IInputFormatter>(),
-                new DefaultObjectValidator(new IExcludeTypeValidationFilter[0], metadataProvider),
+                new Mock<IObjectModelValidator>(MockBehavior.Strict).Object,
                 Mock.Of<IModelValidatorProvider>());
 
             // Assert
@@ -164,7 +164,7 @@ namespace Microsoft.AspNet.Mvc.Test
                 GetCompositeBinder(binder.Object),
                 Mock.Of<IValueProvider>(),
                 new List<IInputFormatter>(),
-                Mock.Of<IObjectModelValidator>(),
+                new Mock<IObjectModelValidator>(MockBehavior.Strict).Object,
                 Mock.Of<IModelValidatorProvider>(),
                 includePredicate);
 
@@ -245,17 +245,17 @@ namespace Microsoft.AspNet.Mvc.Test
 
             // Act
             var result = await ModelBindingHelper.TryUpdateModelAsync(
-                                                    model,
-                                                    null,
-                                                    Mock.Of<HttpContext>(),
-                                                    new ModelStateDictionary(),
-                                                    metadataProvider,
-                                                    GetCompositeBinder(binder.Object),
-                                                    Mock.Of<IValueProvider>(),
-                                                    new List<IInputFormatter>(),
-                                                    Mock.Of<IObjectModelValidator>(),
-                                                    Mock.Of<IModelValidatorProvider>(),
-                                                    m => m.IncludedProperty );
+                model,
+                null,
+                Mock.Of<HttpContext>(),
+                new ModelStateDictionary(),
+                metadataProvider,
+                GetCompositeBinder(binder.Object),
+                Mock.Of<IValueProvider>(),
+                new List<IInputFormatter>(),
+                new Mock<IObjectModelValidator>(MockBehavior.Strict).Object,
+                Mock.Of<IModelValidatorProvider>(),
+                m => m.IncludedProperty );
 
             // Assert
             Assert.False(result);
@@ -502,18 +502,18 @@ namespace Microsoft.AspNet.Mvc.Test
 
             // Act
             var result = await ModelBindingHelper.TryUpdateModelAsync(
-                                                    model,
-                                                    model.GetType(),
-                                                    prefix: null,
-                                                    httpContext: Mock.Of<HttpContext>(),
-                                                    modelState: new ModelStateDictionary(),
-                                                    metadataProvider: metadataProvider,
-                                                    modelBinder: GetCompositeBinder(binder.Object),
-                                                    valueProvider: Mock.Of<IValueProvider>(),
-                                                    inputFormatters: new List<IInputFormatter>(),
-                                                    objectModelValidator: Mock.Of<IObjectModelValidator>(),
-                                                    validatorProvider: Mock.Of<IModelValidatorProvider>(),
-                                                    predicate: includePredicate);
+                model,
+                model.GetType(),
+                prefix: null,
+                httpContext: Mock.Of<HttpContext>(),
+                modelState: new ModelStateDictionary(),
+                metadataProvider: metadataProvider,
+                modelBinder: GetCompositeBinder(binder.Object),
+                valueProvider: Mock.Of<IValueProvider>(),
+                inputFormatters: new List<IInputFormatter>(),
+                objectModelValidator: new Mock<IObjectModelValidator>(MockBehavior.Strict).Object,
+                validatorProvider: Mock.Of<IModelValidatorProvider>(),
+                predicate: includePredicate);
 
             // Assert
             Assert.False(result);
@@ -596,17 +596,17 @@ namespace Microsoft.AspNet.Mvc.Test
 
             // Act
             var result = await ModelBindingHelper.TryUpdateModelAsync(
-                                                    model,
-                                                    modelType: model.GetType(),
-                                                    prefix: null,
-                                                    httpContext: Mock.Of<HttpContext>(),
-                                                    modelState: new ModelStateDictionary(),
-                                                    metadataProvider: metadataProvider,
-                                                    modelBinder: GetCompositeBinder(binder.Object),
-                                                    valueProvider: Mock.Of<IValueProvider>(),
-                                                    inputFormatters: new List<IInputFormatter>(),
-                                                    objectModelValidator: Mock.Of<IObjectModelValidator>(),
-                                                    validatorProvider: Mock.Of<IModelValidatorProvider>());
+                model,
+                modelType: model.GetType(),
+                prefix: null,
+                httpContext: Mock.Of<HttpContext>(),
+                modelState: new ModelStateDictionary(),
+                metadataProvider: metadataProvider,
+                modelBinder: GetCompositeBinder(binder.Object),
+                valueProvider: Mock.Of<IValueProvider>(),
+                inputFormatters: new List<IInputFormatter>(),
+                objectModelValidator: new Mock<IObjectModelValidator>(MockBehavior.Strict).Object,
+                validatorProvider: Mock.Of<IModelValidatorProvider>());
 
             // Assert
             Assert.False(result);

@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -313,9 +312,16 @@ namespace Microsoft.AspNet.Mvc
                 var modelValidationContext = new ModelValidationContext(modelBindingContext, modelExplorer);
 
                 var validationNode = modelBindingResult.ValidationNode;
-                Debug.Assert(
-                    validationNode != null,
-                    "ValidationNode should never be null in a successful ModelBindingResult.");
+                if (validationNode == null)
+                {
+                    validationNode = new ModelValidationNode(
+                        modelBindingResult.Key,
+                        modelMetadata,
+                        modelBindingResult.Model)
+                    {
+                        ValidateAllProperties = true,
+                    };
+                }
 
                 objectModelValidator.Validate(modelValidationContext, validationNode);
 

@@ -138,7 +138,8 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.True(result);
 
             // Model
-            Assert.Collection(model,
+            Assert.Collection(
+                model,
                 element =>
                 {
                     Assert.Equal("One Name", element.Name);
@@ -589,6 +590,64 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("SomeStreet", state.Value.RawValue);
             Assert.Empty(state.Errors);
             Assert.Equal(ModelValidationState.Valid, state.ValidationState);
+        }
+
+        [Fact]
+        public async Task TryUpdateModel_TopLevelCollection_WithPrefix_BindsAfterClearing()
+        {
+            // Arrange
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            {
+                request.QueryString = QueryString.Create(new Dictionary<string, string>
+                {
+                    { "prefix[0].Name", "One Name" },
+                    { "prefix[1].Address.Street", "Two Street" },
+                });
+            });
+
+            var modelState = new ModelStateDictionary();
+            var model = new List<Person1>
+            {
+                new Person1
+                {
+                    Name = "One",
+                    Address = new Address
+                    {
+                        Street = "DefaultStreet",
+                        City = "Toronto",
+                    },
+                },
+                new Person1 { Name = "Two" },
+                new Person1 { Name = "Three" },
+            };
+
+            // Act
+            var result = await TryUpdateModel(model, "prefix", operationContext, modelState);
+
+            // Assert
+            Assert.True(result);
+
+            // Model
+            Assert.Collection(
+                model,
+                element =>
+                {
+                    Assert.Equal("One Name", element.Name);
+                    Assert.Null(element.Address);
+                },
+                element =>
+                {
+                    Assert.Null(element.Name);
+                    Assert.NotNull(element.Address);
+                    Assert.Equal("Two Street", element.Address.Street);
+                    Assert.Null(element.Address.City);
+                });
+
+            // ModelState
+            Assert.True(modelState.IsValid);
+            Assert.Equal(2, modelState.Count);
+            Assert.NotNull(modelState["prefix[0].Name"]);
+            Assert.NotNull(modelState["prefix[1].Address.Street"]);
         }
 
         [Fact]
