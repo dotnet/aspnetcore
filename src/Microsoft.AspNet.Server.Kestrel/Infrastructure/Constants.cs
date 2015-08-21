@@ -7,6 +7,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
     {
         public const int ListenBacklog = 128;
 
+        public const int EOF = -4095;
+        public const int ECONNRESET = -4077;
+
         /// <summary>
         /// Prefix of host name used to specify Unix sockets in the configuration.
         /// </summary>

@@ -253,6 +253,15 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        unsafe protected delegate int uv_pipe_pending_count(UvPipeHandle handle);
+        protected uv_pipe_pending_count _uv_pipe_pending_count = default(uv_pipe_pending_count);
+        unsafe public int pipe_pending_count(UvPipeHandle handle)
+        {
+            handle.Validate();
+            return _uv_pipe_pending_count(handle);
+        }
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void uv_alloc_cb(IntPtr server, int suggested_size, out uv_buf_t buf);
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void uv_read_cb(IntPtr server, int nread, ref uv_buf_t buf);

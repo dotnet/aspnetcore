@@ -3,15 +3,13 @@
 
 using System;
 using System.Diagnostics;
+using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 using Microsoft.AspNet.Server.Kestrel.Networking;
 
 namespace Microsoft.AspNet.Server.Kestrel.Http
 {
     public class Connection : ConnectionContext, IConnectionControl
     {
-        private const int EOF = -4095;
-        private const int ECONNRESET = -4077;
-
         private static readonly Action<UvStreamHandle, int, Exception, object> _readCallback = ReadCallback;
         private static readonly Func<UvStreamHandle, int, object, Libuv.uv_buf_t> _allocCallback = AllocCallback;
 
@@ -60,7 +58,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             SocketInput.Unpin(status);
 
             var normalRead = error == null && status > 0;
-            var normalDone = status == 0 || status == ECONNRESET || status == EOF;
+            var normalDone = status == 0 || status == Constants.ECONNRESET || status == Constants.EOF;
             var errorDone = !(normalDone || normalRead);
 
             if (normalRead)

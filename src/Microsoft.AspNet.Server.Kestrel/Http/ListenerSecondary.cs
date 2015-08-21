@@ -1,11 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Server.Kestrel.Networking;
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Server.Kestrel.Infrastructure;
+using Microsoft.AspNet.Server.Kestrel.Networking;
 
 namespace Microsoft.AspNet.Server.Kestrel.Http
 {
@@ -60,10 +61,23 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                                     (_1, _2, _3) => buf,
                                     (_1, status2, error2, state2) =>
                                     {
-                                        if (status2 == 0)
+                                        if (status2 < 0)
                                         {
+                                            if (status2 != Constants.EOF)
+                                            {
+                                                Exception ex;
+                                                Thread.Loop.Libuv.Check(status2, out ex);
+                                                // TODO: Replace Trace.WriteLine with real logging
+                                                Trace.WriteLine("DispatchPipe.ReadStart " + ex.Message);
+                                            }
+
                                             DispatchPipe.Dispose();
                                             Marshal.FreeHGlobal(ptr);
+                                            return;
+                                        }
+
+                                        if (DispatchPipe.PendingCount() == 0)
+                                        {
                                             return;
                                         }
 

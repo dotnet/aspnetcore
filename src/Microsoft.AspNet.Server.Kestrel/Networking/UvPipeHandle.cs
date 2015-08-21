@@ -32,5 +32,10 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         {
             _uv.pipe_bind(this, name);
         }
+
+        public int PendingCount()
+        {
+            return _uv.pipe_pending_count(this);
+        }
     }
 }
