@@ -145,6 +145,10 @@
     <value>Email '{0}' is invalid.</value>
     <comment>Invalid email</comment>
   </data>
+  <data name="InvalidManagerType" xml:space="preserve">
+    <value>Type {0} must be derived from {1}&lt;{2}&gt;.</value>
+    <comment>Error when the manager type is not derived correctly</comment>
+  </data>
   <data name="InvalidPasswordHasherCompatibilityMode" xml:space="preserve">
     <value>The provided PasswordHasherCompatibilityMode is invalid.</value>
     <comment>Error when the password hasher doesn't understand the format it's being asked to produce.</comment>

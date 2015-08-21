@@ -32,6 +32,46 @@ namespace Microsoft.AspNet.Identity.Test
         }
 
         [Fact]
+        public void AddUserManagerWithCustomManagerReturnsSameInstance()
+        {
+            var services = new ServiceCollection()
+                    .AddTransient<IUserStore<TestUser>, NoopUserStore>()
+                    .AddSingleton<IHttpContextAccessor, HttpContextAccessor>()
+                    .AddLogging();
+            services.AddIdentity<TestUser, TestRole>()
+                .AddUserManager<CustomUserManager>()
+                .AddRoleManager<CustomRoleManager>();
+            var provider = services.BuildServiceProvider();
+            Assert.Same(provider.GetRequiredService<UserManager<TestUser>>(), 
+                provider.GetRequiredService<CustomUserManager>());
+            Assert.Same(provider.GetRequiredService<RoleManager<TestRole>>(),
+                provider.GetRequiredService<CustomRoleManager>());
+        }
+
+        [Fact]
+        public void AddManagerWithWrongTypesThrows()
+        {
+            var services = new ServiceCollection();
+            var builder = services.AddIdentity<TestUser, TestRole>();
+            Assert.Throws<InvalidOperationException>(() => builder.AddUserManager<UserManager<TestUser>>());
+            Assert.Throws<InvalidOperationException>(() => builder.AddRoleManager<RoleManager<TestRole>>());
+            Assert.Throws<InvalidOperationException>(() => builder.AddUserManager<object>());
+            Assert.Throws<InvalidOperationException>(() => builder.AddRoleManager<object>());
+        }
+
+        public class CustomUserManager : UserManager<TestUser>
+        {
+            public CustomUserManager() : base(new Mock<IUserStore<TestUser>>().Object, null, null, null, null, null, null, null, null, null)
+            { }
+        }
+
+        public class CustomRoleManager : RoleManager<TestRole>
+        {
+            public CustomRoleManager() : base(new Mock<IRoleStore<TestRole>>().Object, null, null, null, null, null)
+            { }
+        }
+
+        [Fact]
         public async Task CreateCallsStore()
         {
             // Setup

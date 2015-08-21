@@ -123,6 +123,22 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
+        /// Type {0} must be derived from {1}&lt;{2}&gt;.
+        /// </summary>
+        internal static string InvalidManagerType
+        {
+            get { return GetString("InvalidManagerType"); }
+        }
+
+        /// <summary>
+        /// Type {0} must be derived from {1}&lt;{2}&gt;.
+        /// </summary>
+        internal static string FormatInvalidManagerType(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("InvalidManagerType"), p0, p1, p2);
+        }
+
+        /// <summary>
         /// The provided PasswordHasherCompatibilityMode is invalid.
         /// </summary>
         internal static string InvalidPasswordHasherCompatibilityMode
