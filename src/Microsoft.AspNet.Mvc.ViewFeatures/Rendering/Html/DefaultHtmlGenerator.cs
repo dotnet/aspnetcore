@@ -8,7 +8,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using Microsoft.AspNet.Antiforgery;
 using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.AspNet.Mvc.ModelBinding;
@@ -838,7 +837,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             // Logic below assumes isTargetEnum and enumNames are consistent. Confirm that expectation is met.
             Debug.Assert(isTargetEnum ^ enumNames == null);
 
-            var innerType = Nullable.GetUnderlyingType(metadata.ModelType) ?? metadata.ModelType;
+            var innerType = metadata.UnderlyingOrModelType;
 
             // Convert raw value collection to strings.
             var currentValues = new HashSet<string>(StringComparer.OrdinalIgnoreCase);

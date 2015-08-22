@@ -146,10 +146,8 @@ namespace Microsoft.AspNet.Mvc.Rendering.Internal
 
             // We don't want to search for Nullable<T>, we want to search for T (which should handle both T and
             // Nullable<T>).
-            var modelType = _viewData.ModelExplorer.ModelType;
-            var fieldType = Nullable.GetUnderlyingType(modelType) ?? modelType;
-
-            foreach (var typeName in GetTypeNames(_viewData.ModelExplorer.Metadata, fieldType))
+            var fieldType = metadata.UnderlyingOrModelType;
+            foreach (var typeName in GetTypeNames(metadata, fieldType))
             {
                 yield return typeName;
             }

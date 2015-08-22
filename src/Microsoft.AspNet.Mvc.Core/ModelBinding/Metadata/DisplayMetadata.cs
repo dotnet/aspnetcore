@@ -58,14 +58,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 
         /// <summary>
         /// Gets the ordered display names and values of all <see cref="System.Enum"/> values in
-        /// <see cref="ModelMetadata.ModelType"/> or <c>Nullable.GetUnderlyingType(ModelType)</c>. See
+        /// <see cref="ModelMetadata.UnderlyingOrModelType"/>. See
         /// <see cref="ModelMetadata.EnumDisplayNamesAndValues"/>.
         /// </summary>
         public IEnumerable<KeyValuePair<string, string>> EnumDisplayNamesAndValues { get; set; }
 
         /// <summary>
-        /// Gets the names and values of all <see cref="System.Enum"/> values in <see cref="ModelMetadata.ModelType"/>
-        /// or <c>Nullable.GetUnderlyingType(ModelType)</c>. See <see cref="ModelMetadata.EnumNamesAndValues"/>.
+        /// Gets the names and values of all <see cref="System.Enum"/> values in
+        /// <see cref="ModelMetadata.UnderlyingOrModelType"/>. See <see cref="ModelMetadata.EnumNamesAndValues"/>.
         /// </summary>
         // This could be implemented in DefaultModelMetadata. But value should be cached.
         public IReadOnlyDictionary<string, string> EnumNamesAndValues { get; set; }
@@ -89,17 +89,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         public bool HtmlEncode { get; set; } = true;
 
         /// <summary>
-        /// Gets a value indicating whether <see cref="ModelMetadata.ModelType"/> or
-        /// <c>Nullable.GetUnderlyingType(ModelType)</c> is for an <see cref="System.Enum"/>. See
-        /// <see cref="ModelMetadata.IsEnum"/>.
+        /// Gets a value indicating whether <see cref="ModelMetadata.UnderlyingOrModelType"/> is for an
+        /// <see cref="System.Enum"/>. See <see cref="ModelMetadata.IsEnum"/>.
         /// </summary>
         // This could be implemented in DefaultModelMetadata. But value is needed in the details provider.
         public bool IsEnum { get; set; }
 
         /// <summary>
-        /// Gets a value indicating whether <see cref="ModelMetadata.ModelType"/> or
-        /// <c>Nullable.GetUnderlyingType(ModelType)</c> is for an <see cref="System.Enum"/> with an associated
-        /// <see cref="System.FlagsAttribute"/>. See <see cref="ModelMetadata.IsFlagsEnum"/>.
+        /// Gets a value indicating whether <see cref="ModelMetadata.UnderlyingOrModelType"/> is for an
+        /// <see cref="System.Enum"/> with an associated <see cref="System.FlagsAttribute"/>. See
+        /// <see cref="ModelMetadata.IsFlagsEnum"/>.
         /// </summary>
         // This could be implemented in DefaultModelMetadata. But value is needed in the details provider.
         public bool IsFlagsEnum { get; set; }

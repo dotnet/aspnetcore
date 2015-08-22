@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
 
@@ -51,7 +50,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 // When converting newModel a null value may indicate a failed conversion for an otherwise required
                 // model (can't set a ValueType to null). This detects if a null model value is acceptable given the
                 // current bindingContext. If not, an error is logged.
-                if (model == null && !AllowsNullValue(bindingContext.ModelType))
+                if (model == null && !bindingContext.ModelMetadata.IsReferenceOrNullableType)
                 {
                     bindingContext.ModelState.TryAddModelError(
                         bindingContext.ModelName,
@@ -82,11 +81,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 model: null,
                 key: bindingContext.ModelName,
                 isModelSet: false);
-        }
-
-        private static bool AllowsNullValue(Type type)
-        {
-            return !type.GetTypeInfo().IsValueType || Nullable.GetUnderlyingType(type) != null;
         }
     }
 }

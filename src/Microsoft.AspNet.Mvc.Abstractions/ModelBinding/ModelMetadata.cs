@@ -5,9 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
-#if DNXCORE50
 using System.Reflection;
-#endif
 using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
 using Microsoft.Framework.Internal;
 
@@ -139,8 +137,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public abstract ModelMetadata ElementMetadata { get; }
 
         /// <summary>
-        /// Gets the ordered display names and values of all <see cref="Enum"/> values in <see cref="ModelType"/> or
-        /// <c>Nullable.GetUnderlyingType(ModelType)</c>.
+        /// Gets the ordered display names and values of all <see cref="Enum"/> values in
+        /// <see cref="UnderlyingOrModelType"/>.
         /// </summary>
         /// <value>
         /// An <see cref="IEnumerable{KeyValuePair{string, string}}"/> of mappings between <see cref="Enum"/> field names
@@ -149,8 +147,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public abstract IEnumerable<KeyValuePair<string, string>> EnumDisplayNamesAndValues { get; }
 
         /// <summary>
-        /// Gets the names and values of all <see cref="Enum"/> values in <see cref="ModelType"/> or
-        /// <c>Nullable.GetUnderlyingType(ModelType)</c>.
+        /// Gets the names and values of all <see cref="Enum"/> values in <see cref="UnderlyingOrModelType"/>.
         /// </summary>
         /// <value>
         /// An <see cref="IReadOnlyDictionary{string, string}"/> of mappings between <see cref="Enum"/> field names
@@ -204,23 +201,21 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public abstract bool IsBindingRequired { get; }
 
         /// <summary>
-        /// Gets a value indicating whether <see cref="ModelType"/> or <c>Nullable.GetUnderlyingType(ModelType)</c> is
-        /// for an <see cref="Enum"/>.
+        /// Gets a value indicating whether <see cref="UnderlyingOrModelType"/> is for an <see cref="Enum"/>.
         /// </summary>
         /// <value>
         /// <c>true</c> if <c>type.IsEnum</c> (<c>type.GetTypeInfo().IsEnum</c> for DNX Core 5.0) is <c>true</c> for
-        /// <see cref="ModelType"/> or <c>Nullable.GetUnderlyingType(ModelType)</c>; <c>false</c> otherwise.
+        /// <see cref="UnderlyingOrModelType"/>; <c>false</c> otherwise.
         /// </value>
         public abstract bool IsEnum { get; }
 
         /// <summary>
-        /// Gets a value indicating whether <see cref="ModelType"/> or <c>Nullable.GetUnderlyingType(ModelType)</c> is
-        /// for an <see cref="Enum"/> with an associated <see cref="FlagsAttribute"/>.
+        /// Gets a value indicating whether <see cref="UnderlyingOrModelType"/> is for an <see cref="Enum"/> with an
+        /// associated <see cref="FlagsAttribute"/>.
         /// </summary>
         /// <value>
-        /// <c>true</c> if <see cref="IsEnum"/> is <c>true</c> and <see cref="ModelType"/> or
-        /// <c>Nullable.GetUnderlyingType(ModelType)</c> has an associated <see cref="FlagsAttribute"/>; <c>false</c>
-        /// otherwise.
+        /// <c>true</c> if <see cref="IsEnum"/> is <c>true</c> and <see cref="UnderlyingOrModelType"/> has an
+        /// associated <see cref="FlagsAttribute"/>; <c>false</c> otherwise.
         /// </value>
         public abstract bool IsFlagsEnum { get; }
 
@@ -343,6 +338,32 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
                 // We only need to look for IEnumerable, because IEnumerable<T> extends it.
                 return typeof(IEnumerable).IsAssignableFrom(ModelType);
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether or not <see cref="ModelType"/> allows <c>null</c> values.
+        /// </summary>
+        public bool IsReferenceOrNullableType
+        {
+            get
+            {
+                return !ModelType.GetTypeInfo().IsValueType || IsNullableValueType;
+            }
+        }
+
+        /// <summary>
+        /// Gets the underlying type argument if <see cref="ModelType"/> inherits from <see cref="Nullable{T}"/>.
+        /// Otherwise gets <see cref="ModelType"/>.
+        /// </summary>
+        /// <remarks>
+        /// Identical to <see cref="ModelType"/> unless <see cref="IsNullableValueType"/> is <c>true</c>.
+        /// </remarks>
+        public Type UnderlyingOrModelType
+        {
+            get
+            {
+                return Nullable.GetUnderlyingType(ModelType) ?? ModelType;
             }
         }
 

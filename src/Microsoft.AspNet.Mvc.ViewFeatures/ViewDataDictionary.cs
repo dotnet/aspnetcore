@@ -5,7 +5,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+#if DNXCORE50
 using System.Reflection;
+#endif
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering.Expressions;
 using Microsoft.AspNet.Mvc.ViewFeatures;
@@ -186,8 +188,7 @@ namespace Microsoft.AspNet.Mvc
         {
             // This is the core constructor called when Model is known.
             var modelType = GetModelType(model);
-            var metadataModelType =
-                Nullable.GetUnderlyingType(source.ModelMetadata.ModelType) ?? source.ModelMetadata.ModelType;
+            var metadataModelType = source.ModelMetadata.UnderlyingOrModelType;
             if (modelType == metadataModelType && model == source.ModelExplorer.Model)
             {
                 // Preserve any customizations made to source.ModelExplorer.ModelMetadata if the Type
@@ -260,7 +261,7 @@ namespace Microsoft.AspNet.Mvc
 
         public TemplateInfo TemplateInfo { get; }
 
-        #region IDictionary properties
+#region IDictionary properties
         // Do not just pass through to _data: Indexer should not throw a KeyNotFoundException.
         public object this[string index]
         {
@@ -295,7 +296,7 @@ namespace Microsoft.AspNet.Mvc
         {
             get { return _data.Values; }
         }
-        #endregion
+#endregion
 
         // for unit testing
         internal IDictionary<string, object> Data
@@ -383,13 +384,13 @@ namespace Microsoft.AspNet.Mvc
             EnsureCompatible(value);
 
             // Reset or override ModelMetadata based on runtime value type. Fall back to declared type if value is
-            // null. When called from the Model setter, ModelMetadata will (temporarily) be null. When called from
-            // a constructor, current ModelMetadata may already be set to preserve customizations made in parent scope.
+            // null. When called from a constructor, current ModelExplorer may already be set to preserve
+            // customizations made in parent scope. But ModelExplorer is never null after instance is initialized.
             var modelType = GetModelType(value);
             Type metadataModelType = null;
             if (ModelExplorer != null)
             {
-                metadataModelType = Nullable.GetUnderlyingType(ModelMetadata.ModelType) ?? ModelMetadata.ModelType;
+                metadataModelType = ModelMetadata.UnderlyingOrModelType;
             }
 
             if (metadataModelType != modelType)
@@ -413,7 +414,7 @@ namespace Microsoft.AspNet.Mvc
         {
             // IsCompatibleObject verifies if the value is either an instance of _declaredModelType or (if value is
             // null) that _declaredModelType is a nullable type.
-            var castWillSucceed = IsCompatibleWith(_declaredModelType, value);
+            var castWillSucceed = IsCompatibleWithDeclaredType(value);
             if (!castWillSucceed)
             {
                 string message;
@@ -435,19 +436,20 @@ namespace Microsoft.AspNet.Mvc
             return (value == null) ? _declaredModelType : value.GetType();
         }
 
-        private static bool IsCompatibleWith([NotNull] Type type, object value)
+        private bool IsCompatibleWithDeclaredType(object value)
         {
             if (value == null)
             {
-                return !type.GetTypeInfo().IsValueType || Nullable.GetUnderlyingType(type) != null;
+                // In this case ModelMetadata.ModelType matches _declaredModelType.
+                return ModelMetadata.IsReferenceOrNullableType;
             }
             else
             {
-                return type.GetTypeInfo().IsAssignableFrom(value.GetType().GetTypeInfo());
+                return _declaredModelType.IsAssignableFrom(value.GetType());
             }
         }
 
-        #region IDictionary methods
+#region IDictionary methods
         public void Add([NotNull] string key, object value)
         {
             _data.Add(key, value);
@@ -502,6 +504,6 @@ namespace Microsoft.AspNet.Mvc
         {
             return _data.GetEnumerator();
         }
-        #endregion
+#endregion
     }
 }
