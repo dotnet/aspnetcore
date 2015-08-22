@@ -67,22 +67,22 @@ namespace Microsoft.AspNet.TestHost
 
             // Async offload, don't let the test code block the caller.
             var offload = Task.Factory.StartNew(async () =>
+            {
+                try
                 {
-                    try
-                    {
-                        await _next(state.HttpContext.Features);
-                        state.CompleteResponse();
-                    }
-                    catch (Exception ex)
-                    {
-                        state.Abort(ex);
-                    }
-                    finally
-                    {
-                        registration.Dispose();
-                        state.Dispose();
-                    }
-                });
+                    await _next(state.HttpContext.Features);
+                    state.CompleteResponse();
+                }
+                catch (Exception ex)
+                {
+                    state.Abort(ex);
+                }
+                finally
+                {
+                    registration.Dispose();
+                    state.Dispose();
+                }
+            });
 
             return await state.ResponseTask;
         }
