@@ -45,6 +45,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             MemoryCache = memoryCache;
         }
 
+        /// <inheritdoc />
+        public override int Order
+        {
+            get
+            {
+                return DefaultOrder.DefaultFrameworkSortOrder;
+            }
+        }
+
         /// <summary>
         /// Gets the <see cref="IMemoryCache"/> instance used to cache entries.
         /// </summary>

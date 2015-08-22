@@ -26,6 +26,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             Generator = generator;
         }
 
+        /// <inheritdoc />
+        public override int Order
+        {
+            get
+            {
+                return DefaultOrder.DefaultFrameworkSortOrder;
+            }
+        }
+
         [HtmlAttributeNotBound]
         [ViewContext]
         public ViewContext ViewContext { get; set; }

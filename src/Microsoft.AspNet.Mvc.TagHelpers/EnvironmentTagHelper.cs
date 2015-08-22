@@ -25,6 +25,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             HostingEnvironment = hostingEnvironment;
         }
 
+        /// <inheritdoc />
+        public override int Order
+        {
+            get
+            {
+                return DefaultOrder.DefaultFrameworkSortOrder;
+            }
+        }
+
         /// <summary>
         /// A comma separated list of environment names in which the content should be rendered.
         /// </summary>

@@ -46,6 +46,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             Cache = cache;
         }
 
+        /// <inheritdoc />
+        public override int Order
+        {
+            get
+            {
+                return DefaultOrder.DefaultFrameworkSortOrder;
+            }
+        }
+
         /// <summary>
         /// Source of the image.
         /// </summary>

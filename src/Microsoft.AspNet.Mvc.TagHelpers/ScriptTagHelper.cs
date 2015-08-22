@@ -93,6 +93,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             JavaScriptEncoder = javaScriptEncoder;
         }
 
+        /// <inheritdoc />
+        public override int Order
+        {
+            get
+            {
+                return DefaultOrder.DefaultFrameworkSortOrder;
+            }
+        }
+
         /// <summary>
         /// Address of the external script to use.
         /// </summary>
