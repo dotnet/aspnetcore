@@ -409,6 +409,8 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 ticket = await GetUserInformationAsync(properties, tokenEndpointResponse.Message, ticket);
             }
 
+            await ValidateOpenIdConnectProtocolAsync(jwt, null);
+
             var securityTokenValidatedNotification = await RunSecurityTokenValidatedNotificationAsync(message, ticket);
             if (securityTokenValidatedNotification.HandledResponse)
             {
@@ -418,9 +420,6 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             {
                 return null;
             }
-
-            // If id_token is received using code only flow, no need to validate chash.
-            await ValidateOpenIdConnectProtocolAsync(jwt, message, false);
 
             return ticket;
         }
@@ -443,6 +442,8 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             var validationParameters = Options.TokenValidationParameters.Clone();
             ticket = ValidateToken(message.IdToken, message, properties, validationParameters, out jwt);
 
+            await ValidateOpenIdConnectProtocolAsync(jwt, message);
+
             var securityTokenValidatedNotification = await RunSecurityTokenValidatedNotificationAsync(message, ticket);
             if (securityTokenValidatedNotification.HandledResponse)
             {
@@ -452,8 +453,6 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             {
                 return null;
             }
-
-            await ValidateOpenIdConnectProtocolAsync(jwt, message);
 
             if (message.Code != null)
             {
@@ -879,7 +878,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             return ticket;
         }
 
-        private async Task ValidateOpenIdConnectProtocolAsync(JwtSecurityToken jwt, OpenIdConnectMessage message, bool ValidateCHash = true)
+        private async Task ValidateOpenIdConnectProtocolAsync(JwtSecurityToken jwt, OpenIdConnectMessage message)
         {
             string nonce = jwt.Payload.Nonce;
             if (Options.CacheNonces)
@@ -902,16 +901,13 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
 
             var protocolValidationContext = new OpenIdConnectProtocolValidationContext
             {
+                ProtocolMessage = message,
+                IdToken = jwt,
+                ClientId = Options.ClientId,
                 Nonce = nonce
             };
 
-            // If authorization code is null, protocol validator does not validate the chash
-            if (ValidateCHash)
-            {
-                protocolValidationContext.AuthorizationCode = message.Code;
-            }
-
-            Options.ProtocolValidator.Validate(jwt, protocolValidationContext);
+            Options.ProtocolValidator.Validate(protocolValidationContext);
         }
 
         /// <summary>

@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             BackchannelTimeout = TimeSpan.FromMinutes(1);
             Caption = OpenIdConnectAuthenticationDefaults.Caption;
             GetClaimsFromUserInfoEndpoint = false;
-            ProtocolValidator = new OpenIdConnectProtocolValidator();
+            ProtocolValidator = new OpenIdConnectProtocolValidator() { RequireState = false };
             RefreshOnIssuerKeyNotFound = true;
             ResponseMode = OpenIdConnectResponseModes.FormPost;
             ResponseType = OpenIdConnectResponseTypes.CodeIdToken;

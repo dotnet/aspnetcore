@@ -384,6 +384,7 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
         {
             DefaultOptions(options);
             options.ResponseType = OpenIdConnectResponseTypes.Code;
+            options.ProtocolValidator.RequireNonce = false;
             options.StateDataFormat = new AuthenticationPropertiesFormaterKeyValue();
             options.GetClaimsFromUserInfoEndpoint = true;
             options.SecurityTokenValidators = new Collection<ISecurityTokenValidator> { MockSecurityTokenValidator() };
