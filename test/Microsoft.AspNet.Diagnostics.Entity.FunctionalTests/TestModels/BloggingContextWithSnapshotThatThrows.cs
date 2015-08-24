@@ -25,13 +25,9 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         }
 
         [DbContext(typeof(BloggingContextWithSnapshotThatThrows))]
+        [Migration("111111111111111_MigrationOne")]
         public class MigrationOne : Migration
         {
-            public override string Id
-            {
-                get { return "111111111111111_MigrationOne"; }
-            }
-
             public override IModel TargetModel => new BloggingContextWithSnapshotThatThrowsModelSnapshot().Model;
 
             protected override void Up(MigrationBuilder migrationBuilder)

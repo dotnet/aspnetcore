@@ -88,8 +88,8 @@ namespace Microsoft.AspNet.Diagnostics.Entity
                                 var pendingMigrations = (
                                         from m in migrationsAssembly.Migrations
                                         where !appliedMigrations.Any(
-                                            r => string.Equals(r.MigrationId, m.Id, StringComparison.OrdinalIgnoreCase))
-                                        select m.Id)
+                                            r => string.Equals(r.MigrationId, m.Key, StringComparison.OrdinalIgnoreCase))
+                                        select m.Key)
                                     .ToList();
 
                                 var pendingModelChanges = modelDiffer.HasDifferences(migrationsAssembly.ModelSnapshot?.Model, dbContext.Model);

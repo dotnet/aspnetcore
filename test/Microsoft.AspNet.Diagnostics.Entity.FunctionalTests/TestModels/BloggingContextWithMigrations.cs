@@ -41,13 +41,9 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         }
 
         [DbContext(typeof(BloggingContextWithMigrations))]
+        [Migration("111111111111111_MigrationOne")]
         public class MigrationOne : Migration
         {
-            public override string Id
-            {
-                get { return "111111111111111_MigrationOne"; }
-            }
-
             public override IModel TargetModel => new BloggingContextWithMigrationsModelSnapshot().Model;
 
             protected override void Up(MigrationBuilder migrationBuilder)
@@ -68,13 +64,9 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         }
 
         [DbContext(typeof(BloggingContextWithMigrations))]
+        [Migration("222222222222222_MigrationTwo")]
         public class MigrationTwo : Migration
         {
-            public override string Id
-            {
-                get { return "222222222222222_MigrationTwo"; }
-            }
-
             public override IModel TargetModel => new BloggingContextWithMigrationsModelSnapshot().Model;
 
             protected override void Up(MigrationBuilder migrationBuilder)

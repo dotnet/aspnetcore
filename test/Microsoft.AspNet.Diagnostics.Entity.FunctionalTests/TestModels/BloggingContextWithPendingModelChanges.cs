@@ -23,13 +23,9 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         }
 
         [DbContext(typeof(BloggingContextWithPendingModelChanges))]
+        [Migration("111111111111111_MigrationOne")]
         public partial class MigrationOne : Migration
         {
-            public override string Id
-            {
-                get { return "111111111111111_MigrationOne"; }
-            }
-
             protected override void Up(MigrationBuilder migrationBuilder)
             { }
         }
