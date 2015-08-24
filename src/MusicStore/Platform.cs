@@ -21,10 +21,24 @@ namespace MusicStore
 
         private bool? _isNano;
         private bool? _isMono;
+        private bool? _isWindows;
 
         public Platform(IRuntimeEnvironment runtimeEnvironment)
         {
             _runtimeEnvironment = runtimeEnvironment;
+        }
+        
+        public bool IsRunningOnWindows
+        {
+            get
+            {
+                if (_isWindows == null)
+                {
+                    _isWindows = _runtimeEnvironment.OperatingSystem.Equals("Windows", StringComparison.OrdinalIgnoreCase);
+                }
+                
+                return _isWindows.Value;
+            }
         }
 
         public bool IsRunningOnMono
@@ -46,7 +60,7 @@ namespace MusicStore
             {
                 if (_isNano == null)
                 {
-                    var osVersion = new Version(_runtimeEnvironment.OperatingSystemVersion);
+                    var osVersion = new Version(_runtimeEnvironment.OperatingSystemVersion ?? "");
 
                     try
                     {
