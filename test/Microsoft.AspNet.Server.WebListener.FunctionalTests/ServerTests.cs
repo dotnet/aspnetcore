@@ -150,12 +150,7 @@ namespace Microsoft.AspNet.Server.WebListener
                     requestTasks.Add(requestTask);
                 }
 
-                bool success = Task.WaitAll(requestTasks.ToArray(), TimeSpan.FromSeconds(10));
-                if (!success)
-                {
-                    Console.WriteLine();
-                }
-                Assert.True(success, "Timed out");
+                Assert.True(Task.WaitAll(requestTasks.ToArray(), TimeSpan.FromSeconds(60)), "Timed out");
             }
         }
 
@@ -185,7 +180,7 @@ namespace Microsoft.AspNet.Server.WebListener
                     Task<string> requestTask = SendRequestAsync(address);
                     requestTasks.Add(requestTask);
                 }
-                Assert.True(Task.WaitAll(requestTasks.ToArray(), TimeSpan.FromSeconds(2)), "Timed out");
+                Assert.True(Task.WaitAll(requestTasks.ToArray(), TimeSpan.FromSeconds(60)), "Timed out");
             }
         }
 
