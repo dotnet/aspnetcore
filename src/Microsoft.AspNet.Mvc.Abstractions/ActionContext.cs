@@ -29,9 +29,12 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         /// <param name="actionContext">The <see cref="ActionContext"/> to copy.</param>
         public ActionContext([NotNull] ActionContext actionContext)
-            : this(actionContext.HttpContext, actionContext.RouteData, actionContext.ActionDescriptor)
+            : this(
+                actionContext.HttpContext, 
+                actionContext.RouteData, 
+                actionContext.ActionDescriptor, 
+                actionContext.ModelState)
         {
-            ModelState = actionContext.ModelState;
         }
 
         /// <summary>
