@@ -1,4 +1,6 @@
 ﻿@using TagHelpersWebSite.Models
+@using Microsoft.AspNet.Mvc.Razor
+
 @model WebsiteContext
 
 @{
@@ -16,6 +18,15 @@
     </style>
 }
 
+@functions {
+    public void RenderTemplate(string title, Func<string, HelperResult> template)
+    {
+        Output.WriteLine("<br /><p><em>Rendering Template:</em></p>");
+        var helperResult = template(title);
+        helperResult.WriteTo(Output, HtmlEncoder);
+    }
+}
+
 <div condition="!Model.Approved">
     <p>This website has <strong surround="em">not</strong> been approved yet. Visit www.contoso.com for <strong make-pretty="false">more</strong> information.</p>
 </div>
@@ -25,6 +36,11 @@
     <tag-cloud count="Model.TagsToShow" surround="div" />
     <h3>Current Tag Cloud from ViewComponentHelper:</h3>
     <section bold>@await Component.InvokeAsync("Tags", 15)</section>
+    @{
+        RenderTemplate(
+            "Tag Cloud from Template: ",
+            @<div condition="true"><h3>@item</h3><tag-cloud count="Model.TagsToShow"></tag-cloud></div>);
+    }
 </div>
 
 @section footerContent {

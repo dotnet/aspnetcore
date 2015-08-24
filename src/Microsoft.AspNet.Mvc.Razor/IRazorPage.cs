@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <summary>
         /// Gets or sets the action invoked to render the body.
         /// </summary>
-        Action<TextWriter> RenderBodyDelegate { get; set; }
+        Func<TextWriter, Task> RenderBodyDelegateAsync { get; set; }
 
         /// <summary>
         /// Gets or sets a flag that determines if the layout of this page is being rendered.

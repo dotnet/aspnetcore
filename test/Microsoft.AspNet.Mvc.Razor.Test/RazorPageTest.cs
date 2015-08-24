@@ -301,7 +301,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
                 { "baz", _nullRenderAsyncDelegate }
             };
-            page.RenderBodyDelegate = CreateBodyAction("body-content");
+            page.RenderBodyDelegateAsync = CreateBodyAction("body-content");
 
             // Act
             await page.ExecuteAsync();
@@ -325,7 +325,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
                 { "baz", _nullRenderAsyncDelegate }
             };
-            page.RenderBodyDelegate = CreateBodyAction("body-content");
+            page.RenderBodyDelegateAsync = CreateBodyAction("body-content");
 
             // Act
             await page.ExecuteAsync();
@@ -338,7 +338,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         public async Task RenderSection_ThrowsIfSectionIsRenderedMoreThanOnce()
         {
             // Arrange
-            var expected = new HelperResult(action: null);
+            var expected = new HelperResult(asyncAction: null);
             var page = CreatePage(v =>
             {
                 v.Path = "/Views/TestPath/Test.cshtml";
@@ -362,7 +362,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         public async Task RenderSectionAsync_ThrowsIfSectionIsRenderedMoreThanOnce()
         {
             // Arrange
-            var expected = new HelperResult(action: null);
+            var expected = new HelperResult(asyncAction: null);
             var page = CreatePage(async v =>
             {
                 v.Path = "/Views/TestPath/Test.cshtml";
@@ -386,7 +386,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         public async Task RenderSectionAsync_ThrowsIfSectionIsRenderedMoreThanOnce_WithSyncMethod()
         {
             // Arrange
-            var expected = new HelperResult(action: null);
+            var expected = new HelperResult(asyncAction: null);
             var page = CreatePage(async v =>
             {
                 v.Path = "/Views/TestPath/Test.cshtml";
@@ -410,7 +410,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         public async Task RenderSectionAsync_ThrowsIfNotInvokedFromLayoutPage()
         {
             // Arrange
-            var expected = new HelperResult(action: null);
+            var expected = new HelperResult(asyncAction: null);
             var page = CreatePage(async v =>
             {
                 v.Path = "/Views/TestPath/Test.cshtml";
@@ -434,7 +434,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
             });
             page.Path = path;
-            page.RenderBodyDelegate = CreateBodyAction("some content");
+            page.RenderBodyDelegateAsync = CreateBodyAction("some content");
 
             // Act
             await page.ExecuteAsync();
@@ -454,7 +454,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
             });
             page.Path = path;
-            page.RenderBodyDelegate = CreateBodyAction("some content");
+            page.RenderBodyDelegateAsync = CreateBodyAction("some content");
             page.PreviousSectionWriters = new Dictionary<string, RenderAsyncDelegate>
             {
                 { sectionName, _nullRenderAsyncDelegate }
@@ -480,7 +480,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 v.RenderSection(sectionA);
                 v.RenderSection(sectionB);
             });
-            page.RenderBodyDelegate = CreateBodyAction("some content");
+            page.RenderBodyDelegateAsync = CreateBodyAction("some content");
             page.PreviousSectionWriters = new Dictionary<string, RenderAsyncDelegate>
             {
                 { sectionA, _nullRenderAsyncDelegate },
@@ -514,7 +514,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 v.Write(v.RenderSection("footer"));
                 v.WriteLiteral("Layout end");
             });
-            page.RenderBodyDelegate = CreateBodyAction("body content" + Environment.NewLine);
+            page.RenderBodyDelegateAsync = CreateBodyAction("body content" + Environment.NewLine);
             page.PreviousSectionWriters = new Dictionary<string, RenderAsyncDelegate>
             {
                 {
@@ -1834,9 +1834,9 @@ namespace Microsoft.AspNet.Mvc.Razor
                 new HtmlHelperOptions());
         }
 
-        private static Action<TextWriter> CreateBodyAction(string value)
+        private static Func<TextWriter, Task> CreateBodyAction(string value)
         {
-            return (writer) => writer.Write(value);
+            return async (writer) => await writer.WriteAsync(value);
         }
 
         public abstract class TestableRazorPage : RazorPage

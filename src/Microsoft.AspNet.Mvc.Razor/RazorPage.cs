@@ -126,7 +126,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <inheritdoc />
-        public Action<TextWriter> RenderBodyDelegate { get; set; }
+        public Func<TextWriter, Task> RenderBodyDelegateAsync { get; set; }
 
         /// <inheritdoc />
         public bool IsLayoutBeingRendered { get; set; }
@@ -685,14 +685,14 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         protected virtual HelperResult RenderBody()
         {
-            if (RenderBodyDelegate == null)
+            if (RenderBodyDelegateAsync == null)
             {
                 var message = Resources.FormatRazorPage_MethodCannotBeCalled(nameof(RenderBody), Path);
                 throw new InvalidOperationException(message);
             }
 
             _renderedBody = true;
-            return new HelperResult(RenderBodyDelegate);
+            return new HelperResult(RenderBodyDelegateAsync);
         }
 
         /// <summary>
@@ -860,7 +860,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     throw new InvalidOperationException(Resources.FormatSectionsNotRendered(Path, sectionNames));
                 }
             }
-            else if (RenderBodyDelegate != null && !_renderedBody)
+            else if (RenderBodyDelegateAsync != null && !_renderedBody)
             {
                 // There are no sections defined, but RenderBody was NOT called.
                 // If a body was defined, then RenderBody should have been called.

@@ -189,7 +189,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 // in the layout.
                 previousPage.IsLayoutBeingRendered = true;
                 layoutPage.PreviousSectionWriters = previousPage.SectionWriters;
-                layoutPage.RenderBodyDelegate = bodyWriter.CopyTo;
+                layoutPage.RenderBodyDelegateAsync = bodyWriter.CopyToAsync;
                 bodyWriter = await RenderPageAsync(layoutPage, context, executeViewStart: false);
 
                 renderedLayouts.Add(layoutPage);
