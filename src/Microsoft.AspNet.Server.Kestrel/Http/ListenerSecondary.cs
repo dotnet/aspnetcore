@@ -9,11 +9,15 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Server.Kestrel.Http
 {
-    public class ListenerSecondary : ListenerContext, IDisposable
+    /// <summary>
+    /// A secondary listener is delegated requests from a primary listener via a named pipe or 
+    /// UNIX domain socket.
+    /// </summary>
+    public abstract class ListenerSecondary<T> : ListenerContext, IListenerSecondary where T : UvStreamHandle
     {
         UvPipeHandle DispatchPipe { get; set; }
 
-        public ListenerSecondary(IMemoryPool memory)
+        protected ListenerSecondary(IMemoryPool memory)
         {
             Memory = memory;
         }
@@ -64,8 +68,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                                             return;
                                         }
 
-                                        var acceptSocket = new UvTcpHandle();
-                                        acceptSocket.Init(Thread.Loop, Thread.QueueCloseHandle);
+                                        var acceptSocket = CreateAcceptSocket();
 
                                         try
                                         {
@@ -101,6 +104,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }, null);
             return tcs.Task;
         }
+
+        /// <summary>
+        /// Creates a socket which can be used to accept an incoming connection
+        /// </summary>
+        protected abstract T CreateAcceptSocket();
 
         public void Dispose()
         {

@@ -1,25 +1,22 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 using Microsoft.AspNet.Server.Kestrel.Networking;
 using System;
 using System.Diagnostics;
-using System.Net;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Server.Kestrel.Http
 {
     /// <summary>
-    /// Summary description for Accept
+    /// Base class for listeners in Kestrel. Listens for incoming connections
     /// </summary>
-    public class Listener : ListenerContext, IDisposable
+    /// <typeparam name="T">Type of socket used by this listener</typeparam>
+    public abstract class Listener<T> : ListenerContext, IListener where T : UvStreamHandle
     {
-        private static readonly Action<UvStreamHandle, int, Exception, object> _connectionCallback = ConnectionCallback;
+        protected T ListenSocket { get; private set; }
 
-        UvTcpHandle ListenSocket { get; set; }
-
-        private static void ConnectionCallback(UvStreamHandle stream, int status, Exception error, object state)
+        protected static void ConnectionCallback(UvStreamHandle stream, int status, Exception error, object state)
         {
             if (error != null)
             {
@@ -27,11 +24,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
             else
             {
-                ((Listener)state).OnConnection(stream, status);
+                ((Listener<T>)state).OnConnection((T)stream, status);
             }
         }
 
-        public Listener(IMemoryPool memory)
+        protected Listener(IMemoryPool memory)
         {
             Memory = memory;
         }
@@ -51,10 +48,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {
                 try
                 {
-                    ListenSocket = new UvTcpHandle();
-                    ListenSocket.Init(Thread.Loop, Thread.QueueCloseHandle);
-                    ListenSocket.Bind(new IPEndPoint(IPAddress.Any, port));
-                    ListenSocket.Listen(Constants.ListenBacklog, _connectionCallback, this);
+                    ListenSocket = CreateListenSocket(host, port);
                     tcs.SetResult(0);
                 }
                 catch (Exception ex)
@@ -65,16 +59,19 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             return tcs.Task;
         }
 
-        private void OnConnection(UvStreamHandle listenSocket, int status)
-        {
-            var acceptSocket = new UvTcpHandle();
-            acceptSocket.Init(Thread.Loop, Thread.QueueCloseHandle);
-            listenSocket.Accept(acceptSocket);
+        /// <summary>
+        /// Creates the socket used to listen for incoming connections
+        /// </summary>
+        protected abstract T CreateListenSocket(string host, int port);
 
-            DispatchConnection(acceptSocket);
-        }
+        /// <summary>
+        /// Handles an incoming connection
+        /// </summary>
+        /// <param name="listenSocket">Socket being used to listen on</param>
+        /// <param name="status">Connection status</param>
+        protected abstract void OnConnection(T listenSocket, int status);
 
-        protected virtual void DispatchConnection(UvTcpHandle socket)
+        protected virtual void DispatchConnection(T socket)
         {
             var connection = new Connection(this, socket);
             connection.Start();
