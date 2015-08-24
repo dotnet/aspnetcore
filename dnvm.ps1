@@ -67,7 +67,7 @@ function _WriteOut {
 
 ### Constants
 $ProductVersion="1.0.0"
-$BuildVersion="beta7-10410"
+$BuildVersion="beta8-15502"
 $Authors="Microsoft Open Technologies, Inc."
 
 # If the Version hasn't been replaced...
@@ -359,7 +359,7 @@ function Get-RuntimeAlias {
     if($Aliases -eq $null) {
         _WriteDebug "Scanning for aliases in $AliasesDir"
         if(Test-Path $AliasesDir) {
-            $Aliases = @(Get-ChildItem ($UserHome + "\alias\") | Select-Object @{label='Alias';expression={$_.BaseName}}, @{label='Name';expression={Get-Content $_.FullName }})
+            $Aliases = @(Get-ChildItem ($UserHome + "\alias\") | Select-Object @{label='Alias';expression={$_.BaseName}}, @{label='Name';expression={Get-Content $_.FullName }}, @{label='Orphan';expression={-Not (Test-Path ($RuntimesDir + "\" + (Get-Content $_.FullName)))}})
         } else {
             $Aliases = @()
         }
@@ -396,18 +396,20 @@ function Get-RuntimeAliasOrRuntimeInfo(
 filter List-Parts {
     param($aliases)
 
-    $binDir = Join-Path $_.FullName "bin"
-    if (!(Test-Path $binDir)) {
-        return
+	$location = ""
+
+	$binDir = Join-Path $_.FullName "bin"
+	if ((Test-Path $binDir)) {
+        $location = $_.Parent.FullName
     }
-    $active = IsOnPath $binDir
-    
+	$active = IsOnPath $binDir
+
     $fullAlias=""
     $delim=""
 
     foreach($alias in $aliases) {
         if($_.Name.Split('\', 2) -contains $alias.Name) {
-            $fullAlias += $delim + $alias.Alias
+            $fullAlias += $delim + $alias.Alias + (&{if($alias.Orphan){" (missing)"}})
             $delim = ", "
         }
     }
@@ -416,7 +418,7 @@ filter List-Parts {
     $parts2 = $parts1[0].Split('-', 4)
 
     if($parts1[0] -eq "$RuntimePackageName-mono") {
-        $parts2 += "linux/darwin"
+        $parts2 += "linux/osx"
         $parts2 += "x86/x64"
     }
 
@@ -426,7 +428,7 @@ filter List-Parts {
         Runtime = $parts2[1]
         OperatingSystem = $parts2[2]
         Architecture = $parts2[3]
-        Location = $_.Parent.FullName
+        Location = $location
         Alias = $fullAlias
     }
 }
@@ -925,7 +927,7 @@ function dnvm-help {
         _WriteOut -ForegroundColor $ColorScheme.Help_Header "commands: "
         Get-Command "$CommandPrefix*" | 
             ForEach-Object {
-                if($Host.Version.MajorVersion -lt 3) {
+                if($Host.Version.Major -lt 3) {
                     $h = Get-Help $_.Name
                 } else {
                     $h = Get-Help $_.Name -ShowWindow:$false
@@ -977,6 +979,10 @@ function dnvm-list {
             $items += Get-ChildItem "$_\runtimes\$RuntimePackageName-*" | List-Parts $aliases
         }
     }
+
+	$aliases | Where-Object {$_.Orphan} | ForEach-Object {
+		$items += $_ | Select-Object @{label='Name';expression={$_.Name}}, @{label='FullName';expression={Join-Path $RuntimesDir $_.Name}} | List-Parts $aliases
+	}
 
     if($PassThru) {
         $items

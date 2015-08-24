@@ -2,7 +2,7 @@
 # Source this file from your .bash-profile or script to use
 
 # "Constants"
-_DNVM_BUILDNUMBER="beta7-10410"
+_DNVM_BUILDNUMBER="beta8-15502"
 _DNVM_AUTHORS="Microsoft Open Technologies, Inc."
 _DNVM_RUNTIME_PACKAGE_NAME="dnx"
 _DNVM_RUNTIME_FRIENDLY_NAME=".NET Execution Environment"
@@ -736,7 +736,7 @@ dnvm()
             [[ ! -d $_DNVM_USER_PACKAGES ]] && echo "$_DNVM_RUNTIME_FRIENDLY_NAME is not installed." && return 1
 
             local searchGlob="$_DNVM_RUNTIME_PACKAGE_NAME-*"
-            local runtimes="$(find $_DNVM_USER_PACKAGES -name "$searchGlob" \( -type d -or -type l \) -prune -exec basename {} \; | sort -t. -k2 -k3 -k4 -k1)"
+            local runtimes="$(find $_DNVM_USER_PACKAGES -name "$searchGlob" \( -type d -or -type l \) -prune -exec basename {} \;)"
 
             [[ -z $runtimes ]] && echo 'No runtimes installed. You can run `dnvm install latest` or `dnvm upgrade` to install a runtime.' && return
 
@@ -752,7 +752,12 @@ dnvm()
             local format="%-20s %s\n"
             if [ -d "$_DNVM_ALIAS_DIR" ]; then
                 for __dnvm_file in $(find "$_DNVM_ALIAS_DIR" -name *.alias); do
-                    arr[$i]="$(basename $__dnvm_file | sed 's/\.alias//')/$(cat $__dnvm_file)"
+                    if [ ! -d "$_DNVM_USER_PACKAGES/$(cat $__dnvm_file)" ]; then
+                        arr[$i]="$(basename $__dnvm_file | sed 's/\.alias//')/missing/$(cat $__dnvm_file)"
+                        runtimes="$runtimes $(cat $__dnvm_file)"
+                    else
+                        arr[$i]="$(basename $__dnvm_file | sed 's/\.alias//')/$(cat $__dnvm_file)"
+                    fi
                     let i+=1
                 done
             fi
@@ -767,8 +772,8 @@ dnvm()
                 printf "$formatString" "------" "-------" "-------" "----" "---------------" "-----"
             fi
 
-            local formattedHome=`(echo $_DNVM_USER_PACKAGES | sed s=$HOME=~=g)`
-            for f in `echo $runtimes`; do
+            for f in `echo $runtimes  | sort -t. -k2 -k3 -k4 -k1`; do
+                local formattedHome=`(echo $_DNVM_USER_PACKAGES | sed s=$HOME=~=g)`
                 local active=""
                 [[ $PATH == *"$_DNVM_USER_PACKAGES/$f/bin"* ]] && local active="  *"
                 local pkgRuntime=$(__dnvm_package_runtime "$f")
@@ -780,9 +785,13 @@ dnvm()
                 local alias=""
                 local delim=""
                 for i in "${arr[@]}"; do
-                    if [[ ${i#*/} == "$pkgName.$pkgVersion" ]]; then
-                        alias+="$delim${i%/*}"
+                    if [[ ${i##*/} == "$pkgName.$pkgVersion" ]]; then
+                        alias+="$delim${i%%/*}"
                         delim=", "
+                        if [[ "${i%/*}" =~ \/missing$ ]]; then
+                            alias+=" (missing)"
+                            formattedHome=""
+                        fi
                     fi
                 done
 
