@@ -1483,6 +1483,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                 return new TheoryData<string, string, IEnumerable<TagHelperDescriptor>>
                 {
                     { "SingleTagHelper", null, DefaultPAndInputTagHelperDescriptors },
+                    { "SingleTagHelperWithNewlineBeforeAttributes", null, DefaultPAndInputTagHelperDescriptors },
                     { "BasicTagHelpers", null, DefaultPAndInputTagHelperDescriptors },
                     { "BasicTagHelpers.RemoveTagHelper", null, DefaultPAndInputTagHelperDescriptors },
                     { "BasicTagHelpers.Prefixed", null, PrefixedPAndInputTagHelperDescriptors },

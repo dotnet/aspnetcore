@@ -405,9 +405,9 @@ namespace Microsoft.AspNet.Razor.Parser
 
         private void TagContent()
         {
-            if (!At(HtmlSymbolType.WhiteSpace))
+            if (!At(HtmlSymbolType.WhiteSpace) && !At(HtmlSymbolType.NewLine))
             {
-                // We should be right after the tag name, so if there's no whitespace, something is wrong
+                // We should be right after the tag name, so if there's no whitespace or new line, something is wrong
                 RecoverToEndOfTag();
             }
             else
