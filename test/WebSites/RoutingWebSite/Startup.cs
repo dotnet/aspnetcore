@@ -44,6 +44,10 @@ namespace RoutingWebSite
                     "DuplicateRoute",
                     "conventional/Duplicate",
                     defaults: new { controller = "Duplicate", action = "Duplicate" });
+
+                routes.MapRoute(
+                    "RouteWithOptionalSegment",
+                    "{controller}/{action}/{path?}");
             });
         }
     }

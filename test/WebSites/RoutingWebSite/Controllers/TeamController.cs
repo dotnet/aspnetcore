@@ -62,5 +62,11 @@ namespace RoutingWebSite
         {
             return Content(Url.Action(), "text/plain");
         }
+
+        [HttpGet("/TeamName/{*Name}/")]
+        public ActionResult GetTeam(string name = "DefaultName")
+        {
+            return _generator.Generate("/TeamName/" + name);
+        }
     }
 }

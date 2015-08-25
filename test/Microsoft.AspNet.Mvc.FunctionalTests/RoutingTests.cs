@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         private readonly Action<IServiceCollection> _configureServices = new RoutingWebSite.Startup().ConfigureServices;
 
         [Fact]
-        public async Task ConventionRoutedController_ActionIsReachable()
+        public async Task ConventionalRoutedController_ActionIsReachable()
         {
             // Arrange
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task ConventionRoutedController_ActionIsReachable_WithDefaults()
+        public async Task ConventionalRoutedController_ActionIsReachable_WithDefaults()
         {
             // Arrange
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
@@ -78,7 +78,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task ConventionRoutedController_NonActionIsNotReachable()
+        public async Task ConventionalRoutedController_NonActionIsNotReachable()
         {
             // Arrange
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
@@ -92,7 +92,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task ConventionRoutedController_InArea_ActionIsReachable()
+        public async Task ConventionalRoutedController_InArea_ActionIsReachable()
         {
             // Arrange
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
@@ -121,7 +121,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task ConventionRoutedController_InArea_ActionBlockedByHttpMethod()
+        public async Task ConventionalRoutedController_InArea_ActionBlockedByHttpMethod()
         {
             // Arrange
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
@@ -132,6 +132,27 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Theory]
+        [InlineData("", "/Home/OptionalPath/default")]
+        [InlineData("CustomPath", "/Home/OptionalPath/CustomPath")]
+        public async Task ConventionalRoutedController_WithOptionalSegment(string optionalSegment, string expected)
+        {
+            // Arrange
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
+            var client = server.CreateClient();
+
+            // Act
+            var response = await client.GetAsync("http://localhost/Home/OptionalPath/" + optionalSegment);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            Assert.Single(result.ExpectedUrls, expected);
         }
 
         [Fact]
@@ -338,7 +359,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         // There's two actions at this URL - but attribute routes go in the route table
         // first.
         [Fact]
-        public async Task AttributeRoutedAction_TriedBeforeConventionRouting()
+        public async Task AttributeRoutedAction_TriedBeforeConventionalRouting()
         {
             // Arrange
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
@@ -719,6 +740,24 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Assert
             Assert.NotNull(response);
             Assert.Equal("/Teams/AllOrganizations", response);
+        }
+
+        [Theory]
+        [InlineData("", "/TeamName/DefaultName")]
+        [InlineData("CustomName", "/TeamName/CustomName")]
+        public async Task AttributeRoutedAction_PreservesDefaultValue_IfRouteValueIsNull(string teamName, string expected)
+        {
+            // Arrange
+            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
+            var client = server.CreateClient();
+
+            // Act
+            var body = await client.GetStringAsync("http://localhost/TeamName/" + teamName);
+
+            // Assert
+            Assert.NotNull(body);
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+            Assert.Single(result.ExpectedUrls, expected);
         }
 
         [Fact]

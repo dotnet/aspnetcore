@@ -1464,6 +1464,62 @@ namespace Microsoft.AspNet.Mvc.Routing
         }
 
         [Fact]
+        public async Task AttributeRoute_ReplacesExistingRouteValues_IfNotNull()
+        {
+            // Arrange
+            var router = new Mock<IRouter>();
+            router
+                .Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
+                .Callback<RouteContext>((c) =>
+                {
+                    c.IsHandled = true;
+                })
+                .Returns(Task.FromResult(true));
+
+            var entry = CreateMatchingEntry(router.Object, "Foo/{*path}", order: 0);
+            var route = CreateAttributeRoute(router.Object, entry);
+
+            var context = CreateRouteContext("/Foo/Bar");
+
+            var originalRouteData = context.RouteData;
+            originalRouteData.Values.Add("path", "default");
+
+            // Act
+            await route.RouteAsync(context);
+
+            // Assert
+            Assert.Equal("Bar", context.RouteData.Values["path"]);
+        }
+
+        [Fact]
+        public async Task AttributeRoute_DoesNotReplaceExistingRouteValues_IfNull()
+        {
+            // Arrange
+            var router = new Mock<IRouter>();
+            router
+                .Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
+                .Callback<RouteContext>((c) =>
+                {
+                    c.IsHandled = true;
+                })
+                .Returns(Task.FromResult(true));
+
+            var entry = CreateMatchingEntry(router.Object, "Foo/{*path}", order: 0);
+            var route = CreateAttributeRoute(router.Object, entry);
+
+            var context = CreateRouteContext("/Foo/");
+
+            var originalRouteData = context.RouteData;
+            originalRouteData.Values.Add("path", "default");
+
+            // Act
+            await route.RouteAsync(context);
+
+            // Assert
+            Assert.Equal("default", context.RouteData.Values["path"]);
+        }
+
+        [Fact]
         public async Task AttributeRoute_CreatesNewRouteData_ResetsWhenNotMatched()
         {
             // Arrange

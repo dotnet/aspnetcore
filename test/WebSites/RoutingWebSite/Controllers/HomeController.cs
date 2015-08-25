@@ -30,5 +30,10 @@ namespace RoutingWebSite
         {
             return _generator.Generate("/Home/Contact");
         }
+
+        public IActionResult OptionalPath(string path = "default")
+        {
+            return _generator.Generate("/Home/OptionalPath/" + path);
+        }
     }
 }
