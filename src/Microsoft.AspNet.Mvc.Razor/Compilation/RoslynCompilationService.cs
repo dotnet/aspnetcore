@@ -14,11 +14,11 @@ using Microsoft.AspNet.Mvc.Razor.Internal;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
-using Microsoft.Framework.Internal;
-using Microsoft.Framework.OptionsModel;
-using Microsoft.Dnx.Runtime;
 using Microsoft.Dnx.Compilation;
 using Microsoft.Dnx.Compilation.CSharp;
+using Microsoft.Dnx.Runtime;
+using Microsoft.Framework.Internal;
+using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc.Razor.Compilation
 {
@@ -258,7 +258,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                 }
             });
 
-            return metadata.GetReference();
+            return metadata.GetReference(filePath: path);
         }
 
         private static bool IsError(Diagnostic diagnostic)
