@@ -403,7 +403,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
 
             ticket = ValidateToken(idToken, message, properties, validationParameters, out jwt);
 
-            await ValidateOpenIdConnectProtocolAsync(jwt, null);
+            await ValidateOpenIdConnectProtocolAsync(null, message);
 
             if (Options.GetClaimsFromUserInfoEndpoint)
             {
@@ -878,23 +878,26 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
 
         private async Task ValidateOpenIdConnectProtocolAsync(JwtSecurityToken jwt, OpenIdConnectMessage message)
         {
-            string nonce = jwt.Payload.Nonce;
-            if (Options.CacheNonces)
+            string nonce = jwt?.Payload.Nonce;
+            if (!string.IsNullOrEmpty(nonce))
             {
-                if (await Options.NonceCache.GetAsync(nonce) != null)
+                if (Options.CacheNonces)
                 {
-                    await Options.NonceCache.RemoveAsync(nonce);
+                    if (await Options.NonceCache.GetAsync(nonce) != null)
+                    {
+                        await Options.NonceCache.RemoveAsync(nonce);
+                    }
+                    else
+                    {
+                        // If the nonce cannot be removed, it was
+                        // already used and MUST be rejected.
+                        nonce = null;
+                    }
                 }
                 else
                 {
-                    // If the nonce cannot be removed, it was
-                    // already used and MUST be rejected.
-                    nonce = null;
+                    nonce = ReadNonceCookie(nonce);
                 }
-            }
-            else
-            {
-                nonce = ReadNonceCookie(nonce);
             }
 
             var protocolValidationContext = new OpenIdConnectProtocolValidationContext
