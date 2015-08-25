@@ -71,6 +71,7 @@ namespace Microsoft.AspNet.Hosting.Internal
                 async features =>
                 {
                     var httpContext = contextFactory.CreateHttpContext(features);
+                    httpContext.ApplicationServices = _applicationServices;
                     var requestIdentifier = GetRequestIdentifier(httpContext);
 
                     using (logger.BeginScope("Request Id: {RequestId}", requestIdentifier))

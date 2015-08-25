@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.TestHost
         [Fact]
         public async Task RequestServicesAutoCreated()
         {
-            TestServer server = TestServer.Create(app =>
+            var server = TestServer.Create(app =>
             {
                 app.Run(context =>
                 {
@@ -53,6 +53,33 @@ namespace Microsoft.AspNet.TestHost
 
             string result = await server.CreateClient().GetStringAsync("/path");
             Assert.Equal("RequestServices:True", result);
+        }
+
+        public class CustomContainerStartup
+        {
+            public IServiceProvider Services;
+            public IServiceProvider ConfigureServices(IServiceCollection services)
+            {
+                Services = services.BuildServiceProvider();
+                return Services;
+            }
+
+            public void Configure(IApplicationBuilder app)
+            {
+                app.Run(async context =>
+                {
+                    await context.Response.WriteAsync("ApplicationServicesEqual:" + (context.ApplicationServices == Services));
+                });
+            }
+
+        }
+
+        [Fact]
+        public async Task CustomServiceProviderReplacesApplicationServices()
+        {
+            var server = new TestServer(TestServer.CreateBuilder().UseStartup<CustomContainerStartup>());
+            string result = await server.CreateClient().GetStringAsync("/path");
+            Assert.Equal("ApplicationServicesEqual:True", result);
         }
 
         public class TestService { }
@@ -102,6 +129,29 @@ namespace Microsoft.AspNet.TestHost
             services => services.AddTransient<IStartupFilter, RequestServicesFilter>());
             string result = await server.CreateClient().GetStringAsync("/path");
             Assert.Equal("Found:True", result);
+        }
+
+        public class EnsureApplicationServicesFilter : IStartupFilter
+        {
+            public Action<IApplicationBuilder> Configure(IApplicationBuilder app, Action<IApplicationBuilder> next)
+            {
+                return builder =>
+                {
+                    app.Run(context => {
+                        Assert.NotNull(context.ApplicationServices);
+                        return context.Response.WriteAsync("Done");
+                    });
+                };
+            }
+        }
+
+        [Fact]
+        public async Task ApplicationServicesShouldSetBeforeStatupFilters()
+        {
+            var server = TestServer.Create(app => { },
+                services => services.AddTransient<IStartupFilter, EnsureApplicationServicesFilter>());
+            string result = await server.CreateClient().GetStringAsync("/path");
+            Assert.Equal("Done", result);
         }
 
 
