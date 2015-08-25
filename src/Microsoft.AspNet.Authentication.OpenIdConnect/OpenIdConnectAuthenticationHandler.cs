@@ -403,13 +403,13 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
 
             ticket = ValidateToken(idToken, message, properties, validationParameters, out jwt);
 
+            await ValidateOpenIdConnectProtocolAsync(null, message);
+
             if (Options.GetClaimsFromUserInfoEndpoint)
             {
                 Logger.LogDebug(Resources.OIDCH_0040_Sending_Request_UIEndpoint);
                 ticket = await GetUserInformationAsync(properties, tokenEndpointResponse.Message, ticket);
             }
-
-            await ValidateOpenIdConnectProtocolAsync(jwt, null);
 
             var securityTokenValidatedNotification = await RunSecurityTokenValidatedNotificationAsync(message, ticket);
             if (securityTokenValidatedNotification.HandledResponse)
@@ -528,8 +528,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             var subjectClaimType = identity.FindFirst(ClaimTypes.NameIdentifier);
             if (subjectClaimType == null)
             {
-                Logger.LogError(string.Format(CultureInfo.InvariantCulture, Resources.OIDCH_0041_Subject_Claim_Not_Found, identity.ToString()));
-                return ticket;
+                throw new OpenIdConnectProtocolException(string.Format(CultureInfo.InvariantCulture, Resources.OIDCH_0041_Subject_Claim_Not_Found, identity.ToString()));
             }
 
             var userInfoSubjectClaimValue = user.Value<string>(JwtRegisteredClaimNames.Sub);
@@ -537,8 +536,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             // check if the sub claim matches
             if (userInfoSubjectClaimValue == null || !string.Equals(userInfoSubjectClaimValue, subjectClaimType.Value, StringComparison.Ordinal))
             {
-                Logger.LogError(Resources.OIDCH_0039_Subject_Claim_Mismatch);
-                return ticket;
+                throw new OpenIdConnectProtocolException(Resources.OIDCH_0039_Subject_Claim_Mismatch);
             }
 
             foreach (var claim in identity.Claims)
@@ -880,23 +878,26 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
 
         private async Task ValidateOpenIdConnectProtocolAsync(JwtSecurityToken jwt, OpenIdConnectMessage message)
         {
-            string nonce = jwt.Payload.Nonce;
-            if (Options.CacheNonces)
+            string nonce = jwt?.Payload.Nonce;
+            if (!string.IsNullOrEmpty(nonce))
             {
-                if (await Options.NonceCache.GetAsync(nonce) != null)
+                if (Options.CacheNonces)
                 {
-                    await Options.NonceCache.RemoveAsync(nonce);
+                    if (await Options.NonceCache.GetAsync(nonce) != null)
+                    {
+                        await Options.NonceCache.RemoveAsync(nonce);
+                    }
+                    else
+                    {
+                        // If the nonce cannot be removed, it was
+                        // already used and MUST be rejected.
+                        nonce = null;
+                    }
                 }
                 else
                 {
-                    // If the nonce cannot be removed, it was
-                    // already used and MUST be rejected.
-                    nonce = null;
+                    nonce = ReadNonceCookie(nonce);
                 }
-            }
-            else
-            {
-                nonce = ReadNonceCookie(nonce);
             }
 
             var protocolValidationContext = new OpenIdConnectProtocolValidationContext
