@@ -104,48 +104,6 @@ namespace Microsoft.AspNet.Http.Internal
             return Store.GetEnumerator();
         }
 
-
-        /// <summary>
-        /// Get the associated values from the collection separated into individual values.
-        /// Quoted values will not be split, and the quotes will be removed.
-        /// </summary>
-        /// <param name="key">The header name.</param>
-        /// <returns>the associated values from the collection separated into individual values, or StringValues.Empty if the key is not present.</returns>
-        public StringValues GetCommaSeparatedValues(string key)
-        {
-            return ParsingHelpers.GetHeaderSplit(Store, key);
-        }
-
-        /// <summary>
-        /// Add new values. Each item remains a separate array entry.
-        /// </summary>
-        /// <param name="key">The header name.</param>
-        /// <param name="value">The header value.</param>
-        public void Append(string key, StringValues value)
-        {
-            ParsingHelpers.AppendHeaderUnmodified(Store, key, value);
-        }
-
-        /// <summary>
-        /// Quotes any values containing comas, and then coma joins all of the values with any existing values.
-        /// </summary>
-        /// <param name="key">The header name.</param>
-        /// <param name="values">The header values.</param>
-        public void AppendCommaSeparatedValues(string key, params string[] values)
-        {
-            ParsingHelpers.AppendHeaderJoined(Store, key, values);
-        }
-
-        /// <summary>
-        /// Quotes any values containing comas, and then coma joins all of the values.
-        /// </summary>
-        /// <param name="key">The header name.</param>
-        /// <param name="values">The header values.</param>
-        public void SetCommaSeparatedValues(string key, params string[] values)
-        {
-            ParsingHelpers.SetHeaderJoined(Store, key, values);
-        }
-
         /// <summary>
         /// Adds the given header and values to the collection.
         /// </summary>

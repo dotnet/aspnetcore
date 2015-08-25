@@ -4,11 +4,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.Primitives;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Http.Internal
 {
@@ -524,7 +522,7 @@ namespace Microsoft.AspNet.Http.Internal
             return headers.TryGetValue(key, out values) ? values : StringValues.Empty;
         }
 
-        public static void SetHeader([NotNull] IDictionary<string, StringValues> headers, [NotNull] string key, StringValues value)
+        public static void SetHeaderJoined([NotNull] IDictionary<string, StringValues> headers, [NotNull] string key, StringValues value)
         {
             if (string.IsNullOrWhiteSpace(key))
             {
@@ -536,8 +534,26 @@ namespace Microsoft.AspNet.Http.Internal
             }
             else
             {
-                headers[key] = value;
+                headers[key] = string.Join(",", value.Select(QuoteIfNeeded));
             }
+        }
+
+        // Quote items that contain comas and are not already quoted.
+        private static string QuoteIfNeeded(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                // Ignore
+            }
+            else if (value.Contains(','))
+            {
+                if (value[0] != '"' || value[value.Length - 1] != '"')
+                {
+                    value = '"' + value + '"';
+                }
+            }
+
+            return value;
         }
 
         private static string DeQuote(string value)
@@ -554,31 +570,49 @@ namespace Microsoft.AspNet.Http.Internal
             return value;
         }
 
-        public static long? GetContentLength([NotNull] IHeaderDictionary headers)
+        public static void SetHeaderUnmodified([NotNull] IDictionary<string, StringValues> headers, [NotNull] string key, StringValues? values)
         {
-            const NumberStyles styles = NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite;
-            long value;
-            var rawValue = headers[HeaderNames.ContentLength];
-            if (rawValue.Count == 1 &&
-                !string.IsNullOrWhiteSpace(rawValue[0]) &&
-                long.TryParse(rawValue[0], styles, CultureInfo.InvariantCulture, out value))
+            if (string.IsNullOrWhiteSpace(key))
             {
-                return value;
+                throw new ArgumentNullException(nameof(key));
             }
-
-            return null;
-        }
-
-        public static void SetContentLength([NotNull] IHeaderDictionary headers, long? value)
-        {
-            if (value.HasValue)
+            if (!values.HasValue || StringValues.IsNullOrEmpty(values.Value))
             {
-                headers[HeaderNames.ContentLength] = value.Value.ToString(CultureInfo.InvariantCulture);
+                headers.Remove(key);
             }
             else
             {
-                headers.Remove(HeaderNames.ContentLength);
+                headers[key] = values.Value;
             }
+        }
+
+        public static void AppendHeaderJoined([NotNull] IDictionary<string, StringValues> headers, [NotNull] string key, params string[] values)
+        {
+            if (values == null || values.Length == 0)
+            {
+                return;
+            }
+
+            string existing = GetHeader(headers, key);
+            if (existing == null)
+            {
+                SetHeaderJoined(headers, key, values);
+            }
+            else
+            {
+                headers[key] = existing + "," + string.Join(",", values.Select(value => QuoteIfNeeded(value)));
+            }
+        }
+
+        public static void AppendHeaderUnmodified([NotNull] IDictionary<string, StringValues> headers, [NotNull] string key, StringValues values)
+        {
+            if (values.Count == 0)
+            {
+                return;
+            }
+
+            var existing = GetHeaderUnmodified(headers, key);
+            SetHeaderUnmodified(headers, key, StringValues.Concat(existing, values));
         }
     }
 }
