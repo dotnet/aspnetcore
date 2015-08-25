@@ -4,8 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+#if DNXCORE50
 using System.Reflection;
+#endif
 using System.Threading.Tasks;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -45,8 +48,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var modelType = context.ModelType;
 
             return GetArrayBinder(modelType) ??
-                GetCollectionBinder(modelType) ??
                 GetDictionaryBinder(modelType) ??
+                GetCollectionBinder(modelType) ??
                 GetEnumerableBinder(context) ??
                 GetKeyValuePairBinder(modelType);
         }
@@ -58,6 +61,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 var elementType = modelType.GetElementType();
                 return typeof(ArrayModelBinder<>).MakeGenericType(elementType);
             }
+
             return null;
         }
 
@@ -99,9 +103,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             else
             {
                 // A non-null instance must be updated in-place. For that the instance must also implement
-                // ICollection<T>. For example an IEnumerable<T> property may have a List<T> default value.
-                var closedCollectionType = typeof(ICollection<>).MakeGenericType(modelTypeArguments);
-                if (!closedCollectionType.IsAssignableFrom(context.Model.GetType()))
+                // ICollection<T>. For example an IEnumerable<T> property may have a List<T> default value. Do not use
+                // IsAssignableFrom() because that does not handle explicit interface implementations and binders all
+                // perform explicit casts.
+                var closedGenericInterface =
+                    ClosedGenericMatcher.ExtractGenericInterface(context.Model.GetType(), typeof(ICollection<>));
+                if (closedGenericInterface == null)
                 {
                     return null;
                 }
@@ -112,11 +119,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         private static Type GetKeyValuePairBinder(Type modelType)
         {
-            var modelTypeInfo = modelType.GetTypeInfo();
-            if (modelTypeInfo.IsGenericType &&
-                modelTypeInfo.GetGenericTypeDefinition() == typeof(KeyValuePair<,>))
+            Debug.Assert(modelType != null);
+
+            // Since KeyValuePair is a value type, ExtractGenericInterface() succeeds only on an exact match.
+            var closedGenericType = ClosedGenericMatcher.ExtractGenericInterface(modelType, typeof(KeyValuePair<,>));
+            if (closedGenericType != null)
             {
-                return typeof(KeyValuePairModelBinder<,>).MakeGenericType(modelTypeInfo.GenericTypeArguments);
+                return typeof(KeyValuePairModelBinder<,>).MakeGenericType(modelType.GenericTypeArguments);
             }
 
             return null;
@@ -144,28 +153,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Debug.Assert(supportedInterfaceType != null);
             Debug.Assert(modelType != null);
 
-            var modelTypeInfo = modelType.GetTypeInfo();
-            if (!modelTypeInfo.IsGenericType || modelTypeInfo.IsGenericTypeDefinition)
-            {
-                // modelType is not a closed generic type.
-                return null;
-            }
+            var closedGenericInterface =
+                ClosedGenericMatcher.ExtractGenericInterface(modelType, supportedInterfaceType);
 
-            var modelTypeArguments = modelTypeInfo.GenericTypeArguments;
-            if (modelTypeArguments.Length != supportedInterfaceType.GetTypeInfo().GenericTypeParameters.Length)
-            {
-                // Wrong number of generic type arguments.
-                return null;
-            }
-
-            var closedInstanceType = supportedInterfaceType.MakeGenericType(modelTypeArguments);
-            if (!closedInstanceType.IsAssignableFrom(modelType))
-            {
-                // modelType is not compatible with supportedInterfaceType.
-                return null;
-            }
-
-            return modelTypeArguments;
+            return closedGenericInterface?.GenericTypeArguments;
         }
     }
 }

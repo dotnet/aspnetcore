@@ -164,7 +164,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.True(modelBindingResult.IsModelSet);
             Assert.Empty(Assert.IsType<int[]>(modelBindingResult.Model));
 
-            Assert.Equal(0, modelState.Count);
+            Assert.Empty(modelState);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
         }
@@ -330,7 +330,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.True(modelBindingResult.IsModelSet);
             Assert.Empty(Assert.IsType<Person[]>(modelBindingResult.Model));
 
-            Assert.Equal(0, modelState.Count);
+            Assert.Empty(modelState);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
         }
