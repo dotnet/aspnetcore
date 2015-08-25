@@ -3,13 +3,12 @@
 
 using System;
 using Microsoft.AspNet.FileProviders;
-using Microsoft.AspNet.Mvc.Razor.Precompilation;
 using Microsoft.Dnx.Compilation.CSharp;
 using Microsoft.Dnx.Runtime;
 using Microsoft.Framework.Caching.Memory;
 using Microsoft.Framework.DependencyInjection;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet.Mvc.Razor.Precompilation
 {
     /// <summary>
     /// An <see cref="ICompileModule"/> implementation that pre-compiles Razor views in the application.
