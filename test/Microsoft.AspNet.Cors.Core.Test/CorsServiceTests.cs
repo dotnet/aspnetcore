@@ -397,7 +397,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
                 method: "OPTIONS",
                 origin: "http://example.com",
                 accessControlRequestMethod: "PUT",
-                accessControlRequestHeaders: new[] { "Content-Type" });
+                accessControlRequestHeaders: new[] { "content-type", "accept" });
             var policy = new CorsPolicy();
             policy.Origins.Add(CorsConstants.AnyOrigin);
             policy.Methods.Add("*");
@@ -409,8 +409,8 @@ namespace Microsoft.AspNet.Cors.Core.Test
             var result = corsService.EvaluatePolicy(requestContext, policy);
 
             // Assert
-            Assert.Equal(1, result.AllowedHeaders.Count);
-            Assert.Contains("Content-Type", result.AllowedHeaders);
+            Assert.Equal(2, result.AllowedHeaders.Count);
+            Assert.Contains("Content-Type", result.AllowedHeaders, StringComparer.OrdinalIgnoreCase);
         }
 
         [Fact]
