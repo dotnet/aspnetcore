@@ -77,6 +77,12 @@ namespace Microsoft.AspNet.Server.KestrelTests
             await frame.ResponseBody.WriteAsync(bytes, 0, bytes.Length);
         }
 
+        private Task EmptyApp(Frame frame)
+        {
+            frame.ResponseHeaders.Clear();
+            return Task.FromResult<object>(null);
+        }
+
         [Fact]
         public void EngineCanStartAndStop()
         {
@@ -370,28 +376,132 @@ namespace Microsoft.AspNet.Server.KestrelTests
                         "\r\n");
                     await connection.ReceiveEnd(
                         "HTTP/1.0 200 OK",
-                        "Content-Length: 0",
                         "\r\n");
                 }
             }
         }
 
         [Fact]
-        public async Task EmptyResponseBodyHandledCorrectlyWithoutAnyWrites()
+        public async Task ZeroContentLengthSetAutomaticallyAfterNoWrites()
         {
-            using (var server = new TestServer(frame =>
-            {
-                frame.ResponseHeaders.Clear();
-                return Task.FromResult<object>(null);
-            }))
+            using (var server = new TestServer(EmptyApp))
             {
                 using (var connection = new TestConnection())
                 {
                     await connection.SendEnd(
                         "GET / HTTP/1.1",
                         "",
+                        "GET / HTTP/1.0",
+                        "Connection: keep-alive",
+                        "",
                         "");
                     await connection.ReceiveEnd(
+                        "HTTP/1.1 200 OK",
+                        "Content-Length: 0",
+                        "",
+                        "HTTP/1.0 200 OK",
+                        "Content-Length: 0",
+                        "Connection: keep-alive",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task ZeroContentLengthNotSetAutomaticallyForNonKeepAliveRequests()
+        {
+            using (var server = new TestServer(EmptyApp))
+            {
+                using (var connection = new TestConnection())
+                {
+                    await connection.SendEnd(
+                        "GET / HTTP/1.1",
+                        "Connection: close",
+                        "",
+                        "");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 200 OK",
+                        "Connection: close",
+                        "",
+                        "");
+                }
+
+                using (var connection = new TestConnection())
+                {
+                    await connection.SendEnd(
+                        "GET / HTTP/1.0",
+                        "",
+                        "");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.0 200 OK",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task ZeroContentLengthNotSetAutomaticallyForHeadRequests()
+        {
+            using (var server = new TestServer(EmptyApp))
+            {
+                using (var connection = new TestConnection())
+                {
+                    await connection.SendEnd(
+                        "HEAD / HTTP/1.1",
+                        "",
+                        "");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 200 OK",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task ZeroContentLengthNotSetAutomaticallyForCertainStatusCodes()
+        {
+            using (var server = new TestServer(async frame =>
+            {
+                frame.ResponseHeaders.Clear();
+
+                using (var reader = new StreamReader(frame.RequestBody, Encoding.ASCII))
+                {
+                    var statusString = await reader.ReadLineAsync();
+                    frame.StatusCode = int.Parse(statusString);
+                }
+            }))
+            {
+                using (var connection = new TestConnection())
+                {
+                    await connection.SendEnd(
+                        "POST / HTTP/1.1",
+                        "Content-Length: 3",
+                        "",
+                        "101POST / HTTP/1.1",
+                        "Content-Length: 3",
+                        "",
+                        "204POST / HTTP/1.1",
+                        "Content-Length: 3",
+                        "",
+                        "205POST / HTTP/1.1",
+                        "Content-Length: 3",
+                        "",
+                        "304POST / HTTP/1.1",
+                        "Content-Length: 3",
+                        "",
+                        "200");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 101 Switching Protocols",
+                        "",
+                        "HTTP/1.1 204 No Content",
+                        "",
+                        "HTTP/1.1 205 Reset Content",
+                        "",
+                        "HTTP/1.1 304 Not Modified",
+                        "",
                         "HTTP/1.1 200 OK",
                         "Content-Length: 0",
                         "",

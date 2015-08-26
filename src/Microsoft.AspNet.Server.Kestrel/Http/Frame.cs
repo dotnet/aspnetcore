@@ -494,26 +494,33 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 }
             }
 
-            if (appCompleted && !hasTransferEncoding && !hasContentLength)
-            {
-                // Since the app has completed and we are only now generating
-                // the headers we can safely set the Content-Length to 0.
-                writer.Write("Content-Length: 0\r\n");
-                hasContentLength = true;
-            }
-
             if (_keepAlive && !hasTransferEncoding && !hasContentLength)
             {
-                if (HttpVersion == "HTTP/1.1")
+                if (appCompleted)
                 {
-                    _autoChunk = true;
-                    writer.Write("Transfer-Encoding: chunked\r\n");
+                    // Don't set the Content-Length or Transfer-Encoding headers
+                    // automatically for HEAD requests or 101, 204, 205, 304 responses.
+                    if (Method != "HEAD" && StatusCanHaveBody(StatusCode))
+                    {
+                        // Since the app has completed and we are only now generating
+                        // the headers we can safely set the Content-Length to 0.
+                        writer.Write("Content-Length: 0\r\n");
+                    }
                 }
                 else
                 {
-                    _keepAlive = false;
+                    if (HttpVersion == "HTTP/1.1")
+                    {
+                        _autoChunk = true;
+                        writer.Write("Transfer-Encoding: chunked\r\n");
+                    }
+                    else
+                    {
+                        _keepAlive = false;
+                    }
                 }
             }
+
             if (_keepAlive == false && hasConnection == false && HttpVersion == "HTTP/1.1")
             {
                 writer.Write("Connection: close\r\n\r\n");
@@ -672,6 +679,15 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private void AddRequestHeader(byte[] keyBytes, int keyOffset, int keyLength, string value)
         {
             _requestHeaders.Append(keyBytes, keyOffset, keyLength, value);
+        }
+
+        public bool StatusCanHaveBody(int statusCode)
+        {
+            // List of status codes taken from Microsoft.Net.Http.Server.Response
+            return statusCode != 101 &&
+                   statusCode != 204 &&
+                   statusCode != 205 &&
+                   statusCode != 304;
         }
     }
 }
