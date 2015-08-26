@@ -254,11 +254,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 {
                     FireOnStarting();
                 }
-
-                if (_autoChunk)
-                {
-                    WriteChunkedResponseSuffix();
-                }
             }
             catch (Exception ex)
             {
@@ -380,7 +375,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
         }
 
-        public void ProduceStart(bool immediate = true)
+        public void ProduceStart(bool immediate = true, bool appCompleted = false)
         {
             // ProduceStart shouldn't no-op in the future just b/c FireOnStarting throws.
             if (_responseStarted) return;
@@ -389,7 +384,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
             var status = ReasonPhrases.ToStatus(StatusCode, ReasonPhrase);
 
-            var responseHeader = CreateResponseHeader(status, ResponseHeaders);
+            var responseHeader = CreateResponseHeader(status, appCompleted, ResponseHeaders);
             SocketOutput.Write(
                 responseHeader.Item1,
                 (error, x) =>
@@ -428,7 +423,14 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 }
             }
 
-            ProduceStart();
+            ProduceStart(immediate: true, appCompleted: true);
+
+            // _autoChunk should be checked after we are sure ProduceStart() has been called
+            // since ProduceStart() may set _autoChunk to true.
+            if (_autoChunk)
+            {
+                WriteChunkedResponseSuffix();
+            }
 
             if (!_keepAlive)
             {
@@ -440,7 +442,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         }
 
         private Tuple<ArraySegment<byte>, IDisposable> CreateResponseHeader(
-            string status, IEnumerable<KeyValuePair<string, string[]>> headers)
+            string status,
+            bool appCompleted,
+            IEnumerable<KeyValuePair<string, string[]>> headers)
         {
             var writer = new MemoryPoolTextWriter(Memory);
             writer.Write(HttpVersion);
@@ -488,6 +492,14 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         }
                     }
                 }
+            }
+
+            if (appCompleted && !hasTransferEncoding && !hasContentLength)
+            {
+                // Since the app has completed and we are only now generating
+                // the headers we can safely set the Content-Length to 0.
+                writer.Write("Content-Length: 0\r\n");
+                hasContentLength = true;
             }
 
             if (_keepAlive && !hasTransferEncoding && !hasContentLength)
