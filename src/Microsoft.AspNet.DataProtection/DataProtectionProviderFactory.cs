@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.DataProtection
             {
                 var keyRingProvider = new KeyRingProvider(
                     keyManager: services.GetRequiredService<IKeyManager>(),
-                    keyManagementOptions: services.GetService<IOptions<KeyManagementOptions>>()?.Options, // might be null
+                    keyManagementOptions: services.GetService<IOptions<KeyManagementOptions>>()?.Value, // might be null
                     services: services);
                 dataProtectionProvider = new KeyRingBasedDataProtectionProvider(keyRingProvider, services);
             }

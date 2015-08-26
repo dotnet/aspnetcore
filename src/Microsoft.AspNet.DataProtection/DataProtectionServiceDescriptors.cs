@@ -86,7 +86,7 @@ namespace Microsoft.Framework.DependencyInjection
         {
             return ServiceDescriptor.Singleton<IDataProtectionProvider>(
                 services => DataProtectionProviderFactory.GetProviderFromServices(
-                    options: services.GetRequiredService<IOptions<DataProtectionOptions>>().Options,
+                    options: services.GetRequiredService<IOptions<DataProtectionOptions>>().Value,
                     services: services,
                     mustCreateImmediately: true /* this is the ultimate fallback */));
         }
