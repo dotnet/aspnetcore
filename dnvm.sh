@@ -354,6 +354,10 @@ __dnvm_description() {
 
 }
 
+__dnvm_version() {
+   echo "$_DNVM_VERSION_MANAGER_NAME - Version 1.0.0-$_DNVM_BUILDNUMBER"
+}
+
 __dnvm_help() {
     __dnvm_description
    printf "%b\n" "${Cya}USAGE:${Yel} $_DNVM_COMMAND_NAME <command> [options] ${RCol}"
@@ -421,6 +425,9 @@ __dnvm_help() {
    printf "%b\n" "${Yel}$_DNVM_COMMAND_NAME [help|-h|-help|--help] ${RCol}"
     echo "  displays this help text."
     echo ""
+   printf "%b\n" "${Yel}$_DNVM_COMMAND_NAME [version|-v|-version|--version] ${RCol}"
+     echo "  displays the current version."
+     echo ""
    printf "%b\n" "${Yel}$_DNVM_COMMAND_NAME update-self ${RCol}"
     echo "  updates dnvm itself."
 }
@@ -438,6 +445,10 @@ dnvm()
     case $1 in
         "help"|"-h"|"-help"|"--help" )
             __dnvm_help
+        ;;
+
+        "version"|"-v"|"-version"|"--version" )
+            __dnvm_version
         ;;
 
         "update-self" )
@@ -482,7 +493,7 @@ dnvm()
                     shift
 
                     if [[ $arch != "x86" && $arch != "x64" ]]; then
-                        printf "%b\n" "${Red}Architecture must be x86 or x64.${RCol}" 
+                        printf "%b\n" "${Red}Architecture must be x86 or x64.${RCol}"
                         return 1
                     fi
 
@@ -641,14 +652,14 @@ dnvm()
                         echo "Cannot find $_DNVM_RUNTIME_SHORT_NAME in $runtimeBin. It may have been corrupted. Use '$_DNVM_COMMAND_NAME install $versionOrAlias -f' to attempt to reinstall it"
                     fi
                 ;;
-                "exec") 
+                "exec")
                     (
                         PATH=$(__dnvm_strip_path "$PATH" "/bin")
                         PATH=$(__dnvm_prepend_path "$PATH" "$runtimeBin")
                         $@
                     )
                 ;;
-                "use") 
+                "use")
                     echo "Adding" $runtimeBin "to process PATH"
 
                     PATH=$(__dnvm_strip_path "$PATH" "/bin")
