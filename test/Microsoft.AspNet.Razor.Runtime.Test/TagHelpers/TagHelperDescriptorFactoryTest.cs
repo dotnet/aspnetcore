@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Razor.TagHelpers;
@@ -12,10 +11,12 @@ using Xunit;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 {
-    public class TagHelperDescriptorFactoryTest
+    public abstract class TagHelperDescriptorFactoryTest
     {
-        private static readonly string AssemblyName =
-            typeof(TagHelperDescriptorFactoryTest).GetTypeInfo().Assembly.GetName().Name;
+        protected static readonly AssemblyName TagHelperDescriptorFactoryTestAssembly =  
+            typeof(TagHelperDescriptorFactoryTest).GetTypeInfo().Assembly.GetName();
+
+        protected static readonly string AssemblyName = TagHelperDescriptorFactoryTestAssembly.Name;
 
         public static TheoryData RestrictChildrenData
         {
@@ -73,6 +74,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 };
             }
         }
+
+        public abstract ITypeInfo GetTypeInfo(Type tagHelperType);
 
         [Theory]
         [MemberData(nameof(RestrictChildrenData))]
@@ -188,88 +191,6 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             Assert.Equal(expectedDescriptors, descriptors, CaseSensitiveTagHelperDescriptorComparer.Default);
         }
-
-        // TagHelperDesignTimeDescriptors are not created in CoreCLR.
-#if !DNXCORE50
-        public static TheoryData OutputElementHintData
-        {
-            get
-            {
-                // tagHelperType, expectedDescriptors
-                return new TheoryData<Type, TagHelperDescriptor[]>
-                {
-                    {
-                        typeof(OutputElementHintTagHelper),
-                        new[]
-                        {
-                            new TagHelperDescriptor
-                            {
-                                TagName = "output-element-hint",
-                                TypeName = typeof(OutputElementHintTagHelper).FullName,
-                                AssemblyName = AssemblyName,
-                                DesignTimeDescriptor = new TagHelperDesignTimeDescriptor
-                                {
-                                    OutputElementHint = "strong"
-                                }
-                            }
-                        }
-                    },
-                    {
-                        typeof(MulitpleDescriptorTagHelperWithOutputElementHint),
-                        new[]
-                        {
-                            new TagHelperDescriptor
-                            {
-                                TagName = "a",
-                                TypeName = typeof(MulitpleDescriptorTagHelperWithOutputElementHint).FullName,
-                                AssemblyName = AssemblyName,
-                                DesignTimeDescriptor = new TagHelperDesignTimeDescriptor
-                                {
-                                    OutputElementHint = "div"
-                                }
-                            },
-                            new TagHelperDescriptor
-                            {
-                                TagName = "p",
-                                TypeName = typeof(MulitpleDescriptorTagHelperWithOutputElementHint).FullName,
-                                AssemblyName = AssemblyName,
-                                DesignTimeDescriptor = new TagHelperDesignTimeDescriptor
-                                {
-                                    OutputElementHint = "div"
-                                }
-                            }
-                        }
-                    }
-                };
-            }
-        }
-
-        [Theory]
-        [MemberData(nameof(OutputElementHintData))]
-        public void CreateDescriptors_CreatesDesignTimeDescriptorsWithOutputElementHint(
-            Type tagHelperType,
-            TagHelperDescriptor[] expectedDescriptors)
-        {
-            // Arrange
-            var errorSink = new ErrorSink();
-
-            // Act
-            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
-                AssemblyName,
-                GetTypeInfo(tagHelperType),
-                designTime: true,
-                errorSink: errorSink);
-
-            // Assert
-            Assert.Empty(errorSink.Errors);
-
-            // We don't care about order. Mono returns reflected attributes differently so we need to ensure order
-            // doesn't matter by sorting.
-            descriptors = descriptors.OrderBy(descriptor => descriptor.TagName);
-
-            Assert.Equal(expectedDescriptors, descriptors, CaseSensitiveTagHelperDescriptorComparer.Default);
-        }
-#endif
 
         public static TheoryData EditorBrowsableData
         {
@@ -852,32 +773,9 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 GetTypeInfo(typeof(InheritedNotOverriddenAttributeTagHelper)),
                 designTime: false,
                 errorSink: errorSink);
-
             // Assert
             Assert.Empty(errorSink.Errors);
             Assert.Equal(expectedDescriptors, descriptors, CaseSensitiveTagHelperDescriptorComparer.Default);
-        }
-
-        [Fact]
-        public void CreateDescriptors_BuildsDescriptorsFromSimpleTypes()
-        {
-            // Arrange
-            var errorSink = new ErrorSink();
-            var objectAssemblyName = typeof(object).GetTypeInfo().Assembly.GetName().Name;
-            var expectedDescriptor =
-                CreateTagHelperDescriptor("object", "System.Object", objectAssemblyName);
-
-            // Act
-            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
-                objectAssemblyName,
-                GetTypeInfo(typeof(object)),
-                designTime: false,
-                errorSink: errorSink);
-
-            // Assert
-            Assert.Empty(errorSink.Errors);
-            var descriptor = Assert.Single(descriptors);
-            Assert.Equal(expectedDescriptor, descriptor, CaseSensitiveTagHelperDescriptorComparer.Default);
         }
 
         [Fact]
@@ -1411,7 +1309,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                             {
                                 Name = "dictionary-property",
                                 PropertyName = nameof(DefaultValidHtmlAttributePrefix.DictionaryProperty),
-                                TypeName = typeof(IDictionary<string, string>).FullName
+                                TypeName = RuntimeTypeInfo.SanitizeFullName(typeof(IDictionary<string, string>).FullName)
                             },
                             new TagHelperAttributeDescriptor
                             {
@@ -1431,7 +1329,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                             {
                                 Name = "valid-name",
                                 PropertyName = nameof(SingleValidHtmlAttributePrefix.DictionaryProperty),
-                                TypeName = typeof(IDictionary<string, string>).FullName
+                                TypeName = RuntimeTypeInfo.SanitizeFullName(typeof(IDictionary<string, string>).FullName)
                             },
                             new TagHelperAttributeDescriptor
                             {
@@ -1451,31 +1349,31 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                             {
                                 Name = "valid-name1",
                                 PropertyName = nameof(MultipleValidHtmlAttributePrefix.DictionaryProperty),
-                                TypeName = typeof(Dictionary<string, object>).FullName
+                                TypeName = RuntimeTypeInfo.SanitizeFullName(typeof(Dictionary<string, object>).FullName)
                             },
                             new TagHelperAttributeDescriptor
                             {
                                 Name = "valid-name2",
                                 PropertyName = nameof(MultipleValidHtmlAttributePrefix.DictionarySubclassProperty),
-                                TypeName = typeof(DictionarySubclass).FullName
+                                TypeName = RuntimeTypeInfo.SanitizeFullName(typeof(DictionarySubclass).FullName)
                             },
                             new TagHelperAttributeDescriptor
                             {
                                 Name = "valid-name3",
                                 PropertyName = nameof(MultipleValidHtmlAttributePrefix.DictionaryWithoutParameterlessConstructorProperty),
-                                TypeName = typeof(DictionaryWithoutParameterlessConstructor).FullName
+                                TypeName = RuntimeTypeInfo.SanitizeFullName(typeof(DictionaryWithoutParameterlessConstructor).FullName)
                             },
                             new TagHelperAttributeDescriptor
                             {
                                 Name = "valid-name4",
                                 PropertyName = nameof(MultipleValidHtmlAttributePrefix.GenericDictionarySubclassProperty),
-                                TypeName = typeof(GenericDictionarySubclass<object>).FullName
+                                TypeName = RuntimeTypeInfo.SanitizeFullName(typeof(GenericDictionarySubclass<object>).FullName)
                             },
                             new TagHelperAttributeDescriptor
                             {
                                 Name = "valid-name5",
                                 PropertyName = nameof(MultipleValidHtmlAttributePrefix.SortedDictionaryProperty),
-                                TypeName = typeof(SortedDictionary<string, int>).FullName
+                                TypeName = RuntimeTypeInfo.SanitizeFullName(typeof(SortedDictionary<string, int>).FullName)
                             },
                             new TagHelperAttributeDescriptor
                             {
@@ -2072,7 +1970,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             return data;
         }
 
-        private static TagHelperDescriptor CreateTagHelperDescriptor(
+        protected static TagHelperDescriptor CreateTagHelperDescriptor(
             string tagName,
             string typeName,
             string assemblyName,
@@ -2099,393 +1997,6 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 PropertyName = propertyInfo.Name,
                 TypeName = propertyInfo.PropertyType.FullName
             };
-        }
-
-        private static ITypeInfo GetTypeInfo(Type tagHelperType) =>
-            new RuntimeTypeInfo(tagHelperType.GetTypeInfo());
-
-        [RestrictChildren("p")]
-        private class RestrictChildrenTagHelper
-        {
-        }
-
-        [RestrictChildren("p", "strong")]
-        private class DoubleRestrictChildrenTagHelper
-        {
-        }
-
-        [TargetElement("p")]
-        [TargetElement("div")]
-        [RestrictChildren("p", "strong")]
-        private class MultiTargetRestrictChildrenTagHelper
-        {
-        }
-
-        [TargetElement("input", TagStructure = TagStructure.WithoutEndTag)]
-        private class TagStructureTagHelper : TagHelper
-        {
-        }
-
-        [TargetElement("p", TagStructure = TagStructure.NormalOrSelfClosing)]
-        [TargetElement("input", TagStructure = TagStructure.WithoutEndTag)]
-        private class MultiSpecifiedTagStructureTagHelper : TagHelper
-        {
-        }
-
-        [TargetElement("p")]
-        [TargetElement("input", TagStructure = TagStructure.WithoutEndTag)]
-        private class MultiWithUnspecifiedTagStructureTagHelper : TagHelper
-        {
-        }
-
-        [EditorBrowsable(EditorBrowsableState.Always)]
-        private class DefaultEditorBrowsableTagHelper : TagHelper
-        {
-            [EditorBrowsable(EditorBrowsableState.Always)]
-            public int Property { get; set; }
-        }
-
-        private class HiddenPropertyEditorBrowsableTagHelper : TagHelper
-        {
-            [EditorBrowsable(EditorBrowsableState.Never)]
-            public int Property { get; set; }
-        }
-
-        private class MultiPropertyEditorBrowsableTagHelper : TagHelper
-        {
-            [EditorBrowsable(EditorBrowsableState.Never)]
-            public int Property { get; set; }
-
-            public virtual int Property2 { get; set; }
-        }
-
-        private class OverriddenPropertyEditorBrowsableTagHelper : MultiPropertyEditorBrowsableTagHelper
-        {
-            [EditorBrowsable(EditorBrowsableState.Never)]
-            public override int Property2 { get; set; }
-        }
-
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        private class EditorBrowsableTagHelper : TagHelper
-        {
-            [EditorBrowsable(EditorBrowsableState.Never)]
-            public virtual int Property { get; set; }
-        }
-
-        private class InheritedEditorBrowsableTagHelper : EditorBrowsableTagHelper
-        {
-            public override int Property { get; set; }
-        }
-
-        [EditorBrowsable(EditorBrowsableState.Advanced)]
-        private class OverriddenEditorBrowsableTagHelper : EditorBrowsableTagHelper
-        {
-            [EditorBrowsable(EditorBrowsableState.Advanced)]
-            public override int Property { get; set; }
-        }
-
-        [TargetElement("p")]
-        [TargetElement("div")]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        private class MultiEditorBrowsableTagHelper : TagHelper
-        {
-        }
-
-        [TargetElement(Attributes = "class*")]
-        private class AttributeWildcardTargetingTagHelper : TagHelper
-        {
-        }
-
-        [TargetElement(Attributes = "class*,style*")]
-        private class MultiAttributeWildcardTargetingTagHelper : TagHelper
-        {
-        }
-
-        [TargetElement(Attributes = "class")]
-        private class AttributeTargetingTagHelper : TagHelper
-        {
-        }
-
-        [TargetElement(Attributes = "class,style")]
-        private class MultiAttributeTargetingTagHelper : TagHelper
-        {
-        }
-
-        [TargetElement(Attributes = "custom")]
-        [TargetElement(Attributes = "class,style")]
-        private class MultiAttributeAttributeTargetingTagHelper : TagHelper
-        {
-        }
-
-        [TargetElement(Attributes = "style")]
-        private class InheritedAttributeTargetingTagHelper : AttributeTargetingTagHelper
-        {
-        }
-
-        [TargetElement("input", Attributes = "class")]
-        private class RequiredAttributeTagHelper : TagHelper
-        {
-        }
-
-        [TargetElement("div", Attributes = "class")]
-        private class InheritedRequiredAttributeTagHelper : RequiredAttributeTagHelper
-        {
-        }
-
-        [TargetElement("div", Attributes = "class")]
-        [TargetElement("input", Attributes = "class")]
-        private class MultiAttributeRequiredAttributeTagHelper : TagHelper
-        {
-        }
-
-        [TargetElement("input", Attributes = "style")]
-        [TargetElement("input", Attributes = "class")]
-        private class MultiAttributeSameTagRequiredAttributeTagHelper : TagHelper
-        {
-        }
-
-        [TargetElement("input", Attributes = "class,style")]
-        private class MultiRequiredAttributeTagHelper : TagHelper
-        {
-        }
-
-        [TargetElement("div", Attributes = "style")]
-        private class InheritedMultiRequiredAttributeTagHelper : MultiRequiredAttributeTagHelper
-        {
-        }
-
-        [TargetElement("div", Attributes = "class,style")]
-        [TargetElement("input", Attributes = "class,style")]
-        private class MultiTagMultiRequiredAttributeTagHelper : TagHelper
-        {
-        }
-
-        [TargetElement("p")]
-        [TargetElement("div")]
-        private class MultiTagTagHelper
-        {
-            public string ValidAttribute { get; set; }
-        }
-
-        private class InheritedMultiTagTagHelper : MultiTagTagHelper
-        {
-        }
-
-        [TargetElement("p")]
-        [TargetElement("p")]
-        [TargetElement("div")]
-        [TargetElement("div")]
-        private class DuplicateTagNameTagHelper
-        {
-        }
-
-        [TargetElement("data-condition")]
-        private class OverrideNameTagHelper
-        {
-        }
-
-        private class InheritedSingleAttributeTagHelper : SingleAttributeTagHelper
-        {
-        }
-
-        private class DuplicateAttributeNameTagHelper
-        {
-            public string MyNameIsLegion { get; set; }
-
-            [HtmlAttributeName("my-name-is-legion")]
-            public string Fred { get; set; }
-        }
-
-        private class NotBoundAttributeTagHelper
-        {
-            public object BoundProperty { get; set; }
-
-            [HtmlAttributeNotBound]
-            public string NotBoundProperty { get; set; }
-
-            [HtmlAttributeName("unused")]
-            [HtmlAttributeNotBound]
-            public string NamedNotBoundProperty { get; set; }
-        }
-
-        private class OverriddenAttributeTagHelper
-        {
-            [HtmlAttributeName("SomethingElse")]
-            public virtual string ValidAttribute1 { get; set; }
-
-            [HtmlAttributeName("Something-Else")]
-            public string ValidAttribute2 { get; set; }
-        }
-
-        private class InheritedOverriddenAttributeTagHelper : OverriddenAttributeTagHelper
-        {
-            public override string ValidAttribute1 { get; set; }
-        }
-
-        private class InheritedNotOverriddenAttributeTagHelper : OverriddenAttributeTagHelper
-        {
-        }
-
-        private class ALLCAPSTAGHELPER : TagHelper
-        {
-            public int ALLCAPSATTRIBUTE { get; set; }
-        }
-
-        private class CAPSOnOUTSIDETagHelper : TagHelper
-        {
-            public int CAPSOnOUTSIDEATTRIBUTE { get; set; }
-        }
-
-        private class capsONInsideTagHelper : TagHelper
-        {
-            public int capsONInsideattribute { get; set; }
-        }
-
-        private class One1Two2Three3TagHelper : TagHelper
-        {
-            public int One1Two2Three3Attribute { get; set; }
-        }
-
-        private class ONE1TWO2THREE3TagHelper : TagHelper
-        {
-            public int ONE1TWO2THREE3Attribute { get; set; }
-        }
-
-        private class First_Second_ThirdHiTagHelper : TagHelper
-        {
-            public int First_Second_ThirdAttribute { get; set; }
-        }
-
-        private class UNSuffixedCLASS : TagHelper
-        {
-            public int UNSuffixedATTRIBUTE { get; set; }
-        }
-
-        private class InvalidBoundAttribute : TagHelper
-        {
-            public string DataSomething { get; set; }
-        }
-
-        private class InvalidBoundAttributeWithValid : SingleAttributeTagHelper
-        {
-            public string DataSomething { get; set; }
-        }
-
-        private class OverriddenInvalidBoundAttributeWithValid : TagHelper
-        {
-            [HtmlAttributeName("valid-something")]
-            public string DataSomething { get; set; }
-        }
-
-        private class OverriddenValidBoundAttributeWithInvalid : TagHelper
-        {
-            [HtmlAttributeName("data-something")]
-            public string ValidSomething { get; set; }
-        }
-
-        private class OverriddenValidBoundAttributeWithInvalidUpperCase : TagHelper
-        {
-            [HtmlAttributeName("DATA-SOMETHING")]
-            public string ValidSomething { get; set; }
-        }
-
-        private class DefaultValidHtmlAttributePrefix : TagHelper
-        {
-            public IDictionary<string, string> DictionaryProperty { get; set; }
-        }
-
-        private class SingleValidHtmlAttributePrefix : TagHelper
-        {
-            [HtmlAttributeName("valid-name")]
-            public IDictionary<string, string> DictionaryProperty { get; set; }
-        }
-
-        private class MultipleValidHtmlAttributePrefix : TagHelper
-        {
-            [HtmlAttributeName("valid-name1", DictionaryAttributePrefix = "valid-prefix1-")]
-            public Dictionary<string, object> DictionaryProperty { get; set; }
-
-            [HtmlAttributeName("valid-name2", DictionaryAttributePrefix = "valid-prefix2-")]
-            public DictionarySubclass DictionarySubclassProperty { get; set; }
-
-            [HtmlAttributeName("valid-name3", DictionaryAttributePrefix = "valid-prefix3-")]
-            public DictionaryWithoutParameterlessConstructor DictionaryWithoutParameterlessConstructorProperty { get; set; }
-
-            [HtmlAttributeName("valid-name4", DictionaryAttributePrefix = "valid-prefix4-")]
-            public GenericDictionarySubclass<object> GenericDictionarySubclassProperty { get; set; }
-
-            [HtmlAttributeName("valid-name5", DictionaryAttributePrefix = "valid-prefix5-")]
-            public SortedDictionary<string, int> SortedDictionaryProperty { get; set; }
-
-            [HtmlAttributeName("valid-name6")]
-            public string StringProperty { get; set; }
-
-            public IDictionary<string, int> GetOnlyDictionaryProperty { get; }
-
-            [HtmlAttributeName(DictionaryAttributePrefix = "valid-prefix6")]
-            public IDictionary<string, string> GetOnlyDictionaryPropertyWithAttributePrefix { get; }
-        }
-
-        private class SingleInvalidHtmlAttributePrefix : TagHelper
-        {
-            [HtmlAttributeName("valid-name", DictionaryAttributePrefix = "valid-prefix")]
-            public string StringProperty { get; set; }
-        }
-
-        private class MultipleInvalidHtmlAttributePrefix : TagHelper
-        {
-            [HtmlAttributeName("valid-name1")]
-            public long LongProperty { get; set; }
-
-            [HtmlAttributeName("valid-name2", DictionaryAttributePrefix = "valid-prefix2-")]
-            public Dictionary<int, string> DictionaryOfIntProperty { get; set; }
-
-            [HtmlAttributeName("valid-name3", DictionaryAttributePrefix = "valid-prefix3-")]
-            public IReadOnlyDictionary<string, object> ReadOnlyDictionaryProperty { get; set; }
-
-            [HtmlAttributeName("valid-name4", DictionaryAttributePrefix = "valid-prefix4-")]
-            public int IntProperty { get; set; }
-
-            [HtmlAttributeName("valid-name5", DictionaryAttributePrefix = "valid-prefix5-")]
-            public DictionaryOfIntSubclass DictionaryOfIntSubclassProperty { get; set; }
-
-            [HtmlAttributeName(DictionaryAttributePrefix = "valid-prefix6")]
-            public IDictionary<int, string> GetOnlyDictionaryAttributePrefix { get; }
-
-            [HtmlAttributeName("invalid-name7")]
-            public IDictionary<string, object> GetOnlyDictionaryPropertyWithAttributeName { get; }
-        }
-
-        private class DictionarySubclass : Dictionary<string, string>
-        {
-        }
-
-        private class DictionaryWithoutParameterlessConstructor : Dictionary<string, string>
-        {
-            public DictionaryWithoutParameterlessConstructor(int count)
-                : base()
-            {
-            }
-        }
-
-        private class DictionaryOfIntSubclass : Dictionary<int, string>
-        {
-        }
-
-        private class GenericDictionarySubclass<TValue> : Dictionary<string, TValue>
-        {
-        }
-
-        [OutputElementHint("strong")]
-        private class OutputElementHintTagHelper : TagHelper
-        {
-        }
-
-        [TargetElement("a")]
-        [TargetElement("p")]
-        [OutputElementHint("div")]
-        private class MulitpleDescriptorTagHelperWithOutputElementHint : TagHelper
-        {
         }
     }
 }

@@ -17,6 +17,12 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Razor.Runt
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Razor.Test.Sources", "src\Microsoft.AspNet.Razor.Test.Sources\Microsoft.AspNet.Razor.Test.Sources.xproj", "{E3A2A305-634D-4BA6-95DB-AA06D6C442B0}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Razor.Runtime.Precompilation", "src\Microsoft.AspNet.Razor.Runtime.Precompilation\Microsoft.AspNet.Razor.Runtime.Precompilation.xproj", "{3B7ECD22-4C02-45CF-92E8-98C074DD9D0E}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Razor.Runtime.Precompilation.Test", "test\Microsoft.AspNet.Razor.Runtime.Precompilation.Test\Microsoft.AspNet.Razor.Runtime.Precompilation.Test.xproj", "{C626444C-5A63-42BC-ACAE-DBB2CD3EDE25}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Razor.Runtime.Precompilation.Files", "test\Microsoft.AspNet.Razor.Runtime.Precompilation.Files\Microsoft.AspNet.Razor.Runtime.Precompilation.Files.xproj", "{125D4CC1-5317-495F-88B8-472DFD9C1097}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -43,6 +49,18 @@ Global
 		{E3A2A305-634D-4BA6-95DB-AA06D6C442B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E3A2A305-634D-4BA6-95DB-AA06D6C442B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E3A2A305-634D-4BA6-95DB-AA06D6C442B0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3B7ECD22-4C02-45CF-92E8-98C074DD9D0E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3B7ECD22-4C02-45CF-92E8-98C074DD9D0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3B7ECD22-4C02-45CF-92E8-98C074DD9D0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3B7ECD22-4C02-45CF-92E8-98C074DD9D0E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C626444C-5A63-42BC-ACAE-DBB2CD3EDE25}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C626444C-5A63-42BC-ACAE-DBB2CD3EDE25}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C626444C-5A63-42BC-ACAE-DBB2CD3EDE25}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C626444C-5A63-42BC-ACAE-DBB2CD3EDE25}.Release|Any CPU.Build.0 = Release|Any CPU
+		{125D4CC1-5317-495F-88B8-472DFD9C1097}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{125D4CC1-5317-495F-88B8-472DFD9C1097}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{125D4CC1-5317-495F-88B8-472DFD9C1097}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{125D4CC1-5317-495F-88B8-472DFD9C1097}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -53,5 +71,8 @@ Global
 		{D0196096-1B01-4133-AACE-1A10A0F7247C} = {3C0D6505-79B3-49D0-B4C3-176F0F1836ED}
 		{0535998A-E32C-4D1A-80D1-0B15A513C471} = {92463391-81BE-462B-AC3C-78C6C760741F}
 		{E3A2A305-634D-4BA6-95DB-AA06D6C442B0} = {3C0D6505-79B3-49D0-B4C3-176F0F1836ED}
+		{3B7ECD22-4C02-45CF-92E8-98C074DD9D0E} = {3C0D6505-79B3-49D0-B4C3-176F0F1836ED}
+		{C626444C-5A63-42BC-ACAE-DBB2CD3EDE25} = {92463391-81BE-462B-AC3C-78C6C760741F}
+		{125D4CC1-5317-495F-88B8-472DFD9C1097} = {92463391-81BE-462B-AC3C-78C6C760741F}
 	EndGlobalSection
 EndGlobal

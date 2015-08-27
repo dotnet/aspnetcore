@@ -1,0 +1,33 @@
+﻿{
+    "version": "1.0.0",
+    "dependencies": {
+        "Microsoft.AspNet.Razor.Runtime.Precompilation.Files": "1.0.0-*",
+        "Microsoft.AspNet.Razor.Runtime.Test": "1.0.0-*",
+        "Microsoft.AspNet.Razor.Test.Sources": {
+            "version": "4.0.0-*",
+            "type": "build"
+        },
+        "Microsoft.Dnx.Compilation.CSharp.Common":  "1.0.0-*",
+        "Microsoft.Framework.HashCodeCombiner.Sources": {
+            "type": "build",
+            "version": "1.0.0-*"
+        }
+    },
+    "resource": [
+        "../Microsoft.AspNet.Razor.Runtime.Precompilation.Files/*.cs",
+        "../Microsoft.AspNet.Razor.Runtime.Test/TagHelpers/TestTagHelpers/*.cs",
+        "BadFiles/*.cs"
+    ],
+    "commands": {
+        "test": "xunit.runner.aspnet"
+    },
+    "frameworks": {
+        "dnx451": {
+            "dependencies": {
+                "Moq": "4.2.1312.1622"
+            }
+        },
+        "dnxcore50": {
+        }
+    }
+}

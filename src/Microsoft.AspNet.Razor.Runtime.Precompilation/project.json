@@ -1,0 +1,40 @@
+{
+    "description": "Supports tag helper resolution during precompilation.",
+    "version": "4.0.0-*",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/aspnet/razor"
+    },
+    "compilationOptions": {
+        "warningsAsErrors": true
+    },
+    "dependencies": {
+        "Microsoft.Framework.NotNullAttribute.Sources": {
+            "version": "1.0.0-*",
+            "type": "build"
+        },
+        "Microsoft.Framework.PropertyActivator.Sources": {
+            "version": "1.0.0-*",
+            "type": "build"
+        },
+        "Microsoft.Framework.PropertyHelper.Sources": {
+            "version": "1.0.0-*",
+            "type": "build"
+        },
+        "Microsoft.AspNet.Razor.Runtime": "4.0.0-*",
+        "Microsoft.Dnx.Compilation.CSharp.Abstractions": "1.0.0-*"
+    },
+    "frameworks": {
+        "dnx451": {
+            "frameworkAssemblies": {
+                "System.Runtime": "4.0.0.0"
+            }
+        },
+        "dnxcore50": {
+            "dependencies": {
+                "System.Collections.Concurrent": "4.0.11-*",
+                "System.Linq.Expressions": "4.0.11-*"
+            }
+        }
+    }
+}

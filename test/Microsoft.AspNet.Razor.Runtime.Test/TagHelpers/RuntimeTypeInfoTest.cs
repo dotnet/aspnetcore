@@ -5,39 +5,64 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Xunit;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 {
     public class RuntimeTypeInfoTest
     {
+        private static readonly string StringFullName = typeof(string).FullName;
+        private static readonly string CollectionsNamespace = typeof(IDictionary<,>).Namespace;
+
+        public static TheoryData RuntimeTypeInfo_ReturnsMetadataOfAdaptingTypeData =>
+            new TheoryData<Type, string>
+            {
+                { typeof(int), typeof(int).FullName },
+                { typeof(string), typeof(string).FullName },
+                { typeof(Tuple<>), typeof(Tuple<>).FullName },
+                { typeof(Tuple<,>), typeof(Tuple<,>).FullName },
+                {
+                    typeof(IDictionary<string, string>),
+                    $"{typeof(IDictionary<,>).FullName}[[{StringFullName}],[{StringFullName}]]"
+                },
+                {
+                    typeof(IDictionary<string, IDictionary<string, CustomType>>),
+                    $"{typeof(IDictionary<,>).FullName}[[{StringFullName}],[{typeof(IDictionary<,>).FullName}" +
+                    $"[[{StringFullName}],[{typeof(CustomType).FullName}]]]]"
+                },
+                {
+                    typeof(IList<IReadOnlyList<IDictionary<List<string>, Tuple<CustomType, object[]>>>>),
+                    $"{typeof(IList<>).FullName}[[{typeof(IReadOnlyList<>).FullName}[[{typeof(IDictionary<,>).FullName}[[" +
+                    $"{typeof(List<>).FullName}[[{StringFullName}]]],[{typeof(Tuple<,>).FullName}[[{typeof(CustomType).FullName}]," +
+                    $"[{typeof(object).FullName}[]]]]]]]]]"
+                },
+                { typeof(AbstractType), typeof(AbstractType).FullName },
+                { typeof(PrivateType), typeof(PrivateType).FullName },
+                { typeof(KnownKeyDictionary<>), typeof(KnownKeyDictionary<>).FullName },
+                {
+                    typeof(KnownKeyDictionary<string>),
+                    $"{typeof(KnownKeyDictionary<>).Namespace}" +
+                    $".RuntimeTypeInfoTest+KnownKeyDictionary`1[[{StringFullName}]]"
+                }
+            };
+
         [Theory]
-        [InlineData(typeof(int))]
-        [InlineData(typeof(string))]
-        [InlineData(typeof(Tuple<,>))]
-        [InlineData(typeof(IDictionary<string, string>))]
-        [InlineData(typeof(IDictionary<string, IDictionary<string, CustomType>>))]
-        [InlineData(typeof(AbstractType))]
-        [InlineData(typeof(PrivateType))]
-        [InlineData(typeof(KnownKeyDictionary<>))]
-        [InlineData(typeof(KnownKeyDictionary<string>))]
-        public void RuntimeTypeInfo_ReturnsMetadataOfAdaptingType(Type type)
+        [MemberData(nameof(RuntimeTypeInfo_ReturnsMetadataOfAdaptingTypeData))]
+        public void RuntimeTypeInfo_ReturnsMetadataOfAdaptingType(Type type, string expectedFullName)
         {
             // Arrange
             var typeInfo = type.GetTypeInfo();
             var runtimeTypeInfo = new RuntimeTypeInfo(typeInfo);
 
             // Act and Assert
-            Assert.Same(runtimeTypeInfo.TypeInfo, typeInfo);
-            Assert.Equal(runtimeTypeInfo.Name, typeInfo.Name);
-            Assert.Equal(runtimeTypeInfo.FullName, typeInfo.FullName);
-            Assert.Equal(runtimeTypeInfo.IsAbstract, typeInfo.IsAbstract);
-            Assert.Equal(runtimeTypeInfo.IsGenericType, typeInfo.IsGenericType);
-            Assert.Equal(runtimeTypeInfo.IsPublic, typeInfo.IsPublic);
+            Assert.Same(typeInfo, runtimeTypeInfo.TypeInfo);
+            Assert.Equal(typeInfo.Name, runtimeTypeInfo.Name);
+            Assert.Equal(expectedFullName, runtimeTypeInfo.FullName);
+            Assert.Equal(typeInfo.IsAbstract, runtimeTypeInfo.IsAbstract);
+            Assert.Equal(typeInfo.IsGenericType, runtimeTypeInfo.IsGenericType);
+            Assert.Equal(typeInfo.IsPublic, runtimeTypeInfo.IsPublic);
         }
 
         [Fact]
@@ -150,23 +175,62 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         [InlineData(typeof(ImplementsIDictionary), new[] { typeof(List<string>), typeof(string) })]
         [InlineData(typeof(IDictionary<string, IDictionary<string, CustomType>>),
             new[] { typeof(string), typeof(IDictionary<string, CustomType>) })]
-        [InlineData(typeof(Dictionary<,>), new Type[] { null, null })]
-        [InlineData(typeof(KnownKeyDictionary<>), new[] { typeof(string), null })]
         [InlineData(typeof(KnownKeyDictionary<ImplementsIDictionary>),
             new[] { typeof(string), typeof(ImplementsIDictionary) })]
-        public void GetGenericDictionaryParameterNames_ReturnsKeyAndValueParameterTypeNames(
+        public void GetGenericDictionaryParameters_ReturnsKeyAndValueParameterTypeNames(
             Type type,
             Type[] expectedTypes)
         {
             // Arrange
             var runtimeTypeInfo = new RuntimeTypeInfo(type.GetTypeInfo());
-            var expected = expectedTypes.Select(t => t?.FullName);
 
             // Act
-            var actual = runtimeTypeInfo.GetGenericDictionaryParameterNames();
+            var actual = runtimeTypeInfo.GetGenericDictionaryParameters();
 
             // Assert
-            Assert.Equal(expected, actual);
+            Assert.Collection(actual,
+                keyType =>
+                {
+                    Assert.Equal(new RuntimeTypeInfo(expectedTypes[0].GetTypeInfo()), keyType);
+                },
+                valueType =>
+                {
+                    Assert.Equal(new RuntimeTypeInfo(expectedTypes[1].GetTypeInfo()), valueType);
+                });
+        }
+
+        [Fact]
+        public void GetGenericDictionaryParameters_WorksWhenValueParameterIsOpen()
+        {
+            // Arrange
+            var runtimeTypeInfo = new RuntimeTypeInfo(typeof(KnownKeyDictionary<>).GetTypeInfo());
+
+            // Act
+            var actual = runtimeTypeInfo.GetGenericDictionaryParameters();
+
+            // Assert
+            Assert.Collection(actual,
+                keyType =>
+                {
+                    Assert.Equal(new RuntimeTypeInfo(typeof(string).GetTypeInfo()), keyType);
+                },
+                valueType =>
+                {
+                    Assert.Null(valueType);
+                });
+        }
+
+        [Fact]
+        public void GetGenericDictionaryParameters_WorksWhenKeyAndValueParametersAreOpen()
+        {
+            // Arrange
+            var runtimeTypeInfo = new RuntimeTypeInfo(typeof(Dictionary<,>).GetTypeInfo());
+
+            // Act
+            var actual = runtimeTypeInfo.GetGenericDictionaryParameters();
+
+            // Assert
+            Assert.Equal(new RuntimeTypeInfo[] { null, null }, actual);
         }
 
         [Theory]
@@ -181,10 +245,102 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var runtimeTypeInfo = new RuntimeTypeInfo(type.GetTypeInfo());
 
             // Act
-            var actual = runtimeTypeInfo.GetGenericDictionaryParameterNames();
+            var actual = runtimeTypeInfo.GetGenericDictionaryParameters();
 
             // Assert
             Assert.Null(actual);
+        }
+
+        [Theory]
+        [InlineData(typeof(string))]
+        [InlineData(typeof(IDictionary<,>))]
+        [InlineData(typeof(ITagHelper))]
+        [InlineData(typeof(TagHelper))]
+        public void Equals_ReturnsTrueIfTypeInfosAreIdentical(Type type)
+        {
+            // Arrange
+            var typeA = new RuntimeTypeInfo(type.GetTypeInfo());
+            var typeB = new RuntimeTypeInfo(type.GetTypeInfo());
+
+            // Act
+            var equals = typeA.Equals(typeB);
+            var hashCodeA = typeA.GetHashCode();
+            var hashCodeB = typeB.GetHashCode();
+
+            // Assert
+            Assert.True(equals);
+            Assert.Equal(hashCodeA, hashCodeB);
+        }
+
+        public static TheoryData Equals_ReturnsTrueIfTypeFullNamesAreIdenticalData =>
+            new TheoryData<Type, string>
+            {
+                { typeof(string), typeof(string).FullName },
+                { typeof(ITagHelper), typeof(ITagHelper).FullName },
+                { typeof(TagHelper), typeof(TagHelper).FullName },
+                { typeof(TagHelper), typeof(TagHelper).FullName },
+                { typeof(IDictionary<,>), typeof(IDictionary<,>).FullName },
+                {
+                    typeof(IDictionary<string,string>),
+                    RuntimeTypeInfo.SanitizeFullName(typeof(IDictionary<string, string>).FullName)
+                },
+            };
+
+        [Theory]
+        [MemberData(nameof(Equals_ReturnsTrueIfTypeFullNamesAreIdenticalData))]
+        public void Equals_ReturnsTrueIfTypeInfoNamesAreIdentical(Type type, string fullName)
+        {
+            // Arrange
+            var typeA = new RuntimeTypeInfo(type.GetTypeInfo());
+            var typeB = new TestTypeInfo
+            {
+                FullName = fullName
+            };
+
+            // Act
+            var equals = typeA.Equals(typeB);
+
+            // Assert
+            Assert.True(equals);
+        }
+
+        [Theory]
+        [InlineData(typeof(string), typeof(object))]
+        [InlineData(typeof(IDictionary<,>), typeof(IDictionary<string, string>))]
+        [InlineData(typeof(KnownKeyDictionary<string>), typeof(IDictionary<string, string>))]
+        [InlineData(typeof(ITagHelper), typeof(TagHelper))]
+        public void Equals_ReturnsFalseIfTypeInfosAreDifferent(Type typeA, Type typeB)
+        {
+            // Arrange
+            var typeAInfo = new RuntimeTypeInfo(typeA.GetTypeInfo());
+            var typeBInfo = new RuntimeTypeInfo(typeB.GetTypeInfo());
+
+            // Act
+            var equals = typeAInfo.Equals(typeBInfo);
+            var hashCodeA = typeAInfo.GetHashCode();
+            var hashCodeB = typeBInfo.GetHashCode();
+
+            // Assert
+            Assert.False(equals);
+            Assert.NotEqual(hashCodeA, hashCodeB);
+        }
+
+        [Theory]
+        [MemberData(nameof(Equals_ReturnsTrueIfTypeFullNamesAreIdenticalData))]
+        public void Equals_ReturnsFalseIfTypeInfoNamesAreDifferent(Type type, string fullName)
+        {
+            // Arrange
+            var typeA = new RuntimeTypeInfo(type.GetTypeInfo());
+            var typeB = new TestTypeInfo
+            {
+                FullName = "Different" + fullName
+            };
+
+            // Act
+            var equals = typeA.Equals(typeB);
+
+            // Assert
+            Assert.False(equals);
         }
 
         public class AbstractType
@@ -370,6 +526,69 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
         private class CustomType
         {
+        }
+
+        private class TestTypeInfo : ITypeInfo
+        {
+            public string FullName { get; set; }
+
+            public bool IsAbstract
+            {
+                get
+                {
+                    throw new NotImplementedException();
+    }
+}
+
+            public bool IsGenericType
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public bool IsPublic
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public bool IsTagHelper
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public string Name
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public IEnumerable<IPropertyInfo> Properties
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public IEnumerable<TAttribute> GetCustomAttributes<TAttribute>() where TAttribute : Attribute
+            {
+                throw new NotImplementedException();
+            }
+
+            public ITypeInfo[] GetGenericDictionaryParameters()
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }

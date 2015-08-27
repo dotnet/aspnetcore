@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.Framework.Internal;
@@ -26,6 +27,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         // Each match is then prefixed by a "-" via the ToHtmlCase method.
         private static readonly Regex HtmlCaseRegex =
             new Regex("(?<!^)((?<=[a-zA-Z0-9])[A-Z][a-z])|((?<=[a-z])[A-Z])", RegexOptions.None);
+
+        private static readonly ITypeInfo StringTypeInfo = new RuntimeTypeInfo(typeof(string).GetTypeInfo());
 
         // TODO: Investigate if we should cache TagHelperDescriptors for types:
         // https://github.com/aspnet/Razor/issues/165
@@ -573,8 +576,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             isInvalid = false;
             var hasPublicSetter = property.HasPublicSetter;
-            var dictionaryTypeArguments = property.PropertyType.GetGenericDictionaryParameterNames();
-            if (dictionaryTypeArguments?[0] != typeof(string).FullName)
+            var dictionaryTypeArguments = property.PropertyType.GetGenericDictionaryParameters();
+            if (!StringTypeInfo.Equals(dictionaryTypeArguments?[0]))
             {
                 if (attributeNameAttribute?.DictionaryAttributePrefix != null)
                 {
@@ -641,7 +644,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             return ToAttributeDescriptor(
                 property,
                 attributeName: prefix,
-                typeName: dictionaryTypeArguments[1],
+                typeName: dictionaryTypeArguments[1].FullName,
                 isIndexer: true,
                 designTime: designTime);
         }

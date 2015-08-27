@@ -46,16 +46,16 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         bool IsTagHelper { get; }
 
         /// <summary>
-        /// Gets the full names of the parameter types if the type implements
+        /// Gets the <see cref="ITypeInfo[]"/> for the <c>TKey</c> and <c>TValue</c> parameters of
         /// <see cref="IDictionary{TKey, TValue}"/>.
         /// </summary>
         /// <returns>
-        /// The full type names (<seealso cref="System.Type.FullName"/>) of <c>TKey</c> and <c>TValue</c>
+        /// The <see cref="ITypeInfo"/> of <c>TKey</c> and <c>TValue</c>
         /// parameters if the type implements <see cref="IDictionary{TKey, TValue}"/>, otherwise <c>null</c>.
         /// </returns>
         /// <remarks>
-        /// For open generic types, full type names for generic type parameters is <c>null</c>. 
+        /// For open generic types, <see cref="ITypeInfo" /> for generic type parameters is <c>null</c>. 
         /// </remarks>
-        string[] GetGenericDictionaryParameterNames();
+        ITypeInfo[] GetGenericDictionaryParameters();
     }
 }
