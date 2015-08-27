@@ -293,21 +293,18 @@ namespace Microsoft.AspNet.Mvc
                 ModelBinder = modelBinder,
                 ValidatorProvider = validatorProvider,
                 MetadataProvider = metadataProvider,
-                HttpContext = httpContext
+                HttpContext = httpContext,
+                ValueProvider = valueProvider,
             };
 
-            var modelBindingContext = new ModelBindingContext
-            {
-                Model = model,
-                ModelMetadata = modelMetadata,
-                ModelName = prefix,
-                ModelState = modelState,
-                ValueProvider = valueProvider,
-                FallbackToEmptyPrefix = true,
-                IsTopLevelObject = true,
-                OperationBindingContext = operationBindingContext,
-                PropertyFilter = predicate,
-            };
+            var modelBindingContext = ModelBindingContext.CreateBindingContext(
+                operationBindingContext,
+                modelState,
+                modelMetadata,
+                bindingInfo: null,
+                modelName: prefix ?? string.Empty);
+            modelBindingContext.Model = model;
+            modelBindingContext.PropertyFilter = predicate;
 
             var modelBindingResult = await modelBinder.BindModelAsync(modelBindingContext);
             if (modelBindingResult != null && modelBindingResult.IsModelSet)

@@ -222,11 +222,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             {
                 ModelMetadata = modelMetadata,
                 ModelName = "someName",
+                ModelState = new ModelStateDictionary(),
                 ValueProvider = valueProvider,
                 OperationBindingContext = new OperationBindingContext
                 {
                     ModelBinder = CreateIntBinder(),
-                    MetadataProvider = metadataProvider
+                    MetadataProvider = metadataProvider,
                 },
             };
             return bindingContext;

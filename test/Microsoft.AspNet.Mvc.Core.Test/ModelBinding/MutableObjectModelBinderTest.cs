@@ -796,6 +796,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 Model = model,
                 ModelMetadata = containerMetadata,
                 ModelName = "theModel",
+                ModelState = new ModelStateDictionary(),
                 OperationBindingContext = new OperationBindingContext
                 {
                     MetadataProvider = TestModelMetadataProvider.CreateDefaultProvider(),
@@ -846,6 +847,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 Model = model,
                 ModelMetadata = containerMetadata,
                 ModelName = "theModel",
+                ModelState = new ModelStateDictionary(),
                 OperationBindingContext = new OperationBindingContext
                 {
                     MetadataProvider = TestModelMetadataProvider.CreateDefaultProvider(),
@@ -1649,9 +1651,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return new ModelBindingContext
             {
                 Model = model,
-                ModelState = new ModelStateDictionary(),
                 ModelMetadata = metadata,
                 ModelName = "theModel",
+                ModelState = new ModelStateDictionary(),
                 OperationBindingContext = new OperationBindingContext
                 {
                     MetadataProvider = TestModelMetadataProvider.CreateDefaultProvider(),

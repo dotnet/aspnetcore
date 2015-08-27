@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var binder = new HeaderModelBinder();
             var modelBindingContext = GetBindingContext(type);
 
-            modelBindingContext.ModelName = header;
+            modelBindingContext.FieldName = header;
             modelBindingContext.OperationBindingContext.HttpContext.Request.Headers.Add(header, new[] { headerValue });
 
             // Act
@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var binder = new HeaderModelBinder();
             var modelBindingContext = GetBindingContext(type);
 
-            modelBindingContext.ModelName = header;
+            modelBindingContext.FieldName = header;
             modelBindingContext.OperationBindingContext.HttpContext.Request.Headers.Add(header, new[] { headerValue });
 
             // Act
@@ -81,6 +81,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             {
                 ModelMetadata = modelMetadata,
                 ModelName = "modelName",
+                FieldName = "modelName",
+                ModelState = new ModelStateDictionary(),
                 OperationBindingContext = new OperationBindingContext
                 {
                     ModelBinder = new HeaderModelBinder(),

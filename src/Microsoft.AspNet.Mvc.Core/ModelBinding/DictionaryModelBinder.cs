@@ -57,10 +57,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Update the existing successful but empty ModelBindingResult.
             var metadataProvider = bindingContext.OperationBindingContext.MetadataProvider;
             var valueMetadata = metadataProvider.GetMetadataForType(typeof(TValue));
-            var valueBindingContext = ModelBindingContext.GetChildModelBindingContext(
+            var valueBindingContext = ModelBindingContext.CreateChildBindingContext(
                 bindingContext,
-                bindingContext.ModelName,
-                valueMetadata);
+                valueMetadata,
+                fieldName: bindingContext.FieldName,
+                modelName: bindingContext.ModelName,
+                model: null);
 
             var modelBinder = bindingContext.OperationBindingContext.ModelBinder;
             var validationNode = result.ValidationNode;

@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var modelMetadata = bindingContext.ModelMetadata;
 
             // Property name can be null if the model metadata represents a type (rather than a property or parameter).
-            var headerName = bindingContext.BinderModelName ?? modelMetadata.PropertyName ?? bindingContext.ModelName;
+            var headerName = bindingContext.FieldName;
             object model = null;
             if (bindingContext.ModelType == typeof(string))
             {

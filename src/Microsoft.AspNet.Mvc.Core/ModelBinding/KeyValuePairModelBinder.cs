@@ -93,11 +93,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 parentBindingContext.OperationBindingContext.MetadataProvider.GetMetadataForType(typeof(TModel));
             var propertyModelName =
                 ModelNames.CreatePropertyModelName(parentBindingContext.ModelName, propertyName);
-            var propertyBindingContext = ModelBindingContext.GetChildModelBindingContext(
+            var propertyBindingContext = ModelBindingContext.CreateChildBindingContext(
                 parentBindingContext,
+                propertyModelMetadata,
+                propertyName,
                 propertyModelName,
-                propertyModelMetadata);
-            propertyBindingContext.BinderModelName = propertyModelMetadata.BinderModelName;
+                model: null);
 
             var modelBindingResult = await propertyBindingContext.OperationBindingContext.ModelBinder.BindModelAsync(
                 propertyBindingContext);

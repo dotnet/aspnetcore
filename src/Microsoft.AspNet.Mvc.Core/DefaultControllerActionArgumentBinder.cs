@@ -73,12 +73,12 @@ namespace Microsoft.AspNet.Mvc
             [NotNull] OperationBindingContext operationContext)
         {
             var metadata = _modelMetadataProvider.GetMetadataForType(parameter.ParameterType);
-            var modelBindingContext = GetModelBindingContext(
-                parameter.Name,
+            var modelBindingContext = ModelBindingContext.CreateBindingContext(
+                operationContext,
+                modelState,
                 metadata,
                 parameter.BindingInfo,
-                modelState,
-                operationContext);
+                parameter.Name);
 
             var modelBindingResult = await operationContext.ModelBinder.BindModelAsync(modelBindingContext);
             if (modelBindingResult != null &&
@@ -185,26 +185,6 @@ namespace Microsoft.AspNet.Mvc
                     arguments[parameter.Name] = modelBindingResult.Model;
                 }
             }
-        }
-
-        private static ModelBindingContext GetModelBindingContext(
-            string parameterName,
-            ModelMetadata metadata,
-            BindingInfo bindingInfo,
-            ModelStateDictionary modelState,
-            OperationBindingContext operationBindingContext)
-        {
-            var modelBindingContext = ModelBindingContext.GetModelBindingContext(
-                metadata,
-                bindingInfo,
-                parameterName);
-
-            modelBindingContext.IsTopLevelObject = true;
-            modelBindingContext.ModelState = modelState;
-            modelBindingContext.ValueProvider = operationBindingContext.ValueProvider;
-            modelBindingContext.OperationBindingContext = operationBindingContext;
-
-            return modelBindingContext;
         }
 
         private OperationBindingContext GetOperationBindingContext(

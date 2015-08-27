@@ -148,6 +148,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 Model = oldBindingContext.Model,
                 ModelMetadata = oldBindingContext.ModelMetadata,
                 ModelName = modelName,
+                FieldName = oldBindingContext.FieldName,
                 ModelState = oldBindingContext.ModelState,
                 ValueProvider = oldBindingContext.ValueProvider,
                 OperationBindingContext = oldBindingContext.OperationBindingContext,

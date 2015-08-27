@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
@@ -15,10 +14,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private static readonly Func<ModelBindingContext, string, bool>
             _defaultPropertyFilter = (context, propertyName) => true;
 
-        private string _modelName;
-        private ModelStateDictionary _modelState;
-        private Func<ModelBindingContext, string, bool> _propertyFilter;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="ModelBindingContext"/> class.
         /// </summary>
@@ -27,67 +22,82 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <summary>
-        /// Constructs a new instance of the <see cref="ModelBindingContext"/> class using the
-        /// <paramref name="bindingContext" />.
+        /// Creates a new <see cref="ModelBindingContext"/> for top-level model binding operation.
         /// </summary>
-        /// <param name="bindingContext">Existing <see cref="ModelBindingContext"/>.</param>
-        /// <param name="modelName">Model name of associated with the new <see cref="ModelBindingContext"/>.</param>
-        /// <param name="modelMetadata">Model metadata of associated with the new <see cref="ModelBindingContext"/>.
+        /// <param name="operationBindingContext">
+        /// The <see cref="OperationBindingContext"/> associated with the binding operation.
         /// </param>
-        public static ModelBindingContext GetChildModelBindingContext(
-            [NotNull] ModelBindingContext bindingContext,
-            [NotNull] string modelName,
-            [NotNull] ModelMetadata modelMetadata)
-        {
-            var modelBindingContext = new ModelBindingContext
-            {
-                ModelName = modelName,
-                ModelMetadata = modelMetadata,
-
-                ModelState = bindingContext.ModelState,
-                ValueProvider = bindingContext.ValueProvider,
-                OperationBindingContext = bindingContext.OperationBindingContext,
-
-                BindingSource = modelMetadata.BindingSource,
-                BinderModelName = modelMetadata.BinderModelName,
-                BinderType = modelMetadata.BinderType,
-            };
-
-            return modelBindingContext;
-        }
-
-        /// <summary>
-        /// Constructs a new instance of <see cref="ModelBindingContext"/> from given <paramref name="metadata"/>
-        /// and <paramref name="bindingInfo"/>.
-        /// </summary>
         /// <param name="metadata"><see cref="ModelMetadata"/> associated with the model.</param>
         /// <param name="bindingInfo"><see cref="BindingInfo"/> associated with the model.</param>
-        /// <param name="modelName">An optional name of the model to be used.</param>
+        /// <param name="modelName">The name of the property or parameter being bound.</param>
         /// <returns>A new instance of <see cref="ModelBindingContext"/>.</returns>
-        public static ModelBindingContext GetModelBindingContext(
+        public static ModelBindingContext CreateBindingContext(
+            [NotNull] OperationBindingContext operationBindingContext,
+            [NotNull] ModelStateDictionary modelState,
             [NotNull] ModelMetadata metadata,
             BindingInfo bindingInfo,
-            string modelName)
+            [NotNull] string modelName)
         {
             var binderModelName = bindingInfo?.BinderModelName ?? metadata.BinderModelName;
             var propertyPredicateProvider =
                 bindingInfo?.PropertyBindingPredicateProvider ?? metadata.PropertyBindingPredicateProvider;
-            return new ModelBindingContext
+
+            return new ModelBindingContext()
             {
-                ModelMetadata = metadata,
-                BindingSource = bindingInfo?.BindingSource ?? metadata.BindingSource,
-                PropertyFilter = propertyPredicateProvider?.PropertyFilter,
-                BinderType = bindingInfo?.BinderType ?? metadata.BinderType,
                 BinderModelName = binderModelName,
-                ModelName = binderModelName ?? metadata.PropertyName ?? modelName,
+                BindingSource = bindingInfo?.BindingSource ?? metadata.BindingSource,
+                BinderType = bindingInfo?.BinderType ?? metadata.BinderType,
+                PropertyFilter = propertyPredicateProvider?.PropertyFilter,
+
+                // We only support fallback to empty prefix in cases where the model name is inferred from
+                // the parameter or property being bound.
                 FallbackToEmptyPrefix = binderModelName == null,
+
+                // Because this is the top-level context, FieldName and ModelName should be the same.
+                FieldName = binderModelName ?? modelName,
+                ModelName = binderModelName ?? modelName,
+
+                IsTopLevelObject = true,
+                ModelMetadata = metadata,
+                ModelState = modelState,
+                OperationBindingContext = operationBindingContext,
+                ValueProvider = operationBindingContext.ValueProvider,
+            };
+        }
+
+        public static ModelBindingContext CreateChildBindingContext(
+            [NotNull] ModelBindingContext parent,
+            [NotNull] ModelMetadata modelMetadata,
+            [NotNull] string fieldName,
+            [NotNull] string modelName,
+            object model)
+        {
+            return new ModelBindingContext()
+            {
+                ModelState = parent.ModelState,
+                OperationBindingContext = parent.OperationBindingContext,
+                ValueProvider = parent.ValueProvider,
+
+                Model = model,
+                ModelMetadata = modelMetadata,
+                ModelName = modelName,
+                FieldName = fieldName,
+                BinderModelName = modelMetadata.BinderModelName,
+                BinderType = modelMetadata.BinderType,
+                BindingSource = modelMetadata.BindingSource,
+                PropertyFilter = modelMetadata.PropertyBindingPredicateProvider?.PropertyFilter,
             };
         }
 
         /// <summary>
         /// Represents the <see cref="OperationBindingContext"/> associated with this context.
         /// </summary>
-        public OperationBindingContext OperationBindingContext { get; set; }
+        public OperationBindingContext OperationBindingContext { get; [param:NotNull] set; }
+
+        /// <summary>
+        /// Gets or sets the name of the current field being bound.
+        /// </summary>
+        public string FieldName { get; [param: NotNull] set; }
 
         /// <summary>
         /// Gets or sets the model value for the current operation.
@@ -101,41 +111,19 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <summary>
         /// Gets or sets the metadata for the model associated with this context.
         /// </summary>
-        public ModelMetadata ModelMetadata { get; set; }
+        public ModelMetadata ModelMetadata { get; [param: NotNull] set; }
 
         /// <summary>
         /// Gets or sets the name of the model. This property is used as a key for looking up values in
         /// <see cref="IValueProvider"/> during model binding.
         /// </summary>
-        public string ModelName
-        {
-            get
-            {
-                if (_modelName == null)
-                {
-                    _modelName = string.Empty;
-                }
-                return _modelName;
-            }
-            set { _modelName = value; }
-        }
+        public string ModelName { get; [param: NotNull] set; }
 
         /// <summary>
         /// Gets or sets the <see cref="ModelStateDictionary"/> used to capture <see cref="ModelState"/> values
         /// for properties in the object graph of the model when binding.
         /// </summary>
-        public ModelStateDictionary ModelState
-        {
-            get
-            {
-                if (_modelState == null)
-                {
-                    _modelState = new ModelStateDictionary();
-                }
-                return _modelState;
-            }
-            set { _modelState = value; }
-        }
+        public ModelStateDictionary ModelState { get; [param: NotNull] set; }
 
         /// <summary>
         /// Gets the type of the model.
@@ -143,14 +131,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <remarks>
         /// The <see cref="ModelMetadata"/> property must be set to access this property.
         /// </remarks>
-        public Type ModelType
-        {
-            get
-            {
-                EnsureModelMetadata();
-                return ModelMetadata.ModelType;
-            }
-        }
+        public Type ModelType => ModelMetadata?.ModelType;
 
         /// <summary>
         /// Gets or sets a model name which is explicitly set using an <see cref="IModelNameProvider"/>.
@@ -202,27 +183,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <summary>
         /// Gets or sets the <see cref="IValueProvider"/> associated with this context.
         /// </summary>
-        public IValueProvider ValueProvider { get; set; }
+        public IValueProvider ValueProvider { get; [param: NotNull] set; }
 
-        public Func<ModelBindingContext, string, bool> PropertyFilter
-        {
-            get
-            {
-                if (_propertyFilter == null)
-                {
-                    _propertyFilter = _defaultPropertyFilter;
-                }
-                return _propertyFilter;
-            }
-            set { _propertyFilter = value; }
-        }
-
-        private void EnsureModelMetadata()
-        {
-            if (ModelMetadata == null)
-            {
-                throw new InvalidOperationException(Resources.ModelBindingContext_ModelMetadataMustBeSet);
-            }
-        }
+        /// <summary>
+        /// Gets or sets a predicate which will be evaluated for each property to determine if the property
+        /// is eligible for model binding.
+        /// </summary>
+        public Func<ModelBindingContext, string, bool> PropertyFilter { get; set; }
     }
 }

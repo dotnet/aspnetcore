@@ -149,12 +149,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 bindingContext.ModelName,
                 bindingContext.ModelMetadata,
                 boundCollection);
+
+            var innerBindingContext = ModelBindingContext.CreateChildBindingContext(
+                bindingContext,
+                elementMetadata,
+                fieldName: bindingContext.FieldName,
+                modelName: bindingContext.ModelName,
+                model: null);
+
             foreach (var value in values)
             {
-                var innerBindingContext = ModelBindingContext.GetChildModelBindingContext(
-                    bindingContext,
-                    bindingContext.ModelName,
-                    elementMetadata);
                 innerBindingContext.ValueProvider = new CompositeValueProvider
                 {
                     // our temporary provider goes at the front of the list
@@ -222,10 +226,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             foreach (var indexName in indexNames)
             {
                 var fullChildName = ModelNames.CreateIndexModelName(bindingContext.ModelName, indexName);
-                var childBindingContext = ModelBindingContext.GetChildModelBindingContext(
+                var childBindingContext = ModelBindingContext.CreateChildBindingContext(
                     bindingContext,
-                    fullChildName,
-                    elementMetadata);
+                    elementMetadata,
+                    fieldName: indexName,
+                    modelName: fullChildName,
+                    model: null);
+
 
                 var didBind = false;
                 object boundValue = null;

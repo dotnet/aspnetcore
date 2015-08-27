@@ -159,6 +159,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 ModelMetadata = metadataProvider.GetMetadataForType(modelType),
                 ModelName = "file",
+                ModelState = new ModelStateDictionary(),
                 OperationBindingContext = new OperationBindingContext
                 {
                     ModelBinder = new FormFileModelBinder(),

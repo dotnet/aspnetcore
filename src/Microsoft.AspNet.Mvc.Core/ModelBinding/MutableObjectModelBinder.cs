@@ -160,14 +160,17 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 {
                     isAnyPropertyEnabledForValueProviderBasedBinding = true;
 
-                    var propertyModelName = ModelNames.CreatePropertyModelName(
+                    var fieldName = propertyMetadata.BinderModelName ?? propertyMetadata.PropertyName;
+                    var modelName = ModelNames.CreatePropertyModelName(
                         context.ModelBindingContext.ModelName,
-                        propertyMetadata.BinderModelName ?? propertyMetadata.PropertyName);
+                        fieldName);
 
-                    var propertyModelBindingContext = ModelBindingContext.GetChildModelBindingContext(
+                    var propertyModelBindingContext = ModelBindingContext.CreateChildBindingContext(
                         context.ModelBindingContext,
-                        propertyModelName,
-                        propertyMetadata);
+                        propertyMetadata,
+                        fieldName: fieldName,
+                        modelName: modelName,
+                        model: null);
 
                     // If any property can return a true value.
                     if (CanBindValue(propertyModelBindingContext))
@@ -274,31 +277,34 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var results = new Dictionary<ModelMetadata, ModelBindingResult>();
             foreach (var propertyMetadata in propertyMetadatas)
             {
-                var propertyModelName = ModelNames.CreatePropertyModelName(
-                    bindingContext.ModelName,
-                    propertyMetadata.BinderModelName ?? propertyMetadata.PropertyName);
-                var childContext = ModelBindingContext.GetChildModelBindingContext(
-                    bindingContext,
-                    propertyModelName,
-                    propertyMetadata);
-
                 // ModelBindingContext.Model property values may be non-null when invoked via TryUpdateModel(). Pass
                 // complex (including collection) values down so that binding system does not unnecessarily recreate
                 // instances or overwrite inner properties that are not bound. No need for this with simple values
                 // because they will be overwritten if binding succeeds. Arrays are never reused because they cannot
                 // be resized.
+                object model = null;
                 if (propertyMetadata.PropertyGetter != null &&
                     propertyMetadata.IsComplexType &&
                     !propertyMetadata.ModelType.IsArray)
                 {
-                    childContext.Model = propertyMetadata.PropertyGetter(bindingContext.Model);
+                    model = propertyMetadata.PropertyGetter(bindingContext.Model);
                 }
 
-                var result = await bindingContext.OperationBindingContext.ModelBinder.BindModelAsync(childContext);
+                var fieldName = propertyMetadata.BinderModelName ?? propertyMetadata.PropertyName;
+                var modelName = ModelNames.CreatePropertyModelName(bindingContext.ModelName, fieldName);
+
+                var propertyContext = ModelBindingContext.CreateChildBindingContext(
+                    bindingContext,
+                    propertyMetadata,
+                    fieldName: fieldName,
+                    modelName: modelName,
+                    model: model);
+
+                var result = await bindingContext.OperationBindingContext.ModelBinder.BindModelAsync(propertyContext);
                 if (result == null)
                 {
                     // Could not bind. Let ProcessResult() know explicitly.
-                    result = new ModelBindingResult(model: null, key: propertyModelName, isModelSet: false);
+                    result = new ModelBindingResult(model: null, key: propertyContext.ModelName, isModelSet: false);
                 }
 
                 results[propertyMetadata] = result;
@@ -359,7 +365,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 var modelMetadataPredicate = context.ModelMetadata.PropertyBindingPredicateProvider?.PropertyFilter;
 
                 return
-                    context.PropertyFilter(context, propertyName) &&
+                    (context.PropertyFilter == null || context.PropertyFilter(context, propertyName)) &&
                     (modelMetadataPredicate == null || modelMetadataPredicate(context, propertyName));
             };
         }

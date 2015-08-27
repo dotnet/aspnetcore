@@ -185,6 +185,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             {
                 ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(modelType),
                 ModelName = "theModelName",
+                ModelState = new ModelStateDictionary(),
                 ValueProvider = new SimpleValueProvider() // empty
             };
         }

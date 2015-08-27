@@ -10,14 +10,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
     public class ModelBindingContextTest
     {
         [Fact]
-        public void GetChildModelBindingContext()
+        public void CreateChildBindingContext_CopiesProperties()
         {
             // Arrange
             var originalBindingContext = new ModelBindingContext
             {
+                Model = new object(),
                 ModelMetadata = new TestModelMetadataProvider().GetMetadataForType(typeof(object)),
                 ModelName = "theName",
-                ModelState = new ModelStateDictionary(),
+                OperationBindingContext = new OperationBindingContext(),
                 ValueProvider = new SimpleValueProvider()
             };
 
@@ -32,19 +33,27 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var newModelMetadata = metadataProvider.GetMetadataForType(typeof(object));
             
             // Act
-            var newBindingContext = ModelBindingContext.GetChildModelBindingContext(
+            var newBindingContext = ModelBindingContext.CreateChildBindingContext(
                 originalBindingContext,
-                string.Empty,
-                newModelMetadata);
+                newModelMetadata,
+                fieldName: "fieldName",
+                modelName: "modelprefix.fieldName",
+                model: null);
 
             // Assert
-            Assert.Same(newModelMetadata, newBindingContext.ModelMetadata);
-            Assert.Same(newModelMetadata.BindingSource, newBindingContext.BindingSource);
             Assert.Same(newModelMetadata.BinderModelName, newBindingContext.BinderModelName);
             Assert.Same(newModelMetadata.BinderType, newBindingContext.BinderType);
-            Assert.Equal("", newBindingContext.ModelName);
-            Assert.Equal(originalBindingContext.ModelState, newBindingContext.ModelState);
-            Assert.Equal(originalBindingContext.ValueProvider, newBindingContext.ValueProvider);
+            Assert.Same(newModelMetadata.BindingSource, newBindingContext.BindingSource);
+            Assert.False(newBindingContext.FallbackToEmptyPrefix);
+            Assert.Equal("fieldName", newBindingContext.FieldName);
+            Assert.False(newBindingContext.IsFirstChanceBinding);
+            Assert.False(newBindingContext.IsTopLevelObject);
+            Assert.Null(newBindingContext.Model);
+            Assert.Same(newModelMetadata, newBindingContext.ModelMetadata);
+            Assert.Equal("modelprefix.fieldName", newBindingContext.ModelName);
+            Assert.Same(originalBindingContext.ModelState, newBindingContext.ModelState);
+            Assert.Same(originalBindingContext.OperationBindingContext, newBindingContext.OperationBindingContext);
+            Assert.Same(originalBindingContext.ValueProvider, newBindingContext.ValueProvider);
         }
 
         [Fact]

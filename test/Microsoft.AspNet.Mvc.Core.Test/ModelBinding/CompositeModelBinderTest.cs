@@ -24,14 +24,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(int)),
                 ModelName = "someName",
                 ModelState = new ModelStateDictionary(),
+                OperationBindingContext = new OperationBindingContext(),
                 ValueProvider = new SimpleValueProvider
                 {
                     { "someName", "dummyValue" }
                 },
-                OperationBindingContext = new OperationBindingContext
-                {
-                    ValidatorProvider = GetValidatorProvider()
-                }
             };
 
             var mockIntBinder = new Mock<IModelBinder>();
@@ -71,14 +68,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(List<int>)),
                 ModelName = "someName",
                 ModelState = new ModelStateDictionary(),
+                OperationBindingContext = new OperationBindingContext(),
                 ValueProvider = new SimpleValueProvider
                 {
                     { "someOtherName", "dummyValue" }
                 },
-                OperationBindingContext = new OperationBindingContext
-                {
-                    ValidatorProvider = GetValidatorProvider()
-                }
             };
 
             var mockIntBinder = new Mock<IModelBinder>();
@@ -121,14 +115,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(List<int>)),
                 ModelName = "someName",
                 ModelState = new ModelStateDictionary(),
+                OperationBindingContext = new OperationBindingContext(),
                 ValueProvider = new SimpleValueProvider
                 {
                     { "someOtherName", "dummyValue" }
                 },
-                OperationBindingContext = new OperationBindingContext
-                {
-                    ValidatorProvider = GetValidatorProvider()
-                }
             };
 
             var modelBinder = new Mock<IModelBinder>();
@@ -155,14 +146,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(List<int>)),
                 ModelName = "someName",
                 ModelState = new ModelStateDictionary(),
+                OperationBindingContext = new OperationBindingContext(),
                 ValueProvider = new SimpleValueProvider
                 {
                     { "someOtherName", "dummyValue" }
                 },
-                OperationBindingContext = new OperationBindingContext
-                {
-                    ValidatorProvider = GetValidatorProvider()
-                }
             };
 
             var count = 0;
@@ -201,14 +189,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(List<int>)),
                 ModelName = "someName",
                 ModelState = new ModelStateDictionary(),
+                OperationBindingContext = new OperationBindingContext(),
                 ValueProvider = new SimpleValueProvider
                 {
                     { "someOtherName", "dummyValue" }
                 },
-                OperationBindingContext = new OperationBindingContext
-                {
-                    ValidatorProvider = GetValidatorProvider()
-                }
             };
 
             var modelBinder = new Mock<IModelBinder>();
@@ -238,14 +223,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(List<int>)),
                 ModelName = "someName",
                 ModelState = new ModelStateDictionary(),
+                OperationBindingContext = new OperationBindingContext(),
                 ValueProvider = new SimpleValueProvider
                 {
                     { "someOtherName", "dummyValue" }
                 },
-                OperationBindingContext = new OperationBindingContext
-                {
-                    ValidatorProvider = GetValidatorProvider()
-                }
             };
 
             var modelBinder = new Mock<IModelBinder>();
@@ -276,14 +258,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(List<int>)),
                 ModelName = "someName",
                 ModelState = new ModelStateDictionary(),
+                OperationBindingContext = new OperationBindingContext(),
                 ValueProvider = new SimpleValueProvider
                 {
                     { "someOtherName", "dummyValue" }
                 },
-                OperationBindingContext = new OperationBindingContext
-                {
-                    ValidatorProvider = GetValidatorProvider()
-                }
             };
 
             var modelBinder = new Mock<IModelBinder>();
@@ -318,6 +297,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             {
                 FallbackToEmptyPrefix = false,
                 ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(List<int>)),
+                ModelState = new ModelStateDictionary(),
             };
 
             // Act
@@ -341,7 +321,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 FallbackToEmptyPrefix = true,
                 ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(int)),
                 ModelState = new ModelStateDictionary(),
-                OperationBindingContext = Mock.Of<OperationBindingContext>(),
+                OperationBindingContext = new OperationBindingContext(),
             };
 
             // Act
@@ -504,24 +484,23 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.Same(validationNode, result.ValidationNode);
         }
 
-        private static ModelBindingContext CreateBindingContext(IModelBinder binder,
-                                                                IValueProvider valueProvider,
-                                                                Type type,
-                                                                IModelValidatorProvider validatorProvider = null)
+        private static ModelBindingContext CreateBindingContext(
+            IModelBinder binder,
+            IValueProvider valueProvider,
+            Type type)
         {
-            validatorProvider = validatorProvider ?? GetValidatorProvider();
             var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             var bindingContext = new ModelBindingContext
             {
                 FallbackToEmptyPrefix = true,
                 ModelMetadata = metadataProvider.GetMetadataForType(type),
+                ModelName = "parameter",
                 ModelState = new ModelStateDictionary(),
                 ValueProvider = valueProvider,
                 OperationBindingContext = new OperationBindingContext
                 {
                     MetadataProvider = metadataProvider,
                     ModelBinder = binder,
-                    ValidatorProvider = validatorProvider
                 }
             };
             return bindingContext;
@@ -547,26 +526,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             return shimBinder;
         }
 
-        private static IModelValidatorProvider GetValidatorProvider(params IModelValidator[] validators)
-        {
-            var provider = new Mock<IModelValidatorProvider>();
-            provider
-                .Setup(v => v.GetValidators(It.IsAny<ModelValidatorProviderContext>()))
-                .Callback<ModelValidatorProviderContext>(c =>
-                {
-                    if (validators == null)
-                    {
-                        return;
-                    }
-
-                    foreach (var validator in validators)
-                    {
-                        c.Validators.Add(validator);
-                    }
-                });
-
-            return provider.Object;
-        }
 
         private class SimplePropertiesModel
         {

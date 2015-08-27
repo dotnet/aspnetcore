@@ -429,6 +429,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         {
             var modelBindingContext = new ModelBindingContext()
             {
+                ModelState = new ModelStateDictionary(),
                 OperationBindingContext = new OperationBindingContext()
                 {
                     HttpContext = new DefaultHttpContext(),
@@ -510,6 +511,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             {
                 ModelMetadata = metadataProvider.GetMetadataForType(typeof(IDictionary<int, string>)),
                 ModelName = "someName",
+                ModelState = new ModelStateDictionary(),
                 OperationBindingContext = new OperationBindingContext
                 {
                     ModelBinder = binder.Object,
