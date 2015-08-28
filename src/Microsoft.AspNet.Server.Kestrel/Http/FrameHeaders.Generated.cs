@@ -1,6 +1,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Framework.Primitives;
 
 namespace Microsoft.AspNet.Server.Kestrel.Http 
 {
@@ -8,8 +9,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     {
         public FrameResponseHeaders()
         {
-            _Server = new[] { "Kestrel" };
-            _Date = new[] { DateTime.UtcNow.ToString("r") };
+            _Server = "Kestrel";
+            _Date = DateTime.UtcNow.ToString("r");
             _bits = 67108868L;
         }
     }
@@ -18,47 +19,47 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     {
         long _bits = 0;
         
-        string[] _CacheControl;
-        string[] _Connection;
-        string[] _Date;
-        string[] _KeepAlive;
-        string[] _Pragma;
-        string[] _Trailer;
-        string[] _TransferEncoding;
-        string[] _Upgrade;
-        string[] _Via;
-        string[] _Warning;
-        string[] _Allow;
-        string[] _ContentLength;
-        string[] _ContentType;
-        string[] _ContentEncoding;
-        string[] _ContentLanguage;
-        string[] _ContentLocation;
-        string[] _ContentMD5;
-        string[] _ContentRange;
-        string[] _Expires;
-        string[] _LastModified;
-        string[] _Accept;
-        string[] _AcceptCharset;
-        string[] _AcceptEncoding;
-        string[] _AcceptLanguage;
-        string[] _Authorization;
-        string[] _Cookie;
-        string[] _Expect;
-        string[] _From;
-        string[] _Host;
-        string[] _IfMatch;
-        string[] _IfModifiedSince;
-        string[] _IfNoneMatch;
-        string[] _IfRange;
-        string[] _IfUnmodifiedSince;
-        string[] _MaxForwards;
-        string[] _ProxyAuthorization;
-        string[] _Referer;
-        string[] _Range;
-        string[] _TE;
-        string[] _Translate;
-        string[] _UserAgent;
+        StringValues _CacheControl;
+        StringValues _Connection;
+        StringValues _Date;
+        StringValues _KeepAlive;
+        StringValues _Pragma;
+        StringValues _Trailer;
+        StringValues _TransferEncoding;
+        StringValues _Upgrade;
+        StringValues _Via;
+        StringValues _Warning;
+        StringValues _Allow;
+        StringValues _ContentLength;
+        StringValues _ContentType;
+        StringValues _ContentEncoding;
+        StringValues _ContentLanguage;
+        StringValues _ContentLocation;
+        StringValues _ContentMD5;
+        StringValues _ContentRange;
+        StringValues _Expires;
+        StringValues _LastModified;
+        StringValues _Accept;
+        StringValues _AcceptCharset;
+        StringValues _AcceptEncoding;
+        StringValues _AcceptLanguage;
+        StringValues _Authorization;
+        StringValues _Cookie;
+        StringValues _Expect;
+        StringValues _From;
+        StringValues _Host;
+        StringValues _IfMatch;
+        StringValues _IfModifiedSince;
+        StringValues _IfNoneMatch;
+        StringValues _IfRange;
+        StringValues _IfUnmodifiedSince;
+        StringValues _MaxForwards;
+        StringValues _ProxyAuthorization;
+        StringValues _Referer;
+        StringValues _Range;
+        StringValues _TE;
+        StringValues _Translate;
+        StringValues _UserAgent;
 
         protected override int GetCountFast()
         {
@@ -272,7 +273,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             return count;
         }
 
-        protected override string[] GetValueFast(string key)
+        protected override StringValues GetValueFast(string key)
         {
             switch(key.Length)
             {
@@ -843,7 +844,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             return MaybeUnknown[key];
         }
 
-        protected override bool TryGetValueFast(string key, out string[] value)
+        protected override bool TryGetValueFast(string key, out StringValues value)
         {
             switch(key.Length)
             {
@@ -858,7 +859,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -872,7 +873,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -886,7 +887,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -900,7 +901,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -914,7 +915,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -932,7 +933,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -946,7 +947,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -960,7 +961,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -978,7 +979,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -992,7 +993,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -1006,7 +1007,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -1024,7 +1025,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -1038,7 +1039,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -1052,7 +1053,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -1066,7 +1067,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -1084,7 +1085,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -1098,7 +1099,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -1112,7 +1113,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -1126,7 +1127,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -1140,7 +1141,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -1158,7 +1159,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -1172,7 +1173,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -1190,7 +1191,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -1208,7 +1209,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -1222,7 +1223,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -1240,7 +1241,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -1254,7 +1255,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -1272,7 +1273,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -1286,7 +1287,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -1304,7 +1305,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -1318,7 +1319,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -1332,7 +1333,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -1350,7 +1351,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -1368,7 +1369,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -1382,7 +1383,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -1400,7 +1401,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -1414,7 +1415,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -1432,7 +1433,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -1446,7 +1447,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -1464,7 +1465,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -1482,18 +1483,18 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
                     }
                     break;
             }
-            value = null;
+            value = StringValues.Empty;
             return MaybeUnknown?.TryGetValue(key, out value) ?? false;
         }
 
-        protected override void SetValueFast(string key, string[] value)
+        protected override void SetValueFast(string key, StringValues value)
         {
             switch(key.Length)
             {
@@ -1855,7 +1856,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             Unknown[key] = value;
         }
 
-        protected override void AddValueFast(string key, string[] value)
+        protected override void AddValueFast(string key, StringValues value)
         {
             switch(key.Length)
             {
@@ -2995,7 +2996,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             MaybeUnknown?.Clear();
         }
         
-        protected override void CopyToFast(KeyValuePair<string, string[]>[] array, int arrayIndex)
+        protected override void CopyToFast(KeyValuePair<string, StringValues>[] array, int arrayIndex)
         {
             if (arrayIndex < 0)
             {
@@ -3010,7 +3011,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Cache-Control", _CacheControl);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Cache-Control", _CacheControl);
                     ++arrayIndex;
                 }
             
@@ -3021,7 +3022,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Connection", _Connection);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Connection", _Connection);
                     ++arrayIndex;
                 }
             
@@ -3032,7 +3033,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Date", _Date);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Date", _Date);
                     ++arrayIndex;
                 }
             
@@ -3043,7 +3044,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Keep-Alive", _KeepAlive);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Keep-Alive", _KeepAlive);
                     ++arrayIndex;
                 }
             
@@ -3054,7 +3055,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Pragma", _Pragma);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Pragma", _Pragma);
                     ++arrayIndex;
                 }
             
@@ -3065,7 +3066,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Trailer", _Trailer);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Trailer", _Trailer);
                     ++arrayIndex;
                 }
             
@@ -3076,7 +3077,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Transfer-Encoding", _TransferEncoding);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Transfer-Encoding", _TransferEncoding);
                     ++arrayIndex;
                 }
             
@@ -3087,7 +3088,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Upgrade", _Upgrade);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Upgrade", _Upgrade);
                     ++arrayIndex;
                 }
             
@@ -3098,7 +3099,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Via", _Via);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Via", _Via);
                     ++arrayIndex;
                 }
             
@@ -3109,7 +3110,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Warning", _Warning);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Warning", _Warning);
                     ++arrayIndex;
                 }
             
@@ -3120,7 +3121,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Allow", _Allow);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Allow", _Allow);
                     ++arrayIndex;
                 }
             
@@ -3131,7 +3132,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Content-Length", _ContentLength);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Content-Length", _ContentLength);
                     ++arrayIndex;
                 }
             
@@ -3142,7 +3143,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Content-Type", _ContentType);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Content-Type", _ContentType);
                     ++arrayIndex;
                 }
             
@@ -3153,7 +3154,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Content-Encoding", _ContentEncoding);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Content-Encoding", _ContentEncoding);
                     ++arrayIndex;
                 }
             
@@ -3164,7 +3165,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Content-Language", _ContentLanguage);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Content-Language", _ContentLanguage);
                     ++arrayIndex;
                 }
             
@@ -3175,7 +3176,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Content-Location", _ContentLocation);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Content-Location", _ContentLocation);
                     ++arrayIndex;
                 }
             
@@ -3186,7 +3187,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Content-MD5", _ContentMD5);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Content-MD5", _ContentMD5);
                     ++arrayIndex;
                 }
             
@@ -3197,7 +3198,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Content-Range", _ContentRange);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Content-Range", _ContentRange);
                     ++arrayIndex;
                 }
             
@@ -3208,7 +3209,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Expires", _Expires);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Expires", _Expires);
                     ++arrayIndex;
                 }
             
@@ -3219,7 +3220,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Last-Modified", _LastModified);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Last-Modified", _LastModified);
                     ++arrayIndex;
                 }
             
@@ -3230,7 +3231,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Accept", _Accept);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Accept", _Accept);
                     ++arrayIndex;
                 }
             
@@ -3241,7 +3242,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Accept-Charset", _AcceptCharset);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Accept-Charset", _AcceptCharset);
                     ++arrayIndex;
                 }
             
@@ -3252,7 +3253,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Accept-Encoding", _AcceptEncoding);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Accept-Encoding", _AcceptEncoding);
                     ++arrayIndex;
                 }
             
@@ -3263,7 +3264,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Accept-Language", _AcceptLanguage);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Accept-Language", _AcceptLanguage);
                     ++arrayIndex;
                 }
             
@@ -3274,7 +3275,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Authorization", _Authorization);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Authorization", _Authorization);
                     ++arrayIndex;
                 }
             
@@ -3285,7 +3286,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Cookie", _Cookie);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Cookie", _Cookie);
                     ++arrayIndex;
                 }
             
@@ -3296,7 +3297,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Expect", _Expect);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Expect", _Expect);
                     ++arrayIndex;
                 }
             
@@ -3307,7 +3308,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("From", _From);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("From", _From);
                     ++arrayIndex;
                 }
             
@@ -3318,7 +3319,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Host", _Host);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Host", _Host);
                     ++arrayIndex;
                 }
             
@@ -3329,7 +3330,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("If-Match", _IfMatch);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("If-Match", _IfMatch);
                     ++arrayIndex;
                 }
             
@@ -3340,7 +3341,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("If-Modified-Since", _IfModifiedSince);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("If-Modified-Since", _IfModifiedSince);
                     ++arrayIndex;
                 }
             
@@ -3351,7 +3352,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("If-None-Match", _IfNoneMatch);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("If-None-Match", _IfNoneMatch);
                     ++arrayIndex;
                 }
             
@@ -3362,7 +3363,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("If-Range", _IfRange);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("If-Range", _IfRange);
                     ++arrayIndex;
                 }
             
@@ -3373,7 +3374,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("If-Unmodified-Since", _IfUnmodifiedSince);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("If-Unmodified-Since", _IfUnmodifiedSince);
                     ++arrayIndex;
                 }
             
@@ -3384,7 +3385,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Max-Forwards", _MaxForwards);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Max-Forwards", _MaxForwards);
                     ++arrayIndex;
                 }
             
@@ -3395,7 +3396,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Proxy-Authorization", _ProxyAuthorization);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Proxy-Authorization", _ProxyAuthorization);
                     ++arrayIndex;
                 }
             
@@ -3406,7 +3407,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Referer", _Referer);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Referer", _Referer);
                     ++arrayIndex;
                 }
             
@@ -3417,7 +3418,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Range", _Range);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Range", _Range);
                     ++arrayIndex;
                 }
             
@@ -3428,7 +3429,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("TE", _TE);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("TE", _TE);
                     ++arrayIndex;
                 }
             
@@ -3439,7 +3440,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Translate", _Translate);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Translate", _Translate);
                     ++arrayIndex;
                 }
             
@@ -3450,11 +3451,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("User-Agent", _UserAgent);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("User-Agent", _UserAgent);
                     ++arrayIndex;
                 }
             
-            ((ICollection<KeyValuePair<string, string[]>>)MaybeUnknown)?.CopyTo(array, arrayIndex);
+            ((ICollection<KeyValuePair<string, StringValues>>)MaybeUnknown)?.CopyTo(array, arrayIndex);
         }
 
         public unsafe void Append(byte[] keyBytes, int keyOffset, int keyLength, string value)
@@ -4105,8 +4106,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     break;
             }}
             var key = System.Text.Encoding.ASCII.GetString(keyBytes, keyOffset, keyLength);
-            string[] existing;
-            Unknown[key] = Unknown.TryGetValue(key, out existing) ? AppendValue(existing, value) : new[] {value};
+            StringValues existing;
+            Unknown.TryGetValue(key, out existing);
+            Unknown[key] = AppendValue(existing, value);
         }
 
         public partial struct Enumerator
@@ -4246,7 +4248,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state0:
                     if (((_bits & 1L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Cache-Control", _collection._CacheControl);
+                        _current = new KeyValuePair<string, StringValues>("Cache-Control", _collection._CacheControl);
                         _state = 1;
                         return true;
                     }
@@ -4254,7 +4256,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state1:
                     if (((_bits & 2L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Connection", _collection._Connection);
+                        _current = new KeyValuePair<string, StringValues>("Connection", _collection._Connection);
                         _state = 2;
                         return true;
                     }
@@ -4262,7 +4264,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state2:
                     if (((_bits & 4L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Date", _collection._Date);
+                        _current = new KeyValuePair<string, StringValues>("Date", _collection._Date);
                         _state = 3;
                         return true;
                     }
@@ -4270,7 +4272,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state3:
                     if (((_bits & 8L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Keep-Alive", _collection._KeepAlive);
+                        _current = new KeyValuePair<string, StringValues>("Keep-Alive", _collection._KeepAlive);
                         _state = 4;
                         return true;
                     }
@@ -4278,7 +4280,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state4:
                     if (((_bits & 16L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Pragma", _collection._Pragma);
+                        _current = new KeyValuePair<string, StringValues>("Pragma", _collection._Pragma);
                         _state = 5;
                         return true;
                     }
@@ -4286,7 +4288,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state5:
                     if (((_bits & 32L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Trailer", _collection._Trailer);
+                        _current = new KeyValuePair<string, StringValues>("Trailer", _collection._Trailer);
                         _state = 6;
                         return true;
                     }
@@ -4294,7 +4296,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state6:
                     if (((_bits & 64L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Transfer-Encoding", _collection._TransferEncoding);
+                        _current = new KeyValuePair<string, StringValues>("Transfer-Encoding", _collection._TransferEncoding);
                         _state = 7;
                         return true;
                     }
@@ -4302,7 +4304,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state7:
                     if (((_bits & 128L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Upgrade", _collection._Upgrade);
+                        _current = new KeyValuePair<string, StringValues>("Upgrade", _collection._Upgrade);
                         _state = 8;
                         return true;
                     }
@@ -4310,7 +4312,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state8:
                     if (((_bits & 256L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Via", _collection._Via);
+                        _current = new KeyValuePair<string, StringValues>("Via", _collection._Via);
                         _state = 9;
                         return true;
                     }
@@ -4318,7 +4320,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state9:
                     if (((_bits & 512L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Warning", _collection._Warning);
+                        _current = new KeyValuePair<string, StringValues>("Warning", _collection._Warning);
                         _state = 10;
                         return true;
                     }
@@ -4326,7 +4328,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state10:
                     if (((_bits & 1024L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Allow", _collection._Allow);
+                        _current = new KeyValuePair<string, StringValues>("Allow", _collection._Allow);
                         _state = 11;
                         return true;
                     }
@@ -4334,7 +4336,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state11:
                     if (((_bits & 2048L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Content-Length", _collection._ContentLength);
+                        _current = new KeyValuePair<string, StringValues>("Content-Length", _collection._ContentLength);
                         _state = 12;
                         return true;
                     }
@@ -4342,7 +4344,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state12:
                     if (((_bits & 4096L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Content-Type", _collection._ContentType);
+                        _current = new KeyValuePair<string, StringValues>("Content-Type", _collection._ContentType);
                         _state = 13;
                         return true;
                     }
@@ -4350,7 +4352,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state13:
                     if (((_bits & 8192L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Content-Encoding", _collection._ContentEncoding);
+                        _current = new KeyValuePair<string, StringValues>("Content-Encoding", _collection._ContentEncoding);
                         _state = 14;
                         return true;
                     }
@@ -4358,7 +4360,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state14:
                     if (((_bits & 16384L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Content-Language", _collection._ContentLanguage);
+                        _current = new KeyValuePair<string, StringValues>("Content-Language", _collection._ContentLanguage);
                         _state = 15;
                         return true;
                     }
@@ -4366,7 +4368,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state15:
                     if (((_bits & 32768L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Content-Location", _collection._ContentLocation);
+                        _current = new KeyValuePair<string, StringValues>("Content-Location", _collection._ContentLocation);
                         _state = 16;
                         return true;
                     }
@@ -4374,7 +4376,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state16:
                     if (((_bits & 65536L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Content-MD5", _collection._ContentMD5);
+                        _current = new KeyValuePair<string, StringValues>("Content-MD5", _collection._ContentMD5);
                         _state = 17;
                         return true;
                     }
@@ -4382,7 +4384,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state17:
                     if (((_bits & 131072L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Content-Range", _collection._ContentRange);
+                        _current = new KeyValuePair<string, StringValues>("Content-Range", _collection._ContentRange);
                         _state = 18;
                         return true;
                     }
@@ -4390,7 +4392,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state18:
                     if (((_bits & 262144L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Expires", _collection._Expires);
+                        _current = new KeyValuePair<string, StringValues>("Expires", _collection._Expires);
                         _state = 19;
                         return true;
                     }
@@ -4398,7 +4400,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state19:
                     if (((_bits & 524288L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Last-Modified", _collection._LastModified);
+                        _current = new KeyValuePair<string, StringValues>("Last-Modified", _collection._LastModified);
                         _state = 20;
                         return true;
                     }
@@ -4406,7 +4408,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state20:
                     if (((_bits & 1048576L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Accept", _collection._Accept);
+                        _current = new KeyValuePair<string, StringValues>("Accept", _collection._Accept);
                         _state = 21;
                         return true;
                     }
@@ -4414,7 +4416,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state21:
                     if (((_bits & 2097152L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Accept-Charset", _collection._AcceptCharset);
+                        _current = new KeyValuePair<string, StringValues>("Accept-Charset", _collection._AcceptCharset);
                         _state = 22;
                         return true;
                     }
@@ -4422,7 +4424,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state22:
                     if (((_bits & 4194304L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Accept-Encoding", _collection._AcceptEncoding);
+                        _current = new KeyValuePair<string, StringValues>("Accept-Encoding", _collection._AcceptEncoding);
                         _state = 23;
                         return true;
                     }
@@ -4430,7 +4432,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state23:
                     if (((_bits & 8388608L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Accept-Language", _collection._AcceptLanguage);
+                        _current = new KeyValuePair<string, StringValues>("Accept-Language", _collection._AcceptLanguage);
                         _state = 24;
                         return true;
                     }
@@ -4438,7 +4440,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state24:
                     if (((_bits & 16777216L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Authorization", _collection._Authorization);
+                        _current = new KeyValuePair<string, StringValues>("Authorization", _collection._Authorization);
                         _state = 25;
                         return true;
                     }
@@ -4446,7 +4448,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state25:
                     if (((_bits & 33554432L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Cookie", _collection._Cookie);
+                        _current = new KeyValuePair<string, StringValues>("Cookie", _collection._Cookie);
                         _state = 26;
                         return true;
                     }
@@ -4454,7 +4456,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state26:
                     if (((_bits & 67108864L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Expect", _collection._Expect);
+                        _current = new KeyValuePair<string, StringValues>("Expect", _collection._Expect);
                         _state = 27;
                         return true;
                     }
@@ -4462,7 +4464,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state27:
                     if (((_bits & 134217728L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("From", _collection._From);
+                        _current = new KeyValuePair<string, StringValues>("From", _collection._From);
                         _state = 28;
                         return true;
                     }
@@ -4470,7 +4472,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state28:
                     if (((_bits & 268435456L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Host", _collection._Host);
+                        _current = new KeyValuePair<string, StringValues>("Host", _collection._Host);
                         _state = 29;
                         return true;
                     }
@@ -4478,7 +4480,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state29:
                     if (((_bits & 536870912L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("If-Match", _collection._IfMatch);
+                        _current = new KeyValuePair<string, StringValues>("If-Match", _collection._IfMatch);
                         _state = 30;
                         return true;
                     }
@@ -4486,7 +4488,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state30:
                     if (((_bits & 1073741824L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("If-Modified-Since", _collection._IfModifiedSince);
+                        _current = new KeyValuePair<string, StringValues>("If-Modified-Since", _collection._IfModifiedSince);
                         _state = 31;
                         return true;
                     }
@@ -4494,7 +4496,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state31:
                     if (((_bits & 2147483648L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("If-None-Match", _collection._IfNoneMatch);
+                        _current = new KeyValuePair<string, StringValues>("If-None-Match", _collection._IfNoneMatch);
                         _state = 32;
                         return true;
                     }
@@ -4502,7 +4504,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state32:
                     if (((_bits & 4294967296L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("If-Range", _collection._IfRange);
+                        _current = new KeyValuePair<string, StringValues>("If-Range", _collection._IfRange);
                         _state = 33;
                         return true;
                     }
@@ -4510,7 +4512,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state33:
                     if (((_bits & 8589934592L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("If-Unmodified-Since", _collection._IfUnmodifiedSince);
+                        _current = new KeyValuePair<string, StringValues>("If-Unmodified-Since", _collection._IfUnmodifiedSince);
                         _state = 34;
                         return true;
                     }
@@ -4518,7 +4520,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state34:
                     if (((_bits & 17179869184L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Max-Forwards", _collection._MaxForwards);
+                        _current = new KeyValuePair<string, StringValues>("Max-Forwards", _collection._MaxForwards);
                         _state = 35;
                         return true;
                     }
@@ -4526,7 +4528,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state35:
                     if (((_bits & 34359738368L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Proxy-Authorization", _collection._ProxyAuthorization);
+                        _current = new KeyValuePair<string, StringValues>("Proxy-Authorization", _collection._ProxyAuthorization);
                         _state = 36;
                         return true;
                     }
@@ -4534,7 +4536,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state36:
                     if (((_bits & 68719476736L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Referer", _collection._Referer);
+                        _current = new KeyValuePair<string, StringValues>("Referer", _collection._Referer);
                         _state = 37;
                         return true;
                     }
@@ -4542,7 +4544,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state37:
                     if (((_bits & 137438953472L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Range", _collection._Range);
+                        _current = new KeyValuePair<string, StringValues>("Range", _collection._Range);
                         _state = 38;
                         return true;
                     }
@@ -4550,7 +4552,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state38:
                     if (((_bits & 274877906944L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("TE", _collection._TE);
+                        _current = new KeyValuePair<string, StringValues>("TE", _collection._TE);
                         _state = 39;
                         return true;
                     }
@@ -4558,7 +4560,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state39:
                     if (((_bits & 549755813888L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Translate", _collection._Translate);
+                        _current = new KeyValuePair<string, StringValues>("Translate", _collection._Translate);
                         _state = 40;
                         return true;
                     }
@@ -4566,7 +4568,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state40:
                     if (((_bits & 1099511627776L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("User-Agent", _collection._UserAgent);
+                        _current = new KeyValuePair<string, StringValues>("User-Agent", _collection._UserAgent);
                         _state = 41;
                         return true;
                     }
@@ -4574,7 +4576,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state_default:
                     if (!_hasUnknown || !_unknownEnumerator.MoveNext())
                     {
-                        _current = default(KeyValuePair<string, string[]>);
+                        _current = default(KeyValuePair<string, StringValues>);
                         return false;
                     }
                     _current = _unknownEnumerator.Current;
@@ -4587,36 +4589,36 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     {
         long _bits = 0;
         
-        string[] _CacheControl;
-        string[] _Connection;
-        string[] _Date;
-        string[] _KeepAlive;
-        string[] _Pragma;
-        string[] _Trailer;
-        string[] _TransferEncoding;
-        string[] _Upgrade;
-        string[] _Via;
-        string[] _Warning;
-        string[] _Allow;
-        string[] _ContentLength;
-        string[] _ContentType;
-        string[] _ContentEncoding;
-        string[] _ContentLanguage;
-        string[] _ContentLocation;
-        string[] _ContentMD5;
-        string[] _ContentRange;
-        string[] _Expires;
-        string[] _LastModified;
-        string[] _AcceptRanges;
-        string[] _Age;
-        string[] _ETag;
-        string[] _Location;
-        string[] _ProxyAutheticate;
-        string[] _RetryAfter;
-        string[] _Server;
-        string[] _SetCookie;
-        string[] _Vary;
-        string[] _WWWAuthenticate;
+        StringValues _CacheControl;
+        StringValues _Connection;
+        StringValues _Date;
+        StringValues _KeepAlive;
+        StringValues _Pragma;
+        StringValues _Trailer;
+        StringValues _TransferEncoding;
+        StringValues _Upgrade;
+        StringValues _Via;
+        StringValues _Warning;
+        StringValues _Allow;
+        StringValues _ContentLength;
+        StringValues _ContentType;
+        StringValues _ContentEncoding;
+        StringValues _ContentLanguage;
+        StringValues _ContentLocation;
+        StringValues _ContentMD5;
+        StringValues _ContentRange;
+        StringValues _Expires;
+        StringValues _LastModified;
+        StringValues _AcceptRanges;
+        StringValues _Age;
+        StringValues _ETag;
+        StringValues _Location;
+        StringValues _ProxyAutheticate;
+        StringValues _RetryAfter;
+        StringValues _Server;
+        StringValues _SetCookie;
+        StringValues _Vary;
+        StringValues _WWWAuthenticate;
 
         protected override int GetCountFast()
         {
@@ -4775,7 +4777,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             return count;
         }
 
-        protected override string[] GetValueFast(string key)
+        protected override StringValues GetValueFast(string key)
         {
             switch(key.Length)
             {
@@ -5198,7 +5200,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             return MaybeUnknown[key];
         }
 
-        protected override bool TryGetValueFast(string key, out string[] value)
+        protected override bool TryGetValueFast(string key, out StringValues value)
         {
             switch(key.Length)
             {
@@ -5213,7 +5215,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -5227,7 +5229,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -5241,7 +5243,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -5255,7 +5257,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -5273,7 +5275,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -5287,7 +5289,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -5301,7 +5303,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -5319,7 +5321,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -5333,7 +5335,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -5347,7 +5349,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -5365,7 +5367,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -5379,7 +5381,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -5397,7 +5399,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -5411,7 +5413,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -5425,7 +5427,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -5439,7 +5441,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -5457,7 +5459,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -5471,7 +5473,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -5489,7 +5491,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -5503,7 +5505,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -5521,7 +5523,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -5539,7 +5541,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -5557,7 +5559,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -5575,7 +5577,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -5589,7 +5591,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -5603,7 +5605,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -5617,7 +5619,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -5635,7 +5637,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -5649,7 +5651,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
@@ -5667,18 +5669,18 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             else
                             {
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }
                         }
                     }
                     break;
             }
-            value = null;
+            value = StringValues.Empty;
             return MaybeUnknown?.TryGetValue(key, out value) ?? false;
         }
 
-        protected override void SetValueFast(string key, string[] value)
+        protected override void SetValueFast(string key, StringValues value)
         {
             switch(key.Length)
             {
@@ -5947,7 +5949,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             Unknown[key] = value;
         }
 
-        protected override void AddValueFast(string key, string[] value)
+        protected override void AddValueFast(string key, StringValues value)
         {
             switch(key.Length)
             {
@@ -6791,7 +6793,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             MaybeUnknown?.Clear();
         }
         
-        protected override void CopyToFast(KeyValuePair<string, string[]>[] array, int arrayIndex)
+        protected override void CopyToFast(KeyValuePair<string, StringValues>[] array, int arrayIndex)
         {
             if (arrayIndex < 0)
             {
@@ -6806,7 +6808,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Cache-Control", _CacheControl);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Cache-Control", _CacheControl);
                     ++arrayIndex;
                 }
             
@@ -6817,7 +6819,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Connection", _Connection);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Connection", _Connection);
                     ++arrayIndex;
                 }
             
@@ -6828,7 +6830,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Date", _Date);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Date", _Date);
                     ++arrayIndex;
                 }
             
@@ -6839,7 +6841,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Keep-Alive", _KeepAlive);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Keep-Alive", _KeepAlive);
                     ++arrayIndex;
                 }
             
@@ -6850,7 +6852,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Pragma", _Pragma);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Pragma", _Pragma);
                     ++arrayIndex;
                 }
             
@@ -6861,7 +6863,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Trailer", _Trailer);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Trailer", _Trailer);
                     ++arrayIndex;
                 }
             
@@ -6872,7 +6874,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Transfer-Encoding", _TransferEncoding);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Transfer-Encoding", _TransferEncoding);
                     ++arrayIndex;
                 }
             
@@ -6883,7 +6885,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Upgrade", _Upgrade);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Upgrade", _Upgrade);
                     ++arrayIndex;
                 }
             
@@ -6894,7 +6896,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Via", _Via);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Via", _Via);
                     ++arrayIndex;
                 }
             
@@ -6905,7 +6907,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Warning", _Warning);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Warning", _Warning);
                     ++arrayIndex;
                 }
             
@@ -6916,7 +6918,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Allow", _Allow);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Allow", _Allow);
                     ++arrayIndex;
                 }
             
@@ -6927,7 +6929,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Content-Length", _ContentLength);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Content-Length", _ContentLength);
                     ++arrayIndex;
                 }
             
@@ -6938,7 +6940,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Content-Type", _ContentType);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Content-Type", _ContentType);
                     ++arrayIndex;
                 }
             
@@ -6949,7 +6951,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Content-Encoding", _ContentEncoding);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Content-Encoding", _ContentEncoding);
                     ++arrayIndex;
                 }
             
@@ -6960,7 +6962,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Content-Language", _ContentLanguage);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Content-Language", _ContentLanguage);
                     ++arrayIndex;
                 }
             
@@ -6971,7 +6973,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Content-Location", _ContentLocation);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Content-Location", _ContentLocation);
                     ++arrayIndex;
                 }
             
@@ -6982,7 +6984,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Content-MD5", _ContentMD5);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Content-MD5", _ContentMD5);
                     ++arrayIndex;
                 }
             
@@ -6993,7 +6995,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Content-Range", _ContentRange);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Content-Range", _ContentRange);
                     ++arrayIndex;
                 }
             
@@ -7004,7 +7006,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Expires", _Expires);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Expires", _Expires);
                     ++arrayIndex;
                 }
             
@@ -7015,7 +7017,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Last-Modified", _LastModified);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Last-Modified", _LastModified);
                     ++arrayIndex;
                 }
             
@@ -7026,7 +7028,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Accept-Ranges", _AcceptRanges);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Accept-Ranges", _AcceptRanges);
                     ++arrayIndex;
                 }
             
@@ -7037,7 +7039,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Age", _Age);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Age", _Age);
                     ++arrayIndex;
                 }
             
@@ -7048,7 +7050,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("ETag", _ETag);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("ETag", _ETag);
                     ++arrayIndex;
                 }
             
@@ -7059,7 +7061,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Location", _Location);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Location", _Location);
                     ++arrayIndex;
                 }
             
@@ -7070,7 +7072,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Proxy-Autheticate", _ProxyAutheticate);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Proxy-Autheticate", _ProxyAutheticate);
                     ++arrayIndex;
                 }
             
@@ -7081,7 +7083,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Retry-After", _RetryAfter);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Retry-After", _RetryAfter);
                     ++arrayIndex;
                 }
             
@@ -7092,7 +7094,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Server", _Server);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Server", _Server);
                     ++arrayIndex;
                 }
             
@@ -7103,7 +7105,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Set-Cookie", _SetCookie);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Set-Cookie", _SetCookie);
                     ++arrayIndex;
                 }
             
@@ -7114,7 +7116,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("Vary", _Vary);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Vary", _Vary);
                     ++arrayIndex;
                 }
             
@@ -7125,11 +7127,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>("WWW-Authenticate", _WWWAuthenticate);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("WWW-Authenticate", _WWWAuthenticate);
                     ++arrayIndex;
                 }
             
-            ((ICollection<KeyValuePair<string, string[]>>)MaybeUnknown)?.CopyTo(array, arrayIndex);
+            ((ICollection<KeyValuePair<string, StringValues>>)MaybeUnknown)?.CopyTo(array, arrayIndex);
         }
 
         public unsafe void Append(byte[] keyBytes, int keyOffset, int keyLength, string value)
@@ -7610,8 +7612,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     break;
             }}
             var key = System.Text.Encoding.ASCII.GetString(keyBytes, keyOffset, keyLength);
-            string[] existing;
-            Unknown[key] = Unknown.TryGetValue(key, out existing) ? AppendValue(existing, value) : new[] {value};
+            StringValues existing;
+            Unknown.TryGetValue(key, out existing);
+            Unknown[key] = AppendValue(existing, value);
         }
 
         public partial struct Enumerator
@@ -7718,7 +7721,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state0:
                     if (((_bits & 1L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Cache-Control", _collection._CacheControl);
+                        _current = new KeyValuePair<string, StringValues>("Cache-Control", _collection._CacheControl);
                         _state = 1;
                         return true;
                     }
@@ -7726,7 +7729,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state1:
                     if (((_bits & 2L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Connection", _collection._Connection);
+                        _current = new KeyValuePair<string, StringValues>("Connection", _collection._Connection);
                         _state = 2;
                         return true;
                     }
@@ -7734,7 +7737,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state2:
                     if (((_bits & 4L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Date", _collection._Date);
+                        _current = new KeyValuePair<string, StringValues>("Date", _collection._Date);
                         _state = 3;
                         return true;
                     }
@@ -7742,7 +7745,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state3:
                     if (((_bits & 8L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Keep-Alive", _collection._KeepAlive);
+                        _current = new KeyValuePair<string, StringValues>("Keep-Alive", _collection._KeepAlive);
                         _state = 4;
                         return true;
                     }
@@ -7750,7 +7753,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state4:
                     if (((_bits & 16L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Pragma", _collection._Pragma);
+                        _current = new KeyValuePair<string, StringValues>("Pragma", _collection._Pragma);
                         _state = 5;
                         return true;
                     }
@@ -7758,7 +7761,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state5:
                     if (((_bits & 32L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Trailer", _collection._Trailer);
+                        _current = new KeyValuePair<string, StringValues>("Trailer", _collection._Trailer);
                         _state = 6;
                         return true;
                     }
@@ -7766,7 +7769,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state6:
                     if (((_bits & 64L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Transfer-Encoding", _collection._TransferEncoding);
+                        _current = new KeyValuePair<string, StringValues>("Transfer-Encoding", _collection._TransferEncoding);
                         _state = 7;
                         return true;
                     }
@@ -7774,7 +7777,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state7:
                     if (((_bits & 128L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Upgrade", _collection._Upgrade);
+                        _current = new KeyValuePair<string, StringValues>("Upgrade", _collection._Upgrade);
                         _state = 8;
                         return true;
                     }
@@ -7782,7 +7785,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state8:
                     if (((_bits & 256L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Via", _collection._Via);
+                        _current = new KeyValuePair<string, StringValues>("Via", _collection._Via);
                         _state = 9;
                         return true;
                     }
@@ -7790,7 +7793,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state9:
                     if (((_bits & 512L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Warning", _collection._Warning);
+                        _current = new KeyValuePair<string, StringValues>("Warning", _collection._Warning);
                         _state = 10;
                         return true;
                     }
@@ -7798,7 +7801,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state10:
                     if (((_bits & 1024L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Allow", _collection._Allow);
+                        _current = new KeyValuePair<string, StringValues>("Allow", _collection._Allow);
                         _state = 11;
                         return true;
                     }
@@ -7806,7 +7809,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state11:
                     if (((_bits & 2048L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Content-Length", _collection._ContentLength);
+                        _current = new KeyValuePair<string, StringValues>("Content-Length", _collection._ContentLength);
                         _state = 12;
                         return true;
                     }
@@ -7814,7 +7817,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state12:
                     if (((_bits & 4096L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Content-Type", _collection._ContentType);
+                        _current = new KeyValuePair<string, StringValues>("Content-Type", _collection._ContentType);
                         _state = 13;
                         return true;
                     }
@@ -7822,7 +7825,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state13:
                     if (((_bits & 8192L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Content-Encoding", _collection._ContentEncoding);
+                        _current = new KeyValuePair<string, StringValues>("Content-Encoding", _collection._ContentEncoding);
                         _state = 14;
                         return true;
                     }
@@ -7830,7 +7833,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state14:
                     if (((_bits & 16384L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Content-Language", _collection._ContentLanguage);
+                        _current = new KeyValuePair<string, StringValues>("Content-Language", _collection._ContentLanguage);
                         _state = 15;
                         return true;
                     }
@@ -7838,7 +7841,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state15:
                     if (((_bits & 32768L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Content-Location", _collection._ContentLocation);
+                        _current = new KeyValuePair<string, StringValues>("Content-Location", _collection._ContentLocation);
                         _state = 16;
                         return true;
                     }
@@ -7846,7 +7849,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state16:
                     if (((_bits & 65536L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Content-MD5", _collection._ContentMD5);
+                        _current = new KeyValuePair<string, StringValues>("Content-MD5", _collection._ContentMD5);
                         _state = 17;
                         return true;
                     }
@@ -7854,7 +7857,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state17:
                     if (((_bits & 131072L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Content-Range", _collection._ContentRange);
+                        _current = new KeyValuePair<string, StringValues>("Content-Range", _collection._ContentRange);
                         _state = 18;
                         return true;
                     }
@@ -7862,7 +7865,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state18:
                     if (((_bits & 262144L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Expires", _collection._Expires);
+                        _current = new KeyValuePair<string, StringValues>("Expires", _collection._Expires);
                         _state = 19;
                         return true;
                     }
@@ -7870,7 +7873,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state19:
                     if (((_bits & 524288L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Last-Modified", _collection._LastModified);
+                        _current = new KeyValuePair<string, StringValues>("Last-Modified", _collection._LastModified);
                         _state = 20;
                         return true;
                     }
@@ -7878,7 +7881,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state20:
                     if (((_bits & 1048576L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Accept-Ranges", _collection._AcceptRanges);
+                        _current = new KeyValuePair<string, StringValues>("Accept-Ranges", _collection._AcceptRanges);
                         _state = 21;
                         return true;
                     }
@@ -7886,7 +7889,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state21:
                     if (((_bits & 2097152L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Age", _collection._Age);
+                        _current = new KeyValuePair<string, StringValues>("Age", _collection._Age);
                         _state = 22;
                         return true;
                     }
@@ -7894,7 +7897,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state22:
                     if (((_bits & 4194304L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("ETag", _collection._ETag);
+                        _current = new KeyValuePair<string, StringValues>("ETag", _collection._ETag);
                         _state = 23;
                         return true;
                     }
@@ -7902,7 +7905,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state23:
                     if (((_bits & 8388608L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Location", _collection._Location);
+                        _current = new KeyValuePair<string, StringValues>("Location", _collection._Location);
                         _state = 24;
                         return true;
                     }
@@ -7910,7 +7913,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state24:
                     if (((_bits & 16777216L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Proxy-Autheticate", _collection._ProxyAutheticate);
+                        _current = new KeyValuePair<string, StringValues>("Proxy-Autheticate", _collection._ProxyAutheticate);
                         _state = 25;
                         return true;
                     }
@@ -7918,7 +7921,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state25:
                     if (((_bits & 33554432L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Retry-After", _collection._RetryAfter);
+                        _current = new KeyValuePair<string, StringValues>("Retry-After", _collection._RetryAfter);
                         _state = 26;
                         return true;
                     }
@@ -7926,7 +7929,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state26:
                     if (((_bits & 67108864L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Server", _collection._Server);
+                        _current = new KeyValuePair<string, StringValues>("Server", _collection._Server);
                         _state = 27;
                         return true;
                     }
@@ -7934,7 +7937,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state27:
                     if (((_bits & 134217728L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Set-Cookie", _collection._SetCookie);
+                        _current = new KeyValuePair<string, StringValues>("Set-Cookie", _collection._SetCookie);
                         _state = 28;
                         return true;
                     }
@@ -7942,7 +7945,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state28:
                     if (((_bits & 268435456L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("Vary", _collection._Vary);
+                        _current = new KeyValuePair<string, StringValues>("Vary", _collection._Vary);
                         _state = 29;
                         return true;
                     }
@@ -7950,7 +7953,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state29:
                     if (((_bits & 536870912L) != 0))
                     {
-                        _current = new KeyValuePair<string, string[]>("WWW-Authenticate", _collection._WWWAuthenticate);
+                        _current = new KeyValuePair<string, StringValues>("WWW-Authenticate", _collection._WWWAuthenticate);
                         _state = 30;
                         return true;
                     }
@@ -7958,7 +7961,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state_default:
                     if (!_hasUnknown || !_unknownEnumerator.MoveNext())
                     {
-                        _current = default(KeyValuePair<string, string[]>);
+                        _current = default(KeyValuePair<string, StringValues>);
                         return false;
                     }
                     _current = _unknownEnumerator.Current;

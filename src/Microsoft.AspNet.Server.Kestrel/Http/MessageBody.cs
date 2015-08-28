@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Framework.Primitives;
 
 namespace Microsoft.AspNet.Server.Kestrel.Http
 {
@@ -28,7 +29,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         public static MessageBody For(
             string httpVersion,
-            IDictionary<string, string[]> headers,
+            IDictionary<string, StringValues> headers,
             FrameContext context)
         {
             // see also http://tools.ietf.org/html/rfc2616#section-4.4
@@ -61,15 +62,15 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             return new ForRemainingData(context);
         }
 
-        public static bool TryGet(IDictionary<string, string[]> headers, string name, out string value)
+        public static bool TryGet(IDictionary<string, StringValues> headers, string name, out string value)
         {
-            string[] values;
+            StringValues values;
             if (!headers.TryGetValue(name, out values) || values == null)
             {
                 value = null;
                 return false;
             }
-            var count = values.Length;
+            var count = values.Count;
             if (count == 0)
             {
                 value = null;

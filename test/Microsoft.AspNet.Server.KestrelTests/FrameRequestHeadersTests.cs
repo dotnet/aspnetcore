@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNet.Server.Kestrel.Http;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using Microsoft.AspNet.Server.Kestrel.Http;
+using Microsoft.Framework.Primitives;
 using Xunit;
 
 namespace Microsoft.AspNet.Server.KestrelTests
@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [Fact]
         public void InitialDictionaryIsEmpty()
         {
-            IDictionary<string, string[]> headers = new FrameRequestHeaders();
+            IDictionary<string, StringValues> headers = new FrameRequestHeaders();
 
             Assert.Equal(0, headers.Count);
             Assert.False(headers.IsReadOnly);
@@ -20,31 +20,31 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [Fact]
         public void SettingUnknownHeadersWorks()
         {
-            IDictionary<string, string[]> headers = new FrameRequestHeaders();
+            IDictionary<string, StringValues> headers = new FrameRequestHeaders();
 
             headers["custom"] = new[] { "value" };
 
             Assert.NotNull(headers["custom"]);
-            Assert.Equal(1, headers["custom"].Length);
+            Assert.Equal(1, headers["custom"].Count);
             Assert.Equal("value", headers["custom"][0]);
         }
 
         [Fact]
         public void SettingKnownHeadersWorks()
         {
-            IDictionary<string, string[]> headers = new FrameRequestHeaders();
+            IDictionary<string, StringValues> headers = new FrameRequestHeaders();
 
             headers["host"] = new[] { "value" };
 
             Assert.NotNull(headers["host"]);
-            Assert.Equal(1, headers["host"].Length);
+            Assert.Equal(1, headers["host"].Count);
             Assert.Equal("value", headers["host"][0]);
         }
 
         [Fact]
         public void KnownAndCustomHeaderCountAddedTogether()
         {
-            IDictionary<string, string[]> headers = new FrameRequestHeaders();
+            IDictionary<string, StringValues> headers = new FrameRequestHeaders();
 
             headers["host"] = new[] { "value" };
             headers["custom"] = new[] { "value" };
@@ -55,9 +55,9 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [Fact]
         public void TryGetValueWorksForKnownAndUnknownHeaders()
         {
-            IDictionary<string, string[]> headers = new FrameRequestHeaders();
+            IDictionary<string, StringValues> headers = new FrameRequestHeaders();
 
-            string[] value;
+            StringValues value;
             Assert.False(headers.TryGetValue("host", out value));
             Assert.False(headers.TryGetValue("custom", out value));
 
@@ -73,7 +73,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [Fact]
         public void SameExceptionThrownForMissingKey()
         {
-            IDictionary<string, string[]> headers = new FrameRequestHeaders();
+            IDictionary<string, StringValues> headers = new FrameRequestHeaders();
 
             Assert.Throws<KeyNotFoundException>(() => headers["custom"]);
             Assert.Throws<KeyNotFoundException>(() => headers["host"]);
@@ -82,7 +82,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [Fact]
         public void EntriesCanBeEnumerated()
         {
-            IDictionary<string, string[]> headers = new FrameRequestHeaders();
+            IDictionary<string, StringValues> headers = new FrameRequestHeaders();
             var v1 = new[] { "localhost" };
             var v2 = new[] { "value" };
             headers["host"] = v1;
@@ -90,8 +90,8 @@ namespace Microsoft.AspNet.Server.KestrelTests
 
             Assert.Equal(
                 new[] {
-                    new KeyValuePair<string, string[]>("Host", v1),
-                    new KeyValuePair<string, string[]>("custom", v2),
+                    new KeyValuePair<string, StringValues>("Host", v1),
+                    new KeyValuePair<string, StringValues>("custom", v2),
                 },
                 headers);
         }
@@ -99,9 +99,9 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [Fact]
         public void KeysAndValuesCanBeEnumerated()
         {
-            IDictionary<string, string[]> headers = new FrameRequestHeaders();
-            var v1 = new[] { "localhost" };
-            var v2 = new[] { "value" };
+            IDictionary<string, StringValues> headers = new FrameRequestHeaders();
+            StringValues v1 = new[] { "localhost" };
+            StringValues v2 = new[] { "value" };
             headers["host"] = v1;
             headers["custom"] = v2;
 
@@ -109,7 +109,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 new[] { "Host", "custom" },
                 headers.Keys);
 
-            Assert.Equal<string[]>(
+            Assert.Equal<StringValues>(
                 new[] { v1, v2 },
                 headers.Values);
         }
@@ -118,11 +118,11 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [Fact]
         public void ContainsAndContainsKeyWork()
         {
-            IDictionary<string, string[]> headers = new FrameRequestHeaders();
-            var kv1 = new KeyValuePair<string, string[]>("host", new[] { "localhost" });
-            var kv2 = new KeyValuePair<string, string[]>("custom", new[] { "value" });
-            var kv1b = new KeyValuePair<string, string[]>("host", new[] { "localhost" });
-            var kv2b = new KeyValuePair<string, string[]>("custom", new[] { "value" });
+            IDictionary<string, StringValues> headers = new FrameRequestHeaders();
+            var kv1 = new KeyValuePair<string, StringValues>("host", new[] { "localhost" });
+            var kv2 = new KeyValuePair<string, StringValues>("custom", new[] { "value" });
+            var kv1b = new KeyValuePair<string, StringValues>("host", new[] { "localhost" });
+            var kv2b = new KeyValuePair<string, StringValues>("custom", new[] { "value" });
 
             Assert.False(headers.ContainsKey("host"));
             Assert.False(headers.ContainsKey("custom"));
@@ -149,9 +149,9 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [Fact]
         public void AddWorksLikeSetAndThrowsIfKeyExists()
         {
-            IDictionary<string, string[]> headers = new FrameRequestHeaders();
+            IDictionary<string, StringValues> headers = new FrameRequestHeaders();
 
-            string[] value;
+            StringValues value;
             Assert.False(headers.TryGetValue("host", out value));
             Assert.False(headers.TryGetValue("custom", out value));
 
@@ -169,11 +169,11 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [Fact]
         public void ClearRemovesAllHeaders()
         {
-            IDictionary<string, string[]> headers = new FrameRequestHeaders();
+            IDictionary<string, StringValues> headers = new FrameRequestHeaders();
             headers.Add("host", new[] { "localhost" });
             headers.Add("custom", new[] { "value" });
 
-            string[] value;
+            StringValues value;
             Assert.Equal(2, headers.Count);
             Assert.True(headers.TryGetValue("host", out value));
             Assert.True(headers.TryGetValue("custom", out value));
@@ -188,11 +188,11 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [Fact]
         public void RemoveTakesHeadersOutOfDictionary()
         {
-            IDictionary<string, string[]> headers = new FrameRequestHeaders();
+            IDictionary<string, StringValues> headers = new FrameRequestHeaders();
             headers.Add("host", new[] { "localhost" });
             headers.Add("custom", new[] { "value" });
 
-            string[] value;
+            StringValues value;
             Assert.Equal(2, headers.Count);
             Assert.True(headers.TryGetValue("host", out value));
             Assert.True(headers.TryGetValue("custom", out value));
@@ -215,24 +215,24 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [Fact]
         public void CopyToMovesDataIntoArray()
         {
-            IDictionary<string, string[]> headers = new FrameRequestHeaders();
+            IDictionary<string, StringValues> headers = new FrameRequestHeaders();
             headers.Add("host", new[] { "localhost" });
             headers.Add("custom", new[] { "value" });
 
-            var entries = new KeyValuePair<string, string[]>[4];
+            var entries = new KeyValuePair<string, StringValues>[4];
             headers.CopyTo(entries, 1);
 
             Assert.Null(entries[0].Key);
-            Assert.Null(entries[0].Value);
+            Assert.Equal(new StringValues(), entries[0].Value);
 
             Assert.Equal("Host", entries[1].Key);
-            Assert.NotNull(entries[1].Value);
+            Assert.Equal(new[] { "localhost" }, entries[1].Value);
 
             Assert.Equal("custom", entries[2].Key);
-            Assert.NotNull(entries[2].Value);
+            Assert.Equal(new[] { "value" }, entries[2].Value);
 
             Assert.Null(entries[3].Key);
-            Assert.Null(entries[3].Value);
+            Assert.Equal(new StringValues(), entries[0].Value);
         }
     }
 }

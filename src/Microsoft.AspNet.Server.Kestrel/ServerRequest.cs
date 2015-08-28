@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Server.Kestrel.Http;
+using Microsoft.Framework.Primitives;
 
 namespace Microsoft.AspNet.Server.Kestrel
 {
@@ -115,7 +116,7 @@ namespace Microsoft.AspNet.Server.Kestrel
             }
         }
 
-        IDictionary<string, string[]> IHttpRequestFeature.Headers
+        IDictionary<string, StringValues> IHttpRequestFeature.Headers
         {
             get
             {
@@ -167,7 +168,7 @@ namespace Microsoft.AspNet.Server.Kestrel
             }
         }
 
-        IDictionary<string, string[]> IHttpResponseFeature.Headers
+        IDictionary<string, StringValues> IHttpResponseFeature.Headers
         {
             get
             {
@@ -212,7 +213,7 @@ namespace Microsoft.AspNet.Server.Kestrel
         {
             get
             {
-                string[] values;
+                StringValues values;
                 if (_frame.RequestHeaders.TryGetValue("Connection", out values))
                 {
                     return values.Any(value => value.IndexOf("upgrade", StringComparison.OrdinalIgnoreCase) != -1);
@@ -225,10 +226,10 @@ namespace Microsoft.AspNet.Server.Kestrel
         {
             _frame.StatusCode = 101;
             _frame.ReasonPhrase = "Switching Protocols";
-            _frame.ResponseHeaders["Connection"] = new string[] { "Upgrade" };
+            _frame.ResponseHeaders["Connection"] = "Upgrade";
             if (!_frame.ResponseHeaders.ContainsKey("Upgrade"))
             {
-                string[] values;
+                StringValues values;
                 if (_frame.RequestHeaders.TryGetValue("Upgrade", out values))
                 {
                     _frame.ResponseHeaders["Upgrade"] = values;

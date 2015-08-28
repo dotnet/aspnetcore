@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Framework.Primitives;
 
 // ReSharper disable AccessToModifiedClosure
 
@@ -55,13 +56,13 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         public string Path { get; set; }
         public string QueryString { get; set; }
         public string HttpVersion { get; set; }
-        public IDictionary<string, string[]> RequestHeaders { get; set; }
+        public IDictionary<string, StringValues> RequestHeaders { get; set; }
         public MessageBody MessageBody { get; set; }
         public Stream RequestBody { get; set; }
 
         public int StatusCode { get; set; }
         public string ReasonPhrase { get; set; }
-        public IDictionary<string, string[]> ResponseHeaders { get; set; }
+        public IDictionary<string, StringValues> ResponseHeaders { get; set; }
         public Stream ResponseBody { get; set; }
 
         public Stream DuplexStream { get; set; }
@@ -357,7 +358,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             if (_responseStarted) return;
 
-            string[] expect;
+            StringValues expect;
             if (HttpVersion.Equals("HTTP/1.1") &&
                 RequestHeaders.TryGetValue("Expect", out expect) &&
                 (expect.FirstOrDefault() ?? "").Equals("100-continue", StringComparison.OrdinalIgnoreCase))
@@ -444,7 +445,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private Tuple<ArraySegment<byte>, IDisposable> CreateResponseHeader(
             string status,
             bool appCompleted,
-            IEnumerable<KeyValuePair<string, string[]>> headers)
+            IEnumerable<KeyValuePair<string, StringValues>> headers)
         {
             var writer = new MemoryPoolTextWriter(Memory);
             writer.Write(HttpVersion);

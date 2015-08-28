@@ -167,6 +167,7 @@ namespace Microsoft.AspNet.Server.Kestrel.GeneratedCode
             return $@"
 using System;
 using System.Collections.Generic;
+using Microsoft.Framework.Primitives;
 
 namespace Microsoft.AspNet.Server.Kestrel.Http 
 {{
@@ -174,8 +175,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     {{
         public FrameResponseHeaders()
         {{
-            _Server = new[] {{ ""Kestrel"" }};
-            _Date = new[] {{ DateTime.UtcNow.ToString(""r"") }};
+            _Server = ""Kestrel"";
+            _Date = DateTime.UtcNow.ToString(""r"");
             _bits = {
                 1L << responseHeaders.First(header => header.Name == "Server").Index |
                 1L << responseHeaders.First(header => header.Name == "Date").Index
@@ -187,7 +188,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     {{
         long _bits = 0;
         {Each(loop.Headers, header => @"
-        string[] _" + header.Identifier + ";")}
+        StringValues _" + header.Identifier + ";")}
 
         protected override int GetCountFast()
         {{
@@ -201,7 +202,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             return count;
         }}
 
-        protected override string[] GetValueFast(string key)
+        protected override StringValues GetValueFast(string key)
         {{
             switch(key.Length)
             {{{Each(loop.HeadersByLength, byLength => $@"
@@ -228,7 +229,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             return MaybeUnknown[key];
         }}
 
-        protected override bool TryGetValueFast(string key, out string[] value)
+        protected override bool TryGetValueFast(string key, out StringValues value)
         {{
             switch(key.Length)
             {{{Each(loop.HeadersByLength, byLength => $@"
@@ -243,18 +244,18 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }}
                             else
                             {{
-                                value = null;
+                                value = StringValues.Empty;
                                 return false;
                             }}
                         }}
                     ")}}}
                     break;
             ")}}}
-            value = null;
+            value = StringValues.Empty;
             return MaybeUnknown?.TryGetValue(key, out value) ?? false;
         }}
 
-        protected override void SetValueFast(string key, string[] value)
+        protected override void SetValueFast(string key, StringValues value)
         {{
             switch(key.Length)
             {{{Each(loop.HeadersByLength, byLength => $@"
@@ -272,7 +273,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             Unknown[key] = value;
         }}
 
-        protected override void AddValueFast(string key, string[] value)
+        protected override void AddValueFast(string key, StringValues value)
         {{
             switch(key.Length)
             {{{Each(loop.HeadersByLength, byLength => $@"
@@ -324,7 +325,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             MaybeUnknown?.Clear();
         }}
         
-        protected override void CopyToFast(KeyValuePair<string, string[]>[] array, int arrayIndex)
+        protected override void CopyToFast(KeyValuePair<string, StringValues>[] array, int arrayIndex)
         {{
             if (arrayIndex < 0)
             {{
@@ -339,11 +340,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         throw new ArgumentException();
                     }}
 
-                    array[arrayIndex] = new KeyValuePair<string, string[]>(""{header.Name}"", _{header.Identifier});
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(""{header.Name}"", _{header.Identifier});
                     ++arrayIndex;
                 }}
             ")}
-            ((ICollection<KeyValuePair<string, string[]>>)MaybeUnknown)?.CopyTo(array, arrayIndex);
+            ((ICollection<KeyValuePair<string, StringValues>>)MaybeUnknown)?.CopyTo(array, arrayIndex);
         }}
 
         public unsafe void Append(byte[] keyBytes, int keyOffset, int keyLength, string value)
@@ -370,8 +371,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     break;
             ")}}}}}
             var key = System.Text.Encoding.ASCII.GetString(keyBytes, keyOffset, keyLength);
-            string[] existing;
-            Unknown[key] = Unknown.TryGetValue(key, out existing) ? AppendValue(existing, value) : new[] {{value}};
+            StringValues existing;
+            Unknown.TryGetValue(key, out existing);
+            Unknown[key] = AppendValue(existing, value);
         }}
 
         public partial struct Enumerator
@@ -391,7 +393,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state{header.Index}:
                     if ({header.TestBit()})
                     {{
-                        _current = new KeyValuePair<string, string[]>(""{header.Name}"", _collection._{header.Identifier});
+                        _current = new KeyValuePair<string, StringValues>(""{header.Name}"", _collection._{header.Identifier});
                         _state = {header.Index + 1};
                         return true;
                     }}
@@ -399,7 +401,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 state_default:
                     if (!_hasUnknown || !_unknownEnumerator.MoveNext())
                     {{
-                        _current = default(KeyValuePair<string, string[]>);
+                        _current = default(KeyValuePair<string, StringValues>);
                         return false;
                     }}
                     _current = _unknownEnumerator.Current;

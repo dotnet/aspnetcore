@@ -1,11 +1,12 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Server.Kestrel.Http;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Server.Kestrel.Http;
+using Microsoft.Framework.Primitives;
 using Xunit;
 
 namespace Microsoft.AspNet.Server.KestrelTests
@@ -19,7 +20,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
         public void Http10ConnectionClose()
         {
             var input = new TestInput();
-            var body = MessageBody.For("HTTP/1.0", new Dictionary<string, string[]>(), input.FrameContext);
+            var body = MessageBody.For("HTTP/1.0", new Dictionary<string, StringValues>(), input.FrameContext);
             var stream = new FrameRequestStream(body);
 
             input.Add("Hello", true);
@@ -38,7 +39,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
         public async Task Http10ConnectionCloseAsync()
         {
             var input = new TestInput();
-            var body = MessageBody.For("HTTP/1.0", new Dictionary<string, string[]>(), input.FrameContext);
+            var body = MessageBody.For("HTTP/1.0", new Dictionary<string, StringValues>(), input.FrameContext);
             var stream = new FrameRequestStream(body);
 
             input.Add("Hello", true);
