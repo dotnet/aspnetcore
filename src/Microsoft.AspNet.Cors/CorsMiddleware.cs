@@ -6,9 +6,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Cors.Core;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.WebUtilities;
 using Microsoft.Framework.Internal;
-using Microsoft.Framework.OptionsModel;
+using Microsoft.Framework.Primitives;
 
 namespace Microsoft.AspNet.Cors
 {
@@ -70,12 +69,12 @@ namespace Microsoft.AspNet.Cors
                     _corsService.ApplyResult(corsResult, context.Response);
 
                     var accessControlRequestMethod = 
-                        context.Request.Headers.Get(CorsConstants.AccessControlRequestMethod);
+                        context.Request.Headers[CorsConstants.AccessControlRequestMethod];
                     if (string.Equals(
                             context.Request.Method,
                             CorsConstants.PreflightHttpMethod,
                             StringComparison.Ordinal) &&
-                        accessControlRequestMethod != null)
+                            !StringValues.IsNullOrEmpty(accessControlRequestMethod))
                     {
                         // Since there is a policy which was identified,
                         // always respond to preflight requests.

@@ -3,10 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
+using Microsoft.Framework.Primitives;
 
 namespace Microsoft.AspNet.Cors.Core
 {
@@ -33,7 +35,7 @@ namespace Microsoft.AspNet.Cors.Core
         /// <param name="requestContext"></param>
         /// <param name="policyName"></param>
         /// <returns>A <see cref="CorsResult"/> which contains the result of policy evaluation and can be
-        /// used by the caller to set apporpriate response headers.</returns>
+        /// used by the caller to set appropriate response headers.</returns>
         public CorsResult EvaluatePolicy([NotNull] HttpContext context, string policyName)
         {
             var policy = _options.GetPolicy(policyName);
@@ -44,9 +46,9 @@ namespace Microsoft.AspNet.Cors.Core
         public CorsResult EvaluatePolicy([NotNull] HttpContext context, [NotNull] CorsPolicy policy)
         {
             var corsResult = new CorsResult();
-            var accessControlRequestMethod = context.Request.Headers.Get(CorsConstants.AccessControlRequestMethod);
+            var accessControlRequestMethod = context.Request.Headers[CorsConstants.AccessControlRequestMethod];
             if (string.Equals(context.Request.Method, CorsConstants.PreflightHttpMethod, StringComparison.Ordinal) &&
-                accessControlRequestMethod != null)
+                !StringValues.IsNullOrEmpty(accessControlRequestMethod))
             {
                 EvaluatePreflightRequest(context, policy, corsResult);
             }
@@ -60,8 +62,8 @@ namespace Microsoft.AspNet.Cors.Core
 
         public virtual void EvaluateRequest(HttpContext context, CorsPolicy policy, CorsResult result)
         {
-            var origin = context.Request.Headers.Get(CorsConstants.Origin);
-            if (origin == null || !policy.AllowAnyOrigin && !policy.Origins.Contains(origin))
+            var origin = context.Request.Headers[CorsConstants.Origin];
+            if (StringValues.IsNullOrEmpty(origin) || !policy.AllowAnyOrigin && !policy.Origins.Contains(origin))
             {
                 return;
             }
@@ -73,14 +75,14 @@ namespace Microsoft.AspNet.Cors.Core
 
         public virtual void EvaluatePreflightRequest(HttpContext context, CorsPolicy policy, CorsResult result)
         {
-            var origin = context.Request.Headers.Get(CorsConstants.Origin);
-            if (origin == null || !policy.AllowAnyOrigin && !policy.Origins.Contains(origin))
+            var origin = context.Request.Headers[CorsConstants.Origin];
+            if (StringValues.IsNullOrEmpty(origin) || !policy.AllowAnyOrigin && !policy.Origins.Contains(origin))
             {
                 return;
             }
 
-            var accessControlRequestMethod = context.Request.Headers.Get(CorsConstants.AccessControlRequestMethod);
-            if (accessControlRequestMethod == null)
+            var accessControlRequestMethod = context.Request.Headers[CorsConstants.AccessControlRequestMethod];
+            if (StringValues.IsNullOrEmpty(accessControlRequestMethod))
             {
                 return;
             }
@@ -114,17 +116,17 @@ namespace Microsoft.AspNet.Cors.Core
 
             if (result.AllowedOrigin != null)
             {
-                headers.Add(CorsConstants.AccessControlAllowOrigin, new[] { result.AllowedOrigin });
+                headers[CorsConstants.AccessControlAllowOrigin] = result.AllowedOrigin;
             }
 
             if (result.VaryByOrigin)
             {
-                headers.Set("Vary", "Origin");
+                headers["Vary"] = "Origin";
             }
 
             if (result.SupportsCredentials)
             {
-                headers.Add(CorsConstants.AccessControlAllowCredentials, new[] { "true" });
+                headers[CorsConstants.AccessControlAllowCredentials] = "true";
             }
 
             if (result.AllowedMethods.Count > 0)
@@ -177,9 +179,8 @@ namespace Microsoft.AspNet.Cors.Core
 
             if (result.PreflightMaxAge.HasValue)
             {
-                headers.Set(
-                    CorsConstants.AccessControlMaxAge,
-                    result.PreflightMaxAge.Value.TotalSeconds.ToString());
+                headers[CorsConstants.AccessControlMaxAge]
+                    = result.PreflightMaxAge.Value.TotalSeconds.ToString(CultureInfo.InvariantCulture);
             }
         }
 

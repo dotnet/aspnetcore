@@ -6,8 +6,6 @@
     },
     "dependencies": {
         "Microsoft.AspNet.Cors.Core": "1.0.0-*",
-        "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
-        "Microsoft.AspNet.WebUtilities": "1.0.0-*",
         "Microsoft.Framework.NotNullAttribute.Sources": { "version": "1.0.0-*", "type": "build" }
     },
 

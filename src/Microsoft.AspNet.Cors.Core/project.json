@@ -5,11 +5,11 @@
         "url": "https://github.com/aspnet/cors"
     },
     "dependencies": {
+         "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
          "Microsoft.Framework.Configuration.Abstractions": "1.0.0-*",
          "Microsoft.Framework.DependencyInjection.Abstractions": "1.0.0-*",
-         "Microsoft.Framework.OptionsModel": "1.0.0-*",
-         "Microsoft.AspNet.Http": "1.0.0-*",
-         "Microsoft.Framework.NotNullAttribute.Sources": { "version": "1.0.0-*", "type": "build" }
+         "Microsoft.Framework.NotNullAttribute.Sources": { "version": "1.0.0-*", "type": "build" },
+         "Microsoft.Framework.OptionsModel": "1.0.0-*"
     },
 
     "frameworks" : {

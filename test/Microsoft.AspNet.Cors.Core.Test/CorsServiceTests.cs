@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.Framework.OptionsModel;
@@ -645,7 +646,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
             Assert.Contains("Access-Control-Allow-Methods", httpContext.Response.Headers.Keys);
             var value = Assert.Single(httpContext.Response.Headers.Values);
             Assert.Equal(new[] { "PUT,DELETE" }, value);
-            var methods = httpContext.Response.Headers["Access-Control-Allow-Methods"].Split(',');
+            string[] methods = httpContext.Response.Headers.GetCommaSeparatedValues("Access-Control-Allow-Methods");
             Assert.Equal(2, methods.Length);
             Assert.Contains("PUT", methods);
             Assert.Contains("DELETE", methods);
@@ -725,7 +726,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
             Assert.Contains("Access-Control-Allow-Headers", httpContext.Response.Headers.Keys);
             var value = Assert.Single(httpContext.Response.Headers.Values);
             Assert.Equal(new[] { "foo,bar,baz" }, value);
-            string[] headerValues = httpContext.Response.Headers["Access-Control-Allow-Headers"].Split(',');
+            string[] headerValues = httpContext.Response.Headers.GetCommaSeparatedValues("Access-Control-Allow-Headers");
             Assert.Equal(3, headerValues.Length);
             Assert.Contains("foo", headerValues);
             Assert.Contains("bar", headerValues);
@@ -750,7 +751,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
 
             // Assert
             Assert.Contains("Access-Control-Allow-Headers", httpContext.Response.Headers.Keys);
-            string[] headerValues = httpContext.Response.Headers["Access-Control-Allow-Headers"].Split(',');
+            string[] headerValues = httpContext.Response.Headers.GetCommaSeparatedValues("Access-Control-Allow-Headers");
             Assert.Equal(2, headerValues.Length);
             Assert.Contains("foo", headerValues);
             Assert.Contains("bar", headerValues);
@@ -830,7 +831,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
             Assert.Contains("Access-Control-Expose-Headers", httpContext.Response.Headers.Keys);
             var value = Assert.Single(httpContext.Response.Headers.Values);
             Assert.Equal(new[] { "foo,bar,baz" }, value);
-            string[] exposedHeaderValues = httpContext.Response.Headers["Access-Control-Expose-Headers"].Split(',');
+            string[] exposedHeaderValues = httpContext.Response.Headers.GetCommaSeparatedValues("Access-Control-Expose-Headers");
             Assert.Equal(3, exposedHeaderValues.Length);
             Assert.Contains("foo", exposedHeaderValues);
             Assert.Contains("bar", exposedHeaderValues);
