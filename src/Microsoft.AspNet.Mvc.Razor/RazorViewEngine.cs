@@ -216,9 +216,10 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
         }
 
-        private RazorPageResult LocatePageFromViewLocations(ActionContext context,
-                                                            string pageName,
-                                                            bool isPartial)
+        private RazorPageResult LocatePageFromViewLocations(
+            ActionContext context,
+            string pageName,
+            bool isPartial)
         {
             // Initialize the dictionary for the typical case of having controller and action tokens.
             var areaName = GetNormalizedRouteValue(context, AreaKey);
@@ -240,47 +241,64 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
 
             // 2. With the values that we've accumumlated so far, check if we have a cached result.
-            var pageLocation = _viewLocationCache.Get(expanderContext);
-            if (!string.IsNullOrEmpty(pageLocation))
+            IEnumerable<string> locationsToSearch = null;
+            var cachedResult = _viewLocationCache.Get(expanderContext);
+            if (!cachedResult.Equals(ViewLocationCacheResult.None))
             {
-                var page = _pageFactory.CreateInstance(pageLocation);
-
-                if (page != null)
+                if (cachedResult.IsFoundResult)
                 {
-                    // 2a. We found a IRazorPage at the cached location.
-                    return new RazorPageResult(pageName, page);
+                    var page = _pageFactory.CreateInstance(cachedResult.ViewLocation);
+
+                    if (page != null)
+                    {
+                        // 2a We have a cache entry where a view was previously found.
+                        return new RazorPageResult(pageName, page);
+                    }
+                }
+                else
+                {
+                    locationsToSearch = cachedResult.SearchedLocations;
                 }
             }
 
-            // 2b. We did not find a cached location or did not find a IRazorPage at the cached location.
-            // The cached value has expired and we need to look up the page.
-            foreach (var expander in _viewLocationExpanders)
+            if (locationsToSearch == null)
             {
-                viewLocations = expander.ExpandViewLocations(expanderContext, viewLocations);
+                // 2b. We did not find a cached location or did not find a IRazorPage at the cached location.
+                // The cached value has expired and we need to look up the page.
+                foreach (var expander in _viewLocationExpanders)
+                {
+                    viewLocations = expander.ExpandViewLocations(expanderContext, viewLocations);
+                }
+
+                var controllerName = GetNormalizedRouteValue(context, ControllerKey);
+
+                locationsToSearch = viewLocations.Select(
+                    location => string.Format(
+                        CultureInfo.InvariantCulture,
+                        location,
+                        pageName,
+                        controllerName,
+                        areaName
+                    ));
             }
 
             // 3. Use the expanded locations to look up a page.
-            var controllerName = GetNormalizedRouteValue(context, ControllerKey);
             var searchedLocations = new List<string>();
-            foreach (var path in viewLocations)
+            foreach (var path in locationsToSearch)
             {
-                var transformedPath = string.Format(CultureInfo.InvariantCulture,
-                                                    path,
-                                                    pageName,
-                                                    controllerName,
-                                                    areaName);
-                var page = _pageFactory.CreateInstance(transformedPath);
+                var page = _pageFactory.CreateInstance(path);
                 if (page != null)
                 {
                     // 3a. We found a page. Cache the set of values that produced it and return a found result.
-                    _viewLocationCache.Set(expanderContext, transformedPath);
+                    _viewLocationCache.Set(expanderContext, new ViewLocationCacheResult(path, searchedLocations));
                     return new RazorPageResult(pageName, page);
                 }
 
-                searchedLocations.Add(transformedPath);
+                searchedLocations.Add(path);
             }
 
             // 3b. We did not find a page for any of the paths.
+            _viewLocationCache.Set(expanderContext, new ViewLocationCacheResult(searchedLocations));
             return new RazorPageResult(pageName, searchedLocations);
         }
 

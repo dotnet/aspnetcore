@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.Routing;
@@ -409,9 +410,13 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
 
             var cache = GetViewLocationCache();
             var cacheMock = Mock.Get(cache);
-
-            cacheMock.Setup(c => c.Set(It.IsAny<ViewLocationExpanderContext>(), "/Views/Shared/baz.cshtml"))
-                     .Verifiable();
+            cacheMock.Setup(c => c.Set(It.IsAny<ViewLocationExpanderContext>(), It.IsAny<ViewLocationCacheResult>()))
+                .Callback((ViewLocationExpanderContext _, ViewLocationCacheResult cacheResult) =>
+                {
+                    Assert.Equal("/Views/Shared/baz.cshtml", cacheResult.ViewLocation);
+                    Assert.Equal(new[] { "/Views/bar/baz.cshtml" }, cacheResult.SearchedLocations);
+                })
+                .Verifiable();
 
             var viewEngine = CreateViewEngine(pageFactory.Object, viewFactory.Object, cache: cache);
             var context = GetActionContext(_controllerTestContext);
@@ -443,8 +448,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
                     .Verifiable();
             var cacheMock = new Mock<IViewLocationCache>();
             cacheMock.Setup(c => c.Get(It.IsAny<ViewLocationExpanderContext>()))
-                     .Returns("some-view-location")
-                     .Verifiable();
+                .Returns(new ViewLocationCacheResult("some-view-location", Enumerable.Empty<string>()))
+                .Verifiable();
 
             var viewEngine = CreateViewEngine(pageFactory.Object,
                                               viewFactory.Object,
@@ -480,7 +485,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
 
             var cacheMock = new Mock<IViewLocationCache>();
             cacheMock.Setup(c => c.Get(It.IsAny<ViewLocationExpanderContext>()))
-                     .Returns("expired-location");
+                .Returns(new ViewLocationCacheResult("expired-location", Enumerable.Empty<string>()));
 
             var expander = new Mock<IViewLocationExpander>();
             expander.Setup(v => v.PopulateValues(It.IsAny<ViewLocationExpanderContext>()))
@@ -505,6 +510,65 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             pageFactory.Verify();
             cacheMock.Verify();
             expander.Verify();
+        }
+
+        // This test validates an important perf scenario of RazorViewEngine not constructing
+        // multiple strings for views that do not exist in the file system on a per-request basis.
+        [Fact]
+        public void FindView_DoesNotInvokeExpandViewLocations_IfCacheEntryMatchesButViewIsNotFound()
+        {
+            // Arrange
+            var pageFactory = Mock.Of<IRazorPageFactory>();
+            var viewFactory = Mock.Of<IRazorViewFactory>();
+            var cache = new DefaultViewLocationCache();
+            var expander = new Mock<IViewLocationExpander>();
+            var expandedLocations = new[]
+            {
+                "viewlocation1",
+                "viewlocation2",
+                "viewlocation3",
+            };
+            expander
+                .Setup(v => v.PopulateValues(It.IsAny<ViewLocationExpanderContext>()))
+                .Callback((ViewLocationExpanderContext expanderContext) =>
+                {
+                    expanderContext.Values["somekey"] = "somevalue";
+                })
+                .Verifiable();
+            expander
+                .Setup(v => v.ExpandViewLocations(
+                    It.IsAny<ViewLocationExpanderContext>(), It.IsAny<IEnumerable<string>>()))
+                .Returns((ViewLocationExpanderContext c, IEnumerable<string> viewLocations) => expandedLocations)
+                .Verifiable();
+
+
+            var viewEngine = CreateViewEngine(
+                pageFactory,
+                viewFactory,
+                expanders: new[] { expander.Object },
+                cache: cache);
+            var context = GetActionContext(_controllerTestContext);
+
+            // Act - 1
+            var result = viewEngine.FindView(context, "myview");
+
+            // Assert - 1
+            Assert.False(result.Success);
+            Assert.Equal(expandedLocations, result.SearchedLocations);
+            expander.Verify();
+
+            // Act - 2
+            result = viewEngine.FindView(context, "myview");
+
+            // Assert - 2
+            Assert.False(result.Success);
+            Assert.Equal(expandedLocations, result.SearchedLocations);
+            expander.Verify(
+                v => v.PopulateValues(It.IsAny<ViewLocationExpanderContext>()),
+                Times.Exactly(2));
+            expander.Verify(
+                v => v.ExpandViewLocations(It.IsAny<ViewLocationExpanderContext>(), It.IsAny<IEnumerable<string>>()),
+                Times.Once());
         }
 
         [Theory]
@@ -1045,7 +1109,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
                     options.ViewLocationExpanders.Add(expander);
                 }
             }
-            
+
             var optionsAccessor = new Mock<IOptions<RazorViewEngineOptions>>();
             optionsAccessor.SetupGet(v => v.Options)
                 .Returns(options);
