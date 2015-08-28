@@ -520,7 +520,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
                     excludePatterns.Add(pattern);
                     return matcher.Object;
                 });
-            var patternMatchingResult = new PatternMatchingResult(Enumerable.Empty<string>());
+            var patternMatchingResult = new PatternMatchingResult(Enumerable.Empty<FilePatternMatch>());
             matcher.Setup(m => m.Execute(It.IsAny<DirectoryInfoBase>())).Returns(patternMatchingResult);
             return matcher.Object;
         }

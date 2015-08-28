@@ -142,10 +142,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
                 .OrderBy(path => path, DefaultPathComparer);
         }
 
-        private string ResolveMatchedPath(string matchedPath)
+        private string ResolveMatchedPath(FilePatternMatch matchedPath)
         {
             // Resolve the path to site root
-            var relativePath = new PathString("/" + matchedPath);
+            var relativePath = new PathString("/" + matchedPath.Path);
             return RequestPathBase.Add(relativePath).ToString();
         }
 
