@@ -149,7 +149,7 @@ namespace Microsoft.AspNet.Antiforgery
                 // Adding X-Frame-Options header to prevent ClickJacking. See
                 // http://tools.ietf.org/html/draft-ietf-websec-x-frame-options-10
                 // for more information.
-                context.Response.Headers.Set("X-Frame-Options", "SAMEORIGIN");
+                context.Response.Headers["X-Frame-Options"] = "SAMEORIGIN";
             }
         }
 
