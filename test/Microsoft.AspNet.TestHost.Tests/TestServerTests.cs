@@ -133,11 +133,11 @@ namespace Microsoft.AspNet.TestHost
 
         public class EnsureApplicationServicesFilter : IStartupFilter
         {
-            public Action<IApplicationBuilder> Configure(IApplicationBuilder app, Action<IApplicationBuilder> next)
+            public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
             {
                 return builder =>
                 {
-                    app.Run(context => {
+                    builder.Run(context => {
                         Assert.NotNull(context.ApplicationServices);
                         return context.Response.WriteAsync("Done");
                     });
