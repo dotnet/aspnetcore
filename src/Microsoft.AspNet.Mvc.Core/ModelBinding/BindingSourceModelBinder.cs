@@ -74,14 +74,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 // Binding Sources are opt-in. This model either didn't specify one or specified something
                 // incompatible so let other binders run.
-                return null;
+                return ModelBindingResult.NoResult;
             }
 
             var result = await BindModelCoreAsync(context);
 
-            var modelBindingResult = result != null ?
+            var modelBindingResult = result != ModelBindingResult.NoResult ?
                 result :
-                new ModelBindingResult(model: null, key: context.ModelName, isModelSet: false);
+                ModelBindingResult.Failed(context.ModelName);
 
             // This model binder is the only handler for its binding source.
             // Always tell the model binding system to skip other model binders i.e. return non-null.

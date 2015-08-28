@@ -43,14 +43,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                         bindingContext.ModelMetadata,
                         model);
 
-                    return new ModelBindingResult(
-                        model,
-                        bindingContext.ModelName,
-                        isModelSet: true,
-                        validationNode: validationNode);
+                    return ModelBindingResult.Success(bindingContext.ModelName, model, validationNode);
                 }
 
-                return null;
+                return ModelBindingResult.NoResult;
             }
 
             var valueProviderResult = bindingContext.ValueProvider.GetValue(bindingContext.ModelName);
@@ -85,11 +81,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     valueProviderResult);
             }
 
-            return new ModelBindingResult(
-                model,
-                bindingContext.ModelName,
-                isModelSet: true,
-                validationNode: result.ValidationNode);
+            return ModelBindingResult.Success(bindingContext.ModelName, model, result.ValidationNode);
         }
 
         /// <inheritdoc />

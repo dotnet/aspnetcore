@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var result = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.Null(result);
+            Assert.Equal(ModelBindingResult.NoResult, result);
         }
 
         // We only support IFormCollection here. Using the concrete type won't work.
@@ -83,7 +83,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var result = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.Null(result);
+            Assert.Equal(ModelBindingResult.NoResult, result);
         }
 
         [Fact]

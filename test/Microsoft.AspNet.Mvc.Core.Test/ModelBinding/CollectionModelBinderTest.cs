@@ -318,7 +318,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var result = await binder.BindModelAsync(context);
 
             // Assert
-            Assert.Null(result);
+            Assert.Equal(ModelBindingResult.NoResult, result);
         }
 
         // Model type -> can create instance.
@@ -368,7 +368,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 {
                     Assert.Equal("someName", mbc.ModelName);
                     childValidationNode = new ModelValidationNode("someName", mbc.ModelMetadata, mbc.Model);
-                    return Task.FromResult(new ModelBindingResult(42, mbc.ModelName, true, childValidationNode));
+                    return ModelBindingResult.SuccessAsync(mbc.ModelName, 42, childValidationNode);
                 });
             var modelBinder = new CollectionModelBinder<int>();
 
@@ -413,18 +413,21 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 .Returns((ModelBindingContext mbc) =>
                 {
                     var value = mbc.ValueProvider.GetValue(mbc.ModelName);
-                    if (value != ValueProviderResult.None)
+                    if (value == ValueProviderResult.None)
                     {
-                        var model = value.ConvertTo(mbc.ModelType);
-                        var modelValidationNode = new ModelValidationNode(mbc.ModelName, mbc.ModelMetadata, model);
-                        return Task.FromResult(new ModelBindingResult(
-                            model, 
-                            mbc.ModelName, 
-                            model != null, 
-                            modelValidationNode));
+                        return ModelBindingResult.NoResultAsync;
                     }
 
-                    return Task.FromResult<ModelBindingResult>(null);
+                    var model = value.ConvertTo(mbc.ModelType);
+                    if (model == null)
+                    {
+                        return ModelBindingResult.FailedAsync(mbc.ModelName);
+                    }
+                    else
+                    {
+                        var validationNode = new ModelValidationNode(mbc.ModelName, mbc.ModelMetadata, model);
+                        return ModelBindingResult.SuccessAsync(mbc.ModelName, model, validationNode);
+                    }
                 });
             return mockIntBinder.Object;
         }

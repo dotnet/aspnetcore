@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             var result = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.Null(result);
+            Assert.Equal(ModelBindingResult.NoResult, result);
         }
 
         private static ModelBindingContext GetBindingContext(Type modelType)

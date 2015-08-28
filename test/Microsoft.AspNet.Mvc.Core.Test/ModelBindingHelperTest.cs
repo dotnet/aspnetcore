@@ -25,9 +25,8 @@ namespace Microsoft.AspNet.Mvc.Test
             {
                 return new TheoryData<ModelBindingResult>
                 {
-                    null,
-                    new ModelBindingResult("someKey"), // IsModelSet false.
-                    new ModelBindingResult(model: null, key: "someKey", isModelSet: false),
+                    ModelBindingResult.NoResult,
+                    ModelBindingResult.Failed("someKey"),
                 };
             }
         }
@@ -665,7 +664,7 @@ namespace Microsoft.AspNet.Mvc.Test
 
             var binder = new Mock<IModelBinder>();
             binder.Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                  .Returns(Task.FromResult<ModelBindingResult>(null));
+                  .Returns(ModelBindingResult.NoResultAsync);
             var model = new MyModel();
             Func<ModelBindingContext, string, bool> includePredicate =
                (context, propertyName) => true;

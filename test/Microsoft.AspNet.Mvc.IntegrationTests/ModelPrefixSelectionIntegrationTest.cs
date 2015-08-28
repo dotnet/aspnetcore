@@ -51,7 +51,6 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
 
             // Assert
-            Assert.NotNull(modelBindingResult);
             Assert.True(modelBindingResult.IsModelSet);
             Assert.Equal("parameter", modelBindingResult.Key);
 
@@ -102,7 +101,6 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
 
             // Assert
-            Assert.NotNull(modelBindingResult);
             Assert.True(modelBindingResult.IsModelSet);
             Assert.Equal("parameter", modelBindingResult.Key);
 
@@ -143,7 +141,6 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
 
             // Assert
-            Assert.NotNull(modelBindingResult);
             Assert.True(modelBindingResult.IsModelSet);
             Assert.Equal(string.Empty, modelBindingResult.Key);
 
@@ -194,7 +191,6 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
 
             // Assert
-            Assert.NotNull(modelBindingResult);
             Assert.True(modelBindingResult.IsModelSet);
             Assert.Equal(string.Empty, modelBindingResult.Key);
 
@@ -242,7 +238,6 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
 
             // Assert
-            Assert.NotNull(modelBindingResult);
             Assert.True(modelBindingResult.IsModelSet);
             Assert.Equal(string.Empty, modelBindingResult.Key);
 

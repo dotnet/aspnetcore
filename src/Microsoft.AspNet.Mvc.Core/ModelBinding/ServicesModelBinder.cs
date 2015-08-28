@@ -32,11 +32,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     SuppressValidation = true
                 };
 
-            return Task.FromResult(new ModelBindingResult(
-                    model,
-                    bindingContext.ModelName,
-                    isModelSet: true,
-                    validationNode: validationNode));
+            return ModelBindingResult.SuccessAsync(bindingContext.ModelName, model, validationNode);
         }
     }
 }

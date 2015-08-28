@@ -53,10 +53,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 }
             }
 
-            ModelValidationNode validationNode = null;
-            if (model != null)
+            if (model == null)
             {
-                validationNode = new ModelValidationNode(
+                return ModelBindingResult.FailedAsync(bindingContext.ModelName);
+            }
+            else
+            {
+                var validationNode = new ModelValidationNode(
                     bindingContext.ModelName,
                     bindingContext.ModelMetadata,
                     model);
@@ -65,14 +68,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     bindingContext.ModelName,
                     request.Headers.GetCommaSeparatedValues(headerName),
                     request.Headers[headerName]);
-            }
 
-            return Task.FromResult(
-                new ModelBindingResult(
-                    model,
-                    bindingContext.ModelName,
-                    isModelSet: model != null,
-                    validationNode: validationNode));
+                return ModelBindingResult.SuccessAsync(bindingContext.ModelName, model, validationNode);
+            }
         }
     }
 }

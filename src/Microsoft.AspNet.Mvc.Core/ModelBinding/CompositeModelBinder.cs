@@ -38,14 +38,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             if (newBindingContext == null)
             {
                 // Unable to find a value provider for this binding source. Binding will fail.
-                return null;
+                return ModelBindingResult.NoResult;
             }
 
             var modelBindingResult = await RunModelBinders(newBindingContext);
-            if (modelBindingResult == null)
+            if (modelBindingResult == ModelBindingResult.NoResult)
             {
                 // Unable to bind or something went wrong.
-                return null;
+                return ModelBindingResult.NoResult;
             }
 
             var bindingKey = bindingContext.ModelName;
@@ -76,11 +76,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 }
             }
 
-            return new ModelBindingResult(
-                modelBindingResult.Model,
-                bindingKey,
-                modelBindingResult.IsModelSet,
-                modelBindingResult.ValidationNode);
+            return new ModelBindingResult(bindingKey, modelBindingResult);
         }
 
         private async Task<ModelBindingResult> RunModelBinders(ModelBindingContext bindingContext)
@@ -90,7 +86,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             foreach (var binder in ModelBinders)
             {
                 var result = await binder.BindModelAsync(bindingContext);
-                if (result != null)
+                if (result != ModelBindingResult.NoResult)
                 {
                     // This condition is necessary because the ModelState entry would never be validated if
                     // caller fell back to the empty prefix, leading to an possibly-incorrect !IsValid. In most
@@ -110,7 +106,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
 
             // Either we couldn't find a binder, or the binder couldn't bind. Distinction is not important.
-            return null;
+            return ModelBindingResult.NoResult;
         }
 
         private static ModelBindingContext CreateNewBindingContext(ModelBindingContext oldBindingContext)

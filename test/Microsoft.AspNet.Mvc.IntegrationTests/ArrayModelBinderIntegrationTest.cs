@@ -34,7 +34,6 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
 
             // Assert
-            Assert.NotNull(modelBindingResult);
             Assert.True(modelBindingResult.IsModelSet);
 
             var model = Assert.IsType<int[]>(modelBindingResult.Model);
@@ -79,7 +78,6 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
 
             // Assert
-            Assert.NotNull(modelBindingResult);
             Assert.True(modelBindingResult.IsModelSet);
 
             var model = Assert.IsType<int[]>(modelBindingResult.Model);
@@ -120,7 +118,6 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
 
             // Assert
-            Assert.NotNull(modelBindingResult);
             Assert.True(modelBindingResult.IsModelSet);
 
             var model = Assert.IsType<int[]>(modelBindingResult.Model);
@@ -161,7 +158,6 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
 
             // Assert
-            Assert.NotNull(modelBindingResult);
             Assert.True(modelBindingResult.IsModelSet);
             Assert.Empty(Assert.IsType<int[]>(modelBindingResult.Model));
 
@@ -197,7 +193,6 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
 
             // Assert
-            Assert.NotNull(modelBindingResult);
             Assert.True(modelBindingResult.IsModelSet);
 
             var model = Assert.IsType<Person[]>(modelBindingResult.Model);
@@ -243,7 +238,6 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
 
             // Assert
-            Assert.NotNull(modelBindingResult);
             Assert.True(modelBindingResult.IsModelSet);
 
             var model = Assert.IsType<Person[]>(modelBindingResult.Model);
@@ -285,7 +279,6 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
 
             // Assert
-            Assert.NotNull(modelBindingResult);
             Assert.True(modelBindingResult.IsModelSet);
 
             var model = Assert.IsType<Person[]>(modelBindingResult.Model);
@@ -327,7 +320,6 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
 
             // Assert
-            Assert.NotNull(modelBindingResult);
             Assert.True(modelBindingResult.IsModelSet);
             Assert.Empty(Assert.IsType<Person[]>(modelBindingResult.Model));
 

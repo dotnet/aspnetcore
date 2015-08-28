@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
     public class BinderTypeBasedModelBinderModelBinderTest
     {
         [Fact]
-        public async Task BindModel_ReturnsNull_IfNoBinderTypeIsSet()
+        public async Task BindModel_ReturnsNoResult_IfNoBinderTypeIsSet()
         {
             // Arrange
             var bindingContext = GetBindingContext(typeof(Person));
@@ -26,11 +26,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var binderResult = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.Null(binderResult);
+            Assert.Equal(ModelBindingResult.NoResult, binderResult);
         }
 
         [Fact]
-        public async Task BindModel_ReturnsNotNull_EvenIfSelectedBinderReturnsNull()
+        public async Task BindModel_ReturnsFailedResult_EvenIfSelectedBinderReturnsNull()
         {
             // Arrange
             var bindingContext = GetBindingContext(typeof(Person), binderType: typeof(NullModelBinder));
@@ -41,7 +41,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var binderResult = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.NotNull(binderResult);
+            Assert.NotEqual(ModelBindingResult.NoResult, binderResult);
+            Assert.False(binderResult.IsModelSet);
         }
 
         [Fact]
@@ -125,7 +126,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         {
             public Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
             {
-                return Task.FromResult<ModelBindingResult>(null);
+                return ModelBindingResult.NoResultAsync;
             }
         }
 
@@ -142,7 +143,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             {
                 var validationNode =
                     new ModelValidationNode(bindingContext.ModelName, bindingContext.ModelMetadata, _model);
-                return Task.FromResult(new ModelBindingResult(_model, bindingContext.ModelName, true, validationNode));
+                return ModelBindingResult.SuccessAsync(bindingContext.ModelName, _model, validationNode);
             }
         }
     }

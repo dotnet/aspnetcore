@@ -27,20 +27,20 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     !collectionBinder.CanCreateInstance(bindingContext.ModelType))
                 {
                     // Able to resolve a binder type but need a new model instance and that binder cannot create it.
-                    return null;
+                    return ModelBindingResult.NoResult;
                 }
 
                 var result = await binder.BindModelAsync(bindingContext);
-                var modelBindingResult = result != null ?
+                var modelBindingResult = result != ModelBindingResult.NoResult ?
                     result :
-                    new ModelBindingResult(model: null, key: bindingContext.ModelName, isModelSet: false);
+                    ModelBindingResult.Failed(bindingContext.ModelName);
 
                 // Were able to resolve a binder type.
-                // Always tell the model binding system to skip other model binders i.e. return non-null.
+                // Always tell the model binding system to skip other model binders.
                 return modelBindingResult;
             }
 
-            return null;
+            return ModelBindingResult.NoResult;
         }
 
         private static Type ResolveBinderType(ModelBindingContext context)

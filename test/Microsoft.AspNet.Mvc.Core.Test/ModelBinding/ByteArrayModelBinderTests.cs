@@ -119,7 +119,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var binderResult = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.Null(binderResult);
+            Assert.Equal(ModelBindingResult.NoResult, binderResult);
         }
 
         private static ModelBindingContext GetBindingContext(IValueProvider valueProvider, Type modelType)

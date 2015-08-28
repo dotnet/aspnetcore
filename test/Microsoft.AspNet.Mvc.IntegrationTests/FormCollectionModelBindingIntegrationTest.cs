@@ -57,7 +57,6 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             // Assert
 
             // ModelBindingResult
-            Assert.NotNull(modelBindingResult);
             Assert.True(modelBindingResult.IsModelSet);
 
             // Model
@@ -107,7 +106,6 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             // Assert
             // ModelBindingResult
-            Assert.NotNull(modelBindingResult);
             Assert.True(modelBindingResult.IsModelSet);
 
             // Model
@@ -149,7 +147,6 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             // Assert
 
             // ModelBindingResult
-            Assert.NotNull(modelBindingResult);
             var collection = Assert.IsAssignableFrom<IFormCollection>(modelBindingResult.Model);
 
             // ModelState

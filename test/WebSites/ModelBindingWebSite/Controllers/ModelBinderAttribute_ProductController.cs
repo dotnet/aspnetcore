@@ -73,13 +73,17 @@ namespace ModelBindingWebSite.Controllers
                     // Doing something slightly different here to make sure we don't get accidentally bound
                     // by the type converter binder.
                     OrderStatus model;
-                    var isModelSet = Enum.TryParse<OrderStatus>("Status" + request.Query["status"], out model);
-                    var validationNode =
-                     new ModelValidationNode(bindingContext.ModelName, bindingContext.ModelMetadata, model);
-                    return Task.FromResult(new ModelBindingResult(model, "status", isModelSet, validationNode));
+                    if (Enum.TryParse<OrderStatus>("Status" + request.Query["status"], out model))
+                    {
+                        var validationNode =
+                            new ModelValidationNode(bindingContext.ModelName, bindingContext.ModelMetadata, model);
+                        return ModelBindingResult.SuccessAsync("status", model, validationNode);
+                    }
+                    
+                    return ModelBindingResult.FailedAsync("status");
                 }
 
-                return Task.FromResult<ModelBindingResult>(null);
+                return ModelBindingResult.NoResultAsync;
             }
         }
 
@@ -103,10 +107,10 @@ namespace ModelBindingWebSite.Controllers
 
                     var validationNode =
                         new ModelValidationNode(bindingContext.ModelName, bindingContext.ModelMetadata, value);
-                    return Task.FromResult(new ModelBindingResult(model, key, true, validationNode));
+                    return ModelBindingResult.SuccessAsync(key, model, validationNode);
                 }
 
-                return Task.FromResult<ModelBindingResult>(null);
+                return ModelBindingResult.NoResultAsync;
             }
         }
     }

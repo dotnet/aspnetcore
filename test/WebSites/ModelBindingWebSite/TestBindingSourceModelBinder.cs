@@ -25,10 +25,10 @@ namespace ModelBindingWebSite
             if (!IsSimpleType(bindingContext.ModelType))
             {
                 model = Activator.CreateInstance(bindingContext.ModelType);
-                return Task.FromResult(new ModelBindingResult(model, bindingContext.ModelName, true));
+                return ModelBindingResult.SuccessAsync(bindingContext.ModelName, model, validationNode: null);
             }
 
-            return Task.FromResult(new ModelBindingResult(null, bindingContext.ModelName, false));
+            return ModelBindingResult.FailedAsync(bindingContext.ModelName);
         }
 
         private bool IsSimpleType(Type type)

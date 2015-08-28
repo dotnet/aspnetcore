@@ -25,9 +25,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             if (bindingContext.BinderType == null)
             {
-                // Return null so that we are able to continue with the default set of model binders,
+                // Return NoResult so that we are able to continue with the default set of model binders,
                 // if there is no specific model binder provided.
-                return null;
+                return ModelBindingResult.NoResult;
             }
 
             var requestServices = bindingContext.OperationBindingContext.HttpContext.RequestServices;
@@ -45,9 +45,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             var result = await modelBinder.BindModelAsync(bindingContext);
 
-            var modelBindingResult = result != null ?
+            var modelBindingResult = result != ModelBindingResult.NoResult ?
                 result :
-                new ModelBindingResult(model: null, key: bindingContext.ModelName, isModelSet: false);
+                ModelBindingResult.Failed(bindingContext.ModelName);
 
             // A model binder was specified by metadata and this binder handles all such cases.
             // Always tell the model binding system to skip other model binders i.e. return non-null.

@@ -176,7 +176,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             engine.Setup(e => e.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
                    .Returns(ViewEngineResult.NotFound(viewName, new[] { "Shared/partial-view" }));
             var optionsAccessor = new MockMvcViewOptionsAccessor();
-            optionsAccessor.Options.ViewEngines.Add(engine.Object);
+            optionsAccessor.Value.ViewEngines.Add(engine.Object);
             var compositeViewEngine = new CompositeViewEngine(optionsAccessor);
 
             // Act

@@ -90,7 +90,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var result = await binder.BindModelAsync(context);
 
             // Assert
-            Assert.Null(result);
+            Assert.Equal(ModelBindingResult.NoResult, result);
         }
 
         public static TheoryData<int[]> ArrayModelData
@@ -125,7 +125,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var result = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.Null(result);
+            Assert.Equal(ModelBindingResult.NoResult, result);
         }
 
         // Here "fails silently" means the call does not update the array but also does not throw or set an error.
@@ -173,9 +173,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                     if (value != ValueProviderResult.None)
                     {
                         var model = value.ConvertTo(mbc.ModelType);
-                        return Task.FromResult(new ModelBindingResult(model, key: null, isModelSet: true));
+                        return ModelBindingResult.SuccessAsync(mbc.ModelName, model, validationNode: null);
                     }
-                    return Task.FromResult<ModelBindingResult>(null);
+                    return ModelBindingResult.NoResultAsync;
                 });
             return mockIntBinder.Object;
         }

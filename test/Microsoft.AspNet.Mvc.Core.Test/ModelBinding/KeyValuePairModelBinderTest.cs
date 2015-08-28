@@ -52,7 +52,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var result = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.NotNull(result);
             Assert.Null(result.Model);
             Assert.False(bindingContext.ModelState.IsValid);
             Assert.Null(result.ValidationNode);
@@ -70,7 +69,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var bindingContext = GetBindingContext(valueProvider);
             var mockBinder = new Mock<IModelBinder>();
             mockBinder.Setup(o => o.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                      .Returns(Task.FromResult<ModelBindingResult>(null));
+                      .Returns(ModelBindingResult.NoResultAsync);
 
             bindingContext.OperationBindingContext.ModelBinder = mockBinder.Object;
             var binder = new KeyValuePairModelBinder<int, string>();
@@ -79,7 +78,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var result = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.Null(result);
+            Assert.Equal(ModelBindingResult.NoResult, result);
             Assert.True(bindingContext.ModelState.IsValid);
             Assert.Equal(0, bindingContext.ModelState.ErrorCount);
         }
@@ -118,14 +117,22 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         [Theory]
         [InlineData(null, false)]
         [InlineData(null, true)]
-        [InlineData(42, false)]
         [InlineData(42, true)]
-        public async Task TryBindStrongModel_InnerBinderReturnsNotNull_ReturnsInnerBinderResult(
+        public async Task TryBindStrongModel_InnerBinderReturnsAResult_ReturnsInnerBinderResult(
             object model,
-            bool isModelSet)
+            bool isSuccess)
         {
             // Arrange
-            var innerResult = new ModelBindingResult(model, key: string.Empty, isModelSet: isModelSet);
+            ModelBindingResult innerResult;
+            if (isSuccess)
+            {
+                innerResult = ModelBindingResult.Success(string.Empty, model, validationNode: null);
+            }
+            else
+            {
+                innerResult = ModelBindingResult.Failed(string.Empty);
+            }
+            
             var innerBinder = new Mock<IModelBinder>();
             innerBinder
                 .Setup(o => o.BindModelAsync(It.IsAny<ModelBindingContext>()))
@@ -143,7 +150,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var result = await binder.TryBindStrongModel<int>(bindingContext, "key", modelValidationNodeList);
 
             // Assert
-            Assert.Same(innerResult, result);
+            Assert.Equal(innerResult, result);
             Assert.Empty(bindingContext.ModelState);
         }
 
@@ -201,7 +208,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var result = await binder.BindModelAsync(context);
 
             // Assert
-            Assert.Null(result);
+            Assert.Equal(ModelBindingResult.NoResult, result);
         }
 
         private static ModelBindingContext CreateContext()
@@ -252,9 +259,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                     {
                         var model = 42;
                         var validationNode = new ModelValidationNode(mbc.ModelName, mbc.ModelMetadata, model);
-                        return Task.FromResult(new ModelBindingResult(model, mbc.ModelName, true, validationNode));
+                        return ModelBindingResult.SuccessAsync(mbc.ModelName, model, validationNode);
                     }
-                    return Task.FromResult<ModelBindingResult>(null);
+                    return ModelBindingResult.NoResultAsync;
                 });
             return mockIntBinder.Object;
         }
@@ -270,9 +277,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                     {
                         var model = "some-value";
                         var validationNode = new ModelValidationNode(mbc.ModelName, mbc.ModelMetadata, model);
-                        return Task.FromResult(new ModelBindingResult(model, mbc.ModelName, true, validationNode));
+                        return ModelBindingResult.SuccessAsync(mbc.ModelName, model, validationNode);
                     }
-                    return Task.FromResult<ModelBindingResult>(null);
+                    return ModelBindingResult.NoResultAsync;
                 });
             return mockStringBinder.Object;
         }

@@ -78,8 +78,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 var valueResult = await modelBinder.BindModelAsync(valueBindingContext);
 
                 // Always add an entry to the dictionary but validate only if binding was successful.
-                model[convertedKey] = ModelBindingHelper.CastOrDefault<TValue>(valueResult?.Model);
-                if (valueResult != null && valueResult.IsModelSet)
+                model[convertedKey] = ModelBindingHelper.CastOrDefault<TValue>(valueResult.Model);
+                if (valueResult.IsModelSet)
                 {
                     validationNode.ChildNodes.Add(valueResult.ValidationNode);
                 }

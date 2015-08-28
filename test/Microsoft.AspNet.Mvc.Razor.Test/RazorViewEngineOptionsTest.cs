@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             // Assert
             var accessor = serviceProvider.GetRequiredService<IOptions<RazorViewEngineOptions>>();
-            Assert.Same(fileProvider, accessor.Options.FileProvider);
+            Assert.Same(fileProvider, accessor.Value.FileProvider);
         }
     }
 }

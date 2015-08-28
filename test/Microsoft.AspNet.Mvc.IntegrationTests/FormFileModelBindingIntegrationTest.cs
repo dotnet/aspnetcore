@@ -57,7 +57,6 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             // Assert
 
             // ModelBindingResult
-            Assert.NotNull(modelBindingResult);
             Assert.True(modelBindingResult.IsModelSet);
 
             // Model
@@ -108,7 +107,6 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             // Assert
             // ModelBindingResult
-            Assert.NotNull(modelBindingResult);
             Assert.True(modelBindingResult.IsModelSet);
 
             // Model
@@ -154,9 +152,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
 
             // Assert
-
-            // ModelBindingResult; expect null because binding failed.
-            Assert.Null(modelBindingResult);
+            Assert.Equal(ModelBindingResult.NoResult, modelBindingResult);
 
             // ModelState
             Assert.True(modelState.IsValid);

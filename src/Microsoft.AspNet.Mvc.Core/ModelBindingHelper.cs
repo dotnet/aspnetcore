@@ -308,7 +308,7 @@ namespace Microsoft.AspNet.Mvc
             modelBindingContext.PropertyFilter = predicate;
 
             var modelBindingResult = await modelBinder.BindModelAsync(modelBindingContext);
-            if (modelBindingResult != null && modelBindingResult.IsModelSet)
+            if (modelBindingResult.IsModelSet)
             {
                 var modelExplorer = new ModelExplorer(metadataProvider, modelMetadata, modelBindingResult.Model);
                 var modelValidationContext = new ModelValidationContext(modelBindingContext, modelExplorer);

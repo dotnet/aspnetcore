@@ -19,14 +19,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             if (bindingContext.ModelMetadata.IsComplexType)
             {
                 // this type cannot be converted
-                return null;
+                return ModelBindingResult.NoResult;
             }
 
             var valueProviderResult = bindingContext.ValueProvider.GetValue(bindingContext.ModelName);
             if (valueProviderResult == ValueProviderResult.None)
             {
                 // no entry
-                return null;
+                return ModelBindingResult.NoResult;
             }
 
             bindingContext.ModelState.SetModelValue(bindingContext.ModelName, valueProviderResult);
@@ -45,8 +45,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     }
                 }
 
-                var isModelSet = true;
-
                 // When converting newModel a null value may indicate a failed conversion for an otherwise required
                 // model (can't set a ValueType to null). This detects if a null model value is acceptable given the
                 // current bindingContext. If not, an error is logged.
@@ -56,31 +54,26 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                         bindingContext.ModelName,
                         Resources.FormatCommon_ValueNotValidForProperty(model));
 
-                    isModelSet = false;
+                    return ModelBindingResult.Failed(bindingContext.ModelName);
                 }
+                else
+                {
+                    var validationNode = new ModelValidationNode(
+                        bindingContext.ModelName,
+                        bindingContext.ModelMetadata, 
+                        model);
 
-                // Include a ModelValidationNode if binding succeeded.
-                var validationNode = isModelSet ?
-                    new ModelValidationNode(bindingContext.ModelName, bindingContext.ModelMetadata, model) :
-                    null;
-
-                return new ModelBindingResult(
-                    model,
-                    bindingContext.ModelName,
-                    isModelSet,
-                    validationNode);
+                    return ModelBindingResult.Success(bindingContext.ModelName, model, validationNode);
+                }
             }
             catch (Exception ex)
             {
                 bindingContext.ModelState.TryAddModelError(bindingContext.ModelName, ex);
-            }
 
-            // Were able to find a converter for the type but conversion failed.
-            // Tell the model binding system to skip other model binders i.e. return non-null.
-            return new ModelBindingResult(
-                model: null,
-                key: bindingContext.ModelName,
-                isModelSet: false);
+                // Were able to find a converter for the type but conversion failed.
+                // Tell the model binding system to skip other model binders.
+                return ModelBindingResult.Failed(bindingContext.ModelName);
+            }
         }
     }
 }

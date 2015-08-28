@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var result = await binder.BindModelAsync(context);
 
             // Assert
-            Assert.Null(result);
+            Assert.Equal(ModelBindingResult.NoResult, result);
             Assert.False(binder.WasBindModelCoreCalled);
         }
 
@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var result = await binder.BindModelAsync(context);
 
             // Assert
-            Assert.Null(result);
+            Assert.Equal(ModelBindingResult.NoResult, result);
             Assert.False(binder.WasBindModelCoreCalled);
         }
 
@@ -111,8 +111,18 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             protected override Task<ModelBindingResult> BindModelCoreAsync([NotNull] ModelBindingContext bindingContext)
             {
                 WasBindModelCoreCalled = true;
-                return Task.FromResult(
-                    new ModelBindingResult(model: null, key: bindingContext.ModelName, isModelSet: _isModelSet));
+
+                if (_isModelSet)
+                {
+                    return ModelBindingResult.SuccessAsync(
+                        bindingContext.ModelName,
+                        model: null,
+                        validationNode: null);
+                }
+                else
+                {
+                    return ModelBindingResult.FailedAsync(bindingContext.ModelName);
+                }
             }
         }
     }

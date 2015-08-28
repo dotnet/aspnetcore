@@ -24,14 +24,10 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
                         SuppressValidation = true,
                     };
 
-                return Task.FromResult(new ModelBindingResult(
-                    model,
-                    bindingContext.ModelName,
-                    isModelSet: true,
-                    validationNode: validationNode));
+                return ModelBindingResult.SuccessAsync(bindingContext.ModelName, model, validationNode);
             }
 
-            return Task.FromResult<ModelBindingResult>(null);
+            return ModelBindingResult.NoResultAsync;
         }
     }
 }

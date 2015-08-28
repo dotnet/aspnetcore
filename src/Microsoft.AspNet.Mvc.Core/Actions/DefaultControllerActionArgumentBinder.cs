@@ -81,8 +81,7 @@ namespace Microsoft.AspNet.Mvc.Actions
                 parameter.Name);
 
             var modelBindingResult = await operationContext.ModelBinder.BindModelAsync(modelBindingContext);
-            if (modelBindingResult != null &&
-                modelBindingResult.IsModelSet &&
+            if (modelBindingResult.IsModelSet &&
                 modelBindingResult.ValidationNode != null)
             {
                 var modelExplorer = new ModelExplorer(
@@ -180,7 +179,7 @@ namespace Microsoft.AspNet.Mvc.Actions
             foreach (var parameter in parameterMetadata)
             {
                 var modelBindingResult = await BindModelAsync(parameter, modelState, operationContext);
-                if (modelBindingResult != null && modelBindingResult.IsModelSet)
+                if (modelBindingResult.IsModelSet)
                 {
                     arguments[parameter.Name] = modelBindingResult.Model;
                 }

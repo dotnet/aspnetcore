@@ -358,7 +358,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var result = await binder.BindModelAsync(context);
 
             // Assert
-            Assert.Null(result);
+            Assert.Equal(ModelBindingResult.NoResult, result);
         }
 
         // Model type -> can create instance.
@@ -462,11 +462,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                     KeyValuePair<int, string> value;
                     if (values.TryGetValue(mbc.ModelName, out value))
                     {
-                        return Task.FromResult(new ModelBindingResult(value, mbc.ModelName, isModelSet: true));
+                        return ModelBindingResult.SuccessAsync(mbc.ModelName, value, validationNode: null);
                     }
                     else
                     {
-                        return Task.FromResult<ModelBindingResult>(null);
+                        return ModelBindingResult.NoResultAsync;
                     }
                 });
 

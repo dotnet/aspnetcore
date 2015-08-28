@@ -1205,7 +1205,7 @@ namespace Microsoft.AspNet.Mvc.Test
                       Assert.True(context.PropertyFilter(context, "Property1"));
                       Assert.True(context.PropertyFilter(context, "Property2"));
                   })
-                  .Returns(Task.FromResult<ModelBindingResult>(null))
+                  .Returns(ModelBindingResult.NoResultAsync)
                   .Verifiable();
 
             var controller = GetController(binder.Object, valueProvider);
@@ -1238,7 +1238,7 @@ namespace Microsoft.AspNet.Mvc.Test
                       Assert.True(context.PropertyFilter(context, "Property1"));
                       Assert.True(context.PropertyFilter(context, "Property2"));
                   })
-                  .Returns(Task.FromResult<ModelBindingResult>(null))
+                  .Returns(ModelBindingResult.NoResultAsync)
                   .Verifiable();
 
             var controller = GetController(binder.Object, valueProvider);
@@ -1270,7 +1270,7 @@ namespace Microsoft.AspNet.Mvc.Test
                       Assert.True(context.PropertyFilter(context, "Property1"));
                       Assert.True(context.PropertyFilter(context, "Property2"));
                   })
-                  .Returns(Task.FromResult<ModelBindingResult>(null))
+                  .Returns(ModelBindingResult.NoResultAsync)
                   .Verifiable();
 
             var controller = GetController(binder.Object, provider: null);
@@ -1307,7 +1307,7 @@ namespace Microsoft.AspNet.Mvc.Test
                       Assert.False(context.PropertyFilter(context, "exclude1"));
                       Assert.False(context.PropertyFilter(context, "exclude2"));
                   })
-                  .Returns(Task.FromResult<ModelBindingResult>(null))
+                  .Returns(ModelBindingResult.NoResultAsync)
                   .Verifiable();
 
             var controller = GetController(binder.Object, valueProvider);
@@ -1344,7 +1344,7 @@ namespace Microsoft.AspNet.Mvc.Test
                       Assert.False(context.PropertyFilter(context, "exclude1"));
                       Assert.False(context.PropertyFilter(context, "exclude2"));
                   })
-                  .Returns(Task.FromResult<ModelBindingResult>(null))
+                  .Returns(ModelBindingResult.NoResultAsync)
                   .Verifiable();
 
             var controller = GetController(binder.Object, provider: null);
@@ -1378,7 +1378,7 @@ namespace Microsoft.AspNet.Mvc.Test
                       Assert.False(context.PropertyFilter(context, "exclude1"));
                       Assert.False(context.PropertyFilter(context, "exclude2"));
                   })
-                  .Returns(Task.FromResult<ModelBindingResult>(null))
+                  .Returns(ModelBindingResult.NoResultAsync)
                   .Verifiable();
 
 
@@ -1413,7 +1413,7 @@ namespace Microsoft.AspNet.Mvc.Test
                       Assert.False(context.PropertyFilter(context, "exclude1"));
                       Assert.False(context.PropertyFilter(context, "exclude2"));
                   })
-                  .Returns(Task.FromResult<ModelBindingResult>(null))
+                  .Returns(ModelBindingResult.NoResultAsync)
                   .Verifiable();
 
             var controller = GetController(binder.Object, provider: null);
@@ -1450,7 +1450,7 @@ namespace Microsoft.AspNet.Mvc.Test
                       Assert.False(context.PropertyFilter(context, "exclude1"));
                       Assert.False(context.PropertyFilter(context, "exclude2"));
                   })
-                  .Returns(Task.FromResult<ModelBindingResult>(null))
+                  .Returns(ModelBindingResult.NoResultAsync)
                   .Verifiable();
 
             var controller = GetController(binder.Object, provider: null);
@@ -1484,7 +1484,7 @@ namespace Microsoft.AspNet.Mvc.Test
                       Assert.True(context.PropertyFilter(context, "Property1"));
                       Assert.True(context.PropertyFilter(context, "Property2"));
                   })
-                  .Returns(Task.FromResult<ModelBindingResult>(null))
+                  .Returns(ModelBindingResult.NoResultAsync)
                   .Verifiable();
 
             var controller = GetController(binder.Object, valueProvider);
@@ -1517,7 +1517,7 @@ namespace Microsoft.AspNet.Mvc.Test
                       Assert.True(context.PropertyFilter(context, "Property1"));
                       Assert.True(context.PropertyFilter(context, "Property2"));
                   })
-                  .Returns(Task.FromResult<ModelBindingResult>(null))
+                  .Returns(ModelBindingResult.NoResultAsync)
                   .Verifiable();
 
             var controller = GetController(binder.Object, valueProvider);
