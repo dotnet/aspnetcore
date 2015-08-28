@@ -21,7 +21,7 @@ namespace VersioningWebSite
 
         public static string GetVersion(HttpRequest request)
         {
-            return request.Query.Get("version");
+            return request.Query["version"];
         }
 
         public bool Accept(ActionConstraintContext context)

@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc
             cache.OnActionExecuting(context);
 
             // Assert
-            Assert.Equal("no-store", context.HttpContext.Response.Headers.Get("Cache-control"));
+            Assert.Equal("no-store", context.HttpContext.Response.Headers["Cache-control"]);
         }
 
         [Fact]
@@ -157,7 +157,7 @@ namespace Microsoft.AspNet.Mvc
             cache.OnActionExecuting(context);
 
             // Assert
-            Assert.Equal(output, context.HttpContext.Response.Headers.Get("Cache-control"));
+            Assert.Equal(output, context.HttpContext.Response.Headers["Cache-control"]);
         }
 
         public static IEnumerable<object[]> NoStoreData
@@ -205,7 +205,7 @@ namespace Microsoft.AspNet.Mvc
             cache.OnActionExecuting(context);
 
             // Assert
-            Assert.Equal(output, context.HttpContext.Response.Headers.Get("Cache-control"));
+            Assert.Equal(output, context.HttpContext.Response.Headers["Cache-control"]);
         }
 
         public static IEnumerable<object[]> VaryData
@@ -275,8 +275,8 @@ namespace Microsoft.AspNet.Mvc
             cache.OnActionExecuting(context);
 
             // Assert
-            Assert.Equal(varyOutput, context.HttpContext.Response.Headers.Get("Vary"));
-            Assert.Equal(cacheControlOutput, context.HttpContext.Response.Headers.Get("Cache-control"));
+            Assert.Equal(varyOutput, context.HttpContext.Response.Headers["Vary"]);
+            Assert.Equal(cacheControlOutput, context.HttpContext.Response.Headers["Cache-control"]);
         }
 
         [Fact]
@@ -294,8 +294,8 @@ namespace Microsoft.AspNet.Mvc
             cache.OnActionExecuting(context);
 
             // Assert
-            Assert.Equal("no-store,no-cache", context.HttpContext.Response.Headers.Get("Cache-control"));
-            Assert.Equal("no-cache", context.HttpContext.Response.Headers.Get("Pragma"));
+            Assert.Equal("no-store,no-cache", context.HttpContext.Response.Headers["Cache-control"]);
+            Assert.Equal("no-cache", context.HttpContext.Response.Headers["Pragma"]);
         }
 
         [Fact]
@@ -339,7 +339,7 @@ namespace Microsoft.AspNet.Mvc
             cache.OnActionExecuting(context);
 
             // Assert
-            Assert.Equal("public,max-age=20", context.HttpContext.Response.Headers.Get("Cache-control"));
+            Assert.Equal("public,max-age=20", context.HttpContext.Response.Headers["Cache-control"]);
         }
 
         [Fact]
@@ -359,7 +359,7 @@ namespace Microsoft.AspNet.Mvc
             cache.OnActionExecuting(context);
 
             // Assert
-            Assert.Equal("private,max-age=10", context.HttpContext.Response.Headers.Get("Cache-control"));
+            Assert.Equal("private,max-age=10", context.HttpContext.Response.Headers["Cache-control"]);
         }
 
         [Fact]
@@ -379,7 +379,7 @@ namespace Microsoft.AspNet.Mvc
             cache.OnActionExecuting(context);
 
             // Assert
-            Assert.Equal("public,max-age=10", context.HttpContext.Response.Headers.Get("Cache-control"));
+            Assert.Equal("public,max-age=10", context.HttpContext.Response.Headers["Cache-control"]);
         }
 
         [Fact]
@@ -399,7 +399,7 @@ namespace Microsoft.AspNet.Mvc
             cache.OnActionExecuting(context);
 
             // Assert
-            Assert.Equal("Test", context.HttpContext.Response.Headers.Get("Vary"));
+            Assert.Equal("Test", context.HttpContext.Response.Headers["Vary"]);
         }
 
         private ActionExecutingContext GetActionExecutingContext(List<IFilterMetadata> filters = null)

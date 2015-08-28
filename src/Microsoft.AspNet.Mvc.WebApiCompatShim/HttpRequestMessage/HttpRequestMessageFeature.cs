@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.Http;
 using Microsoft.AspNet.Http;
@@ -58,9 +59,9 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             {
                 // Every header should be able to fit into one of the two header collections.
                 // Try message.Headers first since that accepts more of them.
-                if (!message.Headers.TryAddWithoutValidation(header.Key, header.Value))
+                if (!message.Headers.TryAddWithoutValidation(header.Key, (IEnumerable<string>)header.Value))
                 {
-                    var added = message.Content.Headers.TryAddWithoutValidation(header.Key, header.Value);
+                    var added = message.Content.Headers.TryAddWithoutValidation(header.Key, (IEnumerable<string>)header.Value);
                     Debug.Assert(added);
                 }
             }

@@ -186,10 +186,9 @@ namespace Microsoft.AspNet.Mvc.Test
                 .Callback<CorsResult, HttpResponse>((result1, response1) =>
                 {
                     var headers = response1.Headers;
-                    headers.Set(
-                        CorsConstants.AccessControlMaxAge,
-                        result1.PreflightMaxAge.Value.TotalSeconds.ToString());
-                    headers.Add(CorsConstants.AccessControlAllowOrigin, new[] { result1.AllowedOrigin });
+                    headers[CorsConstants.AccessControlMaxAge] =
+                        result1.PreflightMaxAge.Value.TotalSeconds.ToString();
+                    headers[CorsConstants.AccessControlAllowOrigin] = result1.AllowedOrigin;
                     if (result1.SupportsCredentials)
                     {
                         headers.Add(CorsConstants.AccessControlAllowCredentials, new[] { "true" });

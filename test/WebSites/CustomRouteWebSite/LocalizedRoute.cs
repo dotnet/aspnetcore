@@ -63,7 +63,7 @@ namespace CustomRouteWebSite
         private string GetLocale(HttpContext context)
         {
             string locale;
-            _users.TryGetValue(context.Request.Headers.Get("User"), out locale);
+            _users.TryGetValue(context.Request.Headers["User"], out locale);
             return locale;
         }
     }

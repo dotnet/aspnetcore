@@ -113,7 +113,7 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShimTest
             // Assert
             Assert.True(httpContext.Response.Headers.ContainsKey(transferEncodingHeaderKey));
             Assert.Equal(new string[] { "identity", "chunked" }, 
-                        httpContext.Response.Headers.GetValues(transferEncodingHeaderKey));
+                        httpContext.Response.Headers[transferEncodingHeaderKey]);
             Assert.NotNull(httpContext.Response.ContentLength);
         }
 
@@ -141,7 +141,7 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShimTest
             // Assert
             Assert.True(httpContext.Response.Headers.ContainsKey(transferEncodingHeaderKey));
             Assert.Equal(new string[] { "identity", "chunked" },
-                        httpContext.Response.Headers.GetValues(transferEncodingHeaderKey));
+                        httpContext.Response.Headers[transferEncodingHeaderKey]);
             Assert.NotNull(httpContext.Response.ContentLength);
         }
 

@@ -46,7 +46,7 @@ namespace ResponseCacheWebSite
         [ResponseCache(Duration = 40)]
         public IActionResult SetHeadersInAction()
         {
-            Response.Headers.Set("Cache-control", "max-age=10");
+            Response.Headers["Cache-control"] = "max-age=10";
             return Content("Hello World!");
         }
 

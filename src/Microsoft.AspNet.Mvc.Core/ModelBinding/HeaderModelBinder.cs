@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using System.Linq;
 #if DNXCORE50
 using System.Reflection;
 #endif
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             object model = null;
             if (bindingContext.ModelType == typeof(string))
             {
-                var value = request.Headers.Get(headerName);
+                string value = request.Headers[headerName];
                 if (value != null)
                 {
                     model = value;
@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             else if (typeof(IEnumerable<string>).IsAssignableFrom(bindingContext.ModelType))
             {
                 var values = request.Headers.GetCommaSeparatedValues(headerName);
-                if (values != null)
+                if (values.Length > 0)
                 {
                     model = ModelBindingHelper.ConvertValuesToCollectionType(
                         bindingContext.ModelType,
@@ -60,11 +60,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     bindingContext.ModelName,
                     bindingContext.ModelMetadata,
                     model);
-                
+
                 bindingContext.ModelState.SetModelValue(
-                    bindingContext.ModelName, 
-                    request.Headers.GetCommaSeparatedValues(headerName).ToArray(), 
-                    request.Headers.Get(headerName));
+                    bindingContext.ModelName,
+                    request.Headers.GetCommaSeparatedValues(headerName),
+                    request.Headers[headerName]);
             }
 
             return Task.FromResult(

@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.AspNet.Http.Internal;
+using Microsoft.Framework.Primitives;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -11,7 +12,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     {
         protected override IEnumerableValueProvider GetEnumerableValueProvider(
             BindingSource bindingSource,
-            IDictionary<string, string[]> values,
+            IDictionary<string, StringValues> values,
             CultureInfo culture)
         {
             var backingStore = new ReadableStringCollection(values);

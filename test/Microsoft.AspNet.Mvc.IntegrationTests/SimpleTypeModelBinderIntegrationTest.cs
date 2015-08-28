@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.Framework.Primitives;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.IntegrationTests
@@ -366,19 +367,19 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Empty(modelState.Keys);
         }
 
-        public static TheoryData<IDictionary<string, string[]>> PersonStoreData
+        public static TheoryData<IDictionary<string, StringValues>> PersonStoreData
         {
             get
             {
-                return new TheoryData<IDictionary<string, string[]>>
+                return new TheoryData<IDictionary<string, StringValues>>
                 {
-                    new Dictionary<string, string[]>
+                    new Dictionary<string, StringValues>
                     {
                         { "name", new[] { "Fred" } },
                         { "address.zip", new[] { "98052" } },
                         { "address.lines", new[] { "line 1", "line 2" } },
                     },
-                    new Dictionary<string, string[]>
+                    new Dictionary<string, StringValues>
                     {
                         { "address.lines[]", new[] { "line 1", "line 2" } },
                         { "address[].zip", new[] { "98052" } },
@@ -390,7 +391,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
         [Theory]
         [MemberData(nameof(PersonStoreData))]
-        public async Task BindParameter_FromFormData_BindsCorrectly(IDictionary<string, string[]> personStore)
+        public async Task BindParameter_FromFormData_BindsCorrectly(IDictionary<string, StringValues> personStore)
         {
             // Arrange
             var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();

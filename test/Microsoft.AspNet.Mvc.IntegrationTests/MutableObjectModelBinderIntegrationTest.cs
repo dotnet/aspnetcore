@@ -10,6 +10,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features.Internal;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.Framework.Primitives;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.IntegrationTests
@@ -2129,7 +2130,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
         private static void SetFormFileBodyContent(HttpRequest request, string content, string name)
         {
             var fileCollection = new FormFileCollection();
-            var formCollection = new FormCollection(new Dictionary<string, string[]>(), fileCollection);
+            var formCollection = new FormCollection(new Dictionary<string, StringValues>(), fileCollection);
             var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(content));
 
             request.Form = formCollection;

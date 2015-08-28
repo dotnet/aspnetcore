@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Internal;
+using Microsoft.Framework.Primitives;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Test
@@ -52,7 +53,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
             if (context.Request.HasFormContentType)
             {
-                context.Request.Form = new FormCollection(new Dictionary<string, string[]>());
+                context.Request.Form = new FormCollection(new Dictionary<string, StringValues>());
             }
 
             return new ValueProviderFactoryContext(

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.Primitives;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -29,11 +30,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return null;
         }
 
-        private static async Task<IDictionary<string, string[]>> GetValueCollectionAsync(HttpRequest request)
+        private static async Task<IDictionary<string, StringValues>> GetValueCollectionAsync(HttpRequest request)
         {
             var formCollection = await request.ReadFormAsync();
 
-            var dictionary = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
+            var dictionary = new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase);
             foreach (var entry in formCollection)
             {
                 var key = NormalizeJQueryToMvc(entry.Key);

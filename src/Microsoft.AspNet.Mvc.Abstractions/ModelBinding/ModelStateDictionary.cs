@@ -385,15 +385,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// </param>
         public void SetModelValue([NotNull] string key, ValueProviderResult valueProviderResult)
         {
-            // Avoid creating a new array for rawvalue if there's only one value.
+            // Avoid creating a new array for rawValue if there's only one value.
             object rawValue;
             if (valueProviderResult == ValueProviderResult.None)
             {
                 rawValue = null;
-            }
-            else if (valueProviderResult.Value != null)
-            {
-                rawValue = valueProviderResult.Value;
             }
             else if (valueProviderResult.Length == 1)
             {
@@ -401,10 +397,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
             else
             {
-                rawValue = valueProviderResult.Values;
+                rawValue = valueProviderResult.Values.ToArray();
             }
 
-            SetModelValue(key, rawValue, (string)valueProviderResult);
+            SetModelValue(key, rawValue, valueProviderResult.ToString());
         }
 
         /// <summary>

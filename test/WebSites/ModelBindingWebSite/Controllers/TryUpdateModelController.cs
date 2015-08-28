@@ -10,6 +10,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.Framework.Primitives;
 using ModelBindingWebSite.Models;
 
 namespace ModelBindingWebSite.Controllers
@@ -107,7 +108,7 @@ namespace ModelBindingWebSite.Controllers
         public async Task<Employee> GetEmployeeAsync_BindToBaseDeclaredType()
         {
             var backingStore = new ReadableStringCollection(
-            new Dictionary<string, string[]>
+            new Dictionary<string, StringValues>
             {
                 { "Parent.Name", new[] { "fatherName"} },
                 { "Parent.Parent.Name", new[] {"grandFatherName" } },
@@ -131,7 +132,7 @@ namespace ModelBindingWebSite.Controllers
         public async Task<User> GetUserAsync_ModelType_IncludeAll(int id)
         {
             var backingStore = new ReadableStringCollection(
-            new Dictionary<string, string[]>
+            new Dictionary<string, StringValues>
             {
                 { "Key", new[] { "123"} },
                 { "RegisterationMonth", new[] {"March" } },

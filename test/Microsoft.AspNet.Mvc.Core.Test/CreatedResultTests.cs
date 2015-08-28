@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.Mvc
             var location = "/test/";
             var httpContext = GetHttpContext();
             var actionContext = GetActionContext(httpContext);
-            httpContext.Response.Headers.Set("Location", "/different/location/");
+            httpContext.Response.Headers["Location"] = "/different/location/";
             var result = new CreatedResult(location, "testInput");
 
             // Act

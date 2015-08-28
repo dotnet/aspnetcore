@@ -68,12 +68,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             var body = await response.Content.ReadAsStringAsync();
 
-            var filters = response.Headers.GetValues("filters").Single().Split(',');
+            var filters = response.Headers.GetValues("filters").ToArray();
 
             var i = 0;
             foreach (var filter in filters)
             {
-                Assert.Equal(filter, expected[i++]);
+                Assert.Equal(expected[i++], filter);
             }
 
             Assert.Equal(expected.Length, filters.Length);

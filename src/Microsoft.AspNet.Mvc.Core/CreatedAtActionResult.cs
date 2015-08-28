@@ -7,6 +7,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -73,7 +74,7 @@ namespace Microsoft.AspNet.Mvc
                 throw new InvalidOperationException(Resources.NoRoutesMatched);
             }
 
-            context.HttpContext.Response.Headers.Set("Location", url);
+            context.HttpContext.Response.Headers[HeaderNames.Location] = url;
         }
     }
 }

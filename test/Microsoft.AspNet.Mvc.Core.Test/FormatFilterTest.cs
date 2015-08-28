@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.Mvc
 
             // Query contains xml    
             httpContext.Setup(c => c.Request.Query.ContainsKey("format")).Returns(true);
-            httpContext.Setup(c => c.Request.Query.Get("format")).Returns("xml");
+            httpContext.Setup(c => c.Request.Query["format"]).Returns("xml");
 
             // Routedata contains json
             var data = new RouteData();

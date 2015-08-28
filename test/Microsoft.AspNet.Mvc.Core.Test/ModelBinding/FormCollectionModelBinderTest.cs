@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
+using Microsoft.Framework.Primitives;
 using Moq;
 using Xunit;
 
@@ -20,10 +21,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public async Task FormCollectionModelBinder_ValidType_BindSuccessful()
         {
             // Arrange
-            var formCollection = new FormCollection(new Dictionary<string, string[]>
+            var formCollection = new FormCollection(new Dictionary<string, StringValues>
             {
-                { "field1", new string[] { "value1" } },
-                { "field2", new string[] { "value2" } }
+                { "field1", "value1" },
+                { "field2", "value2" }
             });
             var httpContext = GetMockHttpContext(formCollection);
             var bindingContext = GetBindingContext(typeof(IFormCollection), httpContext);
@@ -48,10 +49,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public async Task FormCollectionModelBinder_InvalidType_BindFails()
         {
             // Arrange
-            var formCollection = new FormCollection(new Dictionary<string, string[]>
+            var formCollection = new FormCollection(new Dictionary<string, StringValues>
             {
-                { "field1", new string[] { "value1" } },
-                { "field2", new string[] { "value2" } }
+                { "field1", "value1" },
+                { "field2", "value2" }
             });
             var httpContext = GetMockHttpContext(formCollection);
             var bindingContext = GetBindingContext(typeof(string), httpContext);
@@ -69,9 +70,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public async Task FormCollectionModelBinder_FormCollectionConcreteType_BindFails()
         {
             // Arrange
-            var formCollection = new FormCollection(new Dictionary<string, string[]>
+            var formCollection = new FormCollection(new Dictionary<string, StringValues>
             {
-                { "field1", new string[] { "value1" } },
+                { "field1", "value1" },
                 { "field2", new string[] { "value2" } }
             });
             var httpContext = GetMockHttpContext(formCollection);
@@ -131,11 +132,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         private class MyFormCollection : ReadableStringCollection, IFormCollection
         {
-            public MyFormCollection(IDictionary<string, string[]> store) : this(store, new FormFileCollection())
+            public MyFormCollection(IDictionary<string, StringValues> store) : this(store, new FormFileCollection())
             {
             }
 
-            public MyFormCollection(IDictionary<string, string[]> store, IFormFileCollection files) : base(store)
+            public MyFormCollection(IDictionary<string, StringValues> store, IFormFileCollection files) : base(store)
             {
                 Files = files;
             }

@@ -21,7 +21,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// </returns>
         public static T ConvertTo<T>(this ValueProviderResult result)
         {
-            var valueToConvert = (object)result.Values ?? (object)result.Value;
+            object valueToConvert = null;
+            if (result.Values.Count == 1)
+            {
+                valueToConvert = result.Values[0];
+            }
+            else if (result.Values.Count > 1)
+            {
+                valueToConvert = result.Values.ToArray();
+            }
             return ModelBindingHelper.ConvertTo<T>(valueToConvert, result.Culture);
         }
 
@@ -35,7 +43,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// </returns>
         public static object ConvertTo(this ValueProviderResult result, [NotNull] Type type)
         {
-            var valueToConvert = (object)result.Values ?? (object)result.Value;
+            object valueToConvert = null;
+            if (result.Values.Count == 1)
+            {
+                valueToConvert = result.Values[0];
+            }
+            else if (result.Values.Count > 1)
+            {
+                valueToConvert = result.Values.ToArray();
+            }
             return ModelBindingHelper.ConvertTo(valueToConvert, type, result.Culture);
         }
     }

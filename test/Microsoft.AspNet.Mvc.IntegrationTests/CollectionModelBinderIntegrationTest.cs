@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.Framework.Primitives;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.IntegrationTests
@@ -604,7 +605,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
             {
-                var formCollection = new FormCollection(new Dictionary<string, string[]>()
+                var formCollection = new FormCollection(new Dictionary<string, StringValues>()
                 {
                     { "Addresses.index", new [] { "Key1", "Key2" } },
                     { "Addresses[Key1].Street", new [] { "Street1" } },
@@ -663,7 +664,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
             {
-                var formCollection = new FormCollection(new Dictionary<string, string[]>()
+                var formCollection = new FormCollection(new Dictionary<string, StringValues>()
                 {
                     { "Addresses.index", new [] { "Key1" } },
                     { "Addresses[Key1].Street", new [] { "Street1" } },
@@ -733,15 +734,15 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
         }
 
         // parameter type, form content, expected type
-        public static TheoryData<Type, IDictionary<string, string[]>, Type> CollectionTypeData
+        public static TheoryData<Type, IDictionary<string, StringValues>, Type> CollectionTypeData
         {
             get
             {
-                return new TheoryData<Type, IDictionary<string, string[]>, Type>
+                return new TheoryData<Type, IDictionary<string, StringValues>, Type>
                 {
                     {
                         typeof(IEnumerable<string>),
-                        new Dictionary<string, string[]>
+                        new Dictionary<string, StringValues>
                         {
                             { "[0]", new[] { "hello" } },
                             { "[1]", new[] { "world" } },
@@ -750,7 +751,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                     },
                     {
                         typeof(ICollection<string>),
-                        new Dictionary<string, string[]>
+                        new Dictionary<string, StringValues>
                         {
                             { "index", new[] { "low", "high" } },
                             { "[low]", new[] { "hello" } },
@@ -760,7 +761,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                     },
                     {
                         typeof(IList<string>),
-                        new Dictionary<string, string[]>
+                        new Dictionary<string, StringValues>
                         {
                             { "[0]", new[] { "hello" } },
                             { "[1]", new[] { "world" } },
@@ -769,7 +770,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                     },
                     {
                         typeof(List<string>),
-                        new Dictionary<string, string[]>
+                        new Dictionary<string, StringValues>
                         {
                             { "index", new[] { "low", "high" } },
                             { "[low]", new[] { "hello" } },
@@ -779,7 +780,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                     },
                     {
                         typeof(ClosedGenericCollection),
-                        new Dictionary<string, string[]>
+                        new Dictionary<string, StringValues>
                         {
                             { "[0]", new[] { "hello" } },
                             { "[1]", new[] { "world" } },
@@ -788,7 +789,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                     },
                     {
                         typeof(ClosedGenericList),
-                        new Dictionary<string, string[]>
+                        new Dictionary<string, StringValues>
                         {
                             { "index", new[] { "low", "high" } },
                             { "[low]", new[] { "hello" } },
@@ -798,7 +799,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                     },
                     {
                         typeof(ExplicitClosedGenericCollection),
-                        new Dictionary<string, string[]>
+                        new Dictionary<string, StringValues>
                         {
                             { "[0]", new[] { "hello" } },
                             { "[1]", new[] { "world" } },
@@ -807,7 +808,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                     },
                     {
                         typeof(ExplicitClosedGenericList),
-                        new Dictionary<string, string[]>
+                        new Dictionary<string, StringValues>
                         {
                             { "index", new[] { "low", "high" } },
                             { "[low]", new[] { "hello" } },
@@ -817,7 +818,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                     },
                     {
                         typeof(ExplicitCollection<string>),
-                        new Dictionary<string, string[]>
+                        new Dictionary<string, StringValues>
                         {
                             { "[0]", new[] { "hello" } },
                             { "[1]", new[] { "world" } },
@@ -826,7 +827,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                     },
                     {
                         typeof(ExplicitList<string>),
-                        new Dictionary<string, string[]>
+                        new Dictionary<string, StringValues>
                         {
                             { "index", new[] { "low", "high" } },
                             { "[low]", new[] { "hello" } },
@@ -836,7 +837,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                     },
                     {
                         typeof(IEnumerable<string>),
-                        new Dictionary<string, string[]>
+                        new Dictionary<string, StringValues>
                         {
                             { string.Empty, new[] { "hello", "world" } },
                         },
@@ -844,7 +845,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                     },
                     {
                         typeof(ICollection<string>),
-                        new Dictionary<string, string[]>
+                        new Dictionary<string, StringValues>
                         {
                             { "[]", new[] { "hello", "world" } },
                         },
@@ -852,7 +853,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                     },
                     {
                         typeof(IList<string>),
-                        new Dictionary<string, string[]>
+                        new Dictionary<string, StringValues>
                         {
                             { string.Empty, new[] { "hello", "world" } },
                         },
@@ -860,7 +861,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                     },
                     {
                         typeof(List<string>),
-                        new Dictionary<string, string[]>
+                        new Dictionary<string, StringValues>
                         {
                             { "[]", new[] { "hello", "world" } },
                         },
@@ -868,7 +869,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                     },
                     {
                         typeof(ClosedGenericCollection),
-                        new Dictionary<string, string[]>
+                        new Dictionary<string, StringValues>
                         {
                             { string.Empty, new[] { "hello", "world" } },
                         },
@@ -876,7 +877,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                     },
                     {
                         typeof(ClosedGenericList),
-                        new Dictionary<string, string[]>
+                        new Dictionary<string, StringValues>
                         {
                             { "[]", new[] { "hello", "world" } },
                         },
@@ -884,7 +885,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                     },
                     {
                         typeof(ExplicitClosedGenericCollection),
-                        new Dictionary<string, string[]>
+                        new Dictionary<string, StringValues>
                         {
                             { string.Empty, new[] { "hello", "world" } },
                         },
@@ -892,7 +893,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                     },
                     {
                         typeof(ExplicitClosedGenericList),
-                        new Dictionary<string, string[]>
+                        new Dictionary<string, StringValues>
                         {
                             { "[]", new[] { "hello", "world" } },
                         },
@@ -900,7 +901,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                     },
                     {
                         typeof(ExplicitCollection<string>),
-                        new Dictionary<string, string[]>
+                        new Dictionary<string, StringValues>
                         {
                             { string.Empty, new[] { "hello", "world" } },
                         },
@@ -908,7 +909,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                     },
                     {
                         typeof(ExplicitList<string>),
-                        new Dictionary<string, string[]>
+                        new Dictionary<string, StringValues>
                         {
                             { "[]", new[] { "hello", "world" } },
                         },
@@ -922,7 +923,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
         [MemberData(nameof(CollectionTypeData))]
         public async Task CollectionModelBinder_BindsParameterToExpectedType(
             Type parameterType,
-            IDictionary<string, string[]> formContent,
+            IDictionary<string, StringValues> formContent,
             Type expectedType)
         {
             // Arrange

@@ -621,7 +621,7 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
         {
             var request = new Mock<HttpRequest>();
 
-            var headers = new HeaderDictionary(new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase));
+            var headers = new HeaderDictionary();
             headers["Accept-Charset"] = MediaTypeHeaderValue.Parse(contentType).Charset;
             request.Setup(r => r.ContentType).Returns(contentType);
             request.SetupGet(r => r.Headers).Returns(headers);

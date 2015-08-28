@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.Mvc
             var httpResponse = new Mock<HttpResponse>();
             httpResponse.SetupProperty(o => o.StatusCode);
             httpResponse.Setup(o => o.Headers).Returns(
-                new HeaderDictionary(new Dictionary<string, string[]>()));
+                new HeaderDictionary());
             httpResponse.SetupGet(o => o.Body).Returns(stream);
             return httpResponse.Object;
         }

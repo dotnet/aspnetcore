@@ -4,8 +4,10 @@
 using System;
 using System.Globalization;
 using System.Linq;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.Framework.Internal;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -94,24 +96,24 @@ namespace Microsoft.AspNet.Mvc
             var headers = context.HttpContext.Response.Headers;
 
             // Clear all headers
-            headers.Remove("Vary");
-            headers.Remove("Cache-control");
-            headers.Remove("Pragma");
+            headers.Remove(HeaderNames.Vary);
+            headers.Remove(HeaderNames.CacheControl);
+            headers.Remove(HeaderNames.Pragma);
 
             if (!string.IsNullOrEmpty(VaryByHeader))
             {
-                headers.Set("Vary", VaryByHeader);
+                headers[HeaderNames.Vary] = VaryByHeader;
             }
 
             if (NoStore)
             {
-                headers.Set("Cache-control", "no-store");
+                headers[HeaderNames.CacheControl] = "no-store";
 
                 // Cache-control: no-store, no-cache is valid.
                 if (Location == ResponseCacheLocation.None)
                 {
-                    headers.Append("Cache-control", "no-cache");
-                    headers.Set("Pragma", "no-cache");
+                    headers.AppendCommaSeparatedValues(HeaderNames.CacheControl, "no-cache");
+                    headers[HeaderNames.Pragma] = "no-cache";
                 }
             }
             else
@@ -127,7 +129,7 @@ namespace Microsoft.AspNet.Mvc
                         break;
                     case ResponseCacheLocation.None:
                         cacheControlValue = "no-cache";
-                        headers.Set("Pragma", "no-cache");
+                        headers[HeaderNames.Pragma] = "no-cache";
                         break;
                 }
 
@@ -140,7 +142,7 @@ namespace Microsoft.AspNet.Mvc
 
                 if (cacheControlValue != null)
                 {
-                    headers.Set("Cache-control", cacheControlValue);
+                    headers[HeaderNames.CacheControl] = cacheControlValue;
                 }
             }
         }

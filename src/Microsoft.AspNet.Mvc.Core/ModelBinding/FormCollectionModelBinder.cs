@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.Primitives;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -51,11 +52,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         private class EmptyFormCollection : IFormCollection
         {
-            public string this[string key]
+            public StringValues this[string key]
             {
                 get
                 {
-                    return null;
+                    return StringValues.Empty;
                 }
             }
 
@@ -93,12 +94,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 return null;
             }
 
-            public IEnumerator<KeyValuePair<string, string[]>> GetEnumerator()
+            public IEnumerator<KeyValuePair<string, StringValues>> GetEnumerator()
             {
-                return Enumerable.Empty<KeyValuePair<string, string[]>>().GetEnumerator();
+                return Enumerable.Empty<KeyValuePair<string, StringValues>>().GetEnumerator();
             }
 
-            public IList<string> GetValues(string key)
+            public IList<StringValues> GetValues(string key)
             {
                 return null;
             }

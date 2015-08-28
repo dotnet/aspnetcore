@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.Framework.Primitives;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
@@ -15,12 +16,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Assert
             Assert.Equal(0, result.Length);
-            Assert.Null(result.Value);
             Assert.Empty(result.Values);
             Assert.Null(result.FirstValue);
             Assert.Equal(ValueProviderResult.None, result);
             Assert.Null((string)result);
-            Assert.Empty((string[])result);
+            Assert.Null((string[])result);
         }
 
         [Fact]
@@ -31,12 +31,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Assert
             Assert.Equal(0, result.Length);
-            Assert.Null(result.Value);
             Assert.Empty(result.Values);
             Assert.Null(result.FirstValue);
             Assert.Equal(ValueProviderResult.None, result);
             Assert.Null((string)result);
-            Assert.Empty((string[])result);
+            Assert.Null((string[])result);
         }
 
         [Fact]
@@ -47,10 +46,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Assert
             Assert.Equal(0, result.Length);
-            Assert.Null(result.Value);
             Assert.Empty(result.Values);
             Assert.Null(result.FirstValue);
             Assert.Equal(ValueProviderResult.None, result);
+            Assert.Equal(ValueProviderResult.None, new ValueProviderResult(new StringValues()));
             Assert.Null((string)result);
             Assert.Empty((string[])result);
         }
@@ -63,8 +62,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Assert
             Assert.Equal(1, result.Length);
-            Assert.Equal("Hi There", result.Value);
-            Assert.Null(result.Values);
+            Assert.Equal("Hi There", result.Values);
             Assert.Equal("Hi There", result.FirstValue);
             Assert.NotEqual(ValueProviderResult.None, result);
             Assert.Equal("Hi There", (string)result);
@@ -79,7 +77,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Assert
             Assert.Equal(2, result.Length);
-            Assert.Null(result.Value);
             Assert.Equal(new string[] { "Hi", "There" }, result.Values);
             Assert.Equal("Hi", result.FirstValue);
             Assert.NotEqual(ValueProviderResult.None, result);

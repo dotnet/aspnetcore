@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Internal;
+using Microsoft.Framework.Primitives;
 using Moq;
 using Xunit;
 
@@ -453,10 +454,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             string keyFormat,
             IDictionary<string, string> dictionary)
         {
-            // Convert to an IDictionary<string, string[]> then wrap it up.
+            // Convert to an IDictionary<string, StringValues> then wrap it up.
             var backingStore = dictionary.ToDictionary(
                 kvp => string.Format(keyFormat, kvp.Key),
-                kvp => new[] { kvp.Value });
+                kvp => (StringValues)kvp.Value);
             var stringCollection = new ReadableStringCollection(backingStore);
 
             return new ReadableStringCollectionValueProvider(

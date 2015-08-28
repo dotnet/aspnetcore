@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Globalization;
 #if DNX451
 using System.Threading.Tasks;
+using Microsoft.Framework.Primitives;
 using Moq;
 using Xunit;
 #endif
@@ -18,11 +19,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     {
         protected override IEnumerableValueProvider GetEnumerableValueProvider(
             BindingSource bindingSource,
-            IDictionary<string, string[]> values,
+            IDictionary<string, StringValues> values,
             CultureInfo culture)
         {
             var emptyValueProvider =
-                new JQueryFormValueProvider(bindingSource, new Dictionary<string, string[]>(), culture);
+                new JQueryFormValueProvider(bindingSource, new Dictionary<string, StringValues>(), culture);
             var valueProvider = new JQueryFormValueProvider(bindingSource, values, culture);
 
             return new CompositeValueProvider(new[] { emptyValueProvider, valueProvider });

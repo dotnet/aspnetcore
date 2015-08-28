@@ -5,34 +5,35 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Framework.Primitives;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public abstract class EnumerableValueProviderTest
     {
-        private static readonly IDictionary<string, string[]> _backingStore = new Dictionary<string, string[]>
+        private static readonly IDictionary<string, StringValues> _backingStore = new Dictionary<string, StringValues>
         {
             { "some", new[] { "someValue1", "someValue2" } },
-            { "null_value", null },
+            { "null_value", StringValues.Empty },
             { "prefix.name", new[] { "someOtherValue" } },
-            { "prefix.null_value", null },
-            { "prefix.property1.property", null },
-            { "prefix.property2[index]", null },
-            { "prefix[index1]", null },
-            { "prefix[index1].property1", null },
-            { "prefix[index1].property2", null },
-            { "prefix[index2].property", null },
-            { "[index]", null },
-            { "[index].property", null },
-            { "[index][anotherIndex]", null },
+            { "prefix.null_value", StringValues.Empty },
+            { "prefix.property1.property", StringValues.Empty },
+            { "prefix.property2[index]", StringValues.Empty },
+            { "prefix[index1]", StringValues.Empty },
+            { "prefix[index1].property1", StringValues.Empty },
+            { "prefix[index1].property2", StringValues.Empty },
+            { "prefix[index2].property", StringValues.Empty },
+            { "[index]", StringValues.Empty },
+            { "[index].property", StringValues.Empty },
+            { "[index][anotherIndex]", StringValues.Empty },
         };
 
         [Fact]
         public void ContainsPrefix_WithEmptyCollection_ReturnsFalseForEmptyPrefix()
         {
             // Arrange
-            var backingStore = new Dictionary<string, string[]>();
+            var backingStore = new Dictionary<string, StringValues>();
             var valueProvider = GetEnumerableValueProvider(BindingSource.Query, backingStore, culture: null);
 
             // Act
@@ -209,7 +210,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void GetValue_NullMultipleValue()
         {
             // Arrange
-            var backingStore = new Dictionary<string, string[]>
+            var backingStore = new Dictionary<string, StringValues>
             {
                 { "key", new string[] { null, null, "value" } },
             };
@@ -278,7 +279,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         private IBindingSourceValueProvider GetBindingSourceValueProvider(
             BindingSource bindingSource,
-            IDictionary<string, string[]> values,
+            IDictionary<string, StringValues> values,
             CultureInfo culture)
         {
             var provider = GetEnumerableValueProvider(bindingSource, values, culture) as IBindingSourceValueProvider;
@@ -291,7 +292,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         protected abstract IEnumerableValueProvider GetEnumerableValueProvider(
             BindingSource bindingSource,
-            IDictionary<string, string[]> values,
+            IDictionary<string, StringValues> values,
             CultureInfo culture);
     }
 }

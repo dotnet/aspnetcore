@@ -9,6 +9,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features.Internal;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.Framework.Primitives;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.IntegrationTests
@@ -164,7 +165,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
         private void UpdateRequest(HttpRequest request, string data, string name)
         {
             var fileCollection = new FormFileCollection();
-            var formCollection = new FormCollection(new Dictionary<string, string[]>(), fileCollection);
+            var formCollection = new FormCollection(new Dictionary<string, StringValues>(), fileCollection);
 
             request.Form = formCollection;
             request.ContentType = "multipart/form-data; boundary=----WebKitFormBoundarymx2fSWqWSd0OxQqq";

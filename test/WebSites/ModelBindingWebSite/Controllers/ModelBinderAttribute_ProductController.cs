@@ -73,7 +73,7 @@ namespace ModelBindingWebSite.Controllers
                     // Doing something slightly different here to make sure we don't get accidentally bound
                     // by the type converter binder.
                     OrderStatus model;
-                    var isModelSet = Enum.TryParse<OrderStatus>("Status" + request.Query.Get("status"), out model);
+                    var isModelSet = Enum.TryParse<OrderStatus>("Status" + request.Query["status"], out model);
                     var validationNode =
                      new ModelValidationNode(bindingContext.ModelName, bindingContext.ModelMetadata, model);
                     return Task.FromResult(new ModelBindingResult(model, "status", isModelSet, validationNode));

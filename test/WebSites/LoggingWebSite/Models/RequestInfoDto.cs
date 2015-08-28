@@ -1,6 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.AspNet.Http;
+﻿using System.Collections.Generic;
+using Microsoft.Framework.Primitives;
 
 namespace LoggingWebSite
 {
@@ -22,10 +21,10 @@ namespace LoggingWebSite
 
         public string Protocol { get; set; }
 
-        public IEnumerable<KeyValuePair<string, string[]>> Headers { get; set; }
+        public IEnumerable<KeyValuePair<string, StringValues>> Headers { get; set; }
 
         public string Query { get; set; }
 
-        public IEnumerable<KeyValuePair<string, string[]>> Cookies { get; set; }
+        public IEnumerable<KeyValuePair<string, StringValues>> Cookies { get; set; }
     }
 }

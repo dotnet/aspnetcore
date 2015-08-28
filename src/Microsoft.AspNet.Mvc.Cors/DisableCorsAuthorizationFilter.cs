@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Cors.Core;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.Primitives;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -27,12 +28,12 @@ namespace Microsoft.AspNet.Mvc
         public Task OnAuthorizationAsync([NotNull] AuthorizationContext context)
         {
             var accessControlRequestMethod = 
-                        context.HttpContext.Request.Headers.Get(CorsConstants.AccessControlRequestMethod);
+                        context.HttpContext.Request.Headers[CorsConstants.AccessControlRequestMethod];
             if (string.Equals(
                     context.HttpContext.Request.Method,
                     CorsConstants.PreflightHttpMethod,
                     StringComparison.Ordinal) &&
-                accessControlRequestMethod != null)
+                !StringValues.IsNullOrEmpty(accessControlRequestMethod))
             {
                 // Short circuit if the request is preflight as that should not result in action execution.
                 context.Result = new HttpStatusCodeResult(StatusCodes.Status200OK);

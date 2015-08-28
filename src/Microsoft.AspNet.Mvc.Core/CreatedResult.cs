@@ -4,6 +4,7 @@
 using System;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.Internal;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -50,7 +51,7 @@ namespace Microsoft.AspNet.Mvc
         /// <inheritdoc />
         protected override void OnFormatting([NotNull] ActionContext context)
         {
-            context.HttpContext.Response.Headers.Set("Location", Location);
+            context.HttpContext.Response.Headers[HeaderNames.Location] = Location;
         }
     }
 }

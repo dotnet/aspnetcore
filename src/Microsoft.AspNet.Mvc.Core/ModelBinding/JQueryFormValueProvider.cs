@@ -1,11 +1,12 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.Primitives;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -14,8 +15,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     /// </summary>
     public class JQueryFormValueProvider : BindingSourceValueProvider, IEnumerableValueProvider
     {
+        private readonly IDictionary<string, StringValues> _values;
         private PrefixContainer _prefixContainer;
-        private readonly IDictionary<string, string[]> _values;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DictionaryBasedValueProvider"/> class.
@@ -25,7 +26,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <param name="culture">The culture to return with ValueProviderResult instances.</param>
         public JQueryFormValueProvider(
             [NotNull] BindingSource bindingSource,
-            [NotNull] IDictionary<string, string[]> values,
+            [NotNull] IDictionary<string, StringValues> values,
             CultureInfo culture)
             : base(bindingSource)
         {
@@ -64,8 +65,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <inheritdoc />
         public override ValueProviderResult GetValue(string key)
         {
-            string[] values;
-            if (_values.TryGetValue(key, out values) && values != null && values.Length > 0)
+            StringValues values;
+            if (_values.TryGetValue(key, out values) && values.Count > 0)
             {
                 return new ValueProviderResult(values, Culture);
             }

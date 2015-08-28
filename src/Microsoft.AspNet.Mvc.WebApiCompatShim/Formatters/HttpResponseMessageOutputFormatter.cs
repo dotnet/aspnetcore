@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.Net.Http.Headers;
 
@@ -53,7 +54,7 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
                 
                 foreach (var header in responseHeaders)
                 {
-                    response.Headers.AppendValues(header.Key, header.Value.ToArray());
+                    response.Headers.Append(header.Key, header.Value.ToArray());
                 }
 
                 if (responseMessage.Content != null)
@@ -67,7 +68,7 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
                     
                     foreach (var header in contentHeaders)
                     {
-                        response.Headers.AppendValues(header.Key, header.Value.ToArray());
+                        response.Headers.Append(header.Key, header.Value.ToArray());
                     }
 
                     await responseMessage.Content.CopyToAsync(response.Body);
