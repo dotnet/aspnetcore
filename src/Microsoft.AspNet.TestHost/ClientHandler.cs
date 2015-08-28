@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.IO;
@@ -135,14 +136,14 @@ namespace Microsoft.AspNet.TestHost
 
                 foreach (var header in request.Headers)
                 {
-                    serverRequest.Headers.AppendValues(header.Key, header.Value.ToArray());
+                    serverRequest.Headers.Append(header.Key, header.Value.ToArray());
                 }
                 var requestContent = request.Content;
                 if (requestContent != null)
                 {
                     foreach (var header in request.Content.Headers)
                     {
-                        serverRequest.Headers.AppendValues(header.Key, header.Value.ToArray());
+                        serverRequest.Headers.Append(header.Key, header.Value.ToArray());
                     }
                 }
 
@@ -187,9 +188,9 @@ namespace Microsoft.AspNet.TestHost
 
                 foreach (var header in HttpContext.Response.Headers)
                 {
-                    if (!response.Headers.TryAddWithoutValidation(header.Key, header.Value))
+                    if (!response.Headers.TryAddWithoutValidation(header.Key, (IEnumerable<string>)header.Value))
                     {
-                        bool success = response.Content.Headers.TryAddWithoutValidation(header.Key, header.Value);
+                        bool success = response.Content.Headers.TryAddWithoutValidation(header.Key, (IEnumerable<string>)header.Value);
                         Contract.Assert(success, "Bad header");
                     }
                 }

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.AspNet.Http.Features;
+using Microsoft.Framework.Primitives;
 
 namespace Microsoft.AspNet.TestHost
 {
@@ -13,7 +14,7 @@ namespace Microsoft.AspNet.TestHost
         public RequestFeature()
         {
             Body = Stream.Null;
-            Headers = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
+            Headers = new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase);
             Method = "GET";
             Path = "";
             PathBase = "";
@@ -24,7 +25,7 @@ namespace Microsoft.AspNet.TestHost
 
         public Stream Body { get; set; }
 
-        public IDictionary<string, string[]> Headers { get; set; }
+        public IDictionary<string, StringValues> Headers { get; set; }
 
         public string Method { get; set; }
 
