@@ -12,21 +12,30 @@ namespace Microsoft.AspNet.Http.Internal
     {
         internal const int DefaultBufferThreshold = 1024 * 30;
 
+        private readonly static Func<string> _getTempDirectory = () => TempDirectory;
+
+        private static string _tempDirectory;
+
         public static string TempDirectory
         {
             get
             {
-                // Look for folders in the following order.
-                var temp = Environment.GetEnvironmentVariable("ASPNET_TEMP") ??     // ASPNET_TEMP - User set temporary location.
-                           Path.GetTempPath();                                      // Fall back.
-
-                if (!Directory.Exists(temp))
+                if (_tempDirectory == null)
                 {
-                    // TODO: ???
-                    throw new DirectoryNotFoundException(temp);
+                    // Look for folders in the following order.
+                    var temp = Environment.GetEnvironmentVariable("ASPNET_TEMP") ??     // ASPNET_TEMP - User set temporary location.
+                               Path.GetTempPath();                                      // Fall back.
+
+                    if (!Directory.Exists(temp))
+                    {
+                        // TODO: ???
+                        throw new DirectoryNotFoundException(temp);
+                    }
+
+                    _tempDirectory = temp;
                 }
 
-                return temp;
+                return _tempDirectory;
             }
         }
 
@@ -37,7 +46,7 @@ namespace Microsoft.AspNet.Http.Internal
             {
                 // TODO: Register this buffer for disposal at the end of the request to ensure the temp file is deleted.
                 //  Otherwise it won't get deleted until GC closes the stream.
-                request.Body = new FileBufferingReadStream(body, bufferThreshold, TempDirectory);
+                request.Body = new FileBufferingReadStream(body, bufferThreshold, _getTempDirectory);
             }
             return request;
         }

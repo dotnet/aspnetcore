@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,13 +19,25 @@ namespace Microsoft.AspNet.WebUtilities
     {
         private readonly Stream _inner;
         private readonly int _memoryThreshold;
-        private readonly string _tempFileDirectory;
+        private string _tempFileDirectory;
+        private readonly Func<string> _tempFileDirectoryAccessor;
 
         private Stream _buffer = new MemoryStream(); // TODO: We could have a more efficiently expanding buffer stream.
         private bool _inMemory = true;
         private bool _completelyBuffered;
 
         private bool _disposed;
+
+        // TODO: allow for an optional buffer size limit to prevent filling hard disks. 1gb?
+        public FileBufferingReadStream(
+            [NotNull] Stream inner,
+            int memoryThreshold,
+            [NotNull] Func<string> tempFileDirectoryAccessor)
+        {
+            _inner = inner;
+            _memoryThreshold = memoryThreshold;
+            _tempFileDirectoryAccessor = tempFileDirectoryAccessor;
+        }
 
         // TODO: allow for an optional buffer size limit to prevent filling hard disks. 1gb?
         public FileBufferingReadStream([NotNull] Stream inner, int memoryThreshold, [NotNull] string tempFileDirectory)
@@ -88,6 +101,13 @@ namespace Microsoft.AspNet.WebUtilities
 
         private Stream CreateTempFile()
         {
+            if (_tempFileDirectory == null)
+            {
+                Debug.Assert(_tempFileDirectoryAccessor != null);
+                _tempFileDirectory = _tempFileDirectoryAccessor();
+                Debug.Assert(_tempFileDirectory != null);
+            }
+
             var fileName = Path.Combine(_tempFileDirectory, "ASPNET_" + Guid.NewGuid().ToString() + ".tmp");
             return new FileStream(fileName, FileMode.Create, FileAccess.ReadWrite, FileShare.Delete, 1024 * 16,
                 FileOptions.Asynchronous | FileOptions.DeleteOnClose | FileOptions.SequentialScan);
