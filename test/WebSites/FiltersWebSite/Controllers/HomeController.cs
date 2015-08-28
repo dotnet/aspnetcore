@@ -77,7 +77,7 @@ namespace FiltersWebSite.Controllers
         }
 
         [HandleInvalidOperationExceptionFilter]
-        [ShortCircuitExceptionFilter]
+        [ShortCircuitExceptionFilter(Order=12)]
         public IActionResult ThrowRandomExcpetion()
         {
             throw new InvalidOperationException("Controller threw.");
