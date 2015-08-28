@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Framework.Primitives;
 using Xunit;
 
 namespace Microsoft.Net.Http.Server
@@ -26,10 +27,10 @@ namespace Microsoft.Net.Http.Server
                 // Assert.Equal(2, requestHeaders.Count);
                 // Assert.Equal("Keep-Alive", requestHeaders.Get("Connection"));
                 Assert.Equal(new Uri(address).Authority, requestHeaders["Host"]);
-                string[] values;
+                StringValues values;
                 Assert.False(requestHeaders.TryGetValue("Accept", out values));
                 Assert.False(requestHeaders.ContainsKey("Accept"));
-                Assert.Null(requestHeaders["Accept"]);
+                Assert.True(StringValues.IsNullOrEmpty(requestHeaders["Accept"]));
                 context.Dispose();
 
                 string response = await responseTask;

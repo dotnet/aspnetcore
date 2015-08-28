@@ -231,16 +231,16 @@ namespace Microsoft.Net.Http.Server
             {
                 if (_contentBoundaryType == BoundaryType.None)
                 {
-                    string transferEncoding = Headers.Get(HttpKnownHeaderNames.TransferEncoding) ?? string.Empty;
-                    if (string.Equals("chunked", transferEncoding.Trim(), StringComparison.OrdinalIgnoreCase))
+                    string transferEncoding = Headers[HttpKnownHeaderNames.TransferEncoding];
+                    if (string.Equals("chunked", transferEncoding?.Trim(), StringComparison.OrdinalIgnoreCase))
                     {
                         _contentBoundaryType = BoundaryType.Chunked;
                     }
                     else
                     {
-                        string length = Headers.Get(HttpKnownHeaderNames.ContentLength) ?? string.Empty;
+                        string length = Headers[HttpKnownHeaderNames.ContentLength];
                         long value;
-                        if (long.TryParse(length.Trim(), NumberStyles.None,
+                        if (length != null && long.TryParse(length.Trim(), NumberStyles.None,
                             CultureInfo.InvariantCulture.NumberFormat, out value))
                         {
                             _contentBoundaryType = BoundaryType.ContentLength;
@@ -422,7 +422,7 @@ namespace Microsoft.Net.Http.Server
         {
             get
             {
-                return Headers.Get(HttpKnownHeaderNames.ContentType);
+                return Headers[HttpKnownHeaderNames.ContentType];
             }
         }
 

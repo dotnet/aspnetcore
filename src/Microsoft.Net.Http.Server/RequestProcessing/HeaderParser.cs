@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Framework.Primitives;
 
 namespace Microsoft.Net.Http.Server
 {
@@ -11,7 +12,7 @@ namespace Microsoft.Net.Http.Server
         internal static IEnumerable<string> Empty = new string[0];
 
         // Split on commas, except in quotes
-        internal static IEnumerable<string> SplitValues(string[] values)
+        internal static IEnumerable<string> SplitValues(StringValues values)
         {
             foreach (var value in values)
             {

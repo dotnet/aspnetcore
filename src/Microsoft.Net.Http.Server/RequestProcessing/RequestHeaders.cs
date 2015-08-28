@@ -39,12 +39,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Microsoft.Framework.Primitives;
 
 namespace Microsoft.Net.Http.Server
 {
-    internal partial class RequestHeaders : IDictionary<string, string[]>
+    internal partial class RequestHeaders : IDictionary<string, StringValues>
     {
-        private IDictionary<string, string[]> _extra;
+        private IDictionary<string, StringValues> _extra;
         private NativeRequestContext _requestMemoryBlob;
 
         internal RequestHeaders(NativeRequestContext requestMemoryBlob)
@@ -52,13 +53,13 @@ namespace Microsoft.Net.Http.Server
             _requestMemoryBlob = requestMemoryBlob;
         }
 
-        private IDictionary<string, string[]> Extra
+        private IDictionary<string, StringValues> Extra
         {
             get
             {
                 if (_extra == null)
                 {
-                    var newDict = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
+                    var newDict = new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase);
                     GetUnknownHeaders(newDict);
                     Interlocked.CompareExchange(ref _extra, newDict, null);
                 }
@@ -66,11 +67,11 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        string[] IDictionary<string, string[]>.this[string key]
+        StringValues IDictionary<string, StringValues>.this[string key]
         {
             get
             {
-                string[] value;
+                StringValues value;
                 return PropertiesTryGetValue(key, out value) ? value : Extra[key];
             }
             set
@@ -88,13 +89,13 @@ namespace Microsoft.Net.Http.Server
                 _requestMemoryBlob.OriginalBlobAddress, (int)header);
         }
 
-        private void GetUnknownHeaders(IDictionary<string, string[]> extra)
+        private void GetUnknownHeaders(IDictionary<string, StringValues> extra)
         {
             UnsafeNclNativeMethods.HttpApi.GetUnknownHeaders(extra, _requestMemoryBlob.RequestBuffer,
                 _requestMemoryBlob.OriginalBlobAddress);
         }
 
-        void IDictionary<string, string[]>.Add(string key, string[] value)
+        void IDictionary<string, StringValues>.Add(string key, StringValues value)
         {
             if (!PropertiesTrySetValue(key, value))
             {
@@ -112,7 +113,7 @@ namespace Microsoft.Net.Http.Server
             get { return PropertiesKeys().Concat(Extra.Keys).ToArray(); }
         }
 
-        ICollection<string[]> IDictionary<string, string[]>.Values
+        ICollection<StringValues> IDictionary<string, StringValues>.Values
         {
             get { return PropertiesValues().Concat(Extra.Values).ToArray(); }
         }
@@ -130,17 +131,17 @@ namespace Microsoft.Net.Http.Server
             return PropertiesTryRemove(key) || Extra.Remove(key);
         }
 
-        public bool TryGetValue(string key, out string[] value)
+        public bool TryGetValue(string key, out StringValues value)
         {
             return PropertiesTryGetValue(key, out value) || Extra.TryGetValue(key, out value);
         }
 
-        void ICollection<KeyValuePair<string, string[]>>.Add(KeyValuePair<string, string[]> item)
+        void ICollection<KeyValuePair<string, StringValues>>.Add(KeyValuePair<string, StringValues> item)
         {
             ((IDictionary<string, object>)this).Add(item.Key, item.Value);
         }
 
-        void ICollection<KeyValuePair<string, string[]>>.Clear()
+        void ICollection<KeyValuePair<string, StringValues>>.Clear()
         {
             foreach (var key in PropertiesKeys())
             {
@@ -149,36 +150,36 @@ namespace Microsoft.Net.Http.Server
             Extra.Clear();
         }
 
-        bool ICollection<KeyValuePair<string, string[]>>.Contains(KeyValuePair<string, string[]> item)
+        bool ICollection<KeyValuePair<string, StringValues>>.Contains(KeyValuePair<string, StringValues> item)
         {
             object value;
             return ((IDictionary<string, object>)this).TryGetValue(item.Key, out value) && Object.Equals(value, item.Value);
         }
 
-        void ICollection<KeyValuePair<string, string[]>>.CopyTo(KeyValuePair<string, string[]>[] array, int arrayIndex)
+        void ICollection<KeyValuePair<string, StringValues>>.CopyTo(KeyValuePair<string, StringValues>[] array, int arrayIndex)
         {
             PropertiesEnumerable().Concat(Extra).ToArray().CopyTo(array, arrayIndex);
         }
 
-        bool ICollection<KeyValuePair<string, string[]>>.IsReadOnly
+        bool ICollection<KeyValuePair<string, StringValues>>.IsReadOnly
         {
             get { return false; }
         }
 
-        bool ICollection<KeyValuePair<string, string[]>>.Remove(KeyValuePair<string, string[]> item)
+        bool ICollection<KeyValuePair<string, StringValues>>.Remove(KeyValuePair<string, StringValues> item)
         {
-            return ((IDictionary<string, string[]>)this).Contains(item) &&
-                ((IDictionary<string, string[]>)this).Remove(item.Key);
+            return ((IDictionary<string, StringValues>)this).Contains(item) &&
+                ((IDictionary<string, StringValues>)this).Remove(item.Key);
         }
 
-        IEnumerator<KeyValuePair<string, string[]>> IEnumerable<KeyValuePair<string, string[]>>.GetEnumerator()
+        IEnumerator<KeyValuePair<string, StringValues>> IEnumerable<KeyValuePair<string, StringValues>>.GetEnumerator()
         {
             return PropertiesEnumerable().Concat(Extra).GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return ((IDictionary<string, string[]>)this).GetEnumerator();
+            return ((IDictionary<string, StringValues>)this).GetEnumerator();
         }
     }
 }

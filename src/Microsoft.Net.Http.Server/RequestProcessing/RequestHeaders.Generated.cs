@@ -29,6 +29,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Framework.Primitives;
 
 namespace Microsoft.Net.Http.Server
 {
@@ -36,52 +37,52 @@ namespace Microsoft.Net.Http.Server
     internal partial class RequestHeaders
     {
 	    // Tracks if individual fields have been read from native or set directly.
-		// Once read or set, their presence in the collection is marked by if their string[] is null or not.
+		// Once read or set, their presence in the collection is marked by if their StringValues is null or not.
         private UInt32 _flag0, _flag1;
 
-        private string[] _Accept;
-        private string[] _AcceptCharset;
-        private string[] _AcceptEncoding;
-        private string[] _AcceptLanguage;
-        private string[] _Allow;
-        private string[] _Authorization;
-        private string[] _CacheControl;
-        private string[] _Connection;
-        private string[] _ContentEncoding;
-        private string[] _ContentLanguage;
-        private string[] _ContentLength;
-        private string[] _ContentLocation;
-        private string[] _ContentMd5;
-        private string[] _ContentRange;
-        private string[] _ContentType;
-        private string[] _Cookie;
-        private string[] _Date;
-        private string[] _Expect;
-        private string[] _Expires;
-        private string[] _From;
-        private string[] _Host;
-        private string[] _IfMatch;
-        private string[] _IfModifiedSince;
-        private string[] _IfNoneMatch;
-        private string[] _IfRange;
-        private string[] _IfUnmodifiedSince;
-        private string[] _KeepAlive;
-        private string[] _LastModified;
-        private string[] _MaxForwards;
-        private string[] _Pragma;
-        private string[] _ProxyAuthorization;
-        private string[] _Range;
-        private string[] _Referer;
-        private string[] _Te;
-        private string[] _Trailer;
-        private string[] _TransferEncoding;
-        private string[] _Translate;
-        private string[] _Upgrade;
-        private string[] _UserAgent;
-        private string[] _Via;
-        private string[] _Warning;
+        private StringValues _Accept;
+        private StringValues _AcceptCharset;
+        private StringValues _AcceptEncoding;
+        private StringValues _AcceptLanguage;
+        private StringValues _Allow;
+        private StringValues _Authorization;
+        private StringValues _CacheControl;
+        private StringValues _Connection;
+        private StringValues _ContentEncoding;
+        private StringValues _ContentLanguage;
+        private StringValues _ContentLength;
+        private StringValues _ContentLocation;
+        private StringValues _ContentMd5;
+        private StringValues _ContentRange;
+        private StringValues _ContentType;
+        private StringValues _Cookie;
+        private StringValues _Date;
+        private StringValues _Expect;
+        private StringValues _Expires;
+        private StringValues _From;
+        private StringValues _Host;
+        private StringValues _IfMatch;
+        private StringValues _IfModifiedSince;
+        private StringValues _IfNoneMatch;
+        private StringValues _IfRange;
+        private StringValues _IfUnmodifiedSince;
+        private StringValues _KeepAlive;
+        private StringValues _LastModified;
+        private StringValues _MaxForwards;
+        private StringValues _Pragma;
+        private StringValues _ProxyAuthorization;
+        private StringValues _Range;
+        private StringValues _Referer;
+        private StringValues _Te;
+        private StringValues _Trailer;
+        private StringValues _TransferEncoding;
+        private StringValues _Translate;
+        private StringValues _Upgrade;
+        private StringValues _UserAgent;
+        private StringValues _Via;
+        private StringValues _Warning;
 
-        internal string[] Accept 
+        internal StringValues Accept 
         {
             get
 			{
@@ -90,7 +91,7 @@ namespace Microsoft.Net.Http.Server
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Accept);
 					if (nativeValue != null)
 					{
-						_Accept = new string[] { nativeValue };
+						_Accept = nativeValue;
 					}
                     _flag0 |= 0x1u;
 				}
@@ -103,7 +104,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal string[] AcceptCharset 
+        internal StringValues AcceptCharset 
         {
             get
 			{
@@ -112,7 +113,7 @@ namespace Microsoft.Net.Http.Server
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.AcceptCharset);
 					if (nativeValue != null)
 					{
-						_AcceptCharset = new string[] { nativeValue };
+						_AcceptCharset = nativeValue;
 					}
                     _flag0 |= 0x2u;
 				}
@@ -125,7 +126,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal string[] AcceptEncoding 
+        internal StringValues AcceptEncoding 
         {
             get
 			{
@@ -134,7 +135,7 @@ namespace Microsoft.Net.Http.Server
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.AcceptEncoding);
 					if (nativeValue != null)
 					{
-						_AcceptEncoding = new string[] { nativeValue };
+						_AcceptEncoding = nativeValue;
 					}
                     _flag0 |= 0x4u;
 				}
@@ -147,7 +148,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal string[] AcceptLanguage 
+        internal StringValues AcceptLanguage 
         {
             get
 			{
@@ -156,7 +157,7 @@ namespace Microsoft.Net.Http.Server
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.AcceptLanguage);
 					if (nativeValue != null)
 					{
-						_AcceptLanguage = new string[] { nativeValue };
+						_AcceptLanguage = nativeValue;
 					}
                     _flag0 |= 0x8u;
 				}
@@ -169,7 +170,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal string[] Allow 
+        internal StringValues Allow 
         {
             get
 			{
@@ -178,7 +179,7 @@ namespace Microsoft.Net.Http.Server
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Allow);
 					if (nativeValue != null)
 					{
-						_Allow = new string[] { nativeValue };
+						_Allow = nativeValue;
 					}
                     _flag0 |= 0x10u;
 				}
@@ -191,7 +192,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal string[] Authorization 
+        internal StringValues Authorization 
         {
             get
 			{
@@ -200,7 +201,7 @@ namespace Microsoft.Net.Http.Server
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Authorization);
 					if (nativeValue != null)
 					{
-						_Authorization = new string[] { nativeValue };
+						_Authorization = nativeValue;
 					}
                     _flag0 |= 0x20u;
 				}
@@ -213,7 +214,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal string[] CacheControl 
+        internal StringValues CacheControl 
         {
             get
 			{
@@ -222,7 +223,7 @@ namespace Microsoft.Net.Http.Server
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.CacheControl);
 					if (nativeValue != null)
 					{
-						_CacheControl = new string[] { nativeValue };
+						_CacheControl = nativeValue;
 					}
                     _flag0 |= 0x40u;
 				}
@@ -235,7 +236,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal string[] Connection 
+        internal StringValues Connection 
         {
             get
 			{
@@ -244,7 +245,7 @@ namespace Microsoft.Net.Http.Server
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Connection);
 					if (nativeValue != null)
 					{
-						_Connection = new string[] { nativeValue };
+						_Connection = nativeValue;
 					}
                     _flag0 |= 0x80u;
 				}
@@ -257,7 +258,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal string[] ContentEncoding 
+        internal StringValues ContentEncoding 
         {
             get
 			{
@@ -266,7 +267,7 @@ namespace Microsoft.Net.Http.Server
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.ContentEncoding);
 					if (nativeValue != null)
 					{
-						_ContentEncoding = new string[] { nativeValue };
+						_ContentEncoding = nativeValue;
 					}
                     _flag0 |= 0x100u;
 				}
@@ -279,7 +280,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal string[] ContentLanguage 
+        internal StringValues ContentLanguage 
         {
             get
 			{
@@ -288,7 +289,7 @@ namespace Microsoft.Net.Http.Server
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.ContentLanguage);
 					if (nativeValue != null)
 					{
-						_ContentLanguage = new string[] { nativeValue };
+						_ContentLanguage = nativeValue;
 					}
                     _flag0 |= 0x200u;
 				}
@@ -301,7 +302,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal string[] ContentLength 
+        internal StringValues ContentLength 
         {
             get
 			{
@@ -310,7 +311,7 @@ namespace Microsoft.Net.Http.Server
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.ContentLength);
 					if (nativeValue != null)
 					{
-						_ContentLength = new string[] { nativeValue };
+						_ContentLength = nativeValue;
 					}
                     _flag0 |= 0x400u;
 				}
@@ -323,7 +324,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal string[] ContentLocation 
+        internal StringValues ContentLocation 
         {
             get
 			{
@@ -332,7 +333,7 @@ namespace Microsoft.Net.Http.Server
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.ContentLocation);
 					if (nativeValue != null)
 					{
-						_ContentLocation = new string[] { nativeValue };
+						_ContentLocation = nativeValue;
 					}
                     _flag0 |= 0x800u;
 				}
@@ -345,7 +346,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal string[] ContentMd5 
+        internal StringValues ContentMd5 
         {
             get
 			{
@@ -354,7 +355,7 @@ namespace Microsoft.Net.Http.Server
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.ContentMd5);
 					if (nativeValue != null)
 					{
-						_ContentMd5 = new string[] { nativeValue };
+						_ContentMd5 = nativeValue;
 					}
                     _flag0 |= 0x1000u;
 				}
@@ -367,7 +368,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal string[] ContentRange 
+        internal StringValues ContentRange 
         {
             get
 			{
@@ -376,7 +377,7 @@ namespace Microsoft.Net.Http.Server
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.ContentRange);
 					if (nativeValue != null)
 					{
-						_ContentRange = new string[] { nativeValue };
+						_ContentRange = nativeValue;
 					}
                     _flag0 |= 0x2000u;
 				}
@@ -389,7 +390,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal string[] ContentType 
+        internal StringValues ContentType 
         {
             get
 			{
@@ -398,7 +399,7 @@ namespace Microsoft.Net.Http.Server
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.ContentType);
 					if (nativeValue != null)
 					{
-						_ContentType = new string[] { nativeValue };
+						_ContentType = nativeValue;
 					}
                     _flag0 |= 0x4000u;
 				}
@@ -411,7 +412,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal string[] Cookie 
+        internal StringValues Cookie 
         {
             get
 			{
@@ -420,7 +421,7 @@ namespace Microsoft.Net.Http.Server
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Cookie);
 					if (nativeValue != null)
 					{
-						_Cookie = new string[] { nativeValue };
+						_Cookie = nativeValue;
 					}
                     _flag0 |= 0x8000u;
 				}
@@ -433,7 +434,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal string[] Date 
+        internal StringValues Date 
         {
             get
 			{
@@ -442,7 +443,7 @@ namespace Microsoft.Net.Http.Server
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Date);
 					if (nativeValue != null)
 					{
-						_Date = new string[] { nativeValue };
+						_Date = nativeValue;
 					}
                     _flag0 |= 0x10000u;
 				}
@@ -455,7 +456,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal string[] Expect 
+        internal StringValues Expect 
         {
             get
 			{
@@ -464,7 +465,7 @@ namespace Microsoft.Net.Http.Server
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Expect);
 					if (nativeValue != null)
 					{
-						_Expect = new string[] { nativeValue };
+						_Expect = nativeValue;
 					}
                     _flag0 |= 0x20000u;
 				}
@@ -477,7 +478,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal string[] Expires 
+        internal StringValues Expires 
         {
             get
 			{
@@ -486,7 +487,7 @@ namespace Microsoft.Net.Http.Server
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Expires);
 					if (nativeValue != null)
 					{
-						_Expires = new string[] { nativeValue };
+						_Expires = nativeValue;
 					}
                     _flag0 |= 0x40000u;
 				}
@@ -499,7 +500,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal string[] From 
+        internal StringValues From 
         {
             get
 			{
@@ -508,7 +509,7 @@ namespace Microsoft.Net.Http.Server
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.From);
 					if (nativeValue != null)
 					{
-						_From = new string[] { nativeValue };
+						_From = nativeValue;
 					}
                     _flag0 |= 0x80000u;
 				}
@@ -521,7 +522,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal string[] Host 
+        internal StringValues Host 
         {
             get
 			{
@@ -530,7 +531,7 @@ namespace Microsoft.Net.Http.Server
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Host);
 					if (nativeValue != null)
 					{
-						_Host = new string[] { nativeValue };
+						_Host = nativeValue;
 					}
                     _flag0 |= 0x100000u;
 				}
@@ -543,7 +544,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal string[] IfMatch 
+        internal StringValues IfMatch 
         {
             get
 			{
@@ -552,7 +553,7 @@ namespace Microsoft.Net.Http.Server
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.IfMatch);
 					if (nativeValue != null)
 					{
-						_IfMatch = new string[] { nativeValue };
+						_IfMatch = nativeValue;
 					}
                     _flag0 |= 0x200000u;
 				}
@@ -565,7 +566,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal string[] IfModifiedSince 
+        internal StringValues IfModifiedSince 
         {
             get
 			{
@@ -574,7 +575,7 @@ namespace Microsoft.Net.Http.Server
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.IfModifiedSince);
 					if (nativeValue != null)
 					{
-						_IfModifiedSince = new string[] { nativeValue };
+						_IfModifiedSince = nativeValue;
 					}
                     _flag0 |= 0x400000u;
 				}
@@ -587,7 +588,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal string[] IfNoneMatch 
+        internal StringValues IfNoneMatch 
         {
             get
 			{
@@ -596,7 +597,7 @@ namespace Microsoft.Net.Http.Server
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.IfNoneMatch);
 					if (nativeValue != null)
 					{
-						_IfNoneMatch = new string[] { nativeValue };
+						_IfNoneMatch = nativeValue;
 					}
                     _flag0 |= 0x800000u;
 				}
@@ -609,7 +610,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal string[] IfRange 
+        internal StringValues IfRange 
         {
             get
 			{
@@ -618,7 +619,7 @@ namespace Microsoft.Net.Http.Server
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.IfRange);
 					if (nativeValue != null)
 					{
-						_IfRange = new string[] { nativeValue };
+						_IfRange = nativeValue;
 					}
                     _flag0 |= 0x1000000u;
 				}
@@ -631,7 +632,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal string[] IfUnmodifiedSince 
+        internal StringValues IfUnmodifiedSince 
         {
             get
 			{
@@ -640,7 +641,7 @@ namespace Microsoft.Net.Http.Server
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.IfUnmodifiedSince);
 					if (nativeValue != null)
 					{
-						_IfUnmodifiedSince = new string[] { nativeValue };
+						_IfUnmodifiedSince = nativeValue;
 					}
                     _flag0 |= 0x2000000u;
 				}
@@ -653,7 +654,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal string[] KeepAlive 
+        internal StringValues KeepAlive 
         {
             get
 			{
@@ -662,7 +663,7 @@ namespace Microsoft.Net.Http.Server
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.KeepAlive);
 					if (nativeValue != null)
 					{
-						_KeepAlive = new string[] { nativeValue };
+						_KeepAlive = nativeValue;
 					}
                     _flag0 |= 0x4000000u;
 				}
@@ -675,7 +676,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal string[] LastModified 
+        internal StringValues LastModified 
         {
             get
 			{
@@ -684,7 +685,7 @@ namespace Microsoft.Net.Http.Server
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.LastModified);
 					if (nativeValue != null)
 					{
-						_LastModified = new string[] { nativeValue };
+						_LastModified = nativeValue;
 					}
                     _flag0 |= 0x8000000u;
 				}
@@ -697,7 +698,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal string[] MaxForwards 
+        internal StringValues MaxForwards 
         {
             get
 			{
@@ -706,7 +707,7 @@ namespace Microsoft.Net.Http.Server
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.MaxForwards);
 					if (nativeValue != null)
 					{
-						_MaxForwards = new string[] { nativeValue };
+						_MaxForwards = nativeValue;
 					}
                     _flag0 |= 0x10000000u;
 				}
@@ -719,7 +720,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal string[] Pragma 
+        internal StringValues Pragma 
         {
             get
 			{
@@ -728,7 +729,7 @@ namespace Microsoft.Net.Http.Server
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Pragma);
 					if (nativeValue != null)
 					{
-						_Pragma = new string[] { nativeValue };
+						_Pragma = nativeValue;
 					}
                     _flag0 |= 0x20000000u;
 				}
@@ -741,7 +742,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal string[] ProxyAuthorization 
+        internal StringValues ProxyAuthorization 
         {
             get
 			{
@@ -750,7 +751,7 @@ namespace Microsoft.Net.Http.Server
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.ProxyAuthorization);
 					if (nativeValue != null)
 					{
-						_ProxyAuthorization = new string[] { nativeValue };
+						_ProxyAuthorization = nativeValue;
 					}
                     _flag0 |= 0x40000000u;
 				}
@@ -763,7 +764,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal string[] Range 
+        internal StringValues Range 
         {
             get
 			{
@@ -772,7 +773,7 @@ namespace Microsoft.Net.Http.Server
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Range);
 					if (nativeValue != null)
 					{
-						_Range = new string[] { nativeValue };
+						_Range = nativeValue;
 					}
                     _flag0 |= 0x80000000u;
 				}
@@ -785,7 +786,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal string[] Referer 
+        internal StringValues Referer 
         {
             get
 			{
@@ -794,7 +795,7 @@ namespace Microsoft.Net.Http.Server
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Referer);
 					if (nativeValue != null)
 					{
-						_Referer = new string[] { nativeValue };
+						_Referer = nativeValue;
 					}
                     _flag1 |= 0x1u;
 				}
@@ -807,7 +808,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal string[] Te 
+        internal StringValues Te 
         {
             get
 			{
@@ -816,7 +817,7 @@ namespace Microsoft.Net.Http.Server
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Te);
 					if (nativeValue != null)
 					{
-						_Te = new string[] { nativeValue };
+						_Te = nativeValue;
 					}
                     _flag1 |= 0x2u;
 				}
@@ -829,7 +830,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal string[] Trailer 
+        internal StringValues Trailer 
         {
             get
 			{
@@ -838,7 +839,7 @@ namespace Microsoft.Net.Http.Server
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Trailer);
 					if (nativeValue != null)
 					{
-						_Trailer = new string[] { nativeValue };
+						_Trailer = nativeValue;
 					}
                     _flag1 |= 0x4u;
 				}
@@ -851,7 +852,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal string[] TransferEncoding 
+        internal StringValues TransferEncoding 
         {
             get
 			{
@@ -860,7 +861,7 @@ namespace Microsoft.Net.Http.Server
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.TransferEncoding);
 					if (nativeValue != null)
 					{
-						_TransferEncoding = new string[] { nativeValue };
+						_TransferEncoding = nativeValue;
 					}
                     _flag1 |= 0x8u;
 				}
@@ -873,7 +874,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal string[] Translate 
+        internal StringValues Translate 
         {
             get
 			{
@@ -882,7 +883,7 @@ namespace Microsoft.Net.Http.Server
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Translate);
 					if (nativeValue != null)
 					{
-						_Translate = new string[] { nativeValue };
+						_Translate = nativeValue;
 					}
                     _flag1 |= 0x10u;
 				}
@@ -895,7 +896,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal string[] Upgrade 
+        internal StringValues Upgrade 
         {
             get
 			{
@@ -904,7 +905,7 @@ namespace Microsoft.Net.Http.Server
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Upgrade);
 					if (nativeValue != null)
 					{
-						_Upgrade = new string[] { nativeValue };
+						_Upgrade = nativeValue;
 					}
                     _flag1 |= 0x20u;
 				}
@@ -917,7 +918,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal string[] UserAgent 
+        internal StringValues UserAgent 
         {
             get
 			{
@@ -926,7 +927,7 @@ namespace Microsoft.Net.Http.Server
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.UserAgent);
 					if (nativeValue != null)
 					{
-						_UserAgent = new string[] { nativeValue };
+						_UserAgent = nativeValue;
 					}
                     _flag1 |= 0x40u;
 				}
@@ -939,7 +940,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal string[] Via 
+        internal StringValues Via 
         {
             get
 			{
@@ -948,7 +949,7 @@ namespace Microsoft.Net.Http.Server
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Via);
 					if (nativeValue != null)
 					{
-						_Via = new string[] { nativeValue };
+						_Via = nativeValue;
 					}
                     _flag1 |= 0x80u;
 				}
@@ -961,7 +962,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal string[] Warning 
+        internal StringValues Warning 
         {
             get
 			{
@@ -970,7 +971,7 @@ namespace Microsoft.Net.Http.Server
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Warning);
 					if (nativeValue != null)
 					{
-						_Warning = new string[] { nativeValue };
+						_Warning = nativeValue;
 					}
                     _flag1 |= 0x100u;
 				}
@@ -1189,7 +1190,7 @@ namespace Microsoft.Net.Http.Server
             return false;
         }
 
-        private bool PropertiesTryGetValue(string key, out string[] value)
+        private bool PropertiesTryGetValue(string key, out StringValues value)
         {
             switch (key.Length)
             {
@@ -1433,11 +1434,11 @@ namespace Microsoft.Net.Http.Server
                     }
                    break;
             }
-            value = null;
+            value = StringValues.Empty;
             return false;
         }
 
-        private bool PropertiesTrySetValue(string key, string[] value)
+        private bool PropertiesTrySetValue(string key, StringValues value)
         {
             switch (key.Length)
             {
@@ -1734,7 +1735,7 @@ namespace Microsoft.Net.Http.Server
 					    && string.Equals(key, "Te", StringComparison.Ordinal)) 
                     {
 					    bool wasSet = ((_flag1 & 0x2u) != 0);
-                        Te = null;
+                        Te = StringValues.Empty;
                         return wasSet;
                     }
                    break;
@@ -1743,7 +1744,7 @@ namespace Microsoft.Net.Http.Server
 					    && string.Equals(key, "Via", StringComparison.Ordinal)) 
                     {
 					    bool wasSet = ((_flag1 & 0x80u) != 0);
-                        Via = null;
+                        Via = StringValues.Empty;
                         return wasSet;
                     }
                    break;
@@ -1752,21 +1753,21 @@ namespace Microsoft.Net.Http.Server
 					    && string.Equals(key, "Date", StringComparison.Ordinal)) 
                     {
 					    bool wasSet = ((_flag0 & 0x10000u) != 0);
-                        Date = null;
+                        Date = StringValues.Empty;
                         return wasSet;
                     }
                     if (_From != null 
 					    && string.Equals(key, "From", StringComparison.Ordinal)) 
                     {
 					    bool wasSet = ((_flag0 & 0x80000u) != 0);
-                        From = null;
+                        From = StringValues.Empty;
                         return wasSet;
                     }
                     if (_Host != null 
 					    && string.Equals(key, "Host", StringComparison.Ordinal)) 
                     {
 					    bool wasSet = ((_flag0 & 0x100000u) != 0);
-                        Host = null;
+                        Host = StringValues.Empty;
                         return wasSet;
                     }
                    break;
@@ -1775,14 +1776,14 @@ namespace Microsoft.Net.Http.Server
 					    && string.Equals(key, "Allow", StringComparison.Ordinal)) 
                     {
 					    bool wasSet = ((_flag0 & 0x10u) != 0);
-                        Allow = null;
+                        Allow = StringValues.Empty;
                         return wasSet;
                     }
                     if (_Range != null 
 					    && string.Equals(key, "Range", StringComparison.Ordinal)) 
                     {
 					    bool wasSet = ((_flag0 & 0x80000000u) != 0);
-                        Range = null;
+                        Range = StringValues.Empty;
                         return wasSet;
                     }
                    break;
@@ -1791,28 +1792,28 @@ namespace Microsoft.Net.Http.Server
 					    && string.Equals(key, "Accept", StringComparison.Ordinal)) 
                     {
 					    bool wasSet = ((_flag0 & 0x1u) != 0);
-                        Accept = null;
+                        Accept = StringValues.Empty;
                         return wasSet;
                     }
                     if (_Cookie != null 
 					    && string.Equals(key, "Cookie", StringComparison.Ordinal)) 
                     {
 					    bool wasSet = ((_flag0 & 0x8000u) != 0);
-                        Cookie = null;
+                        Cookie = StringValues.Empty;
                         return wasSet;
                     }
                     if (_Expect != null 
 					    && string.Equals(key, "Expect", StringComparison.Ordinal)) 
                     {
 					    bool wasSet = ((_flag0 & 0x20000u) != 0);
-                        Expect = null;
+                        Expect = StringValues.Empty;
                         return wasSet;
                     }
                     if (_Pragma != null 
 					    && string.Equals(key, "Pragma", StringComparison.Ordinal)) 
                     {
 					    bool wasSet = ((_flag0 & 0x20000000u) != 0);
-                        Pragma = null;
+                        Pragma = StringValues.Empty;
                         return wasSet;
                     }
                    break;
@@ -1821,35 +1822,35 @@ namespace Microsoft.Net.Http.Server
 					    && string.Equals(key, "Expires", StringComparison.Ordinal)) 
                     {
 					    bool wasSet = ((_flag0 & 0x40000u) != 0);
-                        Expires = null;
+                        Expires = StringValues.Empty;
                         return wasSet;
                     }
                     if (_Referer != null 
 					    && string.Equals(key, "Referer", StringComparison.Ordinal)) 
                     {
 					    bool wasSet = ((_flag1 & 0x1u) != 0);
-                        Referer = null;
+                        Referer = StringValues.Empty;
                         return wasSet;
                     }
                     if (_Trailer != null 
 					    && string.Equals(key, "Trailer", StringComparison.Ordinal)) 
                     {
 					    bool wasSet = ((_flag1 & 0x4u) != 0);
-                        Trailer = null;
+                        Trailer = StringValues.Empty;
                         return wasSet;
                     }
                     if (_Upgrade != null 
 					    && string.Equals(key, "Upgrade", StringComparison.Ordinal)) 
                     {
 					    bool wasSet = ((_flag1 & 0x20u) != 0);
-                        Upgrade = null;
+                        Upgrade = StringValues.Empty;
                         return wasSet;
                     }
                     if (_Warning != null 
 					    && string.Equals(key, "Warning", StringComparison.Ordinal)) 
                     {
 					    bool wasSet = ((_flag1 & 0x100u) != 0);
-                        Warning = null;
+                        Warning = StringValues.Empty;
                         return wasSet;
                     }
                    break;
@@ -1858,14 +1859,14 @@ namespace Microsoft.Net.Http.Server
 					    && string.Equals(key, "If-Match", StringComparison.Ordinal)) 
                     {
 					    bool wasSet = ((_flag0 & 0x200000u) != 0);
-                        IfMatch = null;
+                        IfMatch = StringValues.Empty;
                         return wasSet;
                     }
                     if (_IfRange != null 
 					    && string.Equals(key, "If-Range", StringComparison.Ordinal)) 
                     {
 					    bool wasSet = ((_flag0 & 0x1000000u) != 0);
-                        IfRange = null;
+                        IfRange = StringValues.Empty;
                         return wasSet;
                     }
                    break;
@@ -1874,7 +1875,7 @@ namespace Microsoft.Net.Http.Server
 					    && string.Equals(key, "Translate", StringComparison.Ordinal)) 
                     {
 					    bool wasSet = ((_flag1 & 0x10u) != 0);
-                        Translate = null;
+                        Translate = StringValues.Empty;
                         return wasSet;
                     }
                    break;
@@ -1883,21 +1884,21 @@ namespace Microsoft.Net.Http.Server
 					    && string.Equals(key, "Connection", StringComparison.Ordinal)) 
                     {
 					    bool wasSet = ((_flag0 & 0x80u) != 0);
-                        Connection = null;
+                        Connection = StringValues.Empty;
                         return wasSet;
                     }
                     if (_KeepAlive != null 
 					    && string.Equals(key, "Keep-Alive", StringComparison.Ordinal)) 
                     {
 					    bool wasSet = ((_flag0 & 0x4000000u) != 0);
-                        KeepAlive = null;
+                        KeepAlive = StringValues.Empty;
                         return wasSet;
                     }
                     if (_UserAgent != null 
 					    && string.Equals(key, "User-Agent", StringComparison.Ordinal)) 
                     {
 					    bool wasSet = ((_flag1 & 0x40u) != 0);
-                        UserAgent = null;
+                        UserAgent = StringValues.Empty;
                         return wasSet;
                     }
                    break;
@@ -1906,7 +1907,7 @@ namespace Microsoft.Net.Http.Server
 					    && string.Equals(key, "Content-Md5", StringComparison.Ordinal)) 
                     {
 					    bool wasSet = ((_flag0 & 0x1000u) != 0);
-                        ContentMd5 = null;
+                        ContentMd5 = StringValues.Empty;
                         return wasSet;
                     }
                    break;
@@ -1915,14 +1916,14 @@ namespace Microsoft.Net.Http.Server
 					    && string.Equals(key, "Content-Type", StringComparison.Ordinal)) 
                     {
 					    bool wasSet = ((_flag0 & 0x4000u) != 0);
-                        ContentType = null;
+                        ContentType = StringValues.Empty;
                         return wasSet;
                     }
                     if (_MaxForwards != null 
 					    && string.Equals(key, "Max-Forwards", StringComparison.Ordinal)) 
                     {
 					    bool wasSet = ((_flag0 & 0x10000000u) != 0);
-                        MaxForwards = null;
+                        MaxForwards = StringValues.Empty;
                         return wasSet;
                     }
                    break;
@@ -1931,35 +1932,35 @@ namespace Microsoft.Net.Http.Server
 					    && string.Equals(key, "Authorization", StringComparison.Ordinal)) 
                     {
 					    bool wasSet = ((_flag0 & 0x20u) != 0);
-                        Authorization = null;
+                        Authorization = StringValues.Empty;
                         return wasSet;
                     }
                     if (_CacheControl != null 
 					    && string.Equals(key, "Cache-Control", StringComparison.Ordinal)) 
                     {
 					    bool wasSet = ((_flag0 & 0x40u) != 0);
-                        CacheControl = null;
+                        CacheControl = StringValues.Empty;
                         return wasSet;
                     }
                     if (_ContentRange != null 
 					    && string.Equals(key, "Content-Range", StringComparison.Ordinal)) 
                     {
 					    bool wasSet = ((_flag0 & 0x2000u) != 0);
-                        ContentRange = null;
+                        ContentRange = StringValues.Empty;
                         return wasSet;
                     }
                     if (_IfNoneMatch != null 
 					    && string.Equals(key, "If-None-Match", StringComparison.Ordinal)) 
                     {
 					    bool wasSet = ((_flag0 & 0x800000u) != 0);
-                        IfNoneMatch = null;
+                        IfNoneMatch = StringValues.Empty;
                         return wasSet;
                     }
                     if (_LastModified != null 
 					    && string.Equals(key, "Last-Modified", StringComparison.Ordinal)) 
                     {
 					    bool wasSet = ((_flag0 & 0x8000000u) != 0);
-                        LastModified = null;
+                        LastModified = StringValues.Empty;
                         return wasSet;
                     }
                    break;
@@ -1968,14 +1969,14 @@ namespace Microsoft.Net.Http.Server
 					    && string.Equals(key, "Accept-Charset", StringComparison.Ordinal)) 
                     {
 					    bool wasSet = ((_flag0 & 0x2u) != 0);
-                        AcceptCharset = null;
+                        AcceptCharset = StringValues.Empty;
                         return wasSet;
                     }
                     if (_ContentLength != null 
 					    && string.Equals(key, "Content-Length", StringComparison.Ordinal)) 
                     {
 					    bool wasSet = ((_flag0 & 0x400u) != 0);
-                        ContentLength = null;
+                        ContentLength = StringValues.Empty;
                         return wasSet;
                     }
                    break;
@@ -1984,14 +1985,14 @@ namespace Microsoft.Net.Http.Server
 					    && string.Equals(key, "Accept-Encoding", StringComparison.Ordinal)) 
                     {
 					    bool wasSet = ((_flag0 & 0x4u) != 0);
-                        AcceptEncoding = null;
+                        AcceptEncoding = StringValues.Empty;
                         return wasSet;
                     }
                     if (_AcceptLanguage != null 
 					    && string.Equals(key, "Accept-Language", StringComparison.Ordinal)) 
                     {
 					    bool wasSet = ((_flag0 & 0x8u) != 0);
-                        AcceptLanguage = null;
+                        AcceptLanguage = StringValues.Empty;
                         return wasSet;
                     }
                    break;
@@ -2000,21 +2001,21 @@ namespace Microsoft.Net.Http.Server
 					    && string.Equals(key, "Content-Encoding", StringComparison.Ordinal)) 
                     {
 					    bool wasSet = ((_flag0 & 0x100u) != 0);
-                        ContentEncoding = null;
+                        ContentEncoding = StringValues.Empty;
                         return wasSet;
                     }
                     if (_ContentLanguage != null 
 					    && string.Equals(key, "Content-Language", StringComparison.Ordinal)) 
                     {
 					    bool wasSet = ((_flag0 & 0x200u) != 0);
-                        ContentLanguage = null;
+                        ContentLanguage = StringValues.Empty;
                         return wasSet;
                     }
                     if (_ContentLocation != null 
 					    && string.Equals(key, "Content-Location", StringComparison.Ordinal)) 
                     {
 					    bool wasSet = ((_flag0 & 0x800u) != 0);
-                        ContentLocation = null;
+                        ContentLocation = StringValues.Empty;
                         return wasSet;
                     }
                    break;
@@ -2023,14 +2024,14 @@ namespace Microsoft.Net.Http.Server
 					    && string.Equals(key, "If-Modified-Since", StringComparison.Ordinal)) 
                     {
 					    bool wasSet = ((_flag0 & 0x400000u) != 0);
-                        IfModifiedSince = null;
+                        IfModifiedSince = StringValues.Empty;
                         return wasSet;
                     }
                     if (_TransferEncoding != null 
 					    && string.Equals(key, "Transfer-Encoding", StringComparison.Ordinal)) 
                     {
 					    bool wasSet = ((_flag1 & 0x8u) != 0);
-                        TransferEncoding = null;
+                        TransferEncoding = StringValues.Empty;
                         return wasSet;
                     }
                    break;
@@ -2039,14 +2040,14 @@ namespace Microsoft.Net.Http.Server
 					    && string.Equals(key, "If-Unmodified-Since", StringComparison.Ordinal)) 
                     {
 					    bool wasSet = ((_flag0 & 0x2000000u) != 0);
-                        IfUnmodifiedSince = null;
+                        IfUnmodifiedSince = StringValues.Empty;
                         return wasSet;
                     }
                     if (_ProxyAuthorization != null 
 					    && string.Equals(key, "Proxy-Authorization", StringComparison.Ordinal)) 
                     {
 					    bool wasSet = ((_flag0 & 0x40000000u) != 0);
-                        ProxyAuthorization = null;
+                        ProxyAuthorization = StringValues.Empty;
                         return wasSet;
                     }
                    break;
@@ -2222,7 +2223,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        private IEnumerable<string[]> PropertiesValues()
+        private IEnumerable<StringValues> PropertiesValues()
         {
             if (Accept != null)
             {
@@ -2390,171 +2391,171 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        private IEnumerable<KeyValuePair<string, string[]>> PropertiesEnumerable()
+        private IEnumerable<KeyValuePair<string, StringValues>> PropertiesEnumerable()
         {
             if (Accept != null)
             {
-                yield return new KeyValuePair<string, string[]>("Accept", Accept);
+                yield return new KeyValuePair<string, StringValues>("Accept", Accept);
             }
             if (AcceptCharset != null)
             {
-                yield return new KeyValuePair<string, string[]>("Accept-Charset", AcceptCharset);
+                yield return new KeyValuePair<string, StringValues>("Accept-Charset", AcceptCharset);
             }
             if (AcceptEncoding != null)
             {
-                yield return new KeyValuePair<string, string[]>("Accept-Encoding", AcceptEncoding);
+                yield return new KeyValuePair<string, StringValues>("Accept-Encoding", AcceptEncoding);
             }
             if (AcceptLanguage != null)
             {
-                yield return new KeyValuePair<string, string[]>("Accept-Language", AcceptLanguage);
+                yield return new KeyValuePair<string, StringValues>("Accept-Language", AcceptLanguage);
             }
             if (Allow != null)
             {
-                yield return new KeyValuePair<string, string[]>("Allow", Allow);
+                yield return new KeyValuePair<string, StringValues>("Allow", Allow);
             }
             if (Authorization != null)
             {
-                yield return new KeyValuePair<string, string[]>("Authorization", Authorization);
+                yield return new KeyValuePair<string, StringValues>("Authorization", Authorization);
             }
             if (CacheControl != null)
             {
-                yield return new KeyValuePair<string, string[]>("Cache-Control", CacheControl);
+                yield return new KeyValuePair<string, StringValues>("Cache-Control", CacheControl);
             }
             if (Connection != null)
             {
-                yield return new KeyValuePair<string, string[]>("Connection", Connection);
+                yield return new KeyValuePair<string, StringValues>("Connection", Connection);
             }
             if (ContentEncoding != null)
             {
-                yield return new KeyValuePair<string, string[]>("Content-Encoding", ContentEncoding);
+                yield return new KeyValuePair<string, StringValues>("Content-Encoding", ContentEncoding);
             }
             if (ContentLanguage != null)
             {
-                yield return new KeyValuePair<string, string[]>("Content-Language", ContentLanguage);
+                yield return new KeyValuePair<string, StringValues>("Content-Language", ContentLanguage);
             }
             if (ContentLength != null)
             {
-                yield return new KeyValuePair<string, string[]>("Content-Length", ContentLength);
+                yield return new KeyValuePair<string, StringValues>("Content-Length", ContentLength);
             }
             if (ContentLocation != null)
             {
-                yield return new KeyValuePair<string, string[]>("Content-Location", ContentLocation);
+                yield return new KeyValuePair<string, StringValues>("Content-Location", ContentLocation);
             }
             if (ContentMd5 != null)
             {
-                yield return new KeyValuePair<string, string[]>("Content-Md5", ContentMd5);
+                yield return new KeyValuePair<string, StringValues>("Content-Md5", ContentMd5);
             }
             if (ContentRange != null)
             {
-                yield return new KeyValuePair<string, string[]>("Content-Range", ContentRange);
+                yield return new KeyValuePair<string, StringValues>("Content-Range", ContentRange);
             }
             if (ContentType != null)
             {
-                yield return new KeyValuePair<string, string[]>("Content-Type", ContentType);
+                yield return new KeyValuePair<string, StringValues>("Content-Type", ContentType);
             }
             if (Cookie != null)
             {
-                yield return new KeyValuePair<string, string[]>("Cookie", Cookie);
+                yield return new KeyValuePair<string, StringValues>("Cookie", Cookie);
             }
             if (Date != null)
             {
-                yield return new KeyValuePair<string, string[]>("Date", Date);
+                yield return new KeyValuePair<string, StringValues>("Date", Date);
             }
             if (Expect != null)
             {
-                yield return new KeyValuePair<string, string[]>("Expect", Expect);
+                yield return new KeyValuePair<string, StringValues>("Expect", Expect);
             }
             if (Expires != null)
             {
-                yield return new KeyValuePair<string, string[]>("Expires", Expires);
+                yield return new KeyValuePair<string, StringValues>("Expires", Expires);
             }
             if (From != null)
             {
-                yield return new KeyValuePair<string, string[]>("From", From);
+                yield return new KeyValuePair<string, StringValues>("From", From);
             }
             if (Host != null)
             {
-                yield return new KeyValuePair<string, string[]>("Host", Host);
+                yield return new KeyValuePair<string, StringValues>("Host", Host);
             }
             if (IfMatch != null)
             {
-                yield return new KeyValuePair<string, string[]>("If-Match", IfMatch);
+                yield return new KeyValuePair<string, StringValues>("If-Match", IfMatch);
             }
             if (IfModifiedSince != null)
             {
-                yield return new KeyValuePair<string, string[]>("If-Modified-Since", IfModifiedSince);
+                yield return new KeyValuePair<string, StringValues>("If-Modified-Since", IfModifiedSince);
             }
             if (IfNoneMatch != null)
             {
-                yield return new KeyValuePair<string, string[]>("If-None-Match", IfNoneMatch);
+                yield return new KeyValuePair<string, StringValues>("If-None-Match", IfNoneMatch);
             }
             if (IfRange != null)
             {
-                yield return new KeyValuePair<string, string[]>("If-Range", IfRange);
+                yield return new KeyValuePair<string, StringValues>("If-Range", IfRange);
             }
             if (IfUnmodifiedSince != null)
             {
-                yield return new KeyValuePair<string, string[]>("If-Unmodified-Since", IfUnmodifiedSince);
+                yield return new KeyValuePair<string, StringValues>("If-Unmodified-Since", IfUnmodifiedSince);
             }
             if (KeepAlive != null)
             {
-                yield return new KeyValuePair<string, string[]>("Keep-Alive", KeepAlive);
+                yield return new KeyValuePair<string, StringValues>("Keep-Alive", KeepAlive);
             }
             if (LastModified != null)
             {
-                yield return new KeyValuePair<string, string[]>("Last-Modified", LastModified);
+                yield return new KeyValuePair<string, StringValues>("Last-Modified", LastModified);
             }
             if (MaxForwards != null)
             {
-                yield return new KeyValuePair<string, string[]>("Max-Forwards", MaxForwards);
+                yield return new KeyValuePair<string, StringValues>("Max-Forwards", MaxForwards);
             }
             if (Pragma != null)
             {
-                yield return new KeyValuePair<string, string[]>("Pragma", Pragma);
+                yield return new KeyValuePair<string, StringValues>("Pragma", Pragma);
             }
             if (ProxyAuthorization != null)
             {
-                yield return new KeyValuePair<string, string[]>("Proxy-Authorization", ProxyAuthorization);
+                yield return new KeyValuePair<string, StringValues>("Proxy-Authorization", ProxyAuthorization);
             }
             if (Range != null)
             {
-                yield return new KeyValuePair<string, string[]>("Range", Range);
+                yield return new KeyValuePair<string, StringValues>("Range", Range);
             }
             if (Referer != null)
             {
-                yield return new KeyValuePair<string, string[]>("Referer", Referer);
+                yield return new KeyValuePair<string, StringValues>("Referer", Referer);
             }
             if (Te != null)
             {
-                yield return new KeyValuePair<string, string[]>("Te", Te);
+                yield return new KeyValuePair<string, StringValues>("Te", Te);
             }
             if (Trailer != null)
             {
-                yield return new KeyValuePair<string, string[]>("Trailer", Trailer);
+                yield return new KeyValuePair<string, StringValues>("Trailer", Trailer);
             }
             if (TransferEncoding != null)
             {
-                yield return new KeyValuePair<string, string[]>("Transfer-Encoding", TransferEncoding);
+                yield return new KeyValuePair<string, StringValues>("Transfer-Encoding", TransferEncoding);
             }
             if (Translate != null)
             {
-                yield return new KeyValuePair<string, string[]>("Translate", Translate);
+                yield return new KeyValuePair<string, StringValues>("Translate", Translate);
             }
             if (Upgrade != null)
             {
-                yield return new KeyValuePair<string, string[]>("Upgrade", Upgrade);
+                yield return new KeyValuePair<string, StringValues>("Upgrade", Upgrade);
             }
             if (UserAgent != null)
             {
-                yield return new KeyValuePair<string, string[]>("User-Agent", UserAgent);
+                yield return new KeyValuePair<string, StringValues>("User-Agent", UserAgent);
             }
             if (Via != null)
             {
-                yield return new KeyValuePair<string, string[]>("Via", Via);
+                yield return new KeyValuePair<string, StringValues>("Via", Via);
             }
             if (Warning != null)
             {
-                yield return new KeyValuePair<string, string[]>("Warning", Warning);
+                yield return new KeyValuePair<string, StringValues>("Warning", Warning);
             }
         }
     }

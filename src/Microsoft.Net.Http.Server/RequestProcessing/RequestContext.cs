@@ -194,8 +194,8 @@ namespace Microsoft.Net.Http.Server
                 }
 
                 // Connection: Upgrade (some odd clients send Upgrade,KeepAlive)
-                string connection = Request.Headers[HttpKnownHeaderNames.Connection] ?? string.Empty;
-                if (connection.IndexOf(HttpKnownHeaderNames.Upgrade, StringComparison.OrdinalIgnoreCase) < 0)
+                string connection = Request.Headers[HttpKnownHeaderNames.Connection];
+                if (connection == null || connection.IndexOf(HttpKnownHeaderNames.Upgrade, StringComparison.OrdinalIgnoreCase) < 0)
                 {
                     return false;
                 }
@@ -244,8 +244,8 @@ namespace Microsoft.Net.Http.Server
             }
 
             // Connection: Upgrade (some odd clients send Upgrade,KeepAlive)
-            string connection = Request.Headers[HttpKnownHeaderNames.Connection] ?? string.Empty;
-            if (connection.IndexOf(HttpKnownHeaderNames.Upgrade, StringComparison.OrdinalIgnoreCase) < 0)
+            string connection = Request.Headers[HttpKnownHeaderNames.Connection];
+            if (connection == null || connection.IndexOf(HttpKnownHeaderNames.Upgrade, StringComparison.OrdinalIgnoreCase) < 0)
             {
                 throw new InvalidOperationException("The Connection header is invalid: " + connection);
             }
@@ -345,9 +345,9 @@ namespace Microsoft.Net.Http.Server
                 string secWebSocketKey = Request.Headers[HttpKnownHeaderNames.SecWebSocketKey];
                 string secWebSocketAccept = WebSocketHelpers.GetSecWebSocketAcceptString(secWebSocketKey);
 
-                Response.Headers.AppendValues(HttpKnownHeaderNames.Connection, HttpKnownHeaderNames.Upgrade);
-                Response.Headers.AppendValues(HttpKnownHeaderNames.Upgrade, WebSocketHelpers.WebSocketUpgradeToken);
-                Response.Headers.AppendValues(HttpKnownHeaderNames.SecWebSocketAccept, secWebSocketAccept);
+                Response.Headers.Append(HttpKnownHeaderNames.Connection, HttpKnownHeaderNames.Upgrade);
+                Response.Headers.Append(HttpKnownHeaderNames.Upgrade, WebSocketHelpers.WebSocketUpgradeToken);
+                Response.Headers.Append(HttpKnownHeaderNames.SecWebSocketAccept, secWebSocketAccept);
 
                 Stream opaqueStream = await UpgradeAsync();
 

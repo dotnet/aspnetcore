@@ -27,6 +27,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Security.Principal;
+using Microsoft.Framework.Primitives;
 
 namespace Microsoft.Net.Http.Server
 {
@@ -147,7 +148,8 @@ namespace Microsoft.Net.Http.Server
 
             if (challenges.Count > 0)
             {
-                context.Response.Headers.AppendValues(HttpKnownHeaderNames.WWWAuthenticate, challenges.ToArray());
+                context.Response.Headers[HttpKnownHeaderNames.WWWAuthenticate]
+                    = StringValues.Concat(context.Response.Headers[HttpKnownHeaderNames.WWWAuthenticate], challenges.ToArray());
             }
         }
 

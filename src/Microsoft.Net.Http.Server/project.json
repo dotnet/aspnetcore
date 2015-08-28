@@ -3,6 +3,7 @@
     "description": "Implementation of WebListener, a successor to HttpListener. It is used in the WebListener server package.",
     "dependencies": {
         "Microsoft.Framework.Logging.Abstractions": "1.0.0-*",
+        "Microsoft.Framework.Primitives": "1.0.0-*",
         "Microsoft.Net.WebSockets": "1.0.0-*"
     },
     "compilationOptions": {

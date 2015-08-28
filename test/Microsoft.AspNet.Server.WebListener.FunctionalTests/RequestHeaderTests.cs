@@ -22,6 +22,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Internal;
+using Microsoft.Framework.Primitives;
 using Xunit;
 
 namespace Microsoft.AspNet.Server.WebListener
@@ -38,8 +39,8 @@ namespace Microsoft.AspNet.Server.WebListener
                     // NOTE: The System.Net client only sends the Connection: keep-alive header on the first connection per service-point.
                     // Assert.Equal(2, requestHeaders.Count);
                     // Assert.Equal("Keep-Alive", requestHeaders.Get("Connection"));
-                    Assert.NotNull(requestHeaders.Get("Host"));
-                    Assert.Equal(null, requestHeaders.Get("Accept"));
+                    Assert.False(StringValues.IsNullOrEmpty(requestHeaders["Host"]));
+                    Assert.True(StringValues.IsNullOrEmpty(requestHeaders["Accept"]));
                     return Task.FromResult(0);
                 }))
             {
@@ -56,13 +57,13 @@ namespace Microsoft.AspNet.Server.WebListener
                 {
                     var requestHeaders = new DefaultHttpContext((IFeatureCollection)env).Request.Headers;
                     Assert.Equal(4, requestHeaders.Count);
-                    Assert.NotNull(requestHeaders.Get("Host"));
-                    Assert.Equal("close", requestHeaders.Get("Connection"));
+                    Assert.False(StringValues.IsNullOrEmpty(requestHeaders["Host"]));
+                    Assert.Equal("close", requestHeaders["Connection"]);
                     // Apparently Http.Sys squashes request headers together.
-                    Assert.Equal(1, requestHeaders.GetValues("Custom-Header").Count);
-                    Assert.Equal("custom1, and custom2, custom3", requestHeaders.Get("Custom-Header"));
-                    Assert.Equal(1, requestHeaders.GetValues("Spacer-Header").Count);
-                    Assert.Equal("spacervalue, spacervalue", requestHeaders.Get("Spacer-Header"));
+                    Assert.Equal(1, requestHeaders["Custom-Header"].Count);
+                    Assert.Equal("custom1, and custom2, custom3", requestHeaders["Custom-Header"]);
+                    Assert.Equal(1, requestHeaders["Spacer-Header"].Count);
+                    Assert.Equal("spacervalue, spacervalue", requestHeaders["Spacer-Header"]);
                     return Task.FromResult(0);
                 }))
             {

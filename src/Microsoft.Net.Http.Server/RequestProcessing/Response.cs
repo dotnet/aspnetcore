@@ -33,14 +33,13 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Framework.Logging;
+using Microsoft.Framework.Primitives;
 using static Microsoft.Net.Http.Server.UnsafeNclNativeMethods;
 
 namespace Microsoft.Net.Http.Server
 {
     public sealed unsafe class Response
     {
-        private static readonly string[] ZeroContentLength = new[] { Constants.Zero };
-
         private ResponseState _responseState;
         private HeaderCollection _headers;
         private string _reasonPhrase;
@@ -200,7 +199,7 @@ namespace Microsoft.Net.Http.Server
         {
             get
             {
-                string contentLengthString = Headers.Get(HttpKnownHeaderNames.ContentLength);
+                string contentLengthString = Headers[HttpKnownHeaderNames.ContentLength];
                 long contentLength;
                 if (!string.IsNullOrWhiteSpace(contentLengthString))
                 {
@@ -232,7 +231,7 @@ namespace Microsoft.Net.Http.Server
 
                     if (value.Value == 0)
                     {
-                        ((IDictionary<string, string[]>)Headers)[HttpKnownHeaderNames.ContentLength] = ZeroContentLength;
+                        Headers[HttpKnownHeaderNames.ContentLength] = Constants.Zero;
                     }
                     else
                     {
@@ -246,7 +245,7 @@ namespace Microsoft.Net.Http.Server
         {
             get
             {
-                return Headers.Get(HttpKnownHeaderNames.ContentType);
+                return Headers[HttpKnownHeaderNames.ContentType];
             }
             set
             {
@@ -467,14 +466,14 @@ namespace Microsoft.Net.Http.Server
 
             // Gather everything from the request that affects the response:
             var requestVersion = Request.ProtocolVersion;
-            var requestConnectionString = Request.Headers.Get(HttpKnownHeaderNames.Connection);
+            var requestConnectionString = Request.Headers[HttpKnownHeaderNames.Connection];
             var isHeadRequest = Request.IsHeadMethod;
             var requestCloseSet = Matches(Constants.Close, requestConnectionString);
 
             // Gather everything the app may have set on the response:
             // Http.Sys does not allow us to specify the response protocol version, assume this is a HTTP/1.1 response when making decisions.
-            var responseConnectionString = Headers.Get(HttpKnownHeaderNames.Connection);
-            var transferEncodingString = Headers.Get(HttpKnownHeaderNames.TransferEncoding);
+            var responseConnectionString = Headers[HttpKnownHeaderNames.Connection];
+            var transferEncodingString = Headers[HttpKnownHeaderNames.TransferEncoding];
             var responseContentLength = ContentLength;
             var responseCloseSet = Matches(Constants.Close, responseConnectionString);
             var responseChunkedSet = Matches(Constants.Chunked, transferEncodingString);
@@ -572,9 +571,9 @@ namespace Microsoft.Net.Http.Server
 
             int numUnknownHeaders = 0;
             int numKnownMultiHeaders = 0;
-            foreach (KeyValuePair<string, string[]> headerPair in Headers)
+            foreach (var headerPair in Headers)
             {
-                if (headerPair.Value.Length == 0)
+                if (headerPair.Value.Count == 0)
                 {
                     // TODO: Have the collection exclude empty headers.
                     continue;
@@ -586,9 +585,9 @@ namespace Microsoft.Net.Http.Server
                 if (lookup == -1 ||
                     (isOpaqueUpgrade && lookup == (int)HttpApi.HTTP_RESPONSE_HEADER_ID.Enum.HttpHeaderConnection))
                 {
-                    numUnknownHeaders += headerPair.Value.Length;
+                    numUnknownHeaders += headerPair.Value.Count;
                 }
-                else if (headerPair.Value.Length > 1)
+                else if (headerPair.Value.Count > 1)
                 {
                     numKnownMultiHeaders++;
                 }
@@ -599,15 +598,15 @@ namespace Microsoft.Net.Http.Server
             {
                 fixed (HttpApi.HTTP_KNOWN_HEADER* pKnownHeaders = &_nativeResponse.Response_V1.Headers.KnownHeaders)
                 {
-                    foreach (KeyValuePair<string, string[]> headerPair in Headers)
+                    foreach (var headerPair in Headers)
                     {
-                        if (headerPair.Value.Length == 0)
+                        if (headerPair.Value.Count == 0)
                         {
                             // TODO: Have the collection exclude empty headers.
                             continue;
                         }
                         headerName = headerPair.Key;
-                        string[] headerValues = headerPair.Value;
+                        StringValues headerValues = headerPair.Value;
                         lookup = HttpApi.HTTP_RESPONSE_HEADER_ID.IndexOfKnownHeader(headerName);
 
                         // Http.Sys doesn't let us send the Connection: Upgrade header as a Known header.
@@ -622,7 +621,7 @@ namespace Microsoft.Net.Http.Server
                                 _nativeResponse.Response_V1.Headers.pUnknownHeaders = (HttpApi.HTTP_UNKNOWN_HEADER*)gcHandle.AddrOfPinnedObject();
                             }
 
-                            for (int headerValueIndex = 0; headerValueIndex < headerValues.Length; headerValueIndex++)
+                            for (int headerValueIndex = 0; headerValueIndex < headerValues.Count; headerValueIndex++)
                             {
                                 // Add Name
                                 bytes = new byte[HeaderEncoding.GetByteCount(headerName)];
@@ -643,7 +642,7 @@ namespace Microsoft.Net.Http.Server
                                 _nativeResponse.Response_V1.Headers.UnknownHeaderCount++;
                             }
                         }
-                        else if (headerPair.Value.Length == 1)
+                        else if (headerPair.Value.Count == 1)
                         {
                             headerValue = headerValues[0];
                             if (headerValue != null)
@@ -674,12 +673,12 @@ namespace Microsoft.Net.Http.Server
                             header.HeaderId = (HttpApi.HTTP_RESPONSE_HEADER_ID.Enum)lookup;
                             header.Flags = HttpApi.HTTP_RESPONSE_INFO_FLAGS.PreserveOrder; // TODO: The docs say this is for www-auth only.
 
-                            HttpApi.HTTP_KNOWN_HEADER[] nativeHeaderValues = new HttpApi.HTTP_KNOWN_HEADER[headerValues.Length];
+                            HttpApi.HTTP_KNOWN_HEADER[] nativeHeaderValues = new HttpApi.HTTP_KNOWN_HEADER[headerValues.Count];
                             gcHandle = GCHandle.Alloc(nativeHeaderValues, GCHandleType.Pinned);
                             pinnedHeaders.Add(gcHandle);
                             header.KnownHeaders = (HttpApi.HTTP_KNOWN_HEADER*)gcHandle.AddrOfPinnedObject();
 
-                            for (int headerValueIndex = 0; headerValueIndex < headerValues.Length; headerValueIndex++)
+                            for (int headerValueIndex = 0; headerValueIndex < headerValues.Count; headerValueIndex++)
                             {
                                 // Add Value
                                 headerValue = headerValues[headerValueIndex];

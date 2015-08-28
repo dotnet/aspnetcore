@@ -68,6 +68,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Framework.Primitives;
 
 namespace Microsoft.Net.Http.Server
 {
@@ -75,15 +76,15 @@ namespace Microsoft.Net.Http.Server
     internal partial class RequestHeaders
     {
 	    // Tracks if individual fields have been read from native or set directly.
-		// Once read or set, their presence in the collection is marked by if their string[] is null or not.
+		// Once read or set, their presence in the collection is marked by if their StringValues is null or not.
         private UInt32 _flag0, _flag1;
 
 <# foreach(var prop in props) { #>
-        private string[] _<#=prop.Name#>;
+        private StringValues _<#=prop.Name#>;
 <# } #>
 
 <# foreach(var prop in props) { #>
-        internal string[] <#=prop.Name#> 
+        internal StringValues <#=prop.Name#>
         {
             get
 			{
@@ -92,7 +93,7 @@ namespace Microsoft.Net.Http.Server
 					string nativeValue = GetKnownHeader(<#=prop.ID#>);
 					if (nativeValue != null)
 					{
-						_<#=prop.Name#> = new string[] { nativeValue };
+						_<#=prop.Name#> = nativeValue;
 					}
                     <#=MarkRead(prop.Index)#>;
 				}
@@ -124,7 +125,7 @@ namespace Microsoft.Net.Http.Server
             return false;
         }
 
-        private bool PropertiesTryGetValue(string key, out string[] value)
+        private bool PropertiesTryGetValue(string key, out StringValues value)
         {
             switch (key.Length)
             {
@@ -144,7 +145,7 @@ namespace Microsoft.Net.Http.Server
             return false;
         }
 
-        private bool PropertiesTrySetValue(string key, string[] value)
+        private bool PropertiesTrySetValue(string key, StringValues value)
         {
             switch (key.Length)
             {
@@ -195,7 +196,7 @@ namespace Microsoft.Net.Http.Server
 <# } #>
         }
 
-        private IEnumerable<string[]> PropertiesValues()
+        private IEnumerable<StringValues> PropertiesValues()
         {
 <# foreach(var prop in props) { #>
             if (<#=prop.Name#> != null)
@@ -205,12 +206,12 @@ namespace Microsoft.Net.Http.Server
 <# } #>
         }
 
-        private IEnumerable<KeyValuePair<string, string[]>> PropertiesEnumerable()
+        private IEnumerable<KeyValuePair<string, StringValues>> PropertiesEnumerable()
         {
 <# foreach(var prop in props) { #>
             if (<#=prop.Name#> != null)
             {
-                yield return new KeyValuePair<string, string[]>("<#=prop.Key#>", <#=prop.Name#>);
+                yield return new KeyValuePair<string, StringValues>("<#=prop.Key#>", <#=prop.Name#>);
             }
 <# } #>
         }

@@ -26,6 +26,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Features.Authentication;
+using Microsoft.Framework.Primitives;
 using Microsoft.Net.Http.Headers;
 using Microsoft.Net.Http.Server;
 using Microsoft.Net.WebSockets;
@@ -53,7 +54,7 @@ namespace Microsoft.AspNet.Server.WebListener
         private bool _enableResponseCaching;
 
         private Stream _requestBody;
-        private IDictionary<string, string[]> _requestHeaders;
+        private IDictionary<string, StringValues> _requestHeaders;
         private string _scheme;
         private string _httpMethod;
         private string _httpProtocolVersion;
@@ -71,7 +72,7 @@ namespace Microsoft.AspNet.Server.WebListener
         private IAuthenticationHandler _authHandler;
         private CancellationToken? _disconnectToken;
         private Stream _responseStream;
-        private IDictionary<string, string[]> _responseHeaders;
+        private IDictionary<string, StringValues> _responseHeaders;
 
         internal FeatureContext(RequestContext requestContext, bool enableResponseCaching)
         {
@@ -115,7 +116,7 @@ namespace Microsoft.AspNet.Server.WebListener
             set { _requestBody = value; }
         }
 
-        IDictionary<string, string[]> IHttpRequestFeature.Headers
+        IDictionary<string, StringValues> IHttpRequestFeature.Headers
         {
             get
             {
@@ -348,7 +349,7 @@ namespace Microsoft.AspNet.Server.WebListener
             set { _responseStream = value; }
         }
 
-        IDictionary<string, string[]> IHttpResponseFeature.Headers
+        IDictionary<string, StringValues> IHttpResponseFeature.Headers
         {
             get
             {

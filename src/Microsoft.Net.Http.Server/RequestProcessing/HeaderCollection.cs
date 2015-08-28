@@ -4,44 +4,49 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Microsoft.Framework.Primitives;
 
 namespace Microsoft.Net.Http.Server
 {
-    public class HeaderCollection : IDictionary<string, string[]>
+    public class HeaderCollection : IDictionary<string, StringValues>
     {
         public HeaderCollection()
-            : this(new Dictionary<string, string[]>(4, StringComparer.OrdinalIgnoreCase))
+            : this(new Dictionary<string, StringValues>(4, StringComparer.OrdinalIgnoreCase))
         {
         }
 
-        public HeaderCollection(IDictionary<string, string[]> store)
+        public HeaderCollection(IDictionary<string, StringValues> store)
         {
             Store = store;
         }
 
-        private IDictionary<string, string[]> Store { get; set; }
+        private IDictionary<string, StringValues> Store { get; set; }
 
         // Readonly after the response has been started.
         public bool IsReadOnly { get; internal set; }
 
-        public string this[string key]
+        public StringValues this[string key]
         {
-            get { return Get(key); }
+            get
+            {
+                StringValues values;
+                return TryGetValue(key, out values) ? values : StringValues.Empty;
+            }
             set
             {
                 ThrowIfReadOnly();
-                if (string.IsNullOrEmpty(value))
+                if (StringValues.IsNullOrEmpty(value))
                 {
                     Remove(key);
                 }
                 else
                 {
-                    Set(key, value);
+                    Store[key] = value;
                 }
             }
         }
 
-        string[] IDictionary<string, string[]>.this[string key]
+        StringValues IDictionary<string, StringValues>.this[string key]
         {
             get { return Store[key]; }
             set
@@ -61,18 +66,18 @@ namespace Microsoft.Net.Http.Server
             get { return Store.Keys; }
         }
 
-        public ICollection<string[]> Values
+        public ICollection<StringValues> Values
         {
             get { return Store.Values; }
         }
 
-        public void Add(KeyValuePair<string, string[]> item)
+        public void Add(KeyValuePair<string, StringValues> item)
         {
             ThrowIfReadOnly();
             Store.Add(item);
         }
 
-        public void Add(string key, string[] value)
+        public void Add(string key, StringValues value)
         {
             ThrowIfReadOnly();
             Store.Add(key, value);
@@ -81,35 +86,9 @@ namespace Microsoft.Net.Http.Server
         public void Append(string key, string value)
         {
             ThrowIfReadOnly();
-            string[] values;
-            if (Store.TryGetValue(key, out values))
-            {
-                var newValues = new string[values.Length + 1];
-                Array.Copy(values, newValues, values.Length);
-                newValues[values.Length] = value;
-                Store[key] = newValues;
-            }
-            else
-            {
-                Set(key, value);
-            }
-        }
-
-        public void AppendValues(string key, params string[] values)
-        {
-            ThrowIfReadOnly();
-            string[] oldValues;
-            if (Store.TryGetValue(key, out oldValues))
-            {
-                var newValues = new string[oldValues.Length + values.Length];
-                Array.Copy(oldValues, newValues, oldValues.Length);
-                Array.Copy(values, 0, newValues, oldValues.Length, values.Length);
-                Store[key] = newValues;
-            }
-            else
-            {
-                SetValues(key, values);
-            }
+            StringValues values;
+            Store.TryGetValue(key, out values);
+            Store[key] = StringValues.Concat(values, value);
         }
 
         public void Clear()
@@ -118,7 +97,7 @@ namespace Microsoft.Net.Http.Server
             Store.Clear();
         }
 
-        public bool Contains(KeyValuePair<string, string[]> item)
+        public bool Contains(KeyValuePair<string, StringValues> item)
         {
             return Store.Contains(item);
         }
@@ -128,29 +107,19 @@ namespace Microsoft.Net.Http.Server
             return Store.ContainsKey(key);
         }
 
-        public void CopyTo(KeyValuePair<string, string[]>[] array, int arrayIndex)
+        public void CopyTo(KeyValuePair<string, StringValues>[] array, int arrayIndex)
         {
             Store.CopyTo(array, arrayIndex);
         }
 
-        public string Get(string key)
-        {
-            string[] values;
-            if (Store.TryGetValue(key, out values))
-            {
-                return string.Join(", ", values);
-            }
-            return null;
-        }
-
-        public IEnumerator<KeyValuePair<string, string[]>> GetEnumerator()
+        public IEnumerator<KeyValuePair<string, StringValues>> GetEnumerator()
         {
             return Store.GetEnumerator();
         }
 
         public IEnumerable<string> GetValues(string key)
         {
-            string[] values;
+            StringValues values;
             if (Store.TryGetValue(key, out values))
             {
                 return HeaderParser.SplitValues(values);
@@ -158,7 +127,7 @@ namespace Microsoft.Net.Http.Server
             return HeaderParser.Empty;
         }
 
-        public bool Remove(KeyValuePair<string, string[]> item)
+        public bool Remove(KeyValuePair<string, StringValues> item)
         {
             ThrowIfReadOnly();
             return Store.Remove(item);
@@ -170,19 +139,7 @@ namespace Microsoft.Net.Http.Server
             return Store.Remove(key);
         }
 
-        public void Set(string key, string value)
-        {
-            ThrowIfReadOnly();
-            Store[key] = new[] { value };
-        }
-
-        public void SetValues(string key, params string[] values)
-        {
-            ThrowIfReadOnly();
-            Store[key] = values;
-        }
-
-        public bool TryGetValue(string key, out string[] value)
+        public bool TryGetValue(string key, out StringValues value)
         {
             return Store.TryGetValue(key, out value);
         }

@@ -207,7 +207,7 @@ namespace Microsoft.Net.Http.Server
 
                 var context = await server.GetContextAsync();
                 var responseHeaders = context.Response.Headers;
-                responseHeaders.SetValues("WWW-Authenticate", "custom1, and custom2", "custom3");
+                responseHeaders["WWW-Authenticate"] = new[] { "custom1, and custom2", "custom3" };
                 context.Dispose();
 
                 // HttpClient would merge the headers no matter what
@@ -232,7 +232,7 @@ namespace Microsoft.Net.Http.Server
 
                 var context = await server.GetContextAsync();
                 var responseHeaders = context.Response.Headers;
-                responseHeaders.SetValues("Custom-Header1", "custom1, and custom2", "custom3");
+                responseHeaders["Custom-Header1"] = new[] { "custom1, and custom2", "custom3" };
                 context.Dispose();
 
                 // HttpClient would merge the headers no matter what
@@ -346,8 +346,8 @@ namespace Microsoft.Net.Http.Server
                 var context = await server.GetContextAsync();
                 var responseHeaders = context.Response.Headers;
 
-                responseHeaders.SetValues("Custom1", "value1a", "value1b");
-                responseHeaders.SetValues("Custom2", "value2a, value2b");
+                responseHeaders["Custom1"] = new[] { "value1a", "value1b" };
+                responseHeaders["Custom2"] = "value2a, value2b";
                 var body = context.Response.Body;
                 Assert.False(context.Response.HasStarted);
                 body.Flush();
@@ -382,8 +382,8 @@ namespace Microsoft.Net.Http.Server
                 var context = await server.GetContextAsync();
                 var responseHeaders = context.Response.Headers;
 
-                responseHeaders.SetValues("Custom1", "value1a", "value1b");
-                responseHeaders.SetValues("Custom2", "value2a, value2b");
+                responseHeaders["Custom1"] = new[] { "value1a", "value1b" };
+                responseHeaders["Custom2"] = "value2a, value2b";
                 var body = context.Response.Body;
                 Assert.False(context.Response.HasStarted);
                 await body.FlushAsync();

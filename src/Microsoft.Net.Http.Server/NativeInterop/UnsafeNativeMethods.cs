@@ -25,6 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
+using Microsoft.Framework.Primitives;
 
 namespace Microsoft.Net.Http.Server
 {
@@ -1048,7 +1049,7 @@ namespace Microsoft.Net.Http.Server
 
             // Server API
 
-            internal static void GetUnknownHeaders(IDictionary<string, string[]> unknownHeaders, byte[] memoryBlob, IntPtr originalAddress)
+            internal static void GetUnknownHeaders(IDictionary<string, StringValues> unknownHeaders, byte[] memoryBlob, IntPtr originalAddress)
             {
                 // Return value.
                 fixed (byte* pMemoryBlob = memoryBlob)
@@ -1079,7 +1080,7 @@ namespace Microsoft.Net.Http.Server
                                 }
                                 // Note that Http.Sys currently collapses all headers of the same name to a single coma seperated string,
                                 // so we can just call Set.
-                                unknownHeaders[headerName] = new[] { headerValue };
+                                unknownHeaders[headerName] = headerValue;
                             }
                             pUnknownHeader++;
                         }
