@@ -7,6 +7,7 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.Framework.Logging;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Diagnostics
 {
@@ -87,10 +88,10 @@ namespace Microsoft.AspNet.Diagnostics
         private Task ClearCacheHeaders(object state)
         {
             var response = (HttpResponse)state;
-            response.Headers.Set("Cache-Control", "no-cache");
-            response.Headers.Set("Pragma", "no-cache");
-            response.Headers.Set("Expires", "-1");
-            response.Headers.Remove("ETag");
+            response.Headers[HeaderNames.CacheControl] = "no-cache";
+            response.Headers[HeaderNames.Pragma] = "no-cache";
+            response.Headers[HeaderNames.Expires] = "-1";
+            response.Headers.Remove(HeaderNames.ETag);
             return Task.FromResult(0);
         }
     }

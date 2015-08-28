@@ -27,7 +27,7 @@ using System.Globalization
 #line 3 "DiagnosticsPage.cshtml"
   
     Response.ContentType = "text/html";
-    string error = Request.Query.Get("error");
+    string error = Request.Query["error"];
     if (!string.IsNullOrWhiteSpace(error))
     {
         throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "User requested error '{0}'", error));

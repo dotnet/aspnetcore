@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using Microsoft.AspNet.Http;
+using Microsoft.Framework.Primitives;
 
 namespace Microsoft.AspNet.Diagnostics.Views
 {
@@ -38,14 +39,6 @@ namespace Microsoft.AspNet.Diagnostics.Views
         /// Request headers.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly", Justification = "Model class contains collection")]
-        public IDictionary<string, string[]> Headers { get; set; }
-
-        /* TODO:
-        /// <summary>
-        /// The request environment
-        /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly", Justification = "Model class contains collection")]
-        public HttpContext Environment { get; set; }
-        */
+        public IDictionary<string, StringValues> Headers { get; set; }
     }
 }

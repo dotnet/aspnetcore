@@ -118,7 +118,7 @@ namespace Microsoft.AspNet.Diagnostics.Elm
                 }
                 if (context.Request.Query.ContainsKey("name"))
                 {
-                    var namePrefix = context.Request.Query.GetValues("name")[0];
+                    var namePrefix = context.Request.Query["name"];
                     options.NamePrefix = namePrefix;
                 }
             }
