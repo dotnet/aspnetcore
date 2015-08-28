@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.Primitives;
 using Microsoft.Framework.WebEncoders;
 using Microsoft.Net.Http.Headers;
 
@@ -151,7 +152,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
             if (!ChunkSize.HasValue || ChunkSize.Value > templateLength + escapedValue.Length + (quoted ? 2 : 0))
             {
                 template.Value = quoted ? Quote(escapedValue) : escapedValue;
-                responseHeaders.AppendValues(Constants.Headers.SetCookie, template.ToString());
+                responseHeaders.Append(Constants.Headers.SetCookie, template.ToString());
             }
             else if (ChunkSize.Value < templateLength + (quoted ? 2 : 0) + 10)
             {
@@ -171,7 +172,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
                 var cookieChunkCount = (int)Math.Ceiling(escapedValue.Length * 1.0 / dataSizePerCookie);
 
                 template.Value = "chunks:" + cookieChunkCount.ToString(CultureInfo.InvariantCulture);
-                responseHeaders.AppendValues(Constants.Headers.SetCookie, template.ToString());
+                responseHeaders.Append(Constants.Headers.SetCookie, template.ToString());
 
                 var chunks = new string[cookieChunkCount];
                 var offset = 0;
@@ -186,7 +187,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
                     template.Value = quoted ? Quote(segment) : segment;
                     chunks[chunkId - 1] = template.ToString();
                 }
-                responseHeaders.AppendValues(Constants.Headers.SetCookie, chunks);
+                responseHeaders.Append(Constants.Headers.SetCookie, chunks);
             }
         }
 
@@ -233,10 +234,10 @@ namespace Microsoft.AspNet.Authentication.Cookies
             }
 
             var responseHeaders = context.Response.Headers;
-            var existingValues = responseHeaders.GetValues(Constants.Headers.SetCookie);
-            if (existingValues != null)
+            var existingValues = responseHeaders[Constants.Headers.SetCookie];
+            if (!StringValues.IsNullOrEmpty(existingValues))
             {
-                responseHeaders.SetValues(Constants.Headers.SetCookie, existingValues.Where(value => !rejectPredicate(value)).ToArray());
+                responseHeaders[Constants.Headers.SetCookie] = existingValues.Where(value => !rejectPredicate(value)).ToArray();
             }
 
             AppendResponseCookie(

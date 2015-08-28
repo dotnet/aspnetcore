@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -246,7 +247,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
 
             if (string.Equals(Request.Method, "GET", StringComparison.OrdinalIgnoreCase))
             {
-                message = new OpenIdConnectMessage(Request.Query);
+                message = new OpenIdConnectMessage(Request.Query.Select(pair => new KeyValuePair<string, string[]>(pair.Key, pair.Value)));
 
                 // response_mode=query (explicit or not) and a response_type containing id_token
                 // or token are not considered as a safe combination and MUST be rejected.
@@ -267,7 +268,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             {
                 var form = await Request.ReadFormAsync();
                 Request.Body.Seek(0, SeekOrigin.Begin);
-                message = new OpenIdConnectMessage(form);
+                message = new OpenIdConnectMessage(form.Select(pair => new KeyValuePair<string, string[]>(pair.Key, pair.Value)));
             }
 
             if (message == null)

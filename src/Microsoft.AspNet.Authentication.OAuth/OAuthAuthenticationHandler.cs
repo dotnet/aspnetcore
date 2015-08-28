@@ -5,8 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Security.Cryptography;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
@@ -15,6 +15,7 @@ using Microsoft.AspNet.Http.Features.Authentication;
 using Microsoft.AspNet.WebUtilities;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
+using Microsoft.Framework.Primitives;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.Authentication.OAuth
@@ -85,16 +86,16 @@ namespace Microsoft.AspNet.Authentication.OAuth
                 var query = Request.Query;
 
                 // TODO: Is this a standard error returned by servers?
-                var value = query.Get("error");
-                if (!string.IsNullOrEmpty(value))
+                var value = query["error"];
+                if (!StringValues.IsNullOrEmpty(value))
                 {
                     Logger.LogVerbose("Remote server returned an error: " + Request.QueryString);
                     // TODO: Fail request rather than passing through?
                     return null;
                 }
 
-                var code = query.Get("code");
-                var state = query.Get("state");
+                var code = query["code"];
+                var state = query["state"];
 
                 properties = Options.StateDataFormat.Unprotect(state);
                 if (properties == null)
@@ -108,7 +109,7 @@ namespace Microsoft.AspNet.Authentication.OAuth
                     return new AuthenticationTicket(properties, Options.AuthenticationScheme);
                 }
 
-                if (string.IsNullOrEmpty(code))
+                if (StringValues.IsNullOrEmpty(code))
                 {
                     // Null if the remote server returns an error.
                     return new AuthenticationTicket(properties, Options.AuthenticationScheme);

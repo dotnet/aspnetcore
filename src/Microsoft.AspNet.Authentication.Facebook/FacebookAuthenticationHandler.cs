@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Authentication.Facebook
             var payload = new JObject();
             foreach (string key in form.Keys)
             {
-                payload.Add(string.Equals(key, "expires", StringComparison.OrdinalIgnoreCase) ? "expires_in" : key, form[key]);
+                payload.Add(string.Equals(key, "expires", StringComparison.OrdinalIgnoreCase) ? "expires_in" : key, (string)form[key]);
             }
 
             // The refresh token is not available.

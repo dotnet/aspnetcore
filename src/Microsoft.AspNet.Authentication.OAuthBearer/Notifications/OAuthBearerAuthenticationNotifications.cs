@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Authentication.OAuthBearer
         /// </summary>
         public OAuthBearerAuthenticationNotifications()
         {
-            ApplyChallenge = notification => { notification.HttpContext.Response.Headers.AppendValues("WWW-Authenticate", notification.Options.Challenge); return Task.FromResult(0); };
+            ApplyChallenge = notification => { notification.HttpContext.Response.Headers.Append("WWW-Authenticate", notification.Options.Challenge); return Task.FromResult(0); };
             AuthenticationFailed = notification => Task.FromResult(0);
             MessageReceived = notification => Task.FromResult(0);
             SecurityTokenReceived = notification => Task.FromResult(0);

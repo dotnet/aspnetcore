@@ -16,6 +16,7 @@ using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.WebUtilities;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
+using Microsoft.Framework.Primitives;
 
 namespace Microsoft.AspNet.Authentication.Twitter
 {
@@ -61,21 +62,21 @@ namespace Microsoft.AspNet.Authentication.Twitter
 
                 properties = requestToken.Properties;
 
-                var returnedToken = query.Get("oauth_token");
-                if (string.IsNullOrEmpty(returnedToken))
+                var returnedToken = query["oauth_token"];
+                if (StringValues.IsNullOrEmpty(returnedToken))
                 {
                     Logger.LogWarning("Missing oauth_token");
                     return new AuthenticationTicket(properties, Options.AuthenticationScheme);
                 }
 
-                if (returnedToken != requestToken.Token)
+                if (!string.Equals(returnedToken, requestToken.Token, StringComparison.Ordinal))
                 {
                     Logger.LogWarning("Unmatched token");
                     return new AuthenticationTicket(properties, Options.AuthenticationScheme);
                 }
 
-                var oauthVerifier = query.Get("oauth_verifier");
-                if (string.IsNullOrEmpty(oauthVerifier))
+                var oauthVerifier = query["oauth_verifier"];
+                if (StringValues.IsNullOrEmpty(oauthVerifier))
                 {
                     Logger.LogWarning("Missing or blank oauth_verifier");
                     return new AuthenticationTicket(properties, Options.AuthenticationScheme);

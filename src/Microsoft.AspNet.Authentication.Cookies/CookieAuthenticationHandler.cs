@@ -11,14 +11,13 @@ using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Http.Features.Authentication;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
+using Microsoft.Framework.Primitives;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Authentication.Cookies
 {
     internal class CookieAuthenticationHandler : AuthenticationHandler<CookieAuthenticationOptions>
     {
-        private const string HeaderNameCacheControl = "Cache-Control";
-        private const string HeaderNamePragma = "Pragma";
-        private const string HeaderNameExpires = "Expires";
         private const string HeaderValueNoCache = "no-cache";
         private const string HeaderValueMinusOne = "-1";
         private const string SessionIdClaim = "Microsoft.AspNet.Authentication.Cookies-SessionId";
@@ -344,15 +343,15 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
         private void ApplyHeaders(bool shouldRedirectToReturnUrl = false)
         {
-            Response.Headers.Set(HeaderNameCacheControl, HeaderValueNoCache);
-            Response.Headers.Set(HeaderNamePragma, HeaderValueNoCache);
-            Response.Headers.Set(HeaderNameExpires, HeaderValueMinusOne);
+            Response.Headers[HeaderNames.CacheControl] = HeaderValueNoCache;
+            Response.Headers[HeaderNames.Pragma] = HeaderValueNoCache;
+            Response.Headers[HeaderNames.Expires] = HeaderValueMinusOne;
 
             if (shouldRedirectToReturnUrl && Response.StatusCode == 200)
             {
                 var query = Request.Query;
-                var redirectUri = query.Get(Options.ReturnUrlParameter);
-                if (!string.IsNullOrEmpty(redirectUri)
+                var redirectUri = query[Options.ReturnUrlParameter];
+                if (!StringValues.IsNullOrEmpty(redirectUri)
                     && IsHostRelative(redirectUri))
                 {
                     var redirectContext = new CookieApplyRedirectContext(Context, Options, redirectUri);
