@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
                 c => new
                 {
                     BlogId = c.Column<int>().Annotation("SqlServer:ValueGenerationStrategy", SqlServerIdentityStrategy.IdentityColumn),
-                    Name = c.Column<string>(isNullable: true),
+                    Name = c.Column<string>(nullable: true),
                 })
                 .PrimaryKey("PK_Blog", t => t.BlogId);
             }
