@@ -144,13 +144,9 @@ gb-partial";
 fr-partial";
                 yield return new[] { "fr", expected2 };
 
-                if (!TestPlatformHelper.IsMono)
-                {
-                    // https://github.com/aspnet/Mvc/issues/2759
-                    var expected3 = @"expander-index
+                var expected3 = @"expander-index
 expander-partial";
-                    yield return new[] { "!-invalid-!", expected3 };
-                }
+                yield return new[] { "!-invalid-!", expected3 };
             }
         }
 
@@ -294,11 +290,7 @@ View With Layout
 
                 yield return new[] { "en-GB", expected1 };
 
-                if (!TestPlatformHelper.IsMono)
-                {
-                    // https://github.com/aspnet/Mvc/issues/2759
-                    yield return new[] { "!-invalid-!", expected1 };
-                }
+                yield return new[] { "!-invalid-!", expected1 };
 
                 var expected2 =
  @"<fr-language-layout>
