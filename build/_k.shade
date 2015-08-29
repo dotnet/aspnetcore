@@ -12,6 +12,6 @@ default dnvmUse=''
 
 var dnvmPath='${Directory.GetCurrentDirectory()}\packages\KoreBuild\build\dnvm'
 
-exec program='cmd' commandline='/C dnx ${command}' if='!IsMono && string.IsNullOrEmpty(dnvmUse)'
-exec program='cmd' commandline='/C "${dnvmPath}" run ${dnvmUse} ${command}' if='!IsMono && !string.IsNullOrEmpty(dnvmUse)'
-exec program='dnx' commandline='${command}' if='IsMono'
+exec program='cmd' commandline='/C dnx ${command}' if='!IsLinux && string.IsNullOrEmpty(dnvmUse)'
+exec program='cmd' commandline='/C "${dnvmPath}" run ${dnvmUse} ${command}' if='!IsLinux && !string.IsNullOrEmpty(dnvmUse)'
+exec program='dnx' commandline='${command}' if='IsLinux'
