@@ -1761,7 +1761,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                                     new KeyValuePair<string, SyntaxTreeNode>("class1", new MarkupBlock()),
                                     new KeyValuePair<string, SyntaxTreeNode>(
                                         "class2",
-                                        factory.Markup("").With(SpanChunkGenerator.Null)),
+                                        factory.Markup(string.Empty).With(SpanChunkGenerator.Null)),
                                     new KeyValuePair<string, SyntaxTreeNode>("class3", new MarkupBlock()),
                                 }))
                     },
@@ -1776,7 +1776,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                                     new KeyValuePair<string, SyntaxTreeNode>("class2",  new MarkupBlock()),
                                     new KeyValuePair<string, SyntaxTreeNode>(
                                         "class3",
-                                        factory.Markup("").With(SpanChunkGenerator.Null)),
+                                        factory.Markup(string.Empty).With(SpanChunkGenerator.Null)),
                                 }))
                     },
                 };

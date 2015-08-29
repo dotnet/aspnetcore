@@ -206,23 +206,32 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                     // The goal here is to consume the equal sign and the optional single/double-quote.
 
                     // The coming symbols will either be a quote or value (in the case that the value is unquoted).
-                    // Spaces after/before the equal symbol are not yet supported:
-                    // https://github.com/aspnet/Razor/issues/123
 
                     // TODO: Handle malformed tags, if there's an '=' then there MUST be a value.
                     // https://github.com/aspnet/Razor/issues/104
 
                     SourceLocation symbolStartLocation;
 
+                    // Skip the whitespace preceding the start of the attribute value.
+                    var valueStartIndex = i + 1; // Start from the symbol after '='.
+                    while (valueStartIndex < htmlSymbols.Length &&
+                        (htmlSymbols[valueStartIndex].Type == HtmlSymbolType.WhiteSpace ||
+                        htmlSymbols[valueStartIndex].Type == HtmlSymbolType.NewLine))
+                    {
+                        valueStartIndex++;
+                    }
+
                     // Check for attribute start values, aka single or double quote
-                    if ((i + 1) < htmlSymbols.Length && IsQuote(htmlSymbols[i + 1]))
+                    if (valueStartIndex < htmlSymbols.Length && IsQuote(htmlSymbols[valueStartIndex]))
                     {
                         // Move past the attribute start so we can accept the true value.
-                        i++;
-                        symbolStartLocation = htmlSymbols[i].Start;
+                        valueStartIndex++;
+                        symbolStartLocation = htmlSymbols[valueStartIndex].Start;
 
                         // If there's a start quote then there must be an end quote to be valid, skip it.
                         symbolOffset = 1;
+
+                        i = valueStartIndex - 1;
                     }
                     else
                     {

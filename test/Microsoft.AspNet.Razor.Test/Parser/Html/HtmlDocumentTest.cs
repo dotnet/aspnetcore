@@ -104,9 +104,11 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                     BlockFactory.MarkupTagBlock("<div >"),
                     new MarkupTagBlock(
                         Factory.Markup("<p"),
-                        new MarkupBlock(
-                            Factory.Markup(" class")),
-                        Factory.Markup(" = 'bar'>")),
+                        new MarkupBlock(new AttributeBlockChunkGenerator(name: "class", prefix: new LocationTagged<string>(" class = '", 8, 0, 8), suffix: new LocationTagged<string>("'", 21, 0, 21)),
+                            Factory.Markup(" class = '").With(SpanChunkGenerator.Null),
+                            Factory.Markup("bar").With(new LiteralAttributeChunkGenerator(prefix: new LocationTagged<string>(string.Empty, 18, 0, 18), value: new LocationTagged<string>("bar", 18, 0, 18))),
+                            Factory.Markup("'").With(SpanChunkGenerator.Null)),
+                        Factory.Markup(">")),
                     Factory.Markup(" Foo "),
                     BlockFactory.MarkupTagBlock("</p>"),
                     BlockFactory.MarkupTagBlock("</div >")));

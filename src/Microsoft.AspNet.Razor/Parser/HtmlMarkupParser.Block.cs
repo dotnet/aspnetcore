@@ -463,6 +463,7 @@ namespace Microsoft.AspNet.Razor.Parser
             // http://dev.w3.org/html5/spec/tokenization.html#attribute-name-state
             // Read the 'name' (i.e. read until the '=' or whitespace/newline)
             var name = Enumerable.Empty<HtmlSymbol>();
+            var whitespaceAfterAttributeName = Enumerable.Empty<HtmlSymbol>();
             if (At(HtmlSymbolType.Text))
             {
                 name = ReadWhile(sym =>
@@ -472,6 +473,10 @@ namespace Microsoft.AspNet.Razor.Parser
                                  sym.Type != HtmlSymbolType.CloseAngle &&
                                  sym.Type != HtmlSymbolType.OpenAngle &&
                                  (sym.Type != HtmlSymbolType.ForwardSlash || !NextIs(HtmlSymbolType.CloseAngle)));
+
+                // capture whitespace after attribute name (if any)
+                whitespaceAfterAttributeName = ReadWhile(
+                    sym => sym.Type == HtmlSymbolType.WhiteSpace || sym.Type == HtmlSymbolType.NewLine);
             }
             else
             {
@@ -484,6 +489,10 @@ namespace Microsoft.AspNet.Razor.Parser
             if (!At(HtmlSymbolType.Equals))
             {
                 // Minimized attribute
+
+                // We are at the prefix of the next attribute or the end of tag. Put it back so it is parsed later.
+                PutCurrentBack();
+                PutBack(whitespaceAfterAttributeName);
 
                 // Output anything prior to the attribute, in most cases this will be the tag name:
                 // |<input| checked />. If in-between other attributes this will noop or output malformed attribute
@@ -507,11 +516,14 @@ namespace Microsoft.AspNet.Razor.Parser
             // Start a new markup block for the attribute
             using (Context.StartBlock(BlockType.Markup))
             {
-                AttributePrefix(whitespace, name);
+                AttributePrefix(whitespace, name, whitespaceAfterAttributeName);
             }
         }
 
-        private void AttributePrefix(IEnumerable<HtmlSymbol> whitespace, IEnumerable<HtmlSymbol> nameSymbols)
+        private void AttributePrefix(
+            IEnumerable<HtmlSymbol> whitespace,
+            IEnumerable<HtmlSymbol> nameSymbols,
+            IEnumerable<HtmlSymbol> whitespaceAfterAttributeName)
         {
             // First, determine if this is a 'data-' attribute (since those can't use conditional attributes)
             var name = nameSymbols.GetContent(Span.Start);
@@ -520,13 +532,26 @@ namespace Microsoft.AspNet.Razor.Parser
             // Accept the whitespace and name
             Accept(whitespace);
             Accept(nameSymbols);
+
+            // Since this is not a minimized attribute, the whitespace after attribute name belongs to this attribute.
+            Accept(whitespaceAfterAttributeName);
             Assert(HtmlSymbolType.Equals); // We should be at "="
             AcceptAndMoveNext();
+
+            var whitespaceAfterEquals = ReadWhile(sym => sym.Type == HtmlSymbolType.WhiteSpace || sym.Type == HtmlSymbolType.NewLine);
             var quote = HtmlSymbolType.Unknown;
             if (At(HtmlSymbolType.SingleQuote) || At(HtmlSymbolType.DoubleQuote))
             {
+                // Found a quote, the whitespace belongs to this attribute.
+                Accept(whitespaceAfterEquals);
                 quote = CurrentSymbol.Type;
                 AcceptAndMoveNext();
+            }
+            else if (whitespaceAfterEquals.Any())
+            {
+                // No quotes found after the whitespace. Put it back so that it can be parsed later.
+                PutCurrentBack();
+                PutBack(whitespaceAfterEquals);
             }
 
             // We now have the prefix: (i.e. '      foo="')
@@ -537,10 +562,15 @@ namespace Microsoft.AspNet.Razor.Parser
                 Span.ChunkGenerator = SpanChunkGenerator.Null; // The block chunk generator will render the prefix
                 Output(SpanKind.Markup);
 
-                // Read the values
-                while (!EndOfFile && !IsEndOfAttributeValue(quote, CurrentSymbol))
+                // Read the attribute value only if the value is quoted
+                // or if there is no whitespace between '=' and the unquoted value.
+                if (quote != HtmlSymbolType.Unknown || !whitespaceAfterEquals.Any())
                 {
-                    AttributeValue(quote);
+                    // Read the attribute value.
+                    while (!EndOfFile && !IsEndOfAttributeValue(quote, CurrentSymbol))
+                    {
+                        AttributeValue(quote);
+                    }
                 }
 
                 // Capture the suffix
@@ -566,6 +596,11 @@ namespace Microsoft.AspNet.Razor.Parser
             {
                 // Output the attribute name, the equals and optional quote. Ex: foo="
                 Output(SpanKind.Markup);
+
+                if (quote == HtmlSymbolType.Unknown && whitespaceAfterEquals.Any())
+                {
+                    return;
+                }
 
                 // Not a "conditional" attribute, so just read the value
                 SkipToAndParseCode(sym => IsEndOfAttributeValue(quote, sym));
