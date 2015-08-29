@@ -724,8 +724,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 {
                     { null, null, "text" },
                     { "Byte", null, "number" },
-                    { null, null, "text" },
-                    { "Byte", null, "number" },
                     { "custom-datatype", null, "text" },
                     { "Custom-Datatype", null, "text" },
                     { "date", null, "date" },                  // No date/time special cases since ModelType is string.
