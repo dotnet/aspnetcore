@@ -371,7 +371,8 @@ __dnvm_help() {
     echo "  <nupkg>           install requested $_DNVM_RUNTIME_SHORT_NAME from local package on filesystem"
     echo "  latest            install latest version of $_DNVM_RUNTIME_SHORT_NAME from feed"
     echo "  -OS               the operating system that the runtime targets (default:$(__dnvm_current_os)"
-    echo "  -a|-alias <alias> set alias <alias> for requested $_DNVM_RUNTIME_SHORT_NAME on install"
+    echo "  -alias <alias>    set alias <alias> for requested $_DNVM_RUNTIME_SHORT_NAME on install"
+    echo "  -a|-arch <arch>   architecture to use (x64)"
     echo "  -p|-persistent    set installed version as default"
     echo "  -f|force          force install. Overwrite existing version of $_DNVM_RUNTIME_SHORT_NAME if already installed"
     echo "  -u|unstable       use unstable feed. Installs the $_DNVM_RUNTIME_SHORT_NAME from the unstable feed"
@@ -464,7 +465,7 @@ dnvm()
             do
                 if [[ $1 == "-p" || $1 == "-persistent" ]]; then
                     local persistent="-p"
-                elif [[ $1 == "-a" || $1 == "-alias" ]]; then
+                elif [[ $1 == "-alias" ]]; then
                     local alias=$2
                     shift
                 elif [[ $1 == "-f" || $1 == "-force" ]]; then
@@ -477,7 +478,7 @@ dnvm()
                 elif [[ $1 == "-OS" ]]; then
                     local os=$2
                     shift
-                elif [[ $1 == "-arch" ]]; then
+                elif [[ $1 == "-a" || $1 == "-arch" ]]; then
                     local arch=$2
                     shift
 
