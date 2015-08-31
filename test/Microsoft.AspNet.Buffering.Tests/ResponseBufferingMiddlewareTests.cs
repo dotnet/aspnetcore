@@ -207,7 +207,7 @@ namespace Microsoft.AspNet.Buffering.Tests
                     Assert.False(context.Response.HasStarted);
                     Assert.True(context.Response.Body.CanSeek);
 
-                    var bufferingFeature = context.GetFeature<IHttpBufferingFeature>();
+                    var bufferingFeature = context.Features.Get<IHttpBufferingFeature>();
                     Assert.NotNull(bufferingFeature);
                     bufferingFeature.DisableResponseBuffering();
 
@@ -244,7 +244,7 @@ namespace Microsoft.AspNet.Buffering.Tests
                     Assert.False(context.Response.HasStarted);
                     Assert.True(context.Response.Body.CanSeek);
 
-                    var bufferingFeature = context.GetFeature<IHttpBufferingFeature>();
+                    var bufferingFeature = context.Features.Get<IHttpBufferingFeature>();
                     Assert.NotNull(bufferingFeature);
                     bufferingFeature.DisableResponseBuffering();
 

@@ -28,17 +28,17 @@ namespace Microsoft.AspNet.Buffering
                 return;
             }
 
-            var originalBufferingFeature = httpContext.GetFeature<IHttpBufferingFeature>();
-            var originalSendFileFeature = httpContext.GetFeature<IHttpSendFileFeature>();
+            var originalBufferingFeature = httpContext.Features.Get<IHttpBufferingFeature>();
+            var originalSendFileFeature = httpContext.Features.Get<IHttpSendFileFeature>();
             try
             {
                 // Shim the response stream
                 var bufferStream = new BufferingWriteStream(originalResponseBody);
                 httpContext.Response.Body = bufferStream;
-                httpContext.SetFeature<IHttpBufferingFeature>(new HttpBufferingFeature(bufferStream, originalBufferingFeature));
+                httpContext.Features.Set<IHttpBufferingFeature>(new HttpBufferingFeature(bufferStream, originalBufferingFeature));
                 if (originalSendFileFeature != null)
                 {
-                    httpContext.SetFeature<IHttpSendFileFeature>(new SendFileFeatureWrapper(originalSendFileFeature, bufferStream));
+                    httpContext.Features.Set<IHttpSendFileFeature>(new SendFileFeatureWrapper(originalSendFileFeature, bufferStream));
                 }
 
                 await _next(httpContext);
@@ -57,8 +57,8 @@ namespace Microsoft.AspNet.Buffering
             finally
             {
                 // undo everything
-                httpContext.SetFeature(originalBufferingFeature);
-                httpContext.SetFeature(originalSendFileFeature);
+                httpContext.Features.Set(originalBufferingFeature);
+                httpContext.Features.Set(originalSendFileFeature);
                 httpContext.Response.Body = originalResponseBody;
             }
         }
