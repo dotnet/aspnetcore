@@ -219,8 +219,11 @@ namespace Microsoft.AspNet.Diagnostics.Tests
                 .Returns(true);
             var requestIdentifier = new Mock<IHttpRequestIdentifierFeature>();
             requestIdentifier.Setup(f => f.TraceIdentifier).Returns(Guid.NewGuid().ToString());
-            contextMock.Setup(c => c.Features.Get<IHttpRequestIdentifierFeature>())
-                .Returns(requestIdentifier.Object);
+            var featureCollection = new FeatureCollection();
+            featureCollection.Set<IHttpRequestIdentifierFeature>(requestIdentifier.Object);
+            contextMock
+                .SetupGet(c => c.Features)
+                .Returns(featureCollection);
             return contextMock;
         }
 #endif
