@@ -69,7 +69,7 @@ namespace Microsoft.AspNet.Session
 
             var feature = new SessionFeature();
             feature.Session = _sessionStore.Create(sessionKey, _options.IdleTimeout, tryEstablishSession, isNewSessionKey);
-            context.SetFeature<ISessionFeature>(feature);
+            context.Features.Set<ISessionFeature>(feature);
 
             try
             {
@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.Session
             }
             finally
             {
-                context.SetFeature<ISessionFeature>(null);
+                context.Features.Set<ISessionFeature>(null);
 
                 if (feature.Session != null)
                 {

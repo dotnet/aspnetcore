@@ -362,7 +362,7 @@ namespace Microsoft.AspNet.Session
                 {
                     await next();
 
-                    Assert.Null(httpContext.GetFeature<ISessionFeature>());
+                    Assert.Null(httpContext.Features.Get<ISessionFeature>());
                 });
 
                 app.UseSession();
@@ -403,7 +403,7 @@ namespace Microsoft.AspNet.Session
                     }
 
                     Assert.True(exceptionThrown);
-                    Assert.Null(httpContext.GetFeature<ISessionFeature>());
+                    Assert.Null(httpContext.Features.Get<ISessionFeature>());
                 });
 
                 app.UseSession();
