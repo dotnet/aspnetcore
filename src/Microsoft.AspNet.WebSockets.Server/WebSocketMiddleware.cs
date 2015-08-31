@@ -29,12 +29,12 @@ namespace Microsoft.AspNet.WebSockets.Server
         public Task Invoke(HttpContext context)
         {
             // Detect if an opaque upgrade is available. If so, add a websocket upgrade.
-            var upgradeFeature = context.GetFeature<IHttpUpgradeFeature>();
+            var upgradeFeature = context.Features.Get<IHttpUpgradeFeature>();
             if (upgradeFeature != null)
             {
-                if (_options.ReplaceFeature || context.GetFeature<IHttpWebSocketFeature>() == null)
+                if (_options.ReplaceFeature || context.Features.Get<IHttpWebSocketFeature>() == null)
                 {
-                    context.SetFeature<IHttpWebSocketFeature>(new UpgradeHandshake(context, upgradeFeature, _options));
+                    context.Features.Set<IHttpWebSocketFeature>(new UpgradeHandshake(context, upgradeFeature, _options));
                 }
             }
 
