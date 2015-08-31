@@ -2,11 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Features.Authentication;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.Framework.Logging;
+using Microsoft.Framework.Primitives;
 using Moq;
 using Xunit;
 
@@ -92,10 +96,9 @@ namespace Microsoft.AspNet.Authentication
             public static async Task<CountHandler> Create(string scheme)
             {
                 var handler = new CountHandler();
-                var context = new Mock<HttpContext>();
-                context.Setup(c => c.Request).Returns(new Mock<HttpRequest>().Object);
-                context.Setup(c => c.Response).Returns(new Mock<HttpResponse>().Object);
-                await handler.InitializeAsync(new CountOptions(), context.Object, new LoggerFactory().CreateLogger("CountHandler"), Framework.WebEncoders.UrlEncoder.Default);
+                var context = new DefaultHttpContext();
+                context.Features.Set<IHttpResponseFeature>(new TestResponse());
+                await handler.InitializeAsync(new CountOptions(), context, new LoggerFactory().CreateLogger("CountHandler"), Framework.WebEncoders.UrlEncoder.Default);
                 handler.Options.AuthenticationScheme = scheme;
                 handler.Options.AutomaticAuthentication = true;
                 return handler;
@@ -116,10 +119,9 @@ namespace Microsoft.AspNet.Authentication
             public static async Task<TestHandler> Create(string scheme)
             {
                 var handler = new TestHandler();
-                var context = new Mock<HttpContext>();
-                context.Setup(c => c.Request).Returns(new Mock<HttpRequest>().Object);
-                context.Setup(c => c.Response).Returns(new Mock<HttpResponse>().Object);
-                await handler.InitializeAsync(new TestOptions(), context.Object, new LoggerFactory().CreateLogger("TestHandler"), Framework.WebEncoders.UrlEncoder.Default);
+                var context = new DefaultHttpContext();
+                context.Features.Set<IHttpResponseFeature>(new TestResponse());
+                await handler.InitializeAsync(new TestOptions(), context, new LoggerFactory().CreateLogger("TestHandler"), Framework.WebEncoders.UrlEncoder.Default);
                 handler.Options.AuthenticationScheme = scheme;
                 return handler;
             }
@@ -147,10 +149,9 @@ namespace Microsoft.AspNet.Authentication
             public static async Task<TestAutoHandler> Create(string scheme, bool auto)
             {
                 var handler = new TestAutoHandler();
-                var context = new Mock<HttpContext>();
-                context.Setup(c => c.Request).Returns(new Mock<HttpRequest>().Object);
-                context.Setup(c => c.Response).Returns(new Mock<HttpResponse>().Object);
-                await handler.InitializeAsync(new TestAutoOptions(), context.Object, new LoggerFactory().CreateLogger("TestAutoHandler"), Framework.WebEncoders.UrlEncoder.Default);
+                var context = new DefaultHttpContext();
+                context.Features.Set<IHttpResponseFeature>(new TestResponse());
+                await handler.InitializeAsync(new TestAutoOptions(), context, new LoggerFactory().CreateLogger("TestAutoHandler"), Framework.WebEncoders.UrlEncoder.Default);
                 handler.Options.AuthenticationScheme = scheme;
                 handler.Options.AutomaticAuthentication = auto;
                 return handler;
@@ -159,6 +160,78 @@ namespace Microsoft.AspNet.Authentication
             protected override Task<AuthenticationTicket> HandleAuthenticateAsync()
             {
                 return Task.FromResult<AuthenticationTicket>(null);
+            }
+        }
+
+        private class TestResponse : IHttpResponseFeature
+        {
+            public Stream Body
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+
+                set
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public bool HasStarted
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public IDictionary<string, StringValues> Headers
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+
+                set
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public string ReasonPhrase
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+
+                set
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public int StatusCode
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+
+                set
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public void OnCompleted(Func<object, Task> callback, object state)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void OnStarting(Func<object, Task> callback, object state)
+            {
             }
         }
     }
