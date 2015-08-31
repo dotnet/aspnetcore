@@ -324,7 +324,7 @@ namespace Microsoft.AspNet.StaticFiles
             ApplyResponseHeaders(Constants.Status200Ok);
 
             string physicalPath = _fileInfo.PhysicalPath;
-            var sendFile = _context.GetFeature<IHttpSendFileFeature>();
+            var sendFile = _context.Features.Get<IHttpSendFileFeature>();
             if (sendFile != null && !string.IsNullOrEmpty(physicalPath))
             {
                 await sendFile.SendFileAsync(physicalPath, 0, _length, _context.RequestAborted);
@@ -371,7 +371,7 @@ namespace Microsoft.AspNet.StaticFiles
             ApplyResponseHeaders(Constants.Status206PartialContent);
 
             string physicalPath = _fileInfo.PhysicalPath;
-            var sendFile = _context.GetFeature<IHttpSendFileFeature>();
+            var sendFile = _context.Features.Get<IHttpSendFileFeature>();
             if (sendFile != null && !string.IsNullOrEmpty(physicalPath))
             {
                 if (_logger.IsEnabled(LogLevel.Verbose))
