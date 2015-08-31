@@ -253,17 +253,17 @@ namespace Microsoft.AspNet.Server.WebListener
         [Fact]
         public async Task Server_SetQueueLimit_Success()
         {
-            // TODO: This is just to get a dynamic port
+            // This is just to get a dynamic port
             string address;
             using (Utilities.CreateHttpServer(out address, env => Task.FromResult(0))) { }
 
                 var factory = new ServerFactory(loggerFactory: null);
-            var serverInfo = (ServerInformation)factory.Initialize(configuration: null);
-            serverInfo.Listener.UrlPrefixes.Add(UrlPrefix.Create(address));
+            var serverFeatures = factory.Initialize(configuration: null);
+            var listener = serverFeatures.Get<Microsoft.Net.Http.Server.WebListener>();
+            listener.UrlPrefixes.Add(UrlPrefix.Create(address));
+            listener.SetRequestQueueLimit(1001);
 
-            serverInfo.Listener.SetRequestQueueLimit(1001);
-
-            using (factory.Start(serverInfo, env => Task.FromResult(0)))
+            using (factory.Start(serverFeatures, env => Task.FromResult(0)))
             {
                 string response = await SendRequestAsync(address);
                 Assert.Equal(string.Empty, response);

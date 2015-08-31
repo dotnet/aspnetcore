@@ -174,14 +174,15 @@ namespace Microsoft.AspNet.Server.WebListener
             server.Dispose();
             var rootUri = new Uri(root);
             var factory = new ServerFactory(loggerFactory: null);
-            var serverInfo = (ServerInformation)factory.Initialize(configuration: null);
+            var serverFeatures = factory.Initialize(configuration: null);
+            var listener = serverFeatures.Get<Microsoft.Net.Http.Server.WebListener>();
 
             foreach (string path in new[] { "/", "/11", "/2/3", "/2", "/11/2" })
             {
-                serverInfo.Listener.UrlPrefixes.Add(UrlPrefix.Create(rootUri.Scheme, rootUri.Host, rootUri.Port, path));
+                listener.UrlPrefixes.Add(UrlPrefix.Create(rootUri.Scheme, rootUri.Host, rootUri.Port, path));
             }
 
-            return factory.Start(serverInfo, app);
+            return factory.Start(serverFeatures, app);
         }
 
         private async Task<string> SendRequestAsync(string uri)

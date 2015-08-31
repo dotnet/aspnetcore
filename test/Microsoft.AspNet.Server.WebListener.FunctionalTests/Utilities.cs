@@ -17,6 +17,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http.Features;
 using Microsoft.Net.Http.Server;
 
 namespace Microsoft.AspNet.Server.WebListener
@@ -61,12 +62,13 @@ namespace Microsoft.AspNet.Server.WebListener
                     root = prefix.Scheme + "://" + prefix.Host + ":" + prefix.Port;
                     baseAddress = prefix.ToString();
 
-                    var serverInfo = (ServerInformation)factory.Initialize(configuration: null);
-                    serverInfo.Listener.UrlPrefixes.Add(prefix);
-                    serverInfo.Listener.AuthenticationManager.AuthenticationSchemes = authType;
+                    var serverFeatures = factory.Initialize(configuration: null);
+                    var listener = serverFeatures.Get<Microsoft.Net.Http.Server.WebListener>();
+                    listener.UrlPrefixes.Add(prefix);
+                    listener.AuthenticationManager.AuthenticationSchemes = authType;
                     try
                     {
-                        return factory.Start(serverInfo, app);
+                        return factory.Start(serverFeatures, app);
                     }
                     catch (WebListenerException)
                     {
@@ -85,10 +87,9 @@ namespace Microsoft.AspNet.Server.WebListener
         internal static IDisposable CreateServer(string scheme, string host, int port, string path, AppFunc app)
         {
             var factory = new ServerFactory(loggerFactory: null);
-            var serverInfo = (ServerInformation)factory.Initialize(configuration: null);
-            serverInfo.Listener.UrlPrefixes.Add(UrlPrefix.Create(scheme, host, port, path));
-
-            return factory.Start(serverInfo, app);
+            var serverFeatures = factory.Initialize(configuration: null);
+            serverFeatures.Get<Microsoft.Net.Http.Server.WebListener>().UrlPrefixes.Add(UrlPrefix.Create(scheme, host, port, path));
+            return factory.Start(serverFeatures, app);
         }
     }
 }

@@ -64,11 +64,14 @@ namespace Microsoft.AspNet.Server.WebListener
         /// </summary>
         /// <param name="properties"></param>
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Disposed by caller")]
-        public IServerInformation Initialize(IConfiguration configuration)
+        public IFeatureCollection Initialize(IConfiguration configuration)
         {
             Microsoft.Net.Http.Server.WebListener listener = new Microsoft.Net.Http.Server.WebListener(_loggerFactory);
             ParseAddresses(configuration, listener);
-            return new ServerInformation(new MessagePump(listener, _loggerFactory));
+            var serverFeatures = new FeatureCollection();
+            serverFeatures.Set(listener);
+            serverFeatures.Set(new MessagePump(listener, _loggerFactory));
+            return serverFeatures;
         }
 
         /// <summary>
@@ -76,27 +79,25 @@ namespace Microsoft.AspNet.Server.WebListener
         /// <param name="app">The per-request application entry point.</param>
         /// <param name="server">The value returned </param>
         /// <returns>The server.  Invoke Dispose to shut down.</returns>
-        public IDisposable Start(IServerInformation server, AppFunc app)
+        public IDisposable Start(IFeatureCollection serverFeatures, AppFunc app)
         {
-            if (server == null)
+            if (serverFeatures == null)
             {
-                throw new ArgumentNullException("server");
+                throw new ArgumentNullException("serverFeatures");
             }
             if (app == null)
             {
                 throw new ArgumentNullException("app");
             }
 
-            var serverInfo = server as ServerInformation;
-            if (serverInfo == null)
+            var messagePump = serverFeatures.Get<MessagePump>();
+            if (messagePump == null)
             {
-                throw new ArgumentException("server");
+                throw new InvalidOperationException("messagePump");
             }
 
-            // TODO: var capabilities = new Dictionary<string, object>();
-
-            serverInfo.MessagePump.Start(app);
-            return serverInfo.MessagePump;
+            messagePump.Start(app);
+            return messagePump;
         }
 
         private void ParseAddresses(IConfiguration config, Microsoft.Net.Http.Server.WebListener listener)

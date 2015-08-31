@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Server.WebListener;
+using Microsoft.AspNet.Http.Features;
 using Microsoft.Framework.Logging;
 
 namespace HotAddSample
@@ -15,8 +15,7 @@ namespace HotAddSample
         {
             loggerfactory.AddConsole(LogLevel.Information);
 
-            var server = (ServerInformation)app.Server;
-            var listener = server.Listener;
+            var listener = app.ServerFeatures.Get<Microsoft.Net.Http.Server.WebListener>();
             listener.UrlPrefixes.Add("http://localhost:12346/pathBase/");
 
             app.Use(async (context, next) =>

@@ -4,7 +4,7 @@ using System.Text;
 using System.Threading;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Server.WebListener;
+using Microsoft.AspNet.Http.Features;
 using Microsoft.Framework.Logging;
 using Microsoft.Net.Http.Server;
 
@@ -14,8 +14,8 @@ namespace SelfHostServer
     {
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerfactory)
         {
-            var info = (ServerInformation)app.Server;
-            info.Listener.AuthenticationManager.AuthenticationSchemes = AuthenticationSchemes.AllowAnonymous;
+            var listener = app.ServerFeatures.Get<WebListener>();
+            listener.AuthenticationManager.AuthenticationSchemes = AuthenticationSchemes.AllowAnonymous;
 
             loggerfactory.AddConsole(LogLevel.Verbose);
 
