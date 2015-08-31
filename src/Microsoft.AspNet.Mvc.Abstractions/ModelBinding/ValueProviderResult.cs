@@ -134,9 +134,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <summary>
-        /// Gets an <see cref="IEnumerator<string>"/> for this <see cref="ValueProviderResult"/>.
+        /// Gets an <see cref="IEnumerator{string}"/> for this <see cref="ValueProviderResult"/>.
         /// </summary>
-        /// <returns>An <see cref="IEnumerator<string>"/>.</returns>
+        /// <returns>An <see cref="IEnumerator{string}"/>.</returns>
         public IEnumerator<string> GetEnumerator()
         {
             return ((IEnumerable<string>)Values).GetEnumerator();
