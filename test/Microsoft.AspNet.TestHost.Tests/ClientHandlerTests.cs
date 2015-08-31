@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.TestHost
                 Assert.NotNull(context.Response.Headers);
                 Assert.NotNull(context.Response.Body);
                 Assert.Equal(200, context.Response.StatusCode);
-                Assert.Null(context.GetFeature<IHttpResponseFeature>().ReasonPhrase);
+                Assert.Null(context.Features.Get<IHttpResponseFeature>().ReasonPhrase);
                 Assert.Equal("example.com", context.Request.Host.Value);
 
                 return Task.FromResult(0);

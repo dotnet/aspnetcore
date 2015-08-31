@@ -241,7 +241,7 @@ namespace Microsoft.AspNet.Hosting
 
             // Assert
             Assert.NotNull(httpContext);
-            Assert.IsType<HttpRequestIdentifierFeature>(httpContext.GetFeature<IHttpRequestIdentifierFeature>());
+            Assert.IsType<HttpRequestIdentifierFeature>(httpContext.Features.Get<IHttpRequestIdentifierFeature>());
         }
 
         [Fact]
@@ -264,7 +264,7 @@ namespace Microsoft.AspNet.Hosting
 
             // Assert
             Assert.NotNull(httpContext);
-            Assert.IsType<HttpRequestIdentifierFeature>(httpContext.GetFeature<IHttpRequestIdentifierFeature>());
+            Assert.IsType<HttpRequestIdentifierFeature>(httpContext.Features.Get<IHttpRequestIdentifierFeature>());
         }
 
         [Fact]
@@ -286,7 +286,7 @@ namespace Microsoft.AspNet.Hosting
 
             // Assert
             Assert.NotNull(httpContext);
-            Assert.Same(requestIdentifierFeature, httpContext.GetFeature<IHttpRequestIdentifierFeature>());
+            Assert.Same(requestIdentifierFeature, httpContext.Features.Get<IHttpRequestIdentifierFeature>());
         }
 
         [Fact]

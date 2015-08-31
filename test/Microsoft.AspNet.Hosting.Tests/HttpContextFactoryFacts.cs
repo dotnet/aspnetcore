@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using Microsoft.AspNet.Hosting.Builder;
+using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Owin;
 using Xunit;
 
@@ -18,8 +19,8 @@ namespace Microsoft.AspNet.Hosting.Tests
             var context = contextFactory.CreateHttpContext(new OwinFeatureCollection(env));
             
             // Setting a feature will throw if the above feature collection is not wrapped in a mutable feature collection.
-            context.SetFeature<ICustomFeature>(new CustomFeature(100));
-            Assert.Equal(100, context.GetFeature<ICustomFeature>().Value);
+            context.Features.Set<ICustomFeature>(new CustomFeature(100));
+            Assert.Equal(100, context.Features.Get<ICustomFeature>().Value);
         }
 
         private interface ICustomFeature

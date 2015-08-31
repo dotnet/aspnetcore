@@ -162,14 +162,14 @@ namespace Microsoft.AspNet.Hosting.Internal
 
         private string GetRequestIdentifier(HttpContext httpContext)
         {
-            var requestIdentifierFeature = httpContext.GetFeature<IHttpRequestIdentifierFeature>();
+            var requestIdentifierFeature = httpContext.Features.Get<IHttpRequestIdentifierFeature>();
             if (requestIdentifierFeature == null)
             {
                 requestIdentifierFeature = new HttpRequestIdentifierFeature()
                 {
                     TraceIdentifier = Guid.NewGuid().ToString()
                 };
-                httpContext.SetFeature(requestIdentifierFeature);
+                httpContext.Features.Set(requestIdentifierFeature);
             }
 
             return requestIdentifierFeature.TraceIdentifier;

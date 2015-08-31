@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.TestHost
                 {
                     try
                     {
-                        await _next(state.FeatureCollection);
+                        await _next(state.HttpContext.Features);
                         state.CompleteResponse();
                     }
                     catch (Exception ex)
@@ -108,11 +108,10 @@ namespace Microsoft.AspNet.TestHost
                     request.Headers.Host = request.RequestUri.GetComponents(UriComponents.HostAndPort, UriFormat.UriEscaped);
                 }
 
-                FeatureCollection = new FeatureCollection();
-                HttpContext = new DefaultHttpContext(FeatureCollection);
-                HttpContext.SetFeature<IHttpRequestFeature>(new RequestFeature());
+                HttpContext = new DefaultHttpContext();
+                HttpContext.Features.Set<IHttpRequestFeature>(new RequestFeature());
                 _responseFeature = new ResponseFeature();
-                HttpContext.SetFeature<IHttpResponseFeature>(_responseFeature);
+                HttpContext.Features.Set<IHttpResponseFeature>(_responseFeature);
                 var serverRequest = HttpContext.Request;
                 serverRequest.Protocol = "HTTP/" + request.Version.ToString(2);
                 serverRequest.Scheme = request.RequestUri.Scheme;
@@ -154,8 +153,6 @@ namespace Microsoft.AspNet.TestHost
 
             public HttpContext HttpContext { get; private set; }
 
-            public IFeatureCollection FeatureCollection { get; private set; }
-
             public Task<HttpResponseMessage> ResponseTask
             {
                 get { return _responseTcs.Task; }
@@ -180,7 +177,7 @@ namespace Microsoft.AspNet.TestHost
 
                 var response = new HttpResponseMessage();
                 response.StatusCode = (HttpStatusCode)HttpContext.Response.StatusCode;
-                response.ReasonPhrase = HttpContext.GetFeature<IHttpResponseFeature>().ReasonPhrase;
+                response.ReasonPhrase = HttpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase;
                 response.RequestMessage = _request;
                 // response.Version = owinResponse.Protocol;
 
