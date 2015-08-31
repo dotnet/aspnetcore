@@ -28,10 +28,10 @@ namespace System.Web.Http
         public string Message { get; private set; }
 
         /// <inheritdoc />
-        public override async Task ExecuteResultAsync(ActionContext context)
+        public override Task ExecuteResultAsync(ActionContext context)
         {
             context.HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
-            await base.ExecuteResultAsync(context);
+            return base.ExecuteResultAsync(context);
         }
     }
 }

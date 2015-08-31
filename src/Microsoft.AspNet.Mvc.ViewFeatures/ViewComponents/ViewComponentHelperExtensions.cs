@@ -21,16 +21,16 @@ namespace Microsoft.AspNet.Mvc
             helper.RenderInvoke(typeof(TComponent), args);
         }
 
-        public static async Task<HtmlString> InvokeAsync<TComponent>([NotNull] this IViewComponentHelper helper,
+        public static Task<HtmlString> InvokeAsync<TComponent>([NotNull] this IViewComponentHelper helper,
             params object[] args)
         {
-            return await helper.InvokeAsync(typeof(TComponent), args);
+            return helper.InvokeAsync(typeof(TComponent), args);
         }
 
-        public static async Task RenderInvokeAsync<TComponent>([NotNull] this IViewComponentHelper helper,
+        public static Task RenderInvokeAsync<TComponent>([NotNull] this IViewComponentHelper helper,
             params object[] args)
         {
-            await helper.RenderInvokeAsync(typeof(TComponent), args);
+            return helper.RenderInvokeAsync(typeof(TComponent), args);
         }
     }
 }

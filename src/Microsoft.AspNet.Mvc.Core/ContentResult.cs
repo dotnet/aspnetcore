@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         public int? StatusCode { get; set; }
 
-        public override async Task ExecuteResultAsync([NotNull] ActionContext context)
+        public override Task ExecuteResultAsync([NotNull] ActionContext context)
         {
             var response = context.HttpContext.Response;
             var contentTypeHeader = ContentType;
@@ -54,8 +54,9 @@ namespace Microsoft.AspNet.Mvc
 
             if (Content != null)
             {
-                await response.WriteAsync(Content, contentTypeHeader?.Encoding ?? DefaultContentType.Encoding);
+                return response.WriteAsync(Content, contentTypeHeader?.Encoding ?? DefaultContentType.Encoding);
             }
+            return TaskCache.CompletedTask;
         }
     }
 }

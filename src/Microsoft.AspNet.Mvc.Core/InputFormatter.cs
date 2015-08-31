@@ -82,15 +82,15 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <inheritdoc />
-        public virtual async Task<object> ReadAsync(InputFormatterContext context)
+        public virtual Task<object> ReadAsync(InputFormatterContext context)
         {
             var request = context.HttpContext.Request;
             if (request.ContentLength == 0)
             {
-                return GetDefaultValueForType(context.ModelType);
+                return Task.FromResult(GetDefaultValueForType(context.ModelType));
             }
 
-            return await ReadRequestBodyAsync(context);
+            return ReadRequestBodyAsync(context);
         }
 
         /// <summary>

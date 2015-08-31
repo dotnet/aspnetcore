@@ -101,7 +101,7 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        private async Task InvokeActionAsync(RouteContext context, ActionDescriptor actionDescriptor)
+        private Task InvokeActionAsync(RouteContext context, ActionDescriptor actionDescriptor)
         {
             var actionContext = new ActionContext(context.HttpContext, context.RouteData, actionDescriptor);
             _actionContextAccessor.ActionContext = actionContext;
@@ -114,7 +114,7 @@ namespace Microsoft.AspNet.Mvc
                         actionDescriptor.DisplayName));
             }
 
-            await invoker.InvokeAsync();
+            return invoker.InvokeAsync();
         }
 
         private void EnsureServices(HttpContext context)

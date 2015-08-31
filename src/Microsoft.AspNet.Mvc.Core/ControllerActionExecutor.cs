@@ -25,16 +25,16 @@ namespace Microsoft.AspNet.Mvc
             return CastToObject<T>(task);
         }
 
-        public static async Task<object> ExecuteAsync(
+        public static Task<object> ExecuteAsync(
             MethodInfo actionMethodInfo,
             object instance,
             IDictionary<string, object> actionArguments)
         {
             var orderedArguments = PrepareArguments(actionArguments, actionMethodInfo.GetParameters());
-            return await ExecuteAsync(actionMethodInfo, instance, orderedArguments);
+            return ExecuteAsync(actionMethodInfo, instance, orderedArguments);
         }
 
-        public static async Task<object> ExecuteAsync(
+        public static Task<object> ExecuteAsync(
             MethodInfo actionMethodInfo,
             object instance,
             object[] orderedActionArguments)
@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Mvc
                 exceptionDispatchInfo.Throw();
             }
 
-            return await CoerceResultToTaskAsync(
+            return CoerceResultToTaskAsync(
                 invocationResult,
                 actionMethodInfo.ReturnType,
                 actionMethodInfo.Name,

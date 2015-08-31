@@ -189,13 +189,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         // Used when the ValueProvider contains the collection to be bound as multiple elements, e.g. foo[0], foo[1].
-        private async Task<CollectionResult> BindComplexCollection(ModelBindingContext bindingContext)
+        private Task<CollectionResult> BindComplexCollection(ModelBindingContext bindingContext)
         {
             var indexPropertyName = ModelNames.CreatePropertyModelName(bindingContext.ModelName, "index");
             var valueProviderResultIndex = bindingContext.ValueProvider.GetValue(indexPropertyName);
             var indexNames = GetIndexNamesFromValueProviderResult(valueProviderResultIndex);
 
-            return await BindComplexCollectionFromIndexes(bindingContext, indexNames);
+            return BindComplexCollectionFromIndexes(bindingContext, indexNames);
         }
 
         // Internal for testing.

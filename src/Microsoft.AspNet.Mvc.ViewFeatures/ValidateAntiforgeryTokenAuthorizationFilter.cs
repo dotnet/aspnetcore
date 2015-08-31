@@ -16,9 +16,9 @@ namespace Microsoft.AspNet.Mvc
             _antiforgery = antiforgery;
         }
 
-        public async Task OnAuthorizationAsync([NotNull] AuthorizationContext context)
+        public Task OnAuthorizationAsync([NotNull] AuthorizationContext context)
         {
-            await _antiforgery.ValidateRequestAsync(context.HttpContext);
+            return _antiforgery.ValidateRequestAsync(context.HttpContext);
         }
     }
 }

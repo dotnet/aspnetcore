@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         public int? StatusCode { get; set; }
 
-        public override async Task ExecuteResultAsync(ActionContext context)
+        public override Task ExecuteResultAsync(ActionContext context)
         {
             var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<ObjectResult>>();
                             
@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.Mvc
                 logger.LogWarning("No output formatter was found to write the response.");
 
                 context.HttpContext.Response.StatusCode = StatusCodes.Status406NotAcceptable;
-                return;
+                return TaskCache.CompletedTask;
             }
 
             logger.LogVerbose(
@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.Mvc
             }
 
             OnFormatting(context);
-            await selectedFormatter.WriteAsync(formatterContext);
+            return selectedFormatter.WriteAsync(formatterContext);
         }
 
         public virtual IOutputFormatter SelectFormatter(

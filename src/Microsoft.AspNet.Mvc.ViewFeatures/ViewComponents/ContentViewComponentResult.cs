@@ -69,9 +69,9 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         /// <param name="context">The <see cref="ViewComponentContext"/>.</param>
         /// <returns>A completed <see cref="Task"/>.</returns>
-        public async Task ExecuteAsync([NotNull] ViewComponentContext context)
+        public Task ExecuteAsync([NotNull] ViewComponentContext context)
         {
-            await context.Writer.WriteAsync(EncodedContent.ToString());
+            return context.Writer.WriteAsync(EncodedContent.ToString());
         }
     }
 }

@@ -125,7 +125,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
         }
 
-        private async Task RenderPageCoreAsync(IRazorPage page, ViewContext context)
+        private Task RenderPageCoreAsync(IRazorPage page, ViewContext context)
         {
             page.IsPartial = IsPartial;
             page.ViewContext = context;
@@ -135,7 +135,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
 
             _pageActivator.Activate(page, context);
-            await page.ExecuteAsync();
+            return page.ExecuteAsync();
         }
 
         private async Task RenderViewStartAsync(ViewContext context)

@@ -158,10 +158,10 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <inheritdoc />
-        public async Task WriteAsync([NotNull] OutputFormatterContext context)
+        public Task WriteAsync([NotNull] OutputFormatterContext context)
         {
             WriteResponseHeaders(context);
-            await WriteResponseBodyAsync(context);
+            return WriteResponseBodyAsync(context);
         }
 
         /// <summary>

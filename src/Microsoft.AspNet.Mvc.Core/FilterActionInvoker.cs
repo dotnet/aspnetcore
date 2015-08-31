@@ -186,12 +186,12 @@ namespace Microsoft.AspNet.Mvc.Core
             return context.Results.Select(item => item.Filter).Where(filter => filter != null).ToArray();
         }
 
-        private async Task InvokeAllAuthorizationFiltersAsync()
+        private Task InvokeAllAuthorizationFiltersAsync()
         {
             _cursor.SetStage(FilterStage.AuthorizationFilters);
 
             _authorizationContext = new AuthorizationContext(ActionContext, _filters);
-            await InvokeAuthorizationFilterAsync();
+            return InvokeAuthorizationFilterAsync();
         }
 
         private async Task InvokeAuthorizationFilterAsync()
@@ -236,7 +236,7 @@ namespace Microsoft.AspNet.Mvc.Core
             }
         }
 
-        private async Task InvokeAllResourceFiltersAsync()
+        private Task InvokeAllResourceFiltersAsync()
         {
             _cursor.SetStage(FilterStage.ResourceFilters);
 
@@ -249,7 +249,7 @@ namespace Microsoft.AspNet.Mvc.Core
             context.ValueProviderFactories = new CopyOnWriteList<IValueProviderFactory>(_valueProviderFactories);
 
             _resourceExecutingContext = context;
-            await InvokeResourceFilterAsync();
+            return InvokeResourceFilterAsync();
         }
 
         private async Task<ResourceExecutedContext> InvokeResourceFilterAsync()
@@ -397,11 +397,11 @@ namespace Microsoft.AspNet.Mvc.Core
             return _resourceExecutedContext;
         }
 
-        private async Task InvokeAllExceptionFiltersAsync()
+        private Task InvokeAllExceptionFiltersAsync()
         {
             _cursor.SetStage(FilterStage.ExceptionFilters);
 
-            await InvokeExceptionFilterAsync();
+            return InvokeExceptionFilterAsync();
         }
 
         private async Task InvokeExceptionFilterAsync()
@@ -654,24 +654,9 @@ namespace Microsoft.AspNet.Mvc.Core
                 {
                     await item.FilterAsync.OnResultExecutionAsync(_resultExecutingContext, InvokeResultFilterAsync);
 
-                    if (_resultExecutedContext == null)
+                    if (_resultExecutedContext == null || _resultExecutingContext.Cancel == true)
                     {
-                        // Short-circuited by not calling next
-
-                        _logger.LogVerbose(ResourceFilterShortCircuitLogMessage, item.FilterAsync.GetType().FullName);
-
-                        _resultExecutedContext = new ResultExecutedContext(
-                            _resultExecutingContext,
-                            _filters,
-                            _resultExecutingContext.Result,
-                            Instance)
-                        {
-                            Canceled = true,
-                        };
-                    }
-                    else if (_resultExecutingContext.Cancel == true)
-                    {
-                        // Short-circuited by setting Cancel == true
+                        // Short-circuited by not calling next || Short-circuited by setting Cancel == true
 
                         _logger.LogVerbose(ResourceFilterShortCircuitLogMessage, item.FilterAsync.GetType().FullName);
 

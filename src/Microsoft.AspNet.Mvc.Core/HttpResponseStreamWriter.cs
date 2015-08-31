@@ -146,9 +146,9 @@ namespace Microsoft.AspNet.Mvc
             FlushInternal(true, true);
         }
 
-        public override async Task FlushAsync()
+        public override Task FlushAsync()
         {
-            await FlushInternalAsync(true, true);
+            return FlushInternalAsync(flushStream: true, flushEncoder: true);
         }
 
         // Do not flush the stream on Dispose, as this will cause response to be

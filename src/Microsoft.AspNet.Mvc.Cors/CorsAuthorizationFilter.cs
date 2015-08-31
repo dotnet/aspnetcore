@@ -74,7 +74,6 @@ namespace Microsoft.AspNet.Mvc
                     // If this was a preflight, there is no need to run anything else.
                     // Also the response is always 200 so that anyone after mvc can handle the pre flight request.
                     context.Result = new HttpStatusCodeResult(StatusCodes.Status200OK);
-                    await Task.FromResult(true);
                 }
 
                 // Continue with other filters and action.

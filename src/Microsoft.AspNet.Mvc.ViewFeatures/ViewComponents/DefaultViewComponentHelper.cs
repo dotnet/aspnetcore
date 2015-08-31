@@ -88,16 +88,16 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
             }
         }
 
-        public async Task RenderInvokeAsync([NotNull] string name, params object[] arguments)
+        public Task RenderInvokeAsync([NotNull] string name, params object[] arguments)
         {
             var descriptor = SelectComponent(name);
-            await InvokeCoreAsync(_viewContext.Writer, descriptor, arguments);
+            return InvokeCoreAsync(_viewContext.Writer, descriptor, arguments);
         }
 
-        public async Task RenderInvokeAsync([NotNull] Type componentType, params object[] arguments)
+        public Task RenderInvokeAsync([NotNull] Type componentType, params object[] arguments)
         {
             var descriptor = SelectComponent(componentType);
-            await InvokeCoreAsync(_viewContext.Writer, descriptor, arguments);
+            return InvokeCoreAsync(_viewContext.Writer, descriptor, arguments);
         }
 
         private ViewComponentDescriptor SelectComponent(string name)
@@ -126,7 +126,7 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
                 componentType.FullName));
         }
 
-        private async Task InvokeCoreAsync(
+        private Task InvokeCoreAsync(
             [NotNull] TextWriter writer,
             [NotNull] ViewComponentDescriptor descriptor,
             object[] arguments)
@@ -140,7 +140,7 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
                     Resources.FormatViewComponent_IViewComponentFactory_ReturnedNull(descriptor.Type.FullName));
             }
 
-            await invoker.InvokeAsync(context);
+            return invoker.InvokeAsync(context);
         }
 
         private void InvokeCore(
