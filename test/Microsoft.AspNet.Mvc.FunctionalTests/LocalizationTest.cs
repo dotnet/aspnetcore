@@ -46,13 +46,17 @@ mypartial
 </fr-language-layout>";
                 yield return new[] { "fr", expected2 };
 
-                var expected3 =
-@"<language-layout>
+                if (!TestPlatformHelper.IsMono)
+                {
+                    // https://github.com/aspnet/Mvc/issues/2759
+                    var expected3 =
+ @"<language-layout>
 index
 partial
 mypartial
 </language-layout>";
-                yield return new[] { "!-invalid-!", expected3 };
+                    yield return new[] { "!-invalid-!", expected3 };
+                }
             }
         }
 
