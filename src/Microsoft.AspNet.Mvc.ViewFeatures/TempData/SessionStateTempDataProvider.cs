@@ -183,7 +183,7 @@ namespace Microsoft.AspNet.Mvc
 
         private static bool IsSessionEnabled(HttpContext context)
         {
-            return context.GetFeature<ISessionFeature>() != null;
+            return context.Features.Get<ISessionFeature>() != null;
         }
 
         internal void EnsureObjectCanBeSerialized(object item)

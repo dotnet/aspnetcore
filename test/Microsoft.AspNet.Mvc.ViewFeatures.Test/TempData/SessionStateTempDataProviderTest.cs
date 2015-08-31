@@ -352,7 +352,7 @@ namespace Microsoft.AspNet.Mvc
             var httpContext = new DefaultHttpContext();
             if(sessionEnabled)
             {
-                httpContext.SetFeature<ISessionFeature>(new SessionFeature() { Session = session });
+                httpContext.Features.Set<ISessionFeature>(new SessionFeature() { Session = session });
             }
             return httpContext;
         }

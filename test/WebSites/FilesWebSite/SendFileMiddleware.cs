@@ -26,10 +26,10 @@ namespace FilesWebSite
         {
             var environment = (IApplicationEnvironment)context.RequestServices.GetService(typeof(IApplicationEnvironment));
 
-            if (context.GetFeature<IHttpSendFileFeature>() == null)
+            if (context.Features.Get<IHttpSendFileFeature>() == null)
             {
                 var sendFile = new SendFileFallBack(context.Response.Body, environment.ApplicationBasePath);
-                context.SetFeature<IHttpSendFileFeature>(sendFile);
+                context.Features.Set<IHttpSendFileFeature>(sendFile);
             }
 
             await _next(context);

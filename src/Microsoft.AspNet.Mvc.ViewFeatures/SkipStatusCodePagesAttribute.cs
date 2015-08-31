@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Diagnostics;
+using Microsoft.AspNet.Http.Features;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc
@@ -21,7 +22,7 @@ namespace Microsoft.AspNet.Mvc
         /// <inheritdoc />
         public void OnResourceExecuting([NotNull]ResourceExecutingContext context)
         {
-            var statusCodeFeature = context.HttpContext.GetFeature<IStatusCodePagesFeature>();
+            var statusCodeFeature = context.HttpContext.Features.Get<IStatusCodePagesFeature>();
             if (statusCodeFeature != null)
             {
                 // Turn off the StatusCodePages feature.

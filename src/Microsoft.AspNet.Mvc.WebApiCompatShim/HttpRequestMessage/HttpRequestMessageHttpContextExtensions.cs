@@ -3,6 +3,7 @@
 
 using System.Net.Http;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Features;
 
 namespace Microsoft.AspNet.Mvc.WebApiCompatShim
 {
@@ -10,11 +11,11 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
     {
         public static HttpRequestMessage GetHttpRequestMessage(this HttpContext httpContext)
         {
-            var feature = httpContext.GetFeature<IHttpRequestMessageFeature>();
+            var feature = httpContext.Features.Get<IHttpRequestMessageFeature>();
             if (feature == null)
             {
                 feature = new HttpRequestMessageFeature(httpContext);
-                httpContext.SetFeature(feature);
+                httpContext.Features.Set(feature);
             }
 
             return feature.HttpRequestMessage;

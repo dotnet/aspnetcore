@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.PageExecutionInstrumentation;
@@ -1096,7 +1097,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                                      page,
                                      isPartial: false);
             var viewContext = CreateViewContext(view);
-            viewContext.HttpContext.SetFeature<IPageExecutionListenerFeature>(feature.Object);
+            viewContext.HttpContext.Features.Set<IPageExecutionListenerFeature>(feature.Object);
 
             // Act
             await view.RenderAsync(viewContext);
@@ -1142,7 +1143,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                                      isPartial: true);
             var viewContext = CreateViewContext(view);
             viewContext.Writer = writer;
-            viewContext.HttpContext.SetFeature<IPageExecutionListenerFeature>(feature.Object);
+            viewContext.HttpContext.Features.Set<IPageExecutionListenerFeature>(feature.Object);
 
             // Act
             await view.RenderAsync(viewContext);

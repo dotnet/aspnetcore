@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             {
                 response.StatusCode = (int)responseMessage.StatusCode;
 
-                var responseFeature = context.HttpContext.GetFeature<IHttpResponseFeature>();
+                var responseFeature = context.HttpContext.Features.Get<IHttpResponseFeature>();
                 if (responseFeature != null)
                 {
                     responseFeature.ReasonPhrase = responseMessage.ReasonPhrase;

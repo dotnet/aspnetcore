@@ -69,7 +69,7 @@ namespace Microsoft.AspNet.Mvc
                 throw new FileNotFoundException(Resources.FormatFileResult_InvalidPath(FileName), FileName);
             }
 
-            var sendFile = response.HttpContext.GetFeature<IHttpSendFileFeature>();
+            var sendFile = response.HttpContext.Features.Get<IHttpSendFileFeature>();
             if (sendFile != null)
             {
                 await sendFile.SendFileAsync(

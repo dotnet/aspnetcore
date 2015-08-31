@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.PageExecutionInstrumentation;
 using Microsoft.Framework.Internal;
@@ -68,7 +69,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <inheritdoc />
         public virtual async Task RenderAsync([NotNull] ViewContext context)
         {
-            _pageExecutionFeature = context.HttpContext.GetFeature<IPageExecutionListenerFeature>();
+            _pageExecutionFeature = context.HttpContext.Features.Get<IPageExecutionListenerFeature>();
 
             // Partials don't execute _ViewStart pages, but may execute Layout pages if the Layout property
             // is explicitly specified in the page.

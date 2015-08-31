@@ -100,7 +100,7 @@ namespace Microsoft.AspNet.Mvc
                 .Returns(Task.FromResult<int>(0));
 
             var httpContext = new DefaultHttpContext();
-            httpContext.SetFeature(sendFileMock.Object);
+            httpContext.Features.Set(sendFileMock.Object);
             var context = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             // Act

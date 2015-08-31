@@ -5,6 +5,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Mvc.Razor.Compilation;
 using Microsoft.AspNet.PageExecutionInstrumentation;
 using Microsoft.Framework.DependencyInjection;
@@ -34,7 +35,7 @@ namespace RazorPageExecutionInstrumentationWebSite
                 {
                     var pageExecutionContext = context.ApplicationServices.GetRequiredService<TestPageExecutionContext>();
                     var listenerFeature = new TestPageExecutionListenerFeature(pageExecutionContext);
-                    context.SetFeature<IPageExecutionListenerFeature>(listenerFeature);
+                    context.Features.Set<IPageExecutionListenerFeature>(listenerFeature);
                 }
 
                 await next();
