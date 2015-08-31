@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Hosting.Server
 {
     public interface IServerFactory
     {
-        IServerInformation Initialize(IConfiguration configuration);
-        IDisposable Start(IServerInformation serverInformation, Func<IFeatureCollection, Task> application);
+        IFeatureCollection Initialize(IConfiguration configuration);
+        IDisposable Start(IFeatureCollection serverFeatures, Func<IFeatureCollection, Task> application);
     }
 }

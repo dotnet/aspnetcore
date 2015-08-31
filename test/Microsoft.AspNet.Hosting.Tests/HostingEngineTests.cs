@@ -368,12 +368,12 @@ namespace Microsoft.AspNet.Hosting
                 config ?? new ConfigurationBuilder().Build());
         }
 
-        public IServerInformation Initialize(IConfiguration configuration)
+        public IFeatureCollection Initialize(IConfiguration configuration)
         {
             return null;
         }
 
-        public IDisposable Start(IServerInformation serverInformation, Func<IFeatureCollection, Task> application)
+        public IDisposable Start(IFeatureCollection serverFeatures, Func<IFeatureCollection, Task> application)
         {
             var startInstance = new StartInstance(application);
             _startInstances.Add(startInstance);

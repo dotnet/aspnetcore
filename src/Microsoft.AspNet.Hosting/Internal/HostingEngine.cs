@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Hosting.Internal
         // Only one of these should be set
         internal IServerFactory ServerFactory { get; set; }
         internal string ServerFactoryLocation { get; set; }
-        private IServerInformation _serverInstance;
+        private IFeatureCollection _serverInstance;
 
         public HostingEngine(
             [NotNull] IServiceCollection appServices, 

@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.TestHost
     {
         private const string DefaultEnvironmentName = "Development";
         private const string ServerName = nameof(TestServer);
-        private static readonly ServerInformation ServerInfo = new ServerInformation();
+        private static readonly IFeatureCollection ServerInfo = new FeatureCollection();
         private Func<IFeatureCollection, Task> _appDelegate;
         private IDisposable _appInstance;
         private bool _disposed = false;
@@ -107,18 +107,13 @@ namespace Microsoft.AspNet.TestHost
             return new RequestBuilder(this, path);
         }
 
-        public IServerInformation Initialize(IConfiguration configuration)
+        public IFeatureCollection Initialize(IConfiguration configuration)
         {
             return ServerInfo;
         }
 
-        public IDisposable Start(IServerInformation serverInformation, Func<IFeatureCollection, Task> application)
+        public IDisposable Start(IFeatureCollection serverInformation, Func<IFeatureCollection, Task> application)
         {
-            if (!(serverInformation.GetType() == typeof(ServerInformation)))
-            {
-                throw new ArgumentException(string.Format("The server must be {0}", ServerName), "serverInformation");
-            }
-
             _appDelegate = application;
 
             return this;
@@ -137,14 +132,6 @@ namespace Microsoft.AspNet.TestHost
         {
             _disposed = true;
             _appInstance.Dispose();
-        }
-
-        private class ServerInformation : IServerInformation
-        {
-            public string Name
-            {
-                get { return ServerName; }
-            }
         }
     }
 }
