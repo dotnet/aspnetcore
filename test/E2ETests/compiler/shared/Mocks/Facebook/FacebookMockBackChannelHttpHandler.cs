@@ -24,7 +24,7 @@ namespace MusicStore.Mocks.Facebook
                 {
                     if (queryParameters["code"] == "ValidCode")
                     {
-                        Helpers.ThrowIfConditionFailed(() => queryParameters["redirect_uri"].EndsWith("signin-facebook"), "Redirect URI is not ending with /signin-facebook");
+                        Helpers.ThrowIfConditionFailed(() => ((string)queryParameters["redirect_uri"]).EndsWith("signin-facebook"), "Redirect URI is not ending with /signin-facebook");
                         Helpers.ThrowIfConditionFailed(() => queryParameters["client_id"] == "[AppId]", "Invalid client Id received");
                         Helpers.ThrowIfConditionFailed(() => queryParameters["client_secret"] == "[AppSecret]", "Invalid client secret received");
                         response.Content = new StringContent("access_token=ValidAccessToken&expires=100");

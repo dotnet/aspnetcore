@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Antiforgery;
 using Microsoft.AspNet.Mvc;
 using Microsoft.Data.Entity;
+using Microsoft.Framework.Primitives;
 using MusicStore.Models;
 using MusicStore.ViewModels;
 
@@ -61,7 +62,7 @@ namespace MusicStore.Controllers
         {
             var cookieToken = string.Empty;
             var formToken = string.Empty;
-            string[] tokenHeaders = null;
+            StringValues tokenHeaders;
             string[] tokens = null;
 
             if (Context.Request.Headers.TryGetValue("RequestVerificationToken", out tokenHeaders))
