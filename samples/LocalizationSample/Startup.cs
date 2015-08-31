@@ -5,6 +5,7 @@ using System;
 using System.Globalization;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Localization;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Localization;
