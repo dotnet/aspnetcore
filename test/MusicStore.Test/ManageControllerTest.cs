@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Features.Authentication;
 using Microsoft.AspNet.Http.Features.Authentication.Internal;
 using Microsoft.AspNet.Http.Internal;
@@ -34,7 +35,7 @@ namespace MusicStore.Controllers
 
             // IHttpContextAccessor is required for SignInManager, and UserManager
             var context = new DefaultHttpContext();
-            context.SetFeature<IHttpAuthenticationFeature>(new HttpAuthenticationFeature() { Handler = new TestAuthHandler() });
+            context.Features.Set<IHttpAuthenticationFeature>(new HttpAuthenticationFeature() { Handler = new TestAuthHandler() });
             services.AddInstance<IHttpContextAccessor>(
                 new HttpContextAccessor()
                     {

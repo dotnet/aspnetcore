@@ -4,11 +4,12 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Antiforgery;
-using Microsoft.Data.Entity;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Features.Internal;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc;
+using Microsoft.Data.Entity;
 using Microsoft.Framework.DependencyInjection;
 using MusicStore.Models;
 using MusicStore.ViewModels;
@@ -180,7 +181,7 @@ namespace MusicStore.Controllers
 
             // ServiceProvder initialization
             var serviceProviderFeature = new ServiceProvidersFeature();
-            httpContext.SetFeature<IServiceProvidersFeature>(serviceProviderFeature);
+            httpContext.Features.Set<IServiceProvidersFeature>(serviceProviderFeature);
 
             // AntiForgery initialization
             serviceProviderFeature.RequestServices = _serviceProvider;

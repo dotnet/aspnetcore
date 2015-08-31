@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Features.Internal;
 using Microsoft.AspNet.Http.Internal;
 using Xunit;
@@ -16,7 +17,7 @@ namespace MusicStore.Models
             var cartId = "cartId_A";
 
             var httpContext = new DefaultHttpContext();
-            httpContext.SetFeature<IRequestCookiesFeature>(new CookiesFeature("Session", cartId));
+            httpContext.Features.Set<IRequestCookiesFeature>(new CookiesFeature("Session", cartId));
 
             var cart = new ShoppingCart(new MusicStoreContext());
 
