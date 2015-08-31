@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.Localization
                 }
             }
 
-            context.SetFeature<IRequestCultureFeature>(new RequestCultureFeature(requestCulture, winningProvider));
+            context.Features.Set<IRequestCultureFeature>(new RequestCultureFeature(requestCulture, winningProvider));
 
             SetCurrentThreadCulture(requestCulture);
 

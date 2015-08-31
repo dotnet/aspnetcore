@@ -56,7 +56,7 @@ namespace LocalizationSample
                 context.Response.StatusCode = 200;
                 context.Response.ContentType = "text/html; charset=utf-8";
 
-                var requestCultureFeature = context.GetFeature<IRequestCultureFeature>();
+                var requestCultureFeature = context.Features.Get<IRequestCultureFeature>();
                 var requestCulture = requestCultureFeature.RequestCulture;
 
                 await context.Response.WriteAsync(
