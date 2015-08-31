@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Diagnostics.Elm
         {
             using (RequestIdentifier.Ensure(context))
             {
-                var requestId = context.GetFeature<IHttpRequestIdentifierFeature>().TraceIdentifier;
+                var requestId = context.Features.Get<IHttpRequestIdentifierFeature>().TraceIdentifier;
                 using (_logger.BeginScope("Request: {RequestId}", requestId))
                 {
                     try
@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.Diagnostics.Elm
         {
             return new HttpInfo()
             {
-                RequestID = context.GetFeature<IHttpRequestIdentifierFeature>().TraceIdentifier,
+                RequestID = context.Features.Get<IHttpRequestIdentifierFeature>().TraceIdentifier,
                 Host = context.Request.Host,
                 ContentType = context.Request.ContentType,
                 Path = context.Request.Path,

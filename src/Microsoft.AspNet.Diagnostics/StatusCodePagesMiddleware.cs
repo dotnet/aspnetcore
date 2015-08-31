@@ -5,6 +5,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Features;
 
 namespace Microsoft.AspNet.Diagnostics
 {
@@ -26,7 +27,7 @@ namespace Microsoft.AspNet.Diagnostics
         public async Task Invoke(HttpContext context)
         {
             var statusCodeFeature = new StatusCodePagesFeature();
-            context.SetFeature<IStatusCodePagesFeature>(statusCodeFeature);
+            context.Features.Set<IStatusCodePagesFeature>(statusCodeFeature);
 
             await _next(context);
 

@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Features;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Builder
@@ -126,7 +127,7 @@ namespace Microsoft.AspNet.Builder
 
                 var originalPath = context.HttpContext.Request.Path;
                 // Store the original paths so the app can check it.
-                context.HttpContext.SetFeature<IStatusCodeReExecuteFeature>(new StatusCodeReExecuteFeature()
+                context.HttpContext.Features.Set<IStatusCodeReExecuteFeature>(new StatusCodeReExecuteFeature()
                 {
                     OriginalPathBase = context.HttpContext.Request.PathBase.Value,
                     OriginalPath = originalPath.Value,
@@ -140,7 +141,7 @@ namespace Microsoft.AspNet.Builder
                 finally
                 {
                     context.HttpContext.Request.Path = originalPath;
-                    context.HttpContext.SetFeature<IStatusCodeReExecuteFeature>(null);
+                    context.HttpContext.Features.Set<IStatusCodeReExecuteFeature>(null);
                 }
             });
         }

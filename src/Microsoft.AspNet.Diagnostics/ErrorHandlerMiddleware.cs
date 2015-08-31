@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Diagnostics
                     {
                         Error = ex,
                     };
-                    context.SetFeature<IErrorHandlerFeature>(errorHandlerFeature);
+                    context.Features.Set<IErrorHandlerFeature>(errorHandlerFeature);
                     context.Response.StatusCode = 500;
                     context.Response.Headers.Clear();
                     context.Response.OnStarting(_clearCacheHeadersDelegate, context.Response);

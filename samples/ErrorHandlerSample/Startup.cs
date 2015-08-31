@@ -2,6 +2,7 @@
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Features;
 using Microsoft.Framework.WebEncoders;
 
 namespace ErrorHandlerSample
@@ -21,7 +22,7 @@ namespace ErrorHandlerSample
                     await context.Response.WriteAsync("<html><body>\r\n");
                     await context.Response.WriteAsync("We're sorry, we encountered an un-expected issue with your application.<br>\r\n");
 
-                    var error = context.GetFeature<IErrorHandlerFeature>();
+                    var error = context.Features.Get<IErrorHandlerFeature>();
                     if (error != null)
                     {
                         // This error would not normally be exposed to the client

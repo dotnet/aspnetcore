@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Diagnostics.Elm
         private RequestIdentifier(HttpContext context)
         {
             _context = context;
-            _feature = context.GetFeature<IHttpRequestIdentifierFeature>();
+            _feature = context.Features.Get<IHttpRequestIdentifierFeature>();
 
             if (_feature == null)
             {
@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Diagnostics.Elm
                 {
                     TraceIdentifier = Guid.NewGuid().ToString()
                 };
-                context.SetFeature(_feature);
+                context.Features.Set(_feature);
                 _addedFeature = true;
             }
             else if (string.IsNullOrEmpty(_feature.TraceIdentifier))
@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.Diagnostics.Elm
         {
             if (_addedFeature)
             {
-                _context.SetFeature<IHttpRequestIdentifierFeature>(null);
+                _context.Features.Set<IHttpRequestIdentifierFeature>(null);
             }
             else if (_updatedIdentifier)
             {

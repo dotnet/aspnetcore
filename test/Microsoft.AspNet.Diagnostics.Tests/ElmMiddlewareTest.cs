@@ -219,7 +219,7 @@ namespace Microsoft.AspNet.Diagnostics.Tests
                 .Returns(true);
             var requestIdentifier = new Mock<IHttpRequestIdentifierFeature>();
             requestIdentifier.Setup(f => f.TraceIdentifier).Returns(Guid.NewGuid().ToString());
-            contextMock.Setup(c => c.GetFeature<IHttpRequestIdentifierFeature>())
+            contextMock.Setup(c => c.Features.Get<IHttpRequestIdentifierFeature>())
                 .Returns(requestIdentifier.Object);
             return contextMock;
         }
@@ -236,7 +236,7 @@ namespace Microsoft.AspNet.Diagnostics.Tests
             // Act & Assert
             var errorPageMiddleware = new ElmCaptureMiddleware((innerContext) =>
             {
-                var feature = innerContext.GetFeature<IHttpRequestIdentifierFeature>();
+                var feature = innerContext.Features.Get<IHttpRequestIdentifierFeature>();
                 Assert.NotNull(feature);
                 Assert.False(string.IsNullOrEmpty(feature.TraceIdentifier));
                 return Task.FromResult(0);
@@ -244,7 +244,7 @@ namespace Microsoft.AspNet.Diagnostics.Tests
 
             await errorPageMiddleware.Invoke(context);
 
-            Assert.Null(context.GetFeature<IHttpRequestIdentifierFeature>());
+            Assert.Null(context.Features.Get<IHttpRequestIdentifierFeature>());
         }
 
         [Fact]
@@ -255,19 +255,19 @@ namespace Microsoft.AspNet.Diagnostics.Tests
             {
                 TraceIdentifier = Guid.NewGuid().ToString()
             };
-            context.SetFeature<IHttpRequestIdentifierFeature>(requestIdentifierFeature);
+            context.Features.Set<IHttpRequestIdentifierFeature>(requestIdentifierFeature);
             var loggerFactory = new LoggerFactory();
             loggerFactory.AddProvider(new ElmLoggerProvider(new ElmStore(), new ElmOptions()));
 
             var errorPageMiddleware = new ElmCaptureMiddleware((innerContext) =>
             {
-                Assert.Same(requestIdentifierFeature, innerContext.GetFeature<IHttpRequestIdentifierFeature>());
+                Assert.Same(requestIdentifierFeature, innerContext.Features.Get<IHttpRequestIdentifierFeature>());
                 return Task.FromResult(0);
             }, loggerFactory, new TestElmOptions());
 
             await errorPageMiddleware.Invoke(context);
 
-            Assert.Same(requestIdentifierFeature, context.GetFeature<IHttpRequestIdentifierFeature>());
+            Assert.Same(requestIdentifierFeature, context.Features.Get<IHttpRequestIdentifierFeature>());
         }
 
         [Theory]
@@ -277,13 +277,13 @@ namespace Microsoft.AspNet.Diagnostics.Tests
         {
             var context = new DefaultHttpContext();
             var requestIdentifierFeature = new HttpRequestIdentifierFeature() { TraceIdentifier = requestId };
-            context.SetFeature<IHttpRequestIdentifierFeature>(requestIdentifierFeature);
+            context.Features.Set<IHttpRequestIdentifierFeature>(requestIdentifierFeature);
             var loggerFactory = new LoggerFactory();
             loggerFactory.AddProvider(new ElmLoggerProvider(new ElmStore(), new ElmOptions()));
 
             var errorPageMiddleware = new ElmCaptureMiddleware((innerContext) =>
             {
-                var feature = innerContext.GetFeature<IHttpRequestIdentifierFeature>();
+                var feature = innerContext.Features.Get<IHttpRequestIdentifierFeature>();
                 Assert.NotNull(feature);
                 Assert.False(string.IsNullOrEmpty(feature.TraceIdentifier));
                 return Task.FromResult(0);
@@ -291,7 +291,7 @@ namespace Microsoft.AspNet.Diagnostics.Tests
 
             await errorPageMiddleware.Invoke(context);
 
-            Assert.Equal(requestId, context.GetFeature<IHttpRequestIdentifierFeature>().TraceIdentifier);
+            Assert.Equal(requestId, context.Features.Get<IHttpRequestIdentifierFeature>().TraceIdentifier);
         }
 
         private class TestElmOptions : IOptions<ElmOptions>

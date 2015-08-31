@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Features;
 using Microsoft.Framework.WebEncoders;
 
 namespace StatusCodePagesSample
@@ -40,7 +41,7 @@ namespace StatusCodePagesSample
                     var disableStatusCodePages = context.Request.Query["disableStatusCodePages"];
                     if (disableStatusCodePages == "true")
                     {
-                        var statusCodePagesFeature = context.GetFeature<IStatusCodePagesFeature>();
+                        var statusCodePagesFeature = context.Features.Get<IStatusCodePagesFeature>();
                         if (statusCodePagesFeature != null)
                         {
                             statusCodePagesFeature.Enabled = false;
