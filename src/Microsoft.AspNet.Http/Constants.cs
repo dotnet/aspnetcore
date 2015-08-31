@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Http.Internal
 
         internal static class BuilderProperties
         {
-            internal static string ServerInformation = "server.Information";
+            internal static string ServerFeatures = "server.Features";
             internal static string ApplicationServices = "application.Services";
         }
     }

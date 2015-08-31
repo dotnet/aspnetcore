@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Internal;
 
 namespace Microsoft.AspNet.Builder.Internal
@@ -22,7 +23,7 @@ namespace Microsoft.AspNet.Builder.Internal
         public ApplicationBuilder(IServiceProvider serviceProvider, object server)
             : this(serviceProvider)
         {
-            SetProperty(Constants.BuilderProperties.ServerInformation, server);
+            SetProperty(Constants.BuilderProperties.ServerFeatures, server);
         }
 
         private ApplicationBuilder(ApplicationBuilder builder)
@@ -42,11 +43,11 @@ namespace Microsoft.AspNet.Builder.Internal
             }
         }
 
-        public object Server
+        public IFeatureCollection ServerFeatures
         {
             get
             {
-                return GetProperty<object>(Constants.BuilderProperties.ServerInformation);
+                return GetProperty<IFeatureCollection>(Constants.BuilderProperties.ServerFeatures);
             }
         }
 

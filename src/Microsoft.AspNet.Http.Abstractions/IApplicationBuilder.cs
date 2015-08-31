@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNet.Http.Features;
 
 namespace Microsoft.AspNet.Builder
 {
@@ -10,7 +11,7 @@ namespace Microsoft.AspNet.Builder
     {
         IServiceProvider ApplicationServices { get; set; }
 
-        object Server { get; }
+        IFeatureCollection ServerFeatures { get; }
 
         IDictionary<string, object> Properties { get; }
 
