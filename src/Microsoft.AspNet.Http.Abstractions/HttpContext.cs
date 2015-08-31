@@ -39,19 +39,5 @@ namespace Microsoft.AspNet.Http
         public abstract void Abort();
 
         public abstract void Dispose();
-
-        public abstract object GetFeature(Type type);
-
-        public abstract void SetFeature(Type type, object instance);
-
-        public virtual T GetFeature<T>()
-        {
-            return (T)GetFeature(typeof(T));
-        }
-
-        public virtual void SetFeature<T>(T instance)
-        {
-            SetFeature(typeof(T), instance);
-        }
     }
 }

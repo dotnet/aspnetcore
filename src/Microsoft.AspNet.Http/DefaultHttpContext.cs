@@ -171,15 +171,5 @@ namespace Microsoft.AspNet.Http.Internal
             // REVIEW: is this necessary? is the environment "owned" by the context?
             _features.Dispose();
         }
-
-        public override object GetFeature(Type type)
-        {
-            return _features[type];
-        }
-
-        public override void SetFeature(Type type, object instance)
-        {
-            _features[type] = instance;
-        }
     }
 }
