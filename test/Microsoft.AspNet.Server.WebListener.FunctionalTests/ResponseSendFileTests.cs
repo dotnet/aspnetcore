@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.Server.WebListener
                     Assert.Equal("Overlapped", support.Get<string>("sendfile.Concurrency"));
                     */
 
-                    var sendFile = httpContext.GetFeature<IHttpSendFileFeature>();
+                    var sendFile = httpContext.Features.Get<IHttpSendFileFeature>();
                     Assert.NotNull(sendFile);
                 }
                 catch (Exception ex)
@@ -94,7 +94,7 @@ namespace Microsoft.AspNet.Server.WebListener
             using (Utilities.CreateHttpServer(out address, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
-                var sendFile = httpContext.GetFeature<IHttpSendFileFeature>();
+                var sendFile = httpContext.Features.Get<IHttpSendFileFeature>();
                 try
                 {
                     sendFile.SendFileAsync(string.Empty, 0, null, CancellationToken.None).Wait();
@@ -127,7 +127,7 @@ namespace Microsoft.AspNet.Server.WebListener
             using (Utilities.CreateHttpServer(out address, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
-                var sendFile = httpContext.GetFeature<IHttpSendFileFeature>();
+                var sendFile = httpContext.Features.Get<IHttpSendFileFeature>();
                 return sendFile.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
             }))
             {
@@ -147,7 +147,7 @@ namespace Microsoft.AspNet.Server.WebListener
             using (Utilities.CreateHttpServer(out address, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
-                var sendFile = httpContext.GetFeature<IHttpSendFileFeature>();
+                var sendFile = httpContext.Features.Get<IHttpSendFileFeature>();
                 return sendFile.SendFileAsync(RelativeFilePath, 0, null, CancellationToken.None);
             }))
             {
@@ -167,7 +167,7 @@ namespace Microsoft.AspNet.Server.WebListener
             using (Utilities.CreateHttpServer(out address, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
-                var sendFile = httpContext.GetFeature<IHttpSendFileFeature>();
+                var sendFile = httpContext.Features.Get<IHttpSendFileFeature>();
                 return sendFile.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
             }))
             {
@@ -187,7 +187,7 @@ namespace Microsoft.AspNet.Server.WebListener
             using (Utilities.CreateHttpServer(out address, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
-                var sendFile = httpContext.GetFeature<IHttpSendFileFeature>();
+                var sendFile = httpContext.Features.Get<IHttpSendFileFeature>();
                 sendFile.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None).Wait();
                 return sendFile.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
             }))
@@ -208,7 +208,7 @@ namespace Microsoft.AspNet.Server.WebListener
             using (Utilities.CreateHttpServer(out address, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
-                var sendFile = httpContext.GetFeature<IHttpSendFileFeature>();
+                var sendFile = httpContext.Features.Get<IHttpSendFileFeature>();
                 return sendFile.SendFileAsync(AbsoluteFilePath, 0, FileLength / 2, CancellationToken.None);
             }))
             {
@@ -228,7 +228,7 @@ namespace Microsoft.AspNet.Server.WebListener
             using (Utilities.CreateHttpServer(out address, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
-                var sendFile = httpContext.GetFeature<IHttpSendFileFeature>();
+                var sendFile = httpContext.Features.Get<IHttpSendFileFeature>();
                 return sendFile.SendFileAsync(AbsoluteFilePath, 1234567, null, CancellationToken.None);
             }))
             {
@@ -244,7 +244,7 @@ namespace Microsoft.AspNet.Server.WebListener
             using (Utilities.CreateHttpServer(out address, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
-                var sendFile = httpContext.GetFeature<IHttpSendFileFeature>();
+                var sendFile = httpContext.Features.Get<IHttpSendFileFeature>();
                 return sendFile.SendFileAsync(AbsoluteFilePath, 0, 1234567, CancellationToken.None);
             }))
             {
@@ -260,7 +260,7 @@ namespace Microsoft.AspNet.Server.WebListener
             using (Utilities.CreateHttpServer(out address, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
-                var sendFile = httpContext.GetFeature<IHttpSendFileFeature>();
+                var sendFile = httpContext.Features.Get<IHttpSendFileFeature>();
                 return sendFile.SendFileAsync(AbsoluteFilePath, 0, 0, CancellationToken.None);
             }))
             {
@@ -280,7 +280,7 @@ namespace Microsoft.AspNet.Server.WebListener
             using (Utilities.CreateHttpServer(out address, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
-                var sendFile = httpContext.GetFeature<IHttpSendFileFeature>();
+                var sendFile = httpContext.Features.Get<IHttpSendFileFeature>();
                 httpContext.Response.Headers["Content-lenGth"] = FileLength.ToString();
                 return sendFile.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
             }))
@@ -302,7 +302,7 @@ namespace Microsoft.AspNet.Server.WebListener
             using (Utilities.CreateHttpServer(out address, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
-                var sendFile = httpContext.GetFeature<IHttpSendFileFeature>();
+                var sendFile = httpContext.Features.Get<IHttpSendFileFeature>();
                 httpContext.Response.Headers["Content-lenGth"] = "10";
                 return sendFile.SendFileAsync(AbsoluteFilePath, 0, 10, CancellationToken.None);
             }))
@@ -324,7 +324,7 @@ namespace Microsoft.AspNet.Server.WebListener
             using (Utilities.CreateHttpServer(out address, env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
-                var sendFile = httpContext.GetFeature<IHttpSendFileFeature>();
+                var sendFile = httpContext.Features.Get<IHttpSendFileFeature>();
                 httpContext.Response.Headers["Content-lenGth"] = "0";
                 return sendFile.SendFileAsync(AbsoluteFilePath, 0, 0, CancellationToken.None);
             }))

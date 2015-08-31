@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 try
                 {
-                    var opaqueFeature = httpContext.GetFeature<IHttpUpgradeFeature>();
+                    var opaqueFeature = httpContext.Features.Get<IHttpUpgradeFeature>();
                     Assert.NotNull(opaqueFeature);
                 }
                 catch (Exception ex)
@@ -73,7 +73,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 await httpContext.Response.Body.FlushAsync();
                 try
                 {
-                    var opaqueFeature = httpContext.GetFeature<IHttpUpgradeFeature>();
+                    var opaqueFeature = httpContext.Features.Get<IHttpUpgradeFeature>();
                     Assert.NotNull(opaqueFeature);
                     await opaqueFeature.UpgradeAsync();
                     upgradeThrew = false;
@@ -102,7 +102,7 @@ namespace Microsoft.AspNet.Server.WebListener
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 httpContext.Response.Headers["Upgrade"] = "websocket"; // Win8.1 blocks anything but WebSockets
-                var opaqueFeature = httpContext.GetFeature<IHttpUpgradeFeature>();
+                var opaqueFeature = httpContext.Features.Get<IHttpUpgradeFeature>();
                 Assert.NotNull(opaqueFeature);
                 Assert.True(opaqueFeature.IsUpgradableRequest);
                 await opaqueFeature.UpgradeAsync();
@@ -152,7 +152,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 try
                 {
                     httpContext.Response.Headers["Upgrade"] = "websocket"; // Win8.1 blocks anything but WebSockets
-                    var opaqueFeature = httpContext.GetFeature<IHttpUpgradeFeature>();
+                    var opaqueFeature = httpContext.Features.Get<IHttpUpgradeFeature>();
                     Assert.NotNull(opaqueFeature);
                     Assert.True(opaqueFeature.IsUpgradableRequest);
                     var opaqueStream = await opaqueFeature.UpgradeAsync();
@@ -195,7 +195,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 try
                 {
-                    var opaqueFeature = httpContext.GetFeature<IHttpUpgradeFeature>();
+                    var opaqueFeature = httpContext.Features.Get<IHttpUpgradeFeature>();
                     Assert.NotNull(opaqueFeature);
                     Assert.False(opaqueFeature.IsUpgradableRequest);
                 }

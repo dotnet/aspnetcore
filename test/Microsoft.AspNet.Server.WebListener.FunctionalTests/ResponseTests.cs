@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.Server.WebListener
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 httpContext.Response.StatusCode = 201;
-                httpContext.GetFeature<IHttpResponseFeature>().ReasonPhrase = "CustomReasonPhrase"; // TODO?
+                httpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase = "CustomReasonPhrase"; // TODO?
                 // TODO: env["owin.ResponseProtocol"] = "HTTP/1.0"; // Http.Sys ignores this value
                 return Task.FromResult(0);
             }))

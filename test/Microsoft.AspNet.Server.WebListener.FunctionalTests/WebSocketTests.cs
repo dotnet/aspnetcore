@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 try
                 {
-                    var webSocketFeature = httpContext.GetFeature<IHttpWebSocketFeature>();
+                    var webSocketFeature = httpContext.Features.Get<IHttpWebSocketFeature>();
                     Assert.NotNull(webSocketFeature);
                 }
                 catch (Exception ex)
@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 await httpContext.Response.WriteAsync("Hello World");
                 try
                 {
-                    var webSocketFeature = httpContext.GetFeature<IHttpWebSocketFeature>();
+                    var webSocketFeature = httpContext.Features.Get<IHttpWebSocketFeature>();
                     Assert.NotNull(webSocketFeature);
                     await webSocketFeature.AcceptAsync(null);
                     upgradeThrew = false;
@@ -97,7 +97,7 @@ namespace Microsoft.AspNet.Server.WebListener
             using (Utilities.CreateHttpServer(out address, async env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
-                var webSocketFeature = httpContext.GetFeature<IHttpWebSocketFeature>();
+                var webSocketFeature = httpContext.Features.Get<IHttpWebSocketFeature>();
                 Assert.NotNull(webSocketFeature);
                 Assert.True(webSocketFeature.IsWebSocketRequest);
                 await webSocketFeature.AcceptAsync(null);
@@ -123,7 +123,7 @@ namespace Microsoft.AspNet.Server.WebListener
             using (Utilities.CreateHttpServer(out address, async env =>
             {
                 var httpContext = new DefaultHttpContext((IFeatureCollection)env);
-                var webSocketFeature = httpContext.GetFeature<IHttpWebSocketFeature>();
+                var webSocketFeature = httpContext.Features.Get<IHttpWebSocketFeature>();
                 Assert.NotNull(webSocketFeature);
                 Assert.True(webSocketFeature.IsWebSocketRequest);
                 var serverWebSocket = await webSocketFeature.AcceptAsync(null);
