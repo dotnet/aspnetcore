@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.HttpOverrides
             if ((_options.ForwardedOptions & ForwardedHeaders.XForwardedFor) != 0)
             {
                 var xForwardedForHeaderValue = context.Request.Headers.GetCommaSeparatedValues(XForwardedForHeaderName);
-                if (xForwardedForHeaderValue != null && xForwardedForHeaderValue.Count > 0)
+                if (xForwardedForHeaderValue != null && xForwardedForHeaderValue.Length > 0)
                 {
                     IPAddress ipFromHeader;
                     if (IPAddress.TryParse(xForwardedForHeaderValue[0], out ipFromHeader))
@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.HttpOverrides
                         var remoteIPString = context.Connection.RemoteIpAddress?.ToString();
                         if (!string.IsNullOrEmpty(remoteIPString))
                         {
-                            context.Request.Headers.Set(XOriginalIPName, remoteIPString);
+                            context.Request.Headers[XOriginalIPName] = remoteIPString;
                         }
                         context.Connection.RemoteIpAddress = ipFromHeader;
                     }
@@ -49,13 +49,13 @@ namespace Microsoft.AspNet.HttpOverrides
 
             if ((_options.ForwardedOptions & ForwardedHeaders.XForwardedHost) != 0)
             {
-                var xForwardHostHeaderValue = context.Request.Headers.Get(XForwardedHostHeaderName);
+                var xForwardHostHeaderValue = context.Request.Headers[XForwardedHostHeaderName];
                 if (!string.IsNullOrEmpty(xForwardHostHeaderValue))
                 {
                     var hostString = context.Request.Host.ToString();
                     if (!string.IsNullOrEmpty(hostString))
                     {
-                        context.Request.Headers.Set(XOriginalHostName, hostString);
+                        context.Request.Headers[XOriginalHostName] = hostString;
                     }
                     context.Request.Host = HostString.FromUriComponent(xForwardHostHeaderValue);
                 }
@@ -63,12 +63,12 @@ namespace Microsoft.AspNet.HttpOverrides
 
             if ((_options.ForwardedOptions & ForwardedHeaders.XForwardedProto) != 0)
             {
-                var xForwardProtoHeaderValue = context.Request.Headers.Get(XForwardedProtoHeaderName);
+                var xForwardProtoHeaderValue = context.Request.Headers[XForwardedProtoHeaderName];
                 if (!string.IsNullOrEmpty(xForwardProtoHeaderValue))
                 {
                     if (!string.IsNullOrEmpty(context.Request.Scheme))
                     {
-                        context.Request.Headers.Set(XOriginalProtoName, context.Request.Scheme);
+                        context.Request.Headers[XOriginalProtoName] = context.Request.Scheme;
                     }
                     context.Request.Scheme = xForwardProtoHeaderValue;
                 }

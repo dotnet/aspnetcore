@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.HttpOverrides
                 }
                 else
                 {
-                    var xHttpMethodOverrideValue = context.Request.Headers.Get(xHttpMethodOverride);
+                    var xHttpMethodOverrideValue = context.Request.Headers[xHttpMethodOverride];
                     if (!string.IsNullOrEmpty(xHttpMethodOverrideValue))
                     {
                         context.Request.Method = xHttpMethodOverrideValue;
