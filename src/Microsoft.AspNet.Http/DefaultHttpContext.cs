@@ -32,8 +32,8 @@ namespace Microsoft.AspNet.Http.Internal
         public DefaultHttpContext()
             : this(new FeatureCollection())
         {
-            SetFeature<IHttpRequestFeature>(new HttpRequestFeature());
-            SetFeature<IHttpResponseFeature>(new HttpResponseFeature());
+            _features.Set<IHttpRequestFeature>(new HttpRequestFeature());
+            _features.Set<IHttpResponseFeature>(new HttpResponseFeature());
         }
 
         public DefaultHttpContext(IFeatureCollection features)
@@ -75,6 +75,8 @@ namespace Microsoft.AspNet.Http.Internal
         {
             get { return _session.Fetch(_features); }
         }
+
+        public override IFeatureCollection Features { get { return _features; } }
 
         public override HttpRequest Request { get { return _request; } }
 

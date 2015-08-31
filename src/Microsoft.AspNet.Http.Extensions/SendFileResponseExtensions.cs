@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Http
         /// <returns>True if sendfile feature exists in the response.</returns>
         public static bool SupportsSendFile([NotNull] this HttpResponse response)
         {
-            return response.HttpContext.GetFeature<IHttpSendFileFeature>() != null;
+            return response.HttpContext.Features.Get<IHttpSendFileFeature>() != null;
         }
 
         /// <summary>
@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.Http
         /// <returns></returns>
         public static Task SendFileAsync([NotNull] this HttpResponse response, [NotNull] string fileName, long offset, long? count, CancellationToken cancellationToken)
         {
-            var sendFile = response.HttpContext.GetFeature<IHttpSendFileFeature>();
+            var sendFile = response.HttpContext.Features.Get<IHttpSendFileFeature>();
             if (sendFile == null)
             {
                 throw new NotSupportedException(Resources.Exception_SendFileNotSupported);

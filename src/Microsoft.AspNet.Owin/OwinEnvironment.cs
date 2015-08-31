@@ -37,11 +37,11 @@ namespace Microsoft.AspNet.Owin
 
         public OwinEnvironment(HttpContext context)
         {
-            if (context.GetFeature<IHttpRequestFeature>() == null)
+            if (context.Features.Get<IHttpRequestFeature>() == null)
             {
                 throw new ArgumentException("Missing required feature: " + nameof(IHttpRequestFeature) + ".", nameof(context));
             }
-            if (context.GetFeature<IHttpResponseFeature>() == null)
+            if (context.Features.Get<IHttpResponseFeature>() == null)
             {
                 throw new ArgumentException("Missing required feature: " + nameof(IHttpResponseFeature) + ".", nameof(context));
             }
@@ -100,7 +100,7 @@ namespace Microsoft.AspNet.Owin
             };
 
             // owin.CallCancelled is required but the feature may not be present.
-            if (context.GetFeature<IHttpRequestLifetimeFeature>() != null)
+            if (context.Features.Get<IHttpRequestLifetimeFeature>() != null)
             {
                 _entries[OwinConstants.CallCancelled] = new FeatureMap<IHttpRequestLifetimeFeature>(feature => feature.RequestAborted);
             }
@@ -334,7 +334,7 @@ namespace Microsoft.AspNet.Owin
 
             internal bool TryGet(HttpContext context, out object value)
             {
-                object featureInstance = context.GetFeature(FeatureInterface);
+                object featureInstance = context.Features[FeatureInterface];
                 if (featureInstance == null)
                 {
                     value = null;
@@ -350,7 +350,7 @@ namespace Microsoft.AspNet.Owin
 
             internal void Set(HttpContext context, object value)
             {
-                var feature = context.GetFeature(FeatureInterface);
+                var feature = context.Features[FeatureInterface];
                 if (feature == null)
                 {
                     if (FeatureFactory == null)
@@ -360,7 +360,7 @@ namespace Microsoft.AspNet.Owin
                     else
                     {
                         feature = FeatureFactory();
-                        context.SetFeature(FeatureInterface, feature);
+                        context.Features[FeatureInterface] = feature;
                     }
                 }
                 Setter(feature, value);

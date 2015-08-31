@@ -136,7 +136,7 @@ namespace Microsoft.AspNet.Http.Internal
         public void Query_GetAndSet()
         {
             var request = new DefaultHttpContext().Request;
-            var requestFeature = request.HttpContext.GetFeature<IHttpRequestFeature>();
+            var requestFeature = request.HttpContext.Features.Get<IHttpRequestFeature>();
             Assert.Equal(string.Empty, requestFeature.QueryString);
             Assert.Equal(QueryString.Empty, request.QueryString);
             var query0 = request.Query;
@@ -191,7 +191,7 @@ namespace Microsoft.AspNet.Http.Internal
         private static HttpRequest CreateRequest(IDictionary<string, StringValues> headers)
         {
             var context = new DefaultHttpContext();
-            context.GetFeature<IHttpRequestFeature>().Headers = headers;
+            context.Features.Get<IHttpRequestFeature>().Headers = headers;
             return context.Request;
         }
 

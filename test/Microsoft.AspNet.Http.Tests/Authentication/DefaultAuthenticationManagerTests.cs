@@ -4,6 +4,7 @@
 using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Features.Authentication;
 using Microsoft.AspNet.Http.Features.Authentication.Internal;
 using Microsoft.AspNet.Http.Internal;
@@ -50,7 +51,7 @@ namespace Microsoft.AspNet.Http.Authentication.Internal
         {
             var context = CreateContext();
             var handler = new AuthHandler();
-            context.SetFeature<IHttpAuthenticationFeature>(new HttpAuthenticationFeature() { Handler = handler });
+            context.Features.Set<IHttpAuthenticationFeature>(new HttpAuthenticationFeature() { Handler = handler });
             var user = new ClaimsPrincipal();
             await context.Authentication.SignInAsync("ignored", user);
             Assert.True(handler.SignedIn);

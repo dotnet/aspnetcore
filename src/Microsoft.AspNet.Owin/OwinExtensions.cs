@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Builder
                     {
                         // Use the existing OWIN env if there is one.
                         IDictionary<string, object> env;
-                        var owinEnvFeature = httpContext.GetFeature<IOwinEnvironmentFeature>();
+                        var owinEnvFeature = httpContext.Features.Get<IOwinEnvironmentFeature>();
                         if (owinEnvFeature != null)
                         {
                             env = owinEnvFeature.Environment;
@@ -87,7 +87,7 @@ namespace Microsoft.AspNet.Builder
             {
                 var app = middleware(httpContext =>
                 {
-                    return next(httpContext.GetFeature<IOwinEnvironmentFeature>().Environment);
+                    return next(httpContext.Features.Get<IOwinEnvironmentFeature>().Environment);
                 });
 
                 return env =>
@@ -98,7 +98,7 @@ namespace Microsoft.AspNet.Builder
                     if (env.TryGetValue(typeof(HttpContext).FullName, out obj))
                     {
                         context = (HttpContext)obj;
-                        context.SetFeature<IOwinEnvironmentFeature>(new OwinEnvironmentFeature() { Environment = env });
+                        context.Features.Set<IOwinEnvironmentFeature>(new OwinEnvironmentFeature() { Environment = env });
                     }
                     else
                     {

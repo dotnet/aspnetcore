@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Http.Extensions.Tests
             var context = new DefaultHttpContext();
             var response = context.Response;
             Assert.False(response.SupportsSendFile());
-            context.SetFeature<IHttpSendFileFeature>(new FakeSendFileFeature());
+            context.Features.Set<IHttpSendFileFeature>(new FakeSendFileFeature());
             Assert.True(response.SupportsSendFile());
         }
 
@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Http.Extensions.Tests
             var context = new DefaultHttpContext();
             var response = context.Response;
             var fakeFeature = new FakeSendFileFeature();
-            context.SetFeature<IHttpSendFileFeature>(fakeFeature);
+            context.Features.Set<IHttpSendFileFeature>(fakeFeature);
 
             await response.SendFileAsync("bob", 1, 3, CancellationToken.None);
 

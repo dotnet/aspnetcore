@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Http.Internal
             session.Set("key2", null);
             var feature = new BlahSessionFeature();
             feature.Session = session;
-            context.SetFeature<ISessionFeature>(feature);
+            context.Features.Set<ISessionFeature>(feature);
 
             // Act & Assert
             Assert.Same(session, context.Session);
@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.Http.Internal
             session.Set("key2", null);
             var feature = new BlahSessionFeature();
             feature.Session = session;
-            context.SetFeature<ISessionFeature>(feature);
+            context.Features.Set<ISessionFeature>(feature);
 
             // Act
             context.Session = new TestSession();
@@ -109,9 +109,9 @@ namespace Microsoft.AspNet.Http.Internal
         public void GetItems_DefaultCollectionProvided()
         {
             var context = new DefaultHttpContext(new FeatureCollection());
-            Assert.Null(context.GetFeature<IItemsFeature>());
+            Assert.Null(context.Features.Get<IItemsFeature>());
             var items = context.Items;
-            Assert.NotNull(context.GetFeature<IItemsFeature>());
+            Assert.NotNull(context.Features.Get<IItemsFeature>());
             Assert.NotNull(items);
             Assert.Same(items, context.Items);
             var item = new object();
@@ -123,10 +123,10 @@ namespace Microsoft.AspNet.Http.Internal
         public void SetItems_NewCollectionUsed()
         {
             var context = new DefaultHttpContext(new FeatureCollection());
-            Assert.Null(context.GetFeature<IItemsFeature>());
+            Assert.Null(context.Features.Get<IItemsFeature>());
             var items = new Dictionary<object, object>();
             context.Items = items;
-            Assert.NotNull(context.GetFeature<IItemsFeature>());
+            Assert.NotNull(context.Features.Get<IItemsFeature>());
             Assert.Same(items, context.Items);
             var item = new object();
             items["foo"] = item;

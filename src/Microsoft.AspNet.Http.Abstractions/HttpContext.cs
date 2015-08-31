@@ -12,6 +12,8 @@ namespace Microsoft.AspNet.Http
 {
     public abstract class HttpContext : IDisposable
     {
+        public abstract IFeatureCollection Features { get; }
+
         public abstract HttpRequest Request { get; }
 
         public abstract HttpResponse Response { get; }

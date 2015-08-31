@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Http.Features.Internal
             context.Request.Body = new MemoryStream(formContent);
 
             // Not cached yet
-            var formFeature = context.GetFeature<IFormFeature>();
+            var formFeature = context.Features.Get<IFormFeature>();
             Assert.Null(formFeature);
 
             // Act
@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Http.Features.Internal
             Assert.Equal("2", formCollection["baz"]);
 
             // Cached
-            formFeature = context.GetFeature<IFormFeature>();
+            formFeature = context.Features.Get<IFormFeature>();
             Assert.NotNull(formFeature);
             Assert.NotNull(formFeature.Form);
             Assert.Same(formFeature.Form, formCollection);
@@ -132,7 +132,7 @@ namespace Microsoft.AspNet.Http.Features.Internal
             context.Request.Body = new MemoryStream(formContent);
 
             // Not cached yet
-            var formFeature = context.GetFeature<IFormFeature>();
+            var formFeature = context.Features.Get<IFormFeature>();
             Assert.Null(formFeature);
 
             var formCollection = context.Request.Form;
@@ -140,7 +140,7 @@ namespace Microsoft.AspNet.Http.Features.Internal
             Assert.NotNull(formCollection);
 
             // Cached
-            formFeature = context.GetFeature<IFormFeature>();
+            formFeature = context.Features.Get<IFormFeature>();
             Assert.NotNull(formFeature);
             Assert.NotNull(formFeature.Form);
             Assert.Same(formCollection, formFeature.Form);
@@ -161,7 +161,7 @@ namespace Microsoft.AspNet.Http.Features.Internal
             context.Request.Body = new MemoryStream(formContent);
 
             // Not cached yet
-            var formFeature = context.GetFeature<IFormFeature>();
+            var formFeature = context.Features.Get<IFormFeature>();
             Assert.Null(formFeature);
 
             var formCollection = context.Request.Form;
@@ -169,7 +169,7 @@ namespace Microsoft.AspNet.Http.Features.Internal
             Assert.NotNull(formCollection);
 
             // Cached
-            formFeature = context.GetFeature<IFormFeature>();
+            formFeature = context.Features.Get<IFormFeature>();
             Assert.NotNull(formFeature);
             Assert.NotNull(formFeature.Form);
             Assert.Same(formCollection, formFeature.Form);
@@ -192,7 +192,7 @@ namespace Microsoft.AspNet.Http.Features.Internal
             context.Request.Body = new MemoryStream(formContent);
 
             // Not cached yet
-            var formFeature = context.GetFeature<IFormFeature>();
+            var formFeature = context.Features.Get<IFormFeature>();
             Assert.Null(formFeature);
 
             var formCollection = await context.Request.ReadFormAsync();
@@ -200,7 +200,7 @@ namespace Microsoft.AspNet.Http.Features.Internal
             Assert.NotNull(formCollection);
 
             // Cached
-            formFeature = context.GetFeature<IFormFeature>();
+            formFeature = context.Features.Get<IFormFeature>();
             Assert.NotNull(formFeature);
             Assert.NotNull(formFeature.Form);
             Assert.Same(formFeature.Form, formCollection);
@@ -232,7 +232,7 @@ namespace Microsoft.AspNet.Http.Features.Internal
             context.Request.Body = new MemoryStream(formContent);
 
             // Not cached yet
-            var formFeature = context.GetFeature<IFormFeature>();
+            var formFeature = context.Features.Get<IFormFeature>();
             Assert.Null(formFeature);
 
             var formCollection = await context.Request.ReadFormAsync();
@@ -240,7 +240,7 @@ namespace Microsoft.AspNet.Http.Features.Internal
             Assert.NotNull(formCollection);
 
             // Cached
-            formFeature = context.GetFeature<IFormFeature>();
+            formFeature = context.Features.Get<IFormFeature>();
             Assert.NotNull(formFeature);
             Assert.NotNull(formFeature.Form);
             Assert.Same(formFeature.Form, formCollection);
