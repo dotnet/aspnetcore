@@ -5,6 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Features;
 using Microsoft.Framework.Internal;
 using Microsoft.Net.Http.Headers;
 
@@ -66,6 +67,9 @@ namespace Microsoft.AspNet.Mvc.ActionResults
         /// <inheritdoc />
         protected override Task WriteFileAsync(HttpResponse response, CancellationToken cancellation)
         {
+            var bufferingFeature = response.HttpContext.Features.Get<IHttpBufferingFeature>();
+            bufferingFeature?.DisableResponseBuffering();
+
             return response.Body.WriteAsync(FileContents, 0, FileContents.Length, cancellation);
         }
     }

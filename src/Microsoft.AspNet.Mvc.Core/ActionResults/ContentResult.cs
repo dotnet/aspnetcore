@@ -4,7 +4,7 @@
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Mvc.Actions;
+using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.Framework.Internal;
 using Microsoft.Net.Http.Headers;
@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Mvc.ActionResults
                 contentTypeHeader = contentTypeHeader.Copy();
                 contentTypeHeader.Encoding = Encoding.UTF8;
             }
-            
+
             response.ContentType = contentTypeHeader?.ToString()
                 ?? response.ContentType
                 ?? DefaultContentType.ToString();
@@ -56,8 +56,12 @@ namespace Microsoft.AspNet.Mvc.ActionResults
 
             if (Content != null)
             {
+                var bufferingFeature = response.HttpContext.Features.Get<IHttpBufferingFeature>();
+                bufferingFeature?.DisableResponseBuffering();
+
                 return response.WriteAsync(Content, contentTypeHeader?.Encoding ?? DefaultContentType.Encoding);
             }
+
             return TaskCache.CompletedTask;
         }
     }

@@ -3,6 +3,10 @@
 
 using System;
 using System.IO;
+using System.Text;
+using System.Threading.Tasks;
+using Microsoft.AspNet.Http.Features;
+using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.ActionResults;
 using Microsoft.Net.Http.Headers;
 using Xunit;
@@ -95,6 +99,29 @@ namespace Microsoft.AspNet.Mvc.Formatters
             // Assert
             Assert.True(result);
             Assert.Same(contentType, context.SelectedContentType);
+        }
+
+        [Fact]
+        public async Task DisablesResponseBuffering_IfBufferingFeatureAvailable()
+        {
+            // Arrange
+            var expected = Encoding.UTF8.GetBytes("Test data");
+            var formatter = new StreamOutputFormatter();
+            var httpContext = new DefaultHttpContext();
+            var ms = new MemoryStream();
+            httpContext.Response.Body = ms;
+            var bufferingFeature = new TestBufferingFeature();
+            httpContext.Features.Set<IHttpBufferingFeature>(bufferingFeature);
+            var context = new OutputFormatterContext();
+            context.Object = new MemoryStream(expected);
+            context.HttpContext = httpContext;
+
+            // Act
+            await formatter.WriteAsync(context);
+
+            // Assert
+            Assert.Equal(expected, ms.ToArray());
+            Assert.True(bufferingFeature.DisableResponseBufferingInvoked);
         }
 
         private class SimplePOCO

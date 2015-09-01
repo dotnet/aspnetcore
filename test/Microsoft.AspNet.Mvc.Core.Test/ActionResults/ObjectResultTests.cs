@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Actions;
 using Microsoft.AspNet.Mvc.Formatters;
@@ -119,7 +120,7 @@ namespace Microsoft.AspNet.Mvc.ActionResults
             var httpResponse = new DefaultHttpContext().Response;
             httpResponse.Body = new MemoryStream();
             var actionContext = CreateMockActionContext(
-                outputFormatters: new IOutputFormatter[] 
+                outputFormatters: new IOutputFormatter[]
                 {
                     new HttpNotAcceptableOutputFormatter(),
                     new JsonOutputFormatter()
@@ -172,7 +173,7 @@ namespace Microsoft.AspNet.Mvc.ActionResults
             var actionContext = CreateMockActionContext(
                 new[] { formatter.Object },
                 setupActionBindingContext: false);
-            
+
             // Set the content type property explicitly to a single value.
             var result = new ObjectResult("someValue");
 
@@ -383,7 +384,7 @@ namespace Microsoft.AspNet.Mvc.ActionResults
             // Assert
             Assert.Equal(mockCountingFormatter.Object, formatter);
             mockCountingFormatter.Verify(v => v.CanWriteResult(context, null), Times.Once());
-            
+
             // CanWriteResult is invoked for the following cases:
             // 1. For each accept header present
             // 2. Request Content-Type
@@ -695,7 +696,7 @@ namespace Microsoft.AspNet.Mvc.ActionResults
             // Arrange
             var expectedData = "Hello World!";
             var objectResult = new ObjectResult(expectedData);
-            var outputFormatters = new IOutputFormatter[] 
+            var outputFormatters = new IOutputFormatter[]
             {
                 new HttpNotAcceptableOutputFormatter(),
                 new StringOutputFormatter(),
@@ -727,7 +728,7 @@ namespace Microsoft.AspNet.Mvc.ActionResults
             // Arrange
             var objectResult = new ObjectResult(new Person() { Name = "John" });
             objectResult.ContentTypes.Add(new MediaTypeHeaderValue("application/json"));
-            var outputFormatters = new IOutputFormatter[] 
+            var outputFormatters = new IOutputFormatter[]
             {
                 new HttpNotAcceptableOutputFormatter(),
                 new JsonOutputFormatter()
@@ -760,7 +761,7 @@ namespace Microsoft.AspNet.Mvc.ActionResults
             var objectResult = new ObjectResult(new Person() { Name = "John" });
             objectResult.ContentTypes.Add(new MediaTypeHeaderValue("application/foo"));
             objectResult.ContentTypes.Add(new MediaTypeHeaderValue("application/json"));
-            var outputFormatters = new IOutputFormatter[] 
+            var outputFormatters = new IOutputFormatter[]
             {
                 new HttpNotAcceptableOutputFormatter(),
                 new JsonOutputFormatter()
@@ -891,6 +892,7 @@ namespace Microsoft.AspNet.Mvc.ActionResults
             request.ContentType = requestContentType;
             request.Body = new MemoryStream(contentBytes);
 
+            httpContext.Setup(o => o.Features).Returns(new FeatureCollection());
             httpContext.Setup(o => o.Request).Returns(request);
             httpContext.Setup(o => o.RequestServices).Returns(GetServiceProvider());
 
@@ -911,7 +913,7 @@ namespace Microsoft.AspNet.Mvc.ActionResults
             {
                 actionBindingContext = new ActionBindingContext { OutputFormatters = outputFormatters.ToList() };
             }
-            
+
             httpContext.Setup(o => o.RequestServices.GetService(typeof(IActionBindingContextAccessor)))
                     .Returns(new ActionBindingContextAccessor() { ActionBindingContext = actionBindingContext });
 

@@ -3,6 +3,7 @@
 
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http.Features;
 using Microsoft.Framework.Internal;
 using Microsoft.Net.Http.Headers;
 
@@ -37,6 +38,9 @@ namespace Microsoft.AspNet.Mvc.Formatters
                 {
                     response.ContentType = context.SelectedContentType.ToString();
                 }
+
+                var bufferingFeature = context.HttpContext.Features.Get<IHttpBufferingFeature>();
+                bufferingFeature?.DisableResponseBuffering();
 
                 await valueAsStream.CopyToAsync(response.Body);
             }

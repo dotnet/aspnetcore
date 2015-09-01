@@ -1,10 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Actions;
 using Microsoft.AspNet.Routing;
@@ -77,6 +79,35 @@ namespace Microsoft.AspNet.Mvc.ActionResults
 
             // Assert
             Assert.Equal("text/plain; charset=utf-7", httpContext.Response.ContentType);
+        }
+
+        [Fact]
+        public async Task ContentResult_DisablesResponseBuffering_IfBufferingFeatureAvailable()
+        {
+            // Arrange
+            var data = "Test Content";
+            var contentResult = new ContentResult
+            {
+                Content = data,
+                ContentType = new MediaTypeHeaderValue("text/plain")
+                {
+                    Encoding = Encoding.ASCII
+                }
+            };
+            var httpContext = new DefaultHttpContext();
+            httpContext.Features.Set<IHttpBufferingFeature>(new TestBufferingFeature());
+            var memoryStream = new MemoryStream();
+            httpContext.Response.Body = memoryStream;
+            var actionContext = GetActionContext(httpContext);
+
+            // Act
+            await contentResult.ExecuteResultAsync(actionContext);
+
+            // Assert
+            Assert.Equal("text/plain; charset=us-ascii", httpContext.Response.ContentType);
+            Assert.Equal(Encoding.ASCII.GetString(memoryStream.ToArray()), data);
+            var bufferingFeature = (TestBufferingFeature)httpContext.Features.Get<IHttpBufferingFeature>();
+            Assert.True(bufferingFeature.DisableResponseBufferingInvoked);
         }
 
         public static TheoryData<MediaTypeHeaderValue, string, string, string, byte[]> ContentResultContentTypeData
