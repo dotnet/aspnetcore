@@ -220,6 +220,7 @@
     <File Name="Internal.Uri.dll" Ignore="yes" />
     <File Name="mscorlib.dll" Ignore="yes" />
     <File Name="Microsoft.CSharp.dll" Ignore="yes" />
+    <File Name="Microsoft.CSharp.resources.dll" Ignore="yes" />
     <File Name="Microsoft.VisualBasic.dll" Ignore="yes" />
     <File Name="Microsoft.Win32.Registry.dll" Ignore="yes" />
     <File Name="Microsoft.Win32.Registry.AccessControl.dll" Ignore="yes" />
