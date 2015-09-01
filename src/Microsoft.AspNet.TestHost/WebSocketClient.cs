@@ -94,7 +94,7 @@ namespace Microsoft.AspNet.TestHost
                 HttpContext = new DefaultHttpContext(FeatureCollection);
 
                 // Request
-                HttpContext.SetFeature<IHttpRequestFeature>(new RequestFeature());
+                HttpContext.Features.Set<IHttpRequestFeature>(new RequestFeature());
                 var request = HttpContext.Request;
                 request.Protocol = "HTTP/1.1";
                 var scheme = uri.Scheme;
@@ -122,13 +122,13 @@ namespace Microsoft.AspNet.TestHost
                 request.Body = Stream.Null;
 
                 // Response
-                HttpContext.SetFeature<IHttpResponseFeature>(new ResponseFeature());
+                HttpContext.Features.Set<IHttpResponseFeature>(new ResponseFeature());
                 var response = HttpContext.Response;
                 response.Body = Stream.Null;
                 response.StatusCode = 200;
 
                 // WebSocket
-                HttpContext.SetFeature<IHttpWebSocketFeature>(this);
+                HttpContext.Features.Set<IHttpWebSocketFeature>(this);
             }
 
             public void PipelineComplete()
