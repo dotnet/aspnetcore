@@ -5,11 +5,11 @@ using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc;
 using Microsoft.Data.Entity;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Primitives;
 using MusicStore.Models;
 using Xunit;
 
@@ -64,14 +64,14 @@ namespace MusicStore.Controllers
             // FormCollection initialization
             httpContext.Request.Form =
                 new FormCollection(
-                    new Dictionary<string, string[]>()
-                        { { "PromoCode", new string[] { "FREE" } } }
+                    new Dictionary<string, StringValues>()
+                        { { "PromoCode", new[] { "FREE" } } }
                     );
 
             // UserName initialization
             var claims = new List<Claim> { new Claim(ClaimTypes.Name, "TestUserName") };
             httpContext.User = new ClaimsPrincipal(new ClaimsIdentity(claims));
-            
+
             // DbContext initialization
             var dbContext = _serviceProvider.GetRequiredService<MusicStoreContext>();
             var cartItems = CreateTestCartItems(
@@ -87,7 +87,7 @@ namespace MusicStore.Controllers
                 DbContext = dbContext,
             };
             controller.ActionContext.HttpContext = httpContext;
-            
+
             // Act
             var result = await controller.AddressAndPayment(order, CancellationToken.None);
 
@@ -108,7 +108,7 @@ namespace MusicStore.Controllers
 
             // AddressAndPayment action reads the Promo code from FormCollection.
             context.Request.Form =
-                new FormCollection(new Dictionary<string, string[]>());
+                new FormCollection(new Dictionary<string, StringValues>());
 
             var controller = new CheckoutController();
             controller.ActionContext.HttpContext = context;
@@ -133,7 +133,7 @@ namespace MusicStore.Controllers
             // Arrange
             var context = new DefaultHttpContext();
             context.Request.Form =
-                new FormCollection(new Dictionary<string, string[]>());
+                new FormCollection(new Dictionary<string, StringValues>());
 
             var controller = new CheckoutController();
             controller.ActionContext.HttpContext = context;

@@ -4,6 +4,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Features.Internal;
 using Microsoft.AspNet.Http.Internal;
+using Microsoft.Framework.Primitives;
 using Xunit;
 
 namespace MusicStore.Models
@@ -35,7 +36,7 @@ namespace MusicStore.Models
 
             public CookiesFeature(string key, string value)
             {
-                _cookies = new ReadableStringCollection(new Dictionary<string, string[]>()
+                _cookies = new ReadableStringCollection(new Dictionary<string, StringValues>()
                 {
                     { key, new[] { value } }
                 });

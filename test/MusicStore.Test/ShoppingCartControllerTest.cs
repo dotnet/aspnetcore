@@ -11,6 +11,7 @@ using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc;
 using Microsoft.Data.Entity;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Primitives;
 using MusicStore.Models;
 using MusicStore.ViewModels;
 using Xunit;
@@ -189,7 +190,7 @@ namespace MusicStore.Controllers
             var tokens = antiForgery.GetTokens(httpContext);
 
             // Header initialization for AntiForgery
-            var headers = new KeyValuePair<string, string[]>(
+            var headers = new KeyValuePair<string, StringValues>(
                 "RequestVerificationToken",
                 new string[] { tokens.CookieToken + ":" + tokens.FormToken });
             httpContext.Request.Headers.Add(headers);
