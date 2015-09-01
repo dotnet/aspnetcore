@@ -13,7 +13,6 @@
     "dependencies": {
         "EntityFramework.InMemory": "7.0.0-*",
         "EntityFramework.SqlServer": "7.0.0-*",
-        "Microsoft.AspNet.Server.Kestrel": "1.0.0-*",
         "Microsoft.AspNet.Antiforgery": "1.0.0-*",
         "Microsoft.AspNet.Authentication.Cookies": "1.0.0-*",
         "Microsoft.AspNet.Authentication.Facebook": "1.0.0-*",
@@ -27,9 +26,9 @@
         "Microsoft.AspNet.Mvc": "6.0.0-*",
         "Microsoft.AspNet.Mvc.TagHelpers": "6.0.0-*",
         "Microsoft.AspNet.Server.IIS": "1.0.0-*",
+        "Microsoft.AspNet.Server.Kestrel": "1.0.0-*",
         "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
         "Microsoft.AspNet.Session": "1.0.0-*",
-        "Microsoft.AspNet.SignalR.Server": "3.0.0-*",
         "Microsoft.AspNet.StaticFiles": "1.0.0-*",
         "Microsoft.AspNet.Tooling.Razor": "1.0.0-*",
         "Microsoft.Framework.CodeGenerators.Mvc": "1.0.0-*",

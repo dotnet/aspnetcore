@@ -102,9 +102,6 @@ namespace MusicStore
             // Add MVC services to the services container
             services.AddMvc();
 
-            //Add all SignalR related services to IoC.
-            services.AddSignalR();
-
             //Add InMemoryCache
             services.AddSingleton<IMemoryCache, MemoryCache>();
 
@@ -177,9 +174,6 @@ namespace MusicStore
         {
             // Configure Session.
             app.UseSession();
-
-            //Configure SignalR
-            app.UseSignalR();
 
             // Add static files to the request pipeline
             app.UseStaticFiles();

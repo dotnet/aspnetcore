@@ -6,7 +6,6 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Server.Testing;
-using Microsoft.AspNet.SignalR.Client;
 using Microsoft.Framework.Logging;
 using Xunit;
 
@@ -346,20 +345,6 @@ namespace E2ETests
         public async Task<string> CreateAlbum()
         {
             var albumName = Guid.NewGuid().ToString().Replace("-", string.Empty).Substring(0, 12);
-#if DNX451
-            string dataFromHub = null;
-            var OnReceivedEvent = new AutoResetEvent(false);
-            var hubConnection = new HubConnection(_deploymentResult.ApplicationBaseUri + "SignalR");
-            hubConnection.Received += (data) =>
-            {
-                _logger.LogVerbose("Data received by SignalR client: {receivedData}", data);
-                dataFromHub = data;
-                OnReceivedEvent.Set();
-            };
-
-            IHubProxy proxy = hubConnection.CreateHubProxy("Announcement");
-            await hubConnection.Start();
-#endif
             _logger.LogInformation("Trying to create an album with name '{album}'", albumName);
             var response = await _httpClient.GetAsync("Admin/StoreManager/create");
             await ThrowIfResponseStatusNotOk(response);
@@ -379,12 +364,6 @@ namespace E2ETests
             responseContent = await response.Content.ReadAsStringAsync();
             Assert.Equal<string>(_deploymentResult.ApplicationBaseUri + "Admin/StoreManager", response.RequestMessage.RequestUri.AbsoluteUri);
             Assert.Contains(albumName, responseContent);
-#if DNX451
-            _logger.LogInformation("Waiting for the SignalR client to receive album created announcement");
-            OnReceivedEvent.WaitOne(TimeSpan.FromSeconds(10));
-            dataFromHub = dataFromHub ?? "No relevant data received from Hub";
-            Assert.Contains(albumName, dataFromHub);
-#endif
             _logger.LogInformation("Successfully created an album with name '{album}' in the store", albumName);
             return albumName;
         }

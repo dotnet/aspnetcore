@@ -16,11 +16,11 @@ using MusicStore.Models;
 namespace MusicStore
 {
     /// <summary>
-    /// To make runtime to load an environment based startup class, specify the environment by the following ways: 
+    /// To make runtime to load an environment based startup class, specify the environment by the following ways:
     /// 1. Drop a Microsoft.AspNet.Hosting.ini file in the wwwroot folder
     /// 2. Add a setting in the ini file named 'ASPNET_ENV' with value of the format 'Startup[EnvironmentName]'. For example: To load a Startup class named
-    /// 'StartupOpenIdConnect' the value of the env should be 'OpenIdConnect' (eg. ASPNET_ENV=OpenIdConnect). Runtime adds a 'Startup' prefix to this and loads 'StartupOpenIdConnect'. 
-    /// If no environment name is specified the default startup class loaded is 'Startup'. 
+    /// 'StartupOpenIdConnect' the value of the env should be 'OpenIdConnect' (eg. ASPNET_ENV=OpenIdConnect). Runtime adds a 'Startup' prefix to this and loads 'StartupOpenIdConnect'.
+    /// If no environment name is specified the default startup class loaded is 'Startup'.
     /// Alternative ways to specify environment are:
     /// 1. Set the environment variable named SET ASPNET_ENV=OpenIdConnect
     /// 2. For selfhost based servers pass in a command line variable named --env with this value. Eg:
@@ -34,7 +34,7 @@ namespace MusicStore
 
         public StartupOpenIdConnect(IApplicationEnvironment env, IRuntimeEnvironment runtimeEnvironment)
         {
-            //Below code demonstrates usage of multiple configuration sources. For instance a setting say 'setting1' is found in both the registered sources, 
+            //Below code demonstrates usage of multiple configuration sources. For instance a setting say 'setting1' is found in both the registered sources,
             //then the later source will win. By this way a Local config can be overridden by a different setting while deployed remotely.
             var builder = new ConfigurationBuilder(env.ApplicationBasePath)
                         .AddJsonFile("config.json")
@@ -90,9 +90,6 @@ namespace MusicStore
             // Add MVC services to the services container
             services.AddMvc();
 
-            //Add all SignalR related services to IoC.
-            services.AddSignalR();
-
             //Add InMemoryCache
             services.AddSingleton<IMemoryCache, MemoryCache>();
 
@@ -129,9 +126,6 @@ namespace MusicStore
 
             // Configure Session.
             app.UseSession();
-
-            //Configure SignalR
-            app.UseSignalR();
 
             // Add static files to the request pipeline
             app.UseStaticFiles();

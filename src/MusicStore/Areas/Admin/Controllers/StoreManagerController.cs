@@ -5,11 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Cors.Core;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.AspNet.SignalR;
-using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.Data.Entity;
 using Microsoft.Framework.Caching.Memory;
-using MusicStore.Hubs;
 using MusicStore.Models;
 using MusicStore.ViewModels;
 
@@ -19,28 +16,11 @@ namespace MusicStore.Areas.Admin.Controllers
     [Microsoft.AspNet.Authorization.Authorize("ManageStore")]
     public class StoreManagerController : Controller
     {
-        private IConnectionManager _connectionManager;
-        private IHubContext _announcementHub;
-
         [FromServices]
         public MusicStoreContext DbContext { get; set; }
 
         [FromServices]
         public IMemoryCache Cache { get; set; }
-
-        [FromServices]
-        public IConnectionManager ConnectionManager
-        {
-            get
-            {
-                return _connectionManager;
-            }
-            set
-            {
-                _connectionManager = value;
-                _announcementHub = _connectionManager.GetHubContext<AnnouncementHub>();
-            }
-        }
 
         //
         // GET: /StoreManager/
@@ -113,7 +93,6 @@ namespace MusicStore.Areas.Admin.Controllers
                     Url = Url.Action("Details", "Store", new { id = album.AlbumId })
                 };
 
-                _announcementHub.Clients.All.announcement(albumData);
                 Cache.Remove("latestAlbum");
                 return RedirectToAction("Index");
             }

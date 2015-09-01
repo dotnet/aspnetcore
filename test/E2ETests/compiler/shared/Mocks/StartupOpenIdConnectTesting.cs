@@ -25,7 +25,7 @@ namespace MusicStore
 
         public StartupOpenIdConnectTesting(IApplicationEnvironment env, IRuntimeEnvironment runtimeEnvironment)
         {
-            //Below code demonstrates usage of multiple configuration sources. For instance a setting say 'setting1' is found in both the registered sources, 
+            //Below code demonstrates usage of multiple configuration sources. For instance a setting say 'setting1' is found in both the registered sources,
             //then the later source will win. By this way a Local config can be overridden by a different setting while deployed remotely.
             var builder = new ConfigurationBuilder(env.ApplicationBasePath)
                         .AddJsonFile("config.json")
@@ -98,9 +98,6 @@ namespace MusicStore
             // Add MVC services to the services container
             services.AddMvc();
 
-            //Add all SignalR related services to IoC.
-            services.AddSignalR();
-
             //Add InMemoryCache
             services.AddSingleton<IMemoryCache, MemoryCache>();
 
@@ -137,9 +134,6 @@ namespace MusicStore
 
             // Configure Session.
             app.UseSession();
-
-            //Configure SignalR
-            app.UseSignalR();
 
             // Add static files to the request pipeline
             app.UseStaticFiles();
