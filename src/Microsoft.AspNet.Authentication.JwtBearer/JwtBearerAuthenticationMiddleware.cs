@@ -99,7 +99,7 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
                 webRequestHandler.ServerCertificateValidationCallback = options.BackchannelCertificateValidator.Validate;
             }
 #else
-            new WinHttpHandler();
+            new HttpClientHandler();
 #endif
             return handler;
         }

@@ -167,7 +167,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 webRequestHandler.ServerCertificateValidationCallback = options.BackchannelCertificateValidator.Validate;
             }
 #else
-                new WinHttpHandler();
+                new HttpClientHandler();
 #endif
             return handler;
         }
