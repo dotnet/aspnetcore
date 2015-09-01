@@ -3,14 +3,13 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Hosting.Server;
 using Microsoft.Framework.Configuration;
 
 namespace Microsoft.AspNet.Server.Kestrel
 {
-    public class ServerInformation : IServerInformation, IKestrelServerInformation
+    public class KestrelServerInformation : IKestrelServerInformation
     {
-        public ServerInformation()
+        public KestrelServerInformation()
         {
             Addresses = new List<ServerAddress>();
         }
@@ -29,14 +28,6 @@ namespace Microsoft.AspNet.Server.Kestrel
                 {
                     Addresses.Add(address);
                 }
-            }
-        }
-
-        public string Name
-        {
-            get
-            {
-                return "Kestrel";
             }
         }
 

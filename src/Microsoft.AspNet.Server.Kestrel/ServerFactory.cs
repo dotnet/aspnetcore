@@ -25,17 +25,19 @@ namespace Microsoft.AspNet.Server.Kestrel
             _appShutdownService = appShutdownService;
         }
 
-        public IServerInformation Initialize(IConfiguration configuration)
+        public IFeatureCollection Initialize(IConfiguration configuration)
         {
-            var information = new ServerInformation();
+            var information = new KestrelServerInformation();
             information.Initialize(configuration);
-            return information;
+            var serverFeatures = new FeatureCollection();
+            serverFeatures.Set<IKestrelServerInformation>(information);
+            return serverFeatures;
         }
 
-        public IDisposable Start(IServerInformation serverInformation, Func<IFeatureCollection, Task> application)
+        public IDisposable Start(IFeatureCollection serverFeatures, Func<IFeatureCollection, Task> application)
         {
             var disposables = new List<IDisposable>();
-            var information = (ServerInformation)serverInformation;
+            var information = (KestrelServerInformation)serverFeatures.Get<IKestrelServerInformation>();
             var engine = new KestrelEngine(_libraryManager, _appShutdownService);
             engine.Start(information.ThreadCount == 0 ? 1 : information.ThreadCount);
             foreach (var address in information.Addresses)
