@@ -142,9 +142,9 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                     Response.ContentType = "text/html;charset=UTF-8";
 
                     // Emit Cache-Control=no-cache to prevent client caching.
-                    Response.Headers.Set(HeaderNames.CacheControl, "no-cache");
-                    Response.Headers.Set(HeaderNames.Pragma, "no-cache");
-                    Response.Headers.Set(HeaderNames.Expires, "-1");
+                    Response.Headers[HeaderNames.CacheControl] = "no-cache";
+                    Response.Headers[HeaderNames.Pragma] = "no-cache";
+                    Response.Headers[HeaderNames.Expires] = "-1";
 
                     await Response.Body.WriteAsync(buffer, 0, buffer.Length);
                 }
@@ -299,9 +299,9 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 Response.ContentType = "text/html;charset=UTF-8";
 
                 // Emit Cache-Control=no-cache to prevent client caching.
-                Response.Headers.Set(HeaderNames.CacheControl, "no-cache");
-                Response.Headers.Set(HeaderNames.Pragma, "no-cache");
-                Response.Headers.Set(HeaderNames.Expires, "-1");
+                Response.Headers[HeaderNames.CacheControl] = "no-cache";
+                Response.Headers[HeaderNames.Pragma] = "no-cache";
+                Response.Headers[HeaderNames.Expires] = "-1";
 
                 await Response.Body.WriteAsync(buffer, 0, buffer.Length);
 
