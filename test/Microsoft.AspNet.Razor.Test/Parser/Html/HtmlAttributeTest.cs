@@ -67,9 +67,16 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                 new MarkupBlock(
                     new MarkupTagBlock(
                         Factory.Markup("<a"),
-                        new MarkupBlock(new AttributeBlockChunkGenerator(name: "href", prefix: new LocationTagged<string>(Environment.NewLine + "href='", 2, 0, 2), suffix: new LocationTagged<string>("'", 13, 1, 9)),
+                        new MarkupBlock(
+                            new AttributeBlockChunkGenerator(
+                                name: "href",
+                                prefix: new LocationTagged<string>(Environment.NewLine + "href='", 2, 0, 2),
+                                suffix: new LocationTagged<string>("'", 11 + Environment.NewLine.Length, 1, 9)),
                             Factory.Markup(Environment.NewLine + "href='").With(SpanChunkGenerator.Null),
-                            Factory.Markup("Foo").With(new LiteralAttributeChunkGenerator(prefix: new LocationTagged<string>(string.Empty, 10, 1, 6), value: new LocationTagged<string>("Foo", 10, 1, 6))),
+                            Factory.Markup("Foo").With(
+                                new LiteralAttributeChunkGenerator(
+                                    prefix: new LocationTagged<string>(string.Empty, 8 + Environment.NewLine.Length, 1, 6),
+                                    value: new LocationTagged<string>("Foo", 8 + Environment.NewLine.Length, 1, 6))),
                             Factory.Markup("'").With(SpanChunkGenerator.Null)),
                         Factory.Markup(" />").Accepts(AcceptedCharacters.None))));
         }
@@ -81,13 +88,26 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                 new MarkupBlock(
                     new MarkupTagBlock(
                         Factory.Markup("<a"),
-                        new MarkupBlock(new AttributeBlockChunkGenerator(name: "href", prefix: new LocationTagged<string>(Environment.NewLine + "href='", 2, 0, 2), suffix: new LocationTagged<string>("'", 13, 1, 9)),
-                            Factory.Markup(Environment.NewLine + "href='").With(SpanChunkGenerator.Null),
-                            Factory.Markup("Foo").With(new LiteralAttributeChunkGenerator(prefix: new LocationTagged<string>(string.Empty, 10, 1, 6), value: new LocationTagged<string>("Foo", 10, 1, 6))),
-                            Factory.Markup("'").With(SpanChunkGenerator.Null)),
-                        new MarkupBlock(new AttributeBlockChunkGenerator(name: "abcd", prefix: new LocationTagged<string>(Environment.NewLine + "abcd='", 14, 1, 0), suffix: new LocationTagged<string>("'", 25, 2, 9)),
+                        new MarkupBlock(new AttributeBlockChunkGenerator(
+                            name: "href",
+                            prefix: new LocationTagged<string>(Environment.NewLine + "href='", 2, 0, 2),
+                            suffix: new LocationTagged<string>("'", 11 + Environment.NewLine.Length, 1, 9)),
+                        Factory.Markup(Environment.NewLine + "href='").With(SpanChunkGenerator.Null),
+                        Factory.Markup("Foo").With(
+                            new LiteralAttributeChunkGenerator(
+                                prefix: new LocationTagged<string>(string.Empty, 8 + Environment.NewLine.Length, 1, 6),
+                                value: new LocationTagged<string>("Foo", 8 + Environment.NewLine.Length, 1, 6))),
+                        Factory.Markup("'").With(SpanChunkGenerator.Null)),
+                        new MarkupBlock(
+                            new AttributeBlockChunkGenerator(
+                                name: "abcd",
+                                prefix: new LocationTagged<string>(Environment.NewLine + "abcd='", 12 + Environment.NewLine.Length, 1, 10),
+                                suffix: new LocationTagged<string>("'", 21 + Environment.NewLine.Length * 2, 2, 9)),
                             Factory.Markup(Environment.NewLine + "abcd='").With(SpanChunkGenerator.Null),
-                            Factory.Markup("Bar").With(new LiteralAttributeChunkGenerator(prefix: new LocationTagged<string>(string.Empty, 22, 2, 6), value: new LocationTagged<string>("Bar", 22, 2, 6))),
+                            Factory.Markup("Bar").With(
+                                new LiteralAttributeChunkGenerator(
+                                    prefix: new LocationTagged<string>(string.Empty, 18 + Environment.NewLine.Length * 2, 2, 6),
+                                    value: new LocationTagged<string>("Bar", 18 + Environment.NewLine.Length * 2, 2, 6))),
                             Factory.Markup("'").With(SpanChunkGenerator.Null)),
                         Factory.Markup(" />").Accepts(AcceptedCharacters.None))));
         }
@@ -99,9 +119,16 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                 new MarkupBlock(
                     new MarkupTagBlock(
                         Factory.Markup("<a"),
-                        new MarkupBlock(new AttributeBlockChunkGenerator(name: "href", prefix: new LocationTagged<string>(" " + Environment.NewLine + "href='", 2, 0, 2), suffix: new LocationTagged<string>("'", 14, 1, 9)),
+                        new MarkupBlock(
+                            new AttributeBlockChunkGenerator(
+                                name: "href",
+                                prefix: new LocationTagged<string>(" " + Environment.NewLine + "href='", 2, 0, 2),
+                                suffix: new LocationTagged<string>("'", 12 + Environment.NewLine.Length, 1, 9)),
                             Factory.Markup(" " + Environment.NewLine + "href='").With(SpanChunkGenerator.Null),
-                            Factory.Markup("Foo").With(new LiteralAttributeChunkGenerator(prefix: new LocationTagged<string>(string.Empty, 11, 1, 6), value: new LocationTagged<string>("Foo", 11, 1, 6))),
+                            Factory.Markup("Foo").With(
+                                new LiteralAttributeChunkGenerator(
+                                    prefix: new LocationTagged<string>(string.Empty, 9 + Environment.NewLine.Length, 1, 6),
+                                    value: new LocationTagged<string>("Foo", 9 + Environment.NewLine.Length, 1, 6))),
                             Factory.Markup("'").With(SpanChunkGenerator.Null)),
                         Factory.Markup(" />").Accepts(AcceptedCharacters.None))));
         }
