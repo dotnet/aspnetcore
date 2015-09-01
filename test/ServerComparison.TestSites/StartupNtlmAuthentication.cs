@@ -3,6 +3,7 @@
 
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Server.WebListener;
 using Microsoft.Dnx.Runtime;
 using Microsoft.Framework.Configuration;
@@ -49,10 +50,10 @@ namespace ServerComparison.TestSites
 
             // Set up NTLM authentication for WebListener like below.
             // For IIS and IISExpress: Use inetmgr to setup NTLM authentication on the application vDir or modify the applicationHost.config to enable NTLM.
-            if ((app.Server as ServerInformation) != null)
+            var listener = app.ServerFeatures.Get<WebListener>();
+            if (listener != null)
             {
-                var serverInformation = (ServerInformation)app.Server;
-                serverInformation.Listener.AuthenticationManager.AuthenticationSchemes =
+                listener.AuthenticationManager.AuthenticationSchemes =
                     AuthenticationSchemes.Negotiate | AuthenticationSchemes.NTLM | AuthenticationSchemes.AllowAnonymous;
             }
 
