@@ -46,10 +46,11 @@
     <File Name="System.Diagnostics.Contracts.dll" Ignore="yes" />
     <File Name="System.Diagnostics.Debug.dll" Ignore="yes" />
     <File Name="System.Diagnostics.Process.dll" Ignore="yes" />
-	<File Name="System.Diagnostics.StackTrace.dll" Ignore="yes" />
+    <File Name="System.Diagnostics.StackTrace.dll" Ignore="yes" />
     <File Name="System.Diagnostics.TextWriterTraceListener.dll" Ignore="yes" />
     <File Name="System.Diagnostics.Tools.dll" Ignore="yes" />
     <File Name="System.Diagnostics.TraceSource.dll" Ignore="yes" />
+    <File Name="System.Diagnostics.Tracing.Telemetry.dll" Ignore="yes" />
     <File Name="System.Diagnostics.Tracing.dll" Ignore="yes" />
     <File Name="System.dll" Ignore="yes" />
     <File Name="System.Dynamic.Runtime.dll" Ignore="yes" />
