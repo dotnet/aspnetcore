@@ -9,19 +9,19 @@ using System.Net.Http;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
-namespace Microsoft.AspNet.Authentication.OAuthBearer
+namespace Microsoft.AspNet.Authentication.JwtBearer
 {
     /// <summary>
     /// Options class provides information needed to control Bearer Authentication middleware behavior
     /// </summary>
-    public class OAuthBearerAuthenticationOptions : AuthenticationOptions
+    public class JwtBearerAuthenticationOptions : AuthenticationOptions
     {
         /// <summary>
         /// Creates an instance of bearer authentication options with default values.
         /// </summary>
-        public OAuthBearerAuthenticationOptions() : base()
+        public JwtBearerAuthenticationOptions() : base()
         {
-            AuthenticationScheme = OAuthBearerAuthenticationDefaults.AuthenticationScheme;
+            AuthenticationScheme = JwtBearerAuthenticationDefaults.AuthenticationScheme;
         }
 
         /// <summary>
@@ -45,14 +45,14 @@ namespace Microsoft.AspNet.Authentication.OAuthBearer
         /// <summary>
         /// Gets or sets the challenge to put in the "WWW-Authenticate" header.
         /// </summary>
-        public string Challenge { get; set; } = OAuthBearerAuthenticationDefaults.AuthenticationScheme;
+        public string Challenge { get; set; } = JwtBearerAuthenticationDefaults.AuthenticationScheme;
 
         /// <summary>
         /// The object provided by the application to process events raised by the bearer authentication middleware.
-        /// The application may implement the interface fully, or it may create an instance of OAuthBearerAuthenticationProvider
+        /// The application may implement the interface fully, or it may create an instance of JwtBearerAuthenticationProvider
         /// and assign delegates only to the events it wants to process.
         /// </summary>
-        public OAuthBearerAuthenticationNotifications Notifications { get; set; } = new OAuthBearerAuthenticationNotifications();
+        public JwtBearerAuthenticationNotifications Notifications { get; set; } = new JwtBearerAuthenticationNotifications();
 
         /// <summary>
         /// The HttpMessageHandler used to retrieve metadata.

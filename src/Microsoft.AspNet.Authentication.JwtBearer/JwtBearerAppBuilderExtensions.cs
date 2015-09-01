@@ -2,16 +2,16 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Authentication.OAuthBearer;
+using Microsoft.AspNet.Authentication.JwtBearer;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Builder
 {
     /// <summary>
-    /// Extension methods to add OAuth Bearer authentication capabilities to an HTTP application pipeline
+    /// Extension methods to add Jwt Bearer authentication capabilities to an HTTP application pipeline
     /// </summary>
-    public static class OAuthBearerAppBuilderExtensions
+    public static class JwtBearerAppBuilderExtensions
     {
         /// <summary>
         /// Adds Bearer token processing to an HTTP application pipeline. This middleware understands appropriately
@@ -24,10 +24,10 @@ namespace Microsoft.AspNet.Builder
         /// <param name="app">The application builder</param>
         /// <param name="options">Options which control the processing of the bearer header.</param>
         /// <returns>The application builder</returns>
-        public static IApplicationBuilder UseOAuthBearerAuthentication([NotNull] this IApplicationBuilder app, Action<OAuthBearerAuthenticationOptions> configureOptions = null, string optionsName = "")
+        public static IApplicationBuilder UseJwtBearerAuthentication([NotNull] this IApplicationBuilder app, Action<JwtBearerAuthenticationOptions> configureOptions = null, string optionsName = "")
         {
-            return app.UseMiddleware<OAuthBearerAuthenticationMiddleware>(
-                new ConfigureOptions<OAuthBearerAuthenticationOptions>(configureOptions ?? (o => { }))
+            return app.UseMiddleware<JwtBearerAuthenticationMiddleware>(
+                new ConfigureOptions<JwtBearerAuthenticationOptions>(configureOptions ?? (o => { }))
                 {
                     Name = optionsName
                 });

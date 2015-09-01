@@ -3,7 +3,7 @@
 
 using Microsoft.AspNet.Http;
 
-namespace Microsoft.AspNet.Authentication.OAuthBearer
+namespace Microsoft.AspNet.Authentication.JwtBearer
 {
     public class AuthenticationChallengeNotification<TOptions> : BaseNotification<TOptions>
     {

@@ -12,31 +12,31 @@ using Microsoft.Framework.WebEncoders;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
-namespace Microsoft.AspNet.Authentication.OAuthBearer
+namespace Microsoft.AspNet.Authentication.JwtBearer
 {
     /// <summary>
     /// Bearer authentication middleware component which is added to an HTTP pipeline. This class is not
-    /// created by application code directly, instead it is added by calling the the IAppBuilder UseOAuthBearerAuthentication
+    /// created by application code directly, instead it is added by calling the the IAppBuilder UseJwtBearerAuthentication
     /// extension method.
     /// </summary>
-    public class OAuthBearerAuthenticationMiddleware : AuthenticationMiddleware<OAuthBearerAuthenticationOptions>
+    public class JwtBearerAuthenticationMiddleware : AuthenticationMiddleware<JwtBearerAuthenticationOptions>
     {
         /// <summary>
         /// Bearer authentication component which is added to an HTTP pipeline. This constructor is not
-        /// called by application code directly, instead it is added by calling the the IAppBuilder UseOAuthBearerAuthentication 
+        /// called by application code directly, instead it is added by calling the the IAppBuilder UseJwtBearerAuthentication 
         /// extension method.
         /// </summary>
-        public OAuthBearerAuthenticationMiddleware(
+        public JwtBearerAuthenticationMiddleware(
             [NotNull] RequestDelegate next,
             [NotNull] ILoggerFactory loggerFactory,
             [NotNull] IUrlEncoder encoder,
-            [NotNull] IOptions<OAuthBearerAuthenticationOptions> options,
-            ConfigureOptions<OAuthBearerAuthenticationOptions> configureOptions)
+            [NotNull] IOptions<JwtBearerAuthenticationOptions> options,
+            ConfigureOptions<JwtBearerAuthenticationOptions> configureOptions)
             : base(next, options, loggerFactory, encoder, configureOptions)
         {
             if (Options.Notifications == null)
             {
-                Options.Notifications = new OAuthBearerAuthenticationNotifications();
+                Options.Notifications = new JwtBearerAuthenticationNotifications();
             }
 
             if (string.IsNullOrEmpty(Options.TokenValidationParameters.ValidAudience) && !string.IsNullOrEmpty(Options.Audience))
@@ -76,13 +76,13 @@ namespace Microsoft.AspNet.Authentication.OAuthBearer
         /// Called by the AuthenticationMiddleware base class to create a per-request handler. 
         /// </summary>
         /// <returns>A new instance of the request handler</returns>
-        protected override AuthenticationHandler<OAuthBearerAuthenticationOptions> CreateHandler()
+        protected override AuthenticationHandler<JwtBearerAuthenticationOptions> CreateHandler()
         {
-            return new OAuthBearerAuthenticationHandler();
+            return new JwtBearerAuthenticationHandler();
         }
 
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Managed by caller")]
-        private static HttpMessageHandler ResolveHttpMessageHandler(OAuthBearerAuthenticationOptions options)
+        private static HttpMessageHandler ResolveHttpMessageHandler(JwtBearerAuthenticationOptions options)
         {
             HttpMessageHandler handler = options.BackchannelHttpHandler ??
 #if DNX451

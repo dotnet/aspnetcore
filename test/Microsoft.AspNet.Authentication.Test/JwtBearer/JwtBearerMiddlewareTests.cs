@@ -16,9 +16,9 @@ using Microsoft.Framework.DependencyInjection;
 using Shouldly;
 using Xunit;
 
-namespace Microsoft.AspNet.Authentication.OAuthBearer
+namespace Microsoft.AspNet.Authentication.JwtBearer
 {
-    public class OAuthBearerMiddlewareTests
+    public class JwtBearerMiddlewareTests
     {
         [Fact]
         public async Task BearerTokenValidation()
@@ -309,13 +309,13 @@ namespace Microsoft.AspNet.Authentication.OAuthBearer
             }
         }
 
-        private static TestServer CreateServer(Action<OAuthBearerAuthenticationOptions> configureOptions, Func<HttpContext, bool> handler = null)
+        private static TestServer CreateServer(Action<JwtBearerAuthenticationOptions> configureOptions, Func<HttpContext, bool> handler = null)
         {
             return TestServer.Create(app =>
             {
                 if (configureOptions != null)
                 {
-                    app.UseOAuthBearerAuthentication(configureOptions);
+                    app.UseJwtBearerAuthentication(configureOptions);
                 }
 
                 app.Use(async (context, next) =>
@@ -345,17 +345,17 @@ namespace Microsoft.AspNet.Authentication.OAuthBearer
                     else if (context.Request.Path == new PathString("/unauthorized"))
                     {
                         // Simulate Authorization failure 
-                        var result = await context.Authentication.AuthenticateAsync(OAuthBearerAuthenticationDefaults.AuthenticationScheme);
-                        await context.Authentication.ChallengeAsync(OAuthBearerAuthenticationDefaults.AuthenticationScheme);
+                        var result = await context.Authentication.AuthenticateAsync(JwtBearerAuthenticationDefaults.AuthenticationScheme);
+                        await context.Authentication.ChallengeAsync(JwtBearerAuthenticationDefaults.AuthenticationScheme);
                     }
 
                     else if (context.Request.Path == new PathString("/signIn"))
                     {
-                        await Assert.ThrowsAsync<NotSupportedException>(() => context.Authentication.SignInAsync(OAuthBearerAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal()));
+                        await Assert.ThrowsAsync<NotSupportedException>(() => context.Authentication.SignInAsync(JwtBearerAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal()));
                     }
                     else if (context.Request.Path == new PathString("/signOut"))
                     {
-                        await Assert.ThrowsAsync<NotSupportedException>(() => context.Authentication.SignOutAsync(OAuthBearerAuthenticationDefaults.AuthenticationScheme));
+                        await Assert.ThrowsAsync<NotSupportedException>(() => context.Authentication.SignOutAsync(JwtBearerAuthenticationDefaults.AuthenticationScheme));
                     }
                     else
                     {

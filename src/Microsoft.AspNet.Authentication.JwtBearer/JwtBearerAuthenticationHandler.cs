@@ -11,9 +11,9 @@ using Microsoft.AspNet.Http.Features.Authentication;
 using Microsoft.Framework.Logging;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
-namespace Microsoft.AspNet.Authentication.OAuthBearer
+namespace Microsoft.AspNet.Authentication.JwtBearer
 {
-    public class OAuthBearerAuthenticationHandler : AuthenticationHandler<OAuthBearerAuthenticationOptions>
+    public class JwtBearerAuthenticationHandler : AuthenticationHandler<JwtBearerAuthenticationOptions>
     {
         private OpenIdConnectConfiguration _configuration;
 
@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Authentication.OAuthBearer
             {
                 // Give application opportunity to find from a different location, adjust, or reject token
                 var messageReceivedNotification =
-                    new MessageReceivedNotification<HttpContext, OAuthBearerAuthenticationOptions>(Context, Options)
+                    new MessageReceivedNotification<HttpContext, JwtBearerAuthenticationOptions>(Context, Options)
                     {
                         ProtocolMessage = Context,
                     };
@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.Authentication.OAuthBearer
 
                 // notify user token was received
                 var securityTokenReceivedNotification =
-                    new SecurityTokenReceivedNotification<HttpContext, OAuthBearerAuthenticationOptions>(Context, Options)
+                    new SecurityTokenReceivedNotification<HttpContext, JwtBearerAuthenticationOptions>(Context, Options)
                 {
                     ProtocolMessage = Context,
                     SecurityToken = token,
@@ -117,7 +117,7 @@ namespace Microsoft.AspNet.Authentication.OAuthBearer
                     {
                         var principal = validator.ValidateToken(token, validationParameters, out validatedToken);
                         var ticket = new AuthenticationTicket(principal, new AuthenticationProperties(), Options.AuthenticationScheme);
-                        var securityTokenValidatedNotification = new SecurityTokenValidatedNotification<HttpContext, OAuthBearerAuthenticationOptions>(Context, Options)
+                        var securityTokenValidatedNotification = new SecurityTokenValidatedNotification<HttpContext, JwtBearerAuthenticationOptions>(Context, Options)
                         {
                             ProtocolMessage = Context,
                             AuthenticationTicket = ticket
@@ -151,7 +151,7 @@ namespace Microsoft.AspNet.Authentication.OAuthBearer
                 }
 
                 var authenticationFailedNotification =
-                    new AuthenticationFailedNotification<HttpContext, OAuthBearerAuthenticationOptions>(Context, Options)
+                    new AuthenticationFailedNotification<HttpContext, JwtBearerAuthenticationOptions>(Context, Options)
                     {
                         ProtocolMessage = Context,
                         Exception = ex
@@ -175,7 +175,7 @@ namespace Microsoft.AspNet.Authentication.OAuthBearer
         protected override async Task<bool> HandleUnauthorizedAsync(ChallengeContext context)
         {
             Response.StatusCode = 401;
-            await Options.Notifications.ApplyChallenge(new AuthenticationChallengeNotification<OAuthBearerAuthenticationOptions>(Context, Options));
+            await Options.Notifications.ApplyChallenge(new AuthenticationChallengeNotification<JwtBearerAuthenticationOptions>(Context, Options));
             return false;
         }
 

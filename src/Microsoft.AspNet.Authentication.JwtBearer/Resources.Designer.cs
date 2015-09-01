@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Microsoft.AspNet.Authentication.OAuthBearer {
+namespace Microsoft.AspNet.Authentication.JwtBearer {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Authentication.OAuthBearer {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.AspNet.Authentication.OAuth.Resources", System.Reflection.IntrospectionExtensions.GetTypeInfo(typeof(Resources)).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.AspNet.Authentication.Jwt.Resources", System.Reflection.IntrospectionExtensions.GetTypeInfo(typeof(Resources)).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
