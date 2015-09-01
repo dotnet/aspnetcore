@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNet.Razor.Parser;
 
 namespace Microsoft.AspNet.Razor.Text
@@ -65,7 +66,8 @@ namespace Microsoft.AspNet.Razor.Text
         {
             _absoluteIndex++;
 
-            if (ParserHelpers.IsNewLine(characterRead) && (characterRead != '\r' || nextCharacter != '\n'))
+            if (Environment.NewLine.Length == 1 && characterRead == Environment.NewLine[0] ||
+                ParserHelpers.IsNewLine(characterRead) && (characterRead != '\r' || nextCharacter != '\n'))
             {
                 _lineIndex++;
                 _characterIndex = 0;
