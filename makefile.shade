@@ -153,11 +153,11 @@ var buildTarget = "compile"
         }
 
         Log.Info("No conflicts in repos, continuing with creating release branch.");
-    
+
         foreach (var repo in GetAllRepos())
         {
             GitCommand(repo, "checkout origin/dev -B release");
-            
+
             // Update NuGet.Config
             var nugetConfigPath = Path.Combine(repo, "NuGet.config");
             if (File.Exists(nugetConfigPath))
@@ -565,7 +565,6 @@ functions
             var nonDefaultRepos = new[]
             {
               "DNX",
-              "MusicStore",
               "Coherence",
               "Coherence-Signed",
               "dnvm",
@@ -733,6 +732,7 @@ functions
                 "SignalR-SQLServer",
                 "SignalR-Redis",
                 "Entropy",
+		        "MusicStore"
             };
 
             var repositoryInclude = Environment.GetEnvironmentVariable("KOREBUILD_REPOSITORY_INCLUDE");
