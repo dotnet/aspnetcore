@@ -1219,7 +1219,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
                 IOptions<MvcOptions> options)
                 : base(options)
             {
-                Options = options.Options;
+                Options = options.Value;
             }
 
             public MvcOptions Options { get; }

@@ -68,7 +68,7 @@ namespace System.Net.Http
             options.Formatters.AddRange(new MediaTypeFormatterCollection());
 
             var optionsAccessor = new Mock<IOptions<WebApiCompatShimOptions>>();
-            optionsAccessor.SetupGet(o => o.Options).Returns(options);
+            optionsAccessor.SetupGet(o => o.Value).Returns(options);
 
             services
                 .Setup(s => s.GetService(typeof(IOptions<WebApiCompatShimOptions>)))
@@ -101,7 +101,7 @@ namespace System.Net.Http
             options.Formatters.AddRange(new MediaTypeFormatterCollection());
 
             var optionsAccessor = new Mock<IOptions<WebApiCompatShimOptions>>();
-            optionsAccessor.SetupGet(o => o.Options).Returns(options);
+            optionsAccessor.SetupGet(o => o.Value).Returns(options);
 
             services
                 .Setup(s => s.GetService(typeof(IOptions<WebApiCompatShimOptions>)))
@@ -322,7 +322,7 @@ namespace System.Net.Http
             }
 
             var optionsAccessor = new Mock<IOptions<WebApiCompatShimOptions>>();
-            optionsAccessor.SetupGet(o => o.Options).Returns(options);
+            optionsAccessor.SetupGet(o => o.Value).Returns(options);
 
             var services = new Mock<IServiceProvider>(MockBehavior.Strict);
             services

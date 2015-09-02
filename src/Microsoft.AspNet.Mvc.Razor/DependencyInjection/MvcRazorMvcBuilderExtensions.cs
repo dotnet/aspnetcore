@@ -54,18 +54,5 @@ namespace Microsoft.Framework.DependencyInjection
 
             return builder;
         }
-
-        public static IMvcBuilder AddPrecompiledRazorViews(
-            [NotNull] this IMvcBuilder builder,
-            [NotNull] params Assembly[] assemblies)
-        {
-            builder.Services.Replace(
-                ServiceDescriptor.Singleton<ICompilerCacheProvider>(serviceProvider =>
-                    ActivatorUtilities.CreateInstance<PrecompiledViewsCompilerCacheProvider>(
-                        serviceProvider,
-                        assemblies.AsEnumerable())));
-
-            return builder;
-        }
     }
 }

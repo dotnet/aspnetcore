@@ -267,7 +267,7 @@ public class NotRazorPrefixType {}";
             var fileProvider = new TestFileProvider();
             fileProvider.AddFile(viewPath, "view-content");
             var options = new Mock<IOptions<RazorViewEngineOptions>>();
-            options.SetupGet(o => o.Options)
+            options.SetupGet(o => o.Value)
                 .Returns(new RazorViewEngineOptions
                 {
                     FileProvider = fileProvider
@@ -416,7 +416,7 @@ public class NotRazorPrefixType {}";
                 FileProvider = fileProvider ?? new TestFileProvider()
             };
             var options = new Mock<IOptions<RazorViewEngineOptions>>();
-            options.SetupGet(o => o.Options)
+            options.SetupGet(o => o.Value)
                 .Returns(razorViewEngineOptions);
 
             return options.Object;

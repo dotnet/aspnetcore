@@ -34,8 +34,8 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         {
             // Arrange
             var options = new TestOptionsManager<AuthorizationOptions>();
-            options.Options.AddPolicy("Base", policy => policy.RequireClaim("Basic").RequireClaim("Basic2"));
-            options.Options.AddPolicy("Derived", policy => policy.RequireClaim("Derived"));
+            options.Value.AddPolicy("Base", policy => policy.RequireClaim("Basic").RequireClaim("Basic2"));
+            options.Value.AddPolicy("Derived", policy => policy.RequireClaim("Derived"));
 
             var provider = new AuthorizationApplicationModelProvider(options);
             var defaultProvider = new DefaultApplicationModelProvider(new TestOptionsManager<MvcOptions>());

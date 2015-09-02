@@ -15,7 +15,6 @@ namespace Microsoft.AspNet.Mvc
         public MvcCoreRouteOptionsSetup()
             : base(ConfigureRouting)
         {
-            Order = DefaultOrder.DefaultFrameworkSortOrder;
         }
 
         /// <summary>

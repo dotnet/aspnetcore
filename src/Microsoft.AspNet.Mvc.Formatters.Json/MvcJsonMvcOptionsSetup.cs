@@ -12,9 +12,8 @@ namespace Microsoft.AspNet.Mvc
     public class MvcJsonMvcOptionsSetup : ConfigureOptions<MvcOptions>
     {
         public MvcJsonMvcOptionsSetup(IOptions<MvcJsonOptions> jsonOptions)
-            : base((_) => ConfigureMvc(_, jsonOptions.Options.SerializerSettings))
+            : base((_) => ConfigureMvc(_, jsonOptions.Value.SerializerSettings))
         {
-            Order = DefaultOrder.DefaultFrameworkSortOrder + 10;
         }
 
         public static void ConfigureMvc(MvcOptions options, JsonSerializerSettings serializerSettings)

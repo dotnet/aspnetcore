@@ -19,7 +19,6 @@ namespace Microsoft.AspNet.Mvc
         public MvcCoreMvcOptionsSetup()
             : base(ConfigureMvc)
         {
-            Order = DefaultOrder.DefaultFrameworkSortOrder;
         }
 
         public static void ConfigureMvc(MvcOptions options)

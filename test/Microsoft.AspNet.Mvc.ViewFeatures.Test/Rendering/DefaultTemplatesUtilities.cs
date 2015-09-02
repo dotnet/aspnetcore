@@ -221,7 +221,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             options.ClientModelValidatorProviders.Add(new DataAnnotationsClientModelValidatorProvider());
             var optionsAccessor = new Mock<IOptions<MvcViewOptions>>();
             optionsAccessor
-                .SetupGet(o => o.Options)
+                .SetupGet(o => o.Value)
                 .Returns(options);
 
             var serviceProvider = new Mock<IServiceProvider>();

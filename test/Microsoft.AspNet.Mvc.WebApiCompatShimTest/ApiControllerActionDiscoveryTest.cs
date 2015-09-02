@@ -383,12 +383,12 @@ namespace System.Web.Http
 
             var optionsAccessor = new Mock<IOptions<MvcOptions>>();
             optionsAccessor
-                .SetupGet(o => o.Options)
+                .SetupGet(o => o.Value)
                 .Returns(options);
 
             var authorizationOptionsAccessor = new Mock<IOptions<AuthorizationOptions>>();
             authorizationOptionsAccessor
-                .SetupGet(o => o.Options)
+                .SetupGet(o => o.Value)
                 .Returns(new AuthorizationOptions());
 
             var modelProvider = new DefaultApplicationModelProvider(optionsAccessor.Object);

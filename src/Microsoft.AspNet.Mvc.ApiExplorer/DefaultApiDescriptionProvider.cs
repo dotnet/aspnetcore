@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Mvc.ApiExplorer
             IInlineConstraintResolver constraintResolver,
             IModelMetadataProvider modelMetadataProvider)
         {
-            _outputFormatters = optionsAccessor.Options.OutputFormatters;
+            _outputFormatters = optionsAccessor.Value.OutputFormatters;
             _constraintResolver = constraintResolver;
             _modelMetadataProvider = modelMetadataProvider;
         }

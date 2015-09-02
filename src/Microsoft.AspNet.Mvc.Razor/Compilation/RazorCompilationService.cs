@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         {
             _compilationService = compilationService;
             _razorHost = razorHost;
-            _fileProvider = viewEngineOptions.Options.FileProvider;
+            _fileProvider = viewEngineOptions.Value.FileProvider;
         }
 
         /// <inheritdoc />

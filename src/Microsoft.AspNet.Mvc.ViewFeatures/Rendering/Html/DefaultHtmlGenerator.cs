@@ -49,14 +49,14 @@ namespace Microsoft.AspNet.Mvc.Rendering
             [NotNull] IHtmlEncoder htmlEncoder)
         {
             _antiforgery = antiforgery;
-            var clientValidatorProviders = optionsAccessor.Options.ClientModelValidatorProviders;
+            var clientValidatorProviders = optionsAccessor.Value.ClientModelValidatorProviders;
             _clientModelValidatorProvider = new CompositeClientModelValidatorProvider(clientValidatorProviders);
             _metadataProvider = metadataProvider;
             _urlHelper = urlHelper;
             _htmlEncoder = htmlEncoder;
 
             // Underscores are fine characters in id's.
-            IdAttributeDotReplacement = optionsAccessor.Options.HtmlHelperOptions.IdAttributeDotReplacement;
+            IdAttributeDotReplacement = optionsAccessor.Value.HtmlHelperOptions.IdAttributeDotReplacement;
         }
 
         /// <inheritdoc />

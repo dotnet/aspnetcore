@@ -20,8 +20,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var viewEngine1 = Mock.Of<IViewEngine>();
             var viewEngine2 = Mock.Of<IViewEngine>();
             var optionsAccessor = new MockMvcViewOptionsAccessor();
-            optionsAccessor.Options.ViewEngines.Add(viewEngine1);
-            optionsAccessor.Options.ViewEngines.Add(viewEngine2);
+            optionsAccessor.Value.ViewEngines.Add(viewEngine1);
+            optionsAccessor.Value.ViewEngines.Add(viewEngine2);
             var compositeViewEngine = new CompositeViewEngine(optionsAccessor);
 
             // Act
@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             engine.Setup(e => e.FindView(It.IsAny<ActionContext>(), It.IsAny<string>()))
                    .Returns(ViewEngineResult.NotFound(viewName, new[] { "controller/test-view" }));
             var optionsAccessor = new MockMvcViewOptionsAccessor();
-            optionsAccessor.Options.ViewEngines.Add(engine.Object);
+            optionsAccessor.Value.ViewEngines.Add(engine.Object);
             var compositeViewEngine = new CompositeViewEngine(optionsAccessor);
 
             // Act
@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             engine.Setup(e => e.FindView(It.IsAny<ActionContext>(), It.IsAny<string>()))
                    .Returns(ViewEngineResult.Found(viewName, view));
             var optionsAccessor = new MockMvcViewOptionsAccessor();
-            optionsAccessor.Options.ViewEngines.Add(engine.Object);
+            optionsAccessor.Value.ViewEngines.Add(engine.Object);
             var compositeViewEngine = new CompositeViewEngine(optionsAccessor);
 
             // Act
@@ -108,9 +108,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
                    .Returns(ViewEngineResult.Found(viewName, view3));
 
             var optionsAccessor = new MockMvcViewOptionsAccessor();
-            optionsAccessor.Options.ViewEngines.Add(engine1.Object);
-            optionsAccessor.Options.ViewEngines.Add(engine2.Object);
-            optionsAccessor.Options.ViewEngines.Add(engine3.Object);
+            optionsAccessor.Value.ViewEngines.Add(engine1.Object);
+            optionsAccessor.Value.ViewEngines.Add(engine2.Object);
+            optionsAccessor.Value.ViewEngines.Add(engine3.Object);
             var compositeViewEngine = new CompositeViewEngine(optionsAccessor);
 
             // Act
@@ -138,9 +138,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
                    .Returns(ViewEngineResult.NotFound(viewName, new[] { "4", "5" }));
 
             var optionsAccessor = new MockMvcViewOptionsAccessor();
-            optionsAccessor.Options.ViewEngines.Add(engine1.Object);
-            optionsAccessor.Options.ViewEngines.Add(engine2.Object);
-            optionsAccessor.Options.ViewEngines.Add(engine3.Object);
+            optionsAccessor.Value.ViewEngines.Add(engine1.Object);
+            optionsAccessor.Value.ViewEngines.Add(engine2.Object);
+            optionsAccessor.Value.ViewEngines.Add(engine3.Object);
             var compositeViewEngine = new CompositeViewEngine(optionsAccessor);
 
             // Act
@@ -197,7 +197,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             engine.Setup(e => e.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
                    .Returns(ViewEngineResult.Found(viewName, view));
             var optionsAccessor = new MockMvcViewOptionsAccessor();
-            optionsAccessor.Options.ViewEngines.Add(engine.Object);
+            optionsAccessor.Value.ViewEngines.Add(engine.Object);
             var compositeViewEngine = new CompositeViewEngine(optionsAccessor);
 
             // Act
@@ -226,9 +226,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
                    .Returns(ViewEngineResult.Found(viewName, view3));
 
             var optionsAccessor = new MockMvcViewOptionsAccessor();
-            optionsAccessor.Options.ViewEngines.Add(engine1.Object);
-            optionsAccessor.Options.ViewEngines.Add(engine2.Object);
-            optionsAccessor.Options.ViewEngines.Add(engine3.Object);
+            optionsAccessor.Value.ViewEngines.Add(engine1.Object);
+            optionsAccessor.Value.ViewEngines.Add(engine2.Object);
+            optionsAccessor.Value.ViewEngines.Add(engine3.Object);
             var compositeViewEngine = new CompositeViewEngine(optionsAccessor);
 
             // Act
@@ -256,9 +256,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
                    .Returns(ViewEngineResult.NotFound(viewName, new[] { "4", "5" }));
 
             var optionsAccessor = new MockMvcViewOptionsAccessor();
-            optionsAccessor.Options.ViewEngines.Add(engine1.Object);
-            optionsAccessor.Options.ViewEngines.Add(engine2.Object);
-            optionsAccessor.Options.ViewEngines.Add(engine3.Object);
+            optionsAccessor.Value.ViewEngines.Add(engine1.Object);
+            optionsAccessor.Value.ViewEngines.Add(engine2.Object);
+            optionsAccessor.Value.ViewEngines.Add(engine3.Object);
             var compositeViewEngine = new CompositeViewEngine(optionsAccessor);
 
             // Act

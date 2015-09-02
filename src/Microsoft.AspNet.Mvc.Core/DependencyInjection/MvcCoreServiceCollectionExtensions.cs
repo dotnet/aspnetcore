@@ -108,12 +108,12 @@ namespace Microsoft.Framework.DependencyInjection
             services.TryAddSingleton<IModelMetadataProvider, DefaultModelMetadataProvider>();
             services.TryAdd(ServiceDescriptor.Transient<ICompositeMetadataDetailsProvider>(serviceProvider =>
             {
-                var options = serviceProvider.GetRequiredService<IOptions<MvcOptions>>().Options;
+                var options = serviceProvider.GetRequiredService<IOptions<MvcOptions>>().Value;
                 return new DefaultCompositeMetadataDetailsProvider(options.ModelMetadataDetailsProviders);
             }));
             services.TryAdd(ServiceDescriptor.Singleton<IObjectModelValidator>(serviceProvider =>
             {
-                var options = serviceProvider.GetRequiredService<IOptions<MvcOptions>>().Options;
+                var options = serviceProvider.GetRequiredService<IOptions<MvcOptions>>().Value;
                 var modelMetadataProvider = serviceProvider.GetRequiredService<IModelMetadataProvider>();
                 return new DefaultObjectValidator(options.ValidationExcludeFilters, modelMetadataProvider);
             }));

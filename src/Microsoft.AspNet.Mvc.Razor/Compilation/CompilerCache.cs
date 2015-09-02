@@ -22,7 +22,6 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         /// </summary>
         /// <param name="fileProvider"><see cref="IFileProvider"/> used to locate Razor views.</param>
         public CompilerCache([NotNull] IFileProvider fileProvider)
-        {
             _fileProvider = fileProvider;
             _cache = new MemoryCache(new MemoryCacheOptions { CompactOnMemoryPressure = false });
         }

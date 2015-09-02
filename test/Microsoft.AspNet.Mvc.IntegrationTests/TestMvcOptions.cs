@@ -11,17 +11,12 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
     {
         public TestMvcOptions()
         {
-            Options = new MvcOptions();
-            MvcCoreMvcOptionsSetup.ConfigureMvc(Options);
-            MvcDataAnnotationsMvcOptionsSetup.ConfigureMvc(Options);
-            MvcJsonMvcOptionsSetup.ConfigureMvc(Options, SerializerSettingsProvider.CreateSerializerSettings());
+            Value = new MvcOptions();
+            MvcCoreMvcOptionsSetup.ConfigureMvc(Value);
+            MvcDataAnnotationsMvcOptionsSetup.ConfigureMvc(Value);
+            MvcJsonMvcOptionsSetup.ConfigureMvc(Value, SerializerSettingsProvider.CreateSerializerSettings());
         }
 
-        public MvcOptions Options { get; }
-
-        public MvcOptions GetNamedOptions(string name)
-        {
-            throw new NotImplementedException();
-        }
+        public MvcOptions Value { get; }
     }
 }

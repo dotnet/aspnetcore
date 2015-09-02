@@ -1729,7 +1729,7 @@ namespace Microsoft.AspNet.Mvc.Routing
         {
             var options = new RouteOptions();
             var optionsMock = new Mock<IOptions<RouteOptions>>();
-            optionsMock.SetupGet(o => o.Options).Returns(options);
+            optionsMock.SetupGet(o => o.Value).Returns(options);
 
             return new DefaultInlineConstraintResolver(optionsMock.Object);
         }

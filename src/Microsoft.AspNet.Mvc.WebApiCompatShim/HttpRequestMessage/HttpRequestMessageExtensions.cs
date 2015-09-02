@@ -6,7 +6,6 @@ using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
 using System.Web.Http;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.WebApiCompatShim;
 using Microsoft.Framework.DependencyInjection;
@@ -244,7 +243,7 @@ namespace System.Net.Http
             {
                 // Get the default formatters from options
                 var options = context.RequestServices.GetRequiredService<IOptions<WebApiCompatShimOptions>>();
-                formatters = options.Options.Formatters;
+                formatters = options.Value.Formatters;
             }
 
             var contentNegotiator = context.RequestServices.GetRequiredService<IContentNegotiator>();
@@ -306,7 +305,7 @@ namespace System.Net.Http
 
             // Get the default formatters from options
             var options = context.RequestServices.GetRequiredService<IOptions<WebApiCompatShimOptions>>();
-            var formatters = options.Options.Formatters;
+            var formatters = options.Value.Formatters;
 
             var formatter = formatters.FindWriter(typeof(T), mediaType);
             if (formatter == null)

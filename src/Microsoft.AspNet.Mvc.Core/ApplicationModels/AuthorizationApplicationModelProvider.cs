@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
 
         public AuthorizationApplicationModelProvider(IOptions<AuthorizationOptions> authorizationOptionsAccessor)
         {
-            _authorizationOptions = authorizationOptionsAccessor.Options;
+            _authorizationOptions = authorizationOptionsAccessor.Value;
         }
 
         public int Order {  get { return DefaultOrder.DefaultFrameworkSortOrder + 10; } }

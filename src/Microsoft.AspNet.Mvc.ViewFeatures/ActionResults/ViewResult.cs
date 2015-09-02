@@ -110,7 +110,7 @@ namespace Microsoft.AspNet.Mvc.ActionResults
                     context,
                     ViewData,
                     TempData,
-                    options.Options.HtmlHelperOptions,
+                    options.Value.HtmlHelperOptions,
                     ContentType);
             }
         }

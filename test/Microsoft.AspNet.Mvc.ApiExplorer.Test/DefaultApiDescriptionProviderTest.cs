@@ -1004,7 +1004,7 @@ namespace Microsoft.AspNet.Mvc.Description
             }
 
             var optionsAccessor = new Mock<IOptions<MvcOptions>>();
-            optionsAccessor.SetupGet(o => o.Options)
+            optionsAccessor.SetupGet(o => o.Value)
                 .Returns(options);
 
             var constraintResolver = new Mock<IInlineConstraintResolver>();

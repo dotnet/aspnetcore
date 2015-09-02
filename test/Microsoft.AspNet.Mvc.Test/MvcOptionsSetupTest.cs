@@ -193,8 +193,8 @@ namespace Microsoft.AspNet.Mvc
             var services = GetServiceProvider();
 
             // Act
-            var options = services.GetRequiredService<IOptions<MvcOptions>>().Options;
-            var jsonOptions = services.GetRequiredService<IOptions<MvcJsonOptions>>().Options;
+            var options = services.GetRequiredService<IOptions<MvcOptions>>().Value;
+            var jsonOptions = services.GetRequiredService<IOptions<MvcJsonOptions>>().Value;
 
             // Assert
             var jsonInputFormatters = options.InputFormatters.OfType<JsonInputFormatter>();
@@ -214,7 +214,7 @@ namespace Microsoft.AspNet.Mvc
             where T : class, new()
         {
             var serviceProvider = GetServiceProvider(action);
-            return serviceProvider.GetRequiredService<IOptions<T>>().Options;
+            return serviceProvider.GetRequiredService<IOptions<T>>().Value;
         }
 
         private static IServiceProvider GetServiceProvider(Action<IServiceCollection> action = null)

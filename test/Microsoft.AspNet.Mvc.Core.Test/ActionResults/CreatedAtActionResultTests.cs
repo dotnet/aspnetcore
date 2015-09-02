@@ -97,8 +97,9 @@ namespace Microsoft.AspNet.Mvc.ActionResults
             httpContext.RequestServices = services.Object;
 
             var optionsAccessor = new TestOptionsManager<MvcOptions>();
-            optionsAccessor.Options.OutputFormatters.Add(new StringOutputFormatter());
-            optionsAccessor.Options.OutputFormatters.Add(new JsonOutputFormatter());
+            var optionsAccessor = new MockMvcOptionsAccessor();
+            optionsAccessor.Value.OutputFormatters.Add(new StringOutputFormatter());
+            optionsAccessor.Value.OutputFormatters.Add(new JsonOutputFormatter());
             services.Setup(p => p.GetService(typeof(IOptions<MvcOptions>)))
                 .Returns(optionsAccessor);
             services.Setup(s => s.GetService(typeof(ILogger<ObjectResult>)))
@@ -106,7 +107,7 @@ namespace Microsoft.AspNet.Mvc.ActionResults
 
             var actionBindingContext = new ActionBindingContext
             {
-                OutputFormatters = optionsAccessor.Options.OutputFormatters
+                OutputFormatters = optionsAccessor.Value.OutputFormatters
             };
             services.Setup(o => o.GetService(typeof(IActionBindingContextAccessor)))
                     .Returns(new ActionBindingContextAccessor() { ActionBindingContext = actionBindingContext });

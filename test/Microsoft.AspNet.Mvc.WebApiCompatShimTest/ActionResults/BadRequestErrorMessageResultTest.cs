@@ -73,7 +73,7 @@ namespace System.Web.Http
             options.OutputFormatters.Add(new JsonOutputFormatter());
 
             var optionsAccessor = new Mock<IOptions<MvcOptions>>();
-            optionsAccessor.SetupGet(o => o.Options)
+            optionsAccessor.SetupGet(o => o.Value)
                 .Returns(options);
 
             var actionBindingContext = new ActionBindingContext { OutputFormatters = options.OutputFormatters };

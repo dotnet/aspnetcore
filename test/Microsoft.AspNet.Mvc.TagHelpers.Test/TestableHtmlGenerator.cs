@@ -100,7 +100,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             var mockOptions = new Mock<IOptions<MvcViewOptions>>();
             mockOptions
-                .SetupGet(options => options.Options)
+                .SetupGet(options => options.Value)
                 .Returns(new MvcViewOptions());
 
             return mockOptions.Object;

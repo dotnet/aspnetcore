@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
         public static IObjectModelValidator GetObjectValidator(MvcOptions options = null)
         {
-            options = options ?? new TestMvcOptions().Options;
+            options = options ?? new TestMvcOptions().Value;
             options.MaxModelValidationErrors = 5;
             var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             return new DefaultObjectValidator(
@@ -80,7 +80,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 httpContext.RequestServices.GetRequiredService<IActionContextAccessor>();
             actionContextAccessor.ActionContext = actionContext;
 
-            var options = new TestMvcOptions().Options;
+            var options = new TestMvcOptions().Value;
             if (updateOptions != null)
             {
                 updateOptions(options);

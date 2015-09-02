@@ -252,7 +252,7 @@ namespace Microsoft.AspNet.Mvc.ActionResults
                 .HttpContext
                 .RequestServices
                 .GetRequiredService<IOptions<MvcOptions>>()
-                .Options;
+                .Value;
 
             var respectAcceptHeader = true;
             if (options.RespectBrowserAcceptHeader == false
@@ -311,7 +311,7 @@ namespace Microsoft.AspNet.Mvc.ActionResults
                         .HttpContext
                         .RequestServices
                         .GetRequiredService<IOptions<MvcOptions>>()
-                        .Options;
+                        .Value;
                     formatters = options.OutputFormatters;
                 }
                 else

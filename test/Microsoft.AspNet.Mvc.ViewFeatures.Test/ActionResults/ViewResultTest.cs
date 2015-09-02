@@ -216,7 +216,7 @@ namespace Microsoft.AspNet.Mvc.ActionResults
             serviceProvider.Setup(s => s.GetService(typeof(IOptions<MvcViewOptions>)))
                 .Returns(() => {
                     var optionsAccessor = new Mock<IOptions<MvcViewOptions>>();
-                    optionsAccessor.SetupGet(o => o.Options)
+                    optionsAccessor.SetupGet(o => o.Value)
                         .Returns(new MvcViewOptions());
                     return optionsAccessor.Object;
                 });
@@ -310,7 +310,7 @@ namespace Microsoft.AspNet.Mvc.ActionResults
                 .Returns(new Mock<ILogger<ViewResult>>().Object);
 
             var optionsAccessor = new Mock<IOptions<MvcViewOptions>>();
-            optionsAccessor.SetupGet(o => o.Options)
+            optionsAccessor.SetupGet(o => o.Value)
                 .Returns(new MvcViewOptions());
 
             serviceProvider.Setup(s => s.GetService(typeof(IOptions<MvcViewOptions>)))

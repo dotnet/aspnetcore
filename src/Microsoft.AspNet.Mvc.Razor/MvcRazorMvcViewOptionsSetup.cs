@@ -20,7 +20,6 @@ namespace Microsoft.AspNet.Mvc.Razor
         public MvcRazorMvcViewOptionsSetup(IServiceProvider serviceProvider)
             : base(options => ConfigureMvc(serviceProvider, options))
         {
-            Order = DefaultOrder.DefaultFrameworkSortOrder;
         }
 
         /// <summary>

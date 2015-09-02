@@ -574,7 +574,7 @@ namespace Microsoft.AspNet.Mvc
             var routeOptions = new RouteOptions();
             var accessor = new Mock<IOptions<RouteOptions>>();
             accessor
-                .SetupGet(options => options.Options)
+                .SetupGet(options => options.Value)
                 .Returns(routeOptions);
 
             serviceCollection.AddInstance<IOptions<RouteOptions>>(accessor.Object);

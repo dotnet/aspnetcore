@@ -19,7 +19,6 @@ namespace Microsoft.AspNet.Mvc
         public MvcXmlDataContractSerializerMvcOptionsSetup()
             : base(ConfigureMvc)
         {
-            Order = DefaultOrder.DefaultFrameworkSortOrder + 10;
         }
 
         /// <summary>

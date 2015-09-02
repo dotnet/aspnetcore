@@ -21,18 +21,26 @@ namespace Microsoft.Framework.DependencyInjection
 
             builder.AddApiExplorer();
             builder.AddAuthorization();
-            builder.AddCors();
-            builder.AddDataAnnotations();
+
+            // Order added affects options setup order
+
+            // Default framework order
             builder.AddFormatterMappings();
-            builder.AddJsonFormatters();
             builder.AddViews();
             builder.AddRazorViewEngine();
+
+            // +1 order
+            builder.AddDataAnnotations(); // +1 order
+
+            // +10 order
+            builder.AddJsonFormatters();
+
+            builder.AddCors();
 
             if (setupAction != null)
             {
                 builder.Services.Configure(setupAction);
             }
-
             return new MvcBuilder(services);
         }
     }

@@ -15,7 +15,6 @@ namespace Microsoft.AspNet.Mvc
         public MvcDataAnnotationsMvcOptionsSetup()
             : base(ConfigureMvc)
         {
-            Order = DefaultOrder.DefaultFrameworkSortOrder + 1;
         }
 
         public static void ConfigureMvc(MvcOptions options)

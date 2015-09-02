@@ -5,13 +5,13 @@ using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class MockMvcViewOptionsAccessor : IOptions<MvcViewOptions>
+    public class MockMvcOptionsAccessor : IOptions<MvcOptions>
     {
-        public MockMvcViewOptionsAccessor()
+        public MockMvcOptionsAccessor()
         {
-            Value = new MvcViewOptions();
+            Value = new MvcOptions();
         }
 
-        public MvcViewOptions Value { get; private set; }
+        public MvcOptions Value { get; private set; }
     }
 }

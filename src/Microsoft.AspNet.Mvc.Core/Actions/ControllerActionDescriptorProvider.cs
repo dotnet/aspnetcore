@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Mvc.Actions
         {
             _controllerTypeProvider = controllerTypeProvider;
             _applicationModelProviders = applicationModelProviders.OrderBy(p => p.Order).ToArray();
-            _conventions = optionsAccessor.Options.Conventions;
+            _conventions = optionsAccessor.Value.Conventions;
         }
 
         public int Order

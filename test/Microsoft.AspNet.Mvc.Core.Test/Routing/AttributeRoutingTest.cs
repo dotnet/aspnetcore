@@ -186,7 +186,7 @@ namespace Microsoft.AspNet.Mvc.Routing
 
             var routeOptions = new Mock<IOptions<RouteOptions>>();
             routeOptions
-                .SetupGet(o => o.Options)
+                .SetupGet(o => o.Value)
                 .Returns(new RouteOptions());
 
             services

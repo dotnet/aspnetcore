@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
 
         public DefaultApplicationModelProvider(IOptions<MvcOptions> mvcOptionsAccessor)
         {
-            _globalFilters = mvcOptionsAccessor.Options.Filters;
+            _globalFilters = mvcOptionsAccessor.Value.Filters;
         }
 
         /// <inheritdoc />

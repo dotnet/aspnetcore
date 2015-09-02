@@ -388,7 +388,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
                 OptionsManager = new TestOptionsManager<MvcOptions>();
 
                 // Setup options on mock service provider
-                Options = OptionsManager.Options;
+                Options = OptionsManager.Value;
 
                 // Set up default output formatters.
                 Options.OutputFormatters.Add(new HttpNoContentOutputFormatter());

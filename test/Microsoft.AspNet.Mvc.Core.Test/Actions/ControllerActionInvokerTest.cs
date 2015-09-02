@@ -2004,7 +2004,7 @@ namespace Microsoft.AspNet.Mvc.Actions
 
             var optionsAccessor = new Mock<IOptions<MvcOptions>>();
             optionsAccessor
-                .SetupGet(o => o.Options)
+                .SetupGet(o => o.Value)
                 .Returns(options);
 
             httpContext

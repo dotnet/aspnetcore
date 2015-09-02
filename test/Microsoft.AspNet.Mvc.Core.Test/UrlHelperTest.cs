@@ -951,7 +951,7 @@ namespace Microsoft.AspNet.Mvc
 
             var optionsAccessor = new Mock<IOptions<RouteOptions>>();
             optionsAccessor
-                .SetupGet(o => o.Options)
+                .SetupGet(o => o.Value)
                 .Returns(new RouteOptions());
             services
                 .Setup(s => s.GetService(typeof(IOptions<RouteOptions>)))

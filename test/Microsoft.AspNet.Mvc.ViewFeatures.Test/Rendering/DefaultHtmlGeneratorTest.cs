@@ -640,13 +640,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
         private static IHtmlGenerator GetGenerator(IModelMetadataProvider metadataProvider)
         {
             var mvcViewOptionsAccessor = new Mock<IOptions<MvcViewOptions>>();
-            mvcViewOptionsAccessor.SetupGet(accessor => accessor.Options).Returns(new MvcViewOptions());
+            mvcViewOptionsAccessor.SetupGet(accessor => accessor.Value).Returns(new MvcViewOptions());
             var htmlEncoder = Mock.Of<IHtmlEncoder>();
             var antiforgery = Mock.Of<IAntiforgery>();
 
             var optionsAccessor = new Mock<IOptions<MvcOptions>>();
             optionsAccessor
-                .SetupGet(o => o.Options)
+                .SetupGet(o => o.Value)
                 .Returns(new MvcOptions());
 
             return new DefaultHtmlGenerator(

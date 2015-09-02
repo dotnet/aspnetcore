@@ -41,13 +41,13 @@ namespace Microsoft.AspNet.Mvc.Actions
             _controllerFactory = controllerFactory;
             _filterProviders = filterProviders.OrderBy(item => item.Order).ToArray();
             _argumentBinder = argumentBinder;
-            _inputFormatters = optionsAccessor.Options.InputFormatters.ToArray();
-            _outputFormatters = optionsAccessor.Options.OutputFormatters.ToArray();
-            _modelBinders = optionsAccessor.Options.ModelBinders.ToArray();
-            _modelValidatorProviders = optionsAccessor.Options.ModelValidatorProviders.ToArray();
-            _valueProviderFactories = optionsAccessor.Options.ValueProviderFactories.ToArray();
+            _inputFormatters = optionsAccessor.Value.InputFormatters.ToArray();
+            _outputFormatters = optionsAccessor.Value.OutputFormatters.ToArray();
+            _modelBinders = optionsAccessor.Value.ModelBinders.ToArray();
+            _modelValidatorProviders = optionsAccessor.Value.ModelValidatorProviders.ToArray();
+            _valueProviderFactories = optionsAccessor.Value.ValueProviderFactories.ToArray();
             _actionBindingContextAccessor = actionBindingContextAccessor;
-            _maxModelValidationErrors = optionsAccessor.Options.MaxModelValidationErrors;
+            _maxModelValidationErrors = optionsAccessor.Value.MaxModelValidationErrors;
             _logger = loggerFactory.CreateLogger<ControllerActionInvoker>();
             _notifier = notifier;
         }

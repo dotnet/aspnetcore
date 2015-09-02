@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="optionsAccessor">The options accessor for <see cref="MvcViewOptions"/>.</param>
         public CompositeViewEngine(IOptions<MvcViewOptions> optionsAccessor)
         {
-            ViewEngines = optionsAccessor.Options.ViewEngines.ToArray();
+            ViewEngines = optionsAccessor.Value.ViewEngines.ToArray();
         }
 
         /// <inheritdoc />

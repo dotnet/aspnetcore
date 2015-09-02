@@ -218,7 +218,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                 FileProvider = fileProvider ?? new TestFileProvider()
             };
             var options = new Mock<IOptions<RazorViewEngineOptions>>();
-            options.SetupGet(o => o.Options)
+            options.SetupGet(o => o.Value)
                 .Returns(razorViewEngineOptions);
 
             return options.Object;

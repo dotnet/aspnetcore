@@ -89,14 +89,14 @@ namespace Microsoft.AspNet.Mvc.ActionResults
             httpContext.Setup(o => o.Request).Returns(request);
             httpContext.Setup(o => o.RequestServices).Returns(GetServiceProvider());
             var optionsAccessor = new TestOptionsManager<MvcOptions>();
-            optionsAccessor.Options.OutputFormatters.Add(new StringOutputFormatter());
-            optionsAccessor.Options.OutputFormatters.Add(new JsonOutputFormatter());
-            optionsAccessor.Options.RespectBrowserAcceptHeader = respectBrowserAcceptHeader;
+            optionsAccessor.Value.OutputFormatters.Add(new StringOutputFormatter());
+            optionsAccessor.Value.OutputFormatters.Add(new JsonOutputFormatter());
+            optionsAccessor.Value.RespectBrowserAcceptHeader = respectBrowserAcceptHeader;
             var actionBindingContextAccessor = new ActionBindingContextAccessor()
             {
                 ActionBindingContext = new ActionBindingContext()
                 {
-                    OutputFormatters = optionsAccessor.Options.OutputFormatters
+                    OutputFormatters = optionsAccessor.Value.OutputFormatters
                 }
             };
 
@@ -114,7 +114,7 @@ namespace Microsoft.AspNet.Mvc.ActionResults
         {
             var options = new MvcOptions();
             var optionsAccessor = new Mock<IOptions<MvcOptions>>();
-            optionsAccessor.SetupGet(o => o.Options).Returns(options);
+            optionsAccessor.SetupGet(o => o.Value).Returns(options);
 
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddInstance(optionsAccessor.Object);
