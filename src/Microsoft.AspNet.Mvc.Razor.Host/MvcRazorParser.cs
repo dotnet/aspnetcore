@@ -68,10 +68,13 @@ namespace Microsoft.AspNet.Mvc.Razor
                             _modelExpressionTypeName,
                             StringComparison.Ordinal))
                     {
-                        errorSink.OnError(SourceLocation.Undefined, Resources.FormatMvcRazorParser_InvalidPropertyType(
-                            descriptor.TypeName,
-                            attributeDescriptor.Name,
-                            _modelExpressionTypeName));
+                        errorSink.OnError(
+                            SourceLocation.Undefined,
+                            Resources.FormatMvcRazorParser_InvalidPropertyType(
+                                descriptor.TypeName,
+                                attributeDescriptor.Name,
+                                _modelExpressionTypeName),
+                            length: 0);
                     }
                 }
             }

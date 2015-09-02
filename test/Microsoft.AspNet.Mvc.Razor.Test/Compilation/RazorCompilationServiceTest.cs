@@ -139,7 +139,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                 GetOptions(fileProvider));
             var errors = new[]
             {
-                new RazorError("message-1", new SourceLocation(1, 2, 17)),
+                new RazorError("message-1", new SourceLocation(1, 2, 17), length: 1),
                 new RazorError("message-2", new SourceLocation(viewPath, 1, 4, 6), 7),
                 new RazorError { Message = "message-3" },
                 new RazorError("message-4", new SourceLocation(viewImportsPath, 1, 3, 8), 4),

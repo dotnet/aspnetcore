@@ -42,8 +42,10 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             if (_modelStatementFound && _endInheritsLocation.HasValue)
             {
-                Context.OnError(_endInheritsLocation.Value,
-                                Resources.FormatMvcRazorCodeParser_CannotHaveModelAndInheritsKeyword(ModelKeyword));
+                Context.OnError(
+                    _endInheritsLocation.Value,
+                    Resources.FormatMvcRazorCodeParser_CannotHaveModelAndInheritsKeyword(ModelKeyword),
+                    SyntaxConstants.CSharp.InheritsKeyword.Length);
             }
         }
 
@@ -60,9 +62,10 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             if (_modelStatementFound)
             {
-                Context.OnError(startModelLocation,
-                                Resources.FormatMvcRazorCodeParser_OnlyOneModelStatementIsAllowed(ModelKeyword),
-                                ModelKeyword.Length);
+                Context.OnError(
+                    startModelLocation,
+                    Resources.FormatMvcRazorCodeParser_OnlyOneModelStatementIsAllowed(ModelKeyword),
+                    ModelKeyword.Length);
             }
 
             _modelStatementFound = true;
