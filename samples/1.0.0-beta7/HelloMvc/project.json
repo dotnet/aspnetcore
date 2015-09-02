@@ -5,7 +5,7 @@
         "wwwroot"
     ],
     "packExclude": [
-        "**.kproj",
+        "**.xproj",
         "**.user",
         "**.vspscc"
     ],
