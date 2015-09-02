@@ -44,9 +44,9 @@ namespace Microsoft.AspNet.Diagnostics.Tests
             var factory = new LoggerFactory();
             var optionsMock = new Mock<IOptions<ElmOptions>>();
             optionsMock
-                .SetupGet(o => o.Options)
+                .SetupGet(o => o.Value)
                 .Returns(new ElmOptions());
-            factory.AddProvider(new ElmLoggerProvider(elmStore, optionsMock.Object.Options));
+            factory.AddProvider(new ElmLoggerProvider(elmStore, optionsMock.Object.Value));
 
             RequestDelegate next = _ =>
             {
@@ -81,9 +81,9 @@ namespace Microsoft.AspNet.Diagnostics.Tests
             var factory = new LoggerFactory();
             var optionsMock = new Mock<IOptions<ElmOptions>>();
             optionsMock
-                .SetupGet(o => o.Options)
+                .SetupGet(o => o.Value)
                 .Returns(new ElmOptions());
-            factory.AddProvider(new ElmLoggerProvider(elmStore, optionsMock.Object.Options));
+            factory.AddProvider(new ElmLoggerProvider(elmStore, optionsMock.Object.Value));
 
             RequestDelegate next = _ =>
             {
@@ -129,9 +129,9 @@ namespace Microsoft.AspNet.Diagnostics.Tests
             var factory = new LoggerFactory();
             var optionsMock = new Mock<IOptions<ElmOptions>>();
             optionsMock
-                .SetupGet(o => o.Options)
+                .SetupGet(o => o.Value)
                 .Returns(new ElmOptions());
-            factory.AddProvider(new ElmLoggerProvider(elmStore, optionsMock.Object.Options));
+            factory.AddProvider(new ElmLoggerProvider(elmStore, optionsMock.Object.Value));
 
             RequestDelegate next = _ =>
             {
@@ -311,17 +311,12 @@ namespace Microsoft.AspNet.Diagnostics.Tests
                 _innerOptions = innerOptions;
             }
 
-            public ElmOptions Options
+            public ElmOptions Value
             {
                 get
                 {
                     return _innerOptions;
                 }
-            }
-
-            public ElmOptions GetNamedOptions(string name)
-            {
-                return _innerOptions;
             }
         }
     }

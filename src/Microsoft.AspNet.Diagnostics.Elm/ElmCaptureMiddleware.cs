@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Diagnostics.Elm
         public ElmCaptureMiddleware(RequestDelegate next, ILoggerFactory factory, IOptions<ElmOptions> options)
         {
             _next = next;
-            _options = options.Options;
+            _options = options.Value;
             _logger = factory.CreateLogger<ElmCaptureMiddleware>();
         }
 

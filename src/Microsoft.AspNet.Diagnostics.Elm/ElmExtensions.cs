@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Builder
             var factory = builder.ApplicationServices.GetRequiredService<ILoggerFactory>();
             var store = builder.ApplicationServices.GetRequiredService<ElmStore>();
             var options = builder.ApplicationServices.GetService<IOptions<ElmOptions>>();
-            factory.AddProvider(new ElmLoggerProvider(store, options?.Options ?? new ElmOptions()));
+            factory.AddProvider(new ElmLoggerProvider(store, options?.Value ?? new ElmOptions()));
 
             return builder.UseMiddleware<ElmCaptureMiddleware>();
         }

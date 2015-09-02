@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Diagnostics.Elm
         public ElmPageMiddleware(RequestDelegate next, IOptions<ElmOptions> options, ElmStore store)
         {
             _next = next;
-            _options = options.Options;
+            _options = options.Value;
             _store = store;
         }
 
