@@ -1,16 +1,13 @@
 ﻿using Microsoft.Dnx.Compilation.CSharp;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.CSharp;
+using System;
 
 namespace Microsoft.StandardsPolice
 {
-    // This project can output the Class library as a NuGet Package.
-    // To enable this option, right-click on the project and select the Properties menu item. In the Build tab select "Produce outputs on build".
     public class StandardsPoliceCompileModule : ICompileModule
     {
         public void BeforeCompile(BeforeCompileContext context)
@@ -71,7 +68,7 @@ namespace Microsoft.StandardsPolice
             if (typeSymbol.Locations.Any(location => location.IsInSource))
             {
                 RuleFieldPrivateKeyword(diagnostics, typeSymbol);
-                RuleNestedTypesAreLast(diagnostics, typeSymbol);
+                RuleMembersAreInCorrectOrder(diagnostics, typeSymbol, MapClassMembers);
             }
 
             foreach (var member in typeSymbol.GetTypeMembers())
@@ -79,6 +76,7 @@ namespace Microsoft.StandardsPolice
                 ScanType(diagnostics, member);
             }
         }
+
 
         private static void RuleFieldPrivateKeyword(IList<Diagnostic> diagnostics, INamedTypeSymbol typeSymbol)
         {
@@ -119,27 +117,42 @@ namespace Microsoft.StandardsPolice
             }
         }
 
-        private static void RuleNestedTypesAreLast(IList<Diagnostic> diagnostics, INamedTypeSymbol typeSymbol)
+        enum ClassZone
         {
-            var otherThingsWereLower = false;
-            var members = typeSymbol.GetMembers().Reverse().ToArray();
-            foreach (var member in members)
+            Ignored,
+            BeforeStart,
+            Fields,
+            Constructors,
+            Properties,
+            OtherThings,
+            NestedTypes,
+            AfterEnd
+        }
+
+        private static void RuleMembersAreInCorrectOrder(IList<Diagnostic> diagnostics, INamedTypeSymbol typeSymbol, Func<ISymbol, ClassZone> mapZone)
+        {
+            var currentZone = ClassZone.BeforeStart;
+            foreach (var member in typeSymbol.GetMembers())
             {
-                var namedType = member as INamedTypeSymbol;
-                if (namedType == null || (namedType.TypeKind != TypeKind.Class && namedType.TypeKind != TypeKind.Enum && namedType.TypeKind != TypeKind.Struct))
+                var memberZone = mapZone(member);
+                if (memberZone == ClassZone.Ignored)
                 {
-                    if (member.IsImplicitlyDeclared == false)
-                    {
-                        otherThingsWereLower = true;
-                    }
                     continue;
                 }
-                if (otherThingsWereLower)
+                if (currentZone < memberZone)
+                {
+                    currentZone = memberZone;
+                }
+                if (memberZone >= ClassZone.OtherThings)
+                {
+                    continue;
+                }
+                if (memberZone < currentZone)
                 {
                     if (member.Locations.Count() == 1)
                     {
                         diagnostics.Add(Diagnostic.Create(
-                            "SP1003", "StandardsPolice", $"nested types must be last {typeSymbol.Name}:{member.Name}",
+                            "SP1003", "StandardsPolice", $"{memberZone} like {typeSymbol.Name}::{member.Name} shouldn't be after {currentZone}",
                             DiagnosticSeverity.Warning,
                             DiagnosticSeverity.Warning,
                             false,
@@ -148,6 +161,72 @@ namespace Microsoft.StandardsPolice
                     }
                 }
             }
+            currentZone = ClassZone.AfterEnd;
+            foreach (var member in typeSymbol.GetMembers())
+            {
+                var memberZone = mapZone(member);
+                if (memberZone == ClassZone.Ignored)
+                {
+                    continue;
+                }
+                if (currentZone > memberZone)
+                {
+                    currentZone = memberZone;
+                }
+                if (memberZone <= ClassZone.OtherThings)
+                {
+                    continue;
+                }
+                if (memberZone > currentZone)
+                {
+                    if (member.Locations.Count() == 1)
+                    {
+                        diagnostics.Add(Diagnostic.Create(
+                            "SP1003", "StandardsPolice", $"{memberZone} like {typeSymbol.Name}::{member.Name} shouldn't be before {currentZone}",
+                            DiagnosticSeverity.Warning,
+                            DiagnosticSeverity.Warning,
+                            false,
+                            3,
+                            location: member.Locations.Single()));
+                    }
+                }
+            }
+        }
+
+        private static ClassZone MapClassMembers(ISymbol member)
+        {
+            if (member.IsImplicitlyDeclared)
+            {
+                return ClassZone.Ignored;
+            }
+            if (member.Kind == SymbolKind.Field)
+            {
+                return ClassZone.Fields;
+            }
+            if (member.Kind == SymbolKind.Method)
+            {
+                var method = (IMethodSymbol)member;
+                if (method.MethodKind == MethodKind.Constructor ||
+                    method.MethodKind == MethodKind.StaticConstructor)
+                {
+                    return ClassZone.Constructors;
+                }
+            }
+            if (member.Kind == SymbolKind.Property)
+            {
+                return ClassZone.Properties;
+            }
+            if (member.Kind == SymbolKind.NamedType)
+            {
+                var namedType = (INamedTypeSymbol)member;
+                if (namedType.TypeKind == TypeKind.Class ||
+                    namedType.TypeKind == TypeKind.Enum ||
+                    namedType.TypeKind == TypeKind.Struct)
+                {
+                    return ClassZone.NestedTypes;
+                }
+            }
+            return ClassZone.OtherThings;
         }
 
         public void AfterCompile(AfterCompileContext context)
