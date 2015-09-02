@@ -23,14 +23,10 @@ namespace Microsoft.AspNet.Authentication
             [NotNull] IUrlEncoder encoder,
             ConfigureOptions<TOptions> configureOptions)
         {
+            Options = options.Value;
             if (configureOptions != null)
             {
-                Options = options.GetNamedOptions(configureOptions.Name);
-                configureOptions.Configure(Options, configureOptions.Name);
-            }
-            else
-            {
-                Options = options.Options;
+                configureOptions.Configure(Options);
             }
             Logger = loggerFactory.CreateLogger(this.GetType().FullName);
             UrlEncoder = encoder;

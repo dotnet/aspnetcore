@@ -23,10 +23,7 @@ namespace Microsoft.AspNet.Builder
         public static IApplicationBuilder UseGoogleAuthentication([NotNull] this IApplicationBuilder app, Action<GoogleAuthenticationOptions> configureOptions = null, string optionsName = "")
         {
             return app.UseMiddleware<GoogleAuthenticationMiddleware>(
-                 new ConfigureOptions<GoogleAuthenticationOptions>(configureOptions ?? (o => { }))
-                 {
-                     Name = optionsName
-                 });
+                 new ConfigureOptions<GoogleAuthenticationOptions>(configureOptions ?? (o => { })));
         }
     }
 }

@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Authorization
         public DefaultAuthorizationService(IOptions<AuthorizationOptions> options, IEnumerable<IAuthorizationHandler> handlers)
         {
             _handlers = handlers.ToArray();
-            _options = options.Options;
+            _options = options.Value;
         }
 
         public async Task<bool> AuthorizeAsync(ClaimsPrincipal user, object resource, [NotNull] IEnumerable<IAuthorizationRequirement> requirements)

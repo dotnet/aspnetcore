@@ -18,13 +18,10 @@ namespace Microsoft.AspNet.Builder
         /// <param name="app">The application builder</param>
         /// <param name="options">Options which control the processing of the OpenIdConnect protocol and token validation.</param>
         /// <returns>The application builder</returns>
-        public static IApplicationBuilder UseOpenIdConnectAuthentication(this IApplicationBuilder app, Action<OpenIdConnectAuthenticationOptions> configureOptions = null, string optionsName = "")
+        public static IApplicationBuilder UseOpenIdConnectAuthentication(this IApplicationBuilder app, Action<OpenIdConnectAuthenticationOptions> configureOptions = null)
         {
             return app.UseMiddleware<OpenIdConnectAuthenticationMiddleware>(
-                 new ConfigureOptions<OpenIdConnectAuthenticationOptions>(configureOptions ?? (o => { }))
-                 {
-                     Name = optionsName
-                 });
+                 new ConfigureOptions<OpenIdConnectAuthenticationOptions>(configureOptions ?? (o => { })));
         }
 
         /// <summary>

@@ -10,11 +10,6 @@ namespace Microsoft.Framework.DependencyInjection
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection ConfigureAuthorization([NotNull] this IServiceCollection services, [NotNull] Action<AuthorizationOptions> configure)
-        {
-            return services.Configure(configure);
-        }
-
         public static IServiceCollection AddAuthorization([NotNull] this IServiceCollection services)
         {
             services.AddOptions();
@@ -23,9 +18,9 @@ namespace Microsoft.Framework.DependencyInjection
             return services;
         }
 
-        public static IServiceCollection AddAuthorization([NotNull] this IServiceCollection services, [NotNull] Action<AuthorizationOptions> configureOptions)
+        public static IServiceCollection AddAuthorization([NotNull] this IServiceCollection services, [NotNull] Action<AuthorizationOptions> configure)
         {
-            services.ConfigureAuthorization(configureOptions);
+            services.Configure(configure);
             return services.AddAuthorization();
         }
     }

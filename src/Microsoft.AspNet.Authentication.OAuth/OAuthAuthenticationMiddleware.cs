@@ -82,7 +82,7 @@ namespace Microsoft.AspNet.Authentication.OAuth
 
             if (string.IsNullOrEmpty(Options.SignInScheme))
             {
-                Options.SignInScheme = sharedOptions.Options.SignInScheme;
+                Options.SignInScheme = sharedOptions.Value.SignInScheme;
             }
         }
 

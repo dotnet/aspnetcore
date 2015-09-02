@@ -13,24 +13,14 @@ namespace Microsoft.Framework.DependencyInjection
     /// </summary>
     public static class OpenIdConnectServiceCollectionExtensions
     {
-        public static IServiceCollection ConfigureOpenIdConnectAuthentication([NotNull] this IServiceCollection services, [NotNull] Action<OpenIdConnectAuthenticationOptions> configure)
+        public static IServiceCollection AddOpenIdConnectAuthentication([NotNull] this IServiceCollection services, [NotNull] Action<OpenIdConnectAuthenticationOptions> configure)
         {
-            return ConfigureOpenIdConnectAuthentication(services, configure, null);
+            return services.Configure(configure);
         }
 
-        public static IServiceCollection ConfigureOpenIdConnectAuthentication([NotNull] this IServiceCollection services, [NotNull] Action<OpenIdConnectAuthenticationOptions> configure, string optionsName)
+        public static IServiceCollection AddOpenIdConnectAuthentication([NotNull] this IServiceCollection services, [NotNull] IConfiguration config)
         {
-            return services.Configure(configure, optionsName);
-        }
-
-        public static IServiceCollection ConfigureOpenIdConnectAuthentication([NotNull] this IServiceCollection services, [NotNull] IConfiguration config)
-        {
-            return ConfigureOpenIdConnectAuthentication(services, config, null);
-        }
-
-        public static IServiceCollection ConfigureOpenIdConnectAuthentication([NotNull] this IServiceCollection services, [NotNull] IConfiguration config, string optionsName)
-        {
-            return services.Configure<OpenIdConnectAuthenticationOptions>(config, optionsName);
+            return services.Configure<OpenIdConnectAuthenticationOptions>(config);
         }
     }
 }

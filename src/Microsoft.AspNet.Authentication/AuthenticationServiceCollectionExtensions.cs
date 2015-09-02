@@ -24,17 +24,17 @@ namespace Microsoft.Framework.DependencyInjection
             return services.AddAuthentication();
         }
 
-        public static IServiceCollection ConfigureClaimsTransformation([NotNull] this IServiceCollection services, [NotNull] Action<ClaimsTransformationOptions> configure)
+        public static IServiceCollection AddClaimsTransformation([NotNull] this IServiceCollection services, [NotNull] Action<ClaimsTransformationOptions> configure)
         {
             return services.Configure(configure);
         }
 
-        public static IServiceCollection ConfigureClaimsTransformation([NotNull] this IServiceCollection services, [NotNull] Func<ClaimsPrincipal, ClaimsPrincipal> transform)
+        public static IServiceCollection AddClaimsTransformation([NotNull] this IServiceCollection services, [NotNull] Func<ClaimsPrincipal, ClaimsPrincipal> transform)
         {
             return services.Configure<ClaimsTransformationOptions>(o => o.Transformer = new ClaimsTransformer { TransformSyncDelegate = transform });
         }
 
-        public static IServiceCollection ConfigureClaimsTransformation([NotNull] this IServiceCollection services, [NotNull] Func<ClaimsPrincipal, Task<ClaimsPrincipal>> asyncTransform)
+        public static IServiceCollection AddClaimsTransformation([NotNull] this IServiceCollection services, [NotNull] Func<ClaimsPrincipal, Task<ClaimsPrincipal>> asyncTransform)
         {
             return services.Configure<ClaimsTransformationOptions>(o => o.Transformer = new ClaimsTransformer { TransformAsyncDelegate = asyncTransform });
         }

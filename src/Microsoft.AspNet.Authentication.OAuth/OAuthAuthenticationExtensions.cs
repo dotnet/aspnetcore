@@ -30,10 +30,7 @@ namespace Microsoft.AspNet.Builder
                     {
                         configureOptions(options);
                     }
-                }) 
-                {
-                    Name = authenticationScheme,
-                });
+                }));
         }
     }
 }

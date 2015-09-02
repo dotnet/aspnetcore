@@ -600,12 +600,8 @@ namespace Microsoft.AspNet.Authentication.Google
             },
             services =>
             {
-                services.AddAuthentication();
-                services.Configure<SharedAuthenticationOptions>(options =>
-                {
-                    options.SignInScheme = TestExtensions.CookieAuthenticationScheme;
-                });
-                services.ConfigureClaimsTransformation(p =>
+                services.AddAuthentication(options => options.SignInScheme = TestExtensions.CookieAuthenticationScheme);
+                services.AddClaimsTransformation(p =>
                 {
                     var id = new ClaimsIdentity("xform");
                     id.AddClaim(new Claim("xform", "yup"));

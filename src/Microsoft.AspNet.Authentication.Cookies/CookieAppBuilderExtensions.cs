@@ -20,13 +20,10 @@ namespace Microsoft.AspNet.Builder
         /// <param name="configureOptions">Used to configure the options for the middleware</param>
         /// <param name="optionsName">The name of the options class that controls the middleware behavior, null will use the default options</param>
         /// <returns>The original app parameter</returns>
-        public static IApplicationBuilder UseCookieAuthentication([NotNull] this IApplicationBuilder app, Action<CookieAuthenticationOptions> configureOptions = null, string optionsName = "")
+        public static IApplicationBuilder UseCookieAuthentication([NotNull] this IApplicationBuilder app, Action<CookieAuthenticationOptions> configureOptions = null)
         {
             return app.UseMiddleware<CookieAuthenticationMiddleware>(
-                new ConfigureOptions<CookieAuthenticationOptions>(configureOptions ?? (o => { }))
-                {
-                    Name = optionsName
-                });
+                new ConfigureOptions<CookieAuthenticationOptions>(configureOptions ?? (o => { })));
         }
 
         /// <summary>

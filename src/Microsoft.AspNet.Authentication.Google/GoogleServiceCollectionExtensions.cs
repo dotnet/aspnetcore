@@ -13,24 +13,14 @@ namespace Microsoft.Framework.DependencyInjection
     /// </summary>
     public static class GoogleServiceCollectionExtensions
     {
-        public static IServiceCollection ConfigureGoogleAuthentication([NotNull] this IServiceCollection services, [NotNull] Action<GoogleAuthenticationOptions> configure)
+        public static IServiceCollection AddGoogleAuthentication([NotNull] this IServiceCollection services, [NotNull] Action<GoogleAuthenticationOptions> configure)
         {
-            return services.ConfigureGoogleAuthentication(configure, optionsName: "");
+            return services.Configure(configure);
         }
 
-        public static IServiceCollection ConfigureGoogleAuthentication([NotNull] this IServiceCollection services, [NotNull] Action<GoogleAuthenticationOptions> configure, string optionsName)
+        public static IServiceCollection AddGoogleAuthentication([NotNull] this IServiceCollection services, [NotNull] IConfiguration config)
         {
-            return services.Configure(configure, optionsName);
-        }
-
-        public static IServiceCollection ConfigureGoogleAuthentication([NotNull] this IServiceCollection services, [NotNull] IConfiguration config)
-        {
-            return services.ConfigureGoogleAuthentication(config, optionsName: "");
-        }
-
-        public static IServiceCollection ConfigureGoogleAuthentication([NotNull] this IServiceCollection services, [NotNull] IConfiguration config, string optionsName)
-        {
-            return services.Configure<GoogleAuthenticationOptions>(config, optionsName);
+            return services.Configure<GoogleAuthenticationOptions>(config);
         }
     }
 }

@@ -977,7 +977,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
                 if (claimsTransform != null)
                 {
-                    app.UseClaimsTransformation();
+                    app.UseClaimsTransformation(claimsTransform);
                 }
                 app.Use(async (context, next) =>
                 {
@@ -1033,10 +1033,6 @@ namespace Microsoft.AspNet.Authentication.Cookies
             services =>
             {
                 services.AddAuthentication();
-                if (claimsTransform != null)
-                {
-                    services.ConfigureClaimsTransformation(claimsTransform);
-                }
             });
             server.BaseAddress = baseAddress;
             return server;

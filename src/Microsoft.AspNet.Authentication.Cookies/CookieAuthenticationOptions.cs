@@ -5,13 +5,14 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Authentication.Cookies
 {
     /// <summary>
     /// Contains the options used by the CookiesAuthenticationMiddleware
     /// </summary>
-    public class CookieAuthenticationOptions : AuthenticationOptions
+    public class CookieAuthenticationOptions : AuthenticationOptions, IOptions<CookieAuthenticationOptions>
     {
         private string _cookieName;
 
@@ -146,5 +147,13 @@ namespace Microsoft.AspNet.Authentication.Cookies
         /// to the client. This can be used to mitigate potential problems with very large identities.
         /// </summary>
         public IAuthenticationSessionStore SessionStore { get; set; }
+
+        CookieAuthenticationOptions IOptions<CookieAuthenticationOptions>.Value
+        {
+            get
+            {
+                return this;
+            }
+        }
     }
 }

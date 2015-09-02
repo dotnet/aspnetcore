@@ -13,13 +13,10 @@ namespace Microsoft.AspNet.Builder
     /// </summary>
     public static class TwitterAppBuilderExtensions
     {
-        public static IApplicationBuilder UseTwitterAuthentication([NotNull] this IApplicationBuilder app, Action<TwitterAuthenticationOptions> configureOptions = null, string optionsName = "")
+        public static IApplicationBuilder UseTwitterAuthentication([NotNull] this IApplicationBuilder app, Action<TwitterAuthenticationOptions> configureOptions = null)
         {
             return app.UseMiddleware<TwitterAuthenticationMiddleware>(
-                 new ConfigureOptions<TwitterAuthenticationOptions>(configureOptions ?? (o => { }))
-                 {
-                     Name = optionsName
-                 });
+                 new ConfigureOptions<TwitterAuthenticationOptions>(configureOptions ?? (o => { })));
         }
     }
 }

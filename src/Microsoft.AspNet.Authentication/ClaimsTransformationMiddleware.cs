@@ -18,14 +18,10 @@ namespace Microsoft.AspNet.Authentication
             [NotNull] IOptions<ClaimsTransformationOptions> options,
             ConfigureOptions<ClaimsTransformationOptions> configureOptions)
         {
+            Options = options.Value;
             if (configureOptions != null)
             {
-                Options = options.GetNamedOptions(configureOptions.Name);
-                configureOptions.Configure(Options, configureOptions.Name);
-            }
-            else
-            {
-                Options = options.Options;
+                configureOptions.Configure(Options);
             }
             _next = next;
         }

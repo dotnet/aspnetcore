@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
 
             if (string.IsNullOrEmpty(Options.SignInScheme))
             {
-                Options.SignInScheme = sharedOptions.Options.SignInScheme;
+                Options.SignInScheme = sharedOptions.Value.SignInScheme;
             }
             if (string.IsNullOrEmpty(Options.SignInScheme))
             {

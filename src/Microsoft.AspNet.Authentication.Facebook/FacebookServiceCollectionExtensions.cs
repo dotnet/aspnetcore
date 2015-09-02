@@ -13,24 +13,14 @@ namespace Microsoft.Framework.DependencyInjection
     /// </summary>
     public static class FacebookServiceCollectionExtensions
     {
-        public static IServiceCollection ConfigureFacebookAuthentication([NotNull] this IServiceCollection services, [NotNull] Action<FacebookAuthenticationOptions> configure)
+        public static IServiceCollection AddFacebookAuthentication([NotNull] this IServiceCollection services, [NotNull] Action<FacebookAuthenticationOptions> configure)
         {
-            return services.ConfigureFacebookAuthentication(configure, optionsName: "");
+            return services.Configure(configure);
         }
 
-        public static IServiceCollection ConfigureFacebookAuthentication([NotNull] this IServiceCollection services, [NotNull] Action<FacebookAuthenticationOptions> configure, string optionsName)
+        public static IServiceCollection AddFacebookAuthentication([NotNull] this IServiceCollection services, [NotNull] IConfiguration config)
         {
-            return services.Configure(configure, optionsName);
-        }
-
-        public static IServiceCollection ConfigureFacebookAuthentication([NotNull] this IServiceCollection services, [NotNull] IConfiguration config)
-        {
-            return services.ConfigureFacebookAuthentication(config, optionsName: "");
-        }
-
-        public static IServiceCollection ConfigureFacebookAuthentication([NotNull] this IServiceCollection services, [NotNull] IConfiguration config, string optionsName)
-        {
-            return services.Configure<FacebookAuthenticationOptions>(config, optionsName);
+            return services.Configure<FacebookAuthenticationOptions>(config);
         }
     }
 }

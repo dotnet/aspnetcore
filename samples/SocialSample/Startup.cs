@@ -26,7 +26,7 @@ namespace CookieSample
             {
                 options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
             });
-            services.ConfigureClaimsTransformation(p =>
+            services.AddClaimsTransformation(p =>
             {
                 var id = new ClaimsIdentity("xform");
                 id.AddClaim(new Claim("ClaimsTransformation", "TransformAddedClaim"));

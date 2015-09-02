@@ -15,22 +15,12 @@ namespace Microsoft.Framework.DependencyInjection
     {
         public static IServiceCollection ConfigureJwtBearerAuthentication([NotNull] this IServiceCollection services, [NotNull] Action<JwtBearerAuthenticationOptions> configure)
         {
-            return services.ConfigureJwtBearerAuthentication(configure, optionsName: "");
-        }
-
-        public static IServiceCollection ConfigureJwtBearerAuthentication([NotNull] this IServiceCollection services, [NotNull] Action<JwtBearerAuthenticationOptions> configure, string optionsName)
-        {
-            return services.Configure(configure, optionsName);
+            return services.Configure(configure);
         }
 
         public static IServiceCollection ConfigureJwtBearerAuthentication([NotNull] this IServiceCollection services, [NotNull] IConfiguration config)
         {
-            return services.ConfigureJwtBearerAuthentication(config, optionsName: "");
-        }
-
-        public static IServiceCollection ConfigureJwtBearerAuthentication([NotNull] this IServiceCollection services, [NotNull] IConfiguration config, string optionsName)
-        {
-            return services.Configure<JwtBearerAuthenticationOptions>(config, optionsName);
+            return services.ConfigureJwtBearerAuthentication(config);
         }
     }
 }

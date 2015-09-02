@@ -27,10 +27,7 @@ namespace Microsoft.AspNet.Builder
         public static IApplicationBuilder UseJwtBearerAuthentication([NotNull] this IApplicationBuilder app, Action<JwtBearerAuthenticationOptions> configureOptions = null, string optionsName = "")
         {
             return app.UseMiddleware<JwtBearerAuthenticationMiddleware>(
-                new ConfigureOptions<JwtBearerAuthenticationOptions>(configureOptions ?? (o => { }))
-                {
-                    Name = optionsName
-                });
+                new ConfigureOptions<JwtBearerAuthenticationOptions>(configureOptions ?? (o => { })));
         }
     }
 }

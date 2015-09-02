@@ -13,24 +13,14 @@ namespace Microsoft.Framework.DependencyInjection
     /// </summary>
     public static class TwitterAuthenticationExtensions
     {
-        public static IServiceCollection ConfigureTwitterAuthentication([NotNull] this IServiceCollection services, [NotNull] Action<TwitterAuthenticationOptions> configure)
+        public static IServiceCollection AddTwitterAuthentication([NotNull] this IServiceCollection services, [NotNull] Action<TwitterAuthenticationOptions> configure)
         {
-            return services.ConfigureTwitterAuthentication(configure, optionsName: "");
+            return services.Configure(configure);
         }
 
-        public static IServiceCollection ConfigureTwitterAuthentication([NotNull] this IServiceCollection services, [NotNull] Action<TwitterAuthenticationOptions> configure, string optionsName)
+        public static IServiceCollection AddTwitterAuthentication([NotNull] this IServiceCollection services, [NotNull] IConfiguration config)
         {
-            return services.Configure(configure, optionsName);
-        }
-
-        public static IServiceCollection ConfigureTwitterAuthentication([NotNull] this IServiceCollection services, [NotNull] IConfiguration config)
-        {
-            return services.ConfigureTwitterAuthentication(config, optionsName: "");
-        }
-
-        public static IServiceCollection ConfigureTwitterAuthentication([NotNull] this IServiceCollection services, [NotNull] IConfiguration config, string optionsName)
-        {
-            return services.Configure<TwitterAuthenticationOptions>(config, optionsName);
+            return services.Configure<TwitterAuthenticationOptions>(config);
         }
     }
 }

@@ -35,8 +35,11 @@ namespace Microsoft.AspNet.Authentication.Facebook
                 },
                 services =>
                 {
-                    services.AddAuthentication();
-                    services.ConfigureFacebookAuthentication(options =>
+                    services.AddAuthentication(options =>
+                    {
+                        options.SignInScheme = "External";
+                    });
+                    services.AddFacebookAuthentication(options =>
                     {
                         options.AppId = "Test App Id";
                         options.AppSecret = "Test App Secret";
@@ -48,14 +51,10 @@ namespace Microsoft.AspNet.Authentication.Facebook
                             }
                         };
                     });
-                    services.ConfigureCookieAuthentication(options =>
+                    services.AddCookieAuthentication(options =>
                     {
                         options.AuthenticationScheme = "External";
                         options.AutomaticAuthentication = true;
-                    });
-                    services.Configure<SharedAuthenticationOptions>(options =>
-                    {
-                        options.SignInScheme = "External";
                     });
                 },
                 context =>
@@ -81,7 +80,7 @@ namespace Microsoft.AspNet.Authentication.Facebook
                 services =>
                 {
                     services.AddAuthentication();
-                    services.ConfigureFacebookAuthentication(options =>
+                    services.AddFacebookAuthentication(options =>
                     {
                         options.AppId = "Test App Id";
                         options.AppSecret = "Test App Secret";
@@ -112,7 +111,7 @@ namespace Microsoft.AspNet.Authentication.Facebook
                 services =>
                 {
                     services.AddAuthentication();
-                    services.ConfigureFacebookAuthentication(options =>
+                    services.AddFacebookAuthentication(options =>
                     {
                         options.AppId = "Test App Id";
                         options.AppSecret = "Test App Secret";
@@ -142,19 +141,18 @@ namespace Microsoft.AspNet.Authentication.Facebook
                 },
                 services =>
                 {
-                    services.AddAuthentication();
-                    services.ConfigureFacebookAuthentication(options =>
+                    services.AddAuthentication(options =>
+                    {
+                        options.SignInScheme = "External";
+                    });
+                    services.AddFacebookAuthentication(options =>
                     {
                         options.AppId = "Test App Id";
                         options.AppSecret = "Test App Secret";
                     });
-                    services.ConfigureCookieAuthentication(options =>
+                    services.AddCookieAuthentication(options =>
                     {
                         options.AuthenticationScheme = "External";
-                    });
-                    services.Configure<SharedAuthenticationOptions>(options =>
-                    {
-                        options.SignInScheme = "External";
                     });
                 },
                 context =>
@@ -189,7 +187,7 @@ namespace Microsoft.AspNet.Authentication.Facebook
                 services =>
                 {
                     services.AddAuthentication();
-                    services.ConfigureFacebookAuthentication(options =>
+                    services.AddFacebookAuthentication(options =>
                     {
                         options.AppId = "Test App Id";
                         options.AppSecret = "Test App Secret";

@@ -49,9 +49,9 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             ConfigureOptions<OpenIdConnectAuthenticationOptions> configureOptions = null)
             : base(next, options, loggerFactory, encoder, configureOptions)
         {
-            if (string.IsNullOrEmpty(Options.SignInScheme) && !string.IsNullOrEmpty(sharedOptions.Options.SignInScheme))
+            if (string.IsNullOrEmpty(Options.SignInScheme) && !string.IsNullOrEmpty(sharedOptions.Value.SignInScheme))
             {
-                Options.SignInScheme = sharedOptions.Options.SignInScheme;
+                Options.SignInScheme = sharedOptions.Value.SignInScheme;
             }
 
             if (Options.HtmlEncoder == null)

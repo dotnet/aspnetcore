@@ -13,13 +13,10 @@ namespace Microsoft.AspNet.Builder
     /// </summary>
     public static class MicrosoftAccountAuthenticationExtensions
     {
-        public static IApplicationBuilder UseMicrosoftAccountAuthentication([NotNull] this IApplicationBuilder app, Action<MicrosoftAccountAuthenticationOptions> configureOptions = null, string optionsName = "")
+        public static IApplicationBuilder UseMicrosoftAccountAuthentication([NotNull] this IApplicationBuilder app, Action<MicrosoftAccountAuthenticationOptions> configureOptions = null)
         {
             return app.UseMiddleware<MicrosoftAccountAuthenticationMiddleware>(
-                 new ConfigureOptions<MicrosoftAccountAuthenticationOptions>(configureOptions ?? (o => { }))
-                 {
-                     Name = optionsName
-                 });
+                 new ConfigureOptions<MicrosoftAccountAuthenticationOptions>(configureOptions ?? (o => { })));
         }
     }
 }
