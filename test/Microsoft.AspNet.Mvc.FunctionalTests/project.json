@@ -4,7 +4,7 @@
     ],
     "compilationOptions": {
         "define": [ "__RemoveThisBitTo__GENERATE_BASELINES" ],
-        "warningsAsErrors": "true"
+        "warningsAsErrors": true
     },
     "dependencies": {
         "ActionConstraintsWebSite": "1.0.0",

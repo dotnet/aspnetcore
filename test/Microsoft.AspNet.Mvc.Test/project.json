@@ -1,6 +1,6 @@
 {
   "compilationOptions": {
-    "warningsAsErrors": "true"
+    "warningsAsErrors": true
   },
   "dependencies": {
     "Microsoft.AspNet.Mvc": "6.0.0-*",

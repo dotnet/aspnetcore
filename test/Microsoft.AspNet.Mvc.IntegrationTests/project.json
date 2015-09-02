@@ -1,6 +1,6 @@
 {
     "compilationOptions": {
-        "warningsAsErrors": "true"
+        "warningsAsErrors": true
     },
     "dependencies": {
         "Microsoft.AspNet.Http": "1.0.0-*",
