@@ -17,49 +17,49 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
     public partial class FrameRequestHeaders 
     {
-        long _bits = 0;
+        private long _bits = 0;
         
-        StringValues _CacheControl;
-        StringValues _Connection;
-        StringValues _Date;
-        StringValues _KeepAlive;
-        StringValues _Pragma;
-        StringValues _Trailer;
-        StringValues _TransferEncoding;
-        StringValues _Upgrade;
-        StringValues _Via;
-        StringValues _Warning;
-        StringValues _Allow;
-        StringValues _ContentLength;
-        StringValues _ContentType;
-        StringValues _ContentEncoding;
-        StringValues _ContentLanguage;
-        StringValues _ContentLocation;
-        StringValues _ContentMD5;
-        StringValues _ContentRange;
-        StringValues _Expires;
-        StringValues _LastModified;
-        StringValues _Accept;
-        StringValues _AcceptCharset;
-        StringValues _AcceptEncoding;
-        StringValues _AcceptLanguage;
-        StringValues _Authorization;
-        StringValues _Cookie;
-        StringValues _Expect;
-        StringValues _From;
-        StringValues _Host;
-        StringValues _IfMatch;
-        StringValues _IfModifiedSince;
-        StringValues _IfNoneMatch;
-        StringValues _IfRange;
-        StringValues _IfUnmodifiedSince;
-        StringValues _MaxForwards;
-        StringValues _ProxyAuthorization;
-        StringValues _Referer;
-        StringValues _Range;
-        StringValues _TE;
-        StringValues _Translate;
-        StringValues _UserAgent;
+        private StringValues _CacheControl;
+        private StringValues _Connection;
+        private StringValues _Date;
+        private StringValues _KeepAlive;
+        private StringValues _Pragma;
+        private StringValues _Trailer;
+        private StringValues _TransferEncoding;
+        private StringValues _Upgrade;
+        private StringValues _Via;
+        private StringValues _Warning;
+        private StringValues _Allow;
+        private StringValues _ContentLength;
+        private StringValues _ContentType;
+        private StringValues _ContentEncoding;
+        private StringValues _ContentLanguage;
+        private StringValues _ContentLocation;
+        private StringValues _ContentMD5;
+        private StringValues _ContentRange;
+        private StringValues _Expires;
+        private StringValues _LastModified;
+        private StringValues _Accept;
+        private StringValues _AcceptCharset;
+        private StringValues _AcceptEncoding;
+        private StringValues _AcceptLanguage;
+        private StringValues _Authorization;
+        private StringValues _Cookie;
+        private StringValues _Expect;
+        private StringValues _From;
+        private StringValues _Host;
+        private StringValues _IfMatch;
+        private StringValues _IfModifiedSince;
+        private StringValues _IfNoneMatch;
+        private StringValues _IfRange;
+        private StringValues _IfUnmodifiedSince;
+        private StringValues _MaxForwards;
+        private StringValues _ProxyAuthorization;
+        private StringValues _Referer;
+        private StringValues _Range;
+        private StringValues _TE;
+        private StringValues _Translate;
+        private StringValues _UserAgent;
 
         protected override int GetCountFast()
         {
@@ -4587,38 +4587,38 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
     public partial class FrameResponseHeaders 
     {
-        long _bits = 0;
+        private long _bits = 0;
         
-        StringValues _CacheControl;
-        StringValues _Connection;
-        StringValues _Date;
-        StringValues _KeepAlive;
-        StringValues _Pragma;
-        StringValues _Trailer;
-        StringValues _TransferEncoding;
-        StringValues _Upgrade;
-        StringValues _Via;
-        StringValues _Warning;
-        StringValues _Allow;
-        StringValues _ContentLength;
-        StringValues _ContentType;
-        StringValues _ContentEncoding;
-        StringValues _ContentLanguage;
-        StringValues _ContentLocation;
-        StringValues _ContentMD5;
-        StringValues _ContentRange;
-        StringValues _Expires;
-        StringValues _LastModified;
-        StringValues _AcceptRanges;
-        StringValues _Age;
-        StringValues _ETag;
-        StringValues _Location;
-        StringValues _ProxyAutheticate;
-        StringValues _RetryAfter;
-        StringValues _Server;
-        StringValues _SetCookie;
-        StringValues _Vary;
-        StringValues _WWWAuthenticate;
+        private StringValues _CacheControl;
+        private StringValues _Connection;
+        private StringValues _Date;
+        private StringValues _KeepAlive;
+        private StringValues _Pragma;
+        private StringValues _Trailer;
+        private StringValues _TransferEncoding;
+        private StringValues _Upgrade;
+        private StringValues _Via;
+        private StringValues _Warning;
+        private StringValues _Allow;
+        private StringValues _ContentLength;
+        private StringValues _ContentType;
+        private StringValues _ContentEncoding;
+        private StringValues _ContentLanguage;
+        private StringValues _ContentLocation;
+        private StringValues _ContentMD5;
+        private StringValues _ContentRange;
+        private StringValues _Expires;
+        private StringValues _LastModified;
+        private StringValues _AcceptRanges;
+        private StringValues _Age;
+        private StringValues _ETag;
+        private StringValues _Location;
+        private StringValues _ProxyAutheticate;
+        private StringValues _RetryAfter;
+        private StringValues _Server;
+        private StringValues _SetCookie;
+        private StringValues _Vary;
+        private StringValues _WWWAuthenticate;
 
         protected override int GetCountFast()
         {

@@ -8,12 +8,12 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 {
     public class MemoryPool : IMemoryPool
     {
-        static readonly byte[] EmptyArray = new byte[0];
+        private static readonly byte[] EmptyArray = new byte[0];
 
         class Pool<T>
         {
-            readonly Stack<T[]> _stack = new Stack<T[]>();
-            readonly object _sync = new object();
+            private readonly Stack<T[]> _stack = new Stack<T[]>();
+            private readonly object _sync = new object();
 
             public T[] Alloc(int size)
             {
@@ -39,9 +39,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
         }
 
-        readonly Pool<byte> _pool1 = new Pool<byte>();
-        readonly Pool<byte> _pool2 = new Pool<byte>();
-        readonly Pool<char> _pool3 = new Pool<char>();
+        private readonly Pool<byte> _pool1 = new Pool<byte>();
+        private readonly Pool<byte> _pool2 = new Pool<byte>();
+        private readonly Pool<char> _pool3 = new Pool<char>();
 
         public byte[] Empty
         {

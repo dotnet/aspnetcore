@@ -1,0 +1,28 @@
+﻿{
+    "version": "1.0.0-*",
+
+    "description": "Microsoft.StandardsPolice Class Library",
+
+    "dependencies": {
+        "Microsoft.Dnx.Compilation.CSharp.Abstractions": "1.0.0-beta8-*"
+    },
+
+    "commands": {
+        "Microsoft.StandardsPolice": "Microsoft.StandardsPolice"
+    },
+
+    "frameworks": {
+        "dnx451": {
+            "frameworkAssemblies": {
+                "System.Runtime": "",
+                "System.Text.Encoding": "",
+                "System.Threading.Tasks": ""
+            }
+        },
+        "dnxcore50": {
+            "dependencies": {
+                "System.Console": "4.0.0-beta-*"
+            }
+        }
+    }
+}

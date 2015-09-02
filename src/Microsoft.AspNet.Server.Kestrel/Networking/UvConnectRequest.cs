@@ -15,8 +15,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
     {
         private readonly static Libuv.uv_connect_cb _uv_connect_cb = UvConnectCb;
 
-        Action<UvConnectRequest, int, Exception, object> _callback;
-        object _state;
+        private Action<UvConnectRequest, int, Exception, object> _callback;
+        private object _state;
 
         public void Init(UvLoopHandle loop)
         {

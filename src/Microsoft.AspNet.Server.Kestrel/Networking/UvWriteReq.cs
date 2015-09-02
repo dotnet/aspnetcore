@@ -15,13 +15,13 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
     {
         private readonly static Libuv.uv_write_cb _uv_write_cb = UvWriteCb;
 
-        IntPtr _bufs;
+        private IntPtr _bufs;
 
-        Action<UvWriteReq, int, Exception, object> _callback;
-        object _state;
-        const int BUFFER_COUNT = 4;
+        private Action<UvWriteReq, int, Exception, object> _callback;
+        private object _state;
+        private const int BUFFER_COUNT = 4;
 
-        List<GCHandle> _pins = new List<GCHandle>();
+        private List<GCHandle> _pins = new List<GCHandle>();
 
         public void Init(UvLoopHandle loop)
         {

@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
 {
     public class UvRequest : UvMemory
     {
-        GCHandle _pin;
+        private GCHandle _pin;
 
         protected override bool ReleaseHandle()
         {

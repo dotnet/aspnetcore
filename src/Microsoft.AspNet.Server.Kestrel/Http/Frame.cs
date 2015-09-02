@@ -24,8 +24,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             Terminated,
         }
 
-        static Encoding _ascii = Encoding.ASCII;
-        Mode _mode;
+        private static Encoding _ascii = Encoding.ASCII;
+        private Mode _mode;
         private bool _responseStarted;
         private bool _keepAlive;
         private bool _autoChunk;
@@ -38,10 +38,10 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         CancellationTokenSource _cts = new CancellationTokenSource();
         */
 
-        List<KeyValuePair<Func<object, Task>, object>> _onStarting;
-        List<KeyValuePair<Func<object, Task>, object>> _onCompleted;
-        object _onStartingSync = new Object();
-        object _onCompletedSync = new Object();
+        private List<KeyValuePair<Func<object, Task>, object>> _onStarting;
+        private List<KeyValuePair<Func<object, Task>, object>> _onCompleted;
+        private object _onStartingSync = new Object();
+        private object _onCompletedSync = new Object();
 
         public Frame(ConnectionContext context) : base(context)
         {

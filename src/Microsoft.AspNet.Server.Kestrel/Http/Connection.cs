@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         private readonly UvStreamHandle _socket;
         private Frame _frame;
-        long _connectionId = 0;
+        private long _connectionId = 0;
 
         private readonly object _stateLock = new object();
         private ConnectionState _connectionState;

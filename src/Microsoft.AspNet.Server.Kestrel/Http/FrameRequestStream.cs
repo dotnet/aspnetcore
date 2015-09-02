@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 {
     public class FrameRequestStream : Stream
     {
-        readonly MessageBody _body;
+        private readonly MessageBody _body;
 
         //int _readLength;
         //bool _readFin;

@@ -186,9 +186,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 {Each(loops, loop => $@"
     public partial class {loop.ClassName} 
     {{
-        long _bits = 0;
+        private long _bits = 0;
         {Each(loop.Headers, header => @"
-        StringValues _" + header.Identifier + ";")}
+        private StringValues _" + header.Identifier + ";")}
 
         protected override int GetCountFast()
         {{

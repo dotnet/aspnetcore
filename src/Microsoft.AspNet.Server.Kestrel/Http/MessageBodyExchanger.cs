@@ -17,11 +17,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private static readonly WaitCallback _completePending = CompletePending;
         protected readonly FrameContext _context;
 
-        object _sync = new Object();
+        private object _sync = new Object();
 
-        ArraySegment<byte> _buffer;
-        Queue<ReadOperation> _reads = new Queue<ReadOperation>();
-        bool _send100Continue = true;
+        private ArraySegment<byte> _buffer;
+        private Queue<ReadOperation> _reads = new Queue<ReadOperation>();
+        private bool _send100Continue = true;
 
         public MessageBodyExchanger(FrameContext context)
         {

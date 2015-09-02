@@ -14,9 +14,9 @@ namespace Microsoft.AspNet.Server.Kestrel
 {
     public class ServerRequest : IHttpRequestFeature, IHttpResponseFeature, IHttpUpgradeFeature
     {
-        Frame _frame;
-        string _scheme;
-        string _pathBase;
+        private Frame _frame;
+        private string _scheme;
+        private string _pathBase;
         private FeatureCollection _features;
 
         public ServerRequest(Frame frame)

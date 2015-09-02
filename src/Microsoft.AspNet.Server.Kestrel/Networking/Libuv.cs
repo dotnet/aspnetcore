@@ -397,10 +397,10 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         {
             public sockaddr(long ignored) { x3 = x0 = x1 = x2 = x3 = 0; }
 
-            long x0;
-            long x1;
-            long x2;
-            long x3;
+            private long x0;
+            private long x1;
+            private long x2;
+            private long x3;
         }
 
         public struct uv_buf_t

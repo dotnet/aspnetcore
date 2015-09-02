@@ -16,16 +16,16 @@ namespace Microsoft.AspNet.Server.Kestrel
     /// </summary>
     public class KestrelThread
     {
-        KestrelEngine _engine;
-        Thread _thread;
-        UvLoopHandle _loop;
-        UvAsyncHandle _post;
-        Queue<Work> _workAdding = new Queue<Work>();
-        Queue<Work> _workRunning = new Queue<Work>();
-        Queue<CloseHandle> _closeHandleAdding = new Queue<CloseHandle>();
-        Queue<CloseHandle> _closeHandleRunning = new Queue<CloseHandle>();
-        object _workSync = new Object();
-        bool _stopImmediate = false;
+        private KestrelEngine _engine;
+        private Thread _thread;
+        private UvLoopHandle _loop;
+        private UvAsyncHandle _post;
+        private Queue<Work> _workAdding = new Queue<Work>();
+        private Queue<Work> _workRunning = new Queue<Work>();
+        private Queue<CloseHandle> _closeHandleAdding = new Queue<CloseHandle>();
+        private Queue<CloseHandle> _closeHandleRunning = new Queue<CloseHandle>();
+        private object _workSync = new Object();
+        private bool _stopImmediate = false;
         private ExceptionDispatchInfo _closeError;
 
         public KestrelThread(KestrelEngine engine)

@@ -12,8 +12,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 {
     class FrameDuplexStream : Stream
     {
-        readonly Stream _requestStream;
-        readonly Stream _responseStream;
+        private readonly Stream _requestStream;
+        private readonly Stream _responseStream;
 
         public FrameDuplexStream(Stream requestStream, Stream responseStream)
         {

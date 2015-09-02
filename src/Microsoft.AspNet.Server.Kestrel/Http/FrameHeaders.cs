@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -127,102 +130,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         bool IDictionary<string, StringValues>.TryGetValue(string key, out StringValues value)
         {
             return TryGetValueFast(key, out value);
-        }
-    }
-
-    public partial class FrameRequestHeaders : FrameHeaders
-    {
-        public Enumerator GetEnumerator()
-        {
-            return new Enumerator(this);
-        }
-
-        protected override IEnumerator<KeyValuePair<string, StringValues>> GetEnumeratorFast()
-        {
-            return GetEnumerator();
-        }
-
-        public partial struct Enumerator : IEnumerator<KeyValuePair<string, StringValues>>
-        {
-            FrameRequestHeaders _collection;
-            long _bits;
-            int _state;
-            KeyValuePair<string, StringValues> _current;
-            bool _hasUnknown;
-            Dictionary<string, StringValues>.Enumerator _unknownEnumerator;
-
-            internal Enumerator(FrameRequestHeaders collection)
-            {
-                _collection = collection;
-                _bits = collection._bits;
-                _state = 0;
-                _current = default(KeyValuePair<string, StringValues>);
-                _hasUnknown = collection.MaybeUnknown != null;
-                _unknownEnumerator = _hasUnknown
-                    ? collection.MaybeUnknown.GetEnumerator()
-                    : default(Dictionary<string, StringValues>.Enumerator);
-            }
-
-            public KeyValuePair<string, StringValues> Current => _current;
-
-            object IEnumerator.Current => _current;
-
-            public void Dispose()
-            {
-            }
-
-            public void Reset()
-            {
-                _state = 0;
-            }
-        }
-    }
-
-    public partial class FrameResponseHeaders : FrameHeaders
-    {
-        public Enumerator GetEnumerator()
-        {
-            return new Enumerator(this);
-        }
-
-        protected override IEnumerator<KeyValuePair<string, StringValues>> GetEnumeratorFast()
-        {
-            return GetEnumerator();
-        }
-
-        public partial struct Enumerator : IEnumerator<KeyValuePair<string, StringValues>>
-        {
-            FrameResponseHeaders _collection;
-            long _bits;
-            int _state;
-            KeyValuePair<string, StringValues> _current;
-            bool _hasUnknown;
-            Dictionary<string, StringValues>.Enumerator _unknownEnumerator;
-
-            internal Enumerator(FrameResponseHeaders collection)
-            {
-                _collection = collection;
-                _bits = collection._bits;
-                _state = 0;
-                _current = default(KeyValuePair<string, StringValues>);
-                _hasUnknown = collection.MaybeUnknown != null;
-                _unknownEnumerator = _hasUnknown
-                    ? collection.MaybeUnknown.GetEnumerator()
-                    : default(Dictionary<string, StringValues>.Enumerator);
-            }
-
-            public KeyValuePair<string, StringValues> Current => _current;
-
-            object IEnumerator.Current => _current;
-
-            public void Dispose()
-            {
-            }
-
-            public void Reset()
-            {
-                _state = 0;
-            }
         }
     }
 }
