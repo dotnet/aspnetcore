@@ -6,7 +6,7 @@
         "url": "git://github.com/aspnet/routing"
     },
     "compilationOptions": {
-        "warningsAsErrors": "true"
+        "warningsAsErrors": true
     },
     "dependencies": {
         "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
