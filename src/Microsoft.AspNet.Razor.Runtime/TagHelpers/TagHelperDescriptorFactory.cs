@@ -315,7 +315,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             if (string.IsNullOrWhiteSpace(name))
             {
-                errorSink.OnError(SourceLocation.Zero, whitespaceError);
+                errorSink.OnError(SourceLocation.Zero, whitespaceError, length: 0);
 
                 validName = false;
             }
@@ -327,7 +327,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         InvalidNonWhitespaceNameCharacters.Contains(character))
                     {
                         var error = characterErrorBuilder(character);
-                        errorSink.OnError(SourceLocation.Zero, error);
+                        errorSink.OnError(SourceLocation.Zero, error, length: 0);
 
                         validName = false;
                     }
@@ -379,7 +379,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                             type.FullName,
                             property.Name,
                             typeof(HtmlAttributeNameAttribute).FullName,
-                            nameof(HtmlAttributeNameAttribute.Name)));
+                            nameof(HtmlAttributeNameAttribute.Name)),
+                        length: 0);
                     continue;
                 }
 
@@ -438,7 +439,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                     SourceLocation.Zero,
                     Resources.FormatTagHelperDescriptorFactory_InvalidAttributeNameNullOrEmpty(
                         parentType.FullName,
-                        attributeDescriptor.PropertyName));
+                        attributeDescriptor.PropertyName),
+                    length: 0);
 
                 return false;
             }
@@ -492,7 +494,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                     Resources.FormatTagHelperDescriptorFactory_InvalidAttributeNameOrPrefixWhitespace(
                         parentType.FullName,
                         propertyName,
-                        nameOrPrefix));
+                        nameOrPrefix),
+                    length: 0);
 
                 return false;
             }
@@ -508,7 +511,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         propertyName,
                         nameOrPrefix,
                         attributeNameOrPrefix,
-                        DataDashPrefix));
+                        DataDashPrefix),
+                    length: 0);
 
                 return false;
             }
@@ -525,7 +529,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                             propertyName,
                             nameOrPrefix,
                             attributeNameOrPrefix,
-                            character));
+                            character),
+                    length: 0);
 
                     isValid = false;
                 }
@@ -576,7 +581,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                             property.Name,
                             nameof(HtmlAttributeNameAttribute),
                             nameof(HtmlAttributeNameAttribute.DictionaryAttributePrefix),
-                            "IDictionary<string, TValue>"));
+                            "IDictionary<string, TValue>"),
+                        length: 0);
                 }
                 else if (attributeNameAttribute != null && !hasPublicSetter)
                 {
@@ -589,7 +595,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                             parentType.FullName,
                             property.Name,
                             nameof(HtmlAttributeNameAttribute),
-                            "IDictionary<string, TValue>"));
+                            "IDictionary<string, TValue>"),
+                        length: 0);
                 }
 
                 return null;
@@ -608,7 +615,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         property.Name,
                         nameof(HtmlAttributeNameAttribute),
                         nameof(HtmlAttributeNameAttribute.DictionaryAttributePrefix),
-                        "IDictionary<string, TValue>"));
+                        "IDictionary<string, TValue>"),
+                    length: 0);
 
                 return null;
             }

@@ -296,8 +296,10 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
 
             if (childSpan == null || childSpan.Kind != SpanKind.Markup)
             {
-                errorSink.OnError(block.Children.First().Start,
-                                  RazorResources.FormatTagHelpers_CannotHaveCSharpInTagDeclaration(tagName));
+                errorSink.OnError(
+                    block.Start,
+                    RazorResources.FormatTagHelpers_CannotHaveCSharpInTagDeclaration(tagName),
+                    block.Length);
 
                 return null;
             }
@@ -316,7 +318,10 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
 
             if (name == null)
             {
-                errorSink.OnError(childSpan.Start, RazorResources.FormatTagHelpers_AttributesMustHaveAName(tagName));
+                errorSink.OnError(
+                    childSpan.Start,
+                    RazorResources.FormatTagHelpers_AttributesMustHaveAName(tagName),
+                    childSpan.Length);
 
                 return null;
             }

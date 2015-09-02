@@ -208,12 +208,12 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                     {
                         // End tag TagHelper that states it shouldn't have an end tag.
                         context.ErrorSink.OnError(
-                            tagBlock.Start,
+                            SourceLocation.Advance(tagBlock.Start, "</"),
                             RazorResources.FormatTagHelperParseTreeRewriter_EndTagTagHelperMustNotHaveAnEndTag(
                                 tagName,
                                 invalidDescriptor.TypeName,
                                 invalidDescriptor.TagStructure),
-                            tagBlock.Length);
+                            tagName.Length);
 
                         return false;
                     }
@@ -233,8 +233,9 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                         // Could not recover, the end tag helper has no corresponding start tag, create
                         // an error based on the current childBlock.
                         context.ErrorSink.OnError(
-                            tagBlock.Start,
-                            RazorResources.FormatTagHelpersParseTreeRewriter_FoundMalformedTagHelper(tagName));
+                            SourceLocation.Advance(tagBlock.Start, "</"),
+                            RazorResources.FormatTagHelpersParseTreeRewriter_FoundMalformedTagHelper(tagName),
+                            tagName.Length);
 
                         return false;
                     }
@@ -333,8 +334,9 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                 tagName,
                 tracker.Builder.TagName,
                 allowedChildrenString);
+            var errorStart = GetTagDeclarationErrorStart(tagBlock);
 
-            errorSink.OnError(tagBlock.Start, errorMessage, tagBlock.Length);
+            errorSink.OnError(errorStart, errorMessage, tagName.Length);
         }
 
         private static void ValidateDescriptors(
@@ -373,14 +375,24 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
             // We assume an invalid syntax until we verify that the tag meets all of our "valid syntax" criteria.
             if (IsPartialTag(tag))
             {
+                var errorStart = GetTagDeclarationErrorStart(tag);
+
                 context.ErrorSink.OnError(
-                    tag.Start,
-                    RazorResources.FormatTagHelpersParseTreeRewriter_MissingCloseAngle(tagName));
+                    errorStart,
+                    RazorResources.FormatTagHelpersParseTreeRewriter_MissingCloseAngle(tagName),
+                    tagName.Length);
 
                 return false;
             }
 
             return true;
+        }
+
+        private static SourceLocation GetTagDeclarationErrorStart(Block tagBlock)
+        {
+            var advanceBy = IsEndTag(tagBlock) ? "</" : "<";
+
+            return SourceLocation.Advance(tagBlock.Start, advanceBy);
         }
 
         private static bool IsPartialTag(Block tagBlock)
@@ -501,9 +513,10 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                 var malformedTagHelper = _trackerStack.Peek().Builder;
 
                 context.ErrorSink.OnError(
-                    malformedTagHelper.Start,
+                    SourceLocation.Advance(malformedTagHelper.Start, "<"),
                     RazorResources.FormatTagHelpersParseTreeRewriter_FoundMalformedTagHelper(
-                        malformedTagHelper.TagName));
+                        malformedTagHelper.TagName),
+                    malformedTagHelper.TagName.Length);
 
                 BuildCurrentlyTrackedTagHelperBlock(endTag: null);
             }

@@ -45,16 +45,6 @@ namespace Microsoft.AspNet.Razor
         /// </summary>
         /// <param name="location"><see cref="SourceLocation"/> of the error.</param>
         /// <param name="message">A message describing the error.</param>
-        public void OnError(SourceLocation location, string message)
-        {
-            OnError(location, message, RazorError.DefaultErrorLength);
-        }
-
-        /// <summary>
-        /// Creates and tracks a new <see cref="RazorError"/>.
-        /// </summary>
-        /// <param name="location"><see cref="SourceLocation"/> of the error.</param>
-        /// <param name="message">A message describing the error.</param>
         /// <param name="length">The length of the error.</param>
         public void OnError(SourceLocation location, string message, int length)
         {

@@ -29,7 +29,10 @@ namespace Microsoft.AspNet.Razor.Parser
 
         protected virtual void ReservedDirective(bool topLevel)
         {
-            Context.OnError(CurrentLocation, RazorResources.FormatParseError_ReservedWord(CurrentSymbol.Content));
+            Context.OnError(
+                CurrentLocation,
+                RazorResources.FormatParseError_ReservedWord(CurrentSymbol.Content),
+                CurrentSymbol.Content.Length);
             AcceptAndMoveNext();
             Span.EditHandler.AcceptedCharacters = AcceptedCharacters.None;
             Span.ChunkGenerator = SpanChunkGenerator.Null;
@@ -109,7 +112,10 @@ namespace Microsoft.AspNet.Razor.Parser
                 // using Identifier ==> Using Declaration
                 if (!topLevel)
                 {
-                    Context.OnError(block.Start, RazorResources.ParseError_NamespaceImportAndTypeAlias_Cannot_Exist_Within_CodeBlock);
+                    Context.OnError(
+                        block.Start,
+                        RazorResources.ParseError_NamespaceImportAndTypeAlias_Cannot_Exist_Within_CodeBlock,
+                        block.Name.Length);
                     StandardStatement();
                 }
                 else
@@ -327,10 +333,12 @@ namespace Microsoft.AspNet.Razor.Parser
                 // Check for "{" to make sure we're at a block
                 if (!At(CSharpSymbolType.LeftBrace))
                 {
-                    Context.OnError(CurrentLocation,
-                                    RazorResources.FormatParseError_SingleLine_ControlFlowStatements_Not_Allowed(
-                                        Language.GetSample(CSharpSymbolType.LeftBrace),
-                                        CurrentSymbol.Content));
+                    Context.OnError(
+                        CurrentLocation,
+                        RazorResources.FormatParseError_SingleLine_ControlFlowStatements_Not_Allowed(
+                            Language.GetSample(CSharpSymbolType.LeftBrace),
+                            CurrentSymbol.Content),
+                        CurrentSymbol.Content.Length);
                 }
 
                 // Parse the statement and then we're done
@@ -480,7 +488,10 @@ namespace Microsoft.AspNet.Razor.Parser
             {
                 if (type == CSharpSymbolType.Transition && !isSingleLineMarkup)
                 {
-                    Context.OnError(loc, RazorResources.ParseError_AtInCode_Must_Be_Followed_By_Colon_Paren_Or_Identifier_Start);
+                    Context.OnError(
+                        loc,
+                        RazorResources.ParseError_AtInCode_Must_Be_Followed_By_Colon_Paren_Or_Identifier_Start,
+                        length: 1 /* @ */);
                 }
 
                 // Markup block
@@ -560,7 +571,10 @@ namespace Microsoft.AspNet.Razor.Parser
                 // Throw errors as necessary, but continue parsing
                 if (At(CSharpSymbolType.LeftBrace))
                 {
-                    Context.OnError(CurrentLocation, RazorResources.ParseError_Unexpected_Nested_CodeBlock);
+                    Context.OnError(
+                        CurrentLocation,
+                        RazorResources.ParseError_Unexpected_Nested_CodeBlock,
+                        length: 1  /* { */);
                 }
 
                 // @( or @foo - Nested expression, parse a child block
@@ -649,7 +663,10 @@ namespace Microsoft.AspNet.Razor.Parser
 
             if (EndOfFile)
             {
-                Context.OnError(block.Start, RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF(block.Name, '}', '{'));
+                Context.OnError(
+                    block.Start,
+                    RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF(block.Name, '}', '{'),
+                    length: 1  /* { OR } */);
             }
             else if (acceptTerminatingBrace)
             {

@@ -256,15 +256,25 @@ namespace Microsoft.AspNet.Razor.Parser
                     };
                     if (At(CSharpSymbolType.WhiteSpace) || At(CSharpSymbolType.NewLine))
                     {
-                        Context.OnError(CurrentLocation, RazorResources.ParseError_Unexpected_WhiteSpace_At_Start_Of_CodeBlock_CS);
+                        Context.OnError(
+                            CurrentLocation,
+                            RazorResources.ParseError_Unexpected_WhiteSpace_At_Start_Of_CodeBlock_CS,
+                            CurrentSymbol.Content.Length);
                     }
                     else if (EndOfFile)
                     {
-                        Context.OnError(CurrentLocation, RazorResources.ParseError_Unexpected_EndOfFile_At_Start_Of_CodeBlock);
+                        Context.OnError(
+                            CurrentLocation,
+                            RazorResources.ParseError_Unexpected_EndOfFile_At_Start_Of_CodeBlock,
+                            length: 1 /* end of file */);
                     }
                     else
                     {
-                        Context.OnError(CurrentLocation, RazorResources.FormatParseError_Unexpected_Character_At_Start_Of_CodeBlock_CS(CurrentSymbol.Content));
+                        Context.OnError(
+                            CurrentLocation,
+                            RazorResources.FormatParseError_Unexpected_Character_At_Start_Of_CodeBlock_CS(
+                                CurrentSymbol.Content),
+                            CurrentSymbol.Content.Length);
                     }
                 }
                 finally
@@ -529,7 +539,10 @@ namespace Microsoft.AspNet.Razor.Parser
                 if (!success)
                 {
                     AcceptUntil(CSharpSymbolType.LessThan);
-                    Context.OnError(block.Start, RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF(block.Name, ")", "("));
+                    Context.OnError(
+                        block.Start,
+                        RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF(block.Name, ")", "("),
+                        length: 1 /* ( */);
                 }
 
                 // If necessary, put an empty-content marker symbol here
@@ -556,7 +569,10 @@ namespace Microsoft.AspNet.Razor.Parser
         {
             if (Context.IsWithin(BlockType.Template))
             {
-                Context.OnError(CurrentLocation, RazorResources.ParseError_InlineMarkup_Blocks_Cannot_Be_Nested);
+                Context.OnError(
+                    CurrentLocation,
+                    RazorResources.ParseError_InlineMarkup_Blocks_Cannot_Be_Nested,
+                    length: 1 /* @ */);
             }
             Output(SpanKind.Code);
             using (Context.StartBlock(BlockType.Template))

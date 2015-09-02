@@ -264,7 +264,11 @@ namespace Microsoft.AspNet.Razor.Tokenizer
             }
             else if (EndOfFile)
             {
-                CurrentErrors.Add(new RazorError(RazorResources.ParseError_Unterminated_String_Literal, CurrentStart));
+                CurrentErrors.Add(
+                    new RazorError(
+                        RazorResources.ParseError_Unterminated_String_Literal,
+                        CurrentStart,
+                        length: 1 /* end of file */));
             }
             return Transition(EndSymbol(CSharpSymbolType.StringLiteral), Data);
         }
@@ -285,7 +289,11 @@ namespace Microsoft.AspNet.Razor.Tokenizer
             }
             else if (EndOfFile || ParserHelpers.IsNewLine(CurrentCharacter))
             {
-                CurrentErrors.Add(new RazorError(RazorResources.ParseError_Unterminated_String_Literal, CurrentStart));
+                CurrentErrors.Add(
+                    new RazorError(
+                        RazorResources.ParseError_Unterminated_String_Literal,
+                        CurrentStart,
+                        length: 1 /* " */));
             }
             else
             {
@@ -300,7 +308,11 @@ namespace Microsoft.AspNet.Razor.Tokenizer
             TakeUntil(c => c == '*');
             if (EndOfFile)
             {
-                CurrentErrors.Add(new RazorError(RazorResources.ParseError_BlockComment_Not_Terminated, CurrentStart));
+                CurrentErrors.Add(
+                    new RazorError(
+                        RazorResources.ParseError_BlockComment_Not_Terminated,
+                        CurrentStart,
+                        length: 1 /* end of file */));
                 return Transition(EndSymbol(CSharpSymbolType.Comment), Data);
             }
             if (CurrentCharacter == '*')

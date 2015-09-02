@@ -81,7 +81,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                     {
                         var descriptors = ResolveDescriptorsInAssembly(
                             lookupInfo.AssemblyName,
-                            directiveDescriptor.Location,
+                            lookupInfo.AssemblyNameLocation,
                             context.ErrorSink);
 
                         // Only use descriptors that match our lookup info
@@ -101,7 +101,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         Resources.FormatTagHelperDescriptorResolver_EncounteredUnexpectedError(
                             "@" + directiveName,
                             directiveDescriptor.DirectiveText,
-                            ex.Message));
+                            ex.Message),
+                        GetErrorLength(directiveDescriptor.DirectiveText));
                 }
             }
 
@@ -183,7 +184,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                     context.ErrorSink.OnError(
                         directive.Location,
                         Resources.FormatTagHelperDescriptorResolver_InvalidTagHelperDirective(
-                            SyntaxConstants.CSharp.TagHelperPrefixKeyword));
+                            SyntaxConstants.CSharp.TagHelperPrefixKeyword),
+                        GetErrorLength(directive.DirectiveText));
                 }
             }
 
@@ -213,7 +215,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         Resources.FormatTagHelperDescriptorResolver_InvalidTagHelperPrefixValue(
                             SyntaxConstants.CSharp.TagHelperPrefixKeyword,
                             character,
-                            prefix));
+                            prefix),
+                        prefix.Length);
 
                     return false;
                 }
@@ -241,8 +244,9 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             return regex.IsMatch(descriptor.TypeName);
         }
 
-        private static LookupInfo GetLookupInfo(TagHelperDirectiveDescriptor directiveDescriptor,
-                                                ErrorSink errorSink)
+        private static LookupInfo GetLookupInfo(
+            TagHelperDirectiveDescriptor directiveDescriptor,
+            ErrorSink errorSink)
         {
             var lookupText = directiveDescriptor.DirectiveText;
             var lookupStrings = lookupText?.Split(new[] { ',' });
@@ -256,16 +260,33 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             {
                 errorSink.OnError(
                     directiveDescriptor.Location,
-                    Resources.FormatTagHelperDescriptorResolver_InvalidTagHelperLookupText(lookupText));
+                    Resources.FormatTagHelperDescriptorResolver_InvalidTagHelperLookupText(lookupText),
+                    GetErrorLength(lookupText));
 
                 return null;
             }
 
+            var trimmedAssemblyName = lookupStrings[1].Trim();
+
+            // + 1 is for the comma separator in the lookup text.
+            var assemblyNameIndex = lookupStrings[0].Length + 1 + lookupStrings[1].IndexOf(trimmedAssemblyName);
+            var assemblyNamePrefix = directiveDescriptor.DirectiveText.Substring(0, assemblyNameIndex);
+            var assemblyNameLocation = SourceLocation.Advance(directiveDescriptor.Location, assemblyNamePrefix);
+
             return new LookupInfo
             {
                 TypePattern = lookupStrings[0].Trim(),
-                AssemblyName = lookupStrings[1].Trim()
+                AssemblyName = trimmedAssemblyName,
+                AssemblyNameLocation = assemblyNameLocation,
             };
+        }
+
+        private static int GetErrorLength(string directiveText)
+        {
+            var nonNullLength = directiveText == null ? 1 : directiveText.Length;
+            var normalizeEmptyStringLength = Math.Max(nonNullLength, 1);
+
+            return normalizeEmptyStringLength;
         }
 
         private class LookupInfo
@@ -273,6 +294,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             public string AssemblyName { get; set; }
 
             public string TypePattern { get; set; }
+
+            public SourceLocation AssemblyNameLocation { get; set; }
         }
     }
 }

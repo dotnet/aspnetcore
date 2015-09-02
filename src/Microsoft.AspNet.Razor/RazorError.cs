@@ -11,18 +11,16 @@ namespace Microsoft.AspNet.Razor
     {
         internal const int DefaultErrorLength = 1;
 
+        /// <summary>
+        /// Used only for deserialization.
+        /// </summary>
         public RazorError()
-            : this(message: string.Empty, location: SourceLocation.Undefined)
+            : this(message: string.Empty, location: SourceLocation.Undefined, length: -1)
         {
         }
 
-        public RazorError(string message, SourceLocation location)
-            : this(message, location, DefaultErrorLength)
-        {
-        }
-
-        public RazorError(string message, int absoluteIndex, int lineIndex, int columnIndex)
-            : this(message, new SourceLocation(absoluteIndex, lineIndex, columnIndex))
+        public RazorError(string message, int absoluteIndex, int lineIndex, int columnIndex, int length)
+            : this(message, new SourceLocation(absoluteIndex, lineIndex, columnIndex), length)
         {
         }
 
@@ -31,11 +29,6 @@ namespace Microsoft.AspNet.Razor
             Message = message;
             Location = location;
             Length = length;
-        }
-
-        public RazorError(string message, int absoluteIndex, int lineIndex, int columnIndex, int length)
-            : this(message, new SourceLocation(absoluteIndex, lineIndex, columnIndex), length)
-        {
         }
 
         /// <summary>

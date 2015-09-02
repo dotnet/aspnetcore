@@ -71,10 +71,12 @@ namespace Microsoft.AspNet.Razor.Parser
             AcceptAndMoveNext();
             if (EndOfFile && ((mode & BalancingModes.NoErrorOnFailure) != BalancingModes.NoErrorOnFailure))
             {
-                Context.OnError(start,
-                                RazorResources.FormatParseError_Expected_CloseBracket_Before_EOF(
-                                    Language.GetSample(left),
-                                    Language.GetSample(right)));
+                Context.OnError(
+                    start,
+                    RazorResources.FormatParseError_Expected_CloseBracket_Before_EOF(
+                        Language.GetSample(left),
+                        Language.GetSample(right)),
+                    length: 1 /* { OR } */);
             }
 
             return Balance(mode, left, right, start);
@@ -119,10 +121,12 @@ namespace Microsoft.AspNet.Razor.Parser
                 {
                     if ((mode & BalancingModes.NoErrorOnFailure) != BalancingModes.NoErrorOnFailure)
                     {
-                        Context.OnError(start,
-                                        RazorResources.FormatParseError_Expected_CloseBracket_Before_EOF(
-                                            Language.GetSample(left),
-                                            Language.GetSample(right)));
+                        Context.OnError(
+                            start,
+                            RazorResources.FormatParseError_Expected_CloseBracket_Before_EOF(
+                                Language.GetSample(left),
+                                Language.GetSample(right)),
+                            length: 1 /* { OR } */);
                     }
                     if ((mode & BalancingModes.BacktrackOnFailure) == BalancingModes.BacktrackOnFailure)
                     {
@@ -355,9 +359,17 @@ namespace Microsoft.AspNet.Razor.Parser
                     error = RazorResources.FormatErrorComponent_Character(CurrentSymbol.Content);
                 }
 
-                Context.OnError(
-                    CurrentLocation,
-                    errorBase(error));
+                int errorLength;
+                if (CurrentSymbol == null || CurrentSymbol.Content == null)
+                {
+                    errorLength = 1;
+                }
+                else
+                {
+                    errorLength = Math.Max(CurrentSymbol.Content.Length, 1);
+                }
+
+                Context.OnError(CurrentLocation, errorBase(error), errorLength);
             }
             return found;
         }
@@ -521,7 +533,10 @@ namespace Microsoft.AspNet.Razor.Parser
                     if (!Optional(KnownSymbolType.CommentStar))
                     {
                         errorReported = true;
-                        Context.OnError(start, RazorResources.ParseError_RazorComment_Not_Terminated);
+                        Context.OnError(
+                            start,
+                            RazorResources.ParseError_RazorComment_Not_Terminated,
+                            length: 2 /* @* */);
                     }
                     else
                     {
@@ -533,7 +548,10 @@ namespace Microsoft.AspNet.Razor.Parser
                         if (!errorReported)
                         {
                             errorReported = true;
-                            Context.OnError(start, RazorResources.ParseError_RazorComment_Not_Terminated);
+                            Context.OnError(
+                                start,
+                                RazorResources.ParseError_RazorComment_Not_Terminated,
+                                length: 2 /* @* */);
                         }
                     }
                     else

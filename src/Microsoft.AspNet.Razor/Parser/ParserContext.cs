@@ -200,14 +200,6 @@ namespace Microsoft.AspNet.Razor.Parser
             _errorSink.OnError(error);
         }
 
-        public void OnError(SourceLocation location, string message)
-        {
-            EnusreNotTerminated();
-            AssertOnOwnerTask();
-
-            _errorSink.OnError(location, message);
-        }
-
         public void OnError(SourceLocation location, string message, int length)
         {
             EnusreNotTerminated();
@@ -216,12 +208,12 @@ namespace Microsoft.AspNet.Razor.Parser
             _errorSink.OnError(location, message, length);
         }
 
-        public void OnError(SourceLocation location, string message, params object[] args)
+        public void OnError(SourceLocation location, string message, int length, params object[] args)
         {
             EnusreNotTerminated();
             AssertOnOwnerTask();
 
-            OnError(location, string.Format(CultureInfo.CurrentCulture, message, args));
+            OnError(location, string.Format(CultureInfo.CurrentCulture, message, args), length);
         }
 
         public ParserResults CompleteParse()

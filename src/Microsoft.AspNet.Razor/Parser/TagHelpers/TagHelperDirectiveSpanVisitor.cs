@@ -67,11 +67,12 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
                     chunkGenerator.RemoveTagHelperDescriptors ?
                     TagHelperDirectiveType.RemoveTagHelper :
                     TagHelperDirectiveType.AddTagHelper;
+                var textLocation = GetSubTextSourceLocation(span, chunkGenerator.LookupText);
 
                 var directiveDescriptor = new TagHelperDirectiveDescriptor
                 {
                     DirectiveText = chunkGenerator.LookupText,
-                    Location = span.Start,
+                    Location = textLocation,
                     DirectiveType = directive
                 };
 
@@ -80,16 +81,26 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
             else if (span.ChunkGenerator is TagHelperPrefixDirectiveChunkGenerator)
             {
                 var chunkGenerator = (TagHelperPrefixDirectiveChunkGenerator)span.ChunkGenerator;
+                var textLocation = GetSubTextSourceLocation(span, chunkGenerator.Prefix);
 
                 var directiveDescriptor = new TagHelperDirectiveDescriptor
                 {
                     DirectiveText = chunkGenerator.Prefix,
-                    Location = span.Start,
+                    Location = textLocation,
                     DirectiveType = TagHelperDirectiveType.TagHelperPrefix
                 };
 
                 _directiveDescriptors.Add(directiveDescriptor);
             }
+        }
+
+        private static SourceLocation GetSubTextSourceLocation(Span span, string text)
+        {
+            var startOffset = span.Content.IndexOf(text);
+            var offsetContent = span.Content.Substring(0, startOffset);
+            var offsetTextLocation = SourceLocation.Advance(span.Start, offsetContent);
+
+            return offsetTextLocation;
         }
     }
 }
