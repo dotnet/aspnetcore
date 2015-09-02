@@ -398,8 +398,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             IDictionary<ModelMetadata, ModelBindingResult> results)
         {
             var metadataProvider = bindingContext.OperationBindingContext.MetadataProvider;
-            var modelExplorer =
-                metadataProvider.GetModelExplorerForType(bindingContext.ModelType, bindingContext.Model);
+            var metadata = metadataProvider.GetMetadataForType(bindingContext.ModelType);
+
             var validationInfo = GetPropertyValidationInfo(bindingContext);
 
             // Eliminate provided properties from RequiredProperties; leaving just *missing* required properties.
@@ -408,8 +408,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             foreach (var missingRequiredProperty in validationInfo.RequiredProperties)
             {
-                var propertyExplorer = modelExplorer.GetExplorerForProperty(missingRequiredProperty);
-                var propertyName = propertyExplorer.Metadata.BinderModelName ?? missingRequiredProperty;
+                var propertyMetadata = metadata.Properties[missingRequiredProperty];
+                var propertyName = propertyMetadata.BinderModelName ?? missingRequiredProperty;
                 var modelStateKey = ModelNames.CreatePropertyModelName(bindingContext.ModelName, propertyName);
 
                 bindingContext.ModelState.TryAddModelError(
@@ -425,7 +425,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 {
                     var result = entry.Value;
                     var propertyMetadata = entry.Key;
-                    SetProperty(bindingContext, modelExplorer, propertyMetadata, result);
+                    SetProperty(bindingContext, metadata, propertyMetadata, result);
                 }
             }
         }
@@ -434,15 +434,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// Updates a property in the current <see cref="ModelBindingContext.Model"/>.
         /// </summary>
         /// <param name="bindingContext">The <see cref="ModelBindingContext"/>.</param>
-        /// <param name="modelExplorer">
-        /// The <see cref="ModelExplorer"/> for the model containing property to set.
+        /// <param name="metadata">
+        /// The <see cref="ModelMetadata"/> for the model containing property to set.
         /// </param>
         /// <param name="propertyMetadata">The <see cref="ModelMetadata"/> for the property to set.</param>
         /// <param name="result">The <see cref="ModelBindingResult"/> for the property's new value.</param>
         /// <remarks>Should succeed in all cases that <see cref="CanUpdateProperty"/> returns <c>true</c>.</remarks>
         protected virtual void SetProperty(
             [NotNull] ModelBindingContext bindingContext,
-            [NotNull] ModelExplorer modelExplorer,
+            [NotNull] ModelMetadata metadata,
             [NotNull] ModelMetadata propertyMetadata,
             [NotNull] ModelBindingResult result)
         {
@@ -464,7 +464,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             if (!property.CanWrite)
             {
                 // Try to handle as a collection if property exists but is not settable.
-                AddToProperty(bindingContext, modelExplorer, property, result);
+                AddToProperty(bindingContext, metadata, property, result);
                 return;
             }
 
@@ -481,13 +481,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         private void AddToProperty(
             ModelBindingContext bindingContext,
-            ModelExplorer modelExplorer,
+            ModelMetadata modelMetadata,
             PropertyInfo property,
             ModelBindingResult result)
         {
-            var propertyExplorer = modelExplorer.GetExplorerForProperty(property.Name);
+            var propertyMetadata = modelMetadata.Properties[property.Name];
 
-            var target = propertyExplorer.Model;
+            var target = propertyMetadata.PropertyGetter(bindingContext.Model);
             var source = result.Model;
             if (target == null || source == null)
             {
@@ -504,14 +504,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Determine T if this is an ICollection<T> property. No need for a T[] case because CanUpdateProperty()
             // ensures property is either settable or not an array. Underlying assumption is that CanUpdateProperty()
             // and SetProperty() are overridden together.
-            if (!propertyExplorer.Metadata.IsCollectionType)
+            if (!propertyMetadata.IsCollectionType)
             {
                 // Not a collection model.
                 return;
             }
 
             var propertyAddRange = CallPropertyAddRangeOpenGenericMethod.MakeGenericMethod(
-                propertyExplorer.Metadata.ElementMetadata.ModelType);
+                propertyMetadata.ElementMetadata.ModelType);
             try
             {
                 propertyAddRange.Invoke(obj: null, parameters: new[] { target, source });

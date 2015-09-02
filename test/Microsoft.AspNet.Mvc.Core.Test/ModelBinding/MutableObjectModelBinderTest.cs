@@ -1240,14 +1240,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var bindingContext = CreateContext(GetMetadataForType(model.GetType()), model);
 
             var metadataProvider = bindingContext.OperationBindingContext.MetadataProvider;
-            var modelExplorer = metadataProvider.GetModelExplorerForType(typeof(Person), model);
-            var propertyMetadata = bindingContext.ModelMetadata.Properties[nameof(model.PropertyWithDefaultValue)];
+            var metadata = metadataProvider.GetMetadataForType(typeof(Person));
+            var propertyMetadata = metadata.Properties[nameof(model.PropertyWithDefaultValue)];
 
             var result = ModelBindingResult.Failed("foo");
             var testableBinder = new TestableMutableObjectModelBinder();
 
             // Act
-            testableBinder.SetProperty(bindingContext, modelExplorer, propertyMetadata, result);
+            testableBinder.SetProperty(bindingContext, metadata, propertyMetadata, result);
 
             // Assert
             var person = Assert.IsType<Person>(bindingContext.Model);
@@ -1263,8 +1263,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var bindingContext = CreateContext(GetMetadataForType(model.GetType()), model);
 
             var metadataProvider = bindingContext.OperationBindingContext.MetadataProvider;
-            var modelExplorer = metadataProvider.GetModelExplorerForType(typeof(Person), model);
-            var propertyMetadata = bindingContext.ModelMetadata.Properties[nameof(model.PropertyWithInitializedValue)];
+            var metadata = metadataProvider.GetMetadataForType(typeof(Person));
+            var propertyMetadata = metadata.Properties[nameof(model.PropertyWithInitializedValue)];
 
             // The null model value won't be used because IsModelBound = false.
             var result = ModelBindingResult.Failed("foo");
@@ -1272,7 +1272,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var testableBinder = new TestableMutableObjectModelBinder();
 
             // Act
-            testableBinder.SetProperty(bindingContext, modelExplorer, propertyMetadata, result);
+            testableBinder.SetProperty(bindingContext, metadata, propertyMetadata, result);
 
             // Assert
             var person = Assert.IsType<Person>(bindingContext.Model);
@@ -1288,9 +1288,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var bindingContext = CreateContext(GetMetadataForType(model.GetType()), model);
 
             var metadataProvider = bindingContext.OperationBindingContext.MetadataProvider;
-            var modelExplorer = metadataProvider.GetModelExplorerForType(typeof(Person), model);
-            var propertyMetadata =
-                bindingContext.ModelMetadata.Properties[nameof(model.PropertyWithInitializedValueAndDefault)];
+            var metadata = metadataProvider.GetMetadataForType(typeof(Person));
+            var propertyMetadata = metadata.Properties[nameof(model.PropertyWithInitializedValueAndDefault)];
 
             // The null model value won't be used because IsModelBound = false.
             var result = ModelBindingResult.Failed("foo");
@@ -1298,7 +1297,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var testableBinder = new TestableMutableObjectModelBinder();
 
             // Act
-            testableBinder.SetProperty(bindingContext, modelExplorer, propertyMetadata, result);
+            testableBinder.SetProperty(bindingContext, metadata, propertyMetadata, result);
 
             // Assert
             var person = Assert.IsType<Person>(bindingContext.Model);
@@ -1314,14 +1313,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var bindingContext = CreateContext(GetMetadataForType(model.GetType()), model);
 
             var metadataProvider = bindingContext.OperationBindingContext.MetadataProvider;
-            var modelExplorer = metadataProvider.GetModelExplorerForType(typeof(Person), model);
-            var propertyMetadata = bindingContext.ModelMetadata.Properties[nameof(model.NonUpdateableProperty)];
+            var metadata = metadataProvider.GetMetadataForType(typeof(Person));
+            var propertyMetadata = metadata.Properties[nameof(model.NonUpdateableProperty)];
 
             var result = ModelBindingResult.Failed("foo");
             var testableBinder = new TestableMutableObjectModelBinder();
 
             // Act
-            testableBinder.SetProperty(bindingContext, modelExplorer, propertyMetadata, result);
+            testableBinder.SetProperty(bindingContext, metadata, propertyMetadata, result);
 
             // Assert
             // If didn't throw, success!
@@ -1351,7 +1350,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         [MemberData(nameof(MyCanUpdateButCannotSetPropertyData))]
         public void SetProperty_ValueProvidedAndCanUpdatePropertyTrue_DoesNothing(
             string propertyName,
-            Func<object, object> propertAccessor)
+            Func<object, object> propertyAccessor)
         {
             // Arrange
             var model = new MyModelTestingCanUpdateProperty();
@@ -1359,7 +1358,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var bindingContext = CreateContext(GetMetadataForType(type), model);
             var modelState = bindingContext.ModelState;
             var metadataProvider = bindingContext.OperationBindingContext.MetadataProvider;
-            var modelExplorer = metadataProvider.GetModelExplorerForType(type, model);
+            var metadata = metadataProvider.GetMetadataForType(type);
 
             var propertyMetadata = bindingContext.ModelMetadata.Properties[propertyName];
             var result = ModelBindingResult.Success(
@@ -1369,10 +1368,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var testableBinder = new TestableMutableObjectModelBinder();
 
             // Act
-            testableBinder.SetProperty(bindingContext, modelExplorer, propertyMetadata, result);
+            testableBinder.SetProperty(bindingContext, metadata, propertyMetadata, result);
 
             // Assert
-            Assert.Equal("Joe", propertAccessor(model));
+            Assert.Equal("Joe", propertyAccessor(model));
             Assert.True(modelState.IsValid);
             Assert.Empty(modelState);
         }
@@ -1436,14 +1435,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var bindingContext = CreateContext(GetMetadataForType(type), model);
             var modelState = bindingContext.ModelState;
             var metadataProvider = bindingContext.OperationBindingContext.MetadataProvider;
-            var modelExplorer = metadataProvider.GetModelExplorerForType(type, model);
+            var metadata = metadataProvider.GetMetadataForType(type);
 
             var propertyMetadata = bindingContext.ModelMetadata.Properties[propertyName];
             var result = ModelBindingResult.Success(propertyName, collection);
             var testableBinder = new TestableMutableObjectModelBinder();
 
             // Act
-            testableBinder.SetProperty(bindingContext, modelExplorer, propertyMetadata, result);
+            testableBinder.SetProperty(bindingContext, metadata, propertyMetadata, result);
 
             // Assert
             Assert.Equal(collection, propertyAccessor(model));
@@ -1459,14 +1458,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var bindingContext = CreateContext(GetMetadataForType(model.GetType()), model);
 
             var metadataProvider = bindingContext.OperationBindingContext.MetadataProvider;
-            var modelExplorer = metadataProvider.GetModelExplorerForType(typeof(Person), model);
+            var metadata = metadataProvider.GetMetadataForType(typeof(Person));
             var propertyMetadata = bindingContext.ModelMetadata.Properties[nameof(model.DateOfBirth)];
 
             var result = ModelBindingResult.Success("foo", new DateTime(2001, 1, 1));
             var testableBinder = new TestableMutableObjectModelBinder();
 
             // Act
-            testableBinder.SetProperty(bindingContext, modelExplorer, propertyMetadata, result);
+            testableBinder.SetProperty(bindingContext, metadata, propertyMetadata, result);
 
             // Assert
             Assert.True(bindingContext.ModelState.IsValid);
@@ -1486,14 +1485,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var bindingContext = CreateContext(GetMetadataForType(model.GetType()), model);
 
             var metadataProvider = bindingContext.OperationBindingContext.MetadataProvider;
-            var modelExplorer = metadataProvider.GetModelExplorerForType(typeof(Person), model);
+            var metadata = metadataProvider.GetMetadataForType(typeof(Person));
             var propertyMetadata = bindingContext.ModelMetadata.Properties[nameof(model.DateOfDeath)];
 
             var result = ModelBindingResult.Success("foo", new DateTime(1800, 1, 1));
             var testableBinder = new TestableMutableObjectModelBinder();
 
             // Act
-            testableBinder.SetProperty(bindingContext, modelExplorer, propertyMetadata, result);
+            testableBinder.SetProperty(bindingContext, metadata, propertyMetadata, result);
 
             // Assert
             Assert.Equal("Date of death can't be before date of birth." + Environment.NewLine
@@ -1511,14 +1510,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var bindingContext = CreateContext(GetMetadataForType(model.GetType()), model);
 
             var metadataProvider = bindingContext.OperationBindingContext.MetadataProvider;
-            var modelExplorer = metadataProvider.GetModelExplorerForType(typeof(Person), model);
+            var metadata = metadataProvider.GetMetadataForType(typeof(Person));
             var propertyMetadata = bindingContext.ModelMetadata.Properties[nameof(model.DateOfBirth)];
 
             var result = ModelBindingResult.Success("foo.DateOfBirth", model: null);
             var testableBinder = new TestableMutableObjectModelBinder();
 
             // Act
-            testableBinder.SetProperty(bindingContext, modelExplorer, propertyMetadata, result);
+            testableBinder.SetProperty(bindingContext, metadata, propertyMetadata, result);
 
             // Assert
             Assert.False(bindingContext.ModelState.IsValid);
@@ -1539,14 +1538,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             bindingContext.ModelName = "foo";
 
             var metadataProvider = bindingContext.OperationBindingContext.MetadataProvider;
-            var modelExplorer = metadataProvider.GetModelExplorerForType(typeof(ModelWhosePropertySetterThrows), model);
+            var metadata = metadataProvider.GetMetadataForType(typeof(ModelWhosePropertySetterThrows));
             var propertyMetadata = bindingContext.ModelMetadata.Properties[nameof(model.NameNoAttribute)];
 
             var result = ModelBindingResult.Success("foo.NameNoAttribute", model: null);
             var testableBinder = new TestableMutableObjectModelBinder();
 
             // Act
-            testableBinder.SetProperty(bindingContext, modelExplorer, propertyMetadata, result);
+            testableBinder.SetProperty(bindingContext, metadata, propertyMetadata, result);
 
             // Assert
             Assert.False(bindingContext.ModelState.IsValid);
@@ -1898,11 +1897,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             public new void SetProperty(
                 ModelBindingContext bindingContext,
-                ModelExplorer modelExplorer,
+                ModelMetadata metadata,
                 ModelMetadata propertyMetadata,
                 ModelBindingResult result)
             {
-                base.SetProperty(bindingContext, modelExplorer, propertyMetadata, result);
+                base.SetProperty(bindingContext, metadata, propertyMetadata, result);
             }
         }
     }

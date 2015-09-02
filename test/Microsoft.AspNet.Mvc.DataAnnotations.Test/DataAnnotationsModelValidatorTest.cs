@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         private static IModelMetadataProvider _metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
 
         [Fact]
-        public void ValuesSet()
+        public void Constructor_SetsAttribute()
         {
             // Arrange
             var attribute = new RequiredAttribute();
@@ -33,29 +33,35 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             Assert.Same(attribute, validator.Attribute);
         }
 
-        public static IEnumerable<object[]> ValidateSetsMemberNamePropertyDataSet
+        public static IEnumerable<object[]> Validate_SetsMemberName_OnValidationContext_ForProperties_Data
         {
             get
             {
                 yield return new object[]
                 {
-                    _metadataProvider.GetModelExplorerForType(typeof(string), "Hello").GetExplorerForProperty("Length"),
-                    "Length"
+                    _metadataProvider.GetMetadataForType(typeof(string)).Properties["Length"],
+                    "Hello",
+                    "Hello".Length,
+                    "Length",
                 };
 
                 yield return new object[]
                 {
-                    _metadataProvider.GetModelExplorerForType(typeof(SampleModel), 15),
-                    "SampleModel"
+                    _metadataProvider.GetMetadataForType(typeof(SampleModel)),
+                    null,
+                    15,
+                    "SampleModel",
                 };
             }
         }
 
 #if DNX451
         [Theory]
-        [MemberData(nameof(ValidateSetsMemberNamePropertyDataSet))]
-        public void ValidateSetsMemberNamePropertyOfValidationContextForProperties(
-            ModelExplorer modelExplorer,
+        [MemberData(nameof(Validate_SetsMemberName_OnValidationContext_ForProperties_Data))]
+        public void Validate_SetsMemberName_OnValidationContext_ForProperties(
+            ModelMetadata metadata,
+            object container,
+            object model,
             string expectedMemberName)
         {
             // Arrange
@@ -69,7 +75,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                      .Returns(ValidationResult.Success)
                      .Verifiable();
             var validator = new DataAnnotationsModelValidator(attribute.Object, stringLocalizer: null);
-            var validationContext = CreateValidationContext(modelExplorer);
+            var validationContext = new ModelValidationContext()
+            {
+                Metadata = metadata,
+                Container = container,
+                Model = model,
+            };
 
             // Act
             var results = validator.Validate(validationContext);
@@ -80,18 +91,23 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         }
 
         [Fact]
-        public void ValidateWithIsValidTrue()
+        public void Validate_Valid()
         {
             // Arrange
-            var modelExplorer = _metadataProvider
-                .GetModelExplorerForType(typeof(string), "Hello")
-                .GetExplorerForProperty("Length");
+            var metadata = _metadataProvider.GetMetadataForType(typeof(string));
+            var container = "Hello";
+            var model = container.Length;
 
             var attribute = new Mock<ValidationAttribute> { CallBase = true };
-            attribute.Setup(a => a.IsValid(modelExplorer.Model)).Returns(true);
+            attribute.Setup(a => a.IsValid(model)).Returns(true);
 
             var validator = new DataAnnotationsModelValidator(attribute.Object, stringLocalizer: null);
-            var validationContext = CreateValidationContext(modelExplorer);
+            var validationContext = new ModelValidationContext()
+            {
+                Metadata = metadata,
+                Container = container,
+                Model = model,
+            };
 
             // Act
             var result = validator.Validate(validationContext);
@@ -101,18 +117,23 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         }
 
         [Fact]
-        public void ValidateWithIsValidFalse()
+        public void Validate_Invalid()
         {
             // Arrange
-            var modelExplorer = _metadataProvider
-                .GetModelExplorerForType(typeof(string), "Hello")
-                .GetExplorerForProperty("Length");
+            var metadata = _metadataProvider.GetMetadataForProperty(typeof(string), "Length");
+            var container = "Hello";
+            var model = container.Length;
 
             var attribute = new Mock<ValidationAttribute> { CallBase = true };
-            attribute.Setup(a => a.IsValid(modelExplorer.Model)).Returns(false);
+            attribute.Setup(a => a.IsValid(model)).Returns(false);
 
             var validator = new DataAnnotationsModelValidator(attribute.Object, stringLocalizer: null);
-            var validationContext = CreateValidationContext(modelExplorer);
+            var validationContext = new ModelValidationContext()
+            {
+                Metadata = metadata,
+                Container = container,
+                Model = model,
+            };
 
             // Act
             var result = validator.Validate(validationContext);
@@ -124,19 +145,24 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         }
 
         [Fact]
-        public void ValidatateWithValidationResultSuccess()
+        public void Validatate_ValidationResultSuccess()
         {
             // Arrange
-            var modelExplorer = _metadataProvider
-                .GetModelExplorerForType(typeof(string), "Hello")
-                .GetExplorerForProperty("Length");
+            var metadata = _metadataProvider.GetMetadataForType(typeof(string));
+            var container = "Hello";
+            var model = container.Length;
 
             var attribute = new Mock<ValidationAttribute> { CallBase = true };
             attribute.Protected()
                      .Setup<ValidationResult>("IsValid", ItExpr.IsAny<object>(), ItExpr.IsAny<ValidationContext>())
                      .Returns(ValidationResult.Success);
             var validator = new DataAnnotationsModelValidator(attribute.Object, stringLocalizer: null);
-            var validationContext = CreateValidationContext(modelExplorer);
+            var validationContext = new ModelValidationContext()
+            {
+                Metadata = metadata,
+                Container = container,
+                Model = model,
+            };
 
             // Act
             var result = validator.Validate(validationContext);
@@ -146,14 +172,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         }
 
         [Fact]
-        public void ValidateReturnsSingleValidationResultIfMemberNameSequenceIsEmpty()
+        public void Validate_ReturnsSingleValidationResult_IfMemberNameSequenceIsEmpty()
         {
             // Arrange
             const string errorMessage = "Some error message";
 
-            var modelExplorer = _metadataProvider
-                .GetModelExplorerForType(typeof(string), "Hello")
-                .GetExplorerForProperty("Length");
+            var metadata = _metadataProvider.GetMetadataForType(typeof(string));
+            var container = "Hello";
+            var model = container.Length;
 
             var attribute = new Mock<ValidationAttribute> { CallBase = true };
             attribute.Protected()
@@ -161,24 +187,30 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                      .Returns(new ValidationResult(errorMessage, memberNames: null));
             var validator = new DataAnnotationsModelValidator(attribute.Object, stringLocalizer: null);
 
-            var validationContext = CreateValidationContext(modelExplorer);
+            var validationContext = new ModelValidationContext()
+            {
+                Metadata = metadata,
+                Container = container,
+                Model = model,
+            };
 
             // Act
             var results = validator.Validate(validationContext);
 
             // Assert
-            ModelValidationResult validationResult = Assert.Single(results);
+            var validationResult = Assert.Single(results);
             Assert.Equal(errorMessage, validationResult.Message);
             Assert.Empty(validationResult.MemberName);
         }
 
         [Fact]
-        public void ValidateReturnsSingleValidationResultIfOneMemberNameIsSpecified()
+        public void Validate_ReturnsSingleValidationResult_IfOneMemberNameIsSpecified()
         {
             // Arrange
             const string errorMessage = "A different error message";
 
-            var modelExplorer = _metadataProvider.GetModelExplorerForType(typeof(object), new object());
+            var metadata = _metadataProvider.GetMetadataForType(typeof(object));
+            var model = new object();
 
             var attribute = new Mock<ValidationAttribute> { CallBase = true };
             attribute.Protected()
@@ -186,7 +218,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                      .Returns(new ValidationResult(errorMessage, new[] { "FirstName" }));
 
             var validator = new DataAnnotationsModelValidator(attribute.Object, stringLocalizer: null);
-            var validationContext = CreateValidationContext(modelExplorer);
+            var validationContext = new ModelValidationContext()
+            {
+                Metadata = metadata,
+                Model = model,
+            };
 
             // Act
             var results = validator.Validate(validationContext);
@@ -198,10 +234,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         }
 
         [Fact]
-        public void ValidateReturnsMemberNameIfItIsDifferentFromDisplayName()
+        public void Validate_ReturnsMemberName_IfItIsDifferentFromDisplayName()
         {
             // Arrange
-            var modelExplorer = _metadataProvider.GetModelExplorerForType(typeof(SampleModel), new SampleModel());
+            var metadata = _metadataProvider.GetMetadataForType(typeof(SampleModel));
+            var model = new SampleModel();
 
             var attribute = new Mock<ValidationAttribute> { CallBase = true };
             attribute.Protected()
@@ -209,7 +246,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                      .Returns(new ValidationResult("Name error", new[] { "Name" }));
 
             var validator = new DataAnnotationsModelValidator(attribute.Object, stringLocalizer: null);
-            var validationContext = CreateValidationContext(modelExplorer);
+            var validationContext = new ModelValidationContext()
+            {
+                Metadata = metadata,
+                Model = model,
+            };
 
             // Act
             var results = validator.Validate(validationContext);
@@ -220,15 +261,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         }
 
         [Fact]
-        public void ValidateWithIsValidFalse_StringLocalizerReturnsLocalizerErrorMessage()
+        public void Validate_IsValidFalse_StringLocalizerReturnsLocalizerErrorMessage()
         {
             // Arrange
-            var modelExplorer = _metadataProvider
-                .GetModelExplorerForType(typeof(string), "Hello")
-                .GetExplorerForProperty("Length");
+            var metadata = _metadataProvider.GetMetadataForType(typeof(string));
+            var container = "Hello";
+            var model = container.Length;
 
             var attribute = new Mock<ValidationAttribute> { CallBase = true };
-            attribute.Setup(a => a.IsValid(modelExplorer.Model)).Returns(false);
+            attribute.Setup(a => a.IsValid(model)).Returns(false);
 
             attribute.Object.ErrorMessage = "Length";
 
@@ -237,7 +278,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             stringLocalizer.Setup(s => s["Length"]).Returns(localizedString);
 
             var validator = new DataAnnotationsModelValidator(attribute.Object, stringLocalizer.Object);
-            var validationContext = CreateValidationContext(modelExplorer);
+            var validationContext = new ModelValidationContext()
+            {
+                Metadata = metadata,
+                Container = container,
+                Model = model,
+            };
 
             // Act
             var result = validator.Validate(validationContext);
@@ -258,16 +304,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             Assert.True(new DataAnnotationsModelValidator(new RequiredAttribute(), stringLocalizer: null).IsRequired);
             Assert.True(new DataAnnotationsModelValidator(new DerivedRequiredAttribute(), stringLocalizer: null)
                 .IsRequired);
-        }
-
-        private static ModelValidationContext CreateValidationContext(ModelExplorer modelExplorer)
-        {
-            return new ModelValidationContext()
-            {
-                Container = modelExplorer.Container,
-                Metadata = modelExplorer.Metadata,
-                Model = modelExplorer.Model,
-            };
         }
 
         private class DerivedRequiredAttribute : RequiredAttribute

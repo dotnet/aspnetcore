@@ -5,9 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.Framework.Internal;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding
+namespace Microsoft.AspNet.Mvc.ViewFeatures
 {
     /// <summary>
     /// Associates a model object with it's corresponding <see cref="ModelMetadata"/>.
@@ -29,10 +30,20 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <param name="metadata">The <see cref="ModelMetadata"/>.</param>
         /// <param name="model">The model object. May be <c>null</c>.</param>
         public ModelExplorer(
-            [NotNull] IModelMetadataProvider metadataProvider, 
-            [NotNull] ModelMetadata metadata, 
+            IModelMetadataProvider metadataProvider, 
+            ModelMetadata metadata, 
             object model)
         {
+            if (metadataProvider == null)
+            {
+                throw new ArgumentNullException(nameof(metadataProvider));
+            }
+
+            if (metadata == null)
+            {
+                throw new ArgumentNullException(nameof(metadata));
+            }
+
             _metadataProvider = metadataProvider;
             Metadata = metadata;
             _model = model;
@@ -46,11 +57,26 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <param name="metadata">The <see cref="ModelMetadata"/>.</param>
         /// <param name="modelAccessor">A model accessor function. May be <c>null</c>.</param>
         public ModelExplorer(
-            [NotNull] IModelMetadataProvider metadataProvider,
-            [NotNull] ModelExplorer container,
-            [NotNull] ModelMetadata metadata,
+            IModelMetadataProvider metadataProvider,
+            ModelExplorer container,
+            ModelMetadata metadata,
             Func<object, object> modelAccessor)
         {
+            if (metadataProvider == null)
+            {
+                throw new ArgumentNullException(nameof(metadataProvider));
+            }
+
+            if (container == null)
+            {
+                throw new ArgumentNullException(nameof(container));
+            }
+
+            if (metadata == null)
+            {
+                throw new ArgumentNullException(nameof(metadata));
+            }
+
             _metadataProvider = metadataProvider;
             Container = container;
             Metadata = metadata;
@@ -65,11 +91,21 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <param name="metadata">The <see cref="ModelMetadata"/>.</param>
         /// <param name="model">The model object. May be <c>null</c>.</param>
         public ModelExplorer(
-            [NotNull] IModelMetadataProvider metadataProvider,
-            [NotNull] ModelExplorer container,
-            [NotNull] ModelMetadata metadata,
+            IModelMetadataProvider metadataProvider,
+            ModelExplorer container,
+            ModelMetadata metadata,
             object model)
         {
+            if (metadataProvider == null)
+            {
+                throw new ArgumentNullException(nameof(metadataProvider));
+            }
+
+            if (metadata == null)
+            {
+                throw new ArgumentNullException(nameof(metadata));
+            }
+
             _metadataProvider = metadataProvider;
             Container = container;
             Metadata = metadata;
@@ -216,8 +252,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// </summary>
         /// <param name="name">The property name.</param>
         /// <returns>A <see cref="ModelExplorer"/>, or <c>null</c>.</returns>
-        public ModelExplorer GetExplorerForProperty([NotNull] string name)
+        public ModelExplorer GetExplorerForProperty(string name)
         {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
             return Properties.FirstOrDefault(p => string.Equals(
                 p.Metadata.PropertyName, 
                 name, 
@@ -234,8 +275,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <remarks>
         /// As this creates a model explorer with a specific model accessor function, the result is not cached.
         /// </remarks>
-        public ModelExplorer GetExplorerForProperty([NotNull] string name, Func<object, object> modelAccessor)
+        public ModelExplorer GetExplorerForProperty(string name, Func<object, object> modelAccessor)
         {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
             var metadata = GetMetadataForRuntimeType();
 
             var propertyMetadata = metadata.Properties[name];
@@ -257,8 +303,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <remarks>
         /// As this creates a model explorer with a specific model value, the result is not cached.
         /// </remarks>
-        public ModelExplorer GetExplorerForProperty([NotNull] string name, object model)
+        public ModelExplorer GetExplorerForProperty(string name, object model)
         {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
             var metadata = GetMetadataForRuntimeType();
 
             var propertyMetadata = metadata.Properties[name];
@@ -286,8 +337,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// The returned <see cref="ModelExplorer"/> will have the current instance set as its <see cref="Container"/>.
         /// </para>
         /// </remarks>
-        public ModelExplorer GetExplorerForExpression([NotNull] Type modelType, object model)
+        public ModelExplorer GetExplorerForExpression(Type modelType, object model)
         {
+            if (modelType == null)
+            {
+                throw new ArgumentNullException(nameof(modelType));
+            }
+
             var metadata = _metadataProvider.GetMetadataForType(modelType);
             return GetExplorerForExpression(metadata, model);
         }
@@ -309,8 +365,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// The returned <see cref="ModelExplorer"/> will have the current instance set as its <see cref="Container"/>.
         /// </para>
         /// </remarks>
-        public ModelExplorer GetExplorerForExpression([NotNull] ModelMetadata metadata, object model)
+        public ModelExplorer GetExplorerForExpression(ModelMetadata metadata, object model)
         {
+            if (metadata == null)
+            {
+                throw new ArgumentNullException(nameof(metadata));
+            }
+
             return new ModelExplorer(_metadataProvider, this, metadata, model);
         }
 
@@ -331,8 +392,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// The returned <see cref="ModelExplorer"/> will have the current instance set as its <see cref="Container"/>.
         /// </para>
         /// </remarks>
-        public ModelExplorer GetExplorerForExpression([NotNull] Type modelType, Func<object, object> modelAccessor)
+        public ModelExplorer GetExplorerForExpression(Type modelType, Func<object, object> modelAccessor)
         {
+            if (modelType == null)
+            {
+                throw new ArgumentNullException(nameof(modelType));
+            }
+
             var metadata = _metadataProvider.GetMetadataForType(modelType);
             return GetExplorerForExpression(metadata, modelAccessor);
         }
@@ -354,8 +420,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// The returned <see cref="ModelExplorer"/> will have the current instance set as its <see cref="Container"/>.
         /// </para>
         /// </remarks>
-        public ModelExplorer GetExplorerForExpression([NotNull] ModelMetadata metadata, Func<object, object> modelAccessor)
+        public ModelExplorer GetExplorerForExpression(ModelMetadata metadata, Func<object, object> modelAccessor)
         {
+            if (metadata == null)
+            {
+                throw new ArgumentNullException(nameof(metadata));
+            }
+
             return new ModelExplorer(_metadataProvider, this, metadata, modelAccessor);
         }
 

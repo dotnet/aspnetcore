@@ -5,6 +5,7 @@ using System;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.TestCommon;
+using Microsoft.AspNet.Mvc.ViewFeatures;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Core

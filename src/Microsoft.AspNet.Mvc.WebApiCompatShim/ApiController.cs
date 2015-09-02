@@ -415,10 +415,7 @@ namespace System.Web.Http
         /// </param>
         public void Validate<TEntity>(TEntity entity, string keyPrefix)
         {
-            var modelExplorer = MetadataProvider.GetModelExplorerForType(typeof(TEntity), entity);
-
             var validatidationState = new ValidationStateDictionary();
-
             ObjectValidator.Validate(
                 BindingContext.ValidatorProvider,
                 ModelState,
