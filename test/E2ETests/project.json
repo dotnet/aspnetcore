@@ -1,6 +1,6 @@
 {
     "compilationOptions": {
-        "warningsAsErrors": "true"
+        "warningsAsErrors": true
     },
     "commands": {
         "test": "xunit.runner.aspnet"
