@@ -786,13 +786,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 property => property,
                 property => ModelBindingResult.Failed(property.PropertyName));
             var nameProperty = containerMetadata.Properties[nameof(model.Name)];
-            results[nameProperty] = ModelBindingResult.Success(string.Empty, "John Doe", validationNode: null);
-
-            var modelValidationNode = new ModelValidationNode(string.Empty, containerMetadata, model);
+            results[nameProperty] = ModelBindingResult.Success(string.Empty, "John Doe");
+            
             var testableBinder = new TestableMutableObjectModelBinder();
 
             // Act
-            testableBinder.ProcessResults(bindingContext, results, modelValidationNode);
+            testableBinder.ProcessResults(bindingContext, results);
 
             // Assert
             var modelStateDictionary = bindingContext.ModelState;
@@ -837,13 +836,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 property => property,
                 property => ModelBindingResult.Failed(property.PropertyName));
             var nameProperty = containerMetadata.Properties[nameof(model.Name)];
-            results[nameProperty] = ModelBindingResult.Success(string.Empty, "John Doe", validationNode: null);
+            results[nameProperty] = ModelBindingResult.Success(string.Empty, "John Doe");
 
-            var modelValidationNode = new ModelValidationNode(string.Empty, containerMetadata, model);
             var testableBinder = new TestableMutableObjectModelBinder();
 
             // Act
-            testableBinder.ProcessResults(bindingContext, results, modelValidationNode);
+            testableBinder.ProcessResults(bindingContext, results);
 
             // Assert
             var modelStateDictionary = bindingContext.ModelState;
@@ -888,18 +886,17 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 property => property,
                 property => ModelBindingResult.Failed(property.PropertyName));
             var propertyMetadata = containerMetadata.Properties[nameof(model.Name)];
-            results[propertyMetadata] = ModelBindingResult.Success("theModel.Name", "John Doe", validationNode: null);
+            results[propertyMetadata] = ModelBindingResult.Success("theModel.Name", "John Doe");
 
             // Attempt to set non-Nullable property to null. BindRequiredAttribute should not be relevant in this
             // case because the binding exists.
             propertyMetadata = containerMetadata.Properties[nameof(model.Age)];
-            results[propertyMetadata] = ModelBindingResult.Success("theModel.Age", model: null, validationNode: null);
+            results[propertyMetadata] = ModelBindingResult.Success("theModel.Age", model: null);
 
             var testableBinder = new TestableMutableObjectModelBinder();
-            var modelValidationNode = new ModelValidationNode(string.Empty, containerMetadata, model);
 
             // Act
-            testableBinder.ProcessResults(bindingContext, results, modelValidationNode);
+            testableBinder.ProcessResults(bindingContext, results);
 
             // Assert
             var modelStateDictionary = bindingContext.ModelState;
@@ -929,10 +926,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 property => ModelBindingResult.Failed(property.PropertyName));
 
             var testableBinder = new TestableMutableObjectModelBinder();
-            var modelValidationNode = new ModelValidationNode(string.Empty, containerMetadata, model);
 
             // Act
-            testableBinder.ProcessResults(bindingContext, results, modelValidationNode);
+            testableBinder.ProcessResults(bindingContext, results);
 
             // Assert
             var modelStateDictionary = bindingContext.ModelState;
@@ -952,10 +948,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 property => ModelBindingResult.Failed(property.PropertyName));
 
             var testableBinder = new TestableMutableObjectModelBinder();
-            var modelValidationNode = new ModelValidationNode(string.Empty, containerMetadata, model);
 
             // Act
-            testableBinder.ProcessResults(bindingContext, results, modelValidationNode);
+            testableBinder.ProcessResults(bindingContext, results);
 
             // Assert
             var modelStateDictionary = bindingContext.ModelState;
@@ -984,20 +979,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var propertyMetadata = containerMetadata.Properties[nameof(Person.ValueTypeRequired)];
             results[propertyMetadata] = ModelBindingResult.Success(
                 key: "theModel." + nameof(Person.ValueTypeRequired),
-                model: null,
-                validationNode: null);
+                model: null);
 
             // Make ValueTypeRequiredWithDefaultValue invalid
             propertyMetadata = containerMetadata.Properties[nameof(Person.ValueTypeRequiredWithDefaultValue)];
             results[propertyMetadata] = ModelBindingResult.Success(
                 key: "theModel." + nameof(Person.ValueTypeRequiredWithDefaultValue),
-                model: null,
-                validationNode: null);
-
-            var modelValidationNode = new ModelValidationNode(string.Empty, containerMetadata, model);
+                model: null);
 
             // Act
-            testableBinder.ProcessResults(bindingContext, results, modelValidationNode);
+            testableBinder.ProcessResults(bindingContext, results);
 
             // Assert
             Assert.False(modelStateDictionary.IsValid);
@@ -1056,10 +1047,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             results[propertyMetadata] = ModelBindingResult.Failed(
                 key: "theModel." + nameof(Person.ValueTypeRequiredWithDefaultValue));
 
-            var modelValidationNode = new ModelValidationNode(string.Empty, containerMetadata, model);
-
             // Act
-            testableBinder.ProcessResults(bindingContext, results, modelValidationNode);
+            testableBinder.ProcessResults(bindingContext, results);
 
             // Assert
             Assert.True(modelState.IsValid);
@@ -1084,24 +1073,21 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var propertyMetadata = containerMetadata.Properties[nameof(Person.ValueTypeRequired)];
             results[propertyMetadata] = ModelBindingResult.Success(
                 key: "theModel." + nameof(Person.ValueTypeRequired),
-                model: 41,
-                validationNode: null);
+                model: 41);
 
             // Make ValueTypeRequiredWithDefaultValue valid.
             propertyMetadata = containerMetadata.Properties[nameof(Person.ValueTypeRequiredWithDefaultValue)];
             results[propertyMetadata] = ModelBindingResult.Success(
                 key: "theModel." + nameof(Person.ValueTypeRequiredWithDefaultValue),
-                model: 57,
-                validationNode: null);
+                model: 57);
 
             // Also remind ProcessResults about PropertyWithDefaultValue -- as BindPropertiesAsync() would.
             propertyMetadata = containerMetadata.Properties[nameof(Person.PropertyWithDefaultValue)];
             results[propertyMetadata] = ModelBindingResult.Failed(
                 key: "theModel." + nameof(Person.PropertyWithDefaultValue));
-            var modelValidationNode = new ModelValidationNode(string.Empty, containerMetadata, model);
 
             // Act
-            testableBinder.ProcessResults(bindingContext, results, modelValidationNode);
+            testableBinder.ProcessResults(bindingContext, results);
 
             // Assert
             Assert.True(modelStateDictionary.IsValid);
@@ -1140,13 +1126,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 .Properties[nameof(ModelWithBindRequiredAndRequiredAttribute.ReferenceTypeProperty)];
             results[propertyMetadata] = ModelBindingResult.Success(
                 key: "theModel." + nameof(ModelWithBindRequiredAndRequiredAttribute.ReferenceTypeProperty),
-                model: "value",
-                validationNode: null);
-
-            var modelValidationNode = new ModelValidationNode(string.Empty, containerMetadata, model);
-
+                model: "value");
             // Act
-            testableBinder.ProcessResults(bindingContext, results, modelValidationNode);
+            testableBinder.ProcessResults(bindingContext, results);
 
             // Assert
             Assert.False(modelStateDictionary.IsValid);
@@ -1185,19 +1167,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 .Properties[nameof(ModelWithBindRequiredAndRequiredAttribute.ValueTypeProperty)];
             results[propertyMetadata] = ModelBindingResult.Success(
                 key: "theModel." + nameof(ModelWithBindRequiredAndRequiredAttribute.ValueTypeProperty),
-                model: 17,
-                validationNode: null);
+                model: 17);
 
             // Make ReferenceTypeProperty not have a value.
             propertyMetadata = containerMetadata
                 .Properties[nameof(ModelWithBindRequiredAndRequiredAttribute.ReferenceTypeProperty)];
             results[propertyMetadata] = ModelBindingResult.Failed(
                 key: "theModel." + nameof(ModelWithBindRequiredAndRequiredAttribute.ReferenceTypeProperty));
-
-            var modelValidationNode = new ModelValidationNode(string.Empty, containerMetadata, model);
-
             // Act
-            testableBinder.ProcessResults(bindingContext, results, modelValidationNode);
+            testableBinder.ProcessResults(bindingContext, results);
 
             // Assert
             Assert.False(modelStateDictionary.IsValid);
@@ -1235,57 +1213,23 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var firstNameProperty = containerMetadata.Properties[nameof(model.FirstName)];
             results[firstNameProperty] = ModelBindingResult.Success(
                 nameof(model.FirstName),
-                "John",
-                validationNode: null);
+                "John");
 
             var lastNameProperty = containerMetadata.Properties[nameof(model.LastName)];
             results[lastNameProperty] = ModelBindingResult.Success(
                 nameof(model.LastName),
-                "Doe",
-                validationNode: null);
-
-            var modelValidationNode = new ModelValidationNode(string.Empty, containerMetadata, model);
+                "Doe");
+            
             var testableBinder = new TestableMutableObjectModelBinder();
 
             // Act
-            testableBinder.ProcessResults(bindingContext, results, modelValidationNode);
+            testableBinder.ProcessResults(bindingContext, results);
 
             // Assert
             Assert.Equal("John", model.FirstName);
             Assert.Equal("Doe", model.LastName);
             Assert.Equal(dob, model.DateOfBirth);
             Assert.True(bindingContext.ModelState.IsValid);
-
-            // Ensure that we add child nodes for all the nodes which have a result (irrespective of if they
-            // are bound or not).
-            Assert.Equal(5, modelValidationNode.ChildNodes.Count);
-
-            Assert.Collection(modelValidationNode.ChildNodes,
-                child =>
-                {
-                    Assert.Equal(nameof(model.DateOfBirth), child.Key);
-                    Assert.Equal(null, child.Model);
-                },
-                child =>
-                {
-                    Assert.Equal(nameof(model.DateOfDeath), child.Key);
-                    Assert.Equal(null, child.Model);
-                },
-                child =>
-                {
-                    Assert.Equal(nameof(model.FirstName), child.Key);
-                    Assert.Equal("John", child.Model);
-                },
-                child =>
-                {
-                    Assert.Equal(nameof(model.LastName), child.Key);
-                    Assert.Equal("Doe", child.Model);
-                },
-                child =>
-                {
-                    Assert.Equal(nameof(model.NonUpdateableProperty), child.Key);
-                    Assert.Equal(null, child.Model);
-                });
         }
 
         [Fact]
@@ -1420,8 +1364,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var propertyMetadata = bindingContext.ModelMetadata.Properties[propertyName];
             var result = ModelBindingResult.Success(
                 propertyName,
-                new Simple { Name = "Hanna" },
-                validationNode: null);
+                new Simple { Name = "Hanna" });
 
             var testableBinder = new TestableMutableObjectModelBinder();
 
@@ -1496,7 +1439,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var modelExplorer = metadataProvider.GetModelExplorerForType(type, model);
 
             var propertyMetadata = bindingContext.ModelMetadata.Properties[propertyName];
-            var result = ModelBindingResult.Success(propertyName, collection, validationNode: null);
+            var result = ModelBindingResult.Success(propertyName, collection);
             var testableBinder = new TestableMutableObjectModelBinder();
 
             // Act
@@ -1519,7 +1462,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var modelExplorer = metadataProvider.GetModelExplorerForType(typeof(Person), model);
             var propertyMetadata = bindingContext.ModelMetadata.Properties[nameof(model.DateOfBirth)];
 
-            var result = ModelBindingResult.Success("foo", new DateTime(2001, 1, 1), validationNode: null);
+            var result = ModelBindingResult.Success("foo", new DateTime(2001, 1, 1));
             var testableBinder = new TestableMutableObjectModelBinder();
 
             // Act
@@ -1546,7 +1489,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var modelExplorer = metadataProvider.GetModelExplorerForType(typeof(Person), model);
             var propertyMetadata = bindingContext.ModelMetadata.Properties[nameof(model.DateOfDeath)];
 
-            var result = ModelBindingResult.Success("foo", new DateTime(1800, 1, 1), validationNode: null);
+            var result = ModelBindingResult.Success("foo", new DateTime(1800, 1, 1));
             var testableBinder = new TestableMutableObjectModelBinder();
 
             // Act
@@ -1571,7 +1514,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var modelExplorer = metadataProvider.GetModelExplorerForType(typeof(Person), model);
             var propertyMetadata = bindingContext.ModelMetadata.Properties[nameof(model.DateOfBirth)];
 
-            var result = ModelBindingResult.Success("foo.DateOfBirth", model: null, validationNode: null);
+            var result = ModelBindingResult.Success("foo.DateOfBirth", model: null);
             var testableBinder = new TestableMutableObjectModelBinder();
 
             // Act
@@ -1599,7 +1542,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var modelExplorer = metadataProvider.GetModelExplorerForType(typeof(ModelWhosePropertySetterThrows), model);
             var propertyMetadata = bindingContext.ModelMetadata.Properties[nameof(model.NameNoAttribute)];
 
-            var result = ModelBindingResult.Success("foo.NameNoAttribute", model: null, validationNode: null);
+            var result = ModelBindingResult.Success("foo.NameNoAttribute", model: null);
             var testableBinder = new TestableMutableObjectModelBinder();
 
             // Act

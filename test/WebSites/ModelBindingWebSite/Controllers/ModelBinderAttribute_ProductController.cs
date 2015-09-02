@@ -75,9 +75,7 @@ namespace ModelBindingWebSite.Controllers
                     OrderStatus model;
                     if (Enum.TryParse<OrderStatus>("Status" + request.Query["status"], out model))
                     {
-                        var validationNode =
-                            new ModelValidationNode(bindingContext.ModelName, bindingContext.ModelMetadata, model);
-                        return ModelBindingResult.SuccessAsync("status", model, validationNode);
+                        return ModelBindingResult.SuccessAsync("status", model);
                     }
                     
                     return ModelBindingResult.FailedAsync("status");
@@ -105,9 +103,7 @@ namespace ModelBindingWebSite.Controllers
                     var value = bindingContext.ValueProvider.GetValue(key);
                     model.ProductId = value.ConvertTo<int>();
 
-                    var validationNode =
-                        new ModelValidationNode(bindingContext.ModelName, bindingContext.ModelMetadata, value);
-                    return ModelBindingResult.SuccessAsync(key, model, validationNode);
+                    return ModelBindingResult.SuccessAsync(key, model);
                 }
 
                 return ModelBindingResult.NoResultAsync;

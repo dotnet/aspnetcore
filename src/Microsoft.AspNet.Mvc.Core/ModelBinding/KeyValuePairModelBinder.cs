@@ -15,9 +15,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                                                       typeof(KeyValuePair<TKey, TValue>),
                                                       allowNullModel: true);
 
-            var childNodes = new List<ModelValidationNode>();
-            var keyResult = await TryBindStrongModel<TKey>(bindingContext, "Key", childNodes);
-            var valueResult = await TryBindStrongModel<TValue>(bindingContext, "Value", childNodes);
+            var keyResult = await TryBindStrongModel<TKey>(bindingContext, "Key");
+            var valueResult = await TryBindStrongModel<TValue>(bindingContext, "Value");
 
             if (keyResult.IsModelSet && valueResult.IsModelSet)
             {
@@ -25,15 +24,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     ModelBindingHelper.CastOrDefault<TKey>(keyResult.Model),
                     ModelBindingHelper.CastOrDefault<TValue>(valueResult.Model));
 
-                // Update the model for the top level validation node.
-                var modelValidationNode =
-                    new ModelValidationNode(
-                        bindingContext.ModelName,
-                        bindingContext.ModelMetadata,
-                        model,
-                        childNodes);
-                
-                return ModelBindingResult.Success(bindingContext.ModelName, model, modelValidationNode);
+                return ModelBindingResult.Success(bindingContext.ModelName, model);
             }
             else if (!keyResult.IsModelSet && valueResult.IsModelSet)
             {
@@ -62,13 +53,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 if (bindingContext.IsTopLevelObject)
                 {
                     var model = new KeyValuePair<TKey, TValue>();
-
-                    var validationNode = new ModelValidationNode(
-                        bindingContext.ModelName,
-                        bindingContext.ModelMetadata,
-                        model);
-
-                    return ModelBindingResult.Success(bindingContext.ModelName, model, validationNode);
+                    return ModelBindingResult.Success(bindingContext.ModelName, model);
                 }
 
                 return ModelBindingResult.NoResult;
@@ -77,8 +62,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         internal async Task<ModelBindingResult> TryBindStrongModel<TModel>(
             ModelBindingContext parentBindingContext,
-            string propertyName,
-            List<ModelValidationNode> childNodes)
+            string propertyName)
         {
             var propertyModelMetadata =
                 parentBindingContext.OperationBindingContext.MetadataProvider.GetMetadataForType(typeof(TModel));
@@ -91,19 +75,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 propertyModelName,
                 model: null);
 
-            var modelBindingResult = await propertyBindingContext.OperationBindingContext.ModelBinder.BindModelAsync(
+            var result = await propertyBindingContext.OperationBindingContext.ModelBinder.BindModelAsync(
                 propertyBindingContext);
-            if (modelBindingResult != ModelBindingResult.NoResult)
+            if (result.IsModelSet)
             {
-                if (modelBindingResult.ValidationNode != null)
-                {
-                    childNodes.Add(modelBindingResult.ValidationNode);
-                }
-
-                return modelBindingResult;
+                return result;
             }
-
-            return ModelBindingResult.Failed(propertyModelName);
+            else
+            {
+                return ModelBindingResult.Failed(propertyModelName);
+            }
         }
     }
 }

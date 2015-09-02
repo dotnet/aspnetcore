@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
+using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
@@ -17,6 +18,29 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public class FormFileModelBinderTest
     {
+        [Fact]
+        public async Task FormFileModelBinder_SuppressesValidation()
+        {
+            // Arrange
+            var formFiles = new FormFileCollection();
+            formFiles.Add(GetMockFormFile("file", "file1.txt"));
+            var httpContext = GetMockHttpContext(GetMockFormCollection(formFiles));
+            var bindingContext = GetBindingContext(typeof(IEnumerable<IFormFile>), httpContext);
+            var binder = new FormFileModelBinder();
+
+            // Act
+            var result = await binder.BindModelAsync(bindingContext);
+
+            // Assert
+            Assert.NotEqual(ModelBindingResult.NoResult, result);
+            Assert.True(result.IsModelSet);
+
+            var entry = bindingContext.ValidationState[result.Model];
+            Assert.True(entry.SuppressValidation);
+            Assert.Null(entry.Key);
+            Assert.Null(entry.Metadata);
+        }
+
         [Fact]
         public async Task FormFileModelBinder_ExpectMultipleFiles_BindSuccessful()
         {
@@ -34,8 +58,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Assert
             Assert.NotEqual(ModelBindingResult.NoResult, result);
             Assert.True(result.IsModelSet);
-            Assert.NotNull(result.ValidationNode);
-            Assert.True(result.ValidationNode.SuppressValidation);
+
+            var entry = bindingContext.ValidationState[result.Model];
+            Assert.True(entry.SuppressValidation);
+            Assert.Null(entry.Key);
+            Assert.Null(entry.Metadata);
 
             var files = Assert.IsAssignableFrom<IList<IFormFile>>(result.Model);
             Assert.Equal(2, files.Count);
@@ -197,7 +224,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     ModelBinder = new FormFileModelBinder(),
                     MetadataProvider = metadataProvider,
                     HttpContext = httpContext,
-                }
+                },
+                ValidationState = new ValidationStateDictionary(),
             };
 
             return bindingContext;

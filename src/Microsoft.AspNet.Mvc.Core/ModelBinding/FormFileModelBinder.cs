@@ -10,6 +10,7 @@ using System.Reflection;
 #endif
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.Framework.Internal;
 using Microsoft.Net.Http.Headers;
 
@@ -62,18 +63,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
             else
             { 
-                var validationNode =
-                    new ModelValidationNode(bindingContext.ModelName, bindingContext.ModelMetadata, value)
-                    {
-                        SuppressValidation = true,
-                    };
-
+                bindingContext.ValidationState.Add(value, new ValidationStateEntry() { SuppressValidation = true });
                 bindingContext.ModelState.SetModelValue(
                     bindingContext.ModelName,
                     rawValue: null,
                     attemptedValue: null);
 
-                return ModelBindingResult.Success(bindingContext.ModelName, value, validationNode);
+                return ModelBindingResult.Success(bindingContext.ModelName, value);
             }
         }
 

@@ -44,12 +44,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             try
             {
                 var model = Convert.FromBase64String(value);
-                var validationNode = new ModelValidationNode(
-                    bindingContext.ModelName,
-                    bindingContext.ModelMetadata,
-                    model);
-
-                return ModelBindingResult.SuccessAsync(bindingContext.ModelName, model, validationNode);
+                return ModelBindingResult.SuccessAsync(bindingContext.ModelName, model);
             }
             catch (Exception ex)
             {

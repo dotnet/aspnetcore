@@ -161,7 +161,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                     return ModelBindingResult.NoResultAsync;
                 }
 
-                return ModelBindingResult.SuccessAsync(bindingContext.ModelName, new Address(), validationNode: null);
+                return ModelBindingResult.SuccessAsync(bindingContext.ModelName, new Address());
             }
         }
 

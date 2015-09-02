@@ -27,7 +27,7 @@ namespace ModelBindingWebSite
             if (!IsSimpleType(bindingContext.ModelType))
             {
                 model = Activator.CreateInstance(bindingContext.ModelType);
-                return ModelBindingResult.SuccessAsync(bindingContext.ModelName, model, validationNode: null);
+                return ModelBindingResult.SuccessAsync(bindingContext.ModelName, model);
             }
 
             return ModelBindingResult.FailedAsync(bindingContext.ModelName);

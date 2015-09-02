@@ -309,22 +309,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var modelBindingResult = await modelBinder.BindModelAsync(modelBindingContext);
             if (modelBindingResult.IsModelSet)
             {
-                var modelExplorer = new ModelExplorer(metadataProvider, modelMetadata, modelBindingResult.Model);
-                var modelValidationContext = new ModelValidationContext(modelBindingContext, modelExplorer);
-
-                var validationNode = modelBindingResult.ValidationNode;
-                if (validationNode == null)
-                {
-                    validationNode = new ModelValidationNode(
-                        modelBindingResult.Key,
-                        modelMetadata,
-                        modelBindingResult.Model)
-                    {
-                        ValidateAllProperties = true,
-                    };
-                }
-
-                objectModelValidator.Validate(modelValidationContext, validationNode);
+                objectModelValidator.Validate(
+                    operationBindingContext.ValidatorProvider, 
+                    modelState,
+                    modelBindingContext.ValidationState,
+                    modelBindingResult.Key,
+                    modelBindingResult.Model);
 
                 return modelState.IsValid;
             }

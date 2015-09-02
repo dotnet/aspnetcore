@@ -14,560 +14,625 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {
     public class DefaultObjectValidatorTests
     {
-        private static Person LonelyPerson;
+        private IModelMetadataProvider MetadataProvider { get; } = TestModelMetadataProvider.CreateDefaultProvider();
 
-        static DefaultObjectValidatorTests()
-        {
-            LonelyPerson = new Person() { Name = "Reallllllllly Long Name" };
-            LonelyPerson.Friend = LonelyPerson;
-        }
-
-        public static IEnumerable<object[]> ValidationErrors
-        {
-            get
-            {
-                // returns an array of model, type of model and expected errors.
-                // Primitives
-                yield return new object[] { null, typeof(Person), new Dictionary<string, string>() };
-                yield return new object[] { 14, typeof(int), new Dictionary<string, string>() };
-                yield return new object[] { "foo", typeof(string), new Dictionary<string, string>() };
-
-                // Object Traversal : make sure we can traverse the object graph without throwing
-                yield return new object[]
-                {
-                    new ValueType() { Reference = "ref", Value = 256 },
-                    typeof(ValueType),
-                    new Dictionary<string, string>()
-                };
-                yield return new object[]
-                {
-                    new ReferenceType() { Reference = "ref", Value = 256 },
-                    typeof(ReferenceType),
-                    new Dictionary<string, string>()
-                };
-
-                // Classes
-                yield return new object[]
-                {
-                    new Person() { Name = "Rick", Profession = "Astronaut" },
-                    typeof(Person),
-                    new Dictionary<string, string>()
-                };
-                yield return new object[]
-                {
-                    new Person(),
-                    typeof(Person),
-                    new Dictionary<string, string>()
-                    {
-                        { "Name", ValidationAttributeUtil.GetRequiredErrorMessage("Name") },
-                        { "Profession", ValidationAttributeUtil.GetRequiredErrorMessage("Profession") }
-                    }
-                };
-
-                yield return new object[]
-                {
-                    new Person() { Name = "Rick", Friend = new Person() },
-                    typeof(Person),
-                    new Dictionary<string, string>()
-                    {
-                        { "Profession", ValidationAttributeUtil.GetRequiredErrorMessage("Profession") },
-                        { "Friend.Name", ValidationAttributeUtil.GetRequiredErrorMessage("Name") },
-                        { "Friend.Profession", ValidationAttributeUtil.GetRequiredErrorMessage("Profession") }
-                    }
-                };
-
-                // Collections
-                yield return new object[]
-                {
-                    new Person[] { new Person(), new Person() },
-                    typeof(Person[]),
-                    new Dictionary<string, string>()
-                    {
-                        { "[0].Name", ValidationAttributeUtil.GetRequiredErrorMessage("Name") },
-                        { "[0].Profession", ValidationAttributeUtil.GetRequiredErrorMessage("Profession") },
-                        { "[1].Name", ValidationAttributeUtil.GetRequiredErrorMessage("Name") },
-                        { "[1].Profession", ValidationAttributeUtil.GetRequiredErrorMessage("Profession") }
-                    }
-                };
-
-                yield return new object[]
-                {
-                    new List<Person> { new Person(), new Person() },
-                    typeof(Person[]),
-                    new Dictionary<string, string>()
-                    {
-                        { "[0].Name", ValidationAttributeUtil.GetRequiredErrorMessage("Name") },
-                        { "[0].Profession", ValidationAttributeUtil.GetRequiredErrorMessage("Profession") },
-                        { "[1].Name", ValidationAttributeUtil.GetRequiredErrorMessage("Name") },
-                        { "[1].Profession", ValidationAttributeUtil.GetRequiredErrorMessage("Profession") }
-                    }
-                };
-
-                if (!TestPlatformHelper.IsMono)
-                {
-                    // In Mono this throws a NullRef Exception.
-                    // https://github.com/aspnet/External/issues/23
-                    yield return new object[]
-                    {
-                        new Dictionary<string, Person> { { "Joe", new Person() } , { "Mark", new Person() } },
-                        typeof(Dictionary<string, Person>),
-                        new Dictionary<string, string>()
-                        {
-                            { "[0].Value.Name", ValidationAttributeUtil.GetRequiredErrorMessage("Name") },
-                            { "[0].Value.Profession", ValidationAttributeUtil.GetRequiredErrorMessage("Profession") },
-                            { "[1].Value.Name", ValidationAttributeUtil.GetRequiredErrorMessage("Name") },
-                            { "[1].Value.Profession", ValidationAttributeUtil.GetRequiredErrorMessage("Profession") }
-                        }
-                    };
-                }
-
-                // IValidatableObject's
-                yield return new object[]
-                {
-                    new ValidatableModel(),
-                    typeof(ValidatableModel),
-                    new Dictionary<string, string>()
-                    {
-                        { "", "Error1" },
-                        { "Property1", "Error2" },
-                        { "Property2", "Error3" },
-                        { "Property3", "Error3" }
-                    }
-                };
-
-                yield return new object[]
-                {
-                    new[] { new ValidatableModel() },
-                    typeof(ValidatableModel[]),
-                    new Dictionary<string, string>()
-                    {
-                        { "[0]", "Error1" },
-                        { "[0].Property1", "Error2" },
-                        { "[0].Property2", "Error3" },
-                        { "[0].Property3", "Error3" }
-                    }
-                };
-
-                // Nested Objects
-                yield return new object[]
-                {
-                    new Org()
-                    {
-                        Id = 1,
-                        OrgName = "Org",
-                        Dev = new Team
-                        {
-                            Id = 10,
-                            TeamName = "HelloWorldTeam",
-                            Lead = "SampleLeadDev",
-                            TeamSize = 2
-                        },
-                        Test = new Team
-                        {
-                            Id = 11,
-                            TeamName = "HWT",
-                            Lead = "SampleTestLead",
-                            TeamSize = 12
-                        }
-                    },
-                    typeof(Org),
-                    new Dictionary<string, string>()
-                    {
-                        { "OrgName", ValidationAttributeUtil.GetStringLengthErrorMessage(4, 20, "OrgName") },
-                        { "Dev.Lead", ValidationAttributeUtil.GetMaxLengthErrorMessage(10, "Lead") },
-                        { "Dev.TeamSize", ValidationAttributeUtil.GetRangeErrorMessage(3, 100, "TeamSize") },
-                        { "Test.TeamName", ValidationAttributeUtil.GetStringLengthErrorMessage(4, 20, "TeamName") },
-                        { "Test.Lead", ValidationAttributeUtil.GetMaxLengthErrorMessage(10, "Lead") }
-                    }
-                };
-
-                // Testing we don't validate fields
-                yield return new object[]
-                {
-                    new VariableTest() { test = 5 },
-                    typeof(VariableTest),
-                    new Dictionary<string, string>()
-                };
-
-                // Testing we don't blow up on cycles
-                yield return new object[]
-                {
-                    LonelyPerson,
-                    typeof(Person),
-                    new Dictionary<string, string>()
-                    {
-                        { "Name", ValidationAttributeUtil.GetStringLengthErrorMessage(null, 10, "Name") },
-                        { "Profession", ValidationAttributeUtil.GetRequiredErrorMessage("Profession") }
-                    }
-                };
-            }
-        }
-
-        [Theory]
-        [ReplaceCulture]
-        [MemberData(nameof(ValidationErrors))]
-        public void ExpectedValidationErrorsRaised(object model, Type type, Dictionary<string, string> expectedErrors)
+        [Fact]
+        public void Validate_SimpleValueType_Valid_WithPrefix()
         {
             // Arrange
-            var context = GetModelValidationContext(model, type);
+            var validatorProvider = CreateValidatorProvider();
+            var modelState = new ModelStateDictionary();
+            var validationState = new ValidationStateDictionary();
 
-            var validator = new DefaultObjectValidator(context.ExcludeFilters, context.ModelMetadataProvider);
-            var topLevelValidationNode =
-                new ModelValidationNode(string.Empty, context.ModelValidationContext.ModelExplorer.Metadata, model)
-                {
-                    ValidateAllProperties = true
-                };
+            var validator = CreateValidator();
+
+            var model = (object)15;
+
+            modelState.SetModelValue("parameter", "15", "15");
+            validationState.Add(model, new ValidationStateEntry() { Key = "parameter" });
 
             // Act
-            validator.Validate(context.ModelValidationContext, topLevelValidationNode);
+            validator.Validate(validatorProvider, modelState, validationState, "parameter", model);
 
             // Assert
-            var actualErrors = new Dictionary<string, string>();
-            foreach (var keyStatePair in context.ModelValidationContext.ModelState)
-            {
-                foreach (var error in keyStatePair.Value.Errors)
-                {
-                    actualErrors.Add(keyStatePair.Key, error.ErrorMessage);
-                }
-            }
+            AssertKeysEqual(modelState, "parameter");
 
-            Assert.Equal(expectedErrors.Count, actualErrors.Count);
-            foreach (var keyErrorPair in expectedErrors)
-            {
-                Assert.Contains(keyErrorPair.Key, actualErrors.Keys);
-                Assert.Equal(keyErrorPair.Value, actualErrors[keyErrorPair.Key]);
-            }
+            var entry = modelState["parameter"];
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+            Assert.Empty(entry.Errors);
         }
 
         [Fact]
-        [ReplaceCulture]
-        public void Validator_Throws_IfPropertyAccessorThrows()
+        public void Validate_SimpleReferenceType_Valid_WithPrefix()
         {
             // Arrange
-            var testValidationContext = GetModelValidationContext(new Uri("/api/values", UriKind.Relative), typeof(Uri));
-            var topLevelValidationNode =
-                new ModelValidationNode(
-                    string.Empty,
-                    testValidationContext.ModelValidationContext.ModelExplorer.Metadata,
-                    testValidationContext.ModelValidationContext.ModelExplorer.Model)
-                {
-                    ValidateAllProperties = true
-                };
+            var validatorProvider = CreateValidatorProvider();
+            var modelState = new ModelStateDictionary();
+            var validationState = new ValidationStateDictionary();
 
-            // Act & Assert
-            Assert.Throws(
-                typeof(InvalidOperationException),
-                () =>
-                {
-                    new DefaultObjectValidator(
-                        testValidationContext.ExcludeFilters,
-                        testValidationContext.ModelMetadataProvider)
-                        .Validate(testValidationContext.ModelValidationContext, topLevelValidationNode);
-                });
-        }
+            var validator = CreateValidator();
 
-        public static IEnumerable<object[]> ObjectsWithPropertiesWhichThrowOnGet
-        {
-            get
-            {
-                yield return new object[] {
-                    new Uri("/api/values", UriKind.Relative),
-                    typeof(Uri),
-                    new List<Type>() { typeof(Uri) }
-                };
+            var model = (object)"test";
 
-                // https://github.com/aspnet/External/issues/23
-                if (!TestPlatformHelper.IsMono)
-                {
-                    yield return new object[] { new Dictionary<string, Uri> {
-                        { "values",  new Uri("/api/values", UriKind.Relative) },
-                        { "hello",  new Uri("/api/hello", UriKind.Relative) }
-                    }, typeof(Dictionary<string, Uri>), new List<Type>() { typeof(Uri) } };
-                }
-            }
-        }
+            modelState.SetModelValue("parameter", "test", "test");
+            validationState.Add(model, new ValidationStateEntry() { Key = "parameter" });
 
-        [Theory]
-        [MemberData(nameof(ObjectsWithPropertiesWhichThrowOnGet))]
-        [ReplaceCulture]
-        public void Validator_DoesNotThrow_IfExcludedPropertyAccessorsThrow(
-            object input, Type type, List<Type> excludedTypes)
-        {
-            // Arrange
-            var testValidationContext = GetModelValidationContext(input, type, excludedTypes);
-            var topLevelValidationNode =
-                new ModelValidationNode(
-                    string.Empty,
-                    testValidationContext.ModelValidationContext.ModelExplorer.Metadata,
-                    testValidationContext.ModelValidationContext.ModelExplorer.Model)
-                {
-                    ValidateAllProperties = true
-                };
-
-            // Act & Assert (does not throw)
-            new DefaultObjectValidator(
-                testValidationContext.ExcludeFilters,
-                testValidationContext.ModelMetadataProvider)
-                .Validate(testValidationContext.ModelValidationContext, topLevelValidationNode);
-            Assert.True(testValidationContext.ModelValidationContext.ModelState.IsValid);
-        }
-
-        [Fact]
-        [ReplaceCulture]
-        public void Validator_Throws_IfPropertyGetterThrows()
-        {
-            // Arrange
-            var testValidationContext = GetModelValidationContext(
-                new Uri("/api/values", UriKind.Relative), typeof(Uri));
-            var validationContext = testValidationContext.ModelValidationContext;
-            var topLevelValidationNode =
-                new ModelValidationNode(
-                    string.Empty,
-                    testValidationContext.ModelValidationContext.ModelExplorer.Metadata,
-                    testValidationContext.ModelValidationContext.ModelExplorer.Model)
-                {
-                    ValidateAllProperties = true
-                };
-
-            // Act & Assert
-            Assert.Throws<InvalidOperationException>(
-                () =>
-                {
-                    new DefaultObjectValidator(
-                        testValidationContext.ExcludeFilters,
-                        testValidationContext.ModelMetadataProvider)
-                        .Validate(validationContext, topLevelValidationNode);
-                });
-            Assert.True(validationContext.ModelState.IsValid);
-        }
-
-        [Fact]
-        [ReplaceCulture]
-        public void MultipleValidationErrorsOnSameMemberReported()
-        {
-            // Arrange
-            var model = new Address() { Street = "Microsoft Way" };
-            var testValidationContext = GetModelValidationContext(model, model.GetType());
-            var validationContext = testValidationContext.ModelValidationContext;
-            var topLevelValidationNode =
-                new ModelValidationNode(
-                    string.Empty,
-                    testValidationContext.ModelValidationContext.ModelExplorer.Metadata,
-                    testValidationContext.ModelValidationContext.ModelExplorer.Model)
-                {
-                    ValidateAllProperties = true
-                };
-
-            // Act (does not throw)
-            new DefaultObjectValidator(
-                testValidationContext.ExcludeFilters,
-                testValidationContext.ModelMetadataProvider)
-                .Validate(validationContext, topLevelValidationNode);
+            // Act
+            validator.Validate(validatorProvider, modelState, validationState, "parameter", model);
 
             // Assert
-            Assert.Equal(1, validationContext.ModelState.Count);
-            Assert.Contains("Street", validationContext.ModelState.Keys);
-            var streetState = validationContext.ModelState["Street"];
-            Assert.Equal(2, streetState.Errors.Count);
-            var errorCollection = streetState.Errors.Select(e => e.ErrorMessage);
-            Assert.Contains(ValidationAttributeUtil.GetStringLengthErrorMessage(null, 5, "Street"), errorCollection);
-            Assert.Contains(ValidationAttributeUtil.GetRegExErrorMessage("hehehe", "Street"), errorCollection);
+            Assert.True(modelState.IsValid);
+            AssertKeysEqual(modelState, "parameter");
+
+            var entry = modelState["parameter"];
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+            Assert.Empty(entry.Errors);
         }
 
         [Fact]
-        public void Validate_DoesNotUseOverridden_GetHashCodeOrEquals()
+        public void Validate_SimpleType_MaxErrorsReached()
         {
             // Arrange
-            var instance = new[] {
-                    new TypeThatOverridesEquals { Funny = "hehe" },
-                    new TypeThatOverridesEquals { Funny = "hehe" }
-                };
-            var testValidationContext = GetModelValidationContext(instance, typeof(TypeThatOverridesEquals[]));
-            var topLevelValidationNode =
-                new ModelValidationNode(
-                    string.Empty,
-                    testValidationContext.ModelValidationContext.ModelExplorer.Metadata,
-                    testValidationContext.ModelValidationContext.ModelExplorer.Model)
-                {
-                    ValidateAllProperties = true
-                };
+            var validatorProvider = CreateValidatorProvider();
+            var modelState = new ModelStateDictionary();
+            var validationState = new ValidationStateDictionary();
 
-            // Act & Assert (does not throw)
-            new DefaultObjectValidator(
-                testValidationContext.ExcludeFilters,
-                testValidationContext.ModelMetadataProvider)
-                .Validate(testValidationContext.ModelValidationContext, topLevelValidationNode);
+            var validator = CreateValidator();
+
+            var model = (object)"test";
+
+            modelState.MaxAllowedErrors = 1;
+            modelState.AddModelError("other.Model", "error");
+            modelState.SetModelValue("parameter", "test", "test");
+            validationState.Add(model, new ValidationStateEntry() { Key = "parameter" });
+
+            // Act
+            validator.Validate(validatorProvider, modelState, validationState, "parameter", model);
+
+            // Assert
+            Assert.False(modelState.IsValid);
+            AssertKeysEqual(modelState, string.Empty, "parameter");
+
+            var entry = modelState["parameter"];
+            Assert.Equal(ModelValidationState.Skipped, entry.ValidationState);
+            Assert.Empty(entry.Errors);
         }
 
         [Fact]
-        public void Validation_ShortCircuit_WhenMaxErrorCountIsSet()
+        public void Validate_SimpleType_SuppressValidation()
         {
             // Arrange
-            var user = new User()
+            var validatorProvider = CreateValidatorProvider();
+            var modelState = new ModelStateDictionary();
+            var validationState = new ValidationStateDictionary();
+
+            var validator = CreateValidator();
+
+            var model = (object)"test";
+
+            modelState.SetModelValue("parameter", "test", "test");
+            validationState.Add(model, new ValidationStateEntry() { Key = "parameter", SuppressValidation = true });
+
+            // Act
+            validator.Validate(validatorProvider, modelState, validationState, "parameter", model);
+
+            // Assert
+            Assert.True(modelState.IsValid);
+            AssertKeysEqual(modelState, "parameter");
+
+            var entry = modelState["parameter"];
+            Assert.Equal(ModelValidationState.Skipped, entry.ValidationState);
+            Assert.Empty(entry.Errors);
+        }
+
+
+        [Fact]
+        public void Validate_ComplexValueType_Valid()
+        {
+            // Arrange
+            var validatorProvider = CreateValidatorProvider();
+            var modelState = new ModelStateDictionary();
+            var validationState = new ValidationStateDictionary();
+
+            var validator = CreateValidator();
+
+            var model = (object)new ValueType() { Reference = "ref", Value = 256 };
+
+            modelState.SetModelValue("parameter.Reference", "ref", "ref");
+            modelState.SetModelValue("parameter.Value", "256", "256");
+            validationState.Add(model, new ValidationStateEntry() { Key = "parameter" });
+
+            // Act
+            validator.Validate(validatorProvider, modelState, validationState, "parameter", model);
+
+            // Assert
+            Assert.True(modelState.IsValid);
+            AssertKeysEqual(modelState, "parameter.Reference", "parameter.Value");
+
+            var entry = modelState["parameter.Reference"];
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+            Assert.Empty(entry.Errors);
+
+            entry = modelState["parameter.Value"];
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+            Assert.Empty(entry.Errors);
+        }
+
+        [Fact]
+        public void Validate_ComplexReferenceType_Valid()
+        {
+            // Arrange
+            var validatorProvider = CreateValidatorProvider();
+            var modelState = new ModelStateDictionary();
+            var validationState = new ValidationStateDictionary();
+
+            var validator = CreateValidator();
+
+            var model = (object)new ReferenceType() { Reference = "ref", Value = 256 };
+
+            modelState.SetModelValue("parameter.Reference", "ref", "ref");
+            modelState.SetModelValue("parameter.Value", "256", "256");
+            validationState.Add(model, new ValidationStateEntry() { Key = "parameter" });
+
+            // Act
+            validator.Validate(validatorProvider, modelState, validationState, "parameter", model);
+
+            // Assert
+            Assert.True(modelState.IsValid);
+            AssertKeysEqual(modelState, "parameter.Reference", "parameter.Value");
+
+            var entry = modelState["parameter.Reference"];
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+            Assert.Empty(entry.Errors);
+
+            entry = modelState["parameter.Value"];
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+            Assert.Empty(entry.Errors);
+        }
+
+        [Fact]
+        public void Validate_ComplexReferenceType_Invalid()
+        {
+            // Arrange
+            var validatorProvider = CreateValidatorProvider();
+            var modelState = new ModelStateDictionary();
+            var validationState = new ValidationStateDictionary();
+
+            var validator = CreateValidator();
+
+            var model = (object)new Person();
+
+            validationState.Add(model, new ValidationStateEntry() { Key = string.Empty });
+
+            // Act
+            validator.Validate(validatorProvider, modelState, validationState, string.Empty, model);
+
+            // Assert
+            Assert.False(modelState.IsValid);
+            AssertKeysEqual(modelState, "Name", "Profession");
+
+            var entry = modelState["Name"];
+            Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
+            var error = Assert.Single(entry.Errors);
+            Assert.Equal(ValidationAttributeUtil.GetRequiredErrorMessage("Name"), error.ErrorMessage);
+
+            entry = modelState["Profession"];
+            Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
+            error = Assert.Single(entry.Errors);
+            Assert.Equal(ValidationAttributeUtil.GetRequiredErrorMessage("Profession"), error.ErrorMessage);
+        }
+
+        [Fact]
+        public void Validate_ComplexType_SuppressValidation()
+        {
+            // Arrange
+            var validatorProvider = CreateValidatorProvider();
+            var modelState = new ModelStateDictionary();
+            var validationState = new ValidationStateDictionary();
+
+            var validator = CreateValidator();
+
+            var model = new Person2()
+            {
+                Name = "Billy",
+                Address = new Address { Street = "GreaterThan5Characters" }
+            };
+
+            modelState.SetModelValue("person.Name", "Billy", "Billy");
+            modelState.SetModelValue("person.Address.Street", "GreaterThan5Characters", "GreaterThan5Characters");
+            validationState.Add(model, new ValidationStateEntry() { Key = "person" });
+            validationState.Add(model.Address, new ValidationStateEntry()
+            {
+                Key = "person.Address",
+                SuppressValidation = true
+            });
+
+            // Act
+            validator.Validate(validatorProvider, modelState, validationState, "person", model);
+
+            // Assert
+            Assert.True(modelState.IsValid);
+            AssertKeysEqual(modelState, "person.Name", "person.Address.Street");
+
+            var entry = modelState["person.Name"];
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+            Assert.Empty(entry.Errors);
+
+            entry = modelState["person.Address.Street"];
+            Assert.Equal(ModelValidationState.Skipped, entry.ValidationState);
+            Assert.Empty(entry.Errors);
+        }
+
+        [Fact]
+        [ReplaceCulture]
+        public void Validate_ComplexReferenceType_Invalid_MultipleErrorsOnProperty()
+        {
+            // Arrange
+            var validatorProvider = CreateValidatorProvider();
+            var modelState = new ModelStateDictionary();
+            var validationState = new ValidationStateDictionary();
+
+            var validator = CreateValidator();
+
+            var model = (object)new Address() { Street = "Microsoft Way" };
+
+            modelState.SetModelValue("parameter.Street", "Microsoft Way", "Microsoft Way");
+            validationState.Add(model, new ValidationStateEntry() { Key = "parameter" });
+
+            // Act
+            validator.Validate(validatorProvider, modelState, validationState, "parameter", model);
+
+            // Assert
+            Assert.False(modelState.IsValid);
+            AssertKeysEqual(modelState, "parameter.Street");
+
+            var entry = modelState["parameter.Street"];
+            Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
+
+            Assert.Equal(2, entry.Errors.Count);
+            var errorMessages = entry.Errors.Select(e => e.ErrorMessage);
+            Assert.Contains(ValidationAttributeUtil.GetStringLengthErrorMessage(null, 5, "Street"), errorMessages);
+            Assert.Contains(ValidationAttributeUtil.GetRegExErrorMessage("hehehe", "Street"), errorMessages);
+        }
+
+        [Fact]
+        [ReplaceCulture]
+        public void Validate_ComplexReferenceType_Invalid_MultipleErrorsOnProperty_EmptyPrefix()
+        {
+            // Arrange
+            var validatorProvider = CreateValidatorProvider();
+            var modelState = new ModelStateDictionary();
+            var validationState = new ValidationStateDictionary();
+
+            var validator = CreateValidator();
+
+            var model = (object)new Address() { Street = "Microsoft Way" };
+
+            modelState.SetModelValue("Street", "Microsoft Way", "Microsoft Way");
+            validationState.Add(model, new ValidationStateEntry() { Key = string.Empty });
+
+            // Act
+            validator.Validate(validatorProvider, modelState, validationState, string.Empty, model);
+
+            // Assert
+            Assert.False(modelState.IsValid);
+            AssertKeysEqual(modelState, "Street");
+
+            var entry = modelState["Street"];
+            Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
+
+            Assert.Equal(2, entry.Errors.Count);
+            var errorMessages = entry.Errors.Select(e => e.ErrorMessage);
+            Assert.Contains(ValidationAttributeUtil.GetStringLengthErrorMessage(null, 5, "Street"), errorMessages);
+            Assert.Contains(ValidationAttributeUtil.GetRegExErrorMessage("hehehe", "Street"), errorMessages);
+        }
+
+        [Fact]
+        [ReplaceCulture]
+        public void Validate_NestedComplexReferenceType_Invalid()
+        {
+            // Arrange
+            var validatorProvider = CreateValidatorProvider();
+            var modelState = new ModelStateDictionary();
+            var validationState = new ValidationStateDictionary();
+
+            var validator = CreateValidator();
+
+            var model = (object)new Person() { Name = "Rick", Friend = new Person() };
+
+            modelState.SetModelValue("Name", "Rick", "Rick");
+            validationState.Add(model, new ValidationStateEntry() { Key = string.Empty });
+
+            // Act
+            validator.Validate(validatorProvider, modelState, validationState, string.Empty, model);
+
+            // Assert
+            Assert.False(modelState.IsValid);
+            AssertKeysEqual(modelState, "Name", "Profession", "Friend.Name", "Friend.Profession");
+
+            var entry = modelState["Name"];
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+
+            entry = modelState["Profession"];
+            Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
+            var error = Assert.Single(entry.Errors);
+            Assert.Equal(ValidationAttributeUtil.GetRequiredErrorMessage("Profession"), error.ErrorMessage);
+
+            entry = modelState["Friend.Name"];
+            Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
+            error = Assert.Single(entry.Errors);
+            Assert.Equal(ValidationAttributeUtil.GetRequiredErrorMessage("Name"), error.ErrorMessage);
+
+            entry = modelState["Friend.Profession"];
+            Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
+            error = Assert.Single(entry.Errors);
+            Assert.Equal(ValidationAttributeUtil.GetRequiredErrorMessage("Profession"), error.ErrorMessage);
+        }
+
+        // IValidatableObject is significant because the validators are on the object
+        // itself, not just the properties.
+        [Fact]
+        [ReplaceCulture]
+        public void Validate_ComplexType_IValidatableObject_Invalid()
+        {
+            // Arrange
+            var validatorProvider = CreateValidatorProvider();
+            var modelState = new ModelStateDictionary();
+            var validationState = new ValidationStateDictionary();
+
+            var validator = CreateValidator();
+
+            var model = (object)new ValidatableModel();
+
+            modelState.SetModelValue("parameter", "model", "model");
+
+            validationState.Add(model, new ValidationStateEntry() { Key = "parameter" });
+
+            // Act
+            validator.Validate(validatorProvider, modelState, validationState, "parameter", model);
+
+            // Assert
+            Assert.False(modelState.IsValid);
+            AssertKeysEqual(modelState, "parameter", "parameter.Property1", "parameter.Property2", "parameter.Property3");
+
+            var entry = modelState["parameter"];
+            Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
+            var error = Assert.Single(entry.Errors);
+            Assert.Equal("Error1", error.ErrorMessage);
+
+            entry = modelState["parameter.Property1"];
+            Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
+            error = Assert.Single(entry.Errors);
+            Assert.Equal("Error2", error.ErrorMessage);
+
+            entry = modelState["parameter.Property2"];
+            Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
+            error = Assert.Single(entry.Errors);
+            Assert.Equal("Error3", error.ErrorMessage);
+
+            entry = modelState["parameter.Property3"];
+            Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
+            error = Assert.Single(entry.Errors);
+            Assert.Equal("Error3", error.ErrorMessage);
+        }
+
+        [Fact]
+        [ReplaceCulture]
+        public void Validate_ComplexType_FieldsAreIgnored_Valid()
+        {
+            // Arrange
+            var validatorProvider = CreateValidatorProvider();
+            var modelState = new ModelStateDictionary();
+            var validationState = new ValidationStateDictionary();
+
+            var validator = CreateValidator();
+
+            var model = (object)new VariableTest() { test = 5 };
+
+            modelState.SetModelValue("parameter", "5", "5");
+            validationState.Add(model, new ValidationStateEntry() { Key = "parameter" });
+
+            // Act
+            validator.Validate(validatorProvider, modelState, validationState, "parameter", model);
+
+            // Assert
+            Assert.True(modelState.IsValid);
+            Assert.Equal(1, modelState.Count);
+
+            var entry = modelState["parameter"];
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+            Assert.Empty(entry.Errors);
+        }
+
+        [Fact]
+        [ReplaceCulture]
+        public void Validate_ComplexType_CyclesNotFollowed_Invalid()
+        {
+            // Arrange
+            var validatorProvider = CreateValidatorProvider();
+            var modelState = new ModelStateDictionary();
+            var validationState = new ValidationStateDictionary();
+
+            var validator = CreateValidator();
+
+            var person = new Person() { Name = "Billy" };
+            person.Friend = person;
+
+            var model = (object)person;
+
+            modelState.SetModelValue("parameter.Name", "Billy", "Billy");
+            validationState.Add(model, new ValidationStateEntry() { Key = "parameter" });
+
+            // Act
+            validator.Validate(validatorProvider, modelState, validationState, "parameter", model);
+
+            // Assert
+            Assert.False(modelState.IsValid);
+            AssertKeysEqual(modelState, "parameter.Name", "parameter.Profession");
+
+            var entry = modelState["parameter.Name"];
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+            Assert.Empty(entry.Errors);
+
+            entry = modelState["parameter.Profession"];
+            Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
+            var error = Assert.Single(entry.Errors);
+            Assert.Equal(error.ErrorMessage, ValidationAttributeUtil.GetRequiredErrorMessage("Profession"));
+        }
+
+        [Fact]
+        public void Validate_ComplexType_ShortCircuit_WhenMaxErrorCountIsSet()
+        {
+            // Arrange
+            var validatorProvider = CreateValidatorProvider();
+            var modelState = new ModelStateDictionary();
+            var validationState = new ValidationStateDictionary();
+
+            var validator = CreateValidator(typeof(string));
+
+            var model = new User()
             {
                 Password = "password-val",
                 ConfirmPassword = "not-password-val"
             };
 
-            var testValidationContext = GetModelValidationContext(
-                user,
-                typeof(User),
-                new List<Type> { typeof(string) });
+            modelState.MaxAllowedErrors = 2;
+            modelState.AddModelError("key1", "error1");
+            modelState.SetModelValue("user.Password", "password-val", "password-val");
+            modelState.SetModelValue("user.ConfirmPassword", "not-password-val", "not-password-val");
 
-            var validationContext = testValidationContext.ModelValidationContext;
-            validationContext.ModelState.MaxAllowedErrors = 2;
-            validationContext.ModelState.AddModelError("key1", "error1");
-            var validator = new DefaultObjectValidator(
-                testValidationContext.ExcludeFilters,
-                testValidationContext.ModelMetadataProvider);
-            var topLevelValidationNode =
-                new ModelValidationNode(
-                    "user",
-                    testValidationContext.ModelValidationContext.ModelExplorer.Metadata,
-                    testValidationContext.ModelValidationContext.ModelExplorer.Model)
-                {
-                    ValidateAllProperties = true
-                };
+            validationState.Add(model, new ValidationStateEntry() { Key = "user", });
 
             // Act
-            validator.Validate(validationContext, topLevelValidationNode);
+            validator.Validate(validatorProvider, modelState, validationState, "user", model);
 
             // Assert
-            Assert.Equal(new[] { "key1", "", "user.ConfirmPassword" },
-                validationContext.ModelState.Keys.ToArray());
-            var modelState = validationContext.ModelState["user.ConfirmPassword"];
-            Assert.Empty(modelState.Errors);
-            Assert.Equal(modelState.ValidationState, ModelValidationState.Skipped);
+            Assert.False(modelState.IsValid);
+            AssertKeysEqual(modelState, string.Empty, "key1", "user.ConfirmPassword", "user.Password");
 
-            var error = Assert.Single(validationContext.ModelState[""].Errors);
+            var entry = modelState[string.Empty];
+            Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
+            var error = Assert.Single(entry.Errors);
             Assert.IsType<TooManyModelErrorsException>(error.Exception);
         }
 
         [Fact]
-        public void ForExcludedNonModelBoundTypes_NoEntryInModelState()
+        [ReplaceCulture]
+        public void Validate_CollectionType_ArrayOfSimpleType_Valid_DefaultKeyPattern()
         {
             // Arrange
-            var user = new User()
-            {
-                Password = "password-val",
-                ConfirmPassword = "not-password-val"
-            };
+            var validatorProvider = CreateValidatorProvider();
+            var modelState = new ModelStateDictionary();
+            var validationState = new ValidationStateDictionary();
 
-            var testValidationContext = GetModelValidationContext(
-                user,
-                typeof(User),
-                new List<Type> { typeof(User) });
-            var validationContext = testValidationContext.ModelValidationContext;
-            var validator = new DefaultObjectValidator(
-                testValidationContext.ExcludeFilters,
-                testValidationContext.ModelMetadataProvider);
-            var topLevelValidationNode =
-                new ModelValidationNode(
-                    "user",
-                    testValidationContext.ModelValidationContext.ModelExplorer.Metadata,
-                    testValidationContext.ModelValidationContext.ModelExplorer.Model)
-                {
-                    ValidateAllProperties = true
-                };
+            var validator = CreateValidator();
+
+            var model = (object)new int[] { 5, 17 };
+
+            modelState.SetModelValue("parameter[0]", "5", "17");
+            modelState.SetModelValue("parameter[1]", "17", "5");
+            validationState.Add(model, new ValidationStateEntry() { Key = "parameter" });
 
             // Act
-            validator.Validate(validationContext, topLevelValidationNode);
+            validator.Validate(validatorProvider, modelState, validationState, "parameter", model);
 
             // Assert
-            Assert.True(validationContext.ModelState.IsValid);
-            Assert.Empty(validationContext.ModelState);
+            Assert.True(modelState.IsValid);
+            AssertKeysEqual(modelState, "parameter[0]", "parameter[1]");
+
+            var entry = modelState["parameter[0]"];
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+            Assert.Empty(entry.Errors);
+
+            entry = modelState["parameter[0]"];
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+            Assert.Empty(entry.Errors);
         }
 
         [Fact]
-        public void ForExcludedModelBoundTypes_Properties_MarkedAsSkipped()
+        [ReplaceCulture]
+        public void Validate_CollectionType_ArrayOfComplexType_Invalid()
         {
             // Arrange
-            var user = new User()
-            {
-                Password = "password-val",
-                ConfirmPassword = "not-password-val"
-            };
+            var validatorProvider = CreateValidatorProvider();
+            var modelState = new ModelStateDictionary();
+            var validationState = new ValidationStateDictionary();
 
-            var testValidationContext = GetModelValidationContext(
-                user,
-                typeof(User),
-                new List<Type> { typeof(User) });
-            var validationContext = testValidationContext.ModelValidationContext;
+            var validator = CreateValidator();
 
-            // Set the value on model state as a model binder would.
-            validationContext.ModelState.SetModelValue("user.Password", new string[] { "password" }, "password");
-            var validator = new DefaultObjectValidator(
-                testValidationContext.ExcludeFilters,
-                testValidationContext.ModelMetadataProvider);
-            var topLevelValidationNode =
-                new ModelValidationNode(
-                    "user",
-                    testValidationContext.ModelValidationContext.ModelExplorer.Metadata,
-                    testValidationContext.ModelValidationContext.ModelExplorer.Model)
-                {
-                    ValidateAllProperties = true
-                };
+            var model = (object)new Person[] { new Person(), new Person() };
+
+            validationState.Add(model, new ValidationStateEntry() { Key = string.Empty });
 
             // Act
-            validator.Validate(validationContext, topLevelValidationNode);
+            validator.Validate(validatorProvider, modelState, validationState, string.Empty, model);
 
             // Assert
-            var entry = Assert.Single(validationContext.ModelState);
-            Assert.Equal("user.Password", entry.Key);
-            Assert.Empty(entry.Value.Errors);
-            Assert.Equal(entry.Value.ValidationState, ModelValidationState.Skipped);
-            Assert.Equal(new string[] { "password" }, entry.Value.RawValue);
-            Assert.Same("password", entry.Value.AttemptedValue);
-        }
+            Assert.False(modelState.IsValid);
+            AssertKeysEqual(modelState, "[0].Name", "[0].Profession", "[1].Name", "[1].Profession");
 
-        private class Person2
-        {
-            public Address Address { get; set; }
+            var entry = modelState["[0].Name"];
+            Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
+            var error = Assert.Single(entry.Errors);
+            Assert.Equal(ValidationAttributeUtil.GetRequiredErrorMessage("Name"), error.ErrorMessage);
+
+            entry = modelState["[0].Profession"];
+            Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
+            error = Assert.Single(entry.Errors);
+            Assert.Equal(ValidationAttributeUtil.GetRequiredErrorMessage("Profession"), error.ErrorMessage);
+
+            entry = modelState["[1].Name"];
+            Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
+            error = Assert.Single(entry.Errors);
+            Assert.Equal(ValidationAttributeUtil.GetRequiredErrorMessage("Name"), error.ErrorMessage);
+
+            entry = modelState["[1].Profession"];
+            Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
+            error = Assert.Single(entry.Errors);
+            Assert.Equal(ValidationAttributeUtil.GetRequiredErrorMessage("Profession"), error.ErrorMessage);
         }
 
         [Fact]
-        public void Validate_IfSuppressIsSet_MarkedAsSkipped()
+        [ReplaceCulture]
+        public void Validate_CollectionType_ListOfComplexType_Invalid()
         {
             // Arrange
-            var testValidationContext = GetModelValidationContext(
-                new Person2()
-                {
-                    Address = new Address { Street = "GreaterThan5Characters" }
-                },
-                typeof(Person2));
-            var validationContext = testValidationContext.ModelValidationContext;
+            var validatorProvider = CreateValidatorProvider();
+            var modelState = new ModelStateDictionary();
+            var validationState = new ValidationStateDictionary();
 
-            // Create an entry like a model binder would.
-            validationContext.ModelState.Add("person.Address", new ModelState());
+            var validator = CreateValidator();
 
-            var validator = new DefaultObjectValidator(
-                testValidationContext.ExcludeFilters,
-                testValidationContext.ModelMetadataProvider);
-            var modelExplorer = testValidationContext.ModelValidationContext.ModelExplorer;
-            var topLevelValidationNode = new ModelValidationNode(
-                "person",
-                modelExplorer.Metadata,
-                modelExplorer.Model);
+            var model = (object)new List<Person> { new Person(), new Person() };
 
-            var propertyExplorer = modelExplorer.GetExplorerForProperty("Address");
-            var childNode = new ModelValidationNode(
-                "person.Address",
-                propertyExplorer.Metadata,
-                propertyExplorer.Model)
-            {
-                SuppressValidation = true
-            };
-
-            topLevelValidationNode.ChildNodes.Add(childNode);
+            validationState.Add(model, new ValidationStateEntry() { Key = string.Empty });
 
             // Act
-            validator.Validate(validationContext, topLevelValidationNode);
+            validator.Validate(validatorProvider, modelState, validationState, string.Empty, model);
 
             // Assert
-            Assert.True(validationContext.ModelState.IsValid);
-            Assert.Equal(1, validationContext.ModelState.Count);
-            var modelState = validationContext.ModelState["person.Address"];
-            Assert.Equal(modelState.ValidationState, ModelValidationState.Skipped);
+            Assert.False(modelState.IsValid);
+            AssertKeysEqual(modelState, "[0].Name", "[0].Profession", "[1].Name", "[1].Profession");
+
+            var entry = modelState["[0].Name"];
+            Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
+            var error = Assert.Single(entry.Errors);
+            Assert.Equal(ValidationAttributeUtil.GetRequiredErrorMessage("Name"), error.ErrorMessage);
+
+            entry = modelState["[0].Profession"];
+            Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
+            error = Assert.Single(entry.Errors);
+            Assert.Equal(ValidationAttributeUtil.GetRequiredErrorMessage("Profession"), error.ErrorMessage);
+
+            entry = modelState["[1].Name"];
+            Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
+            error = Assert.Single(entry.Errors);
+            Assert.Equal(ValidationAttributeUtil.GetRequiredErrorMessage("Name"), error.ErrorMessage);
+
+            entry = modelState["[1].Profession"];
+            Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
+            error = Assert.Single(entry.Errors);
+            Assert.Equal(ValidationAttributeUtil.GetRequiredErrorMessage("Profession"), error.ErrorMessage);
         }
 
         [Theory]
@@ -577,63 +642,55 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         [InlineData(new[] { "Foo", "Bar", "Baz" }, typeof(HashSet<string>))]
         [InlineData(new[] { "1/1/14", "2/2/14", "3/3/14" }, typeof(ICollection<DateTime>))]
         [InlineData(new[] { "Foo", "Bar", "Baz" }, typeof(HashSet<Uri>))]
-        public void EnumerableType_ValidationSuccessful(object model, Type type)
+        public void Validate_IndexedCollectionTypes_Valid(object model, Type type)
         {
             // Arrange
-            var modelStateDictionary = new ModelStateDictionary();
-            modelStateDictionary.Add("items[0]", new ModelState());
-            modelStateDictionary.Add("items[1]", new ModelState());
-            modelStateDictionary.Add("items[2]", new ModelState());
+            var validatorProvider = CreateValidatorProvider();
+            var modelState = new ModelStateDictionary();
+            var validationState = new ValidationStateDictionary();
 
-            var testValidationContext = GetModelValidationContext(
-                model,
-                type,
-                excludedTypes: null,
-                modelStateDictionary: modelStateDictionary);
+            var validator = CreateValidator(new SimpleTypesExcludeFilter());
 
-            var excludeTypeFilters = new List<IExcludeTypeValidationFilter>();
-            excludeTypeFilters.Add(new SimpleTypesExcludeFilter());
-            testValidationContext.ExcludeFilters = excludeTypeFilters;
-
-            var validationContext = testValidationContext.ModelValidationContext;
-
-            var validator = new DefaultObjectValidator(
-                testValidationContext.ExcludeFilters,
-                testValidationContext.ModelMetadataProvider);
-            var topLevelValidationNode =
-                new ModelValidationNode(
-                    "items",
-                    testValidationContext.ModelValidationContext.ModelExplorer.Metadata,
-                    testValidationContext.ModelValidationContext.ModelExplorer.Model)
-                {
-                    ValidateAllProperties = true
-                };
+            modelState.Add("items[0]", new ModelState());
+            modelState.Add("items[1]", new ModelState());
+            modelState.Add("items[2]", new ModelState());
+            validationState.Add(model, new ValidationStateEntry()
+            {
+                Key = "items",
+                
+                // Force the validator to treat it as the specified type.
+                Metadata = MetadataProvider.GetMetadataForType(type),
+            });
 
             // Act
-            validator.Validate(validationContext, topLevelValidationNode);
+            validator.Validate(validatorProvider, modelState, validationState, "items", model);
 
             // Assert
-            Assert.True(validationContext.ModelState.IsValid);
-            Assert.Equal(3, validationContext.ModelState.Count);
-            var modelState = validationContext.ModelState["items[0]"];
-            Assert.Equal(modelState.ValidationState, ModelValidationState.Valid);
+            Assert.True(modelState.IsValid);
+            AssertKeysEqual(modelState, "items[0]", "items[1]", "items[2]");
 
-            modelState = validationContext.ModelState["items[1]"];
-            Assert.Equal(modelState.ValidationState, ModelValidationState.Valid);
+            var entry = modelState["items[0]"];
+            Assert.Equal(entry.ValidationState, ModelValidationState.Valid);
+            Assert.Empty(entry.Errors);
 
-            modelState = validationContext.ModelState["items[2]"];
-            Assert.Equal(modelState.ValidationState, ModelValidationState.Valid);
+            entry = modelState["items[1]"];
+            Assert.Equal(entry.ValidationState, ModelValidationState.Valid);
+            Assert.Empty(entry.Errors);
+
+            entry = modelState["items[2]"];
+            Assert.Equal(entry.ValidationState, ModelValidationState.Valid);
+            Assert.Empty(entry.Errors);
         }
 
         [Fact]
-        public void DictionaryType_ValidationSuccessful()
+        public void Validate_CollectionType_DictionaryOfSimpleType_Invalid()
         {
             // Arrange
-            var modelStateDictionary = new ModelStateDictionary();
-            modelStateDictionary.Add("items[0].Key", new ModelState());
-            modelStateDictionary.Add("items[0].Value", new ModelState());
-            modelStateDictionary.Add("items[1].Key", new ModelState());
-            modelStateDictionary.Add("items[1].Value", new ModelState());
+            var validatorProvider = CreateValidatorProvider();
+            var modelState = new ModelStateDictionary();
+            var validationState = new ValidationStateDictionary();
+
+            var validator = CreateValidator(new SimpleTypesExcludeFilter());
 
             var model = new Dictionary<string, string>()
             {
@@ -641,161 +698,215 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                 { "BarKey", "BarValue" }
             };
 
-            var testValidationContext = GetModelValidationContext(
-                model,
-                typeof(Dictionary<string, string>),
-                excludedTypes: null,
-                modelStateDictionary: modelStateDictionary);
+            modelState.Add("items[0].Key", new ModelState());
+            modelState.Add("items[0].Value", new ModelState());
+            modelState.Add("items[1].Key", new ModelState());
+            modelState.Add("items[1].Value", new ModelState());
+            validationState.Add(model, new ValidationStateEntry() { Key = "items" });
 
-            var excludeTypeFilters = new List<IExcludeTypeValidationFilter>();
-            excludeTypeFilters.Add(new SimpleTypesExcludeFilter());
-            testValidationContext.ExcludeFilters = excludeTypeFilters;
+            // Act
+            validator.Validate(validatorProvider, modelState, validationState, "items", model);
 
-            var validationContext = testValidationContext.ModelValidationContext;
+            // Assert
+            Assert.True(modelState.IsValid);
+            AssertKeysEqual(modelState, "items[0].Key", "items[0].Value", "items[1].Key", "items[1].Value");
 
-            var validator = new DefaultObjectValidator(
-                testValidationContext.ExcludeFilters,
-                testValidationContext.ModelMetadataProvider);
+            var entry = modelState["items[0].Key"];
+            Assert.Equal(ModelValidationState.Skipped, entry.ValidationState);
+            Assert.Empty(entry.Errors);
 
-            var topLevelValidationNode =
-                new ModelValidationNode(
-                    "items",
-                    testValidationContext.ModelValidationContext.ModelExplorer.Metadata,
-                    testValidationContext.ModelValidationContext.ModelExplorer.Model)
+            entry = modelState["items[0].Value"];
+            Assert.Equal(ModelValidationState.Skipped, entry.ValidationState);
+            Assert.Empty(entry.Errors);
+
+            entry = modelState["items[1].Key"];
+            Assert.Equal(ModelValidationState.Skipped, entry.ValidationState);
+            Assert.Empty(entry.Errors);
+
+            entry = modelState["items[1].Value"];
+            Assert.Equal(ModelValidationState.Skipped, entry.ValidationState);
+            Assert.Empty(entry.Errors);
+        }
+
+        [Fact]
+        [ReplaceCulture]
+        public void Validate_CollectionType_DictionaryOfComplexType_Invalid()
+        {
+            // Arrange
+            var validatorProvider = CreateValidatorProvider();
+            var modelState = new ModelStateDictionary();
+            var validationState = new ValidationStateDictionary();
+
+            var validator = CreateValidator();
+
+            var model = (object)new Dictionary<string, Person> { { "Joe", new Person() }, { "Mark", new Person() } };
+
+            modelState.SetModelValue("[0].Key", "Joe", "Joe");
+            modelState.SetModelValue("[1].Key", "Mark", "Mark");
+            validationState.Add(model, new ValidationStateEntry() { Key = string.Empty });
+
+            // Act
+            validator.Validate(validatorProvider, modelState, validationState, string.Empty, model);
+
+            // Assert
+            Assert.False(modelState.IsValid);
+            AssertKeysEqual(
+                modelState,
+                "[0].Key",
+                "[0].Value.Name", 
+                "[0].Value.Profession",
+                "[1].Key",
+                "[1].Value.Name",
+                "[1].Value.Profession");
+
+            var entry = modelState["[0].Key"];
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+            Assert.Empty(entry.Errors);
+
+            entry = modelState["[1].Key"];
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+            Assert.Empty(entry.Errors);
+
+            entry = modelState["[0].Value.Name"];
+            Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
+            var error = Assert.Single(entry.Errors);
+            Assert.Equal(error.ErrorMessage, ValidationAttributeUtil.GetRequiredErrorMessage("Name"));
+
+            entry = modelState["[0].Value.Profession"];
+            Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
+            error = Assert.Single(entry.Errors);
+            Assert.Equal(error.ErrorMessage, ValidationAttributeUtil.GetRequiredErrorMessage("Profession"));
+
+            entry = modelState["[1].Value.Name"];
+            Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
+            error = Assert.Single(entry.Errors);
+            Assert.Equal(error.ErrorMessage, ValidationAttributeUtil.GetRequiredErrorMessage("Name"));
+
+            entry = modelState["[1].Value.Profession"];
+            Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
+            error = Assert.Single(entry.Errors);
+            Assert.Equal(error.ErrorMessage, ValidationAttributeUtil.GetRequiredErrorMessage("Profession"));
+        }
+
+        [Fact]
+        [ReplaceCulture]
+        public void Validate_DoesntCatchExceptions_FromPropertyAccessors()
+        {
+            // Arrange
+            var validatorProvider = CreateValidatorProvider();
+            var modelState = new ModelStateDictionary();
+            var validationState = new ValidationStateDictionary();
+
+            var validator = CreateValidator();
+
+            var model = new ThrowingProperty();
+
+            // Act & Assert
+            Assert.Throws(
+                typeof(InvalidTimeZoneException),
+                () =>
                 {
-                    ValidateAllProperties = true
-                };
-
-            // Act
-            validator.Validate(validationContext, topLevelValidationNode);
-
-            // Assert
-            Assert.True(validationContext.ModelState.IsValid);
-            Assert.Equal(4, validationContext.ModelState.Count);
-            var modelState = validationContext.ModelState["items[0].Key"];
-            Assert.Equal(ModelValidationState.Skipped, modelState.ValidationState);
-            modelState = validationContext.ModelState["items[0].Value"];
-            Assert.Equal(ModelValidationState.Skipped, modelState.ValidationState);
-            modelState = validationContext.ModelState["items[1].Key"];
-            Assert.Equal(ModelValidationState.Skipped, modelState.ValidationState);
-            modelState = validationContext.ModelState["items[1].Value"];
-            Assert.Equal(ModelValidationState.Skipped, modelState.ValidationState);
+                    validator.Validate(validatorProvider, modelState, validationState, string.Empty, model);
+                });
         }
 
+        // We use the reference equality comparer for breaking cycles
         [Fact]
-        public void Validator_IfValidateAllPropertiesIsNotSet_DoesNotAutoExpand()
+        public void Validate_DoesNotUseOverridden_GetHashCodeOrEquals()
         {
             // Arrange
-            var testValidationContext = GetModelValidationContext(
-                LonelyPerson,
-                typeof(Person));
+            var validatorProvider = CreateValidatorProvider();
+            var modelState = new ModelStateDictionary();
+            var validationState = new ValidationStateDictionary();
 
-            var validationContext = testValidationContext.ModelValidationContext;
-            var validator = new DefaultObjectValidator(
-                testValidationContext.ExcludeFilters,
-                testValidationContext.ModelMetadataProvider);
-            var modelExplorer = testValidationContext.ModelValidationContext.ModelExplorer;
+            var validator = CreateValidator();
 
-            // No ChildNode added
-            var topLevelValidationNode = new ModelValidationNode(
-                "person",
-                modelExplorer.Metadata,
-                modelExplorer.Model);
-
-            // Act
-            validator.Validate(validationContext, topLevelValidationNode);
-
-            // Assert
-            Assert.True(validationContext.ModelState.IsValid);
-
-            // Since Person is not IValidatable and we do not look at its properties, the state is empty.
-            Assert.Empty(validationContext.ModelState.Keys);
-        }
-
-        [Fact]
-        public void Validator_IfValidateAllPropertiesSet_WithChildNodes_DoesNotAutoExpand()
-        {
-            // Arrange
-            var testValidationContext = GetModelValidationContext(
-                LonelyPerson,
-                typeof(Person));
-
-            var validationContext = testValidationContext.ModelValidationContext;
-            var validator = new DefaultObjectValidator(
-                testValidationContext.ExcludeFilters,
-                testValidationContext.ModelMetadataProvider);
-            var modelExplorer = testValidationContext.ModelValidationContext.ModelExplorer;
-
-            var topLevelValidationNode = new ModelValidationNode(
-                "person",
-                modelExplorer.Metadata,
-                modelExplorer.Model)
+            var model = new TypeThatOverridesEquals[]
             {
-                ValidateAllProperties = true
+                new TypeThatOverridesEquals { Funny = "hehe" },
+                new TypeThatOverridesEquals { Funny = "hehe" }
             };
 
-            var propertyExplorer = modelExplorer.GetExplorerForProperty("Profession");
-            var childNode = new ModelValidationNode(
-                "person.Profession",
-                propertyExplorer.Metadata,
-                propertyExplorer.Model);
+            // Act & Assert (does not throw)
+            validator.Validate(validatorProvider, modelState, validationState, string.Empty, model);
+        }
 
-            topLevelValidationNode.ChildNodes.Add(childNode);
+        [Fact]
+        public void Validate_ForExcludedType_PropertiesMarkedAsSkipped()
+        {
+            // Arrange
+            var validatorProvider = CreateValidatorProvider();
+            var modelState = new ModelStateDictionary();
+            var validationState = new ValidationStateDictionary();
+
+            var validator = CreateValidator(typeof(User));
+
+            var model = new User()
+            {
+                Password = "password-val",
+                ConfirmPassword = "not-password-val"
+            };
+
+            // Note that user.ConfirmPassword has no entry in modelstate - we should not
+            // create one just to mark it as skipped.
+            modelState.SetModelValue("user.Password", "password-val", "password-val");
+            validationState.Add(model, new ValidationStateEntry() { Key = "user", });
 
             // Act
-            validator.Validate(validationContext, topLevelValidationNode);
+            validator.Validate(validatorProvider, modelState, validationState, "user", model);
 
             // Assert
-            var modelState = validationContext.ModelState;
-            Assert.False(modelState.IsValid);
+            Assert.Equal(ModelValidationState.Valid, modelState.ValidationState);
+            AssertKeysEqual(modelState, "user.Password");
 
-            // Since the model is invalid at property level there is no entry in the model state for top level node.
-            Assert.Single(modelState.Keys, k => k == "person.Profession");
-            Assert.Equal(1, modelState.Count);
+            var entry = modelState["user.Password"];
+            Assert.Equal(ModelValidationState.Skipped, entry.ValidationState);
+            Assert.Empty(entry.Errors);
         }
 
-        private TestModelValidationContext GetModelValidationContext(
-            object model,
-            Type type,
-            List<Type> excludedTypes = null)
+        private static IModelValidatorProvider CreateValidatorProvider()
         {
-            return GetModelValidationContext(model, type, excludedTypes, new ModelStateDictionary());
+            return TestModelValidatorProvider.CreateDefaultProvider();
         }
 
-        private TestModelValidationContext GetModelValidationContext(
-            object model,
-            Type type,
-            List<Type> excludedTypes,
-            ModelStateDictionary modelStateDictionary)
+        private static DefaultObjectValidator CreateValidator(Type excludedType)
         {
-            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
-
-            var excludedValidationTypesPredicate = new List<IExcludeTypeValidationFilter>();
-            if (excludedTypes != null)
+            var excludeFilters = new List<IExcludeTypeValidationFilter>();
+            if (excludedType != null)
             {
-                var mockExcludeTypeFilter = new Mock<IExcludeTypeValidationFilter>();
-                mockExcludeTypeFilter
+                var excludeFilter = new Mock<IExcludeTypeValidationFilter>();
+                excludeFilter
                     .Setup(o => o.IsTypeExcluded(It.IsAny<Type>()))
-                    .Returns<Type>(excludedType => excludedTypes.Any(t => t.IsAssignableFrom(excludedType)));
+                    .Returns<Type>(t => t.IsAssignableFrom(excludedType));
 
-                excludedValidationTypesPredicate.Add(mockExcludeTypeFilter.Object);
+                excludeFilters.Add(excludeFilter.Object);
             }
 
-            var modelExplorer = modelMetadataProvider.GetModelExplorerForType(type, model);
-
-            return new TestModelValidationContext
-            {
-                ModelValidationContext = new ModelValidationContext(
-                    null,
-                    TestModelValidatorProvider.CreateDefaultProvider(),
-                    modelStateDictionary,
-                    modelExplorer),
-                ModelMetadataProvider = modelMetadataProvider,
-                ExcludeFilters = excludedValidationTypesPredicate
-            };
+            return new DefaultObjectValidator(excludeFilters, TestModelMetadataProvider.CreateDefaultProvider());
         }
 
-        public class Person
+        private static DefaultObjectValidator CreateValidator(params IExcludeTypeValidationFilter[] excludeFilters)
+        {
+            return new DefaultObjectValidator(excludeFilters, TestModelMetadataProvider.CreateDefaultProvider());
+        }
+
+        private static void AssertKeysEqual(ModelStateDictionary modelState, params string[] keys)
+        {
+            Assert.Equal<string>(keys.OrderBy(k => k).ToArray(), modelState.Keys.OrderBy(k => k).ToArray());
+        }
+
+        private class ThrowingProperty
+        {
+            public string WatchOut
+            {
+                get
+                {
+                    throw new InvalidTimeZoneException();
+                }
+            }
+        }
+
+        private class Person
         {
             [Required, StringLength(10)]
             public string Name { get; set; }
@@ -806,33 +917,32 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             public Person Friend { get; set; }
         }
 
-        public class Address
+        private class Person2
+        {
+            public string Name { get; set; }
+            public Address Address { get; set; }
+        }
+
+        private class Address
         {
             [StringLength(5)]
             [RegularExpression("hehehe")]
             public string Street { get; set; }
         }
 
-        public struct ValueType
+        private struct ValueType
         {
-            public int Value;
-            public string Reference;
+            public int Value { get; set; }
+            public string Reference { get; set; }
         }
 
-        public class ReferenceType
+        private class ReferenceType
         {
-            public static string StaticProperty { get { return "static"; } }
-            public int Value;
-            public string Reference;
+            public int Value { get; set; }
+            public string Reference { get; set; }
         }
 
-        public class Pet
-        {
-            [Required]
-            public Person Owner { get; set; }
-        }
-
-        public class ValidatableModel : IValidatableObject
+        private class ValidatableModel : IValidatableObject
         {
             public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
             {
@@ -842,7 +952,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             }
         }
 
-        public class TypeThatOverridesEquals
+        private class TypeThatOverridesEquals
         {
             [StringLength(2)]
             public string Funny { get; set; }
@@ -858,42 +968,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             }
         }
 
-        public class VariableTest
+        private class VariableTest
         {
             [Range(15, 25)]
             public int test;
-        }
-
-        public class Team
-        {
-            [Required]
-            public int Id { get; set; }
-
-            [Required]
-            [StringLength(20, MinimumLength = 4)]
-            public string TeamName { get; set; }
-
-            [MaxLength(10)]
-            public string Lead { get; set; }
-
-            [Range(3, 100)]
-            public int TeamSize { get; set; }
-
-            public string TeamDescription { get; set; }
-        }
-
-        public class Org
-        {
-            [Required]
-            public int Id { get; set; }
-
-            [StringLength(20, MinimumLength = 4)]
-            public string OrgName { get; set; }
-
-            [Required]
-            public Team Dev { get; set; }
-
-            public Team Test { get; set; }
         }
 
         private class User : IValidatableObject
@@ -910,26 +988,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                     yield return new ValidationResult("Password does not meet complexity requirements.");
                 }
             }
-        }
-
-        public class TestServiceProvider
-        {
-            [FromServices]
-            [Required]
-            public ITestService TestService { get; set; }
-        }
-
-        public interface ITestService
-        {
-        }
-
-        private class TestModelValidationContext
-        {
-            public ModelValidationContext ModelValidationContext { get; set; }
-
-            public IModelMetadataProvider ModelMetadataProvider { get; set; }
-
-            public IList<IExcludeTypeValidationFilter> ExcludeFilters { get; set; }
         }
     }
 }

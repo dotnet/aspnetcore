@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.Framework.Internal;
+
 namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {
     /// <summary>
@@ -9,12 +11,20 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
     public interface IObjectModelValidator
     {
         /// <summary>
-        /// Validates the given model in <see cref="ModelValidationContext.ModelExplorer"/>.
+        /// Validates the provided object.
         /// </summary>
-        /// <param name="validationContext">The <see cref="ModelValidationContext"/> associated with the current call.
+        /// <param name="validatorProvider">The <see cref="IModelValidatorProvider"/>.</param>
+        /// <param name="modelState">The <see cref="ModelStateDictionary"/>.</param>
+        /// <param name="validationState">The <see cref="ValidationStateDictionary"/>. May be null.</param>
+        /// <param name="prefix">
+        /// The model prefix. Used to map the model object to entries in <paramref name="modelState"/>.
         /// </param>
-        /// <param name="validationNode">The <see cref="ModelValidationNode"/> for the model which gets validated.
-        /// </param>
-        void Validate(ModelValidationContext validationContext, ModelValidationNode validationNode);
+        /// <param name="model">The model object.</param>
+        void Validate(
+            IModelValidatorProvider validatorProvider,
+            ModelStateDictionary modelState,
+            ValidationStateDictionary validationState,
+            string prefix,
+            object model);
     }
 }

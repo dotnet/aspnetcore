@@ -57,12 +57,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 }
                 else
                 {
-                    var validationNode = new ModelValidationNode(
-                        bindingContext.ModelName,
-                        bindingContext.ModelMetadata,
-                        model);
-
-                    return ModelBindingResult.SuccessAsync(bindingContext.ModelName, model, validationNode);
+                    return ModelBindingResult.SuccessAsync(bindingContext.ModelName, model);
                 }
             }
             catch (Exception ex)

@@ -44,7 +44,11 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             // ModelState (not set unless inner binder sets it)
             Assert.True(modelState.IsValid);
-            Assert.Empty(modelState);
+            var entry = modelState[string.Empty];
+            Assert.Null(entry.AttemptedValue);
+            Assert.Null(entry.RawValue);
+            Assert.Empty(entry.Errors);
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
         }
 
         [Fact]
@@ -294,15 +298,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                     new string[] { address.Street },
                     address.Street);
 
-                var validationNode = new ModelValidationNode(
-                  bindingContext.ModelName,
-                  bindingContext.ModelMetadata,
-                  address)
-                {
-                    ValidateAllProperties = true
-                };
-
-                return ModelBindingResult.SuccessAsync(bindingContext.ModelName, address, validationNode);
+                return ModelBindingResult.SuccessAsync(bindingContext.ModelName, address);
             }
         }
 
@@ -316,11 +312,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                     new string[] { model },
                     model);
 
-                var modelValidationNode = new ModelValidationNode(
-                    bindingContext.ModelName,
-                    bindingContext.ModelMetadata,
-                    model);
-                return ModelBindingResult.SuccessAsync(bindingContext.ModelName, model, modelValidationNode);
+                return ModelBindingResult.SuccessAsync(bindingContext.ModelName, model);
             }
         }
 
@@ -328,7 +320,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
         {
             public Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
             {
-                return ModelBindingResult.SuccessAsync(bindingContext.ModelName, model: null, validationNode: null);
+                return ModelBindingResult.SuccessAsync(bindingContext.ModelName, model: null);
             }
         }
 

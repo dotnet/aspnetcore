@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 
         public IEnumerable<ModelValidationResult> Validate(ModelValidationContext context)
         {
-            var model = context.ModelExplorer.Model;
+            var model = context.Model;
             if (model == null)
             {
                 return Enumerable.Empty<ModelValidationResult>();

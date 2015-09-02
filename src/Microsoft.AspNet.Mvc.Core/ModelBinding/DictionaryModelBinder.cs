@@ -9,6 +9,7 @@ using System.Linq;
 using System.Reflection;
 #endif
 using System.Threading.Tasks;
+using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
@@ -24,7 +25,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public override async Task<ModelBindingResult> BindModelAsync([NotNull] ModelBindingContext bindingContext)
         {
             var result = await base.BindModelAsync(bindingContext);
-            if (result == null || !result.IsModelSet)
+            if (!result.IsModelSet)
             {
                 // No match for the prefix at all.
                 return result;
@@ -65,8 +66,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 model: null);
 
             var modelBinder = bindingContext.OperationBindingContext.ModelBinder;
-            var validationNode = result.ValidationNode;
 
+            var keyMappings = new Dictionary<string, TKey>(StringComparer.Ordinal);
             foreach (var kvp in keys)
             {
                 // Use InvariantCulture to convert the key since ExpressionHelper.GetExpressionText() would use
@@ -79,11 +80,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
                 // Always add an entry to the dictionary but validate only if binding was successful.
                 model[convertedKey] = ModelBindingHelper.CastOrDefault<TValue>(valueResult.Model);
-                if (valueResult.IsModelSet)
-                {
-                    validationNode.ChildNodes.Add(valueResult.ValidationNode);
-                }
+                keyMappings.Add(kvp.Key, convertedKey);
             }
+
+            bindingContext.ValidationState.Add(model, new ValidationStateEntry()
+            {
+                Strategy = new ShortFormDictionaryValidationStrategy<TKey, TValue>(keyMappings, valueMetadata),
+            });
 
             return result;
         }

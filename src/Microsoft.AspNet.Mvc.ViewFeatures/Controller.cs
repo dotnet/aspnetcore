@@ -1514,18 +1514,12 @@ namespace Microsoft.AspNet.Mvc
                 MetadataProvider,
                 modelName);
 
-            var validationContext = new ModelValidationContext(
-                bindingSource: null,
-                validatorProvider: BindingContext.ValidatorProvider,
-                modelState: ModelState,
-                modelExplorer: modelExplorer);
-
             ObjectValidator.Validate(
-                validationContext,
-                new ModelValidationNode(modelName, modelExplorer.Metadata, model)
-                {
-                    ValidateAllProperties = true
-                });
+                BindingContext.ValidatorProvider,
+                ModelState,
+                validationState: null,
+                prefix: prefix,
+                model: model);
             return ModelState.IsValid;
         }
 

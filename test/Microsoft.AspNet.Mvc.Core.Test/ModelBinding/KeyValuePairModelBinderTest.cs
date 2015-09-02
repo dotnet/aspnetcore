@@ -32,7 +32,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.NotEqual(ModelBindingResult.NoResult, result);
             Assert.Null(result.Model);
             Assert.False(bindingContext.ModelState.IsValid);
-            Assert.Null(result.ValidationNode);
             Assert.Equal("someName", bindingContext.ModelName);
             var error = Assert.Single(bindingContext.ModelState["someName.Key"].Errors);
             Assert.Equal("A value is required.", error.ErrorMessage);
@@ -54,7 +53,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             // Assert
             Assert.Null(result.Model);
             Assert.False(bindingContext.ModelState.IsValid);
-            Assert.Null(result.ValidationNode);
             Assert.Equal("someName", bindingContext.ModelName);
             Assert.Equal(bindingContext.ModelState["someName.Value"].Errors.First().ErrorMessage, "A value is required.");
         }
@@ -99,19 +97,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             // Assert
             Assert.NotEqual(ModelBindingResult.NoResult, result);
             Assert.Equal(new KeyValuePair<int, string>(42, "some-value"), result.Model);
-            Assert.NotNull(result.ValidationNode);
-            Assert.Equal(new KeyValuePair<int, string>(42, "some-value"), result.ValidationNode.Model);
-            Assert.Equal("someName", result.ValidationNode.Key);
-
-            var validationNode = result.ValidationNode.ChildNodes[0];
-            Assert.Equal("someName.Key", validationNode.Key);
-            Assert.Equal(42, validationNode.Model);
-            Assert.Empty(validationNode.ChildNodes);
-
-            validationNode = result.ValidationNode.ChildNodes[1];
-            Assert.Equal("someName.Value", validationNode.Key);
-            Assert.Equal("some-value", validationNode.Model);
-            Assert.Empty(validationNode.ChildNodes);
         }
 
         [Theory]
@@ -126,11 +111,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             ModelBindingResult innerResult;
             if (isSuccess)
             {
-                innerResult = ModelBindingResult.Success(string.Empty, model, validationNode: null);
+                innerResult = ModelBindingResult.Success("somename.key", model);
             }
             else
             {
-                innerResult = ModelBindingResult.Failed(string.Empty);
+                innerResult = ModelBindingResult.Failed("somename.key");
             }
             
             var innerBinder = new Mock<IModelBinder>();
@@ -144,10 +129,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var bindingContext = GetBindingContext(new SimpleValueProvider(), innerBinder.Object);
 
             var binder = new KeyValuePairModelBinder<int, string>();
-            var modelValidationNodeList = new List<ModelValidationNode>();
 
             // Act
-            var result = await binder.TryBindStrongModel<int>(bindingContext, "key", modelValidationNodeList);
+            var result = await binder.TryBindStrongModel<int>(bindingContext, "key");
 
             // Assert
             Assert.Equal(innerResult, result);
@@ -180,10 +164,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.Equal(default(KeyValuePair<string, string>), Assert.IsType<KeyValuePair<string, string>>(result.Model));
             Assert.Equal("modelName", result.Key);
             Assert.True(result.IsModelSet);
-
-            Assert.Equal(result.ValidationNode.Model, result.Model);
-            Assert.Same(result.ValidationNode.Key, result.Key);
-            Assert.Same(result.ValidationNode.ModelMetadata, context.ModelMetadata);
         }
 
         [Theory]
@@ -260,8 +240,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                     if (mbc.ModelType == typeof(int))
                     {
                         var model = 42;
-                        var validationNode = new ModelValidationNode(mbc.ModelName, mbc.ModelMetadata, model);
-                        return ModelBindingResult.SuccessAsync(mbc.ModelName, model, validationNode);
+                        return ModelBindingResult.SuccessAsync(mbc.ModelName, model);
                     }
                     return ModelBindingResult.NoResultAsync;
                 });
@@ -278,8 +257,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                     if (mbc.ModelType == typeof(string))
                     {
                         var model = "some-value";
-                        var validationNode = new ModelValidationNode(mbc.ModelName, mbc.ModelMetadata, model);
-                        return ModelBindingResult.SuccessAsync(mbc.ModelName, model, validationNode);
+                        return ModelBindingResult.SuccessAsync(mbc.ModelName, model);
                     }
                     return ModelBindingResult.NoResultAsync;
                 });

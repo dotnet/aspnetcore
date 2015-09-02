@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Reflection;
 using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
 using Microsoft.Framework.Internal;
@@ -14,6 +15,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     /// <summary>
     /// A metadata representation of a model type, property or parameter.
     /// </summary>
+    [DebuggerDisplay("{DebuggerToString(),nq}")]
     public abstract class ModelMetadata
     {
         private bool? _isComplexType;
@@ -406,6 +408,18 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public string GetDisplayName()
         {
             return DisplayName ?? PropertyName ?? ModelType.Name;
+        }
+
+        private string DebuggerToString()
+        {
+            if (Identity.MetadataKind == ModelMetadataKind.Type)
+            {
+                return $"ModelMetadata (Type: '{ModelType.Name}')";
+            }
+            else
+            {
+                return $"ModelMetadata (Property: '{ContainerType.Name}.{PropertyName}' Type: '{ModelType.Name}')";
+            }
         }
     }
 }

@@ -67,9 +67,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var p = (Person)binderResult.Model;
             Assert.Equal(model.Age, p.Age);
             Assert.Equal(model.Name, p.Name);
-            Assert.NotNull(binderResult.ValidationNode);
-            Assert.Equal(bindingContext.ModelName, binderResult.ValidationNode.Key);
-            Assert.Same(binderResult.Model, binderResult.ValidationNode.Model);
         }
 
         [Fact]
@@ -141,9 +138,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
             public Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
             {
-                var validationNode =
-                    new ModelValidationNode(bindingContext.ModelName, bindingContext.ModelMetadata, _model);
-                return ModelBindingResult.SuccessAsync(bindingContext.ModelName, _model, validationNode);
+                return ModelBindingResult.SuccessAsync(bindingContext.ModelName, _model);
             }
         }
     }

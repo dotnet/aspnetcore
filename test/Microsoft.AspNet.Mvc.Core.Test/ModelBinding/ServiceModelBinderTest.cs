@@ -4,6 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Internal;
+using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
@@ -29,9 +30,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.NotNull(result.Model);
             Assert.Equal("modelName", result.Key);
 
-            Assert.NotNull(result.ValidationNode);
-            Assert.Equal("modelName", result.ValidationNode.Key);
-            Assert.True(result.ValidationNode.SuppressValidation);
+            var entry = modelBindingContext.ValidationState[result.Model];
+            Assert.True(entry.SuppressValidation);
+            Assert.Null(entry.Key);
+            Assert.Null(entry.Metadata);
         }
 
         [Fact]
@@ -95,6 +97,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 },
                 BinderModelName = modelMetadata.BinderModelName,
                 BindingSource = modelMetadata.BindingSource,
+                ValidationState = new ValidationStateDictionary(),
             };
 
             return bindingContext;

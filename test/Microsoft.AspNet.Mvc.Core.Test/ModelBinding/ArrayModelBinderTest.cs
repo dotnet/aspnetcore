@@ -62,10 +62,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.Empty(Assert.IsType<string[]>(result.Model));
             Assert.Equal("modelName", result.Key);
             Assert.True(result.IsModelSet);
-
-            Assert.Same(result.ValidationNode.Model, result.Model);
-            Assert.Same(result.ValidationNode.Key, result.Key);
-            Assert.Same(result.ValidationNode.ModelMetadata, context.ModelMetadata);
         }
 
         [Theory]
@@ -173,7 +169,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                     if (value != ValueProviderResult.None)
                     {
                         var model = value.ConvertTo(mbc.ModelType);
-                        return ModelBindingResult.SuccessAsync(mbc.ModelName, model, validationNode: null);
+                        return ModelBindingResult.SuccessAsync(mbc.ModelName, model);
                     }
                     return ModelBindingResult.NoResultAsync;
                 });

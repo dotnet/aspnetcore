@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.Primitives;
 
@@ -46,13 +47,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 model = new EmptyFormCollection();
             }
 
-            var validationNode =
-                 new ModelValidationNode(bindingContext.ModelName, bindingContext.ModelMetadata, model)
-                 {
-                     SuppressValidation = true,
-                 };
-
-            return ModelBindingResult.Success(bindingContext.ModelName, model, validationNode);
+            bindingContext.ValidationState.Add(model, new ValidationStateEntry() { SuppressValidation = true });
+            return ModelBindingResult.Success(bindingContext.ModelName, model);
         }
 
         private class EmptyFormCollection : IFormCollection

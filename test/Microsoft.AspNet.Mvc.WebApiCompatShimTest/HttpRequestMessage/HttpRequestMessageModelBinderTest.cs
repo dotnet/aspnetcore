@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.WebApiCompatShim
@@ -27,8 +28,11 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             Assert.NotEqual(ModelBindingResult.NoResult, result);
             Assert.True(result.IsModelSet);
             Assert.Same(expectedModel, result.Model);
-            Assert.NotNull(result.ValidationNode);
-            Assert.True(result.ValidationNode.SuppressValidation);
+
+            var entry = bindingContext.ValidationState[result.Model];
+            Assert.True(entry.SuppressValidation);
+            Assert.Null(entry.Key);
+            Assert.Null(entry.Metadata);
         }
 
         [Theory]
@@ -59,7 +63,8 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
                 {
                     HttpContext = new DefaultHttpContext(),
                     MetadataProvider = metadataProvider,
-                }
+                },
+                ValidationState = new ValidationStateDictionary(),
             };
 
             bindingContext.OperationBindingContext.HttpContext.Request.Method = "GET";

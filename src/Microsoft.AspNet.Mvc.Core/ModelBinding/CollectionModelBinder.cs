@@ -11,6 +11,7 @@ using System.Linq;
 using System.Reflection;
 #endif
 using System.Threading.Tasks;
+using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
@@ -38,12 +39,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                         model = CreateEmptyCollection(bindingContext.ModelType);
                     }
 
-                    var validationNode = new ModelValidationNode(
-                        bindingContext.ModelName,
-                        bindingContext.ModelMetadata,
-                        model);
-
-                    return ModelBindingResult.Success(bindingContext.ModelName, model, validationNode);
+                    return ModelBindingResult.Success(bindingContext.ModelName, model);
                 }
 
                 return ModelBindingResult.NoResult;
@@ -72,6 +68,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 CopyToModel(model, boundCollection);
             }
 
+            Debug.Assert(model != null);
+            if (result.ValidationStrategy != null)
+            {
+                bindingContext.ValidationState.Add(model, new ValidationStateEntry()
+                {
+                    Strategy = result.ValidationStrategy,
+                });
+            }
+
             if (valueProviderResult != ValueProviderResult.None)
             {
                 // If we did simple binding, then modelstate should be updated to reflect what we bound for ModelName. 
@@ -81,7 +86,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     valueProviderResult);
             }
 
-            return ModelBindingResult.Success(bindingContext.ModelName, model, result.ValidationNode);
+            return ModelBindingResult.Success(bindingContext.ModelName, model);
         }
 
         /// <inheritdoc />
@@ -137,11 +142,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var metadataProvider = bindingContext.OperationBindingContext.MetadataProvider;
             var elementMetadata = metadataProvider.GetMetadataForType(typeof(TElement));
 
-            var validationNode = new ModelValidationNode(
-                bindingContext.ModelName,
-                bindingContext.ModelMetadata,
-                boundCollection);
-
             var innerBindingContext = ModelBindingContext.CreateChildBindingContext(
                 bindingContext,
                 elementMetadata,
@@ -164,18 +164,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 if (result != null && result.IsModelSet)
                 {
                     boundValue = result.Model;
-                    if (result.ValidationNode != null)
-                    {
-                        validationNode.ChildNodes.Add(result.ValidationNode);
-                    }
-
                     boundCollection.Add(ModelBindingHelper.CastOrDefault<TElement>(boundValue));
                 }
             }
 
             return new CollectionResult
             {
-                ValidationNode = validationNode,
                 Model = boundCollection
             };
         }
@@ -211,10 +205,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var elementMetadata = metadataProvider.GetMetadataForType(typeof(TElement));
 
             var boundCollection = new List<TElement>();
-            var validationNode = new ModelValidationNode(
-                bindingContext.ModelName,
-                bindingContext.ModelMetadata,
-                boundCollection);
+
             foreach (var indexName in indexNames)
             {
                 var fullChildName = ModelNames.CreateIndexModelName(bindingContext.ModelName, indexName);
@@ -235,10 +226,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 {
                     didBind = true;
                     boundValue = result.Model;
-                    if (result.ValidationNode != null)
-                    {
-                        validationNode.ChildNodes.Add(result.ValidationNode);
-                    }
                 }
 
                 // infinite size collection stops on first bind failure
@@ -252,17 +239,26 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             return new CollectionResult
             {
-                ValidationNode = validationNode,
-                Model = boundCollection
+                Model = boundCollection,
+
+                // If we're working with a fixed set of indexes then this is the format like:
+                //
+                //  ?parameter.index=zero,one,two&parameter[zero]=0&&parameter[one]=1&parameter[two]=2...
+                //
+                // We need to provide this data to the validation system so it can 'replay' the keys.
+                // But we can't just set ValidationState here, because it needs the 'real' model.
+                ValidationStrategy = indexNamesIsFinite ?
+                    new ExplicitIndexCollectionValidationStrategy(indexNames) :
+                    null,
             };
         }
 
         // Internal for testing.
         internal class CollectionResult
         {
-            public ModelValidationNode ValidationNode { get; set; }
-
             public IEnumerable<TElement> Model { get; set; }
+
+            public IValidationStrategy ValidationStrategy { get; set; }
         }
 
         /// <summary>

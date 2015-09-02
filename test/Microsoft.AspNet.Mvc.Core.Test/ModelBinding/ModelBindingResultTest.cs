@@ -15,16 +15,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             // Arrange
             var key = "someName";
             var model = "some model";
-            var validationNode = new ModelValidationNode(key, null, model);
 
             // Act
-            var result = ModelBindingResult.Success(key, model, validationNode);
+            var result = ModelBindingResult.Success(key, model);
 
             // Assert
             Assert.Same(key, result.Key);
             Assert.True(result.IsModelSet);
             Assert.Same(model, result.Model);
-            Assert.Same(validationNode, result.ValidationNode);
         }
 
         [Fact]
@@ -33,16 +31,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             // Arrange
             var key = "someName";
             var model = "some model";
-            var validationNode = new ModelValidationNode(key, null, model);
 
             // Act
-            var result = await ModelBindingResult.SuccessAsync(key, model, validationNode);
+            var result = await ModelBindingResult.SuccessAsync(key, model);
 
             // Assert
             Assert.Same(key, result.Key);
             Assert.True(result.IsModelSet);
             Assert.Same(model, result.Model);
-            Assert.Same(validationNode, result.ValidationNode);
         }
 
         [Fact]
@@ -58,7 +54,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.Same(key, result.Key);
             Assert.False(result.IsModelSet);
             Assert.Null(result.Model);
-            Assert.Null(result.ValidationNode);
         }
 
         [Fact]
@@ -74,7 +69,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.Same(key, result.Key);
             Assert.False(result.IsModelSet);
             Assert.Null(result.Model);
-            Assert.Null(result.ValidationNode);
         }
 
         [Fact]
@@ -87,7 +81,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.Null(result.Key);
             Assert.False(result.IsModelSet);
             Assert.Null(result.Model);
-            Assert.Null(result.ValidationNode);
         }
 
         [Fact]
@@ -100,7 +93,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.Null(result.Key);
             Assert.False(result.IsModelSet);
             Assert.Null(result.Model);
-            Assert.Null(result.ValidationNode);
         }
     }
 }

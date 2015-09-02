@@ -33,20 +33,17 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 
         public IEnumerable<ModelValidationResult> Validate(ModelValidationContext validationContext)
         {
-            var modelExplorer = validationContext.ModelExplorer;
-            var metadata = modelExplorer.Metadata;
-
+            var metadata = validationContext.Metadata;
             var memberName = metadata.PropertyName ?? metadata.ModelType.Name;
-            var containerExplorer = modelExplorer.Container;
+            var container = validationContext.Container;
 
-            var container = containerExplorer?.Model;
-            var context = new ValidationContext(container ?? modelExplorer.Model)
+            var context = new ValidationContext(container ?? validationContext.Model)
             {
                 DisplayName = metadata.GetDisplayName(),
                 MemberName = memberName
             };
 
-            var result = Attribute.GetValidationResult(modelExplorer.Model, context);
+            var result = Attribute.GetValidationResult(validationContext.Model, context);
             if (result != ValidationResult.Success)
             {
                 // ModelValidationResult.MemberName is used by invoking validators (such as ModelValidator) to

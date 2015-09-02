@@ -63,17 +63,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
             else
             {
-                var validationNode = new ModelValidationNode(
-                    bindingContext.ModelName,
-                    bindingContext.ModelMetadata,
-                    model);
-
                 bindingContext.ModelState.SetModelValue(
                     bindingContext.ModelName,
                     request.Headers.GetCommaSeparatedValues(headerName),
                     request.Headers[headerName]);
 
-                return ModelBindingResult.SuccessAsync(bindingContext.ModelName, model, validationNode);
+                return ModelBindingResult.SuccessAsync(bindingContext.ModelName, model);
             }
         }
     }

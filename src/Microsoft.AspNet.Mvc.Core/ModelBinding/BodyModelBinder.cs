@@ -87,12 +87,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     return ModelBindingResult.Failed(modelBindingKey);
                 }
 
-                var validationNode = new ModelValidationNode(modelBindingKey, bindingContext.ModelMetadata, model)
-                {
-                    ValidateAllProperties = true
-                };
-
-                return ModelBindingResult.Success(modelBindingKey, model, validationNode);
+                return ModelBindingResult.Success(modelBindingKey, model);
             }
             catch (Exception ex)
             {

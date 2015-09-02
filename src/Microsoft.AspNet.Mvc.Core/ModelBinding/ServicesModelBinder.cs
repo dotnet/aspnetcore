@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
@@ -30,13 +31,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             var requestServices = bindingContext.OperationBindingContext.HttpContext.RequestServices;
             var model = requestServices.GetRequiredService(bindingContext.ModelType);
-            var validationNode =
-                new ModelValidationNode(bindingContext.ModelName, bindingContext.ModelMetadata, model)
-                {
-                    SuppressValidation = true
-                };
 
-            return ModelBindingResult.SuccessAsync(bindingContext.ModelName, model, validationNode);
+            bindingContext.ValidationState.Add(model, new ValidationStateEntry() { SuppressValidation = true });
+
+            return ModelBindingResult.SuccessAsync(bindingContext.ModelName, model);
         }
     }
 }

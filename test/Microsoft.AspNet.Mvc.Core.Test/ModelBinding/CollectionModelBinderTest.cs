@@ -9,6 +9,7 @@ using System.Linq;
 #endif
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Internal;
+using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 #if DNX451
 using Moq;
 #endif
@@ -32,13 +33,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var binder = new CollectionModelBinder<int>();
 
             // Act
-            var boundCollection = await binder.BindComplexCollectionFromIndexes(bindingContext, new[] { "foo", "bar", "baz" });
+            var collectionResult = await binder.BindComplexCollectionFromIndexes(
+                bindingContext,
+                new[] { "foo", "bar", "baz" });
 
             // Assert
-            Assert.Equal(new[] { 42, 0, 200 }, boundCollection.Model.ToArray());
-            Assert.Equal(
-                new[] { "someName[foo]", "someName[baz]" },
-                boundCollection.ValidationNode.ChildNodes.Select(o => o.Key).ToArray());
+            Assert.Equal(new[] { 42, 0, 200 }, collectionResult.Model.ToArray());
+
+            // This requires a non-default IValidationStrategy
+            var strategy = Assert.IsType<ExplicitIndexCollectionValidationStrategy>(collectionResult.ValidationStrategy);
+            Assert.Equal(new[] { "foo", "bar", "baz" }, strategy.ElementKeys);
         }
 
         [Fact]
@@ -59,9 +63,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
             // Assert
             Assert.Equal(new[] { 42, 100 }, boundCollection.Model.ToArray());
-            Assert.Equal(
-                new[] { "someName[0]", "someName[1]" },
-                boundCollection.ValidationNode.ChildNodes.Select(o => o.Key).ToArray());
+
+            // This uses the default IValidationStrategy
+            Assert.DoesNotContain(boundCollection, bindingContext.ValidationState.Keys);
         }
 
         [Theory]
@@ -197,7 +201,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.NotEqual(ModelBindingResult.NoResult, result);
             Assert.True(result.IsModelSet);
             Assert.NotNull(result.Model);
-            Assert.NotNull(result.ValidationNode);
 
             var model = Assert.IsType<List<int>>(result.Model);
             Assert.Empty(model);
@@ -252,10 +255,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.Empty(Assert.IsType<List<string>>(result.Model));
             Assert.Equal("modelName", result.Key);
             Assert.True(result.IsModelSet);
-
-            Assert.Same(result.ValidationNode.Model, result.Model);
-            Assert.Same(result.ValidationNode.Key, result.Key);
-            Assert.Same(result.ValidationNode.ModelMetadata, context.ModelMetadata);
         }
 
         // Setup like CollectionModelBinder_CreatesEmptyCollection_IfIsTopLevelObject  except
@@ -290,10 +289,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.Empty(list);
             Assert.Equal("modelName", result.Key);
             Assert.True(result.IsModelSet);
-
-            Assert.Same(result.ValidationNode.Model, result.Model);
-            Assert.Same(result.ValidationNode.Key, result.Key);
-            Assert.Same(result.ValidationNode.ModelMetadata, context.ModelMetadata);
         }
 
         [Theory]
@@ -361,14 +356,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             // Arrange
             var culture = new CultureInfo("fr-FR");
             var bindingContext = GetModelBindingContext(new SimpleValueProvider());
-            ModelValidationNode childValidationNode = null;
+
             Mock.Get<IModelBinder>(bindingContext.OperationBindingContext.ModelBinder)
                 .Setup(o => o.BindModelAsync(It.IsAny<ModelBindingContext>()))
                 .Returns((ModelBindingContext mbc) =>
                 {
                     Assert.Equal("someName", mbc.ModelName);
-                    childValidationNode = new ModelValidationNode("someName", mbc.ModelMetadata, mbc.Model);
-                    return ModelBindingResult.SuccessAsync(mbc.ModelName, 42, childValidationNode);
+                    return ModelBindingResult.SuccessAsync(mbc.ModelName, 42);
                 });
             var modelBinder = new CollectionModelBinder<int>();
 
@@ -379,7 +373,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
             // Assert
             Assert.Equal(new[] { 42 }, boundCollection.Model.ToArray());
-            Assert.Equal(new[] { childValidationNode }, boundCollection.ValidationNode.ChildNodes.ToArray());
         }
 
         private static ModelBindingContext GetModelBindingContext(
@@ -399,7 +392,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 {
                     ModelBinder = CreateIntBinder(),
                     MetadataProvider = metadataProvider
-                }
+                },
+                ValidationState = new ValidationStateDictionary(),
             };
 
             return bindingContext;
@@ -425,8 +419,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                     }
                     else
                     {
-                        var validationNode = new ModelValidationNode(mbc.ModelName, mbc.ModelMetadata, model);
-                        return ModelBindingResult.SuccessAsync(mbc.ModelName, model, validationNode);
+                        return ModelBindingResult.SuccessAsync(mbc.ModelName, model);
                     }
                 });
             return mockIntBinder.Object;

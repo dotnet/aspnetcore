@@ -630,12 +630,12 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             IEnumerator IEnumerable.GetEnumerator()
             {
-                throw new NotImplementedException();
+                return _data.GetEnumerator();
             }
 
             IEnumerator<KeyValuePair<string, string>> IEnumerable<KeyValuePair<string, string>>.GetEnumerator()
             {
-                throw new NotImplementedException();
+                return _data.GetEnumerator();
             }
 
             bool ICollection<KeyValuePair<string, string>>.Remove(KeyValuePair<string, string> item)
@@ -650,7 +650,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             bool IDictionary<string, string>.TryGetValue(string key, out string value)
             {
-                throw new NotImplementedException();
+                return _data.TryGetValue(key, out value);
             }
         }
 
@@ -735,12 +735,12 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             IEnumerator IEnumerable.GetEnumerator()
             {
-                throw new NotImplementedException();
+                return _data.GetEnumerator();
             }
 
             IEnumerator<KeyValuePair<TKey, TValue>> IEnumerable<KeyValuePair<TKey, TValue>>.GetEnumerator()
             {
-                throw new NotImplementedException();
+                return _data.GetEnumerator();
             }
 
             bool ICollection<KeyValuePair<TKey, TValue>>.Remove(KeyValuePair<TKey, TValue> item)
@@ -755,7 +755,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             bool IDictionary<TKey, TValue>.TryGetValue(TKey key, out TValue value)
             {
-                throw new NotImplementedException();
+                return _data.TryGetValue(key, out value);
             }
         }
     }

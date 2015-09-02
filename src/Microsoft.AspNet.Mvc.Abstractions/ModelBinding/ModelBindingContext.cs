@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.Framework.Internal;
+using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -59,6 +60,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 ModelState = modelState,
                 OperationBindingContext = operationBindingContext,
                 ValueProvider = operationBindingContext.ValueProvider,
+
+                ValidationState = new ValidationStateDictionary(),
             };
         }
 
@@ -74,6 +77,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 ModelState = parent.ModelState,
                 OperationBindingContext = parent.OperationBindingContext,
                 ValueProvider = parent.ValueProvider,
+                ValidationState = parent.ValidationState,
 
                 Model = model,
                 ModelMetadata = modelMetadata,
@@ -174,5 +178,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// is eligible for model binding.
         /// </summary>
         public Func<ModelBindingContext, string, bool> PropertyFilter { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="ValidationStateDictionary"/>. Used for tracking validation state to
+        /// customize validation behavior for a model object.
+        /// </summary>
+        public ValidationStateDictionary ValidationState { get; set; }
     }
 }

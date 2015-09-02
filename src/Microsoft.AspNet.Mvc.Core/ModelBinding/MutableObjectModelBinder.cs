@@ -52,16 +52,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             var results = await BindPropertiesAsync(bindingContext, mutableObjectBinderContext.PropertyMetadata);
 
-            var validationNode = new ModelValidationNode(
-                bindingContext.ModelName,
-                bindingContext.ModelMetadata,
-                model);
-
             // Post-processing e.g. property setters and hooking up validation.
             bindingContext.Model = model;
-            ProcessResults(bindingContext, results, validationNode);
+            ProcessResults(bindingContext, results);
 
-            return ModelBindingResult.Success(bindingContext.ModelName, model, validationNode);
+            return ModelBindingResult.Success(bindingContext.ModelName, model);
         }
 
         /// <summary>
@@ -398,10 +393,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         // Internal for testing.
-        internal ModelValidationNode ProcessResults(
+        internal void ProcessResults(
             ModelBindingContext bindingContext,
-            IDictionary<ModelMetadata, ModelBindingResult> results,
-            ModelValidationNode validationNode)
+            IDictionary<ModelMetadata, ModelBindingResult> results)
         {
             var metadataProvider = bindingContext.OperationBindingContext.MetadataProvider;
             var modelExplorer =
@@ -432,20 +426,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     var result = entry.Value;
                     var propertyMetadata = entry.Key;
                     SetProperty(bindingContext, modelExplorer, propertyMetadata, result);
-
-                    var propertyValidationNode = result.ValidationNode;
-                    if (propertyValidationNode == null)
-                    {
-                        // Make sure that irrespective of whether the properties of the model were bound with a value,
-                        // create a validation node so that these get validated.
-                        propertyValidationNode = new ModelValidationNode(result.Key, entry.Key, result.Model);
-                    }
-
-                    validationNode.ChildNodes.Add(propertyValidationNode);
                 }
             }
-
-            return validationNode;
         }
 
         /// <summary>
@@ -574,30 +556,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 modelState.AddModelError(modelStateKey, exception);
             }
-        }
-
-        // Returns true if validator execution adds a model error.
-        private static bool RunValidator(
-            IModelValidator validator,
-            ModelBindingContext bindingContext,
-            ModelExplorer propertyExplorer,
-            string modelStateKey)
-        {
-            var validationContext = new ModelValidationContext(bindingContext, propertyExplorer);
-
-            var addedError = false;
-            foreach (var validationResult in validator.Validate(validationContext))
-            {
-                bindingContext.ModelState.TryAddModelError(modelStateKey, validationResult.Message);
-                addedError = true;
-            }
-
-            if (!addedError)
-            {
-                bindingContext.ModelState.MarkFieldValid(modelStateKey);
-            }
-
-            return addedError;
         }
 
         internal sealed class PropertyValidationInfo

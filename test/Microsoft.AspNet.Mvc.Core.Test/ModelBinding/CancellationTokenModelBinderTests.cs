@@ -25,8 +25,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.NotEqual(ModelBindingResult.NoResult, result);
             Assert.True(result.IsModelSet);
             Assert.Equal(bindingContext.OperationBindingContext.HttpContext.RequestAborted, result.Model);
-            Assert.NotNull(result.ValidationNode);
-            Assert.True(result.ValidationNode.SuppressValidation);
         }
 
         [Theory]
