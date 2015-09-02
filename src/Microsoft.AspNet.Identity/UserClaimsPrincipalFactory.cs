@@ -38,13 +38,13 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException(nameof(roleManager));
             }
-            if (optionsAccessor == null || optionsAccessor.Options == null)
+            if (optionsAccessor == null || optionsAccessor.Value == null)
             {
                 throw new ArgumentNullException(nameof(optionsAccessor));
             }
             UserManager = userManager;
             RoleManager = roleManager;
-            Options = optionsAccessor.Options;
+            Options = optionsAccessor.Value;
         }
 
         /// <summary>
@@ -85,7 +85,7 @@ namespace Microsoft.AspNet.Identity
             }
             var userId = await UserManager.GetUserIdAsync(user);
             var userName = await UserManager.GetUserNameAsync(user);
-            var id = new ClaimsIdentity(IdentityOptions.ApplicationCookieAuthenticationType, 
+            var id = new ClaimsIdentity(Options.Cookies.TwoFactorRememberMeCookieAuthenticationScheme, 
                 Options.ClaimsIdentity.UserNameClaimType,
                 Options.ClaimsIdentity.RoleClaimType);
             id.AddClaim(new Claim(Options.ClaimsIdentity.UserIdClaimType, userId));

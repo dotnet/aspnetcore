@@ -21,10 +21,11 @@ namespace Microsoft.AspNet.Identity.Test
         [Fact]
         public async Task OnValidatePrincipalThrowsWithEmptyServiceCollection()
         {
+            var scheme = new IdentityOptions().Cookies.ApplicationCookieAuthenticationScheme;
             var httpContext = new Mock<HttpContext>();
             httpContext.Setup(c => c.RequestServices).Returns(new ServiceCollection().BuildServiceProvider());
-            var id = new ClaimsPrincipal(new ClaimsIdentity(IdentityOptions.ApplicationCookieAuthenticationScheme));
-            var ticket = new AuthenticationTicket(id, new AuthenticationProperties { IssuedUtc = DateTimeOffset.UtcNow }, IdentityOptions.ApplicationCookieAuthenticationScheme);
+            var id = new ClaimsPrincipal(new ClaimsIdentity(scheme));
+            var ticket = new AuthenticationTicket(id, new AuthenticationProperties { IssuedUtc = DateTimeOffset.UtcNow }, scheme);
             var context = new CookieValidatePrincipalContext(httpContext.Object, ticket, new CookieAuthenticationOptions());
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => SecurityStampValidator.ValidatePrincipalAsync(context));
             Assert.True(ex.Message.Contains("No service for type 'Microsoft.Framework.OptionsModel.IOptions"));
@@ -40,11 +41,11 @@ namespace Microsoft.AspNet.Identity.Test
             var claimsManager = new Mock<IUserClaimsPrincipalFactory<TestUser>>();
             var identityOptions = new IdentityOptions { SecurityStampValidationInterval = TimeSpan.Zero };
             var options = new Mock<IOptions<IdentityOptions>>();
-            options.Setup(a => a.Options).Returns(identityOptions);
+            options.Setup(a => a.Value).Returns(identityOptions);
             var httpContext = new Mock<HttpContext>();
             var contextAccessor = new Mock<IHttpContextAccessor>();
             contextAccessor.Setup(a => a.HttpContext).Returns(httpContext.Object);
-            var id = new ClaimsIdentity(IdentityOptions.ApplicationCookieAuthenticationScheme);
+            var id = new ClaimsIdentity(identityOptions.Cookies.ApplicationCookieAuthenticationScheme);
             id.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id));
             var principal = new ClaimsPrincipal(id);
 
@@ -61,7 +62,7 @@ namespace Microsoft.AspNet.Identity.Test
 
             var ticket = new AuthenticationTicket(principal, 
                 properties, 
-                IdentityOptions.ApplicationCookieAuthenticationScheme);
+                identityOptions.Cookies.ApplicationCookieAuthenticationScheme);
             var context = new CookieValidatePrincipalContext(httpContext.Object, ticket, new CookieAuthenticationOptions());
             Assert.NotNull(context.Properties);
             Assert.NotNull(context.Options);
@@ -80,7 +81,7 @@ namespace Microsoft.AspNet.Identity.Test
             var claimsManager = new Mock<IUserClaimsPrincipalFactory<TestUser>>();
             var identityOptions = new IdentityOptions { SecurityStampValidationInterval = TimeSpan.Zero };
             var options = new Mock<IOptions<IdentityOptions>>();
-            options.Setup(a => a.Options).Returns(identityOptions);
+            options.Setup(a => a.Value).Returns(identityOptions);
             var httpContext = new Mock<HttpContext>();
             var contextAccessor = new Mock<IHttpContextAccessor>();
             contextAccessor.Setup(a => a.HttpContext).Returns(httpContext.Object);
@@ -92,12 +93,12 @@ namespace Microsoft.AspNet.Identity.Test
             services.AddInstance(signInManager.Object);
             services.AddInstance<ISecurityStampValidator>(new SecurityStampValidator<TestUser>());
             httpContext.Setup(c => c.RequestServices).Returns(services.BuildServiceProvider());
-            var id = new ClaimsIdentity(IdentityOptions.ApplicationCookieAuthenticationScheme);
+            var id = new ClaimsIdentity(identityOptions.Cookies.ApplicationCookieAuthenticationScheme);
             id.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id));
 
             var ticket = new AuthenticationTicket(new ClaimsPrincipal(id),
                 new AuthenticationProperties { IssuedUtc = DateTimeOffset.UtcNow },
-                IdentityOptions.ApplicationCookieAuthenticationScheme);
+                identityOptions.Cookies.ApplicationCookieAuthenticationScheme);
             var context = new CookieValidatePrincipalContext(httpContext.Object, ticket, new CookieAuthenticationOptions());
             Assert.NotNull(context.Properties);
             Assert.NotNull(context.Options);
@@ -116,7 +117,7 @@ namespace Microsoft.AspNet.Identity.Test
             var claimsManager = new Mock<IUserClaimsPrincipalFactory<TestUser>>();
             var identityOptions = new IdentityOptions { SecurityStampValidationInterval = TimeSpan.Zero };
             var options = new Mock<IOptions<IdentityOptions>>();
-            options.Setup(a => a.Options).Returns(identityOptions);
+            options.Setup(a => a.Value).Returns(identityOptions);
             var contextAccessor = new Mock<IHttpContextAccessor>();
             contextAccessor.Setup(a => a.HttpContext).Returns(httpContext.Object);
             var signInManager = new Mock<SignInManager<TestUser>>(userManager.Object,
@@ -127,12 +128,12 @@ namespace Microsoft.AspNet.Identity.Test
             services.AddInstance(signInManager.Object);
             services.AddInstance<ISecurityStampValidator>(new SecurityStampValidator<TestUser>());
             httpContext.Setup(c => c.RequestServices).Returns(services.BuildServiceProvider());
-            var id = new ClaimsIdentity(IdentityOptions.ApplicationCookieAuthenticationScheme);
+            var id = new ClaimsIdentity(identityOptions.Cookies.ApplicationCookieAuthenticationScheme);
             id.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id));
 
             var ticket = new AuthenticationTicket(new ClaimsPrincipal(id),
                 new AuthenticationProperties(),
-                IdentityOptions.ApplicationCookieAuthenticationScheme);
+                identityOptions.Cookies.ApplicationCookieAuthenticationScheme);
             var context = new CookieValidatePrincipalContext(httpContext.Object, ticket, new CookieAuthenticationOptions());
             Assert.NotNull(context.Properties);
             Assert.NotNull(context.Options);
@@ -151,7 +152,7 @@ namespace Microsoft.AspNet.Identity.Test
             var claimsManager = new Mock<IUserClaimsPrincipalFactory<TestUser>>();
             var identityOptions = new IdentityOptions { SecurityStampValidationInterval = TimeSpan.FromDays(1) };
             var options = new Mock<IOptions<IdentityOptions>>();
-            options.Setup(a => a.Options).Returns(identityOptions);
+            options.Setup(a => a.Value).Returns(identityOptions);
             var contextAccessor = new Mock<IHttpContextAccessor>();
             contextAccessor.Setup(a => a.HttpContext).Returns(httpContext.Object);
             var signInManager = new Mock<SignInManager<TestUser>>(userManager.Object,
@@ -163,12 +164,12 @@ namespace Microsoft.AspNet.Identity.Test
             services.AddInstance(signInManager.Object);
             services.AddInstance<ISecurityStampValidator>(new SecurityStampValidator<TestUser>());
             httpContext.Setup(c => c.RequestServices).Returns(services.BuildServiceProvider());
-            var id = new ClaimsIdentity(IdentityOptions.ApplicationCookieAuthenticationScheme);
+            var id = new ClaimsIdentity(identityOptions.Cookies.ApplicationCookieAuthenticationScheme);
             id.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id));
 
             var ticket = new AuthenticationTicket(new ClaimsPrincipal(id),
                 new AuthenticationProperties { IssuedUtc = DateTimeOffset.UtcNow },
-                IdentityOptions.ApplicationCookieAuthenticationScheme);
+                identityOptions.Cookies.ApplicationCookieAuthenticationScheme);
             var context = new CookieValidatePrincipalContext(httpContext.Object, ticket, new CookieAuthenticationOptions());
             Assert.NotNull(context.Properties);
             Assert.NotNull(context.Options);

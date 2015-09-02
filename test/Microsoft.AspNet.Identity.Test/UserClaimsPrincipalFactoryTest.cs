@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.Throws<ArgumentNullException>("optionsAccessor",
                 () => new UserClaimsPrincipalFactory<TestUser, TestRole>(userManager, roleManager, options.Object));
             var identityOptions = new IdentityOptions();
-            options.Setup(a => a.Options).Returns(identityOptions);
+            options.Setup(a => a.Value).Returns(identityOptions);
             var factory = new UserClaimsPrincipalFactory<TestUser, TestRole>(userManager, roleManager, options.Object);
             await Assert.ThrowsAsync<ArgumentNullException>("user",
                 async () => await factory.CreateAsync(null));
@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.Identity.Test
 
             var options = new Mock<IOptions<IdentityOptions>>();
             var identityOptions = new IdentityOptions();
-            options.Setup(a => a.Options).Returns(identityOptions);
+            options.Setup(a => a.Value).Returns(identityOptions);
             var factory = new UserClaimsPrincipalFactory<TestUser, TestRole>(userManager.Object, roleManager.Object, options.Object);
 
             // Act
@@ -83,7 +83,7 @@ namespace Microsoft.AspNet.Identity.Test
             var manager = userManager.Object;
             Assert.NotNull(identity);
             Assert.Equal(1, principal.Identities.Count());
-            Assert.Equal(IdentityOptions.ApplicationCookieAuthenticationType, identity.AuthenticationType);
+            Assert.Equal(identityOptions.Cookies.TwoFactorRememberMeCookieAuthenticationScheme, identity.AuthenticationType);
             var claims = identity.Claims.ToList();
             Assert.NotNull(claims);
             Assert.True(

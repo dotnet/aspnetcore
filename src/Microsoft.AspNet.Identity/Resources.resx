@@ -125,10 +125,6 @@
     <value>An unknown failure has occured.</value>
     <comment>Default identity result error message</comment>
   </data>
-  <data name="DefaultTokenProvider" xml:space="preserve">
-    <value>Default Token Provider</value>
-    <comment>Name of the default token provider</comment>
-  </data>
   <data name="DuplicateEmail" xml:space="preserve">
     <value>Email '{0}' is already taken.</value>
     <comment>Error for duplicate emails</comment>

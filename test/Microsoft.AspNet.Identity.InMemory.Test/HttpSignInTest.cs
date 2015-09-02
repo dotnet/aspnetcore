@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             var context = new Mock<HttpContext>();
             var auth = new Mock<AuthenticationManager>();
             context.Setup(c => c.Authentication).Returns(auth.Object).Verifiable();
-            auth.Setup(a => a.SignInAsync(IdentityOptions.ApplicationCookieAuthenticationScheme,
+            auth.Setup(a => a.SignInAsync(new IdentityCookieOptions().ApplicationCookieAuthenticationScheme,
                 It.IsAny<ClaimsPrincipal>(),
                 It.IsAny<AuthenticationProperties>())).Returns(Task.FromResult(0)).Verifiable();
             // REVIEW: is persistant mocking broken

@@ -5,6 +5,7 @@ using System;
 
 using Microsoft.AspNet.Identity;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Builder
 {
@@ -31,10 +32,11 @@ namespace Microsoft.AspNet.Builder
                 throw new InvalidOperationException(Resources.MustCallAddIdentity);
             }
 
-            app.UseCookieAuthentication(null, IdentityOptions.ExternalCookieAuthenticationScheme);
-            app.UseCookieAuthentication(null, IdentityOptions.TwoFactorRememberMeCookieAuthenticationScheme);
-            app.UseCookieAuthentication(null, IdentityOptions.TwoFactorUserIdCookieAuthenticationScheme);
-            app.UseCookieAuthentication(null, IdentityOptions.ApplicationCookieAuthenticationScheme);
+            var options = app.ApplicationServices.GetRequiredService<IOptions<IdentityOptions>>().Value;
+            app.UseCookieAuthentication(options.Cookies.ExternalCookie);
+            app.UseCookieAuthentication(options.Cookies.TwoFactorRememberMeCookie);
+            app.UseCookieAuthentication(options.Cookies.TwoFactorUserIdCookie);
+            app.UseCookieAuthentication(options.Cookies.ApplicationCookie);
             return app;
         }
     }

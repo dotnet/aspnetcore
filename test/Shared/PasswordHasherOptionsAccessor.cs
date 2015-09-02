@@ -8,11 +8,6 @@ namespace Microsoft.AspNet.Identity.Test
 {
     internal class PasswordHasherOptionsAccessor : IOptions<PasswordHasherOptions>
     {
-        public PasswordHasherOptions Options { get; } = new PasswordHasherOptions();
-
-        public PasswordHasherOptions GetNamedOptions(string name)
-        {
-            throw new NotImplementedException();
-        }
+        public PasswordHasherOptions Value { get; } = new PasswordHasherOptions();
     }
 }

@@ -164,14 +164,14 @@ namespace Microsoft.AspNet.Identity.Test
                 var options = new PasswordHasherOptionsAccessor();
                 if (compatMode != null)
                 {
-                    options.Options.CompatibilityMode = (PasswordHasherCompatibilityMode)compatMode;
+                    options.Value.CompatibilityMode = (PasswordHasherCompatibilityMode)compatMode;
                 }
                 if (iterCount != null)
                 {
-                    options.Options.IterationCount = (int)iterCount;
+                    options.Value.IterationCount = (int)iterCount;
                 }
-                Assert.NotNull(options.Options.Rng); // should have a default value
-                options.Options.Rng = new SequentialRandomNumberGenerator();
+                Assert.NotNull(options.Value.Rng); // should have a default value
+                options.Value.Rng = new SequentialRandomNumberGenerator();
                 return options;
             }
         }

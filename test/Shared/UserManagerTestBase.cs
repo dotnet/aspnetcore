@@ -32,23 +32,22 @@ namespace Microsoft.AspNet.Identity.Test
         protected virtual void SetupIdentityServices(IServiceCollection services, object context = null)
         {
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            services.AddIdentity<TUser, TRole>().AddDefaultTokenProviders();
-            AddUserStore(services, context);
-            AddRoleStore(services, context);
-            services.AddLogging();
-            services.AddInstance<ILogger<UserManager<TUser>>>(new TestLogger<UserManager<TUser>>());
-            services.AddInstance<ILogger<RoleManager<TRole>>>(new TestLogger<RoleManager<TRole>>());
-            services.ConfigureIdentity(options =>
+            services.AddIdentity<TUser, TRole>(options =>
             {
                 options.Password.RequireDigit = false;
                 options.Password.RequireLowercase = false;
                 options.Password.RequireNonLetterOrDigit = false;
                 options.Password.RequireUppercase = false;
                 options.User.AllowedUserNameCharacters = null;
-            });
+            }).AddDefaultTokenProviders();
+            AddUserStore(services, context);
+            AddRoleStore(services, context);
+            services.AddLogging();
+            services.AddInstance<ILogger<UserManager<TUser>>>(new TestLogger<UserManager<TUser>>());
+            services.AddInstance<ILogger<RoleManager<TRole>>>(new TestLogger<RoleManager<TRole>>());
         }
 
-        protected virtual UserManager<TUser> CreateManager(object context = null, IServiceCollection services = null)
+        protected virtual UserManager<TUser> CreateManager(object context = null, IServiceCollection services = null, Action<IServiceCollection> configureServices = null)
         {
             if (services == null)
             {
@@ -59,6 +58,10 @@ namespace Microsoft.AspNet.Identity.Test
                 context = CreateTestContext();
             }
             SetupIdentityServices(services, context);
+            if (configureServices != null)
+            {
+                configureServices(services);
+            }
             return services.BuildServiceProvider().GetService<UserManager<TUser>>();
         }
 
@@ -648,8 +651,6 @@ namespace Microsoft.AspNet.Identity.Test
 
         private class StaticTokenProvider : IUserTokenProvider<TUser>
         {
-            public string Name { get; } = "Static";
-
             public async Task<string> GenerateAsync(string purpose, UserManager<TUser> manager, TUser user)
             {
                 return MakeToken(purpose, await manager.GetUserIdAsync(user));
@@ -680,8 +681,8 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task CanResetPasswordWithStaticTokenProvider()
         {
             var manager = CreateManager();
-            manager.RegisterTokenProvider(new StaticTokenProvider());
-            manager.Options.PasswordResetTokenProvider = "Static";
+            manager.RegisterTokenProvider("Static", new StaticTokenProvider());
+            manager.Options.Tokens.PasswordResetTokenProvider = "Static";
             var user = CreateTestUser();
             const string password = "password";
             const string newPassword = "newpassword";
@@ -701,8 +702,8 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task PasswordValidatorCanBlockResetPasswordWithStaticTokenProvider()
         {
             var manager = CreateManager();
-            manager.RegisterTokenProvider(new StaticTokenProvider());
-            manager.Options.PasswordResetTokenProvider = "Static";
+            manager.RegisterTokenProvider("Static", new StaticTokenProvider());
+            manager.Options.Tokens.PasswordResetTokenProvider = "Static";
             var user = CreateTestUser();
             const string password = "password";
             const string newPassword = "newpassword";
@@ -723,8 +724,8 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task ResetPasswordWithStaticTokenProviderFailsWithWrongToken()
         {
             var manager = CreateManager();
-            manager.RegisterTokenProvider(new StaticTokenProvider());
-            manager.Options.PasswordResetTokenProvider = "Static";
+            manager.RegisterTokenProvider("Static", new StaticTokenProvider());
+            manager.Options.Tokens.PasswordResetTokenProvider = "Static";
             var user = CreateTestUser();
             const string password = "password";
             const string newPassword = "newpassword";
@@ -741,7 +742,7 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task CanGenerateAndVerifyUserTokenWithStaticTokenProvider()
         {
             var manager = CreateManager();
-            manager.RegisterTokenProvider(new StaticTokenProvider());
+            manager.RegisterTokenProvider("Static", new StaticTokenProvider());
             var user = CreateTestUser();
             var user2 = CreateTestUser();
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
@@ -765,8 +766,8 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task CanConfirmEmailWithStaticToken()
         {
             var manager = CreateManager();
-            manager.RegisterTokenProvider(new StaticTokenProvider());
-            manager.Options.EmailConfirmationTokenProvider = "Static";
+            manager.RegisterTokenProvider("Static", new StaticTokenProvider());
+            manager.Options.Tokens.EmailConfirmationTokenProvider = "Static";
             var user = CreateTestUser();
             Assert.False(await manager.IsEmailConfirmedAsync(user));
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
@@ -783,8 +784,8 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task ConfirmEmailWithStaticTokenFailsWithWrongToken()
         {
             var manager = CreateManager();
-            manager.RegisterTokenProvider(new StaticTokenProvider());
-            manager.Options.EmailConfirmationTokenProvider = "Static";
+            manager.RegisterTokenProvider("Static", new StaticTokenProvider());
+            manager.Options.Tokens.EmailConfirmationTokenProvider = "Static";
             var user = CreateTestUser();
             Assert.False(await manager.IsEmailConfirmedAsync(user));
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
@@ -1435,6 +1436,27 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task CanChangeEmail()
         {
             var manager = CreateManager();
+            var user = CreateTestUser("foouser");
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
+            var email = await manager.GetUserNameAsync(user) + "@diddly.bop";
+            IdentityResultAssert.IsSuccess(await manager.SetEmailAsync(user, email));
+            Assert.False(await manager.IsEmailConfirmedAsync(user));
+            var stamp = await manager.GetSecurityStampAsync(user);
+            var newEmail = await manager.GetUserNameAsync(user) + "@en.vec";
+            var token1 = await manager.GenerateChangeEmailTokenAsync(user, newEmail);
+            IdentityResultAssert.IsSuccess(await manager.ChangeEmailAsync(user, newEmail, token1));
+            Assert.True(await manager.IsEmailConfirmedAsync(user));
+            Assert.Equal(await manager.GetEmailAsync(user), newEmail);
+            Assert.NotEqual(stamp, await manager.GetSecurityStampAsync(user));
+        }
+
+        [Fact]
+        public async Task CanChangeEmailWithDifferentTokenProvider()
+        {
+            var manager = CreateManager(context: null, services: null, 
+                configureServices: s => s.Configure<IdentityOptions>(
+                    o => o.Tokens.ProviderMap["NewProvider2"] = new TokenProviderDescriptor(typeof(EmailTokenProvider<TUser>))));
+            manager.Options.Tokens.ChangeEmailTokenProvider = "NewProvider2";
             var user = CreateTestUser("foouser");
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             var email = await manager.GetUserNameAsync(user) + "@diddly.bop";

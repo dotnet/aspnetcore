@@ -48,17 +48,6 @@ namespace Microsoft.AspNet.Identity.Test
                 provider.GetRequiredService<CustomRoleManager>());
         }
 
-        [Fact]
-        public void AddManagerWithWrongTypesThrows()
-        {
-            var services = new ServiceCollection();
-            var builder = services.AddIdentity<TestUser, TestRole>();
-            Assert.Throws<InvalidOperationException>(() => builder.AddUserManager<UserManager<TestUser>>());
-            Assert.Throws<InvalidOperationException>(() => builder.AddRoleManager<RoleManager<TestRole>>());
-            Assert.Throws<InvalidOperationException>(() => builder.AddUserManager<object>());
-            Assert.Throws<InvalidOperationException>(() => builder.AddRoleManager<object>());
-        }
-
         public class CustomUserManager : UserManager<TestUser>
         {
             public CustomUserManager() : base(new Mock<IUserStore<TestUser>>().Object, null, null, null, null, null, null, null, null, null)
@@ -714,7 +703,7 @@ namespace Microsoft.AspNet.Identity.Test
             await Assert.ThrowsAsync<ArgumentNullException>("providerKey",
                 async () => await manager.RemoveLoginAsync(null, "", null));
             await Assert.ThrowsAsync<ArgumentNullException>("email", async () => await manager.FindByEmailAsync(null));
-            Assert.Throws<ArgumentNullException>("provider", () => manager.RegisterTokenProvider(null));
+            Assert.Throws<ArgumentNullException>("provider", () => manager.RegisterTokenProvider("whatever", null));
             await Assert.ThrowsAsync<ArgumentNullException>("roles", async () => await manager.AddToRolesAsync(new TestUser(), null));
             await Assert.ThrowsAsync<ArgumentNullException>("roles", async () => await manager.RemoveFromRolesAsync(new TestUser(), null));
         }
@@ -723,7 +712,7 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task MethodsFailWithUnknownUserTest()
         {
             var manager = MockHelpers.TestUserManager(new EmptyStore());
-            manager.RegisterTokenProvider(new NoOpTokenProvider());
+            manager.RegisterTokenProvider("whatever", new NoOpTokenProvider());
             await Assert.ThrowsAsync<ArgumentNullException>("user",
                 async () => await manager.GetUserNameAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("user",

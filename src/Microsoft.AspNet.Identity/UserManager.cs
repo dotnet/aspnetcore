@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
+using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
 
@@ -51,7 +52,7 @@ namespace Microsoft.AspNet.Identity
             IEnumerable<IPasswordValidator<TUser>> passwordValidators,
             ILookupNormalizer keyNormalizer,
             IdentityErrorDescriber errors,
-            IEnumerable<IUserTokenProvider<TUser>> tokenProviders,
+            IServiceProvider services,
             ILogger<UserManager<TUser>> logger,
             IHttpContextAccessor contextAccessor)
         {
@@ -60,7 +61,7 @@ namespace Microsoft.AspNet.Identity
                 throw new ArgumentNullException(nameof(store));
             }
             Store = store;
-            Options = optionsAccessor?.Options ?? new IdentityOptions();
+            Options = optionsAccessor?.Value ?? new IdentityOptions();
             _context = contextAccessor?.HttpContext;
             PasswordHasher = passwordHasher;
             KeyNormalizer = keyNormalizer;
@@ -82,11 +83,15 @@ namespace Microsoft.AspNet.Identity
                 }
             }
 
-            if (tokenProviders != null)
+            if (services != null)
             {
-                foreach (var tokenProvider in tokenProviders)
+                foreach (var providerName in Options.Tokens.ProviderMap.Keys)
                 {
-                    RegisterTokenProvider(tokenProvider);
+                    var provider = services.GetRequiredService(Options.Tokens.ProviderMap[providerName].ProviderType) as IUserTokenProvider<TUser>;
+                    if (provider != null)
+                    {
+                        RegisterTokenProvider(providerName, provider);
+                    }
                 }
             }
         }
@@ -715,7 +720,7 @@ namespace Microsoft.AspNet.Identity
         public virtual Task<string> GeneratePasswordResetTokenAsync(TUser user)
         {
             ThrowIfDisposed();
-            return GenerateUserTokenAsync(user, Options.PasswordResetTokenProvider, "ResetPassword");
+            return GenerateUserTokenAsync(user, Options.Tokens.PasswordResetTokenProvider, "ResetPassword");
         }
 
         /// <summary>
@@ -738,7 +743,7 @@ namespace Microsoft.AspNet.Identity
             }
 
             // Make sure the token is valid and the stamp matches
-            if (!await VerifyUserTokenAsync(user, Options.PasswordResetTokenProvider, "ResetPassword", token))
+            if (!await VerifyUserTokenAsync(user, Options.Tokens.PasswordResetTokenProvider, "ResetPassword", token))
             {
                 return IdentityResult.Failed(ErrorDescriber.InvalidToken());
             }
@@ -1260,7 +1265,7 @@ namespace Microsoft.AspNet.Identity
         public virtual Task<string> GenerateEmailConfirmationTokenAsync(TUser user)
         {
             ThrowIfDisposed();
-            return GenerateUserTokenAsync(user, Options.EmailConfirmationTokenProvider, "EmailConfirmation");
+            return GenerateUserTokenAsync(user, Options.Tokens.EmailConfirmationTokenProvider, "EmailConfirmation");
         }
 
         /// <summary>
@@ -1281,7 +1286,7 @@ namespace Microsoft.AspNet.Identity
                 throw new ArgumentNullException("user");
             }
 
-            if (!await VerifyUserTokenAsync(user, Options.EmailConfirmationTokenProvider, "EmailConfirmation", token))
+            if (!await VerifyUserTokenAsync(user, Options.Tokens.EmailConfirmationTokenProvider, "EmailConfirmation", token))
             {
                 return IdentityResult.Failed(ErrorDescriber.InvalidToken());
             }
@@ -1319,7 +1324,7 @@ namespace Microsoft.AspNet.Identity
         public virtual Task<string> GenerateChangeEmailTokenAsync(TUser user, string newEmail)
         {
             ThrowIfDisposed();
-            return GenerateUserTokenAsync(user, Options.ChangeEmailTokenProvider, GetChangeEmailPurpose(newEmail));
+            return GenerateUserTokenAsync(user, Options.Tokens.ChangeEmailTokenProvider, GetChangeEmailPurpose(newEmail));
         }
 
         /// <summary>
@@ -1341,7 +1346,7 @@ namespace Microsoft.AspNet.Identity
             }
 
             // Make sure the token is valid and the stamp matches
-            if (!await VerifyUserTokenAsync(user, Options.ChangeEmailTokenProvider, GetChangeEmailPurpose(newEmail), token))
+            if (!await VerifyUserTokenAsync(user, Options.Tokens.ChangeEmailTokenProvider, GetChangeEmailPurpose(newEmail), token))
             {
                 return IdentityResult.Failed(ErrorDescriber.InvalidToken());
             }
@@ -1556,15 +1561,16 @@ namespace Microsoft.AspNet.Identity
         /// <summary>
         /// Registers a token provider.
         /// </summary>
+        /// <param name="providerName">The name of the provider to register.</param>
         /// <param name="provider">The provider to register.</param>
-        public virtual void RegisterTokenProvider(IUserTokenProvider<TUser> provider)
+        public virtual void RegisterTokenProvider(string providerName, IUserTokenProvider<TUser> provider)
         {
             ThrowIfDisposed();
             if (provider == null)
             {
                 throw new ArgumentNullException("provider");
             }
-            _tokenProviders[provider.Name] = provider;
+            _tokenProviders[providerName] = provider;
         }
 
         /// <summary>

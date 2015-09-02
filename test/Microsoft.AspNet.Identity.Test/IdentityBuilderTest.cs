@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.OptionsModel;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.Test
@@ -105,8 +106,28 @@ namespace Microsoft.AspNet.Identity.Test
             services.AddIdentity<TestUser,TestRole>().AddDefaultTokenProviders();
 
             var provider = services.BuildServiceProvider();
-            var tokenProviders = provider.GetRequiredService<IEnumerable<IUserTokenProvider<TestUser>>>();
+            var tokenProviders = provider.GetRequiredService<IOptions<IdentityOptions>>().Value.Tokens.ProviderMap.Values;
             Assert.Equal(3, tokenProviders.Count());
+        }
+
+        [Fact]
+        public void AddManagerWithWrongTypesThrows()
+        {
+            var services = new ServiceCollection();
+            var builder = services.AddIdentity<TestUser, TestRole>();
+            Assert.Throws<InvalidOperationException>(() => builder.AddUserManager<UserManager<TestUser>>());
+            Assert.Throws<InvalidOperationException>(() => builder.AddRoleManager<RoleManager<TestRole>>());
+            Assert.Throws<InvalidOperationException>(() => builder.AddUserManager<object>());
+            Assert.Throws<InvalidOperationException>(() => builder.AddRoleManager<object>());
+        }
+
+        [Fact]
+        public void AddTokenProviderWithWrongTypesThrows()
+        {
+            var services = new ServiceCollection();
+            var builder = services.AddIdentity<TestUser, TestRole>();
+            Assert.Throws<InvalidOperationException>(() => builder.AddTokenProvider<object>("whatevs"));
+            Assert.Throws<InvalidOperationException>(() => builder.AddTokenProvider("whatevs", typeof(object)));
         }
 
         private class MyUberThingy : IUserValidator<TestUser>, IPasswordValidator<TestUser>, IRoleValidator<TestRole>, IUserStore<TestUser>, IRoleStore<TestRole>

@@ -2,10 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Authentication;
-using Microsoft.AspNet.Authentication.Cookies;
+using Microsoft.AspNet.Identity;
 using Microsoft.Framework.Configuration;
 using Microsoft.Framework.DependencyInjection.Extensions;
 
@@ -16,39 +14,6 @@ namespace Microsoft.Framework.DependencyInjection
     /// </summary>
     public static class IdentityServiceCollectionExtensions
     {
-        /// <summary>
-        /// Configures a set of <see cref="IdentityOptions"/> for the application
-        /// </summary>
-        /// <param name="services">The services available in the application.</param>
-        /// <param name="setupAction">An action to configure the <see cref="IdentityOptions"/>.</param>
-        /// <returns>The <see cref="IServiceCollection"/> instance this method extends.</returns>
-        public static IServiceCollection ConfigureIdentity(this IServiceCollection services, Action<IdentityOptions> setupAction)
-        {
-            return services.Configure(setupAction);
-        }
-
-        /// <summary>
-        /// Configures a set of <see cref="IdentityOptions"/> for the application
-        /// </summary>
-        /// <param name="services">The services available in the application.</param>
-        /// <param name="config">The configuration for the <see cref="IdentityOptions>"/>.</param>
-        /// <returns>The <see cref="IServiceCollection"/> instance this method extends.</returns>
-        public static IServiceCollection ConfigureIdentity(this IServiceCollection services, IConfiguration config)
-        {
-            return services.Configure<IdentityOptions>(config);
-        }
-
-        /// <summary>
-        /// Configures a set of <see cref="CookieAuthenticationOptions"/> for the application
-        /// </summary>
-        /// <param name="services">The services available in the application.</param>
-        /// <param name="setupAction">An action to configure the <see cref="CookieAuthenticationOptions"/>.</param>
-        /// <returns>The <see cref="IServiceCollection"/> instance this method extends.</returns>
-        public static IServiceCollection ConfigureIdentityApplicationCookie(this IServiceCollection services, Action<CookieAuthenticationOptions> setupAction)
-        {
-            return services.ConfigureCookieAuthentication(setupAction, IdentityOptions.ApplicationCookieAuthenticationScheme);
-        }
-
         /// <summary>
         /// Adds the default identity system configuration for the specified User and Role types.
         /// </summary>
@@ -99,42 +64,13 @@ namespace Microsoft.Framework.DependencyInjection
 
             if (setupAction != null)
             {
-                services.ConfigureIdentity(setupAction);
+                services.Configure<IdentityOptions>(setupAction);
             }
             services.Configure<SharedAuthenticationOptions>(options =>
             {
-                options.SignInScheme = IdentityOptions.ExternalCookieAuthenticationScheme;
+                // This is the Default value for ExternalCookieAuthenticationScheme
+                options.SignInScheme = new IdentityCookieOptions().ExternalCookieAuthenticationScheme;
             });
-
-            // Configure all of the cookie middlewares
-            services.ConfigureIdentityApplicationCookie(options =>
-            {
-                options.AuthenticationScheme = IdentityOptions.ApplicationCookieAuthenticationScheme;
-                options.AutomaticAuthentication = true;
-                options.LoginPath = new PathString("/Account/Login");
-                options.Notifications = new CookieAuthenticationNotifications
-                {
-                    OnValidatePrincipal = SecurityStampValidator.ValidatePrincipalAsync
-                };
-            });
-
-            services.ConfigureCookieAuthentication(options =>
-            {
-                options.AuthenticationScheme = IdentityOptions.ExternalCookieAuthenticationScheme;
-                options.CookieName = IdentityOptions.ExternalCookieAuthenticationScheme;
-                options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
-            }, IdentityOptions.ExternalCookieAuthenticationScheme);
-            services.ConfigureCookieAuthentication(options =>
-            {
-                options.AuthenticationScheme = IdentityOptions.TwoFactorRememberMeCookieAuthenticationScheme;
-                options.CookieName = IdentityOptions.TwoFactorRememberMeCookieAuthenticationScheme;
-            }, IdentityOptions.TwoFactorRememberMeCookieAuthenticationScheme);
-            services.ConfigureCookieAuthentication(options =>
-            {
-                options.AuthenticationScheme = IdentityOptions.TwoFactorUserIdCookieAuthenticationScheme;
-                options.CookieName = IdentityOptions.TwoFactorUserIdCookieAuthenticationScheme;
-                options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
-            }, IdentityOptions.TwoFactorUserIdCookieAuthenticationScheme);
 
             return new IdentityBuilder(typeof(TUser), typeof(TRole), services);
         }

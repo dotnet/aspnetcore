@@ -121,20 +121,31 @@ namespace Microsoft.AspNet.Identity
         /// Adds a token provider.
         /// </summary>
         /// <typeparam name="TProvider">The type of the token provider to add.</typeparam>
+        /// <param name="providerName">The name of the provider to add.</param>
         /// <returns>The <see cref="IdentityBuilder"/>.</returns>
-        public virtual IdentityBuilder AddTokenProvider<TProvider>() where TProvider : class
+        public virtual IdentityBuilder AddTokenProvider<TProvider>(string providerName) where TProvider : class
         {
-            return AddTokenProvider(typeof(TProvider));
+            return AddTokenProvider(providerName, typeof(TProvider));
         }
 
         /// <summary>
         /// Adds a token provider for the <seealso cref="UserType"/>.
         /// </summary>
+        /// <param name="providerName">The name of the provider to add.</param>
         /// <param name="provider">The type of the <see cref="IUserTokenProvider{TUser}"/> to add.</param>
         /// <returns>The <see cref="IdentityBuilder"/>.</returns>
-        public virtual IdentityBuilder AddTokenProvider(Type provider)
+        public virtual IdentityBuilder AddTokenProvider(string providerName, Type provider)
         {
-            return AddScoped(typeof(IUserTokenProvider<>).MakeGenericType(UserType), provider);
+            if (!typeof(IUserTokenProvider<>).MakeGenericType(UserType).GetTypeInfo().IsAssignableFrom(provider.GetTypeInfo()))
+            {
+                throw new InvalidOperationException(Resources.FormatInvalidManagerType(provider.Name, "IUserTokenProvider", UserType.Name));
+            }
+            Services.Configure<IdentityOptions>(options =>
+            {
+                options.Tokens.ProviderMap[providerName] = new TokenProviderDescriptor(provider);
+            });
+            Services.AddTransient(provider);
+            return this; 
         }
 
         /// <summary>
@@ -143,14 +154,12 @@ namespace Microsoft.AspNet.Identity
         /// <returns>The <see cref="IdentityBuilder"/>.</returns>
         public virtual IdentityBuilder AddDefaultTokenProviders()
         {
-            Services.Configure<DataProtectionTokenProviderOptions>(options =>
-            {
-                options.Name = Resources.DefaultTokenProvider;
-            });
-
-            return AddTokenProvider(typeof(DataProtectorTokenProvider<>).MakeGenericType(UserType))
-                .AddTokenProvider(typeof(PhoneNumberTokenProvider<>).MakeGenericType(UserType))
-                .AddTokenProvider(typeof(EmailTokenProvider<>).MakeGenericType(UserType));
+            var dataProtectionProviderType = typeof(DataProtectorTokenProvider<>).MakeGenericType(UserType);
+            var phoneNumberProviderType = typeof(PhoneNumberTokenProvider<>).MakeGenericType(UserType);
+            var emailTokenProviderType = typeof(EmailTokenProvider<>).MakeGenericType(UserType);
+            return AddTokenProvider(TokenOptions.DefaultProvider, dataProtectionProviderType)
+                .AddTokenProvider(TokenOptions.DefaultEmailProvider, emailTokenProviderType)
+                .AddTokenProvider(TokenOptions.DefaultPhoneProvider, phoneNumberProviderType);
         }
 
         /// <summary>

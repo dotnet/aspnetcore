@@ -43,22 +43,6 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Default Token Provider
-        /// </summary>
-        internal static string DefaultTokenProvider
-        {
-            get { return GetString("DefaultTokenProvider"); }
-        }
-
-        /// <summary>
-        /// Default Token Provider
-        /// </summary>
-        internal static string FormatDefaultTokenProvider()
-        {
-            return GetString("DefaultTokenProvider");
-        }
-
-        /// <summary>
         /// Email '{0}' is already taken.
         /// </summary>
         internal static string DuplicateEmail
@@ -123,7 +107,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Type {0} must be derived from {1}&lt;{2}&gt;.
+        /// Type {0} must derive from {1}&lt;{2}&gt;.
         /// </summary>
         internal static string InvalidManagerType
         {
@@ -131,7 +115,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Type {0} must be derived from {1}&lt;{2}&gt;.
+        /// Type {0} must derive from {1}&lt;{2}&gt;.
         /// </summary>
         internal static string FormatInvalidManagerType(object p0, object p1, object p2)
         {

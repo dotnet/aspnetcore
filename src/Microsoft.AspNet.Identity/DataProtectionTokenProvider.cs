@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException(nameof(dataProtectionProvider));
             }
-            Options = options?.Options ?? new DataProtectionTokenProviderOptions();
+            Options = options?.Value ?? new DataProtectionTokenProviderOptions();
             // Use the Name as the purpose which should usually be distinct from others
             Protector = dataProtectionProvider.CreateProtector(Name ?? "DataProtectorTokenProvider"); 
         }

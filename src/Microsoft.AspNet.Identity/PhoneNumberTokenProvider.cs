@@ -1,23 +1,8 @@
 using System;
 using System.Threading.Tasks;
-using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Identity
 {
-    /// <summary>
-    /// Encapsulations options for a <see cref="PhoneNumberTokenProvider{TUser}"/>.
-    /// </summary>
-    public class PhoneNumberTokenProviderOptions
-    {
-        /// <summary>
-        /// Gets or sets the name for the <see cref="PhoneNumberTokenProvider{TUser}"/>.
-        /// </summary>
-        /// <value>
-        /// The name for the <see cref="PhoneNumberTokenProvider{TUser}"/>.
-        /// </value>
-        public string Name { get; set; } = "Phone";
-    }
-
     /// <summary>
     /// Represents a token provider that generates tokens from a user's security stamp and
     /// sends them to the user via their phone number.
@@ -26,31 +11,6 @@ namespace Microsoft.AspNet.Identity
     public class PhoneNumberTokenProvider<TUser> : TotpSecurityStampBasedTokenProvider<TUser>
         where TUser : class
     {
-        /// <summary>
-        /// Creates a new instance of <see cref="PhoneNumberTokenProvider{TUser}"/> with the specified <paramref name="options"/>.
-        /// </summary>
-        /// <param name="options">The options to use for the created instance of a <see cref="PhoneNumberTokenProvider{TUser}"/>.</param>
-        public PhoneNumberTokenProvider(IOptions<PhoneNumberTokenProviderOptions> options)
-        {
-            if (options == null || options.Options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
-            Options = options.Options;
-        }
-
-        /// <summary>
-        /// Gets the options for this instance of <see cref="PhoneNumberTokenProvider{TUser}"/>.
-        /// </summary>
-        /// <value>The options for this instance of <see cref="PhoneNumberTokenProvider{TUser}"/>.</value>
-        public PhoneNumberTokenProviderOptions Options { get; private set; }
-
-        /// <summary>
-        /// Gets the name for this instance of <see cref="PhoneNumberTokenProvider{TUser}"/>.
-        /// </summary>
-        /// <value>The name for this instance of <see cref="PhoneNumberTokenProvider{TUser}"/>.</value>
-        public override string Name { get { return Options.Name; } }
-
         /// <summary>
         /// Returns a flag indicating whether the token provider can generate a token suitable for two factor authentication token for
         /// the specified <paramref name="ref"/>.

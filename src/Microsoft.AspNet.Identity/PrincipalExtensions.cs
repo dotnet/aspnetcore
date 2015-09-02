@@ -53,7 +53,7 @@ namespace System.Security.Claims
                 throw new ArgumentNullException(nameof(principal));
             }
             return principal?.Identities != null && 
-                principal.Identities.Any(i => i.AuthenticationType == IdentityOptions.ApplicationCookieAuthenticationType);
+                principal.Identities.Any(i => i.AuthenticationType == IdentityCookieOptions.ApplicationCookieAuthenticationType);
         }
 
         /// <summary>

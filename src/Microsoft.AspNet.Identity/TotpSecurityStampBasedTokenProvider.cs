@@ -13,12 +13,6 @@ namespace Microsoft.AspNet.Identity
         where TUser : class
     {
         /// <summary>
-        /// Gets the name of the token provider.
-        /// </summary>
-        /// <value>The name of the token provider.</value>
-        public abstract string Name { get; }
-
-        /// <summary>
         /// Generates a token for the specified <paramref name="ref"/> and <paramref name="purpose"/>, as an asynchronous operation.
         /// </summary>
         /// <param name="purpose">The purpose the token will be used for.</param>

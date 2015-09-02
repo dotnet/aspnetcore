@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Identity
         /// <param name="options">The options for this instance.</param>
         public PasswordHasher(IOptions<PasswordHasherOptions> optionsAccessor = null)
         {
-            var options = optionsAccessor?.Options ?? new PasswordHasherOptions();
+            var options = optionsAccessor?.Value ?? new PasswordHasherOptions();
 
             _compatibilityMode = options.CompatibilityMode;
             switch (_compatibilityMode)

@@ -1,23 +1,7 @@
-using System;
 using System.Threading.Tasks;
-using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Identity
 {
-    /// <summary>
-    /// Options for the <see cref="EmailTokenProvider{TUser}"/> class.
-    /// </summary>
-    public class EmailTokenProviderOptions
-    {
-        /// <summary>
-        /// Gets or sets the unique name used for an instance of <see cref="EmailTokenProvider{TUser}"/>.
-        /// </summary>
-        /// <value>
-        /// The unique name used for an instance of <see cref="EmailTokenProvider{TUser}"/>.
-        /// </value>
-        public string Name { get; set; } = "Email";
-    }
-
     /// <summary>
     /// TokenProvider that generates tokens from the user's security stamp and notifies a user via email.
     /// </summary>
@@ -25,36 +9,6 @@ namespace Microsoft.AspNet.Identity
     public class EmailTokenProvider<TUser> : TotpSecurityStampBasedTokenProvider<TUser>
         where TUser : class
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="EmailTokenProvider{TUser}"/> class.
-        /// </summary>
-        /// <param name="options">The configured <see cref="DataProtectionTokenProviderOptions"/>.</param>
-        /// <param name="name">The unique name for this instance of <see cref="EmailTokenProvider{TUser}"/>.</param>
-        public EmailTokenProvider(IOptions<EmailTokenProviderOptions> options, string name = "")
-        {
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
-            Options = options.GetNamedOptions(name);
-        }
-
-        /// <summary>
-        /// Gets the options for this instance of <see cref="EmailTokenProvider{TUser}"/>.
-        /// </summary>
-        /// <value>
-        /// The options for this instance of <see cref="EmailTokenProvider{TUser}"/>.
-        /// </value>
-        public EmailTokenProviderOptions Options { get; private set; }
-
-        /// <summary>
-        /// Gets the unique name for this instance of <see cref="EmailTokenProvider{TUser}"/>.
-        /// </summary>
-        /// <value>
-        /// The unique name for this instance of <see cref="EmailTokenProvider{TUser}"/>.
-        /// </value>
-        public override string Name { get { return Options.Name; } }
-
         /// <summary>
         /// Checks if a two factor authentication token can be generated for the specified <paramref name="user"/>.
         /// </summary>

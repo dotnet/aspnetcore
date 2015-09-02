@@ -74,7 +74,7 @@ namespace Microsoft.AspNet.Identity
             {
                 var timeElapsed = currentUtc.Subtract(issuedUtc.Value);
                 var accessor = context.HttpContext.RequestServices.GetRequiredService<IOptions<IdentityOptions>>();
-                validate = timeElapsed > accessor.Options.SecurityStampValidationInterval;
+                validate = timeElapsed > accessor.Value.SecurityStampValidationInterval;
             }
             if (validate)
             {
