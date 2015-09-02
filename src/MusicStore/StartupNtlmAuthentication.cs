@@ -4,7 +4,7 @@ using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.Diagnostics.Entity;
-using Microsoft.AspNet.Server.WebListener;
+using Microsoft.AspNet.Http.Features;
 using Microsoft.Data.Entity;
 using Microsoft.Framework.Caching.Memory;
 using Microsoft.Framework.Configuration;
@@ -94,10 +94,10 @@ namespace MusicStore
 
             // Set up NTLM authentication for WebListener like below.
             // For IIS and IISExpress: Use inetmgr to setup NTLM authentication on the application vDir or modify the applicationHost.config to enable NTLM.
-            if ((app.Server as ServerInformation) != null)
+            var listener = app.ServerFeatures.Get<WebListener>();
+            if (listener != null)
             {
-                var serverInformation = (ServerInformation)app.Server;
-                serverInformation.Listener.AuthenticationManager.AuthenticationSchemes = AuthenticationSchemes.NTLM;
+                listener.AuthenticationManager.AuthenticationSchemes = AuthenticationSchemes.NTLM;
             }
 
             app.UseDatabaseErrorPage(DatabaseErrorPageOptions.ShowAll);
