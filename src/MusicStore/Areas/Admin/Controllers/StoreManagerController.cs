@@ -193,7 +193,7 @@ namespace MusicStore.Areas.Admin.Controllers
                 return HttpNotFound();
             }
 
-            return new ContentResult { Content = album.AlbumId.ToString() };
+            return Content(album.AlbumId.ToString());
         }
 #endif
     }
