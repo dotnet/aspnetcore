@@ -31,7 +31,7 @@ namespace MusicStore.Models
 
         private static async Task CreateAdminUser(IServiceProvider serviceProvider)
         {
-            var settings = serviceProvider.GetService<IOptions<SiteSettings>>().Options;
+            var settings = serviceProvider.GetService<IOptions<SiteSettings>>().Value;
             const string adminRole = "Administrator";
 
             var userManager = serviceProvider.GetService<UserManager<ApplicationUser>>();

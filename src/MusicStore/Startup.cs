@@ -57,34 +57,32 @@ namespace MusicStore
             }
 
             // Add Identity services to the services container
-            services.AddIdentity<ApplicationUser, IdentityRole>()
+            services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+                    {
+                        options.ApplicationCookie.AccessDeniedPath = new PathString("/Home/AccessDenied");
+                    })
                     .AddEntityFrameworkStores<MusicStoreContext>()
                     .AddDefaultTokenProviders();
 
-            services.ConfigureCookieAuthentication(options =>
-            {
-                options.AccessDeniedPath = new PathString("/Home/AccessDenied");
-            });
-
-            services.ConfigureFacebookAuthentication(options =>
+            services.AddFacebookAuthentication(options =>
             {
                 options.AppId = "550624398330273";
                 options.AppSecret = "10e56a291d6b618da61b1e0dae3a8954";
             });
 
-            services.ConfigureGoogleAuthentication(options =>
+            services.AddGoogleAuthentication(options =>
             {
                 options.ClientId = "977382855444.apps.googleusercontent.com";
                 options.ClientSecret = "NafT482F70Vjj_9q1PU4B0pN";
             });
 
-            services.ConfigureTwitterAuthentication(options =>
+            services.AddTwitterAuthentication(options =>
             {
                 options.ConsumerKey = "9J3j3pSwgbWkgPFH7nAf0Spam";
                 options.ConsumerSecret = "jUBYkQuBFyqp7G3CUB9SW3AfflFr9z3oQBiNvumYy87Al0W4h8";
             });
 
-            services.ConfigureMicrosoftAccountAuthentication(options =>
+            services.AddMicrosoftAccountAuthentication(options =>
             {
                 options.Caption = "MicrosoftAccount - Requires project changes";
                 options.ClientId = "000000004012C08A";

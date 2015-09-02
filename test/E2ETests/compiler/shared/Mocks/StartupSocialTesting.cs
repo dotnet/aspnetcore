@@ -68,16 +68,16 @@ namespace MusicStore
             }
 
             // Add Identity services to the services container
-            services.AddIdentity<ApplicationUser, IdentityRole>()
+            services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+                    {
+                        options.ApplicationCookie.AccessDeniedPath = new PathString("/Home/AccessDenied");
+                    })
                     .AddEntityFrameworkStores<MusicStoreContext>()
                     .AddDefaultTokenProviders();
 
-            services.ConfigureCookieAuthentication(options =>
-            {
-                options.AccessDeniedPath = new PathString("/Home/AccessDenied");
-            });
+            services.AddCookieAuthentication();
 
-            services.ConfigureFacebookAuthentication(options =>
+            services.AddFacebookAuthentication(options =>
             {
                 options.AppId = "[AppId]";
                 options.AppSecret = "[AppSecret]";
@@ -94,7 +94,7 @@ namespace MusicStore
                 options.Scope.Add("user_checkins");
             });
 
-            services.ConfigureGoogleAuthentication(options =>
+            services.AddGoogleAuthentication(options =>
             {
                 options.ClientId = "[ClientId]";
                 options.ClientSecret = "[ClientSecret]";
