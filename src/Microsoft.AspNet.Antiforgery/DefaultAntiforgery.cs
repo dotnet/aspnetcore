@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Antiforgery
             IAntiforgeryTokenStore tokenStore,
             IHtmlEncoder htmlEncoder)
         {
-            _options = antiforgeryOptionsAccessor.Options;
+            _options = antiforgeryOptionsAccessor.Value;
             _tokenGenerator = tokenGenerator;
             _tokenSerializer = tokenSerializer;
             _tokenStore = tokenStore;

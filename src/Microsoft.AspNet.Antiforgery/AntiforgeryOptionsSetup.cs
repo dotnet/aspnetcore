@@ -13,10 +13,8 @@ namespace Microsoft.AspNet.Antiforgery
     public class AntiforgeryOptionsSetup : ConfigureOptions<AntiforgeryOptions>
     {
         public AntiforgeryOptionsSetup(IOptions<DataProtectionOptions> dataProtectionOptionsAccessor)
-            : base((options) => ConfigureOptions(options, dataProtectionOptionsAccessor.Options))
+            : base((options) => ConfigureOptions(options, dataProtectionOptionsAccessor.Value))
         {
-            // We want this to run after any user setups to compute a default name if needed.
-            Order = 10000;
         }
 
         public static void ConfigureOptions(AntiforgeryOptions options, DataProtectionOptions dataProtectionOptions)

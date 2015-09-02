@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Antiforgery
             [NotNull] IOptions<AntiforgeryOptions> optionsAccessor,
             [NotNull] IAntiforgeryTokenSerializer tokenSerializer)
         {
-            _options = optionsAccessor.Options;
+            _options = optionsAccessor.Value;
             _tokenSerializer = tokenSerializer;
         }
 

@@ -466,7 +466,7 @@ namespace Microsoft.AspNet.Antiforgery
             var optionsManager = new TestOptionsManager();
             if (options != null)
             {
-                optionsManager.Options = options;
+                optionsManager.Value = options;
             }
 
             return new DefaultAntiforgery(
@@ -628,12 +628,7 @@ namespace Microsoft.AspNet.Antiforgery
 
         private class TestOptionsManager : IOptions<AntiforgeryOptions>
         {
-            public AntiforgeryOptions Options { get; set; } = new AntiforgeryOptions();
-
-            public AntiforgeryOptions GetNamedOptions(string name)
-            {
-                throw new NotImplementedException();
-            }
+            public AntiforgeryOptions Value { get; set; } = new AntiforgeryOptions();
         }
     }
 }

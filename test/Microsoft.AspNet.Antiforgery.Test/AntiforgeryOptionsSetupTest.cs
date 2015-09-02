@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Antiforgery
             var options = services.GetRequiredService<IOptions<AntiforgeryOptions>>();
 
             // Act
-            var cookieName = options.Options.CookieName;
+            var cookieName = options.Value.CookieName;
 
             // Assert
             Assert.Equal(expectedCookieName, cookieName);
@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Antiforgery
             var options = services.GetRequiredService<IOptions<AntiforgeryOptions>>();
 
             // Act
-            var cookieName = options.Options.CookieName;
+            var cookieName = options.Value.CookieName;
 
             // Assert
             Assert.Equal("antiforgery", cookieName);

@@ -17,11 +17,6 @@ namespace Microsoft.AspNet.Antiforgery
             Options = options;
         }
 
-        public AntiforgeryOptions Options { get; set; } = new AntiforgeryOptions();
-
-        public AntiforgeryOptions GetNamedOptions(string name)
-        {
-            throw new NotImplementedException();
-        }
+        public AntiforgeryOptions Value { get; set; } = new AntiforgeryOptions();
     }
 }
