@@ -89,7 +89,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                     message.PostLogoutRedirectUri = Options.PostLogoutRedirectUri;
                 }
 
-                var redirectToIdentityProviderContext = new RedirectToIdentityProviderContext<OpenIdConnectMessage, OpenIdConnectAuthenticationOptions>(Context, Options)
+                var redirectToIdentityProviderContext = new RedirectToIdentityProviderContext(Context, Options)
                 {
                     ProtocolMessage = message
                 };
@@ -220,11 +220,10 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 }
             }
 
-            var redirectToIdentityProviderContext =
-                new RedirectToIdentityProviderContext<OpenIdConnectMessage, OpenIdConnectAuthenticationOptions>(Context, Options)
-                {
-                    ProtocolMessage = message
-                };
+            var redirectToIdentityProviderContext = new RedirectToIdentityProviderContext(Context, Options)
+            {
+                ProtocolMessage = message
+            };
 
             await Options.Events.RedirectToIdentityProvider(redirectToIdentityProviderContext);
             if (redirectToIdentityProviderContext.HandledResponse)
@@ -745,14 +744,13 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             }
         }
 
-        private async Task<MessageReceivedContext<OpenIdConnectMessage, OpenIdConnectAuthenticationOptions>> RunMessageReceivedEventAsync(OpenIdConnectMessage message)
+        private async Task<MessageReceivedContext> RunMessageReceivedEventAsync(OpenIdConnectMessage message)
         {
             Logger.LogDebug(Resources.OIDCH_0001_MessageReceived, message.BuildRedirectUrl());
-            var messageReceivedContext =
-                new MessageReceivedContext<OpenIdConnectMessage, OpenIdConnectAuthenticationOptions>(Context, Options)
-                {
-                    ProtocolMessage = message
-                };
+            var messageReceivedContext = new MessageReceivedContext(Context, Options)
+            {
+                ProtocolMessage = message
+            };
 
             await Options.Events.MessageReceived(messageReceivedContext);
             if (messageReceivedContext.HandledResponse)
@@ -818,14 +816,13 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             return authorizationCodeRedeemedContext;
         }
 
-        private async Task<SecurityTokenReceivedContext<OpenIdConnectMessage, OpenIdConnectAuthenticationOptions>> RunSecurityTokenReceivedEventAsync(OpenIdConnectMessage message)
+        private async Task<SecurityTokenReceivedContext> RunSecurityTokenReceivedEventAsync(OpenIdConnectMessage message)
         {
             Logger.LogDebug(Resources.OIDCH_0020_IdTokenReceived, message.IdToken);
-            var securityTokenReceivedContext =
-                new SecurityTokenReceivedContext<OpenIdConnectMessage, OpenIdConnectAuthenticationOptions>(Context, Options)
-                {
-                    ProtocolMessage = message,
-                };
+            var securityTokenReceivedContext = new SecurityTokenReceivedContext(Context, Options)
+            {
+                ProtocolMessage = message,
+            };
 
             await Options.Events.SecurityTokenReceived(securityTokenReceivedContext);
             if (securityTokenReceivedContext.HandledResponse)
@@ -840,14 +837,13 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             return securityTokenReceivedContext;
         }
 
-        private async Task<SecurityTokenValidatedContext<OpenIdConnectMessage, OpenIdConnectAuthenticationOptions>> RunSecurityTokenValidatedEventAsync(OpenIdConnectMessage message, AuthenticationTicket ticket)
+        private async Task<SecurityTokenValidatedContext> RunSecurityTokenValidatedEventAsync(OpenIdConnectMessage message, AuthenticationTicket ticket)
         {
-            var securityTokenValidatedContext =
-                new SecurityTokenValidatedContext<OpenIdConnectMessage, OpenIdConnectAuthenticationOptions>(Context, Options)
-                {
-                    AuthenticationTicket = ticket,
-                    ProtocolMessage = message
-                };
+            var securityTokenValidatedContext = new SecurityTokenValidatedContext(Context, Options)
+            {
+                AuthenticationTicket = ticket,
+                ProtocolMessage = message
+            };
 
             await Options.Events.SecurityTokenValidated(securityTokenValidatedContext);
             if (securityTokenValidatedContext.HandledResponse)
@@ -862,14 +858,13 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             return securityTokenValidatedContext;
         }
 
-        private async Task<AuthenticationFailedContext<OpenIdConnectMessage, OpenIdConnectAuthenticationOptions>> RunAuthenticationFailedEventAsync(OpenIdConnectMessage message, Exception exception)
+        private async Task<AuthenticationFailedContext> RunAuthenticationFailedEventAsync(OpenIdConnectMessage message, Exception exception)
         {
-            var authenticationFailedContext =
-                new AuthenticationFailedContext<OpenIdConnectMessage, OpenIdConnectAuthenticationOptions>(Context, Options)
-                {
-                    ProtocolMessage = message,
-                    Exception = exception
-                };
+            var authenticationFailedContext = new AuthenticationFailedContext(Context, Options)
+            {
+                ProtocolMessage = message,
+                Exception = exception
+            };
 
             await Options.Events.AuthenticationFailed(authenticationFailedContext);
             if (authenticationFailedContext.HandledResponse)

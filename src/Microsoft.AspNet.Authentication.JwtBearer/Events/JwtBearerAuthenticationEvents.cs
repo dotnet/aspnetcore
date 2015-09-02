@@ -30,26 +30,26 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
         /// <summary>
         /// Invoked if exceptions are thrown during request processing. The exceptions will be re-thrown after this event unless suppressed.
         /// </summary>
-        public Func<AuthenticationFailedContext<HttpContext, JwtBearerAuthenticationOptions>, Task> AuthenticationFailed { get; set; }
+        public Func<AuthenticationFailedContext, Task> AuthenticationFailed { get; set; }
 
         /// <summary>
         /// Invoked when a protocol message is first received.
         /// </summary>
-        public Func<MessageReceivedContext<HttpContext, JwtBearerAuthenticationOptions>, Task> MessageReceived { get; set; }
+        public Func<MessageReceivedContext, Task> MessageReceived { get; set; }
 
         /// <summary>
         /// Invoked with the security token that has been extracted from the protocol message.
         /// </summary>
-        public Func<SecurityTokenReceivedContext<HttpContext, JwtBearerAuthenticationOptions>, Task> SecurityTokenReceived { get; set; }
+        public Func<SecurityTokenReceivedContext, Task> SecurityTokenReceived { get; set; }
 
         /// <summary>
         /// Invoked after the security token has passed validation and a ClaimsIdentity has been generated.
         /// </summary>
-        public Func<SecurityTokenValidatedContext<HttpContext, JwtBearerAuthenticationOptions>, Task> SecurityTokenValidated { get; set; }
+        public Func<SecurityTokenValidatedContext, Task> SecurityTokenValidated { get; set; }
 
         /// <summary>
         /// Invoked to apply a challenge sent back to the caller.
         /// </summary>
-        public Func<AuthenticationChallengeContext<JwtBearerAuthenticationOptions>, Task> ApplyChallenge { get; set; }
+        public Func<AuthenticationChallengeContext, Task> ApplyChallenge { get; set; }
     }
 }

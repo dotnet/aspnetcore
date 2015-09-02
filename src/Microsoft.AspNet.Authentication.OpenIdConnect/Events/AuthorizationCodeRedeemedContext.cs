@@ -11,7 +11,8 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         /// <summary>
         /// Creates a <see cref="AuthorizationCodeRedeemedContext"/>
         /// </summary>
-        public AuthorizationCodeRedeemedContext(HttpContext context, OpenIdConnectAuthenticationOptions options) : base(context, options)
+        public AuthorizationCodeRedeemedContext(HttpContext context, OpenIdConnectAuthenticationOptions options)
+            : base(context, options)
         {
         }
 

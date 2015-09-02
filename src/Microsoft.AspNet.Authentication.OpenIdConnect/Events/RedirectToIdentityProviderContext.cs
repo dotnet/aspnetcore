@@ -4,25 +4,27 @@
 using System;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.Internal;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
-namespace Microsoft.AspNet.Authentication
+namespace Microsoft.AspNet.Authentication.OpenIdConnect
 {
     /// <summary>
     /// When a user configures the <see cref="AuthenticationMiddleware{TOptions}"/> to be notified prior to redirecting to an IdentityProvider
-    /// an instance of <see cref="RedirectFromIdentityProviderContext{TMessage, TOptions, TMessage}"/> is passed to the 'RedirectToIdentityProviderContext".
+    /// an instance of <see cref="RedirectFromIdentityProviderContext"/> is passed to the 'RedirectToIdentityProviderContext".
     /// </summary>
     /// <typeparam name="TMessage">protocol specific message.</typeparam>
     /// <typeparam name="TOptions">protocol specific options.</typeparam>
-    public class RedirectToIdentityProviderContext<TMessage, TOptions> : BaseControlContext<TOptions>
+    public class RedirectToIdentityProviderContext : BaseControlContext<OpenIdConnectAuthenticationOptions>
     {
-        public RedirectToIdentityProviderContext([NotNull] HttpContext context, [NotNull] TOptions options) : base(context, options)
+        public RedirectToIdentityProviderContext([NotNull] HttpContext context, [NotNull] OpenIdConnectAuthenticationOptions options)
+            : base(context, options)
         {
         }
 
         /// <summary>
-        /// Gets or sets the <see cref="{TMessage}"/>.
+        /// Gets or sets the <see cref="OpenIdConnectMessage"/>.
         /// </summary>
         /// <exception cref="ArgumentNullException">if 'value' is null.</exception>
-        public TMessage ProtocolMessage { get; [param: NotNull] set; }
+        public OpenIdConnectMessage ProtocolMessage { get; [param: NotNull] set; }
     }
 }

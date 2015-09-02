@@ -5,9 +5,9 @@ using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Authentication.JwtBearer
 {
-    public class AuthenticationChallengeContext : BaseControlContext<JwtBearerAuthenticationOptions>
+    public class SecurityTokenValidatedContext : BaseControlContext<JwtBearerAuthenticationOptions>
     {
-        public AuthenticationChallengeContext(HttpContext context, JwtBearerAuthenticationOptions options)
+        public SecurityTokenValidatedContext(HttpContext context, JwtBearerAuthenticationOptions options)
             : base(context, options)
         {
         }

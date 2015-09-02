@@ -3,15 +3,14 @@
 
 using Microsoft.AspNet.Http;
 
-namespace Microsoft.AspNet.Authentication
+namespace Microsoft.AspNet.Authentication.JwtBearer
 {
-    public class MessageReceivedContext<TMessage, TOptions> : BaseControlContext<TOptions>
+    public class MessageReceivedContext : BaseControlContext<JwtBearerAuthenticationOptions>
     {
-        public MessageReceivedContext(HttpContext context, TOptions options) : base(context, options)
+        public MessageReceivedContext(HttpContext context, JwtBearerAuthenticationOptions options)
+            : base(context, options)
         {
         }
-
-        public TMessage ProtocolMessage { get; set; }
 
         /// <summary>
         /// Bearer Token. This will give application an opportunity to retrieve token from an alternation location.
