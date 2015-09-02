@@ -47,17 +47,17 @@ namespace IdentitySamples
                     .AddEntityFrameworkStores<ApplicationDbContext>()
                     .AddDefaultTokenProviders();
 
-            services.ConfigureFacebookAuthentication(options =>
+            services.AddFacebookAuthentication(options =>
             {
                 options.AppId = "901611409868059";
                 options.AppSecret = "4aa3c530297b1dcebc8860334b39668b";
             });
-            services.ConfigureGoogleAuthentication(options =>
+            services.AddGoogleAuthentication(options =>
             {
                 options.ClientId = "514485782433-fr3ml6sq0imvhi8a7qir0nb46oumtgn9.apps.googleusercontent.com";
                 options.ClientSecret = "V2nDD9SkFbvLTqAUBWBBxYAL";
             });
-            services.ConfigureTwitterAuthentication(options =>
+            services.AddTwitterAuthentication(options =>
             {
                 options.ConsumerKey = "BSdJJ0CrDuvEhpkchnukXZBUv";
                 options.ConsumerSecret = "xKUNuKhsRdHD03eLn67xhPAyE1wFFEndFo1X2UJaK2m1jdAxf4";
