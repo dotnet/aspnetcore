@@ -5,22 +5,22 @@ using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Authentication
 {
-    public class BaseNotification<TOptions> : BaseContext<TOptions>
+    public class BaseControlContext<TOptions> : BaseContext<TOptions>
     {
-        protected BaseNotification(HttpContext context, TOptions options) : base(context, options)
+        protected BaseControlContext(HttpContext context, TOptions options) : base(context, options)
         {
         }
 
-        public NotificationResultState State { get; set; }
+        public EventResultState State { get; set; }
 
         public bool HandledResponse
         {
-            get { return State == NotificationResultState.HandledResponse; }
+            get { return State == EventResultState.HandledResponse; }
         }
 
         public bool Skipped
         {
-            get { return State == NotificationResultState.Skipped; }
+            get { return State == EventResultState.Skipped; }
         }
 
         /// <summary>
@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Authentication
         /// </summary>
         public void HandleResponse()
         {
-            State = NotificationResultState.HandledResponse;
+            State = EventResultState.HandledResponse;
         }
 
         /// <summary>
@@ -39,11 +39,11 @@ namespace Microsoft.AspNet.Authentication
         /// </summary>
         public void SkipToNextMiddleware()
         {
-            State = NotificationResultState.Skipped;
+            State = EventResultState.Skipped;
         }
 
         /// <summary>
-        /// Gets or set the <see cref="AuthenticationTicket"/> to return if this notification signals it handled the notification.
+        /// Gets or set the <see cref="AuthenticationTicket"/> to return if this event signals it handled the event.
         /// </summary>
         public AuthenticationTicket AuthenticationTicket { get; set; }
     }

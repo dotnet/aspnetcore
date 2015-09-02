@@ -4,14 +4,14 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 namespace Microsoft.AspNet.Authentication.OpenIdConnect
 {
     /// <summary>
-    /// This Notification can be used to be informed when an 'AuthorizationCode' is redeemed for tokens at the token endpoint.
+    /// This Context can be used to be informed when an 'AuthorizationCode' is redeemed for tokens at the token endpoint.
     /// </summary>
-    public class AuthorizationCodeRedeemedNotification : BaseNotification<OpenIdConnectAuthenticationOptions>
+    public class AuthorizationCodeRedeemedContext : BaseControlContext<OpenIdConnectAuthenticationOptions>
     {
         /// <summary>
-        /// Creates a <see cref="AuthorizationCodeRedeemedNotification"/>
+        /// Creates a <see cref="AuthorizationCodeRedeemedContext"/>
         /// </summary>
-        public AuthorizationCodeRedeemedNotification(HttpContext context, OpenIdConnectAuthenticationOptions options) : base(context, options)
+        public AuthorizationCodeRedeemedContext(HttpContext context, OpenIdConnectAuthenticationOptions options) : base(context, options)
         {
         }
 

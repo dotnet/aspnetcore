@@ -198,7 +198,7 @@ namespace Microsoft.AspNet.Authentication.Google
             {
                 options.ClientId = "Test Id";
                 options.ClientSecret = "Test Secret";
-                options.Notifications = new OAuthAuthenticationNotifications
+                options.Events = new OAuthAuthenticationEvents
                 {
                     OnApplyRedirect = context =>
                         {
@@ -414,7 +414,7 @@ namespace Microsoft.AspNet.Authentication.Google
                         return null;
                     }
                 };
-                options.Notifications = new OAuthAuthenticationNotifications
+                options.Events = new OAuthAuthenticationEvents
                 {
                     OnAuthenticated = context =>
                     {
@@ -455,7 +455,7 @@ namespace Microsoft.AspNet.Authentication.Google
                 options.ClientSecret = "Test Secret";
                 options.StateDataFormat = stateFormat;
                 options.AccessType = "offline";
-                options.Notifications = new OAuthAuthenticationNotifications()
+                options.Events = new OAuthAuthenticationEvents()
                 {
                     OnAuthenticated = context =>
                     {

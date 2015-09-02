@@ -8,7 +8,7 @@ using Microsoft.AspNet.Http.Authentication;
 namespace Microsoft.AspNet.Authentication.Cookies
 {
     /// <summary>
-    /// Context object passed to the ICookieAuthenticationNotifications method ResponseSignedIn.
+    /// Context object passed to the ICookieAuthenticationEvents method ResponseSignedIn.
     /// </summary>    
     public class CookieResponseSignedInContext : BaseContext<CookieAuthenticationOptions>
     {

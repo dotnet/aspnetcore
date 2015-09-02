@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Authentication.OAuth
             };
             ticket.Properties.RedirectUri = null;
 
-            await Options.Notifications.ReturnEndpoint(context);
+            await Options.Events.ReturnEndpoint(context);
 
             if (context.SignInScheme != null && context.Principal != null)
             {
@@ -183,20 +183,20 @@ namespace Microsoft.AspNet.Authentication.OAuth
 
         protected virtual async Task<AuthenticationTicket> CreateTicketAsync(ClaimsIdentity identity, AuthenticationProperties properties, OAuthTokenResponse tokens)
         {
-            var notification = new OAuthAuthenticatedContext(Context, Options, Backchannel, tokens)
+            var context = new OAuthAuthenticatedContext(Context, Options, Backchannel, tokens)
             {
                 Principal = new ClaimsPrincipal(identity),
                 Properties = properties
             };
             
-            await Options.Notifications.Authenticated(notification);
+            await Options.Events.Authenticated(context);
 
-            if (notification.Principal?.Identity == null)
+            if (context.Principal?.Identity == null)
             {
                 return null;
             }
 
-            return new AuthenticationTicket(notification.Principal, notification.Properties, Options.AuthenticationScheme);
+            return new AuthenticationTicket(context.Principal, context.Properties, Options.AuthenticationScheme);
         }
 
         protected override Task<bool> HandleUnauthorizedAsync([NotNull] ChallengeContext context)
@@ -215,7 +215,7 @@ namespace Microsoft.AspNet.Authentication.OAuth
             var redirectContext = new OAuthApplyRedirectContext(
                 Context, Options,
                 properties, authorizationEndpoint);
-            Options.Notifications.ApplyRedirect(redirectContext);
+            Options.Events.ApplyRedirect(redirectContext);
             return Task.FromResult(true);
         }
 

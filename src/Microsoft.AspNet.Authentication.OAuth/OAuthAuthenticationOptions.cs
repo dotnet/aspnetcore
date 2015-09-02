@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Authentication.OAuth
         /// <summary>
         /// Gets or sets the URI the middleware will access to obtain the user information.
         /// This value is not used in the default implementation, it is for use in custom implementations of
-        /// IOAuthAuthenticationNotifications.Authenticated or OAuthAuthenticationHandler.CreateTicketAsync.
+        /// IOAuthAuthenticationEvents.Authenticated or OAuthAuthenticationHandler.CreateTicketAsync.
         /// </summary>
         public string UserInformationEndpoint { get; set; }
 
@@ -80,9 +80,9 @@ namespace Microsoft.AspNet.Authentication.OAuth
         public HttpMessageHandler BackchannelHttpHandler { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="IOAuthAuthenticationNotifications"/> used to handle authentication events.
+        /// Gets or sets the <see cref="IOAuthAuthenticationEvents"/> used to handle authentication events.
         /// </summary>
-        public IOAuthAuthenticationNotifications Notifications { get; set; } = new OAuthAuthenticationNotifications();
+        public IOAuthAuthenticationEvents Events { get; set; } = new OAuthAuthenticationEvents();
 
         /// <summary>
         /// A list of permissions to request.

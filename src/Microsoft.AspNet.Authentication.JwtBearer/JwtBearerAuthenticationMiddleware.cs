@@ -34,9 +34,9 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
             ConfigureOptions<JwtBearerAuthenticationOptions> configureOptions)
             : base(next, options, loggerFactory, encoder, configureOptions)
         {
-            if (Options.Notifications == null)
+            if (Options.Events == null)
             {
-                Options.Notifications = new JwtBearerAuthenticationNotifications();
+                Options.Events = new JwtBearerAuthenticationEvents();
             }
 
             if (string.IsNullOrEmpty(Options.TokenValidationParameters.ValidAudience) && !string.IsNullOrEmpty(Options.Audience))

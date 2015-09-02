@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Authentication.Facebook
                     {
                         options.AppId = "Test App Id";
                         options.AppSecret = "Test App Secret";
-                        options.Notifications = new OAuthAuthenticationNotifications
+                        options.Events = new OAuthAuthenticationEvents
                         {
                             OnApplyRedirect = context =>
                             {

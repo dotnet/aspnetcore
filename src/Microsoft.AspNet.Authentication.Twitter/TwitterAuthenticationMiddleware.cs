@@ -51,9 +51,9 @@ namespace Microsoft.AspNet.Authentication.Twitter
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, nameof(Options.ConsumerKey)));
             }
 
-            if (Options.Notifications == null)
+            if (Options.Events == null)
             {
-                Options.Notifications = new TwitterAuthenticationNotifications();
+                Options.Events = new TwitterAuthenticationEvents();
             }
             if (Options.StateDataFormat == null)
             {

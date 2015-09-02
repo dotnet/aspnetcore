@@ -5,9 +5,9 @@ using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Authentication
 {
-    public class RedirectFromIdentityProviderNotification<TMessage, TOptions> : BaseNotification<TOptions>
+    public class RedirectFromIdentityProviderContext<TMessage, TOptions> : BaseControlContext<TOptions>
     {
-        public RedirectFromIdentityProviderNotification(HttpContext context, TOptions options)
+        public RedirectFromIdentityProviderContext(HttpContext context, TOptions options)
             : base(context, options)
         {
         }

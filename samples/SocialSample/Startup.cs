@@ -135,16 +135,16 @@ namespace CookieSample
                 options.ClaimsIssuer = "OAuth2-Github";
                 options.SaveTokensAsClaims = false;
                 // Retrieving user information is unique to each provider.
-                options.Notifications = new OAuthAuthenticationNotifications
+                options.Events = new OAuthAuthenticationEvents
                 {
-                    OnAuthenticated = async notification =>
+                    OnAuthenticated = async context =>
                     {
                         // Get the GitHub user
-                        var request = new HttpRequestMessage(HttpMethod.Get, notification.Options.UserInformationEndpoint);
-                        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", notification.AccessToken);
+                        var request = new HttpRequestMessage(HttpMethod.Get, context.Options.UserInformationEndpoint);
+                        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", context.AccessToken);
                         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-                        var response = await notification.Backchannel.SendAsync(request, notification.HttpContext.RequestAborted);
+                        var response = await context.Backchannel.SendAsync(request, context.HttpContext.RequestAborted);
                         response.EnsureSuccessStatusCode();
 
                         var user = JObject.Parse(await response.Content.ReadAsStringAsync());
@@ -152,33 +152,33 @@ namespace CookieSample
                         var identifier = user.Value<string>("id");
                         if (!string.IsNullOrEmpty(identifier))
                         {
-                            notification.Identity.AddClaim(new Claim(
+                            context.Identity.AddClaim(new Claim(
                                 ClaimTypes.NameIdentifier, identifier,
-                                ClaimValueTypes.String, notification.Options.ClaimsIssuer));
+                                ClaimValueTypes.String, context.Options.ClaimsIssuer));
                         }
 
                         var userName = user.Value<string>("login");
                         if (!string.IsNullOrEmpty(userName))
                         {
-                            notification.Identity.AddClaim(new Claim(
+                            context.Identity.AddClaim(new Claim(
                                 ClaimsIdentity.DefaultNameClaimType, userName,
-                                ClaimValueTypes.String, notification.Options.ClaimsIssuer));
+                                ClaimValueTypes.String, context.Options.ClaimsIssuer));
                         }
 
                         var name = user.Value<string>("name");
                         if (!string.IsNullOrEmpty(name))
                         {
-                            notification.Identity.AddClaim(new Claim(
+                            context.Identity.AddClaim(new Claim(
                                 "urn:github:name", name,
-                                ClaimValueTypes.String, notification.Options.ClaimsIssuer));
+                                ClaimValueTypes.String, context.Options.ClaimsIssuer));
                         }
 
                         var link = user.Value<string>("url");
                         if (!string.IsNullOrEmpty(link))
                         {
-                            notification.Identity.AddClaim(new Claim(
+                            context.Identity.AddClaim(new Claim(
                                 "urn:github:url", link,
-                                ClaimValueTypes.String, notification.Options.ClaimsIssuer));
+                                ClaimValueTypes.String, context.Options.ClaimsIssuer));
                         }
                     },
                 };

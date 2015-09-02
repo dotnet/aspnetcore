@@ -7,14 +7,14 @@ using System.Threading.Tasks;
 namespace Microsoft.AspNet.Authentication.Twitter
 {
     /// <summary>
-    /// Default <see cref="ITwitterAuthenticationNotifications"/> implementation.
+    /// Default <see cref="ITwitterAuthenticationEvents"/> implementation.
     /// </summary>
-    public class TwitterAuthenticationNotifications : ITwitterAuthenticationNotifications
+    public class TwitterAuthenticationEvents : ITwitterAuthenticationEvents
     {
         /// <summary>
-        /// Initializes a <see cref="TwitterAuthenticationNotifications"/>
+        /// Initializes a <see cref="TwitterAuthenticationEvents"/>
         /// </summary>
-        public TwitterAuthenticationNotifications()
+        public TwitterAuthenticationEvents()
         {
             OnAuthenticated = context => Task.FromResult<object>(null);
             OnReturnEndpoint = context => Task.FromResult<object>(null);

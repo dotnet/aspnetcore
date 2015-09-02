@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Authentication.Tests.MicrosoftAccount
                 {
                     options.ClientId = "Test Client Id";
                     options.ClientSecret = "Test Client Secret";
-                    options.Notifications = new OAuthAuthenticationNotifications
+                    options.Events = new OAuthAuthenticationEvents
                     {
                         OnApplyRedirect = context =>
                         {
@@ -143,7 +143,7 @@ namespace Microsoft.AspNet.Authentication.Tests.MicrosoftAccount
                             return null;
                         }
                     };
-                    options.Notifications = new OAuthAuthenticationNotifications
+                    options.Events = new OAuthAuthenticationEvents
                     {
                         OnAuthenticated = context =>
                         {

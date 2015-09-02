@@ -117,20 +117,20 @@ namespace Microsoft.AspNet.Authentication.Twitter
 
         protected virtual async Task<AuthenticationTicket> CreateTicketAsync(ClaimsIdentity identity, AuthenticationProperties properties, AccessToken token)
         {
-            var notification = new TwitterAuthenticatedContext(Context, token.UserId, token.ScreenName, token.Token, token.TokenSecret)
+            var context = new TwitterAuthenticatedContext(Context, token.UserId, token.ScreenName, token.Token, token.TokenSecret)
             {
                 Principal = new ClaimsPrincipal(identity),
                 Properties = properties
             };
 
-            await Options.Notifications.Authenticated(notification);
+            await Options.Events.Authenticated(context);
             
-            if (notification.Principal?.Identity == null)
+            if (context.Principal?.Identity == null)
             {
                 return null;
             }
 
-            return new AuthenticationTicket(notification.Principal, notification.Properties, Options.AuthenticationScheme);
+            return new AuthenticationTicket(context.Principal, context.Properties, Options.AuthenticationScheme);
         }
 
         protected override async Task<bool> HandleUnauthorizedAsync([NotNull] ChallengeContext context)
@@ -157,7 +157,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
                 var redirectContext = new TwitterApplyRedirectContext(
                     Context, Options,
                     properties, twitterAuthenticationEndpoint);
-                Options.Notifications.ApplyRedirect(redirectContext);
+                Options.Events.ApplyRedirect(redirectContext);
                 return true;
             }
             else
@@ -184,7 +184,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
             };
             model.Properties.RedirectUri = null;
 
-            await Options.Notifications.ReturnEndpoint(context);
+            await Options.Events.ReturnEndpoint(context);
 
             if (context.SignInScheme != null && context.Principal != null)
             {

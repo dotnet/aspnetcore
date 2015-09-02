@@ -94,26 +94,26 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             }
         }
 
-        // Setup a notification to check for expected state.
-        // The state gets set by the runtime after the 'MessageReceivedNotification'
+        // Setup an event to check for expected state.
+        // The state gets set by the runtime after the 'MessageReceivedContext'
         private static void SetStateOptions(OpenIdConnectAuthenticationOptions options)
         {
             options.AuthenticationScheme = "OpenIdConnectHandlerTest";
             options.ConfigurationManager = TestUtilities.DefaultOpenIdConnectConfigurationManager;
             options.ClientId = Guid.NewGuid().ToString();
             options.StateDataFormat = new AuthenticationPropertiesFormaterKeyValue();
-            options.Notifications = new OpenIdConnectAuthenticationNotifications
+            options.Events = new OpenIdConnectAuthenticationEvents
             {
-                AuthorizationCodeRedeemed = notification =>
+                AuthorizationCodeRedeemed = context =>
                 {
-                    notification.HandleResponse();
-                    if (notification.ProtocolMessage.State == null && !notification.ProtocolMessage.Parameters.ContainsKey(ExpectedStateParameter))
+                    context.HandleResponse();
+                    if (context.ProtocolMessage.State == null && !context.ProtocolMessage.Parameters.ContainsKey(ExpectedStateParameter))
                         return Task.FromResult<object>(null);
 
-                    if (notification.ProtocolMessage.State == null || !notification.ProtocolMessage.Parameters.ContainsKey(ExpectedStateParameter))
-                        Assert.True(false, "(notification.ProtocolMessage.State=!= null || !notification.ProtocolMessage.Parameters.ContainsKey(expectedState)");
+                    if (context.ProtocolMessage.State == null || !context.ProtocolMessage.Parameters.ContainsKey(ExpectedStateParameter))
+                        Assert.True(false, "(context.ProtocolMessage.State=!= null || !context.ProtocolMessage.Parameters.ContainsKey(expectedState)");
 
-                    Assert.Equal(notification.ProtocolMessage.State, notification.ProtocolMessage.Parameters[ExpectedStateParameter]);
+                    Assert.Equal(context.ProtocolMessage.State, context.ProtocolMessage.Parameters[ExpectedStateParameter]);
                     return Task.FromResult<object>(null);
                 }
             };
@@ -274,12 +274,12 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             DefaultOptions(options);
             options.SecurityTokenValidator = MockSecurityTokenValidator();
             options.ProtocolValidator = MockProtocolValidator();
-            options.Notifications =
-                new OpenIdConnectAuthenticationNotifications
+            options.Events =
+                new OpenIdConnectAuthenticationEvents
                 {
-                    AuthorizationCodeReceived = (notification) =>
+                    AuthorizationCodeReceived = (context) =>
                     {
-                        notification.HandleResponse();
+                        context.HandleResponse();
                         return Task.FromResult<object>(null);
                     }
                 };
@@ -290,12 +290,12 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             DefaultOptions(options);
             options.SecurityTokenValidator = MockSecurityTokenValidator();
             options.ProtocolValidator = MockProtocolValidator();
-            options.Notifications =
-                new OpenIdConnectAuthenticationNotifications
+            options.Events =
+                new OpenIdConnectAuthenticationEvents
                 {
-                    AuthorizationCodeReceived = (notification) =>
+                    AuthorizationCodeReceived = (context) =>
                     {
-                        notification.SkipToNextMiddleware();
+                        context.SkipToNextMiddleware();
                         return Task.FromResult<object>(null);
                     }
                 };
@@ -306,12 +306,12 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             DefaultOptions(options);
             options.SecurityTokenValidator = MockSecurityTokenValidator();
             options.ProtocolValidator = MockProtocolValidator();
-            options.Notifications =
-                new OpenIdConnectAuthenticationNotifications
+            options.Events =
+                new OpenIdConnectAuthenticationEvents
                 {
-                    AuthenticationFailed = (notification) =>
+                    AuthenticationFailed = (context) =>
                     {
-                        notification.HandleResponse();
+                        context.HandleResponse();
                         return Task.FromResult<object>(null);
                     }
                 };
@@ -322,12 +322,12 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             DefaultOptions(options);
             options.SecurityTokenValidator = MockSecurityTokenValidator();
             options.ProtocolValidator = MockProtocolValidator();
-            options.Notifications =
-                new OpenIdConnectAuthenticationNotifications
+            options.Events =
+                new OpenIdConnectAuthenticationEvents
                 {
-                    AuthenticationFailed = (notification) =>
+                    AuthenticationFailed = (context) =>
                     {
-                        notification.SkipToNextMiddleware();
+                        context.SkipToNextMiddleware();
                         return Task.FromResult<object>(null);
                     }
                 };
@@ -336,12 +336,12 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
         private static void MessageReceivedHandledOptions(OpenIdConnectAuthenticationOptions options)
         {
             DefaultOptions(options);
-            options.Notifications =
-                new OpenIdConnectAuthenticationNotifications
+            options.Events =
+                new OpenIdConnectAuthenticationEvents
                 {
-                    MessageReceived = (notification) =>
+                    MessageReceived = (context) =>
                     {
-                        notification.HandleResponse();
+                        context.HandleResponse();
                         return Task.FromResult<object>(null);
                     }
                 };
@@ -352,12 +352,12 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             DefaultOptions(options);
             options.ResponseType = OpenIdConnectResponseTypes.Code;
             options.StateDataFormat = new AuthenticationPropertiesFormaterKeyValue();
-            options.Notifications =
-                new OpenIdConnectAuthenticationNotifications
+            options.Events =
+                new OpenIdConnectAuthenticationEvents
                 {
-                    AuthorizationCodeRedeemed = (notification) =>
+                    AuthorizationCodeRedeemed = (context) =>
                     {
-                        notification.HandleResponse();
+                        context.HandleResponse();
                         return Task.FromResult<object>(null);
                     }
                 };
@@ -368,12 +368,12 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             DefaultOptions(options);
             options.ResponseType = OpenIdConnectResponseTypes.Code;
             options.StateDataFormat = new AuthenticationPropertiesFormaterKeyValue();
-            options.Notifications =
-                new OpenIdConnectAuthenticationNotifications
+            options.Events =
+                new OpenIdConnectAuthenticationEvents
                 {
-                    AuthorizationCodeRedeemed = (notification) =>
+                    AuthorizationCodeRedeemed = (context) =>
                     {
-                        notification.SkipToNextMiddleware();
+                        context.SkipToNextMiddleware();
                         return Task.FromResult<object>(null);
                     }
                 };
@@ -387,14 +387,14 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             options.StateDataFormat = new AuthenticationPropertiesFormaterKeyValue();
             options.GetClaimsFromUserInfoEndpoint = true;
             options.SecurityTokenValidator = MockSecurityTokenValidator();
-            options.Notifications =
-                new OpenIdConnectAuthenticationNotifications
+            options.Events =
+                new OpenIdConnectAuthenticationEvents
                 {
-                    SecurityTokenValidated = (notification) =>
+                    SecurityTokenValidated = (context) =>
                     {
-                        var claimValue = notification.AuthenticationTicket.Principal.FindFirst("test claim");
+                        var claimValue = context.AuthenticationTicket.Principal.FindFirst("test claim");
                         Assert.Equal(claimValue.Value, "test value");
-                        notification.HandleResponse();
+                        context.HandleResponse();
                         return Task.FromResult<object>(null);
                     }
                 };
@@ -402,12 +402,12 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
         private static void MessageReceivedSkippedOptions(OpenIdConnectAuthenticationOptions options)
         {
             DefaultOptions(options);
-            options.Notifications =
-                new OpenIdConnectAuthenticationNotifications
+            options.Events =
+                new OpenIdConnectAuthenticationEvents
                 {
-                    MessageReceived = (notification) =>
+                    MessageReceived = (context) =>
                     {
-                        notification.SkipToNextMiddleware();
+                        context.SkipToNextMiddleware();
                         return Task.FromResult<object>(null);
                     }
                 };
@@ -421,12 +421,12 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
         private static void SecurityTokenReceivedHandledOptions(OpenIdConnectAuthenticationOptions options)
         {
             DefaultOptions(options);
-            options.Notifications =
-                new OpenIdConnectAuthenticationNotifications
+            options.Events =
+                new OpenIdConnectAuthenticationEvents
                 {
-                    SecurityTokenReceived = (notification) =>
+                    SecurityTokenReceived = (context) =>
                     {
-                        notification.HandleResponse();
+                        context.HandleResponse();
                         return Task.FromResult<object>(null);
                     }
                 };
@@ -435,12 +435,12 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
         private static void SecurityTokenReceivedSkippedOptions(OpenIdConnectAuthenticationOptions options)
         {
             DefaultOptions(options);
-            options.Notifications =
-                new OpenIdConnectAuthenticationNotifications
+            options.Events =
+                new OpenIdConnectAuthenticationEvents
                 {
-                    SecurityTokenReceived = (notification) =>
+                    SecurityTokenReceived = (context) =>
                     {
-                        notification.SkipToNextMiddleware();
+                        context.SkipToNextMiddleware();
                         return Task.FromResult<object>(null);
                     }
                 };
@@ -492,12 +492,12 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
         private static void SecurityTokenValidatedHandledOptions(OpenIdConnectAuthenticationOptions options)
         {
             SecurityTokenValidatorValidatesAllTokens(options);
-            options.Notifications =
-                new OpenIdConnectAuthenticationNotifications
+            options.Events =
+                new OpenIdConnectAuthenticationEvents
                 {
-                    SecurityTokenValidated = (notification) =>
+                    SecurityTokenValidated = (context) =>
                     {
-                        notification.HandleResponse();
+                        context.HandleResponse();
                         return Task.FromResult<object>(null);
                     }
                 };
@@ -506,12 +506,12 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
         private static void SecurityTokenValidatedSkippedOptions(OpenIdConnectAuthenticationOptions options)
         {
             SecurityTokenValidatorValidatesAllTokens(options);
-            options.Notifications =
-                new OpenIdConnectAuthenticationNotifications
+            options.Events =
+                new OpenIdConnectAuthenticationEvents
                 {
-                    SecurityTokenValidated = (notification) =>
+                    SecurityTokenValidated = (context) =>
                     {
-                        notification.SkipToNextMiddleware();
+                        context.SkipToNextMiddleware();
                         return Task.FromResult<object>(null);
                     }
                 };

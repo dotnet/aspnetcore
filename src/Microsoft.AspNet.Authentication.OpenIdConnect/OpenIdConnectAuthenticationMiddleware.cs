@@ -92,9 +92,9 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 }
             }
 
-            if (Options.Notifications == null)
+            if (Options.Events == null)
             {
-                Options.Notifications = new OpenIdConnectAuthenticationNotifications();
+                Options.Events = new OpenIdConnectAuthenticationEvents();
             }
 
             if (string.IsNullOrEmpty(Options.TokenValidationParameters.ValidAudience) && !string.IsNullOrEmpty(Options.ClientId))
@@ -162,7 +162,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 var webRequestHandler = handler as WebRequestHandler;
                 if (webRequestHandler == null)
                 {
-                    throw new InvalidOperationException(Resources.OIDCH_0102_ExceptionValidatorHandlerMismatch);
+                    throw new InvalidOperationException(Resources.OIDCH_0102_Exception_ValidatorHandlerMismatch);
                 }
                 webRequestHandler.ServerCertificateValidationCallback = options.BackchannelCertificateValidator.Validate;
             }

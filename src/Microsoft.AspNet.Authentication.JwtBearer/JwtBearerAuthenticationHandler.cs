@@ -27,26 +27,26 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
             try
             {
                 // Give application opportunity to find from a different location, adjust, or reject token
-                var messageReceivedNotification =
-                    new MessageReceivedNotification<HttpContext, JwtBearerAuthenticationOptions>(Context, Options)
+                var messageReceivedContext =
+                    new MessageReceivedContext<HttpContext, JwtBearerAuthenticationOptions>(Context, Options)
                     {
                         ProtocolMessage = Context,
                     };
 
-                // notification can set the token
-                await Options.Notifications.MessageReceived(messageReceivedNotification);
-                if (messageReceivedNotification.HandledResponse)
+                // event can set the token
+                await Options.Events.MessageReceived(messageReceivedContext);
+                if (messageReceivedContext.HandledResponse)
                 {
-                    return messageReceivedNotification.AuthenticationTicket;
+                    return messageReceivedContext.AuthenticationTicket;
                 }
 
-                if (messageReceivedNotification.Skipped)
+                if (messageReceivedContext.Skipped)
                 {
                     return null;
                 }
 
                 // If application retrieved token from somewhere else, use that.
-                token = messageReceivedNotification.Token;
+                token = messageReceivedContext.Token;
 
                 if (string.IsNullOrEmpty(token))
                 {
@@ -71,20 +71,20 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
                 }
 
                 // notify user token was received
-                var securityTokenReceivedNotification =
-                    new SecurityTokenReceivedNotification<HttpContext, JwtBearerAuthenticationOptions>(Context, Options)
+                var securityTokenReceivedContext =
+                    new SecurityTokenReceivedContext<HttpContext, JwtBearerAuthenticationOptions>(Context, Options)
                 {
                     ProtocolMessage = Context,
                     SecurityToken = token,
                 };
 
-                await Options.Notifications.SecurityTokenReceived(securityTokenReceivedNotification);
-                if (securityTokenReceivedNotification.HandledResponse)
+                await Options.Events.SecurityTokenReceived(securityTokenReceivedContext);
+                if (securityTokenReceivedContext.HandledResponse)
                 {
-                    return securityTokenReceivedNotification.AuthenticationTicket;
+                    return securityTokenReceivedContext.AuthenticationTicket;
                 }
 
-                if (securityTokenReceivedNotification.Skipped)
+                if (securityTokenReceivedContext.Skipped)
                 {
                     return null;
                 }
@@ -117,19 +117,19 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
                     {
                         var principal = validator.ValidateToken(token, validationParameters, out validatedToken);
                         var ticket = new AuthenticationTicket(principal, new AuthenticationProperties(), Options.AuthenticationScheme);
-                        var securityTokenValidatedNotification = new SecurityTokenValidatedNotification<HttpContext, JwtBearerAuthenticationOptions>(Context, Options)
+                        var securityTokenValidatedContext = new SecurityTokenValidatedContext<HttpContext, JwtBearerAuthenticationOptions>(Context, Options)
                         {
                             ProtocolMessage = Context,
                             AuthenticationTicket = ticket
                         };
 
-                        await Options.Notifications.SecurityTokenValidated(securityTokenValidatedNotification);
-                        if (securityTokenValidatedNotification.HandledResponse)
+                        await Options.Events.SecurityTokenValidated(securityTokenValidatedContext);
+                        if (securityTokenValidatedContext.HandledResponse)
                         {
-                            return securityTokenValidatedNotification.AuthenticationTicket;
+                            return securityTokenValidatedContext.AuthenticationTicket;
                         }
 
-                        if (securityTokenValidatedNotification.Skipped)
+                        if (securityTokenValidatedContext.Skipped)
                         {
                             return null;
                         }
@@ -144,26 +144,26 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
             {
                 Logger.LogError("Exception occurred while processing message", ex);
 
-                // Refresh the configuration for exceptions that may be caused by key rollovers. The user can also request a refresh in the notification.
+                // Refresh the configuration for exceptions that may be caused by key rollovers. The user can also request a refresh in the event.
                 if (Options.RefreshOnIssuerKeyNotFound && ex.GetType().Equals(typeof(SecurityTokenSignatureKeyNotFoundException)))
                 {
                     Options.ConfigurationManager.RequestRefresh();
                 }
 
-                var authenticationFailedNotification =
-                    new AuthenticationFailedNotification<HttpContext, JwtBearerAuthenticationOptions>(Context, Options)
+                var authenticationFailedContext =
+                    new AuthenticationFailedContext<HttpContext, JwtBearerAuthenticationOptions>(Context, Options)
                     {
                         ProtocolMessage = Context,
                         Exception = ex
                     };
 
-                await Options.Notifications.AuthenticationFailed(authenticationFailedNotification);
-                if (authenticationFailedNotification.HandledResponse)
+                await Options.Events.AuthenticationFailed(authenticationFailedContext);
+                if (authenticationFailedContext.HandledResponse)
                 {
-                    return authenticationFailedNotification.AuthenticationTicket;
+                    return authenticationFailedContext.AuthenticationTicket;
                 }
 
-                if (authenticationFailedNotification.Skipped)
+                if (authenticationFailedContext.Skipped)
                 {
                     return null;
                 }
@@ -175,7 +175,7 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
         protected override async Task<bool> HandleUnauthorizedAsync(ChallengeContext context)
         {
             Response.StatusCode = 401;
-            await Options.Notifications.ApplyChallenge(new AuthenticationChallengeNotification<JwtBearerAuthenticationOptions>(Context, Options));
+            await Options.Events.ApplyChallenge(new AuthenticationChallengeContext<JwtBearerAuthenticationOptions>(Context, Options));
             return false;
         }
 

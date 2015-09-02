@@ -102,9 +102,9 @@ namespace Microsoft.AspNet.Authentication.Twitter
         public ISecureDataFormat<RequestToken> StateDataFormat { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="ITwitterAuthenticationNotifications"/> used to handle authentication events.
+        /// Gets or sets the <see cref="ITwitterAuthenticationEvents"/> used to handle authentication events.
         /// </summary>
-        public ITwitterAuthenticationNotifications Notifications { get; set; }
+        public ITwitterAuthenticationEvents Events { get; set; }
 
         /// <summary>
         /// Defines whether access tokens should be stored in the

@@ -22,9 +22,9 @@ namespace Microsoft.AspNet.Authentication.Cookies
             ConfigureOptions<CookieAuthenticationOptions> configureOptions)
             : base(next, options, loggerFactory, urlEncoder, configureOptions)
         {
-            if (Options.Notifications == null)
+            if (Options.Events == null)
             {
-                Options.Notifications = new CookieAuthenticationNotifications();
+                Options.Events = new CookieAuthenticationEvents();
             }
             if (String.IsNullOrEmpty(Options.CookieName))
             {

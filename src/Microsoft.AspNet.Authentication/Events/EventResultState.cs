@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.AspNet.Authentication
 {
-    public enum NotificationResultState
+    public enum EventResultState
     {
         /// <summary>
         /// Continue with normal processing.

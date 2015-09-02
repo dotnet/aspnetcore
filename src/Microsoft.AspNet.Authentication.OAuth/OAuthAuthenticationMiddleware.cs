@@ -63,9 +63,9 @@ namespace Microsoft.AspNet.Authentication.OAuth
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, nameof(Options.TokenEndpoint)));
             }
 
-            if (Options.Notifications == null)
+            if (Options.Events == null)
             {
-                Options.Notifications = new OAuthAuthenticationNotifications();
+                Options.Events = new OAuthAuthenticationEvents();
             }
 
             if (Options.StateDataFormat == null)

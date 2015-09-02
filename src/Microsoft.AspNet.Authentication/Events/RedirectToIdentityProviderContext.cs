@@ -9,13 +9,13 @@ namespace Microsoft.AspNet.Authentication
 {
     /// <summary>
     /// When a user configures the <see cref="AuthenticationMiddleware{TOptions}"/> to be notified prior to redirecting to an IdentityProvider
-    /// an instance of <see cref="RedirectFromIdentityProviderNotification{TMessage, TOptions, TMessage}"/> is passed to the 'RedirectToIdentityProviderNotification".
+    /// an instance of <see cref="RedirectFromIdentityProviderContext{TMessage, TOptions, TMessage}"/> is passed to the 'RedirectToIdentityProviderContext".
     /// </summary>
     /// <typeparam name="TMessage">protocol specific message.</typeparam>
     /// <typeparam name="TOptions">protocol specific options.</typeparam>
-    public class RedirectToIdentityProviderNotification<TMessage, TOptions> : BaseNotification<TOptions>
+    public class RedirectToIdentityProviderContext<TMessage, TOptions> : BaseControlContext<TOptions>
     {
-        public RedirectToIdentityProviderNotification([NotNull] HttpContext context, [NotNull] TOptions options) : base(context, options)
+        public RedirectToIdentityProviderContext([NotNull] HttpContext context, [NotNull] TOptions options) : base(context, options)
         {
         }
 

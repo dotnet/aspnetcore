@@ -341,7 +341,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
             {
                 options.SystemClock = clock;
                 options.ExpireTimeSpan = TimeSpan.FromMinutes(10);
-                options.Notifications = new CookieAuthenticationNotifications
+                options.Events = new CookieAuthenticationEvents
                 {
                     OnValidatePrincipal = ctx =>
                     {
@@ -372,7 +372,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
                 options.SystemClock = clock;
                 options.ExpireTimeSpan = TimeSpan.FromMinutes(10);
                 options.SlidingExpiration = false;
-                options.Notifications = new CookieAuthenticationNotifications
+                options.Events = new CookieAuthenticationEvents
                 {
                     OnValidatePrincipal = ctx =>
                     {
@@ -402,7 +402,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
                 options.SystemClock = clock;
                 options.ExpireTimeSpan = TimeSpan.FromMinutes(10);
                 options.SlidingExpiration = false;
-                options.Notifications = new CookieAuthenticationNotifications
+                options.Events = new CookieAuthenticationEvents
                 {
                     OnValidatePrincipal = ctx =>
                     {
@@ -448,7 +448,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
             {
                 options.SystemClock = clock;
                 options.ExpireTimeSpan = TimeSpan.FromMinutes(10);
-                options.Notifications = new CookieAuthenticationNotifications
+                options.Events = new CookieAuthenticationEvents
                 {
                     OnValidatePrincipal = ctx =>
                     {
@@ -495,7 +495,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
                 options.SystemClock = clock;
                 options.ExpireTimeSpan = TimeSpan.FromMinutes(10);
                 options.SlidingExpiration = false;
-                options.Notifications = new CookieAuthenticationNotifications()
+                options.Events = new CookieAuthenticationEvents()
                 {
                     OnResponseSignIn = context =>
                     {

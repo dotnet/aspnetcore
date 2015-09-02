@@ -100,7 +100,7 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
         }
 
         /// <summary>
-        /// Tests RedirectToIdentityProviderNotification replaces the OpenIdConnectMesssage correctly.
+        /// Tests RedirectToIdentityProviderContext replaces the OpenIdConnectMesssage correctly.
         /// </summary>
         /// <returns>Task</returns>
         [Theory]
@@ -130,12 +130,12 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             mockOpenIdConnectMessage.Setup(m => m.CreateAuthenticationRequestUrl()).Returns(ExpectedAuthorizeRequest);
             mockOpenIdConnectMessage.Setup(m => m.CreateLogoutRequestUrl()).Returns(ExpectedLogoutRequest);
             options.AutomaticAuthentication = true;
-            options.Notifications =
-                new OpenIdConnectAuthenticationNotifications
+            options.Events =
+                new OpenIdConnectAuthenticationEvents
                 {
-                    RedirectToIdentityProvider = (notification) =>
+                    RedirectToIdentityProvider = (context) =>
                     {
-                        notification.ProtocolMessage = mockOpenIdConnectMessage.Object;
+                        context.ProtocolMessage = mockOpenIdConnectMessage.Object;
                         return Task.FromResult<object>(null);
                     }
                 };
@@ -143,8 +143,8 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
 
         /// <summary>
         /// Tests for users who want to add 'state'. There are two ways to do it.
-        /// 1. Users set 'state' (OpenIdConnectMessage.State) in the notification. The runtime appends to that state.
-        /// 2. Users add to the AuthenticationProperties (notification.AuthenticationProperties), values will be serialized.
+        /// 1. Users set 'state' (OpenIdConnectMessage.State) in the event. The runtime appends to that state.
+        /// 2. Users add to the AuthenticationProperties (context.AuthenticationProperties), values will be serialized.
         /// </summary>
         /// <param name="userSetsState"></param>
         /// <returns></returns>
@@ -163,11 +163,11 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             {
                 SetOptions(options, DefaultParameters(new string[] { OpenIdConnectParameterNames.State }), queryValues, stateDataFormat);
                 options.AutomaticAuthentication = challenge.Equals(ChallengeWithOutContext);
-                options.Notifications = new OpenIdConnectAuthenticationNotifications
+                options.Events = new OpenIdConnectAuthenticationEvents
                 {
-                    RedirectToIdentityProvider = notification =>
+                    RedirectToIdentityProvider = context =>
                     {
-                        notification.ProtocolMessage.State = userState;
+                        context.ProtocolMessage.State = userState;
                         return Task.FromResult<object>(null);
                     }
 
@@ -207,21 +207,21 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
         }
 
         [Fact]
-        public async Task ChallengeWillUseNotifications()
+        public async Task ChallengeWillUseEvents()
         {
             var queryValues = new ExpectedQueryValues(DefaultAuthority);
-            var queryValuesSetInNotification = new ExpectedQueryValues(DefaultAuthority);
+            var queryValuesSetInEvent = new ExpectedQueryValues(DefaultAuthority);
             var server = CreateServer(options =>
             {
                 SetOptions(options, DefaultParameters(), queryValues);
-                options.Notifications = new OpenIdConnectAuthenticationNotifications
+                options.Events = new OpenIdConnectAuthenticationEvents
                 {
-                    RedirectToIdentityProvider = notification =>
+                    RedirectToIdentityProvider = context =>
                     {
-                        notification.ProtocolMessage.ClientId = queryValuesSetInNotification.ClientId;
-                        notification.ProtocolMessage.RedirectUri = queryValuesSetInNotification.RedirectUri;
-                        notification.ProtocolMessage.Resource = queryValuesSetInNotification.Resource;
-                        notification.ProtocolMessage.Scope = queryValuesSetInNotification.Scope;
+                        context.ProtocolMessage.ClientId = queryValuesSetInEvent.ClientId;
+                        context.ProtocolMessage.RedirectUri = queryValuesSetInEvent.RedirectUri;
+                        context.ProtocolMessage.Resource = queryValuesSetInEvent.Resource;
+                        context.ProtocolMessage.Scope = queryValuesSetInEvent.Scope;
                         return Task.FromResult<object>(null);
                     }
                 };
@@ -229,7 +229,7 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
 
             var transaction = await SendAsync(server, DefaultHost + Challenge);
             transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
-            queryValuesSetInNotification.CheckValues(transaction.Response.Headers.Location.AbsoluteUri, DefaultParameters());
+            queryValuesSetInEvent.CheckValues(transaction.Response.Headers.Location.AbsoluteUri, DefaultParameters());
         }
 
         private void SetOptions(OpenIdConnectAuthenticationOptions options, List<string> parameters, ExpectedQueryValues queryValues, ISecureDataFormat<AuthenticationProperties> secureDataFormat = null)

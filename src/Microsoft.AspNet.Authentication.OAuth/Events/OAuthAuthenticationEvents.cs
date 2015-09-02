@@ -2,16 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http.Authentication;
 
 namespace Microsoft.AspNet.Authentication.OAuth
 {
     /// <summary>
-    /// Default <see cref="IOAuthAuthenticationNotifications"/> implementation.
+    /// Default <see cref="IOAuthAuthenticationEvents"/> implementation.
     /// </summary>
-    public class OAuthAuthenticationNotifications : IOAuthAuthenticationNotifications
+    public class OAuthAuthenticationEvents : IOAuthAuthenticationEvents
     {
         /// <summary>
         /// Gets or sets the function that is invoked when the Authenticated method is invoked.

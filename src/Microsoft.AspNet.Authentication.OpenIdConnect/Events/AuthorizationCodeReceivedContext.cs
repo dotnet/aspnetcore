@@ -9,14 +9,14 @@ using System.IdentityModel.Tokens.Jwt;
 namespace Microsoft.AspNet.Authentication.OpenIdConnect
 {
     /// <summary>
-    /// This Notification can be used to be informed when an 'AuthorizationCode' is received over the OpenIdConnect protocol.
+    /// This Context can be used to be informed when an 'AuthorizationCode' is received over the OpenIdConnect protocol.
     /// </summary>
-    public class AuthorizationCodeReceivedNotification : BaseNotification<OpenIdConnectAuthenticationOptions>
+    public class AuthorizationCodeReceivedContext : BaseControlContext<OpenIdConnectAuthenticationOptions>
     {
         /// <summary>
-        /// Creates a <see cref="AuthorizationCodeReceivedNotification"/>
+        /// Creates a <see cref="AuthorizationCodeReceivedContext"/>
         /// </summary>
-        public AuthorizationCodeReceivedNotification(HttpContext context, OpenIdConnectAuthenticationOptions options) : base(context, options)
+        public AuthorizationCodeReceivedContext(HttpContext context, OpenIdConnectAuthenticationOptions options) : base(context, options)
         { 
         }
 

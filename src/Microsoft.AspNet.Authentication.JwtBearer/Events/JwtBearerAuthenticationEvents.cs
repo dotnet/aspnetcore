@@ -13,43 +13,43 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
     /// <summary>
     /// Jwt bearer token middleware provider
     /// </summary>
-    public class JwtBearerAuthenticationNotifications
+    public class JwtBearerAuthenticationEvents
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="JwtBearerAuthenticationProvider"/> class
         /// </summary>
-        public JwtBearerAuthenticationNotifications()
+        public JwtBearerAuthenticationEvents()
         {
-            ApplyChallenge = notification => { notification.HttpContext.Response.Headers.Append("WWW-Authenticate", notification.Options.Challenge); return Task.FromResult(0); };
-            AuthenticationFailed = notification => Task.FromResult(0);
-            MessageReceived = notification => Task.FromResult(0);
-            SecurityTokenReceived = notification => Task.FromResult(0);
-            SecurityTokenValidated = notification => Task.FromResult(0);
+            ApplyChallenge = context => { context.HttpContext.Response.Headers.Append("WWW-Authenticate", context.Options.Challenge); return Task.FromResult(0); };
+            AuthenticationFailed = context => Task.FromResult(0);
+            MessageReceived = context => Task.FromResult(0);
+            SecurityTokenReceived = context => Task.FromResult(0);
+            SecurityTokenValidated = context => Task.FromResult(0);
         }
 
         /// <summary>
         /// Invoked if exceptions are thrown during request processing. The exceptions will be re-thrown after this event unless suppressed.
         /// </summary>
-        public Func<AuthenticationFailedNotification<HttpContext, JwtBearerAuthenticationOptions>, Task> AuthenticationFailed { get; set; }
+        public Func<AuthenticationFailedContext<HttpContext, JwtBearerAuthenticationOptions>, Task> AuthenticationFailed { get; set; }
 
         /// <summary>
         /// Invoked when a protocol message is first received.
         /// </summary>
-        public Func<MessageReceivedNotification<HttpContext, JwtBearerAuthenticationOptions>, Task> MessageReceived { get; set; }
+        public Func<MessageReceivedContext<HttpContext, JwtBearerAuthenticationOptions>, Task> MessageReceived { get; set; }
 
         /// <summary>
         /// Invoked with the security token that has been extracted from the protocol message.
         /// </summary>
-        public Func<SecurityTokenReceivedNotification<HttpContext, JwtBearerAuthenticationOptions>, Task> SecurityTokenReceived { get; set; }
+        public Func<SecurityTokenReceivedContext<HttpContext, JwtBearerAuthenticationOptions>, Task> SecurityTokenReceived { get; set; }
 
         /// <summary>
         /// Invoked after the security token has passed validation and a ClaimsIdentity has been generated.
         /// </summary>
-        public Func<SecurityTokenValidatedNotification<HttpContext, JwtBearerAuthenticationOptions>, Task> SecurityTokenValidated { get; set; }
+        public Func<SecurityTokenValidatedContext<HttpContext, JwtBearerAuthenticationOptions>, Task> SecurityTokenValidated { get; set; }
 
         /// <summary>
         /// Invoked to apply a challenge sent back to the caller.
         /// </summary>
-        public Func<AuthenticationChallengeNotification<JwtBearerAuthenticationOptions>, Task> ApplyChallenge { get; set; }
+        public Func<AuthenticationChallengeContext<JwtBearerAuthenticationOptions>, Task> ApplyChallenge { get; set; }
     }
 }

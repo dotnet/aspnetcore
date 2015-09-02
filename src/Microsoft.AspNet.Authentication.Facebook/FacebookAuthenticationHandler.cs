@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.Authentication.Facebook
 
             var payload = JObject.Parse(await response.Content.ReadAsStringAsync());
             
-            var notification = new OAuthAuthenticatedContext(Context, Options, Backchannel, tokens, payload)
+            var context = new OAuthAuthenticatedContext(Context, Options, Backchannel, tokens, payload)
             {
                 Properties = properties,
                 Principal = new ClaimsPrincipal(identity)
@@ -104,9 +104,9 @@ namespace Microsoft.AspNet.Authentication.Facebook
                 identity.AddClaim(new Claim("urn:facebook:link", link, ClaimValueTypes.String, Options.ClaimsIssuer));
             }
 
-            await Options.Notifications.Authenticated(notification);
+            await Options.Events.Authenticated(context);
 
-            return new AuthenticationTicket(notification.Principal, notification.Properties, notification.Options.AuthenticationScheme);
+            return new AuthenticationTicket(context.Principal, context.Properties, context.Options.AuthenticationScheme);
         }
 
         private string GenerateAppSecretProof(string accessToken)

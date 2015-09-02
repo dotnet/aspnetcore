@@ -49,10 +49,10 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
 
         /// <summary>
         /// The object provided by the application to process events raised by the bearer authentication middleware.
-        /// The application may implement the interface fully, or it may create an instance of JwtBearerAuthenticationProvider
+        /// The application may implement the interface fully, or it may create an instance of JwtBearerAuthenticationEvents
         /// and assign delegates only to the events it wants to process.
         /// </summary>
-        public JwtBearerAuthenticationNotifications Notifications { get; set; } = new JwtBearerAuthenticationNotifications();
+        public JwtBearerAuthenticationEvents Events { get; set; } = new JwtBearerAuthenticationEvents();
 
         /// <summary>
         /// The HttpMessageHandler used to retrieve metadata.

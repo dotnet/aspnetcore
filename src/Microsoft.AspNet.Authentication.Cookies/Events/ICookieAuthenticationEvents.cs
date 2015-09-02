@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
     /// <summary>
     /// Specifies callback methods which the <see cref="CookieAuthenticationMiddleware"></see> invokes to enable developer control over the authentication process. />
     /// </summary>
-    public interface ICookieAuthenticationNotifications
+    public interface ICookieAuthenticationEvents
     {
         /// <summary>
         /// Called each time a request principal has been validated by the middleware. By implementing this method the

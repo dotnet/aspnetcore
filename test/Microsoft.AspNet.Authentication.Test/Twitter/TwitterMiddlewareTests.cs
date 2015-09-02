@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
                 {
                     options.ConsumerKey = "Test Consumer Key";
                     options.ConsumerSecret = "Test Consumer Secret";
-                    options.Notifications = new TwitterAuthenticationNotifications
+                    options.Events = new TwitterAuthenticationEvents
                     {
                         OnApplyRedirect = context =>
                         {

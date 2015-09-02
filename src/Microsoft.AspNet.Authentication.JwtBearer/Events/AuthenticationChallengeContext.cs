@@ -5,9 +5,9 @@ using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Authentication.JwtBearer
 {
-    public class AuthenticationChallengeNotification<TOptions> : BaseNotification<TOptions>
+    public class AuthenticationChallengeContext<TOptions> : BaseControlContext<TOptions>
     {
-        public AuthenticationChallengeNotification(HttpContext context, TOptions options) : base(context, options)
+        public AuthenticationChallengeContext(HttpContext context, TOptions options) : base(context, options)
         {
         }
     }

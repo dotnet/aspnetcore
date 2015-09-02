@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
             CookieHttpOnly = true;
             CookieSecure = CookieSecureOption.SameAsRequest;
             SystemClock = new SystemClock();
-            Notifications = new CookieAuthenticationNotifications();
+            Events = new CookieAuthenticationEvents();
         }
 
         /// <summary>
@@ -116,10 +116,10 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
         /// <summary>
         /// The Provider may be assigned to an instance of an object created by the application at startup time. The middleware
-        /// calls methods on the provider which give the application control at certain points where processing is occuring. 
+        /// calls methods on the provider which give the application control at certain points where processing is occurring. 
         /// If it is not provided a default instance is supplied which does nothing when the methods are called.
         /// </summary>
-        public ICookieAuthenticationNotifications Notifications { get; set; }
+        public ICookieAuthenticationEvents Events { get; set; }
 
         /// <summary>
         /// The TicketDataFormat is used to protect and unprotect the identity and other properties which are stored in the

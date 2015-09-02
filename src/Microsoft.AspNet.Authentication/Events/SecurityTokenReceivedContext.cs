@@ -5,11 +5,13 @@ using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Authentication
 {
-    public class SecurityTokenValidatedNotification<TMessage, TOptions> : BaseNotification<TOptions>
+    public class SecurityTokenReceivedContext<TMessage, TOptions> : BaseControlContext<TOptions>
     {
-        public SecurityTokenValidatedNotification(HttpContext context, TOptions options) : base(context, options)
+        public SecurityTokenReceivedContext(HttpContext context, TOptions options) : base(context, options)
         {
         }
+
+        public string SecurityToken { get; set; }
 
         public TMessage ProtocolMessage { get; set; }
     }

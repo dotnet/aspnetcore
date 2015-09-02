@@ -5,9 +5,9 @@ using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Authentication
 {
-    public class MessageReceivedNotification<TMessage, TOptions> : BaseNotification<TOptions>
+    public class MessageReceivedContext<TMessage, TOptions> : BaseControlContext<TOptions>
     {
-        public MessageReceivedNotification(HttpContext context, TOptions options) : base(context, options)
+        public MessageReceivedContext(HttpContext context, TOptions options) : base(context, options)
         {
         }
 
