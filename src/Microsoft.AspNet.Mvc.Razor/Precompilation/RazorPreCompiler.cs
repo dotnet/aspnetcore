@@ -15,6 +15,7 @@ using Microsoft.AspNet.Mvc.Razor.Internal;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.Dnx.Compilation;
 using Microsoft.Dnx.Compilation.CSharp;
 using Microsoft.Dnx.Runtime;
 using Microsoft.Framework.Caching.Memory;
@@ -169,18 +170,24 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
             }
             else
             {
-                var assemblyResource = new ResourceDescription(assemblyResourceName,
-                                                               () => GetNonDisposableStream(assemblyStream),
-                                                               isPublic: true);
+                var assemblyResource = new ResourceDescriptor()
+                {
+                    FileName = Path.GetFileName(assemblyResourceName),
+                    Name = assemblyResourceName,
+                    StreamFactory = () => GetNonDisposableStream(assemblyStream)
+                };
                 CompileContext.Resources.Add(assemblyResource);
 
                 string symbolsResourceName = null;
                 if (pdbStream != null)
                 {
                     symbolsResourceName = resourcePrefix + ".pdb";
-                    var pdbResource = new ResourceDescription(symbolsResourceName,
-                                                              () => GetNonDisposableStream(pdbStream),
-                                                              isPublic: true);
+                    var pdbResource = new ResourceDescriptor()
+                    {
+                        FileName = Path.GetFileName(symbolsResourceName),
+                        Name = symbolsResourceName,
+                        StreamFactory = () => GetNonDisposableStream(pdbStream)
+                    };
 
                     CompileContext.Resources.Add(pdbResource);
                 }
