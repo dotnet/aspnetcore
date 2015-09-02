@@ -10,35 +10,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     {
         private static readonly byte[] EmptyArray = new byte[0];
 
-        class Pool<T>
-        {
-            private readonly Stack<T[]> _stack = new Stack<T[]>();
-            private readonly object _sync = new object();
-
-            public T[] Alloc(int size)
-            {
-                lock (_sync)
-                {
-                    if (_stack.Count != 0)
-                    {
-                        return _stack.Pop();
-                    }
-                }
-                return new T[size];
-            }
-
-            public void Free(T[] value, int limit)
-            {
-                lock (_sync)
-                {
-                    if (_stack.Count < limit)
-                    {
-                        _stack.Push(value);
-                    }
-                }
-            }
-        }
-
         private readonly Pool<byte> _pool1 = new Pool<byte>();
         private readonly Pool<byte> _pool2 = new Pool<byte>();
         private readonly Pool<char> _pool3 = new Pool<char>();
@@ -120,6 +91,35 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         public void FreeSegment(ArraySegment<byte> segment)
         {
             FreeByte(segment.Array);
+        }
+
+        class Pool<T>
+        {
+            private readonly Stack<T[]> _stack = new Stack<T[]>();
+            private readonly object _sync = new object();
+
+            public T[] Alloc(int size)
+            {
+                lock (_sync)
+                {
+                    if (_stack.Count != 0)
+                    {
+                        return _stack.Pop();
+                    }
+                }
+                return new T[size];
+            }
+
+            public void Free(T[] value, int limit)
+            {
+                lock (_sync)
+                {
+                    if (_stack.Count < limit)
+                    {
+                        _stack.Push(value);
+                    }
+                }
+            }
         }
     }
 }

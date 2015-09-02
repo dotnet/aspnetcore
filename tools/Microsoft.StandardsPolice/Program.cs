@@ -12,14 +12,14 @@ namespace Microsoft.StandardsPolice
         public int Main(string[] args)
         {
             var tree = CSharpSyntaxTree.ParseText(@"
-public class Hello { protected int _foo; int _bar; }
-public class World { protected int _foo; int _bar; }
+public class Hello { public Hello(int foo){}; protected int _foo; int _bar; }
+public class World { public World(int foo){}; protected int _foo; int _bar; static int _quux = 4; enum Blah{} class Clazz{} }
 ");
             var diags = new List<Diagnostic>();
 
             var comp = CSharpCompilation.Create("Comp", new[] { tree });
 
-            StandardsPoliceCompileModule.ScanSyntaxTree(diags, tree);
+            StandardsPoliceCompileModule.ScanCompilation(diags, comp);
 
             var hello = comp.GetTypeByMetadataName("Hello");
             foreach (var f in hello.GetMembers().OfType<IFieldSymbol>())

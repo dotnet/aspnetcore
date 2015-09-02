@@ -16,14 +16,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 {
     public class Frame : FrameContext, IFrameControl
     {
-        enum Mode
-        {
-            StartLine,
-            MessageHeader,
-            MessageBody,
-            Terminated,
-        }
-
         private static Encoding _ascii = Encoding.ASCII;
         private Mode _mode;
         private bool _responseStarted;
@@ -689,6 +681,14 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                    statusCode != 204 &&
                    statusCode != 205 &&
                    statusCode != 304;
+        }
+
+        enum Mode
+        {
+            StartLine,
+            MessageHeader,
+            MessageBody,
+            Terminated,
         }
     }
 }

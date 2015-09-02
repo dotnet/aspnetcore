@@ -148,15 +148,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
             private Mode _mode = Mode.ChunkSizeLine;
 
-            private enum Mode
-            {
-                ChunkSizeLine,
-                ChunkData,
-                ChunkDataCRLF,
-                Complete,
-            };
-
-
             public ForChunkedEncoding(bool keepAlive, FrameContext context)
                 : base(context)
             {
@@ -305,6 +296,14 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 }
                 return false;
             }
+
+            private enum Mode
+            {
+                ChunkSizeLine,
+                ChunkData,
+                ChunkDataCRLF,
+                Complete,
+            };
         }
     }
 }

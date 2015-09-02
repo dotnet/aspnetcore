@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace Microsoft.StandardsPolice
 {
@@ -14,13 +15,18 @@ namespace Microsoft.StandardsPolice
     {
         public void BeforeCompile(BeforeCompileContext context)
         {
-            ScanNamespace(context.Diagnostics, context.Compilation.GlobalNamespace);
+            ScanCompilation(context.Diagnostics, context.Compilation);
+        }
 
-            foreach (var st in context.Compilation.SyntaxTrees)
+        internal static void ScanCompilation(IList<Diagnostic> diagnostics, CSharpCompilation compilation)
+        {
+            ScanNamespace(diagnostics, compilation.GlobalNamespace);
+
+            foreach (var st in compilation.SyntaxTrees)
             {
                 if (!st.FilePath.EndsWith(".Generated.cs"))
                 {
-                    ScanSyntaxTree(context.Diagnostics, st);
+                    ScanSyntaxTree(diagnostics, st);
                 }
             }
         }
@@ -62,6 +68,20 @@ namespace Microsoft.StandardsPolice
 
         private static void ScanType(IList<Diagnostic> diagnostics, INamedTypeSymbol typeSymbol)
         {
+            if (typeSymbol.Locations.Any(location => location.IsInSource))
+            {
+                RuleFieldPrivateKeyword(diagnostics, typeSymbol);
+                RuleNestedTypesAreLast(diagnostics, typeSymbol);
+            }
+
+            foreach (var member in typeSymbol.GetTypeMembers())
+            {
+                ScanType(diagnostics, member);
+            }
+        }
+
+        private static void RuleFieldPrivateKeyword(IList<Diagnostic> diagnostics, INamedTypeSymbol typeSymbol)
+        {
             foreach (var member in typeSymbol.GetMembers().OfType<IFieldSymbol>())
             {
                 if (member.DeclaredAccessibility != Accessibility.Private)
@@ -97,11 +117,39 @@ namespace Microsoft.StandardsPolice
                     }
                 }
             }
-            foreach (var member in typeSymbol.GetTypeMembers())
+        }
+
+        private static void RuleNestedTypesAreLast(IList<Diagnostic> diagnostics, INamedTypeSymbol typeSymbol)
+        {
+            var otherThingsWereLower = false;
+            var members = typeSymbol.GetMembers().Reverse().ToArray();
+            foreach (var member in members)
             {
-                ScanType(diagnostics, member);
+                var namedType = member as INamedTypeSymbol;
+                if (namedType == null || (namedType.TypeKind != TypeKind.Class && namedType.TypeKind != TypeKind.Enum && namedType.TypeKind != TypeKind.Struct))
+                {
+                    if (member.IsImplicitlyDeclared == false)
+                    {
+                        otherThingsWereLower = true;
+                    }
+                    continue;
+                }
+                if (otherThingsWereLower)
+                {
+                    if (member.Locations.Count() == 1)
+                    {
+                        diagnostics.Add(Diagnostic.Create(
+                            "SP1003", "StandardsPolice", $"nested types must be last {typeSymbol.Name}:{member.Name}",
+                            DiagnosticSeverity.Warning,
+                            DiagnosticSeverity.Warning,
+                            false,
+                            3,
+                            location: member.Locations.Single()));
+                    }
+                }
             }
         }
+
         public void AfterCompile(AfterCompileContext context)
         {
         }
