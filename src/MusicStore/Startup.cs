@@ -59,7 +59,7 @@ namespace MusicStore
             // Add Identity services to the services container
             services.AddIdentity<ApplicationUser, IdentityRole>(options =>
                     {
-                        options.ApplicationCookie.AccessDeniedPath = new PathString("/Home/AccessDenied");
+                        options.Cookies.ApplicationCookie.AccessDeniedPath = new PathString("/Home/AccessDenied");
                     })
                     .AddEntityFrameworkStores<MusicStoreContext>()
                     .AddDefaultTokenProviders();

@@ -36,7 +36,7 @@ namespace MusicStore.Mocks.Facebook
 
         internal static async Task OnReturnEndpoint(OAuthReturnEndpointContext context)
         {
-            if (context.Principal != null && context.SignInScheme == IdentityOptions.ExternalCookieAuthenticationScheme)
+            if (context.Principal != null && context.SignInScheme == IdentityCookieOptions.ExternalCookieAuthenticationScheme)
             {
                 //This way we will know all notifications were fired.
                 var identity = context.Principal.Identities.First();

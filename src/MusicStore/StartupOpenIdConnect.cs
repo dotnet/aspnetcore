@@ -73,7 +73,7 @@ namespace MusicStore
                     .AddEntityFrameworkStores<MusicStoreContext>()
                     .AddDefaultTokenProviders();
 
-            services.ConfigureOpenIdConnectAuthentication(options =>
+            services.AddOpenIdConnectAuthentication(options =>
             {
                 options.Authority = "https://login.windows.net/[tenantName].onmicrosoft.com";
                 options.ClientId = "[ClientId]";

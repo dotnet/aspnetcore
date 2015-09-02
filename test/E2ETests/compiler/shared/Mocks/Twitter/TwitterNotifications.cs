@@ -29,7 +29,7 @@ namespace MusicStore.Mocks.Twitter
 
         internal static async Task OnReturnEndpoint(TwitterReturnEndpointContext context)
         {
-            if (context.Principal != null && context.SignInScheme == IdentityOptions.ExternalCookieAuthenticationScheme)
+            if (context.Principal != null && context.SignInScheme == IdentityCookieOptions.ExternalCookieAuthenticationScheme)
             {
                 //This way we will know all notifications were fired.
                 var identity = context.Principal.Identities.First();

@@ -70,12 +70,10 @@ namespace MusicStore
             // Add Identity services to the services container
             services.AddIdentity<ApplicationUser, IdentityRole>(options =>
                     {
-                        options.ApplicationCookie.AccessDeniedPath = new PathString("/Home/AccessDenied");
+                        options.Cookies.ApplicationCookie.AccessDeniedPath = new PathString("/Home/AccessDenied");
                     })
                     .AddEntityFrameworkStores<MusicStoreContext>()
                     .AddDefaultTokenProviders();
-
-            services.AddCookieAuthentication();
 
             services.AddFacebookAuthentication(options =>
             {
@@ -109,7 +107,7 @@ namespace MusicStore
                 options.BackchannelHttpHandler = new GoogleMockBackChannelHttpHandler();
             });
 
-            services.ConfigureTwitterAuthentication(options =>
+            services.AddTwitterAuthentication(options =>
             {
                 options.ConsumerKey = "[ConsumerKey]";
                 options.ConsumerSecret = "[ConsumerSecret]";
@@ -126,7 +124,7 @@ namespace MusicStore
 #endif
             });
 
-            services.ConfigureMicrosoftAccountAuthentication(options =>
+            services.AddMicrosoftAccountAuthentication(options =>
             {
                 options.Caption = "MicrosoftAccount - Requires project changes";
                 options.ClientId = "[ClientId]";
