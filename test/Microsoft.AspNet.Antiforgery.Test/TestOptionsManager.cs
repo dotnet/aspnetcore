@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Antiforgery
 
         public TestOptionsManager(AntiforgeryOptions options)
         {
-            Options = options;
+            Value = options;
         }
 
         public AntiforgeryOptions Value { get; set; } = new AntiforgeryOptions();

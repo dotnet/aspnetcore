@@ -22,7 +22,7 @@ namespace AntiforgerySample
         {
             _next = next;
             _antiforgery = antiforgery;
-            _options = options.Options;
+            _options = options.Value;
         }
 
         public async Task Invoke(HttpContext context)

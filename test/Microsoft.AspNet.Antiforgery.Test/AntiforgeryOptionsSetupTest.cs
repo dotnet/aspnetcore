@@ -36,14 +36,13 @@ namespace Microsoft.AspNet.Antiforgery
         {
             // Arrange
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddAntiforgery();
-            serviceCollection.ConfigureDataProtection(o => o.SetApplicationName("HelloWorldApp"));
-
             serviceCollection.Configure<AntiforgeryOptions>(o =>
             {
                 Assert.Null(o.CookieName);
                 o.CookieName = "antiforgery";
-            }, order: 9999);
+            });
+            serviceCollection.AddAntiforgery();
+            serviceCollection.ConfigureDataProtection(o => o.SetApplicationName("HelloWorldApp"));
 
             var services = serviceCollection.BuildServiceProvider();
             var options = services.GetRequiredService<IOptions<AntiforgeryOptions>>();
