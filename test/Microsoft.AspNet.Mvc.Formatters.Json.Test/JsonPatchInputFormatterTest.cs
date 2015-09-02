@@ -11,7 +11,7 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet.Mvc.Formatters
 {
     public class JsonPatchInputFormatterTest
     {
@@ -114,7 +114,7 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var exceptionMessage = "Cannot deserialize the current JSON array (e.g. [1,2,3]) into type " +
-                "'Microsoft.AspNet.Mvc.JsonPatchInputFormatterTest+Customer' because the type requires a JSON object ";
+                $"'{typeof(Customer).FullName}' because the type requires a JSON object ";
 
             var formatter = new JsonPatchInputFormatter();
             var content = "[{\"op\": \"add\", \"path\" : \"Customer/Name\", \"value\":\"John\"}]";

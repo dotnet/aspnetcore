@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.AspNet.Mvc.Core;
+using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc

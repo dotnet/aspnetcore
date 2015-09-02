@@ -3,8 +3,8 @@
 
 using System;
 using Microsoft.AspNet.Cors.Core;
-using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.ApplicationModels;
+using Microsoft.AspNet.Mvc.Cors;
 using Microsoft.Framework.DependencyInjection.Extensions;
 using Microsoft.Framework.Internal;
 

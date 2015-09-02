@@ -2,14 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using ContentNegotiationWebSite.Models;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Mvc.Internal;
+using Microsoft.AspNet.Mvc.Formatters;
 using Microsoft.Net.Http.Headers;
 
 namespace ContentNegotiationWebSite

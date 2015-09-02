@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.Mvc.ActionResults;
 using Microsoft.AspNet.Mvc.Rendering;
 using MvcSample.Web.Models;
 

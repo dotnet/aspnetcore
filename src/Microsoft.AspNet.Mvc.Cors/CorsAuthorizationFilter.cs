@@ -5,12 +5,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Cors.Core;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Mvc.ActionResults;
+using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.Primitives;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet.Mvc.Cors
 {
     /// <summary>
     /// A filter which applies the given <see cref="CorsPolicy"/> and adds appropriate response headers.
@@ -47,7 +50,7 @@ namespace Microsoft.AspNet.Mvc
 
 
         /// <inheritdoc />
-        public async Task OnAuthorizationAsync([NotNull] AuthorizationContext context)
+        public async Task OnAuthorizationAsync([NotNull] Filters.AuthorizationContext context)
         {
             // If this filter is not closest to the action, it is not applicable.
             if (!IsClosestToAction(context.Filters))

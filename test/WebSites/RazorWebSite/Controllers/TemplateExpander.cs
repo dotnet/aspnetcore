@@ -7,12 +7,12 @@ namespace RazorWebSite.Controllers
 {
     public class TemplateExpander : Controller
     {
-        public ViewResult Index()
+        public IActionResult Index()
         {
             return View();
         }
 
-        public ViewResult ViewWithLayout()
+        public IActionResult ViewWithLayout()
         {
             return View();
         }

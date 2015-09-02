@@ -9,7 +9,7 @@ namespace RazorWebSite.Controllers
     // The intent of this controller is to verify that view compilation uses the app's compilation settings.
     public class ViewsConsumingCompilationOptionsController : Controller
     {
-        public ViewResult Index()
+        public IActionResult Index()
         {
             return View();
         }

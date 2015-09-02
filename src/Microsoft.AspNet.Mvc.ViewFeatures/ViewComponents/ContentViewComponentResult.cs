@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.Framework.Internal;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet.Mvc.ViewComponents
 {
     /// <summary>
     /// An <see cref="IViewComponentResult"/> which writes text when executed.

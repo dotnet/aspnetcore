@@ -3,6 +3,7 @@
 
 using System.Net.Http;
 using System.Net.Http.Formatting;
+using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc.WebApiCompatShim

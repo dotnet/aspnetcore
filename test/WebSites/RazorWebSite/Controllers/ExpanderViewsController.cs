@@ -8,12 +8,12 @@ namespace RazorWebSite.Controllers
     public class ExpanderViewsController : Controller
     {
         // This result discovers the Index.cshtml from /View but the partial is executed from /Shared-Views
-        public ViewResult Index()
+        public IActionResult Index()
         {
             return View();
         }
 
-        public PartialViewResult Partial()
+        public IActionResult Partial()
         {
             return PartialView("_ExpanderPartial");
         }

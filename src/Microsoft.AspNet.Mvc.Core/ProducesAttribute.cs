@@ -4,8 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNet.Mvc.ActionResults;
 using Microsoft.AspNet.Mvc.ApiExplorer;
 using Microsoft.AspNet.Mvc.Core;
+using Microsoft.AspNet.Mvc.Filters;
+using Microsoft.AspNet.Mvc.Formatters;
 using Microsoft.Framework.Internal;
 using Microsoft.Net.Http.Headers;
 

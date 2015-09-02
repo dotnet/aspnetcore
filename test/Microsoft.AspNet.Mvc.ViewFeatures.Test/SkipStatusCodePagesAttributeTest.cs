@@ -4,6 +4,8 @@
 using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Internal;
+using Microsoft.AspNet.Mvc.Actions;
+using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Routing;
 using Xunit;
 

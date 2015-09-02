@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
+using Microsoft.AspNet.Mvc.Actions;
 using Microsoft.AspNet.Testing;
 using Microsoft.Net.Http.Headers;
 using Moq;
@@ -16,7 +17,7 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Core.Test.Formatters
+namespace Microsoft.AspNet.Mvc.Formatters
 {
     public class JsonOutputFormatterTests
     {

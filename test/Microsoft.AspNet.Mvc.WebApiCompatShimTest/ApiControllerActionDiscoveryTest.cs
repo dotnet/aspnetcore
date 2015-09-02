@@ -8,6 +8,8 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.Mvc.ActionConstraints;
+using Microsoft.AspNet.Mvc.Actions;
 using Microsoft.AspNet.Mvc.ApplicationModels;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Filters;
@@ -370,7 +372,7 @@ namespace System.Web.Http
 
         private ControllerActionDescriptorProvider CreateProvider()
         {
-            var assemblyProvider = new FixedSetAssemblyProvider();
+            var assemblyProvider = new StaticAssemblyProvider();
             assemblyProvider.CandidateAssemblies.Add(GetType().GetTypeInfo().Assembly);
             var controllerTypeProvider = new NamespaceFilteredControllerTypeProvider(assemblyProvider);
 

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 #endif
 using System.Diagnostics;
+using Microsoft.AspNet.Mvc.Actions;
 using Microsoft.AspNet.Mvc.Internal.DecisionTree;
 
 namespace Microsoft.AspNet.Mvc.Routing

@@ -20,52 +20,52 @@ namespace ViewComponentWebSite
             };
         }
 
-        public ViewResult ViewWithAsyncComponents()
+        public IActionResult ViewWithAsyncComponents()
         {
-            return new ViewResult();
+            return View();
         }
 
-        public ViewResult ViewWithSyncComponents()
+        public IActionResult ViewWithSyncComponents()
         {
-            return new ViewResult();
+            return View();
         }
 
-        public ViewResult ViewWithIntegerViewComponent()
+        public IActionResult ViewWithIntegerViewComponent()
         {
-            return new ViewResult();
+            return View();
         }
 
-        public ViewResult ViewComponentWithEnumerableModelUsingWhere()
+        public IActionResult ViewComponentWithEnumerableModelUsingWhere()
         {
             ViewBag.LinqQueryType = "Where";
             return View("ViewComponentWithEnumerableModel", ModelList.Where(a => a != null));
         }
 
-        public ViewResult ViewComponentWithEnumerableModelUsingSelect()
+        public IActionResult ViewComponentWithEnumerableModelUsingSelect()
         {
             ViewBag.LinqQueryType = "Select";
             return View("ViewComponentWithEnumerableModel", ModelList.Select(a => a));
         }
         
-        public ViewResult ViewComponentWithEnumerableModelUsingTake()
+        public IActionResult ViewComponentWithEnumerableModelUsingTake()
         {
             ViewBag.LinqQueryType = "Take";
             return View("ViewComponentWithEnumerableModel", ModelList.Take(2));
         }
 
-        public ViewResult ViewComponentWithEnumerableModelUsingTakeWhile()
+        public IActionResult ViewComponentWithEnumerableModelUsingTakeWhile()
         {
             ViewBag.LinqQueryType = "TakeWhile";
             return View("ViewComponentWithEnumerableModel", ModelList.TakeWhile(a => a != null));
         }
 
-        public ViewResult ViewComponentWithEnumerableModelUsingUnion()
+        public IActionResult ViewComponentWithEnumerableModelUsingUnion()
         {
             ViewBag.LinqQueryType = "Union";
             return View("ViewComponentWithEnumerableModel", ModelList.Union(ModelList));
         }
 
-        public ViewResult ViewComponentWithEnumerableModelUsingSelectMany()
+        public IActionResult ViewComponentWithEnumerableModelUsingSelectMany()
         {
             var selectManySampleModelList = new List<SelectManySampleModel>
                     {

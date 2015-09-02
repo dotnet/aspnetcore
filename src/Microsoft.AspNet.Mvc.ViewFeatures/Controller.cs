@@ -8,6 +8,9 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Mvc.ActionResults;
+using Microsoft.AspNet.Mvc.Actions;
+using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Mvc.Rendering;
@@ -830,7 +833,9 @@ namespace Microsoft.AspNet.Mvc
         /// <returns>The created <see cref="PhysicalFileProviderResult"/> for the response.</returns>
         [NonAction]
         public virtual PhysicalFileProviderResult PhysicalFile(
-            string physicalPath, string contentType, string fileDownloadName)
+            string physicalPath,
+            string contentType,
+            string fileDownloadName)
         {
             return new PhysicalFileProviderResult(physicalPath, contentType) { FileDownloadName = fileDownloadName };
         }

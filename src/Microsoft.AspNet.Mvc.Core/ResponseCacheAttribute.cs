@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Mvc.Core;
+using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;

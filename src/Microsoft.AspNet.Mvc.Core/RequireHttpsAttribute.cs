@@ -3,13 +3,14 @@
 
 using System;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Mvc.ActionResults;
+using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = true, AllowMultiple = false)]
-    public class RequireHttpsAttribute :
-        Attribute, IAuthorizationFilter, IOrderedFilter
+    public class RequireHttpsAttribute : Attribute, IAuthorizationFilter, IOrderedFilter
     {
         public int Order { get; set; }
 

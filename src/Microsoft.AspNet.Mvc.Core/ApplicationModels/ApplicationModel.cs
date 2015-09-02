@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Diagnostics;
+using Microsoft.AspNet.Mvc.Filters;
 
 namespace Microsoft.AspNet.Mvc.ApplicationModels
 {
@@ -36,7 +37,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
 
         /// <summary>
         /// Gets a set of properties associated with all actions.
-        /// These properties will be copied to <see cref="ActionDescriptor.Properties"/>.
+        /// These properties will be copied to <see cref="Actions.ActionDescriptor.Properties"/>.
         /// </summary>
         public IDictionary<object, object> Properties { get; }
     }

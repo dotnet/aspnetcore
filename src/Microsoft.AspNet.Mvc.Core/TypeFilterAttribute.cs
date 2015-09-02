@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
 

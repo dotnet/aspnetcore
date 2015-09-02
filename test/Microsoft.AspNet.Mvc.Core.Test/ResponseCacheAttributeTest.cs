@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.Framework.OptionsModel;
 using Moq;
 using Xunit;

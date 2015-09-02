@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNet.Mvc.Actions;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Extensions;
 
@@ -14,7 +15,7 @@ namespace Microsoft.AspNet.Mvc.Internal
     {
         public static void AddControllersAsServices(IServiceCollection services, IEnumerable<Type> types)
         {
-            var controllerTypeProvider = new FixedSetControllerTypeProvider();
+            var controllerTypeProvider = new StaticControllerTypeProvider();
             foreach (var type in types)
             {
                 services.TryAddTransient(type, type);
@@ -27,7 +28,7 @@ namespace Microsoft.AspNet.Mvc.Internal
 
         public static void AddControllersAsServices(IServiceCollection services, IEnumerable<Assembly> assemblies)
         {
-            var assemblyProvider = new FixedSetAssemblyProvider();
+            var assemblyProvider = new StaticAssemblyProvider();
             foreach (var assembly in assemblies)
             {
                 assemblyProvider.CandidateAssemblies.Add(assembly);

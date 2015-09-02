@@ -11,6 +11,7 @@ using Microsoft.AspNet.Builder;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Dnx.Runtime;
 using Xunit;
+using Microsoft.AspNet.Mvc.Actions;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {

@@ -7,11 +7,11 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Mvc.Formatters.Xml;
 using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Framework.DependencyInjection;
 using Newtonsoft.Json;
 using Xunit;
+using Microsoft.AspNet.Mvc.Formatters;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
@@ -650,8 +650,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [ConditionalTheory]
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [InlineData("Controller", "text/xml", "Microsoft.AspNet.Mvc.Formatters.Xml.XmlDataContractSerializerOutputFormatter")]
-        [InlineData("Action", "application/json", "Microsoft.AspNet.Mvc.JsonOutputFormatter")]
+        [InlineData("Controller", "text/xml", "Microsoft.AspNet.Mvc.Formatters.XmlDataContractSerializerOutputFormatter")]
+        [InlineData("Action", "application/json", "Microsoft.AspNet.Mvc.Formatters.JsonOutputFormatter")]
         public async Task ApiExplorer_ResponseContentType_OverrideOnAction(
             string action,
             string contentType,

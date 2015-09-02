@@ -5,11 +5,10 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.JsonPatch;
 using Microsoft.Framework.Internal;
-using Microsoft.Net.Http.Headers;
 using Microsoft.AspNet.Mvc.Internal;
 using Newtonsoft.Json;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet.Mvc.Formatters
 {
     public class JsonPatchInputFormatter : JsonInputFormatter
     {

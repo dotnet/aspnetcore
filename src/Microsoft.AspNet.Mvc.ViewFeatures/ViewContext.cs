@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using Microsoft.AspNet.Mvc.Actions;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.Framework.Internal;
@@ -86,7 +87,7 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
-        /// Gets or sets the <see cref="Mvc.FormContext"/> for the form element being rendered.
+        /// Gets or sets the <see cref="Rendering.FormContext"/> for the form element being rendered.
         /// A default context is returned if no form is currently being rendered.
         /// </summary>
         public virtual FormContext FormContext

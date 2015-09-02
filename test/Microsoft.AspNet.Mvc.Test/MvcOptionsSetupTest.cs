@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
+using Microsoft.AspNet.Mvc.Formatters;
 using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;

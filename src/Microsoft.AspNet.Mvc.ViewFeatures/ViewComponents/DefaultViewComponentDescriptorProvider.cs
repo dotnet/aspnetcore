@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNet.Mvc.Actions;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ViewComponents

@@ -9,17 +9,17 @@ namespace ViewComponentWebSite
     [ViewComponent(Name = "ViewData")]
     public class ViewDataComponent : ViewComponent
     {
-        public ViewViewComponentResult Invoke()
+        public IViewComponentResult Invoke()
         {
             ViewData["value-from-component"] = nameof(Invoke) + ": hello from viewdatacomponent";
             return View("ComponentThatReadsViewData");
         }
 
-        public Task<ViewViewComponentResult> InvokeAsync()
+        public Task<IViewComponentResult> InvokeAsync()
         {
             ViewData["value-from-component"] = nameof(InvokeAsync) + ": hello from viewdatacomponent";
             var result = View("ComponentThatReadsViewData");
-            return Task.FromResult(result);
+            return Task.FromResult<IViewComponentResult>(result);
         }
     }
 }

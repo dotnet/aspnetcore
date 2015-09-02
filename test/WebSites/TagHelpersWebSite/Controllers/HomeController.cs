@@ -30,44 +30,44 @@ namespace TagHelpersWebSite.Controllers
             return View();
         }
 
-        public ViewResult UnboundDynamicAttributes()
+        public IActionResult UnboundDynamicAttributes()
         {
             return View();
         }
 
-        public ViewResult NestedViewImportsTagHelper()
+        public IActionResult NestedViewImportsTagHelper()
         {
             return View();
         }
 
-        public ViewResult ViewWithLayoutAndNestedTagHelper()
+        public IActionResult ViewWithLayoutAndNestedTagHelper()
         {
             return View();
         }
 
-        public ViewResult ViewWithInheritedRemoveTagHelper()
+        public IActionResult ViewWithInheritedRemoveTagHelper()
         {
             return View("/Views/RemoveInheritedTagHelpers/ViewWithInheritedRemoveTagHelper.cshtml");
         }
 
-        public ViewResult ViewWithInheritedTagHelperPrefix()
+        public IActionResult ViewWithInheritedTagHelperPrefix()
         {
             return View("/Views/InheritedTagHelperPrefix/InheritedTagHelperPrefix.cshtml");
         }
 
-        public ViewResult ViewWithOverriddenTagHelperPrefix()
+        public IActionResult ViewWithOverriddenTagHelperPrefix()
         {
             return View("/Views/InheritedTagHelperPrefix/OverriddenTagHelperPrefix.cshtml");
         }
 
-        public ViewResult ViewWithNestedInheritedTagHelperPrefix()
+        public IActionResult ViewWithNestedInheritedTagHelperPrefix()
         {
             return View(
                 "/Views/InheritedTagHelperPrefix/NestedInheritedTagHelperPrefix/" +
                 "NestedInheritedTagHelperPrefix.cshtml");
         }
 
-        public ViewResult ViewWithNestedOverriddenTagHelperPrefix()
+        public IActionResult ViewWithNestedOverriddenTagHelperPrefix()
         {
             return View(
                 "/Views/InheritedTagHelperPrefix/NestedInheritedTagHelperPrefix/" +

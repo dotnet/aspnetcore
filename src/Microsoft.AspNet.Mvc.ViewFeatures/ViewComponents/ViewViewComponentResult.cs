@@ -4,11 +4,12 @@
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Mvc.Actions;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet.Mvc.ViewComponents
 {
     /// <summary>
     /// A <see cref="IViewComponentResult"/> that renders a partial view when executed.

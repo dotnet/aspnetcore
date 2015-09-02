@@ -5,7 +5,7 @@ namespace Microsoft.AspNet.Mvc.ApiExplorer
 {
     /// <summary>
     /// Represents data used to build an <c>ApiDescription</c>, stored as part of the
-    /// <see cref="ActionDescriptor.Properties"/>.
+    /// <see cref="Actions.ActionDescriptor.Properties"/>.
     /// </summary>
     public class ApiDescriptionActionData
     {

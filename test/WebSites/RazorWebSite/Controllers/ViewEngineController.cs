@@ -49,7 +49,7 @@ namespace RazorWebSite.Controllers
             return View(model);
         }
 
-        public ViewResult ViewPassesViewDataToLayout()
+        public IActionResult ViewPassesViewDataToLayout()
         {
             ViewData["Title"] = "Controller title";
             return View("ViewWithTitle");
@@ -61,13 +61,13 @@ namespace RazorWebSite.Controllers
             return View("ViewWithDataFromController");
         }
 
-        public ViewResult ViewWithComponentThatHasLayout()
+        public IActionResult ViewWithComponentThatHasLayout()
         {
             ViewData["Title"] = "View With Component With Layout";
             return View();
         }
 
-        public ViewResult ViewWithComponentThatHasViewStart()
+        public IActionResult ViewWithComponentThatHasViewStart()
         {
             return View();
         }

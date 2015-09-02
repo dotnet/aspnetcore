@@ -7,7 +7,7 @@ using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 using Newtonsoft.Json;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet.Mvc.ViewComponents
 {
     /// <summary>
     /// An <see cref="IViewComponentResult"/> which renders JSON text when executed.

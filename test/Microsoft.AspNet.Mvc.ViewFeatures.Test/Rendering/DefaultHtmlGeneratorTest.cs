@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.AspNet.Antiforgery;
 using Microsoft.AspNet.DataProtection;
+using Microsoft.AspNet.Mvc.Actions;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.Framework.OptionsModel;
 using Microsoft.Framework.WebEncoders;

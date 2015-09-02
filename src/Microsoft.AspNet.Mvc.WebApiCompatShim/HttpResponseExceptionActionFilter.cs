@@ -3,6 +3,8 @@
 
 using System.Net.Http;
 using System.Web.Http;
+using Microsoft.AspNet.Mvc.ActionResults;
+using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.WebApiCompatShim

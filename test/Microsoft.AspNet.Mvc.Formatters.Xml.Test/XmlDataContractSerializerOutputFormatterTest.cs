@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
+using Microsoft.AspNet.Mvc.Formatters.Xml.Internal;
 using Microsoft.AspNet.Testing;
 using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Net.Http.Headers;

@@ -7,6 +7,8 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Cors.Core;
+using Microsoft.AspNet.Mvc.ActionResults;
+using Microsoft.AspNet.Mvc.Actions;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.Framework.Internal;
@@ -1209,7 +1211,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         private class TestApplicationModelProvider : DefaultApplicationModelProvider
         {
             public TestApplicationModelProvider()
-                : this(new MockMvcOptionsAccessor())
+                : this(new TestOptionsManager<MvcOptions>())
             {
             }
 

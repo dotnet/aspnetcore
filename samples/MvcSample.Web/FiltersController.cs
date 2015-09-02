@@ -3,6 +3,8 @@
 
 using System;
 using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.Mvc.ActionResults;
+using Microsoft.AspNet.Mvc.Filters;
 using MvcSample.Web.Filters;
 using MvcSample.Web.Models;
 

@@ -4,6 +4,8 @@
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.Mvc.ActionResults;
+using Microsoft.AspNet.Mvc.Actions;
 using MvcSample.Web.Models;
 
 namespace MvcSample.Web.RandomNameSpace

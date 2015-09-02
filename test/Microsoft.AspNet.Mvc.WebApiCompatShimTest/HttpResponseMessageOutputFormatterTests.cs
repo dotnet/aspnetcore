@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
+using Microsoft.AspNet.Mvc.Formatters;
 using Microsoft.AspNet.Mvc.WebApiCompatShim;
 using Microsoft.AspNet.Testing.xunit;
 using Moq;
@@ -145,8 +146,10 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShimTest
             Assert.NotNull(httpContext.Response.ContentLength);
         }
 
-        private OutputFormatterContext GetOutputFormatterContext(object outputValue, Type outputType,
-                                                                    HttpContext httpContext)
+        private OutputFormatterContext GetOutputFormatterContext(
+            object outputValue,
+            Type outputType,
+            HttpContext httpContext)
         {
             return new OutputFormatterContext
             {

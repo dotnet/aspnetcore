@@ -1,0 +1,90 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.AspNet.Mvc.Filters;
+using Microsoft.AspNet.Mvc.Formatters;
+using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.ModelBinding.Validation;
+using Microsoft.Framework.Internal;
+using Microsoft.Framework.Logging;
+using Microsoft.Framework.Notification;
+using Microsoft.Framework.OptionsModel;
+
+namespace Microsoft.AspNet.Mvc.Actions
+{
+    public class ControllerActionInvokerProvider : IActionInvokerProvider
+    {
+        private readonly IControllerActionArgumentBinder _argumentBinder;
+        private readonly IControllerFactory _controllerFactory;
+        private readonly IFilterProvider[] _filterProviders;
+        private readonly IReadOnlyList<IInputFormatter> _inputFormatters;
+        private readonly IReadOnlyList<IModelBinder> _modelBinders;
+        private readonly IReadOnlyList<IOutputFormatter> _outputFormatters;
+        private readonly IReadOnlyList<IModelValidatorProvider> _modelValidatorProviders;
+        private readonly IReadOnlyList<IValueProviderFactory> _valueProviderFactories;
+        private readonly IActionBindingContextAccessor _actionBindingContextAccessor;
+        private readonly int _maxModelValidationErrors;
+        private readonly ILogger _logger;
+        private readonly INotifier _notifier;
+
+        public ControllerActionInvokerProvider(
+            IControllerFactory controllerFactory,
+            IEnumerable<IFilterProvider> filterProviders,
+            IControllerActionArgumentBinder argumentBinder,
+            IOptions<MvcOptions> optionsAccessor,
+            IActionBindingContextAccessor actionBindingContextAccessor,
+            ILoggerFactory loggerFactory,
+            INotifier notifier)
+        {
+            _controllerFactory = controllerFactory;
+            _filterProviders = filterProviders.OrderBy(item => item.Order).ToArray();
+            _argumentBinder = argumentBinder;
+            _inputFormatters = optionsAccessor.Options.InputFormatters.ToArray();
+            _outputFormatters = optionsAccessor.Options.OutputFormatters.ToArray();
+            _modelBinders = optionsAccessor.Options.ModelBinders.ToArray();
+            _modelValidatorProviders = optionsAccessor.Options.ModelValidatorProviders.ToArray();
+            _valueProviderFactories = optionsAccessor.Options.ValueProviderFactories.ToArray();
+            _actionBindingContextAccessor = actionBindingContextAccessor;
+            _maxModelValidationErrors = optionsAccessor.Options.MaxModelValidationErrors;
+            _logger = loggerFactory.CreateLogger<ControllerActionInvoker>();
+            _notifier = notifier;
+        }
+
+        public int Order
+        {
+            get { return DefaultOrder.DefaultFrameworkSortOrder; }
+        }
+
+        /// <inheritdoc />
+        public void OnProvidersExecuting([NotNull] ActionInvokerProviderContext context)
+        {
+            var actionDescriptor = context.ActionContext.ActionDescriptor as ControllerActionDescriptor;
+
+            if (actionDescriptor != null)
+            {
+                context.Result = new ControllerActionInvoker(
+                                    context.ActionContext,
+                                    _filterProviders,
+                                    _controllerFactory,
+                                    actionDescriptor,
+                                    _inputFormatters,
+                                    _outputFormatters,
+                                    _argumentBinder,
+                                    _modelBinders,
+                                    _modelValidatorProviders,
+                                    _valueProviderFactories,
+                                    _actionBindingContextAccessor,
+                                    _logger,
+                                    _notifier,
+                                    _maxModelValidationErrors);
+            }
+        }
+
+        /// <inheritdoc />
+        public void OnProvidersExecuted([NotNull] ActionInvokerProviderContext context)
+        {
+        }
+    }
+}

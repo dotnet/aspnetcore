@@ -9,11 +9,13 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using Microsoft.AspNet.Mvc.Formatters.Xml;
+using Microsoft.AspNet.Mvc.Formatters.Xml.Internal;
 using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.Framework.Internal;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNet.Mvc.Formatters.Xml
+namespace Microsoft.AspNet.Mvc.Formatters
 {
     /// <summary>
     /// This class handles deserialization of input XML data

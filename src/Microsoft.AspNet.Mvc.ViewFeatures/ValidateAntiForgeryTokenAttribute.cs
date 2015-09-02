@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Antiforgery;
+using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc

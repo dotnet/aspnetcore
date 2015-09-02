@@ -5,10 +5,12 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Cors.Core;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Mvc.ActionResults;
+using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.Primitives;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet.Mvc.Cors
 {
     /// <summary>
     /// An <see cref="ICorsAuthorizationFilter"/> which ensures that an action does not run for a pre-flight request.

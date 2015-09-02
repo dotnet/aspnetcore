@@ -7,7 +7,7 @@ namespace RazorWebSite.Controllers
 {
     public class NestedViewStartsController : Controller
     {
-        public ViewResult Index()
+        public IActionResult Index()
         {
             return View("NestedViewStarts/Index");
         }

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNet.Mvc.Actions;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ViewComponents
@@ -85,7 +86,7 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
 
             private static IAssemblyProvider GetAssemblyProvider()
             {
-                var assemblyProvider = new FixedSetAssemblyProvider();
+                var assemblyProvider = new StaticAssemblyProvider();
                 assemblyProvider.CandidateAssemblies.Add(
                     typeof(FilteredViewComponentDescriptorProvider).GetTypeInfo().Assembly);
 

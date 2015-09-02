@@ -7,6 +7,7 @@ using System.Reflection;
 using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.ApplicationModels;
+using Microsoft.AspNet.Mvc.Formatters;
 using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.Framework.DependencyInjection.Extensions;
 using Microsoft.Framework.Internal;

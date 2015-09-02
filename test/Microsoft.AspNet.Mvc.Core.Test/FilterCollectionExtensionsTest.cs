@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.ObjectModel;
+using Microsoft.AspNet.Mvc.Filters;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc

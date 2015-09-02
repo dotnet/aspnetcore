@@ -4,9 +4,10 @@
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Cors.Core;
+using Microsoft.AspNet.Mvc.ApplicationModels;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.ApplicationModels
+namespace Microsoft.AspNet.Mvc.Cors
 {
     public class CorsApplicationModelProviderTest
     {

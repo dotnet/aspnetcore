@@ -3,6 +3,7 @@
 
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNet.Mvc.Actions;
 using Microsoft.AspNet.Mvc.MvcServiceCollectionExtensionsTestControllers;
 using Microsoft.Framework.DependencyInjection;
 using Moq;
@@ -45,7 +46,7 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal(ServiceLifetime.Transient, services[2].Lifetime);
 
             Assert.Equal(typeof(IControllerTypeProvider), services[3].ServiceType);
-            var typeProvider = Assert.IsType<FixedSetControllerTypeProvider>(services[3].ImplementationInstance);
+            var typeProvider = Assert.IsType<StaticControllerTypeProvider>(services[3].ImplementationInstance);
             Assert.Equal(controllerTypes, typeProvider.ControllerTypes.OrderBy(c => c.Name));
             Assert.Equal(ServiceLifetime.Singleton, services[3].Lifetime);
         }
@@ -59,7 +60,7 @@ namespace Microsoft.AspNet.Mvc
 // independent.
 namespace Microsoft.AspNet.Mvc.MvcServiceCollectionExtensionsTestControllers
 {
-    public class ControllerTypeA : Controller
+    public class ControllerTypeA : Microsoft.AspNet.Mvc.Controller
     {
 
     }

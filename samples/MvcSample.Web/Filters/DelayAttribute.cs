@@ -3,7 +3,8 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.Mvc.ActionResults;
+using Microsoft.AspNet.Mvc.Filters;
 
 namespace MvcSample.Web.Filters
 {

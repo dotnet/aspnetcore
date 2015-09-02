@@ -3,6 +3,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNet.Antiforgery;
+using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc

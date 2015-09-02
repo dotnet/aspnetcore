@@ -6,7 +6,7 @@ using Microsoft.AspNet.Cors.Core;
 using Microsoft.AspNet.Mvc.ApplicationModels;
 using Microsoft.Framework.Internal;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet.Mvc.Cors
 {
     public class CorsApplicationModelProvider : IApplicationModelProvider
     {

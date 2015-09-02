@@ -11,32 +11,32 @@ namespace ActivatorWebSite
     /// </summary>
     public class ViewController : Controller
     {
-        public ViewResult ConsumeDefaultProperties()
+        public IActionResult ConsumeDefaultProperties()
         {
             return View();
         }
 
-        public ViewResult ConsumeInjectedService()
+        public IActionResult ConsumeInjectedService()
         {
             return View();
         }
 
-        public ViewResult ConsumeServicesFromBaseType()
+        public IActionResult ConsumeServicesFromBaseType()
         {
             return View();
         }
 
-        public ViewResult ConsumeViewComponent()
+        public IActionResult ConsumeViewComponent()
         {
             return View();
         }
 
-        public ViewResult ConsumeCannotBeActivatedComponent()
+        public IActionResult ConsumeCannotBeActivatedComponent()
         {
             return View();
         }
 
-        public ViewResult UseTagHelper()
+        public IActionResult UseTagHelper()
         {
             var item = new Item
             {

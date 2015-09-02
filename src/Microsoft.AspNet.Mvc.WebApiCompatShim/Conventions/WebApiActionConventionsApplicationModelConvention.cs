@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNet.Mvc.Actions;
 using Microsoft.AspNet.Mvc.ApplicationModels;
 
 namespace Microsoft.AspNet.Mvc.WebApiCompatShim

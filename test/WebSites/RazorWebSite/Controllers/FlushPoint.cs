@@ -7,34 +7,34 @@ namespace RazorWebSite
 {
     public class FlushPoint : Controller
     {
-        public ViewResult PageWithLayout()
+        public IActionResult PageWithLayout()
         {
             return View();
         }
 
-        public ViewResult PageWithoutLayout()
+        public IActionResult PageWithoutLayout()
         {
             return View();
         }
 
         // This uses RenderSection to render the section that contains a FlushAsync call
-        public ViewResult PageWithPartialsAndViewComponents()
+        public IActionResult PageWithPartialsAndViewComponents()
         {
             return View();
         }
 
         // This uses RenderSectionAsync to render the section that contains a FlushAsync call
-        public ViewResult PageWithRenderSectionAsync()
+        public IActionResult PageWithRenderSectionAsync()
         {
             return View("PageWithSectionInvokedViaRenderSectionAsync");
         }
 
-        public ViewResult PageWithNestedLayout()
+        public IActionResult PageWithNestedLayout()
         {
             return View();
         }
 
-        public ViewResult PageWithFlushBeforeLayout()
+        public IActionResult PageWithFlushBeforeLayout()
         {
             return View();
         }
