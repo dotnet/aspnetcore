@@ -27,14 +27,14 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             return await base.HandleUnauthorizedAsync(context);
         }
 
-        protected override async Task<OpenIdConnectTokenEndpointResponse> RedeemAuthorizationCodeAsync(string authorizationCode, string redirectUri)
+        protected override Task<OpenIdConnectTokenEndpointResponse> RedeemAuthorizationCodeAsync(string authorizationCode, string redirectUri)
         {
             var jsonResponse = new JObject();
             jsonResponse.Add(OpenIdConnectParameterNames.IdToken, "test token");
-            return new OpenIdConnectTokenEndpointResponse(jsonResponse);
+            return Task.FromResult(new OpenIdConnectTokenEndpointResponse(jsonResponse));
         }
 
-        protected override async Task<AuthenticationTicket> GetUserInformationAsync(AuthenticationProperties properties, OpenIdConnectMessage message, AuthenticationTicket ticket)
+        protected override Task<AuthenticationTicket> GetUserInformationAsync(AuthenticationProperties properties, OpenIdConnectMessage message, AuthenticationTicket ticket)
         {
             var claimsIdentity = (ClaimsIdentity)ticket.Principal.Identity;
             if (claimsIdentity == null)
@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
                 claimsIdentity = new ClaimsIdentity();
             }
             claimsIdentity.AddClaim(new Claim("test claim", "test value"));
-            return new AuthenticationTicket(new ClaimsPrincipal(claimsIdentity), ticket.Properties, ticket.AuthenticationScheme);
+            return Task.FromResult(new AuthenticationTicket(new ClaimsPrincipal(claimsIdentity), ticket.Properties, ticket.AuthenticationScheme));
         }
     }
 }
