@@ -83,7 +83,7 @@ namespace Microsoft.Framework.DependencyInjection
             services.TryAddSingleton<IJsonHelper, JsonHelper>();
             services.TryAdd(ServiceDescriptor.Singleton<JsonOutputFormatter>(serviceProvider =>
             {
-                var options = serviceProvider.GetRequiredService<IOptions<MvcJsonOptions>>().Options;
+                var options = serviceProvider.GetRequiredService<IOptions<MvcJsonOptions>>().Value;
                 return new JsonOutputFormatter(options.SerializerSettings);
             }));
 

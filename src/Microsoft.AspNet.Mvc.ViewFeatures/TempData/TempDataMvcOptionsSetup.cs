@@ -13,7 +13,6 @@ namespace Microsoft.AspNet.Mvc
         public TempDataMvcOptionsSetup()
             : base(ConfigureMvc)
         {
-            Order = DefaultOrder.DefaultFrameworkSortOrder;
         }
 
         public static void ConfigureMvc(MvcOptions options)
