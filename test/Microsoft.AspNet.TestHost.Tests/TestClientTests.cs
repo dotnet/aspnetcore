@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -244,6 +245,68 @@ namespace Microsoft.AspNet.TestHost
             }
 
             clientSocket.Dispose();
+        }
+
+        [Fact]
+        public async Task ClientDisposalAbortsRequest()
+        {
+            // Arrange
+            TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
+            RequestDelegate appDelegate = async ctx =>
+            {
+                // Write Headers
+                await ctx.Response.Body.FlushAsync();
+
+                var sem = new SemaphoreSlim(0);
+                try
+                {
+                    await sem.WaitAsync(ctx.RequestAborted);
+                }
+                catch (Exception e)
+                {
+                    tcs.SetException(e);
+                }
+            };
+
+            // Act
+            var server = TestServer.Create(app => app.Run(appDelegate));
+            var client = server.CreateClient();
+            var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost:12345");
+            var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+            // Abort Request
+            response.Dispose();
+
+            // Assert
+            var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await tcs.Task);
+        }
+
+        [Fact]
+        public async Task ClientCancellationAbortsRequest()
+        {
+            // Arrange
+            TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
+            RequestDelegate appDelegate = async ctx =>
+            {
+                var sem = new SemaphoreSlim(0);
+                try
+                {
+                    await sem.WaitAsync(ctx.RequestAborted);
+                }
+                catch (Exception e)
+                {
+                    tcs.SetException(e);
+                }
+            };
+
+            // Act
+            var server = TestServer.Create(app => app.Run(appDelegate));
+            var client = server.CreateClient();
+            var cts = new CancellationTokenSource();
+            cts.CancelAfter(500);
+            var response = await client.GetAsync("http://localhost:12345", cts.Token);
+
+            // Assert
+            var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await tcs.Task);
         }
     }
 }
