@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Session
         {
             _next = next;
             _logger = loggerFactory.CreateLogger<SessionMiddleware>();
-            _options = options.Options;
+            _options = options.Value;
             _sessionStore = sessionStore;
             _sessionStore.Connect();
         }
