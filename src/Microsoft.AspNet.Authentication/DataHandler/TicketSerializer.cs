@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Authentication
 {
     public class TicketSerializer : IDataSerializer<AuthenticationTicket>
     {
-        private const int FormatVersion = 3;
+        private const int FormatVersion = 4;
 
         public virtual byte[] Serialize(AuthenticationTicket model)
         {
@@ -63,6 +63,17 @@ namespace Microsoft.AspNet.Authentication
                         WriteWithDefault(writer, claim.Issuer, DefaultValues.LocalAuthority);
                         WriteWithDefault(writer, claim.OriginalIssuer, claim.Issuer);
                     }
+
+                    var bootstrap = identity.BootstrapContext as string;
+                    if (string.IsNullOrEmpty(bootstrap))
+                    {
+                        writer.Write(0);
+                    }
+                    else
+                    {
+                        writer.Write(bootstrap.Length);
+                        writer.Write(bootstrap);
+                    }
                 }
             }
             PropertiesSerializer.Write(writer, model.Properties);
@@ -99,7 +110,13 @@ namespace Microsoft.AspNet.Authentication
                     var originalIssuer = ReadWithDefault(reader, issuer);
                     claims[index] = new Claim(type, value, valueType, issuer, originalIssuer);
                 }
-                identities[i] = new ClaimsIdentity(claims, authenticationType, nameClaimType, roleClaimType);
+                var identity = new ClaimsIdentity(claims, authenticationType, nameClaimType, roleClaimType);
+                var bootstrapContextSize = reader.ReadInt32();
+                if (bootstrapContextSize > 0)
+                {
+                    identity.BootstrapContext = reader.ReadString();
+                }
+                identities[i] = identity;
             }
 
             var properties = PropertiesSerializer.Read(reader);
