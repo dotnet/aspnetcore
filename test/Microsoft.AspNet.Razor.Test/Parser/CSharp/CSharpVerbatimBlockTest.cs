@@ -46,7 +46,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                            designTimeParser: true,
                            expectedErrors: new[]
                            {
-                               new RazorError(RazorResources.FormatParseError_Unexpected_Character_At_Start_Of_CodeBlock_CS("}"), new SourceLocation(2, 0, 2))
+                               new RazorError(
+                                   RazorResources.FormatParseError_Unexpected_Character_At_Start_Of_CodeBlock_CS("}"),
+                                   new SourceLocation(2, 0, 2),
+                                   length: 1)
                            });
         }
 
@@ -68,7 +71,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                            designTimeParser: true,
                            expectedErrors: new[]
                            {
-                               new RazorError(RazorResources.FormatParseError_Unexpected_Character_At_Start_Of_CodeBlock_CS("."), new SourceLocation(2, 0, 2))
+                               new RazorError(
+                                   RazorResources.FormatParseError_Unexpected_Character_At_Start_Of_CodeBlock_CS("."),
+                                   new SourceLocation(2, 0, 2),
+                                   length: 1)
                            });
         }
 
@@ -91,7 +97,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                Factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
                 /* designTimeParser */ true,
                            new RazorError(
-                               RazorResources.ParseError_Unexpected_WhiteSpace_At_Start_Of_CodeBlock_CS, 6 + Environment.NewLine.Length, 1, 5));
+                               RazorResources.ParseError_Unexpected_WhiteSpace_At_Start_Of_CodeBlock_CS,
+                               new SourceLocation(6 + Environment.NewLine.Length, 1, 5),
+                               Environment.NewLine.Length));
         }
 
         [Fact]

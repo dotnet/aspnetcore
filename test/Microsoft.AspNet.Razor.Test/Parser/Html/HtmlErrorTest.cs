@@ -32,7 +32,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                         Factory.MarkupTransition("<text foo bar>").Accepts(AcceptedCharacters.Any)),
                     new MarkupTagBlock(
                         Factory.MarkupTransition("</text>"))),
-                new RazorError(RazorResources.ParseError_TextTagCannotContainAttributes, SourceLocation.Zero));
+                new RazorError(
+                    RazorResources.ParseError_TextTagCannotContainAttributes,
+                    new SourceLocation(1, 0, 1),
+                    length: 4));
         }
 
         [Fact]
@@ -44,7 +47,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                         Factory.MarkupTransition("<text>")),
                     new MarkupTagBlock(
                         Factory.MarkupTransition("</text foo bar>").Accepts(AcceptedCharacters.Any))),
-                new RazorError(RazorResources.ParseError_TextTagCannotContainAttributes, 6, 0, 6));
+                new RazorError(
+                    RazorResources.ParseError_TextTagCannotContainAttributes,
+                    new SourceLocation(8, 0, 8),
+                    length: 4));
         }
 
         [Fact]
@@ -52,7 +58,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
         {
             ParseBlockTest("foo bar <baz>",
                 new MarkupBlock(),
-                new RazorError(RazorResources.ParseError_MarkupBlock_Must_Start_With_Tag, SourceLocation.Zero));
+                new RazorError(
+                    RazorResources.ParseError_MarkupBlock_Must_Start_With_Tag,
+                    SourceLocation.Zero,
+                    length: 3));
         }
 
         [Fact]
@@ -63,7 +72,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                     new MarkupTagBlock(
                         Factory.Markup("</foo>").Accepts(AcceptedCharacters.None)),
                     Factory.Markup(" ").Accepts(AcceptedCharacters.None)),
-                new RazorError(RazorResources.FormatParseError_UnexpectedEndTag("foo"), SourceLocation.Zero));
+                new RazorError(
+                    RazorResources.FormatParseError_UnexpectedEndTag("foo"),
+                    new SourceLocation(2, 0, 2),
+                    length: 3));
         }
 
         [Fact]
@@ -77,7 +89,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                         Factory.Markup("<foo>").Accepts(AcceptedCharacters.None)),
                     new MarkupTagBlock(
                         Factory.Markup("</bar>").Accepts(AcceptedCharacters.None))),
-                new RazorError(RazorResources.FormatParseError_MissingEndTag("p"), new SourceLocation(0, 0, 0)));
+                new RazorError(
+                    RazorResources.FormatParseError_MissingEndTag("p"),
+                    new SourceLocation(1, 0, 1),
+                    length: 1));
         }
 
         [Fact]
@@ -88,7 +103,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                     new MarkupTagBlock(
                         Factory.Markup("<foo>").Accepts(AcceptedCharacters.None)),
                     Factory.Markup("blah blah blah blah blah")),
-                new RazorError(RazorResources.FormatParseError_MissingEndTag("foo"), new SourceLocation(0, 0, 0)));
+                new RazorError(
+                    RazorResources.FormatParseError_MissingEndTag("foo"),
+                    new SourceLocation(1, 0, 1),
+                    length: 3));
         }
 
         [Fact]
@@ -101,7 +119,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                         new MarkupBlock(new AttributeBlockChunkGenerator("bar", new LocationTagged<string>(" bar=", 4, 0, 4), new LocationTagged<string>(string.Empty, 12, 0, 12)),
                             Factory.Markup(" bar=").With(SpanChunkGenerator.Null),
                             Factory.Markup("baz").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 9, 0, 9), new LocationTagged<string>("baz", 9, 0, 9)))))),
-                new RazorError(RazorResources.FormatParseError_UnfinishedTag("foo"), new SourceLocation(0, 0, 0)));
+                new RazorError(
+                    RazorResources.FormatParseError_UnfinishedTag("foo"),
+                    new SourceLocation(1, 0, 1),
+                    length: 3));
         }
     }
 }

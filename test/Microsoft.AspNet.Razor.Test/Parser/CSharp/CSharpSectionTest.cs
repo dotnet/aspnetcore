@@ -24,8 +24,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                         Factory.CodeTransition(),
                         Factory.MetaCode("section" + Environment.NewLine))),
                 new RazorError(
-                        RazorResources.FormatParseError_Unexpected_Character_At_Section_Name_Start(RazorResources.ErrorComponent_EndOfFile),
-                    8 + Environment.NewLine.Length, 1, 0));
+                    RazorResources.FormatParseError_Unexpected_Character_At_Section_Name_Start(
+                        RazorResources.ErrorComponent_EndOfFile),
+                    new SourceLocation(8 + Environment.NewLine.Length, 1, 0),
+                    length: 1));
         }
 
         [Fact]
@@ -39,7 +41,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                         Factory.CodeTransition(),
                         Factory.MetaCode("section Foo         " + Environment.NewLine)),
                     Factory.Markup("    ")),
-                new RazorError(RazorResources.ParseError_MissingOpenBraceAfterSection, 12, 0, 12));
+                new RazorError(
+                    RazorResources.ParseError_MissingOpenBraceAfterSection,
+                    new SourceLocation(12, 0, 12),
+                    length: 1));
         }
 
         [Fact]
@@ -54,8 +59,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                         Factory.MetaCode("section         " + Environment.NewLine)),
                     Factory.Markup("    ")),
                 new RazorError(
-                        RazorResources.FormatParseError_Unexpected_Character_At_Section_Name_Start(RazorResources.ErrorComponent_EndOfFile),
-                    21 + Environment.NewLine.Length, 1, 4));
+                    RazorResources.FormatParseError_Unexpected_Character_At_Section_Name_Start(
+                        RazorResources.ErrorComponent_EndOfFile),
+                    new SourceLocation(21 + Environment.NewLine.Length, 1, 4),
+                    length: 1));
         }
 
         [Fact]
@@ -89,8 +96,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                         Factory.Markup("</p>")),
                      Factory.Markup(" }")),
                 new RazorError(
-                        RazorResources.FormatParseError_Unexpected_Character_At_Section_Name_Start(RazorResources.FormatErrorComponent_Character("9")),
-                    9, 0, 9));
+                    RazorResources.FormatParseError_Unexpected_Character_At_Section_Name_Start(
+                        RazorResources.FormatErrorComponent_Character("9")),
+                    new SourceLocation(9, 0, 9),
+                    length: 1));
         }
 
         [Fact]
@@ -109,7 +118,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                     new MarkupTagBlock(
                         Factory.Markup("</p>")),
                     Factory.Markup(" }")),
-                new RazorError(RazorResources.ParseError_MissingOpenBraceAfterSection, 12, 0, 12));
+                new RazorError(
+                    RazorResources.ParseError_MissingOpenBraceAfterSection,
+                    new SourceLocation(12, 0, 12),
+                    length: 1));
         }
 
         [Fact]
@@ -159,7 +171,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                         new MarkupBlock())),
                 new RazorError(
                     RazorResources.FormatParseError_Expected_X("}"),
-                    14, 0, 14));
+                    new SourceLocation(14, 0, 14),
+                    length: 1));
         }
 
         [Fact]
@@ -182,7 +195,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                 Factory.Markup("</p>"))))),
                 new RazorError(
                     RazorResources.FormatParseError_Expected_X("}"),
-                    27, 0, 27));
+                    new SourceLocation(27, 0, 27),
+                    length: 1));
         }
 
         [Fact]
@@ -194,7 +208,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                     new SectionBlock(new SectionChunkGenerator("foo"),
                         Factory.CodeTransition(),
                         Factory.MetaCode("section foo      " + Environment.NewLine))),
-                new RazorError(RazorResources.ParseError_MissingOpenBraceAfterSection, 12, 0, 12));
+                new RazorError(
+                    RazorResources.ParseError_MissingOpenBraceAfterSection,
+                    new SourceLocation(12, 0, 12),
+                    length: 1));
         }
 
         [Fact]

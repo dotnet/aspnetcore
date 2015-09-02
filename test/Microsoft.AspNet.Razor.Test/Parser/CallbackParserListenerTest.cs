@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser
 
             // Act/Assert
             listener.VisitStartBlock(new FunctionsBlock());
-            listener.VisitError(new RazorError("Error", SourceLocation.Zero));
+            listener.VisitError(new RazorError("Error", SourceLocation.Zero, length: 1));
             listener.VisitEndBlock(new FunctionsBlock());
         }
 
@@ -98,9 +98,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser
         [Fact]
         public void ListenerCallsOnErrorCallbackUsingSynchronizationContextIfSpecified()
         {
-            RunSyncContextTest(new RazorError("Bar", 42, 42, 42),
-                               errorCallback => new CallbackVisitor(_ => { }, errorCallback, _ => { }, _ => { }),
-                               (listener, expected) => listener.VisitError(expected));
+            RunSyncContextTest(
+                new RazorError("Bar", new SourceLocation(42, 42, 42), length: 3),
+                errorCallback => new CallbackVisitor(_ => { }, errorCallback, _ => { }, _ => { }),
+                (listener, expected) => listener.VisitError(expected));
         }
 
         private static void RunSyncContextTest<T>(T expected, Func<Action<T>, CallbackVisitor> ctor, Action<CallbackVisitor, T> call)
@@ -136,7 +137,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser
 
         private static void RunOnErrorTest(Func<Action<RazorError>, CallbackVisitor> ctor, Action<RazorError, RazorError> verifyResults = null)
         {
-            RunCallbackTest(new RazorError("Foo", SourceLocation.Zero), ctor, (listener, expected) => listener.VisitError(expected), verifyResults);
+            RunCallbackTest(
+                new RazorError("Foo", SourceLocation.Zero, length: 3),
+                ctor,
+                (listener, expected) => listener.VisitError(expected), verifyResults);
         }
 
         private static void RunOnEndSpanTest(Func<Action<Span>, CallbackVisitor> ctor, Action<Span, Span> verifyResults = null)

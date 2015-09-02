@@ -29,7 +29,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                             string.Empty,
                             HtmlSymbolType.Unknown))
                                .Accepts(AcceptedCharacters.Any))),
-                new RazorError(RazorResources.ParseError_RazorComment_Not_Terminated, 0, 0, 0));
+                new RazorError(
+                    RazorResources.ParseError_RazorComment_Not_Terminated,
+                    SourceLocation.Zero,
+                    length: 2));
         }
 
         [Fact]
@@ -84,7 +87,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                .AsImplicitExpression(CSharpCodeParser.DefaultKeywords))),
                 new RazorError(
                     RazorResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"),
-                    4, 0, 4));
+                    new SourceLocation(4, 0, 4),
+                    length: 1));
         }
 
         [Fact]
@@ -107,8 +111,14 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                 string.Empty,
                                 CSharpSymbolType.Unknown))
                                     .Accepts(AcceptedCharacters.Any)))),
-                new RazorError(RazorResources.ParseError_RazorComment_Not_Terminated, 5, 0, 5),
-                new RazorError(RazorResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"), 4, 0, 4));
+                new RazorError(
+                    RazorResources.ParseError_RazorComment_Not_Terminated,
+                    new SourceLocation(5, 0, 5),
+                    length: 2),
+                new RazorError(
+                    RazorResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"),
+                    new SourceLocation(4, 0, 4),
+                    length: 1));
         }
 
         [Fact]
@@ -147,9 +157,18 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                        .Accepts(AcceptedCharacters.None)),
                             Factory.Markup(Environment.NewLine).With(SpanChunkGenerator.Null),
                             Factory.Markup("}")))),
-                new RazorError(RazorResources.ParseError_TextTagCannotContainAttributes, 6 + Environment.NewLine.Length, 1, 4),
-                new RazorError(RazorResources.FormatParseError_MissingEndTag("text"), 6 + Environment.NewLine.Length, 1, 4),
-                new RazorError(RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF(RazorResources.BlockName_Code, "}", "{"), 1, 0, 1));
+                new RazorError(
+                    RazorResources.ParseError_TextTagCannotContainAttributes,
+                    new SourceLocation(7 + Environment.NewLine.Length, 1, 5),
+                    length: 4),
+                new RazorError(
+                    RazorResources.FormatParseError_MissingEndTag("text"),
+                    new SourceLocation(7 + Environment.NewLine.Length, 1, 5),
+                    length: 4),
+                new RazorError(
+                    RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF(RazorResources.BlockName_Code, "}", "{"),
+                    new SourceLocation(1, 0, 1),
+                    length: 1));
         }
 
         [Fact]
@@ -173,8 +192,15 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                                                         string.Empty,
                                                                         CSharpSymbolType.Unknown))
                                    .Accepts(AcceptedCharacters.Any)))),
-                new RazorError(RazorResources.ParseError_RazorComment_Not_Terminated, 2, 0, 2),
-                new RazorError(RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF(RazorResources.BlockName_Code, "}", "{"), 1, 0, 1));
+                new RazorError(
+                    RazorResources.ParseError_RazorComment_Not_Terminated,
+                    new SourceLocation(2, 0, 2),
+                    length: 2),
+                new RazorError(
+                    RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF(
+                        RazorResources.BlockName_Code, "}", "{"),
+                    new SourceLocation(1, 0, 1),
+                    length: 1));
         }
 
         [Fact]

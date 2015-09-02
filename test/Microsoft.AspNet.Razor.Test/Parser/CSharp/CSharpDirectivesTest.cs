@@ -68,7 +68,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                         .AsTagHelperPrefixDirective("Foo")),
                 new RazorError(
                     RazorResources.ParseError_Unterminated_String_Literal,
-                    absoluteIndex: 17, lineIndex: 0, columnIndex: 17),
+                    absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 1),
                 new RazorError(
                     RazorResources.FormatParseError_DirectiveMustBeSurroundedByQuotes(
                         SyntaxConstants.CSharp.TagHelperPrefixKeyword),
@@ -89,7 +89,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                         .Accepts(AcceptedCharacters.AnyExceptNewline)),
                  new RazorError(
                      RazorResources.ParseError_Unterminated_String_Literal,
-                     absoluteIndex: 20, lineIndex: 0, columnIndex: 20),
+                     absoluteIndex: 20, lineIndex: 0, columnIndex: 20, length: 1),
                  new RazorError(
                      RazorResources.FormatParseError_DirectiveMustBeSurroundedByQuotes(
                         SyntaxConstants.CSharp.TagHelperPrefixKeyword),
@@ -168,7 +168,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                         .AsRemoveTagHelper("Foo")),
                  new RazorError(
                      RazorResources.ParseError_Unterminated_String_Literal,
-                     absoluteIndex: 17, lineIndex: 0, columnIndex: 17),
+                     absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 1),
                  new RazorError(
                      RazorResources.FormatParseError_DirectiveMustBeSurroundedByQuotes(
                         SyntaxConstants.CSharp.RemoveTagHelperKeyword),
@@ -188,7 +188,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                         .Accepts(AcceptedCharacters.AnyExceptNewline)),
                  new RazorError(
                      RazorResources.ParseError_Unterminated_String_Literal,
-                     absoluteIndex: 20, lineIndex: 0, columnIndex: 20),
+                     absoluteIndex: 20, lineIndex: 0, columnIndex: 20, length: 1),
                  new RazorError(
                      RazorResources.FormatParseError_DirectiveMustBeSurroundedByQuotes(
                         SyntaxConstants.CSharp.RemoveTagHelperKeyword),
@@ -264,7 +264,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                         .AsAddTagHelper("Foo")),
                  new RazorError(
                      RazorResources.ParseError_Unterminated_String_Literal,
-                     absoluteIndex: 14, lineIndex: 0, columnIndex: 14),
+                     absoluteIndex: 14, lineIndex: 0, columnIndex: 14, length: 1),
                  new RazorError(
                      RazorResources.FormatParseError_DirectiveMustBeSurroundedByQuotes(
                         SyntaxConstants.CSharp.AddTagHelperKeyword),
@@ -284,7 +284,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                         .Accepts(AcceptedCharacters.AnyExceptNewline)),
                  new RazorError(
                      RazorResources.ParseError_Unterminated_String_Literal,
-                     absoluteIndex: 17, lineIndex: 0, columnIndex: 17),
+                     absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 1),
                  new RazorError(
                      RazorResources.FormatParseError_DirectiveMustBeSurroundedByQuotes(
                         SyntaxConstants.CSharp.AddTagHelperKeyword),

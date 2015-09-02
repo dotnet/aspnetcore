@@ -118,7 +118,9 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                Factory.MetaCode("}").Accepts(AcceptedCharacters.None)
                                ), true,
                            new RazorError(
-                               RazorResources.ParseError_AtInCode_Must_Be_Followed_By_Colon_Paren_Or_Identifier_Start, 5 + Environment.NewLine.Length, 1, 4));
+                               RazorResources.ParseError_AtInCode_Must_Be_Followed_By_Colon_Paren_Or_Identifier_Start,
+                               new SourceLocation(5 + Environment.NewLine.Length, 1, 4),
+                               length: 1));
         }
 
         [Fact]

@@ -60,7 +60,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                ),
                            new RazorError(
                                RazorResources.ParseError_NamespaceImportAndTypeAlias_Cannot_Exist_Within_CodeBlock,
-                               new SourceLocation(2, 0, 2)));
+                               new SourceLocation(2, 0, 2),
+                               length: 5));
         }
 
         [Fact]
@@ -76,7 +77,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                ),
                            new RazorError(
                                RazorResources.ParseError_NamespaceImportAndTypeAlias_Cannot_Exist_Within_CodeBlock,
-                               new SourceLocation(2, 0, 2)));
+                               new SourceLocation(2, 0, 2),
+                               length: 5));
         }
 
         [Fact]
@@ -165,7 +167,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                ),
                            new RazorError(
                                RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF("functions", "}", "{"),
-                               new SourceLocation(10, 0, 10)));
+                               new SourceLocation(10, 0, 10),
+                               length: 1));
         }
 
         [Fact]
@@ -189,7 +192,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                    .Accepts(AcceptedCharacters.NonWhiteSpace)),
                            new RazorError(
                                RazorResources.FormatParseError_Unexpected_Character_At_Start_Of_CodeBlock_CS("/"),
-                               1, 0, 1));
+                               new SourceLocation(1, 0, 1),
+                               length: 1));
         }
 
         [Fact]

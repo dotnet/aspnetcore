@@ -1221,7 +1221,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             Assert.Equal(expectedErrorMessages.Length, errors.Length);
             for (var i = 0; i < expectedErrorMessages.Length; i++)
             {
-                Assert.Equal(1, errors[i].Length);
+                Assert.Equal(0, errors[i].Length);
                 Assert.Equal(SourceLocation.Zero, errors[i].Location);
                 Assert.Equal(expectedErrorMessages[i], errors[i].Message, StringComparer.Ordinal);
             }
@@ -1377,7 +1377,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             for (var i = 0; i < actualErrors.Length; i++)
             {
                 var actualError = actualErrors[i];
-                Assert.Equal(1, actualError.Length);
+                Assert.Equal(0, actualError.Length);
                 Assert.Equal(SourceLocation.Zero, actualError.Location);
                 Assert.Equal(expectedErrors[i], actualError.Message, StringComparer.Ordinal);
             }
@@ -1607,7 +1607,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             for (var i = 0; i < errors.Length; i++)
             {
-                Assert.Equal(1, errors[i].Length);
+                Assert.Equal(0, errors[i].Length);
                 Assert.Equal(SourceLocation.Zero, errors[i].Location);
                 Assert.Equal(expectedErrorMessages[i], errors[i].Message, StringComparer.Ordinal);
             }
@@ -1749,7 +1749,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             Assert.Equal(expectedErrorMessages.Length, errors.Length);
             for (var i = 0; i < expectedErrorMessages.Length; i++)
             {
-                Assert.Equal(1, errors[i].Length);
+                Assert.Equal(0, errors[i].Length);
                 Assert.Equal(SourceLocation.Zero, errors[i].Location);
                 Assert.Equal(expectedErrorMessages[i], errors[i].Message, StringComparer.Ordinal);
             }
@@ -1804,7 +1804,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             Assert.Equal(expectedErrorMessages.Length, errors.Length);
             for (var i = 0; i < expectedErrorMessages.Length; i++)
             {
-                Assert.Equal(1, errors[i].Length);
+                Assert.Equal(0, errors[i].Length);
                 Assert.Equal(SourceLocation.Zero, errors[i].Location);
                 Assert.Equal(expectedErrorMessages[i], errors[i].Message, StringComparer.Ordinal);
             }
@@ -1837,7 +1837,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             // Arrange
             var errorSink = new ErrorSink();
-            var expectedErrors = expectedErrorMessages.Select(message => new RazorError(message, SourceLocation.Zero));
+            var expectedErrors = expectedErrorMessages.Select(
+                message => new RazorError(message, SourceLocation.Zero, 0));
 
             // Act
             TagHelperDescriptorFactory.GetValidAllowedChildren(new[] { name }, "SomeTagHelper", errorSink);

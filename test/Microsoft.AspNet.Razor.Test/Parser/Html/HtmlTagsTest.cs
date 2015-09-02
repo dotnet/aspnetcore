@@ -41,7 +41,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                     BlockFactory.MarkupTagBlock("<p>", AcceptedCharacters.None),
                     BlockFactory.MarkupTagBlock("</>", AcceptedCharacters.None),
                     Factory.Markup(" ").Accepts(AcceptedCharacters.None)),
-                new RazorError(RazorResources.FormatParseError_MissingEndTag("p"), 0, 0, 0));
+                new RazorError(
+                    RazorResources.FormatParseError_MissingEndTag("p"),
+                    new SourceLocation(1, 0, 1),
+                    length: 1));
         }
 
         [Fact]

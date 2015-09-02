@@ -19,7 +19,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                            new DirectiveBlock(
                                Factory.MetaCode(word).Accepts(AcceptedCharacters.None)
                                ),
-                           new RazorError(RazorResources.FormatParseError_ReservedWord(word), SourceLocation.Zero));
+                           new RazorError(
+                               RazorResources.FormatParseError_ReservedWord(word),
+                               SourceLocation.Zero,
+                               word.Length));
         }
 
         [Theory]

@@ -43,8 +43,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                             new MarkupTagBlock(
                                 Factory.Markup("<"))))),
                 new RazorError(
-                    RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF(RazorResources.BlockName_Code, "}", "{"),
-                    1, 0, 1));
+                    RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF(
+                        RazorResources.BlockName_Code, "}", "{"),
+                    new SourceLocation(1, 0, 1),
+                    length: 1));
         }
 
         [Fact]
@@ -75,8 +77,14 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                 designTimeParser: true,
                 expectedErrors: new[]
                 {
-                    new RazorError(RazorResources.FormatParseError_UnexpectedEndTag("html"), 3 + Environment.NewLine.Length * 2, 2, 0),
-                    new RazorError(RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF("code", "}", "{"), 1, 0, 1)
+                    new RazorError(
+                        RazorResources.FormatParseError_UnexpectedEndTag("html"),
+                        new SourceLocation(5 + Environment.NewLine.Length * 2, 2, 2),
+                        length: 4),
+                    new RazorError(
+                        RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF("code", "}", "{"),
+                        new SourceLocation(1, 0, 1),
+                        length: 1)
                 });
         }
 
@@ -89,7 +97,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                     new MarkupTagBlock(
                         Factory.Markup($"<                      {Environment.NewLine}   "))),
                 designTimeParser: true,
-                expectedErrors: new RazorError(RazorResources.FormatParseError_UnfinishedTag(string.Empty), 0, 0, 0));
+                expectedErrors: new RazorError(
+                    RazorResources.FormatParseError_UnfinishedTag(string.Empty),
+                    new SourceLocation(1, 0, 1),
+                    length: 1));
         }
 
         [Fact]
@@ -319,7 +330,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                 new MarkupBlock(
                     new MarkupTagBlock(
                         Factory.Markup("<foo>").Accepts(AcceptedCharacters.None))),
-                new RazorError(RazorResources.FormatParseError_MissingEndTag("foo"), new SourceLocation(0, 0, 0)));
+                new RazorError(
+                    RazorResources.FormatParseError_MissingEndTag("foo"),
+                    new SourceLocation(1, 0, 1),
+                    length: 3));
         }
 
         [Fact]
@@ -382,7 +396,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                         Factory.Markup("<foo>").Accepts(AcceptedCharacters.None)),
                     new MarkupTagBlock(
                         Factory.Markup("</!-- bar -->").Accepts(AcceptedCharacters.None))),
-                new RazorError(RazorResources.FormatParseError_MissingEndTag("foo"), 0, 0, 0));
+                new RazorError(
+                    RazorResources.FormatParseError_MissingEndTag("foo"),
+                    new SourceLocation(1, 0, 1),
+                    length: 3));
         }
 
 
@@ -545,7 +562,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                 new MarkupBlock(
                     new MarkupTagBlock(
                         Factory.Markup("<br/"))),
-                new RazorError(RazorResources.FormatParseError_UnfinishedTag("br"), SourceLocation.Zero));
+                new RazorError(
+                    RazorResources.FormatParseError_UnfinishedTag("br"),
+                    new SourceLocation(1, 0, 1),
+                    length: 2));
         }
 
         [Fact]

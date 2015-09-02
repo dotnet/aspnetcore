@@ -41,8 +41,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser
             var errorSink = new ErrorSink();
             List<RazorError> errors = new List<RazorError>
             {
-                new RazorError("Foo", 1, 0, 1),
-                new RazorError("Bar", 2, 0, 2),
+                new RazorError("Foo", new SourceLocation(1, 0, 1), length: 3),
+                new RazorError("Bar", new SourceLocation(2, 0, 2), length: 3),
             };
             foreach (var error in errors)
             {
@@ -65,8 +65,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser
             Mock<ParserVisitor> targetMock = new Mock<ParserVisitor>();
             var root = new BlockBuilder() { Type = BlockType.Comment }.Build();
             var errorSink = new ErrorSink();
-            errorSink.OnError(new RazorError("Foo", 1, 0, 1));
-            errorSink.OnError(new RazorError("Bar", 2, 0, 2));
+            errorSink.OnError(new RazorError("Foo", new SourceLocation(1, 0, 1), length: 3));
+            errorSink.OnError(new RazorError("Bar", new SourceLocation(2, 0, 2), length: 3));
             var results = new ParserResults(root, Enumerable.Empty<TagHelperDescriptor>(), errorSink);
 
             // Act

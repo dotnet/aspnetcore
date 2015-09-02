@@ -265,7 +265,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                             factory
                                 .Code("try { someMethod(); } catch(Exception) when (")
                                 .AsStatement()),
-                        new[] { new RazorError(unbalancedParenErrorString, 45, 0, 45) }
+                        new[] { new RazorError(unbalancedParenErrorString, 45, 0, 45, 1) }
                     },
                     {
                         "@try { someMethod(); } catch(Exception) when (someMethod(",
@@ -274,7 +274,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                             factory
                                 .Code("try { someMethod(); } catch(Exception) when (someMethod(")
                                 .AsStatement()),
-                        new[] { new RazorError(unbalancedParenErrorString, 45, 0, 45) }
+                        new[] { new RazorError(unbalancedParenErrorString, 45, 0, 45, 1) }
                     },
                     {
                         "@try { someMethod(); } catch(Exception) when (true) {",
@@ -283,7 +283,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                             factory
                                 .Code("try { someMethod(); } catch(Exception) when (true) {")
                                 .AsStatement()),
-                        new[] { new RazorError(unbalancedBracketCatchErrorString, 23, 0, 23) }
+                        new[] { new RazorError(unbalancedBracketCatchErrorString, 23, 0, 23, 1) }
                     },
                 };
             }

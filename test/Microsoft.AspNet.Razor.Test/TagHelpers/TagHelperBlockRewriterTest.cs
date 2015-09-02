@@ -237,7 +237,8 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         {
                             new RazorError(
                                 string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
-                                SourceLocation.Zero)
+                                new SourceLocation(1, 0, 1),
+                                length: 1)
                         }
                     },
                     {
@@ -252,7 +253,8 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         {
                             new RazorError(
                                 string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
-                                SourceLocation.Zero)
+                                new SourceLocation(1, 0, 1),
+                                length: 1)
                         }
                     },
                     {
@@ -269,10 +271,12 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         {
                             new RazorError(
                                 string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
-                                SourceLocation.Zero),
+                                new SourceLocation(1, 0, 1),
+                                length: 1),
                             new RazorError(
                                 string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
-                                SourceLocation.Zero)
+                                new SourceLocation(1, 0, 1),
+                                length: 1)
                         }
                     },
                     {
@@ -291,10 +295,12 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         {
                             new RazorError(
                                 string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
-                                SourceLocation.Zero),
+                                new SourceLocation(1, 0, 1),
+                                length: 1),
                             new RazorError(
                                 string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
-                                SourceLocation.Zero)
+                                new SourceLocation(1, 0, 1),
+                                length: 1)
                         }
                     },
                     {
@@ -311,15 +317,16 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         {
                             new RazorError(
                                 string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
-                                SourceLocation.Zero),
+                                new SourceLocation(1, 0, 1),
+                                length: 1),
                             new RazorError(
                                 string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
-                                SourceLocation.Zero),
+                                new SourceLocation(1, 0, 1),
+                                length: 1),
                             new RazorError(
                                 "TagHelper attributes must be well-formed.",
-                                absoluteIndex: 12,
-                                lineIndex: 0,
-                                columnIndex: 12)
+                                new SourceLocation(12, 0, 12),
+                                length: 1)
                         }
                     },
                     {
@@ -336,10 +343,12 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         {
                             new RazorError(
                                 string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
-                                SourceLocation.Zero),
+                                new SourceLocation(1, 0, 1),
+                                length: 1),
                             new RazorError(
                                 string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
-                                SourceLocation.Zero)
+                                new SourceLocation(1, 0, 1),
+                                length: 1)
                         }
                     },
                     {
@@ -358,10 +367,12 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         {
                             new RazorError(
                                 string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
-                                SourceLocation.Zero),
+                                new SourceLocation(1, 0, 1),
+                                length: 1),
                             new RazorError(
                                 string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
-                                SourceLocation.Zero)
+                                new SourceLocation(1, 0, 1),
+                                length: 1)
                         }
                     },
                     {
@@ -378,13 +389,16 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         {
                             new RazorError(
                                 string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
-                                SourceLocation.Zero),
+                                new SourceLocation(1, 0, 1),
+                                length: 1),
                             new RazorError(
                                 string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
-                                SourceLocation.Zero),
+                                new SourceLocation(1, 0, 1),
+                                length: 1),
                             new RazorError(
                                 string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "strong"),
-                                absoluteIndex: 10, lineIndex: 0, columnIndex: 10)
+                                new SourceLocation(11, 0, 11),
+                                length: 6)
                         }
                     },
                     {
@@ -399,7 +413,8 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         {
                             new RazorError(
                                 string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
-                                SourceLocation.Zero)
+                                new SourceLocation(1, 0, 1),
+                                length: 1)
                         }
                     },
                     {
@@ -414,7 +429,8 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         {
                             new RazorError(
                                 string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
-                                SourceLocation.Zero)
+                                new SourceLocation(1, 0, 1),
+                                length: 1)
                         }
                     },
                     {
@@ -433,13 +449,16 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         {
                             new RazorError(
                                 string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
-                                SourceLocation.Zero),
+                                new SourceLocation(1, 0, 1),
+                                length: 1),
                             new RazorError(
                                 string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
-                                SourceLocation.Zero),
+                                new SourceLocation(1, 0, 1),
+                                length: 1),
                             new RazorError(
                                 string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "strong"),
-                                absoluteIndex: 23, lineIndex: 0, columnIndex: 23)
+                                new SourceLocation(24, 0, 24),
+                                length: 6)
                         }
                     },
                     {
@@ -463,7 +482,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         {
                             new RazorError(
                                 string.Format(CultureInfo.InvariantCulture, errorFormatNoCSharp, "p"),
-                                absoluteIndex: 3, lineIndex: 0 , columnIndex: 3)
+                                absoluteIndex: 3, lineIndex: 0 , columnIndex: 3, length: 13)
                         }
                     },
                     {
@@ -474,7 +493,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         {
                             new RazorError(
                                 string.Format(CultureInfo.InvariantCulture, errorFormatNoCSharp, "p"),
-                                absoluteIndex: 3, lineIndex: 0 , columnIndex: 3)
+                                absoluteIndex: 3, lineIndex: 0 , columnIndex: 3, length: 13)
                         }
                     },
                     {
@@ -502,7 +521,8 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         {
                             new RazorError(
                                 string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
-                                SourceLocation.Zero)
+                                new SourceLocation(1, 0, 1),
+                                length: 1)
                         }
                     },
                     {
@@ -519,13 +539,15 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         {
                             new RazorError(
                                 string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
-                                SourceLocation.Zero),
+                                new SourceLocation(1, 0, 1),
+                                length: 1),
                             new RazorError(
                                 string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
-                                SourceLocation.Zero),
+                                new SourceLocation(1, 0, 1),
+                                length: 1),
                             new RazorError(
                                 RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF("do", "}", "{"),
-                                absoluteIndex: 11, lineIndex: 0, columnIndex: 11)
+                                absoluteIndex: 11, lineIndex: 0, columnIndex: 11, length: 1)
                         }
                     },
                     {
@@ -540,16 +562,18 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         {
                             new RazorError(
                                 string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
-                                SourceLocation.Zero),
+                                new SourceLocation(1, 0, 1),
+                                length: 1),
                             new RazorError(
                                 string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
-                                SourceLocation.Zero),
+                                new SourceLocation(1, 0, 1),
+                                length: 1),
                             new RazorError(
                                 RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF("do", "}", "{"),
-                                absoluteIndex: 11, lineIndex: 0, columnIndex: 11),
+                                absoluteIndex: 11, lineIndex: 0, columnIndex: 11, length: 1),
                             new RazorError(
                                 RazorResources.ParseError_Unterminated_String_Literal,
-                                absoluteIndex: 15, lineIndex: 0, columnIndex: 15)
+                                absoluteIndex: 15, lineIndex: 0, columnIndex: 15, length: 1)
                         }
                     },
                     {
@@ -560,19 +584,21 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         {
                             new RazorError(
                                 string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
-                                SourceLocation.Zero),
+                                new SourceLocation(1, 0, 1),
+                                length: 1),
                             new RazorError(
                                 string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
-                                SourceLocation.Zero),
+                                new SourceLocation(1, 0, 1),
+                                length: 1),
                             new RazorError(
                                 string.Format(CultureInfo.InvariantCulture, errorFormatNoCSharp, "p"),
-                                absoluteIndex: 3, lineIndex: 0 , columnIndex: 3),
+                                absoluteIndex: 3, lineIndex: 0 , columnIndex: 3, length: 30),
                             new RazorError(
                                 RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF("do", "}", "{"),
-                                absoluteIndex: 4, lineIndex: 0, columnIndex: 4),
+                                absoluteIndex: 4, lineIndex: 0, columnIndex: 4, length: 1),
                             new RazorError(
                                 RazorResources.FormatParseError_UnexpectedEndTag("p"),
-                                absoluteIndex: 29, lineIndex: 0, columnIndex: 29)
+                                absoluteIndex: 31, lineIndex: 0, columnIndex: 31, length: 1)
                         }
                     }
                 };
@@ -609,10 +635,12 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         {
                             new RazorError(
                                 string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
-                                SourceLocation.Zero),
+                                new SourceLocation(1, 0, 1),
+                                length: 1),
                             new RazorError(
                                 string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
-                                SourceLocation.Zero)
+                                new SourceLocation(1, 0, 1),
+                                length: 1)
                         }
                     },
                     {
@@ -623,7 +651,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         {
                             new RazorError(
                                 string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
-                                absoluteIndex: 3, lineIndex: 0, columnIndex: 3)
+                                absoluteIndex: 5, lineIndex: 0, columnIndex: 5, length: 1)
                         }
                     },
                     {
@@ -635,13 +663,16 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         {
                             new RazorError(
                                 string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
-                                SourceLocation.Zero),
+                                new SourceLocation(1, 0, 1),
+                                length: 1),
                             new RazorError(
                                 string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "strong"),
-                                absoluteIndex: 3, lineIndex: 0, columnIndex: 3),
+                                new SourceLocation(4, 0, 4),
+                                length: 6),
                             new RazorError(
                                 string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "strong"),
-                                absoluteIndex: 3, lineIndex: 0, columnIndex: 3)
+                                new SourceLocation(4, 0, 4),
+                                length: 6)
                         }
                     },
                     {
@@ -653,13 +684,16 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         {
                             new RazorError(
                                 string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "strong"),
-                                SourceLocation.Zero),
+                                new SourceLocation(1, 0, 1),
+                                length: 6),
                             new RazorError(
                                 string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "strong"),
-                                SourceLocation.Zero),
+                                new SourceLocation(1, 0, 1),
+                                length: 6),
                             new RazorError(
                                 string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
-                                absoluteIndex: 8, lineIndex: 0, columnIndex: 8)
+                                new SourceLocation(9, 0, 9),
+                                length: 1)
                         }
                     },
                     {
@@ -670,10 +704,12 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         {
                             new RazorError(
                                 string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "strong"),
-                                SourceLocation.Zero),
+                                new SourceLocation(1, 0, 1),
+                                length: 6),
                             new RazorError(
                                 string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "strong"),
-                                absoluteIndex: 8, lineIndex: 0, columnIndex: 8)
+                                new SourceLocation(10, 0, 10),
+                                length: 6)
                         }
                     },
                     {
@@ -689,10 +725,12 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         {
                             new RazorError(
                                 string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "strong"),
-                                absoluteIndex: 2, lineIndex: 0, columnIndex: 2),
+                                new SourceLocation(4, 0, 4),
+                                length: 6),
                             new RazorError(
                                 string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
-                                absoluteIndex: 13, lineIndex: 0, columnIndex: 13)
+                                new SourceLocation(14, 0, 14),
+                                length: 1)
                         }
                     },
                     {
@@ -709,7 +747,8 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         {
                             new RazorError(
                                 string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "strong"),
-                                absoluteIndex: 2, lineIndex: 0, columnIndex: 2)
+                                new SourceLocation(3, 0, 3),
+                                length: 6)
                         }
                     },
                     {
@@ -722,7 +761,8 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         {
                             new RazorError(
                                 string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
-                                absoluteIndex: 12, lineIndex: 0, columnIndex: 12)
+                                new SourceLocation(14, 0, 14),
+                                length: 1)
                         }
                     }
                 };
@@ -1091,10 +1131,10 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                     {
                         new RazorError(
                             string.Format(CultureInfo.InvariantCulture, malformedErrorFormat, "strong"),
-                            absoluteIndex: 52, lineIndex: 0, columnIndex: 52),
+                            absoluteIndex: 53, lineIndex: 0, columnIndex: 53, length: 6),
                         new RazorError(
                             string.Format(CultureInfo.InvariantCulture, malformedErrorFormat, "strong"),
-                            absoluteIndex: 64, lineIndex: 0, columnIndex: 64)
+                            absoluteIndex: 66, lineIndex: 0, columnIndex: 66, length: 6)
                     }
                 };
                 yield return new object[]
@@ -1111,7 +1151,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                     {
                         new RazorError(
                             string.Format(CultureInfo.InvariantCulture, malformedErrorFormat, "p"),
-                            absoluteIndex: 5, lineIndex: 0, columnIndex: 5)
+                            absoluteIndex: 6, lineIndex: 0, columnIndex: 6, length: 1)
                     }
                 };
                 yield return new object[]
@@ -1128,10 +1168,10 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                     {
                         new RazorError(
                             string.Format(CultureInfo.InvariantCulture, malformedErrorFormat, "p"),
-                            absoluteIndex: 5, lineIndex: 0, columnIndex: 5),
+                            absoluteIndex: 6, lineIndex: 0, columnIndex: 6, length: 1),
                         new RazorError(
                             string.Format(CultureInfo.InvariantCulture, malformedErrorFormat, "strong"),
-                            absoluteIndex: 14, lineIndex: 0, columnIndex: 14)
+                            absoluteIndex: 15, lineIndex: 0, columnIndex: 15, length: 6)
                     }
                 };
                 yield return new object[]
@@ -1154,7 +1194,8 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                     {
                         new RazorError(
                             string.Format(CultureInfo.InvariantCulture, malformedErrorFormat, "p"),
-                            SourceLocation.Zero)
+                            new SourceLocation(1, 0, 1),
+                            length: 1)
                     }
                 };
             }
@@ -3463,8 +3504,14 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                                 })),
                         new[]
                         {
-                            new RazorError(string.Format(errorFormatNoCloseAngle, "input"), SourceLocation.Zero),
-                            new RazorError(string.Format(errorFormatUnclosed, "input"), SourceLocation.Zero),
+                            new RazorError(
+                                string.Format(errorFormatNoCloseAngle, "input"),
+                                new SourceLocation(1, 0, 1),
+                                length: 5),
+                            new RazorError(
+                                string.Format(errorFormatUnclosed, "input"),
+                                new SourceLocation(1, 0, 1),
+                                length: 5),
                         }
                     },
                     {
@@ -3479,8 +3526,14 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                                 })),
                         new[]
                         {
-                            new RazorError(string.Format(errorFormatNoCloseAngle, "input"), SourceLocation.Zero),
-                            new RazorError(string.Format(errorFormatUnclosed, "input"), SourceLocation.Zero),
+                            new RazorError(
+                                string.Format(errorFormatNoCloseAngle, "input"),
+                                new SourceLocation(1, 0, 1),
+                                length: 5),
+                            new RazorError(
+                                string.Format(errorFormatUnclosed, "input"),
+                                new SourceLocation(1, 0, 1),
+                                length: 5),
                             new RazorError(
                                 string.Format(errorFormatNoValue, "bound-required-string", "input", stringType),
                                 absoluteIndex: 7,
@@ -3501,8 +3554,14 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                                 })),
                         new[]
                         {
-                            new RazorError(string.Format(errorFormatNoCloseAngle, "input"), SourceLocation.Zero),
-                            new RazorError(string.Format(errorFormatUnclosed, "input"), SourceLocation.Zero),
+                            new RazorError(
+                                string.Format(errorFormatNoCloseAngle, "input"),
+                                new SourceLocation(1, 0, 1),
+                                length: 5),
+                            new RazorError(
+                                string.Format(errorFormatUnclosed, "input"),
+                                new SourceLocation(1, 0, 1),
+                                length: 5),
                             new RazorError(
                                 string.Format(errorFormatNoValue, "bound-required-int", "input", intType),
                                 absoluteIndex: 7,
@@ -3525,8 +3584,14 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                                 })),
                         new[]
                         {
-                            new RazorError(string.Format(errorFormatNoCloseAngle, "input"), SourceLocation.Zero),
-                            new RazorError(string.Format(errorFormatUnclosed, "input"), SourceLocation.Zero),
+                            new RazorError(
+                                string.Format(errorFormatNoCloseAngle, "input"),
+                                new SourceLocation(1, 0, 1),
+                                length: 5),
+                            new RazorError(
+                                string.Format(errorFormatUnclosed, "input"),
+                                new SourceLocation(1, 0, 1),
+                                length: 5),
                             new RazorError(
                                 string.Format(errorFormatNoValue, "bound-required-int", "input", intType),
                                 absoluteIndex: 7,
@@ -3553,8 +3618,14 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                                 })),
                         new[]
                         {
-                            new RazorError(string.Format(errorFormatNoCloseAngle, "p"), SourceLocation.Zero),
-                            new RazorError(string.Format(errorFormatUnclosed, "p"), SourceLocation.Zero),
+                            new RazorError(
+                                string.Format(errorFormatNoCloseAngle, "p"),
+                                new SourceLocation(1, 0, 1),
+                                length: 1),
+                            new RazorError(
+                                string.Format(errorFormatUnclosed, "p"),
+                                new SourceLocation(1, 0, 1),
+                                length: 1),
                             new RazorError(
                                 string.Format(errorFormatNoValue, "bound-string", "p", stringType), 3, 0, 3, 12),
                         }
@@ -3571,8 +3642,14 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                                 })),
                         new[]
                         {
-                            new RazorError(string.Format(errorFormatNoCloseAngle, "p"), SourceLocation.Zero),
-                            new RazorError(string.Format(errorFormatUnclosed, "p"), SourceLocation.Zero),
+                            new RazorError(
+                                string.Format(errorFormatNoCloseAngle, "p"),
+                                new SourceLocation(1, 0, 1),
+                                length: 1),
+                            new RazorError(
+                                string.Format(errorFormatUnclosed, "p"),
+                                new SourceLocation(1, 0, 1),
+                                length: 1),
                             new RazorError(string.Format(errorFormatNoValue, "bound-int", "p", intType), 3, 0, 3, 9),
                         }
                     },
@@ -3589,8 +3666,14 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                                 })),
                         new[]
                         {
-                            new RazorError(string.Format(errorFormatNoCloseAngle, "p"), SourceLocation.Zero),
-                            new RazorError(string.Format(errorFormatUnclosed, "p"), SourceLocation.Zero),
+                            new RazorError(
+                                string.Format(errorFormatNoCloseAngle, "p"),
+                                new SourceLocation(1, 0, 1),
+                                length: 1),
+                            new RazorError(
+                                string.Format(errorFormatUnclosed, "p"),
+                                new SourceLocation(1, 0, 1),
+                                length: 1),
                             new RazorError(string.Format(errorFormatNoValue, "bound-int", "p", intType), 3, 0, 3, 9),
                             new RazorError(
                                 string.Format(errorFormatNoValue, "bound-string", "p", stringType), 13, 0, 13, 12),
@@ -3618,8 +3701,14 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                                     }))),
                         new[]
                         {
-                            new RazorError(string.Format(errorFormatNoCloseAngle, "input"), SourceLocation.Zero),
-                            new RazorError(string.Format(errorFormatUnclosed, "input"), SourceLocation.Zero),
+                            new RazorError(
+                                string.Format(errorFormatNoCloseAngle, "input"),
+                                new SourceLocation(1, 0, 1),
+                                length: 5),
+                            new RazorError(
+                                string.Format(errorFormatUnclosed, "input"),
+                                new SourceLocation(1, 0, 1),
+                                length: 5),
                             new RazorError(
                                 string.Format(errorFormatNoValue, "bound-required-int", "input", intType), 7, 0, 7, 18),
                             new RazorError(
@@ -3628,8 +3717,14 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                                 lineIndex: 0,
                                 columnIndex: 43,
                                 length: 21),
-                            new RazorError(string.Format(errorFormatNoCloseAngle, "p"), 64, 0, 64),
-                            new RazorError(string.Format(errorFormatUnclosed, "p"), 64, 0, 64),
+                            new RazorError(
+                                string.Format(errorFormatNoCloseAngle, "p"),
+                                new SourceLocation(65, 0, 65),
+                                length: 1),
+                            new RazorError(
+                                string.Format(errorFormatUnclosed, "p"),
+                                new SourceLocation(65, 0, 65),
+                                length: 1),
                             new RazorError(string.Format(errorFormatNoValue, "bound-int", "p", intType), 67, 0, 67, 9),
                             new RazorError(
                                 string.Format(errorFormatNoValue, "bound-string", "p", stringType),

@@ -62,7 +62,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                                .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                .Accepts(AcceptedCharacters.NonWhiteSpace)),
                     Factory.EmptyHtml()),
-                new RazorError(RazorResources.ParseError_Unexpected_EndOfFile_At_Start_Of_CodeBlock, 1, 0, 1));
+                new RazorError(
+                    RazorResources.ParseError_Unexpected_EndOfFile_At_Start_Of_CodeBlock,
+                    new SourceLocation(1, 0, 1),
+                    length: 1));
         }
 
         [Fact]
@@ -148,7 +151,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                                .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                .Accepts(AcceptedCharacters.NonWhiteSpace)),
                     Factory.EmptyHtml()),
-                new RazorError(RazorResources.ParseError_Unexpected_EndOfFile_At_Start_Of_CodeBlock, 5, 0, 5));
+                new RazorError(
+                    RazorResources.ParseError_Unexpected_EndOfFile_At_Start_Of_CodeBlock,
+                    new SourceLocation(5, 0, 5),
+                    length: 1));
         }
 
         [Fact]
@@ -567,8 +573,14 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
                     Factory.Markup(" />")));
             var expectedErrors = new RazorError[]
             {
-                new RazorError(@"A space or line break was encountered after the ""@"" character.  Only valid identifiers, keywords, comments, ""("" and ""{"" are valid at the start of a code block and they must occur immediately following ""@"" with no space in between.", new SourceLocation(12, 0, 12)),
-                new RazorError(@"""' />"" is not valid at the start of a code block.  Only identifiers, keywords, comments, ""("" and ""{"" are valid.", new SourceLocation(14, 0, 14)),
+                new RazorError(
+                    @"A space or line break was encountered after the ""@"" character.  Only valid identifiers, keywords, comments, ""("" and ""{"" are valid at the start of a code block and they must occur immediately following ""@"" with no space in between.",
+                    new SourceLocation(12, 0, 12),
+                    length: 1),
+                new RazorError(
+                    @"""' />"" is not valid at the start of a code block.  Only identifiers, keywords, comments, ""("" and ""{"" are valid.",
+                    new SourceLocation(14, 0, 14),
+                    length: 4),
             };
 
             // Act & Assert

@@ -319,7 +319,10 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
 
         private static RazorError GetNestedTemplateError(int characterIndex)
         {
-            return new RazorError(RazorResources.ParseError_InlineMarkup_Blocks_Cannot_Be_Nested, new SourceLocation(characterIndex, 0, characterIndex));
+            return new RazorError(
+                RazorResources.ParseError_InlineMarkup_Blocks_Cannot_Be_Nested,
+                new SourceLocation(characterIndex, 0, characterIndex),
+                length: 1);
         }
     }
 }

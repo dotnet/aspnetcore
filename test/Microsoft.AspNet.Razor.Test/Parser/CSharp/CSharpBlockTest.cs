@@ -124,11 +124,13 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
         [Fact]
         public void ParseBlockTerminatesParenBalancingAtEOF()
         {
-            ImplicitExpressionTest("Html.En(code()", "Html.En(code()",
-                                   AcceptedCharacters.Any,
-                                   new RazorError(
-                                       RazorResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"),
-                                       new SourceLocation(8, 0, 8)));
+            ImplicitExpressionTest(
+                "Html.En(code()", "Html.En(code()",
+                AcceptedCharacters.Any,
+                new RazorError(
+                    RazorResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"),
+                    new SourceLocation(8, 0, 8),
+                    length: 1));
         }
 
         [Fact]
@@ -468,7 +470,8 @@ while(true);", BlockType.Statement, SpanKind.Code, acceptedCharacters: AcceptedC
                 SpanKind.Code,
                 new RazorError(
                     RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF("foreach", '}', '{'),
-                    SourceLocation.Zero));
+                    SourceLocation.Zero,
+                    length: 1));
         }
 
         [Fact]
@@ -480,18 +483,29 @@ while(true);", BlockType.Statement, SpanKind.Code, acceptedCharacters: AcceptedC
                 document,
                 BlockType.Statement,
                 SpanKind.Code,
-                new RazorError(RazorResources.ParseError_BlockComment_Not_Terminated, 24, 0, 24),
+                new RazorError(
+                    RazorResources.ParseError_BlockComment_Not_Terminated,
+                    new SourceLocation(24, 0, 24),
+                    length: 1),
                 new RazorError(
                     RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF("foreach", '}', '{'),
-                    SourceLocation.Zero));
+                    SourceLocation.Zero,
+                    length: 1));
         }
 
         [Fact]
         public void ParseBlockTerminatesSingleSlashAtEndOfFile()
         {
             const string document = "foreach(var f in Foo) { / foo bar baz";
-            SingleSpanBlockTest(document, document, BlockType.Statement, SpanKind.Code,
-                                new RazorError(RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF("foreach", '}', '{'), SourceLocation.Zero));
+            SingleSpanBlockTest(
+                document,
+                document,
+                BlockType.Statement,
+                SpanKind.Code,
+                new RazorError(
+                    RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF("foreach", '}', '{'),
+                    SourceLocation.Zero,
+                    length: 1));
         }
 
         [Fact]
@@ -1102,8 +1116,14 @@ catch(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
                 Factory.EmptyHtml()));
             var expectedErrors = new RazorError[]
             {
-                new RazorError(@"End of file or an unexpected character was reached before the ""span"" tag could be parsed.  Elements inside markup blocks must be complete. They must either be self-closing (""<br />"") or have matching end tags (""<p>Hello</p>"").  If you intended to display a ""<"" character, use the ""&lt;"" HTML entity.", new SourceLocation(1, 0, 1)),
-                new RazorError(@"The code block is missing a closing ""}"" character.  Make sure you have a matching ""}"" character for all the ""{"" characters within this block, and that none of the ""}"" characters are being interpreted as markup.", new SourceLocation(0, 0, 0)),
+                new RazorError(
+                    @"End of file or an unexpected character was reached before the ""span"" tag could be parsed.  Elements inside markup blocks must be complete. They must either be self-closing (""<br />"") or have matching end tags (""<p>Hello</p>"").  If you intended to display a ""<"" character, use the ""&lt;"" HTML entity.",
+                    new SourceLocation(2, 0, 2),
+                    length: 4),
+                new RazorError(
+                    @"The code block is missing a closing ""}"" character.  Make sure you have a matching ""}"" character for all the ""{"" characters within this block, and that none of the ""}"" characters are being interpreted as markup.",
+                    SourceLocation.Zero,
+                    length: 1),
             };
 
             // Act & Assert
@@ -1139,8 +1159,14 @@ catch(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
                 Factory.MetaCode("}").Accepts(AcceptedCharacters.None));
             var expectedErrors = new RazorError[]
             {
-                new RazorError(@"A space or line break was encountered after the ""@"" character.  Only valid identifiers, keywords, comments, ""("" and ""{"" are valid at the start of a code block and they must occur immediately following ""@"" with no space in between.", new SourceLocation(13, 0, 13)),
-                new RazorError(@"""' />}"" is not valid at the start of a code block.  Only identifiers, keywords, comments, ""("" and ""{"" are valid.", new SourceLocation(15, 0, 15)),
+                new RazorError(
+                    @"A space or line break was encountered after the ""@"" character.  Only valid identifiers, keywords, comments, ""("" and ""{"" are valid at the start of a code block and they must occur immediately following ""@"" with no space in between.",
+                    new SourceLocation(13, 0, 13),
+                    length: 1),
+                new RazorError(
+                    @"""' />}"" is not valid at the start of a code block.  Only identifiers, keywords, comments, ""("" and ""{"" are valid.",
+                    new SourceLocation(15, 0, 15),
+                    length: 5),
             };
 
             // Act & Assert
@@ -1187,7 +1213,7 @@ catch(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
             {
                 errors = new RazorError[]
                 {
-                    new RazorError(errorMessage, location.Value)
+                    new RazorError(errorMessage, location.Value, length: 1)
                 };
             }
             ParseBlockTest(content,

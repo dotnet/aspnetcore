@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // Assert
             var error = Assert.Single(errorSink.Errors);
-            Assert.Equal(1, error.Length);
+            Assert.Equal(4, error.Length);
             Assert.Equal(documentLocation, error.Location);
 
             // The framework throws the underlying Exception. Only confirm Message mentions expected assembly.

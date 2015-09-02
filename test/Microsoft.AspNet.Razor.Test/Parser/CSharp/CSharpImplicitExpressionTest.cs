@@ -26,12 +26,18 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                 Func<int, RazorError[]> missingEndParenError = (index) =>
                     new RazorError[1]
                     {
-                        new RazorError("An opening \"(\" is missing the corresponding closing \")\".", index, 0, index)
+                        new RazorError(
+                            "An opening \"(\" is missing the corresponding closing \")\".",
+                            new SourceLocation(index, 0, index),
+                            length: 1)
                     };
                 Func<int, RazorError[]> missingEndBracketError = (index) =>
                     new RazorError[1]
                     {
-                        new RazorError("An opening \"[\" is missing the corresponding closing \"]\".", index, 0, index)
+                        new RazorError(
+                            "An opening \"[\" is missing the corresponding closing \"]\".",
+                            new SourceLocation(index, 0, index),
+                            length: 1)
                     };
 
                 // implicitExpression, expectedImplicitExpression, acceptedCharacters, expectedErrors
@@ -139,7 +145,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                    .Accepts(AcceptedCharacters.NonWhiteSpace)),
                            new RazorError(
                                RazorResources.FormatParseError_Unexpected_Character_At_Start_Of_CodeBlock_CS("/"),
-                               new SourceLocation(1, 0, 1)));
+                               new SourceLocation(1, 0, 1),
+                               length: 1));
         }
 
         [Fact]
@@ -153,7 +160,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                    .Accepts(AcceptedCharacters.NonWhiteSpace)),
                            new RazorError(
                                RazorResources.ParseError_Unexpected_EndOfFile_At_Start_Of_CodeBlock,
-                               new SourceLocation(1, 0, 1)));
+                               new SourceLocation(1, 0, 1),
+                               length: 1));
         }
 
         [Fact]
@@ -250,9 +258,13 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
         [Fact]
         public void ParseBlockStopsBalancingParenthesesAtEOF()
         {
-            ImplicitExpressionTest("foo(()", "foo(()",
-                                   acceptedCharacters: AcceptedCharacters.Any,
-                                   errors: new RazorError(RazorResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"), new SourceLocation(4, 0, 4)));
+            ImplicitExpressionTest(
+                "foo(()", "foo(()",
+                acceptedCharacters: AcceptedCharacters.Any,
+                errors: new RazorError(
+                    RazorResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"),
+                    new SourceLocation(4, 0, 4),
+                    length: 1));
         }
 
         [Fact]
