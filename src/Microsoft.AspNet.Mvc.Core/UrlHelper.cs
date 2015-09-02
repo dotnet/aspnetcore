@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Actions;
-using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.Internal;
 
@@ -87,9 +86,16 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <inheritdoc />
-        public bool IsLocalUrl(string url)
+        public virtual bool IsLocalUrl(string url)
         {
-            return UrlUtility.IsLocalUrl(url);
+            return
+                !string.IsNullOrEmpty(url) &&
+
+                // Allows "/" or "/foo" but not "//" or "/\".
+                ((url[0] == '/' && (url.Length == 1 || (url[1] != '/' && url[1] != '\\'))) ||
+
+                // Allows "~/" or "~/foo".
+                (url.Length > 1 && url[0] == '~' && url[1] == '/'));
         }
 
         /// <inheritdoc />
