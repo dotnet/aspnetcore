@@ -89,27 +89,24 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                     message.PostLogoutRedirectUri = Options.PostLogoutRedirectUri;
                 }
 
-                if (Options.Notifications.RedirectToIdentityProvider != null)
+                var redirectToIdentityProviderNotification = new RedirectToIdentityProviderNotification<OpenIdConnectMessage, OpenIdConnectAuthenticationOptions>(Context, Options)
                 {
-                    var redirectToIdentityProviderNotification = new RedirectToIdentityProviderNotification<OpenIdConnectMessage, OpenIdConnectAuthenticationOptions>(Context, Options)
-                    {
-                        ProtocolMessage = message
-                    };
+                    ProtocolMessage = message
+                };
 
-                    await Options.Notifications.RedirectToIdentityProvider(redirectToIdentityProviderNotification);
-                    if (redirectToIdentityProviderNotification.HandledResponse)
-                    {
-                        Logger.LogVerbose(Resources.OIDCH_0034_RedirectToIdentityProviderNotificationHandledResponse);
-                        return;
-                    }
-                    else if (redirectToIdentityProviderNotification.Skipped)
-                    {
-                        Logger.LogVerbose(Resources.OIDCH_0035_RedirectToIdentityProviderNotificationSkipped);
-                        return;
-                    }
-
-                    message = redirectToIdentityProviderNotification.ProtocolMessage;
+                await Options.Notifications.RedirectToIdentityProvider(redirectToIdentityProviderNotification);
+                if (redirectToIdentityProviderNotification.HandledResponse)
+                {
+                    Logger.LogVerbose(Resources.OIDCH_0034_RedirectToIdentityProviderNotificationHandledResponse);
+                    return;
                 }
+                else if (redirectToIdentityProviderNotification.Skipped)
+                {
+                    Logger.LogVerbose(Resources.OIDCH_0035_RedirectToIdentityProviderNotificationSkipped);
+                    return;
+                }
+
+                message = redirectToIdentityProviderNotification.ProtocolMessage;
 
                 if (Options.AuthenticationMethod == OpenIdConnectAuthenticationMethod.RedirectGet)
                 {
@@ -223,33 +220,30 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 }
             }
 
-            if (Options.Notifications.RedirectToIdentityProvider != null)
+            var redirectToIdentityProviderNotification =
+                new RedirectToIdentityProviderNotification<OpenIdConnectMessage, OpenIdConnectAuthenticationOptions>(Context, Options)
+                {
+                    ProtocolMessage = message
+                };
+
+            await Options.Notifications.RedirectToIdentityProvider(redirectToIdentityProviderNotification);
+            if (redirectToIdentityProviderNotification.HandledResponse)
             {
-                var redirectToIdentityProviderNotification =
-                    new RedirectToIdentityProviderNotification<OpenIdConnectMessage, OpenIdConnectAuthenticationOptions>(Context, Options)
-                    {
-                        ProtocolMessage = message
-                    };
-
-                await Options.Notifications.RedirectToIdentityProvider(redirectToIdentityProviderNotification);
-                if (redirectToIdentityProviderNotification.HandledResponse)
-                {
-                    Logger.LogVerbose(Resources.OIDCH_0034_RedirectToIdentityProviderNotificationHandledResponse);
-                    return true;
-                }
-                else if (redirectToIdentityProviderNotification.Skipped)
-                {
-                    Logger.LogVerbose(Resources.OIDCH_0035_RedirectToIdentityProviderNotificationSkipped);
-                    return false;
-                }
-
-                if (!string.IsNullOrEmpty(redirectToIdentityProviderNotification.ProtocolMessage.State))
-                {
-                    properties.Items[OpenIdConnectAuthenticationDefaults.UserstatePropertiesKey] = redirectToIdentityProviderNotification.ProtocolMessage.State;
-                }
-
-                message = redirectToIdentityProviderNotification.ProtocolMessage;
+                Logger.LogVerbose(Resources.OIDCH_0034_RedirectToIdentityProviderNotificationHandledResponse);
+                return true;
             }
+            else if (redirectToIdentityProviderNotification.Skipped)
+            {
+                Logger.LogVerbose(Resources.OIDCH_0035_RedirectToIdentityProviderNotificationSkipped);
+                return false;
+            }
+
+            if (!string.IsNullOrEmpty(redirectToIdentityProviderNotification.ProtocolMessage.State))
+            {
+                properties.Items[OpenIdConnectAuthenticationDefaults.UserstatePropertiesKey] = redirectToIdentityProviderNotification.ProtocolMessage.State;
+            }
+
+            message = redirectToIdentityProviderNotification.ProtocolMessage;
 
             var redirectUriForCode = message.RedirectUri;
             if (string.IsNullOrEmpty(redirectUriForCode))
