@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.Hosting.Tests
             app.ApplicationServices = startup.ConfigureServicesDelegate(new ServiceCollection());
             startup.ConfigureDelegate(app);
 
-            var options = app.ApplicationServices.GetRequiredService<IOptions<FakeOptions>>().Options;
+            var options = app.ApplicationServices.GetRequiredService<IOptions<FakeOptions>>().Value;
             Assert.NotNull(options);
             Assert.True(options.Configured);
             Assert.Equal(environment, options.Environment);
