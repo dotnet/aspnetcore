@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             IEnumerable<Assembly> assemblies)
         {
             _loadContextAccessor = loadContextAccessor;
-            _fileProvider = mvcViewOptions.Options.FileProvider;
+            _fileProvider = mvcViewOptions.Value.FileProvider;
             _createCache = CreateCache;
             _assemblies = assemblies.ToArray();
         }

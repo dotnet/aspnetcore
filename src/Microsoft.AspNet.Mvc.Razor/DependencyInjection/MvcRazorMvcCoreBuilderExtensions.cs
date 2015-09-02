@@ -93,7 +93,7 @@ namespace Microsoft.Framework.DependencyInjection
             services.TryAdd(ServiceDescriptor.Singleton<IChunkTreeCache>(serviceProvider =>
             {
                 var cachedFileProvider = serviceProvider.GetRequiredService<IOptions<RazorViewEngineOptions>>();
-                return new DefaultChunkTreeCache(cachedFileProvider.Options.FileProvider);
+                return new DefaultChunkTreeCache(cachedFileProvider.Value.FileProvider);
             }));
 
             // Caches compilation artifacts across the lifetime of the application.

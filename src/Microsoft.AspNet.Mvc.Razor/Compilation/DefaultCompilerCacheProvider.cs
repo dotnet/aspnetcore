@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         /// <param name="optionsAccessor">An accessor to the <see cref="RazorViewEngineOptions"/>.</param>
         public DefaultCompilerCacheProvider(IOptions<RazorViewEngineOptions> mvcViewOptions)
         {
-            var fileProvider = mvcViewOptions.Options.FileProvider;
+            var fileProvider = mvcViewOptions.Value.FileProvider;
             Cache = new CompilerCache(fileProvider);
         }
 
