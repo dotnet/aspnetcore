@@ -11,6 +11,22 @@ namespace Microsoft.AspNet.Authorization
             = new ResourceManager("Microsoft.AspNet.Authorization.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
+        /// AuthorizationPolicy must have at least one requirement.
+        /// </summary>
+        internal static string Exception_AuthorizationPolicyEmpty
+        {
+            get { return GetString("Exception_AuthorizationPolicyEmpty"); }
+        }
+
+        /// <summary>
+        /// AuthorizationPolicy must have at least one requirement.
+        /// </summary>
+        internal static string FormatException_AuthorizationPolicyEmpty()
+        {
+            return GetString("Exception_AuthorizationPolicyEmpty");
+        }
+
+        /// <summary>
         /// The AuthorizationPolicy named: '{0}' was not found.
         /// </summary>
         internal static string Exception_AuthorizationPolicyNotFound
@@ -24,22 +40,6 @@ namespace Microsoft.AspNet.Authorization
         internal static string FormatException_AuthorizationPolicyNotFound(object p0)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("Exception_AuthorizationPolicyNotFound"), p0);
-        }
-
-        /// <summary>
-        /// AuthorizationPolicy must have at least one requirement.
-        /// </summary>
-        internal static string Exception_AuthorizationPolicyEmpty
-        {
-            get { return GetString("Exception_AuthorizationPolicyEmpty"); }
-        }
-
-        /// <summary>
-        /// AuthorizationPolicy must have at least one requirement.
-        /// </summary>
-        internal static string FormatException_AuthorizationPolicyEmpty(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Exception_AuthorizationPolicyEmpty"), p0);
         }
 
         /// <summary>
