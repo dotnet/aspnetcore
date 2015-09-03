@@ -21,6 +21,82 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             _responseStream = responseStream;
         }
 
+        public override bool CanRead
+        {
+            get
+            {
+                return _requestStream.CanRead;
+            }
+        }
+
+        public override bool CanSeek
+        {
+            get
+            {
+                return _requestStream.CanSeek;
+            }
+        }
+
+        public override bool CanTimeout
+        {
+            get
+            {
+                return _responseStream.CanTimeout || _requestStream.CanTimeout;
+            }
+        }
+
+        public override bool CanWrite
+        {
+            get
+            {
+                return _responseStream.CanWrite;
+            }
+        }
+
+        public override long Length
+        {
+            get
+            {
+                return _requestStream.Length;
+            }
+        }
+
+        public override long Position
+        {
+            get
+            {
+                return _requestStream.Position;
+            }
+            set
+            {
+                _requestStream.Position = value;
+            }
+        }
+
+        public override int ReadTimeout
+        {
+            get
+            {
+                return _requestStream.ReadTimeout;
+            }
+            set
+            {
+                _requestStream.ReadTimeout = value;
+            }
+        }
+
+        public override int WriteTimeout
+        {
+            get
+            {
+                return _responseStream.WriteTimeout;
+            }
+            set
+            {
+                _responseStream.WriteTimeout = value;
+            }
+        }
+
 #if DNX451
         public override void Close()
         {
@@ -115,82 +191,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         public override void WriteByte(byte value)
         {
             _responseStream.WriteByte(value);
-        }
-
-        public override bool CanRead
-        {
-            get
-            {
-                return _requestStream.CanRead;
-            }
-        }
-
-        public override bool CanSeek
-        {
-            get
-            {
-                return _requestStream.CanSeek;
-            }
-        }
-
-        public override bool CanTimeout
-        {
-            get
-            {
-                return _responseStream.CanTimeout || _requestStream.CanTimeout;
-            }
-        }
-
-        public override bool CanWrite
-        {
-            get
-            {
-                return _responseStream.CanWrite;
-            }
-        }
-
-        public override long Length
-        {
-            get
-            {
-                return _requestStream.Length;
-            }
-        }
-
-        public override long Position
-        {
-            get
-            {
-                return _requestStream.Position;
-            }
-            set
-            {
-                _requestStream.Position = value;
-            }
-        }
-
-        public override int ReadTimeout
-        {
-            get
-            {
-                return _requestStream.ReadTimeout;
-            }
-            set
-            {
-                _requestStream.ReadTimeout = value;
-            }
-        }
-
-        public override int WriteTimeout
-        {
-            get
-            {
-                return _responseStream.WriteTimeout;
-            }
-            set
-            {
-                _responseStream.WriteTimeout = value;
-            }
         }
     }
 }

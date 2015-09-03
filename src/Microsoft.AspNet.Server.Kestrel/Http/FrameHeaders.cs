@@ -15,6 +15,27 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         protected Dictionary<string, StringValues> Unknown => MaybeUnknown ?? (MaybeUnknown = new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase));
 
+        StringValues IDictionary<string, StringValues>.this[string key]
+        {
+            get
+            {
+                return GetValueFast(key);
+            }
+
+            set
+            {
+                SetValueFast(key, value);
+            }
+        }
+
+        int ICollection<KeyValuePair<string, StringValues>>.Count => GetCountFast();
+
+        bool ICollection<KeyValuePair<string, StringValues>>.IsReadOnly => false;
+
+        ICollection<string> IDictionary<string, StringValues>.Keys => ((IDictionary<string, StringValues>)this).Select(pair => pair.Key).ToList();
+
+        ICollection<StringValues> IDictionary<string, StringValues>.Values => ((IDictionary<string, StringValues>)this).Select(pair => pair.Value).ToList();
+
         protected static StringValues AppendValue(StringValues existing, string append)
         {
             return StringValues.Concat(existing, append);
@@ -46,28 +67,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         protected virtual IEnumerator<KeyValuePair<string, StringValues>> GetEnumeratorFast()
         { throw new NotImplementedException(); }
-
-
-        StringValues IDictionary<string, StringValues>.this[string key]
-        {
-            get
-            {
-                return GetValueFast(key);
-            }
-
-            set
-            {
-                SetValueFast(key, value);
-            }
-        }
-
-        int ICollection<KeyValuePair<string, StringValues>>.Count => GetCountFast();
-
-        bool ICollection<KeyValuePair<string, StringValues>>.IsReadOnly => false;
-
-        ICollection<string> IDictionary<string, StringValues>.Keys => ((IDictionary<string, StringValues>)this).Select(x => x.Key).ToList();
-
-        ICollection<StringValues> IDictionary<string, StringValues>.Values => ((IDictionary<string, StringValues>)this).Select(x => x.Value).ToList();
 
         void ICollection<KeyValuePair<string, StringValues>>.Add(KeyValuePair<string, StringValues> item)
         {

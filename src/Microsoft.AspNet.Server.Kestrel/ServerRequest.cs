@@ -26,13 +26,6 @@ namespace Microsoft.AspNet.Server.Kestrel
             PopulateFeatures();
         }
 
-        private void PopulateFeatures()
-        {
-            _features[typeof(IHttpRequestFeature)] = this;
-            _features[typeof(IHttpResponseFeature)] = this;
-            _features[typeof(IHttpUpgradeFeature)] = this;
-        }
-
         internal IFeatureCollection Features
         {
             get { return _features; }
@@ -199,16 +192,6 @@ namespace Microsoft.AspNet.Server.Kestrel
             get { return _frame.HasResponseStarted; }
         }
 
-        void IHttpResponseFeature.OnStarting(Func<object, Task> callback, object state)
-        {
-            _frame.OnStarting(callback, state);
-        }
-
-        void IHttpResponseFeature.OnCompleted(Func<object, Task> callback, object state)
-        {
-            _frame.OnCompleted(callback, state);
-        }
-
         bool IHttpUpgradeFeature.IsUpgradableRequest
         {
             get
@@ -220,6 +203,23 @@ namespace Microsoft.AspNet.Server.Kestrel
                 }
                 return false;
             }
+        }
+
+        private void PopulateFeatures()
+        {
+            _features[typeof(IHttpRequestFeature)] = this;
+            _features[typeof(IHttpResponseFeature)] = this;
+            _features[typeof(IHttpUpgradeFeature)] = this;
+        }
+
+        void IHttpResponseFeature.OnStarting(Func<object, Task> callback, object state)
+        {
+            _frame.OnStarting(callback, state);
+        }
+
+        void IHttpResponseFeature.OnCompleted(Func<object, Task> callback, object state)
+        {
+            _frame.OnCompleted(callback, state);
         }
 
         Task<Stream> IHttpUpgradeFeature.UpgradeAsync()

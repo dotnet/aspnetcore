@@ -17,9 +17,25 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             _context = context;
         }
 
+        public override bool CanRead => false;
+
+        public override bool CanSeek => false;
+
+        public override bool CanWrite => false;
+
+        public override long Length
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public override long Position { get; set; }
+
         public override void Flush()
         {
-            //_write(default(ArraySegment<byte>), null);
+            FlushAsync(CancellationToken.None).Wait();
         }
 
         public override Task FlushAsync(CancellationToken cancellationToken)
@@ -83,39 +99,5 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 tcs);
             return tcs.Task;
         }
-
-        public override bool CanRead
-        {
-            get
-            {
-                return false;
-            }
-        }
-
-        public override bool CanSeek
-        {
-            get
-            {
-                return false;
-            }
-        }
-
-        public override bool CanWrite
-        {
-            get
-            {
-                return true;
-            }
-        }
-
-        public override long Length
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public override long Position { get; set; }
     }
 }

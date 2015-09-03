@@ -9,11 +9,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 {
     public abstract class MessageBody : MessageBodyExchanger
     {
-        public bool RequestKeepAlive { get; protected set; }
-
         protected MessageBody(FrameContext context) : base(context)
         {
         }
+
+        public bool RequestKeepAlive { get; protected set; }
 
         public void Intake(int count)
         {

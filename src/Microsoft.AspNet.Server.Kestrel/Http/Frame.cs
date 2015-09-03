@@ -17,18 +17,16 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     public class Frame : FrameContext, IFrameControl
     {
         private static Encoding _ascii = Encoding.ASCII;
+        private static readonly ArraySegment<byte> _endChunkBytes = CreateAsciiByteArraySegment("\r\n");
+        private static readonly ArraySegment<byte> _endChunkedResponseBytes = CreateAsciiByteArraySegment("0\r\n\r\n");
+        private static readonly ArraySegment<byte> _continueBytes = CreateAsciiByteArraySegment("HTTP/1.1 100 Continue\r\n\r\n");
+
         private Mode _mode;
         private bool _responseStarted;
         private bool _keepAlive;
         private bool _autoChunk;
         private readonly FrameRequestHeaders _requestHeaders = new FrameRequestHeaders();
         private readonly FrameResponseHeaders _responseHeaders = new FrameResponseHeaders();
-
-        /*
-        //IDictionary<string, object> _environment;
-
-        CancellationTokenSource _cts = new CancellationTokenSource();
-        */
 
         private List<KeyValuePair<Func<object, Task>, object>> _onStarting;
         private List<KeyValuePair<Func<object, Task>, object>> _onCompleted;
@@ -64,18 +62,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             get { return _responseStarted; }
         }
 
-
-        /*
-        public bool LocalIntakeFin
-        {
-            get
-            {
-                return _mode == Mode.MessageBody
-                    ? _messageBody.LocalIntakeFin
-                    : _mode == Mode.Terminated;
-            }
-        }
-        */
         public void Consume()
         {
             var input = SocketInput;
@@ -131,7 +117,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             break;
                         }
 
-                        //var resumeBody = HandleExpectContinue(callback);
                         _mode = Mode.MessageBody;
                         Execute();
                         break;
@@ -298,9 +283,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     immediate: false);
         }
 
-        private static readonly ArraySegment<byte> _endChunkBytes = CreateAsciiByteArraySegment("\r\n");
-        private static readonly ArraySegment<byte> _endChunkedResponseBytes = CreateAsciiByteArraySegment("0\r\n\r\n");
-
         private void WriteChunkSuffix()
         {
             SocketOutput.Write(_endChunkBytes,
@@ -333,12 +315,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             _keepAlive = false;
             ProduceStart();
-
-            // NOTE: needs changes
-            //_upgradeTask = callback(_callContext);
         }
-
-        private static readonly ArraySegment<byte> _continueBytes = CreateAsciiByteArraySegment("HTTP/1.1 100 Continue\r\n\r\n");
 
         private static ArraySegment<byte> CreateAsciiByteArraySegment(string text)
         {
@@ -380,13 +357,13 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             var responseHeader = CreateResponseHeader(status, appCompleted, ResponseHeaders);
             SocketOutput.Write(
                 responseHeader.Item1,
-                (error, x) =>
+                (error, state) =>
                 {
                     if (error != null)
                     {
                         Trace.WriteLine("ProduceStart " + error.ToString());
                     }
-                    ((IDisposable)x).Dispose();
+                    ((IDisposable)state).Dispose();
                 },
                 responseHeader.Item2,
                 immediate: immediate);

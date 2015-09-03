@@ -13,24 +13,12 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     /// </summary>
     public abstract class Listener : ListenerContext, IDisposable
     {
-        protected UvStreamHandle ListenSocket { get; private set; }
-
-        protected static void ConnectionCallback(UvStreamHandle stream, int status, Exception error, object state)
-        {
-            if (error != null)
-            {
-                Trace.WriteLine("Listener.ConnectionCallback " + error.ToString());
-            }
-            else
-            {
-                ((Listener)state).OnConnection(stream, status);
-            }
-        }
-
         protected Listener(IMemoryPool memory)
         {
             Memory = memory;
         }
+
+        protected UvStreamHandle ListenSocket { get; private set; }
 
         public Task StartAsync(
             string scheme,
@@ -62,6 +50,18 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         /// Creates the socket used to listen for incoming connections
         /// </summary>
         protected abstract UvStreamHandle CreateListenSocket(string host, int port);
+
+        protected static void ConnectionCallback(UvStreamHandle stream, int status, Exception error, object state)
+        {
+            if (error != null)
+            {
+                Trace.WriteLine("Listener.ConnectionCallback " + error.ToString());
+            }
+            else
+            {
+                ((Listener)state).OnConnection(stream, status);
+            }
+        }
 
         /// <summary>
         /// Handles an incoming connection

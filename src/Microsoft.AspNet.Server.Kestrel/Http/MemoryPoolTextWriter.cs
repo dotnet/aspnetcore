@@ -23,20 +23,20 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         private readonly Encoder _encoder;
 
-        public ArraySegment<byte> Buffer
-        {
-            get
-            {
-                return new ArraySegment<byte>(_dataArray, 0, _dataEnd);
-            }
-        }
-
         public MemoryPoolTextWriter(IMemoryPool memory)
         {
             _memory = memory;
             _textArray = _memory.AllocChar(_textLength);
             _dataArray = _memory.Empty;
             _encoder = Encoding.UTF8.GetEncoder();
+        }
+
+        public ArraySegment<byte> Buffer
+        {
+            get
+            {
+                return new ArraySegment<byte>(_dataArray, 0, _dataEnd);
+            }
         }
 
         public override Encoding Encoding

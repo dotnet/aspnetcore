@@ -216,14 +216,14 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         private class WriteContext
         {
+            public SocketOutput Self;
+            public Queue<ArraySegment<byte>> Buffers;
+
             public WriteContext(SocketOutput self)
             {
                 Self = self;
                 Buffers = new Queue<ArraySegment<byte>>();
             }
-
-            public SocketOutput Self;
-            public Queue<ArraySegment<byte>> Buffers;
         }
     }
 }

@@ -16,6 +16,7 @@ namespace Microsoft.AspNet.Server.Kestrel
     /// </summary>
     public class KestrelThread
     {
+        private static Action<object, object> _objectCallback = (cb, obj) => ((Action<object>)cb).Invoke(obj);
         private KestrelEngine _engine;
         private Thread _thread;
         private UvLoopHandle _loop;
@@ -102,7 +103,21 @@ namespace Microsoft.AspNet.Server.Kestrel
         {
             lock (_workSync)
             {
-                _workAdding.Enqueue(new Work { Callback = callback, State = state });
+                _workAdding.Enqueue(new Work { Callback1 = _objectCallback, Callback2 = callback, State = state });
+            }
+            _post.Send();
+        }
+
+        public void Post<T>(Action<T> callback, T state)
+        {
+            lock (_workSync)
+            {
+                _workAdding.Enqueue(new Work
+                {
+                    Callback1 = (state1, state2) => ((Action<T>)state1).Invoke((T)state2),
+                    Callback2 = callback,
+                    State = state
+                });
             }
             _post.Send();
         }
@@ -112,7 +127,30 @@ namespace Microsoft.AspNet.Server.Kestrel
             var tcs = new TaskCompletionSource<int>();
             lock (_workSync)
             {
-                _workAdding.Enqueue(new Work { Callback = callback, State = state, Completion = tcs });
+                _workAdding.Enqueue(new Work
+                {
+                    Callback1 = _objectCallback,
+                    Callback2 = callback,
+                    State = state,
+                    Completion = tcs
+                });
+            }
+            _post.Send();
+            return tcs.Task;
+        }
+
+        public Task PostAsync<T>(Action<T> callback, T state)
+        {
+            var tcs = new TaskCompletionSource<int>();
+            lock (_workSync)
+            {
+                _workAdding.Enqueue(new Work
+                {
+                    Callback1 = (state1, state2) => ((Action<T>)state1).Invoke((T)state2),
+                    Callback2 = callback,
+                    State = state,
+                    Completion = tcs
+                });
             }
             _post.Send();
             return tcs.Task;
@@ -212,7 +250,7 @@ namespace Microsoft.AspNet.Server.Kestrel
                 var work = queue.Dequeue();
                 try
                 {
-                    work.Callback(work.State);
+                    work.Callback1(work.Callback2, work.State);
                     if (work.Completion != null)
                     {
                         ThreadPool.QueueUserWorkItem(
@@ -261,7 +299,8 @@ namespace Microsoft.AspNet.Server.Kestrel
 
         private struct Work
         {
-            public Action<object> Callback;
+            public Action<object, object> Callback1;
+            public object Callback2;
             public object State;
             public TaskCompletionSource<int> Completion;
         }

@@ -15,12 +15,12 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     /// </summary>
     public abstract class ListenerSecondary : ListenerContext, IDisposable
     {
-        UvPipeHandle DispatchPipe { get; set; }
-
         protected ListenerSecondary(IMemoryPool memory)
         {
             Memory = memory;
         }
+
+        UvPipeHandle DispatchPipe { get; set; }
 
         public Task StartAsync(
             string pipeName,

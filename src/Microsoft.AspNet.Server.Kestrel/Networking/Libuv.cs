@@ -9,6 +9,13 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
 {
     public class Libuv
     {
+        public bool IsWindows;
+        public bool IsDarwin;
+
+        public Func<string, IntPtr> LoadLibrary;
+        public Func<IntPtr, bool> FreeLibrary;
+        public Func<IntPtr, string, IntPtr> GetProcAddress;
+
         public Libuv()
         {
             IsWindows = PlatformApis.IsWindows();
@@ -17,13 +24,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
                 IsDarwin = PlatformApis.IsDarwin();
             }
         }
-
-        public bool IsWindows;
-        public bool IsDarwin;
-
-        public Func<string, IntPtr> LoadLibrary;
-        public Func<IntPtr, bool> FreeLibrary;
-        public Func<IntPtr, string, IntPtr> GetProcAddress;
 
         public void Load(string dllToLoad)
         {
@@ -395,16 +395,19 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
 
         public struct sockaddr
         {
-            public sockaddr(long ignored) { x3 = x0 = x1 = x2 = x3 = 0; }
-
             private long x0;
             private long x1;
             private long x2;
             private long x3;
+
+            public sockaddr(long ignored) { x3 = x0 = x1 = x2 = x3 = 0; }
         }
 
         public struct uv_buf_t
         {
+            public IntPtr x0;
+            public IntPtr x1;
+
             public uv_buf_t(IntPtr memory, int len, bool IsWindows)
             {
                 if (IsWindows)
@@ -418,9 +421,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
                     x1 = (IntPtr)len;
                 }
             }
-
-            public IntPtr x0;
-            public IntPtr x1;
         }
 
         public enum HandleType
@@ -456,10 +456,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             WORK,
             GETADDRINFO,
             GETNAMEINFO,
-        }        
-        //int handle_size_async;
-        //int handle_size_tcp;
-        //int req_size_write;
-        //int req_size_shutdown;
+        }
     }
 }

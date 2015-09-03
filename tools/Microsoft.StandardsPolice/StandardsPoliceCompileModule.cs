@@ -117,21 +117,16 @@ namespace Microsoft.StandardsPolice
             }
         }
 
-        enum ClassZone
-        {
-            Ignored,
-            BeforeStart,
-            Fields,
-            Constructors,
-            Properties,
-            OtherThings,
-            NestedTypes,
-            AfterEnd
-        }
-
         private static void RuleMembersAreInCorrectOrder(IList<Diagnostic> diagnostics, INamedTypeSymbol typeSymbol, Func<ISymbol, ClassZone> mapZone)
         {
+            if (typeSymbol.Locations.Length >= 2 || typeSymbol.Name == "Libuv")
+            {
+                // Don't apply to partial classes. All members are enumerated, but are not merged by zone order.
+                return;
+            }
+
             var currentZone = ClassZone.BeforeStart;
+            var currentZoneExample = default(ISymbol);
             foreach (var member in typeSymbol.GetMembers())
             {
                 var memberZone = mapZone(member);
@@ -139,9 +134,10 @@ namespace Microsoft.StandardsPolice
                 {
                     continue;
                 }
-                if (currentZone < memberZone)
+                if (currentZone <= memberZone)
                 {
                     currentZone = memberZone;
+                    currentZoneExample = member;
                 }
                 if (memberZone >= ClassZone.OtherThings)
                 {
@@ -152,26 +148,29 @@ namespace Microsoft.StandardsPolice
                     if (member.Locations.Count() == 1)
                     {
                         diagnostics.Add(Diagnostic.Create(
-                            "SP1003", "StandardsPolice", $"{memberZone} like {typeSymbol.Name}::{member.Name} shouldn't be after {currentZone}",
+                            "SP1003", "StandardsPolice", $"{memberZone} like {typeSymbol.Name}::{member.Name} shouldn't be after {currentZone} like {currentZoneExample.Name}",
                             DiagnosticSeverity.Warning,
                             DiagnosticSeverity.Warning,
                             false,
                             3,
-                            location: member.Locations.Single()));
+                            location: member.Locations.Single(),
+                            additionalLocations: currentZoneExample.Locations));
                     }
                 }
             }
             currentZone = ClassZone.AfterEnd;
-            foreach (var member in typeSymbol.GetMembers())
+            currentZoneExample = null;
+            foreach (var member in typeSymbol.GetMembers().Reverse())
             {
                 var memberZone = mapZone(member);
                 if (memberZone == ClassZone.Ignored)
                 {
                     continue;
                 }
-                if (currentZone > memberZone)
+                if (currentZone >= memberZone)
                 {
                     currentZone = memberZone;
+                    currentZoneExample = member;
                 }
                 if (memberZone <= ClassZone.OtherThings)
                 {
@@ -182,12 +181,13 @@ namespace Microsoft.StandardsPolice
                     if (member.Locations.Count() == 1)
                     {
                         diagnostics.Add(Diagnostic.Create(
-                            "SP1003", "StandardsPolice", $"{memberZone} like {typeSymbol.Name}::{member.Name} shouldn't be before {currentZone}",
+                            "SP1003", "StandardsPolice", $"{memberZone} like {typeSymbol.Name}::{member.Name} shouldn't be before {currentZone} like {currentZoneExample.Name}",
                             DiagnosticSeverity.Warning,
                             DiagnosticSeverity.Warning,
                             false,
                             3,
-                            location: member.Locations.Single()));
+                            location: member.Locations.Single(),
+                            additionalLocations: currentZoneExample.Locations));
                     }
                 }
             }
@@ -211,6 +211,11 @@ namespace Microsoft.StandardsPolice
                 {
                     return ClassZone.Constructors;
                 }
+                if (method.MethodKind == MethodKind.PropertyGet ||
+                    method.MethodKind == MethodKind.PropertySet)
+                {
+                    return ClassZone.Properties;
+                }
             }
             if (member.Kind == SymbolKind.Property)
             {
@@ -231,6 +236,18 @@ namespace Microsoft.StandardsPolice
 
         public void AfterCompile(AfterCompileContext context)
         {
+        }
+
+        enum ClassZone
+        {
+            Ignored,
+            BeforeStart,
+            Fields,
+            Constructors,
+            Properties,
+            OtherThings,
+            NestedTypes,
+            AfterEnd
         }
     }
 }

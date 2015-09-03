@@ -15,8 +15,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     /// </summary>
     abstract public class ListenerPrimary : Listener
     {
-        UvPipeHandle ListenPipe { get; set; }
-
         private List<UvPipeHandle> _dispatchPipes = new List<UvPipeHandle>();
         private int _dispatchIndex;
         private ArraySegment<ArraySegment<byte>> _1234 = new ArraySegment<ArraySegment<byte>>(new[] { new ArraySegment<byte>(new byte[] { 1, 2, 3, 4 }) });
@@ -24,6 +22,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         protected ListenerPrimary(IMemoryPool memory) : base(memory)
         {
         }
+
+        UvPipeHandle ListenPipe { get; set; }
 
         public async Task StartAsync(
             string pipeName,

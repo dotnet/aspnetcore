@@ -11,6 +11,7 @@ namespace Microsoft.AspNet.Server.Kestrel
     public class Disposable : IDisposable
     {
         private Action _dispose;
+        private bool disposedValue = false; // To detect redundant calls
 
         public Disposable(Action dispose)
         {
@@ -18,7 +19,6 @@ namespace Microsoft.AspNet.Server.Kestrel
         }
 
         #region IDisposable Support
-        private bool disposedValue = false; // To detect redundant calls
 
         protected virtual void Dispose(bool disposing)
         {

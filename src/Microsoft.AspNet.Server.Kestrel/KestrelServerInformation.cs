@@ -14,6 +14,10 @@ namespace Microsoft.AspNet.Server.Kestrel
             Addresses = new List<ServerAddress>();
         }
 
+        public IList<ServerAddress> Addresses { get; private set; }
+
+        public int ThreadCount { get; set; }
+
         public void Initialize(IConfiguration configuration)
         {
             var urls = configuration["server.urls"];
@@ -30,9 +34,5 @@ namespace Microsoft.AspNet.Server.Kestrel
                 }
             }
         }
-
-        public IList<ServerAddress> Addresses { get; private set; }
-
-        public int ThreadCount { get; set; }
     }
 }

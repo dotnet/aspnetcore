@@ -12,14 +12,26 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     {
         private readonly MessageBody _body;
 
-        //int _readLength;
-        //bool _readFin;
-        //Exception _readError;
-
         public FrameRequestStream(MessageBody body)
         {
             _body = body;
         }
+
+        public override bool CanRead { get { return true; } }
+
+        public override bool CanSeek { get { return false; } }
+
+        public override bool CanWrite { get { return false; } }
+
+        public override long Length
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public override long Position { get; set; }
 
         public override void Flush()
         {
@@ -67,20 +79,20 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             var tcs = new TaskCompletionSource<int>(state);
             var task = _body.ReadAsync(new ArraySegment<byte>(buffer, offset, count));
-            task.ContinueWith((t, x) =>
+            task.ContinueWith((task2, state2) =>
             {
-                var tcs2 = (TaskCompletionSource<int>)x;
-                if (t.IsCanceled)
+                var tcs2 = (TaskCompletionSource<int>)state2;
+                if (task2.IsCanceled)
                 {
                     tcs2.SetCanceled();
                 }
-                else if (t.IsFaulted)
+                else if (task2.IsFaulted)
                 {
-                    tcs2.SetException(t.Exception);
+                    tcs2.SetException(task2.Exception);
                 }
                 else
                 {
-                    tcs2.SetResult(t.Result);
+                    tcs2.SetResult(task2.Result);
                 }
             }, tcs);
             return tcs.Task;
@@ -90,21 +102,5 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             throw new NotImplementedException();
         }
-
-        public override bool CanRead { get { return true; } }
-
-        public override bool CanSeek { get { return false; } }
-
-        public override bool CanWrite { get { return false; } }
-
-        public override long Length
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public override long Position { get; set; }
     }
 }
