@@ -181,7 +181,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                             Assert.Equal(0, message.StartLine);
                             Assert.Equal(-1, message.StartColumn);
                             Assert.Equal(0, message.EndLine);
-                            Assert.Equal(0, message.EndColumn);
+                            Assert.Equal(-2, message.EndColumn);
                         });
                 },
                 failure =>
