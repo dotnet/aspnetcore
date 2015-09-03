@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Identity
                 AuthenticationScheme = ApplicationCookieAuthenticationScheme,
                 AutomaticAuthentication = true,
                 LoginPath = new PathString("/Account/Login"),
-                Notifications = new CookieAuthenticationNotifications
+                Events = new CookieAuthenticationEvents
                 {
                     OnValidatePrincipal = SecurityStampValidator.ValidatePrincipalAsync
                 }
