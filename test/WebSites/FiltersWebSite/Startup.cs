@@ -15,7 +15,7 @@ namespace FiltersWebSite
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
-            services.ConfigureAuthorization(options =>
+            services.AddAuthorization(options =>
             {
                 // This policy cannot succeed since the claim is never added
                 options.AddPolicy("Impossible", policy =>
@@ -43,8 +43,6 @@ namespace FiltersWebSite
             services.AddSingleton<RandomNumberFilter>();
             services.AddSingleton<RandomNumberService>();
             services.AddTransient<IAuthorizationHandler, ManagerHandler>();
-            services.Configure<BasicOptions>(o => o.AuthenticationScheme = "Api", "Api");
-            services.Configure<BasicOptions>(o => o.AuthenticationScheme = "Interactive", "Interactive");
 
             services.Configure<MvcOptions>(options =>
             {

@@ -56,7 +56,7 @@ namespace ContentNegotiationWebSite
             var optionsAccessor = ActionContext.HttpContext.RequestServices
                 .GetRequiredService<IOptions<MvcOptions>>();
             objectResult.Formatters.Add(new HttpNotAcceptableOutputFormatter());
-            foreach (var formatter in optionsAccessor.Options.OutputFormatters)
+            foreach (var formatter in optionsAccessor.Value.OutputFormatters)
             {
                 objectResult.Formatters.Add(formatter);
             }
@@ -74,7 +74,7 @@ namespace ContentNegotiationWebSite
                 objectResult.Formatters.Add(new HttpNotAcceptableOutputFormatter());
             }
 
-            foreach (var formatter in optionsAccessor.Options.OutputFormatters)
+            foreach (var formatter in optionsAccessor.Value.OutputFormatters)
             {
                 objectResult.Formatters.Add(formatter);
             }

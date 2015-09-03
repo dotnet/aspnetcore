@@ -37,12 +37,12 @@ namespace UrlHelperWebSite
         /// <returns></returns>
         public override string Content(string contentPath)
         {
-            if (_appOptions.Options.ServeCDNContent
+            if (_appOptions.Value.ServeCDNContent
                 && contentPath.StartsWith("~/", StringComparison.Ordinal))
             {
                 var segment = new PathString(contentPath.Substring(1));
 
-                return ConvertToLowercaseUrl(_appOptions.Options.CDNServerBaseUrl + segment);
+                return ConvertToLowercaseUrl(_appOptions.Value.CDNServerBaseUrl + segment);
             }
 
             return ConvertToLowercaseUrl(base.Content(contentPath));
@@ -61,7 +61,7 @@ namespace UrlHelperWebSite
         private string ConvertToLowercaseUrl(string url)
         {
             if (!string.IsNullOrEmpty(url)
-                && _appOptions.Options.GenerateLowercaseUrls)
+                && _appOptions.Value.GenerateLowercaseUrls)
             {
                 return url.ToLowerInvariant();
             }
