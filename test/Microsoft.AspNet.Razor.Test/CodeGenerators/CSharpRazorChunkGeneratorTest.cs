@@ -52,6 +52,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         }
 
         [Theory]
+        [InlineData("NestedCSharp")]
         [InlineData("NullConditionalExpressions")]
         [InlineData("NestedCodeBlocks")]
         [InlineData("CodeBlock")]
@@ -73,6 +74,55 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         public void CSharpChunkGeneratorCorrectlyGeneratesRunTimeCode(string testType)
         {
             RunTest(testType);
+        }
+
+        [Fact]
+        public void CSharpChunkGeneratorCorrectlyGeneratesMappingsForNestedCSharp()
+        {
+            RunTest(
+                "NestedCSharp",
+                "NestedCSharp.DesignTime",
+                designTimeMode: true,
+                tabTest: TabTest.NoTabs,
+                expectedDesignTimePragmas: new List<LineMapping>
+                {
+                    BuildLineMapping(
+                        documentAbsoluteIndex: 2,
+                        documentLineIndex: 0,
+                        generatedAbsoluteIndex: 522,
+                        generatedLineIndex: 22,
+                        characterOffsetIndex: 2,
+                        contentLength: 6),
+                    BuildLineMapping(
+                        documentAbsoluteIndex: 9,
+                        documentLineIndex: 1,
+                        documentCharacterOffsetIndex: 5,
+                        generatedAbsoluteIndex: 598,
+                        generatedLineIndex: 29,
+                        generatedCharacterOffsetIndex: 4,
+                        contentLength: 53),
+                    BuildLineMapping(
+                        documentAbsoluteIndex: 82,
+                        documentLineIndex: 4,
+                        generatedAbsoluteIndex: 730,
+                        generatedLineIndex: 37,
+                        characterOffsetIndex: 13,
+                        contentLength: 16),
+                    BuildLineMapping(
+                        documentAbsoluteIndex: 115,
+                        documentLineIndex: 5,
+                        generatedAbsoluteIndex: 825,
+                        generatedLineIndex: 42,
+                        characterOffsetIndex: 14,
+                        contentLength: 7),
+                    BuildLineMapping(
+                        documentAbsoluteIndex: 122,
+                        documentLineIndex: 6,
+                        generatedAbsoluteIndex: 903,
+                        generatedLineIndex: 49,
+                        characterOffsetIndex: 5,
+                        contentLength: 2),
+                });
         }
 
         [Fact]

@@ -16,6 +16,31 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
     public class CSharpBlockTest : CsHtmlCodeParserTestBase
     {
         [Fact]
+        public void ParseBlock_NestedCodeBlockWithMarkupSetsDotAsMarkup()
+        {
+            ParseBlockTest("if (true) { @if(false) { <div>@something.</div> } }",
+                new StatementBlock(
+                    Factory.Code("if (true) { ").AsStatement(),
+                    new StatementBlock(
+                        Factory.CodeTransition(),
+                        Factory.Code("if(false) {").AsStatement(),
+                        new MarkupBlock(
+                            Factory.Markup(" "),
+                            BlockFactory.MarkupTagBlock("<div>", AcceptedCharacters.None),
+                            Factory.EmptyHtml(),
+                            new ExpressionBlock(
+                                Factory.CodeTransition(),
+                                Factory.Code("something")
+                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords, acceptTrailingDot: false)
+                                    .Accepts(AcceptedCharacters.NonWhiteSpace)),
+                            Factory.Markup("."),
+                            BlockFactory.MarkupTagBlock("</div>", AcceptedCharacters.None),
+                            Factory.Markup(" ").Accepts(AcceptedCharacters.None)),
+                        Factory.Code("}").AsStatement()),
+                    Factory.Code(" }").AsStatement()));
+        }
+
+        [Fact]
         public void ParseBlockMethodThrowsArgNullExceptionOnNullContext()
         {
             // Arrange

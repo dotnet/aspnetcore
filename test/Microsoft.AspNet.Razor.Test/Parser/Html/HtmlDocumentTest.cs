@@ -17,6 +17,34 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
         private static readonly TestFile Nested1000 = TestFile.Create("TestFiles/nested-1000.html");
 
         [Fact]
+        public void ParseDocument_NestedCodeBlockWithMarkupSetsDotAsMarkup()
+        {
+            ParseDocumentTest("@if (true) { @if(false) { <div>@something.</div> } }",
+                new MarkupBlock(
+                    Factory.EmptyHtml(),
+                    new StatementBlock(
+                        Factory.CodeTransition(),
+                        Factory.Code("if (true) { ").AsStatement(),
+                        new StatementBlock(
+                            Factory.CodeTransition(),
+                            Factory.Code("if(false) {").AsStatement(),
+                            new MarkupBlock(
+                                Factory.Markup(" "),
+                                BlockFactory.MarkupTagBlock("<div>", AcceptedCharacters.None),
+                                Factory.EmptyHtml(),
+                                new ExpressionBlock(
+                                    Factory.CodeTransition(),
+                                    Factory.Code("something")
+                                        .AsImplicitExpression(CSharpCodeParser.DefaultKeywords, acceptTrailingDot: false)
+                                        .Accepts(AcceptedCharacters.NonWhiteSpace)),
+                                Factory.Markup("."),
+                                BlockFactory.MarkupTagBlock("</div>", AcceptedCharacters.None),
+                                Factory.Markup(" ").Accepts(AcceptedCharacters.None)),
+                            Factory.Code("}").AsStatement()),
+                        Factory.Code(" }").AsStatement())));
+        }
+
+        [Fact]
         public void ParseDocumentMethodThrowsArgNullExceptionOnNullContext()
         {
             // Arrange

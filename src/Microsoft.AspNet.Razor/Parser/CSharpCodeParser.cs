@@ -631,6 +631,11 @@ namespace Microsoft.AspNet.Razor.Parser
 
         private void ParseWithOtherParser(Action<ParserBase> parseAction)
         {
+            // When transitioning to the HTML parser we no longer want to act as if we're in a nested C# state.
+            // For instance, if <div>@hello.</div> is in a nested C# block we don't want the trailing '.' to be handled
+            // as C#; it should be handled as a period because it's wrapped in markup.
+            var wasNested = IsNested;
+            IsNested = false;
             using (PushSpanConfig())
             {
                 Context.SwitchActiveParser();
@@ -638,6 +643,7 @@ namespace Microsoft.AspNet.Razor.Parser
                 Context.SwitchActiveParser();
             }
             Initialize(Span);
+            IsNested = wasNested;
             NextToken();
         }
     }
