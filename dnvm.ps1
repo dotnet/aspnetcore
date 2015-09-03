@@ -67,7 +67,7 @@ function _WriteOut {
 
 ### Constants
 $ProductVersion="1.0.0"
-$BuildVersion="beta8-15502"
+$BuildVersion="beta8-15506"
 $Authors="Microsoft Open Technologies, Inc."
 
 # If the Version hasn't been replaced...
@@ -82,6 +82,7 @@ $FullVersion="$ProductVersion-$BuildVersion"
 Set-Variable -Option Constant "CommandName" ([IO.Path]::GetFileNameWithoutExtension($ScriptPath))
 Set-Variable -Option Constant "CommandFriendlyName" ".NET Version Manager"
 Set-Variable -Option Constant "DefaultUserDirectoryName" ".dnx"
+Set-Variable -Option Constant "DefaultGlobalDirectoryName" "Microsoft DNX"
 Set-Variable -Option Constant "OldUserDirectoryNames" @(".kre", ".k")
 Set-Variable -Option Constant "RuntimePackageName" "dnx"
 Set-Variable -Option Constant "DefaultFeed" "https://www.nuget.org/api/v2"
@@ -155,6 +156,7 @@ $DeprecatedCommands = @("unalias")
 # Load Environment variables
 $RuntimeHomes = $env:DNX_HOME
 $UserHome = $env:DNX_USER_HOME
+$GlobalHome = $env:DNX_GLOBAL_HOME
 $ActiveFeed = $env:DNX_FEED
 $ActiveUnstableFeed = $env:DNX_UNSTABLE_FEED
 
@@ -182,9 +184,22 @@ if($CmdPathFile) {
 # Determine where runtimes can exist (RuntimeHomes)
 if(!$RuntimeHomes) {
     # Set up a default value for the runtime home
-    $UnencodedHomes = "%USERPROFILE%\$DefaultUserDirectoryName"
+    $UnencodedHomes = "$env:USERPROFILE\$DefaultUserDirectoryName;$GlobalHome\$DefaultGlobalDirectoryName"
 } else {
     $UnencodedHomes = $RuntimeHomes
+}
+
+# Determine the default global installation directory (GlobalHome)
+if(!$GlobalHome) {
+    if($env:ProgramData) {
+        $GlobalHome = "$env:ProgramData\$DefaultGlobalDirectoryName"
+    } else {
+        $GlobalHome = "$env:AllUsersProfile\$DefaultGlobalDirectoryName"
+    }
+
+    $env:DNX_GLOBAL_HOME="$GlobalHome"
+    $env:DNX_HOME="$env:DNX_HOME;$env:DNX_GLOBAL_HOME"
+    $UnencodedHomes = "$UnencodedHomes;$GlobalHome"
 }
 
 $UnencodedHomes = $UnencodedHomes.Split(";")
@@ -221,6 +236,7 @@ _WriteDebug "Runtime Homes: $RuntimeHomes"
 _WriteDebug "User Home: $UserHome"
 $AliasesDir = Join-Path $UserHome "alias"
 $RuntimesDir = Join-Path $UserHome "runtimes"
+$GlobalRuntimesDir = Join-Path $GlobalHome "runtimes"
 $Aliases = $null
 
 ### Helper Functions
@@ -394,7 +410,7 @@ function Get-RuntimeAliasOrRuntimeInfo(
 }
 
 filter List-Parts {
-    param($aliases)
+    param($aliases, $items)
 
 	$location = ""
 
@@ -420,6 +436,20 @@ filter List-Parts {
     if($parts1[0] -eq "$RuntimePackageName-mono") {
         $parts2 += "linux/osx"
         $parts2 += "x86/x64"
+    }
+
+    $aliasUsed = ""
+    if($items) {
+    $aliasUsed = $items | ForEach-Object {
+        if($_.Architecture -eq $parts2[3] -and $_.Runtime -eq $parts2[1] -and $_.OperatingSystem -eq $parts2[2] -and $_.Version -eq $parts1[1]) {
+            return $true;
+        }
+        return $false;
+    }
+    }
+
+    if($aliasUsed -eq $true) {
+        $fullAlias = ""
     }
 
     return New-Object PSObject -Property @{
@@ -693,7 +723,7 @@ function Get-RuntimePath($runtimeFullName) {
     foreach($RuntimeHome in $RuntimeHomes) {
         $runtimeBin = "$RuntimeHome\runtimes\$runtimeFullName\bin"
         _WriteDebug " Candidate $runtimeBin"
-        if (Test-Path "$runtimeBin") {
+        if (Test-Path $runtimeBin) {
             _WriteDebug " Found in $runtimeBin"
             return $runtimeBin
         }
@@ -976,7 +1006,7 @@ function dnvm-list {
     $RuntimeHomes | ForEach-Object {
         _WriteDebug "Scanning $_ for runtimes..."
         if (Test-Path "$_\runtimes") {
-            $items += Get-ChildItem "$_\runtimes\$RuntimePackageName-*" | List-Parts $aliases
+            $items += Get-ChildItem "$_\runtimes\$RuntimePackageName-*" | List-Parts $aliases $items
         }
     }
 
@@ -1104,7 +1134,9 @@ function dnvm-unalias {
 .PARAMETER Ngen
     For CLR flavor only. Generate native images for runtime libraries on Desktop CLR to improve startup time. This option requires elevated privilege and will be automatically turned on if the script is running in administrative mode. To opt-out in administrative mode, use -NoNative switch.
 .PARAMETER Unstable
-    Upgrade from our unstable dev feed. This will give you the latest development version of the runtime. 
+    Upgrade from the unstable dev feed. This will give you the latest development version of the runtime. 
+.PARAMETER Global
+    Installs to configured global dnx file location (default: C:\ProgramData)
 #>
 function dnvm-upgrade {
     param(
@@ -1140,7 +1172,10 @@ function dnvm-upgrade {
         [switch]$Ngen,
 
         [Parameter(Mandatory=$false)]
-        [switch]$Unstable)
+        [switch]$Unstable,
+        
+        [Parameter(Mandatory=$false)]
+        [switch]$Global)
 
     if($OS -ne "win" -and ![String]::IsNullOrEmpty($OS)) {
         #We could remove OS as an option from upgrade, but I want to take this opporunty to educate users about the difference between install and upgrade
@@ -1150,7 +1185,7 @@ function dnvm-upgrade {
         return
     }
 
-    dnvm-install "latest" -Alias:$Alias -Architecture:$Architecture -Runtime:$Runtime -OS:$OS -Force:$Force -Proxy:$Proxy -NoNative:$NoNative -Ngen:$Ngen -Unstable:$Unstable -Persistent:$true
+    dnvm-install "latest" -Alias:$Alias -Architecture:$Architecture -Runtime:$Runtime -OS:$OS -Force:$Force -Proxy:$Proxy -NoNative:$NoNative -Ngen:$Ngen -Unstable:$Unstable -Persistent:$true -Global:$Global
 }
 
 <#
@@ -1179,7 +1214,9 @@ function dnvm-upgrade {
 .PARAMETER Persistent
     Make the installed runtime useable across all processes run by the current user
 .PARAMETER Unstable
-    Upgrade from our unstable dev feed. This will give you the latest development version of the runtime.
+    Upgrade from the unstable dev feed. This will give you the latest development version of the runtime.
+.PARAMETER Global
+    Installs to configured global dnx file location (default: C:\ProgramData)
 .DESCRIPTION
     A proxy can also be specified by using the 'http_proxy' environment variable
 #>
@@ -1223,7 +1260,10 @@ function dnvm-install {
         [switch]$Persistent,
 
         [Parameter(Mandatory=$false)]
-        [switch]$Unstable)
+        [switch]$Unstable,
+
+        [Parameter(Mandatory=$false)]
+        [switch]$Global)
 
     $selectedFeed = ""
 
@@ -1279,7 +1319,7 @@ function dnvm-install {
                 $Version = Get-PackageVersion $BaseName
             }
             
-            if([String]::IsNullOrEmpty($Architecture)) {
+            if([String]::IsNullOrEmpty($OS)) {
                 $OS = Get-PackageOS $BaseName
             }
         } else {
@@ -1313,7 +1353,15 @@ function dnvm-install {
     _WriteDebug "Version: $($runtimeInfo.Version)"
     _WriteDebug "OS: $($runtimeInfo.OS)"
 
-    $RuntimeFolder = Join-Path $RuntimesDir $($runtimeInfo.RuntimeName)
+    $installDir = $RuntimesDir
+    if (!$Global) {
+        $RuntimeFolder = Join-Path $RuntimesDir $($runtimeInfo.RuntimeName)
+    }
+    else {
+        $installDir = $GlobalRuntimesDir
+        $RuntimeFolder = Join-Path $GlobalRuntimesDir $($runtimeInfo.RuntimeName)
+    }
+
     _WriteDebug "Destination: $RuntimeFolder"
 
     if((Test-Path $RuntimeFolder) -and $Force) {
@@ -1321,8 +1369,15 @@ function dnvm-install {
         Remove-Item $RuntimeFolder -Recurse -Force
     }
 
-    if(Test-Path $RuntimeFolder) {
-        _WriteOut "'$($runtimeInfo.RuntimeName)' is already installed."
+    $installed=""
+    if(Test-Path (Join-Path $RuntimesDir $($runtimeInfo.RuntimeName))) {
+        $installed = Join-Path $RuntimesDir $($runtimeInfo.RuntimeName)
+    }
+    if(Test-Path (Join-Path $GlobalRuntimesDir $($runtimeInfo.RuntimeName))) {
+        $installed = Join-Path $GlobalRuntimesDir $($runtimeInfo.RuntimeName)
+    }
+    if($installed -ne "") {
+        _WriteOut "'$($runtimeInfo.RuntimeName)' is already installed in $installed."
         if($runtimeInfo.OS -eq "win") {
             dnvm-use $runtimeInfo.Version -Architecture:$runtimeInfo.Architecture -Runtime:$runtimeInfo.Runtime -Persistent:$Persistent -OS:$runtimeInfo.OS
         }
@@ -1333,7 +1388,7 @@ function dnvm-install {
         $Runtime = $runtimeInfo.Runtime
         $OS = $runtimeInfo.OS
         
-        $TempFolder = Join-Path $RuntimesDir "temp" 
+        $TempFolder = Join-Path $installDir "temp" 
         $UnpackFolder = Join-Path $TempFolder $runtimeFullName
         $DownloadFile = Join-Path $UnpackFolder "$runtimeFullName.nupkg"
 
