@@ -15,9 +15,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     /// </summary>
     public abstract class ListenerSecondary : ListenerContext, IDisposable
     {
-        protected ListenerSecondary(IMemoryPool memory)
+        protected ListenerSecondary(ServiceContext serviceContext) : base(serviceContext)
         {
-            Memory = memory;
         }
 
         UvPipeHandle DispatchPipe { get; set; }

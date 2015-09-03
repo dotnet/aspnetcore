@@ -13,9 +13,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     /// </summary>
     public abstract class Listener : ListenerContext, IDisposable
     {
-        protected Listener(IMemoryPool memory)
+        protected Listener(ServiceContext serviceContext) : base(serviceContext)
         {
-            Memory = memory;
         }
 
         protected UvStreamHandle ListenSocket { get; private set; }

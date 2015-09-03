@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         // but it has no other functional significance
         private readonly ArraySegment<ArraySegment<byte>> _dummyMessage = new ArraySegment<ArraySegment<byte>>(new[] { new ArraySegment<byte>(new byte[] { 1, 2, 3, 4 }) });
 
-        protected ListenerPrimary(IMemoryPool memory) : base(memory)
+        protected ListenerPrimary(ServiceContext serviceContext) : base(serviceContext)
         {
         }
 

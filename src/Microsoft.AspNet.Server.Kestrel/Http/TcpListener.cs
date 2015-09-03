@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     /// </summary>
     public class TcpListener : Listener
     {
-        public TcpListener(IMemoryPool memory) : base(memory)
+        public TcpListener(ServiceContext serviceContext) : base(serviceContext)
         {
         }
 

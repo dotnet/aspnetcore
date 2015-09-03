@@ -10,11 +10,16 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     {
         public ListenerContext() { }
 
-        public ListenerContext(ListenerContext context)
+        public ListenerContext(ServiceContext serviceContext)
         {
-            Thread = context.Thread;
-            Application = context.Application;
-            Memory = context.Memory;
+            Memory = serviceContext.Memory;
+        }
+
+        public ListenerContext(ListenerContext listenerContext)
+        {
+            Thread = listenerContext.Thread;
+            Application = listenerContext.Application;
+            Memory = listenerContext.Memory;
         }
 
         public KestrelThread Thread { get; set; }

@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Dnx.Runtime;
 
 namespace Microsoft.AspNet.Server.Kestrel
 {
@@ -18,6 +19,7 @@ namespace Microsoft.AspNet.Server.Kestrel
     {
         private static Action<object, object> _objectCallbackAdapter = (callback, state) => ((Action<object>)callback).Invoke(state);
         private KestrelEngine _engine;
+        private readonly IApplicationShutdown _appShutdown;
         private Thread _thread;
         private UvLoopHandle _loop;
         private UvAsyncHandle _post;
@@ -29,9 +31,10 @@ namespace Microsoft.AspNet.Server.Kestrel
         private bool _stopImmediate = false;
         private ExceptionDispatchInfo _closeError;
 
-        public KestrelThread(KestrelEngine engine)
+        public KestrelThread(KestrelEngine engine, ServiceContext serviceContext)
         {
             _engine = engine;
+            _appShutdown = serviceContext.AppShutdown;
             _loop = new UvLoopHandle();
             _post = new UvAsyncHandle();
             _thread = new Thread(ThreadStart);
@@ -226,7 +229,7 @@ namespace Microsoft.AspNet.Server.Kestrel
                 _closeError = ExceptionDispatchInfo.Capture(ex);
                 // Request shutdown so we can rethrow this exception
                 // in Stop which should be observable.
-                _engine.AppShutdown.RequestShutdown();
+                _appShutdown.RequestShutdown();
             }
         }
 

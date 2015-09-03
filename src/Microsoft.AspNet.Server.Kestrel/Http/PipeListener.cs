@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     /// </summary>
     public class PipeListener : Listener
     {
-        public PipeListener(IMemoryPool memory) : base(memory)
+        public PipeListener(ServiceContext serviceContext) : base(serviceContext)
         {
         }
 
