@@ -294,6 +294,7 @@
                 <Justification>Font reference</Justification>
             </SrcExclusions>
             <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNet.Localization\Internal\CultureInfoList.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Compilation.CSharp.Common\CultureInfoCache.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.Globalization.CultureInfoCache\CultureInfoList.cs;
                                     $(PoliCheckPath)**\src\EntityFramework.Core.FunctionalTests\TestModels\Northwind\NorthwindData.cs">
                 <term>BS</term>
@@ -341,6 +342,7 @@
                 <Justification>Temporary exclusion to pass the build.</Justification>
             </SrcExclusions>
             <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNet.Localization\Internal\CultureInfoList.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Compilation.CSharp.Common\CultureInfoCache.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.Globalization.CultureInfoCache\CultureInfoList.cs;
                                     $(PoliCheckPath)**\src\EntityFramework.Core.FunctionalTests\TestModels\Northwind\NorthwindData.cs">
                 <term>FY</term>
@@ -453,6 +455,7 @@
                                     $(PoliCheckPath)**\src\EntityFramework.Core.FunctionalTests\TestModels\Northwind\NorthwindData.cs;
                                     $(PoliCheckPath)**\src\Microsoft.AspNet.Diagnostics\Views\WelcomePage.cs;
                                     $(PoliCheckPath)**\src\Microsoft.AspNet.Localization\Internal\CultureInfoList.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Compilation.CSharp.Common\CultureInfoCache.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.Globalization.CultureInfoCache\CultureInfoList.cs">
                 <term>UK</term>
                 <Justification>text appears in base64 encoded string of an image; Culture info;Northwind Database</Justification>
