@@ -22,7 +22,7 @@ namespace ErrorHandlerSample
                     await context.Response.WriteAsync("<html><body>\r\n");
                     await context.Response.WriteAsync("We're sorry, we encountered an un-expected issue with your application.<br>\r\n");
 
-                    var error = context.Features.Get<IErrorHandlerFeature>();
+                    var error = context.Features.Get<IExceptionHandlerFeature>();
                     if (error != null)
                     {
                         // This error would not normally be exposed to the client

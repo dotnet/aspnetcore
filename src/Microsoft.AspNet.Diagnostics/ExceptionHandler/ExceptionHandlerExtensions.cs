@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Builder
             {
                 ErrorHandlingPath = new PathString(errorHandlingPath)
             };
-            return app.UseMiddleware<ErrorHandlerMiddleware>(options);
+            return app.UseMiddleware<ExceptionHandlerMiddleware>(options);
         }
 
         /// <summary>
@@ -76,7 +76,7 @@ namespace Microsoft.AspNet.Builder
             {
                 ErrorHandler = errorPipeline
             };
-            return app.UseMiddleware<ErrorHandlerMiddleware>(options);
+            return app.UseMiddleware<ExceptionHandlerMiddleware>(options);
         }
     }
 }

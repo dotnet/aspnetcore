@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.AspNet.Diagnostics
 {
-    public class ErrorHandlerFeature : IErrorHandlerFeature
+    public class ExceptionHandlerFeature : IExceptionHandlerFeature
     {
         public Exception Error { get; set; }
     }
