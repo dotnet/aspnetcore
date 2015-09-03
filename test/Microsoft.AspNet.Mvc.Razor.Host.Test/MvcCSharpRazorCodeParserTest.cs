@@ -207,7 +207,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 new RazorError(
                     "The 'inherits' keyword is not allowed when a 'model' keyword is used.",
                     PlatformNormalizer.NormalizedSourceLocation(21, 1, 9),
-                    1)
+                    length: 8)
             };
 
             // Act
@@ -251,8 +251,10 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var expectedErrors = new[]
             {
-                new RazorError("The 'inherits' keyword is not allowed when a 'model' keyword is used.",
-                               new SourceLocation(9, 0, 9), 1)
+                new RazorError(
+                    "The 'inherits' keyword is not allowed when a 'model' keyword is used.",
+                    new SourceLocation(9, 0, 9),
+                    length: 8)
             };
 
             // Act

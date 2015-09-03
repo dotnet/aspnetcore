@@ -237,7 +237,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Host.Test
                 new RazorError(
                     "The 'inherits' keyword is not allowed when a 'model' keyword is used.",
                     PlatformNormalizer.NormalizedSourceLocation(21, 1, 9),
-                    1)
+                    length: 8)
             };
             expectedSpans.Zip(spans, (exp, span) => new { expected = exp, span = span }).ToList().ForEach(i => Assert.Equal(i.expected, i.span));
             Assert.Equal(expectedSpans, spans.ToArray());
@@ -279,7 +279,10 @@ namespace Microsoft.AspNet.Mvc.Razor.Host.Test
 
             var expectedErrors = new[]
             {
-                new RazorError("The 'inherits' keyword is not allowed when a 'model' keyword is used.", new SourceLocation(9, 0, 9), 1)
+                new RazorError(
+                    "The 'inherits' keyword is not allowed when a 'model' keyword is used.",
+                    new SourceLocation(9, 0, 9),
+                    length: 8)
             };
             expectedSpans.Zip(spans, (exp, span) => new { expected = exp, span = span }).ToList().ForEach(i => Assert.Equal(i.expected, i.span));
             Assert.Equal(expectedSpans, spans.ToArray());
