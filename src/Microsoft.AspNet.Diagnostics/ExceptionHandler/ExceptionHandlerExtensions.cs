@@ -71,10 +71,10 @@ namespace Microsoft.AspNet.Builder
         {
             var subAppBuilder = app.New();
             configure(subAppBuilder);
-            var errorPipeline = subAppBuilder.Build();
+            var exceptionHandlerPipeline = subAppBuilder.Build();
             var options = new ExceptionHandlerOptions()
             {
-                ExceptionHandler = errorPipeline
+                ExceptionHandler = exceptionHandlerPipeline
             };
             return app.UseMiddleware<ExceptionHandlerMiddleware>(options);
         }
