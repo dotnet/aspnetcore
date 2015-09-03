@@ -67,6 +67,5 @@ namespace Microsoft.Framework.DependencyInjection
 		
             return builder;		
         }		
-     }
     }
 }
