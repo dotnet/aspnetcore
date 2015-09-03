@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
 
             // Assert
             Assert.Equal(
-                "PreflightMaxAge must be greater than or equal to 0.\r\nParameter name: value",
+                $"PreflightMaxAge must be greater than or equal to 0.{Environment.NewLine}Parameter name: value",
                 exception.Message);
         }
 
