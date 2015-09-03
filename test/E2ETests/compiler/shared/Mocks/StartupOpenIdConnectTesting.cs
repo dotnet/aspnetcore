@@ -77,13 +77,13 @@ namespace MusicStore
                 options.ProtocolValidator.NonceLifetime = TimeSpan.FromDays(36500);
                 options.UseTokenLifetime = false;
 
-                options.Notifications = new OpenIdConnectAuthenticationNotifications
+                options.Events = new OpenIdConnectAuthenticationEvents
                 {
-                    MessageReceived = OpenIdConnectNotifications.MessageReceived,
-                    AuthorizationCodeReceived = OpenIdConnectNotifications.AuthorizationCodeReceived,
-                    RedirectToIdentityProvider = OpenIdConnectNotifications.RedirectToIdentityProvider,
-                    SecurityTokenReceived = OpenIdConnectNotifications.SecurityTokenReceived,
-                    SecurityTokenValidated = OpenIdConnectNotifications.SecurityTokenValidated
+                    OnMessageReceived = OpenIdConnectEvents.MessageReceived,
+                    OnAuthorizationCodeReceived = OpenIdConnectEvents.AuthorizationCodeReceived,
+                    OnRedirectToIdentityProvider = OpenIdConnectEvents.RedirectToIdentityProvider,
+                    OnSecurityTokenReceived = OpenIdConnectEvents.SecurityTokenReceived,
+                    OnSecurityTokenValidated = OpenIdConnectEvents.SecurityTokenValidated
                 };
             });
 

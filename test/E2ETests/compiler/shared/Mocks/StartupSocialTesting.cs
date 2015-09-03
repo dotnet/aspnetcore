@@ -79,11 +79,11 @@ namespace MusicStore
             {
                 options.AppId = "[AppId]";
                 options.AppSecret = "[AppSecret]";
-                options.Notifications = new OAuthAuthenticationNotifications()
+                options.Events = new OAuthAuthenticationEvents()
                 {
-                    OnAuthenticated = FacebookNotifications.OnAuthenticated,
-                    OnReturnEndpoint = FacebookNotifications.OnReturnEndpoint,
-                    OnApplyRedirect = FacebookNotifications.OnApplyRedirect
+                    OnAuthenticated = FacebookEvents.OnAuthenticated,
+                    OnReturnEndpoint = FacebookEvents.OnReturnEndpoint,
+                    OnApplyRedirect = FacebookEvents.OnApplyRedirect
                 };
                 options.BackchannelHttpHandler = new FacebookMockBackChannelHttpHandler();
                 options.StateDataFormat = new CustomStateDataFormat();
@@ -97,11 +97,11 @@ namespace MusicStore
                 options.ClientId = "[ClientId]";
                 options.ClientSecret = "[ClientSecret]";
                 options.AccessType = "offline";
-                options.Notifications = new OAuthAuthenticationNotifications()
+                options.Events = new OAuthAuthenticationEvents()
                 {
-                    OnAuthenticated = GoogleNotifications.OnAuthenticated,
-                    OnReturnEndpoint = GoogleNotifications.OnReturnEndpoint,
-                    OnApplyRedirect = GoogleNotifications.OnApplyRedirect
+                    OnAuthenticated = GoogleEvents.OnAuthenticated,
+                    OnReturnEndpoint = GoogleEvents.OnReturnEndpoint,
+                    OnApplyRedirect = GoogleEvents.OnApplyRedirect
                 };
                 options.StateDataFormat = new CustomStateDataFormat();
                 options.BackchannelHttpHandler = new GoogleMockBackChannelHttpHandler();
@@ -111,11 +111,11 @@ namespace MusicStore
             {
                 options.ConsumerKey = "[ConsumerKey]";
                 options.ConsumerSecret = "[ConsumerSecret]";
-                options.Notifications = new TwitterAuthenticationNotifications()
+                options.Events = new TwitterAuthenticationEvents()
                 {
-                    OnAuthenticated = TwitterNotifications.OnAuthenticated,
-                    OnReturnEndpoint = TwitterNotifications.OnReturnEndpoint,
-                    OnApplyRedirect = TwitterNotifications.OnApplyRedirect
+                    OnAuthenticated = TwitterEvents.OnAuthenticated,
+                    OnReturnEndpoint = TwitterEvents.OnReturnEndpoint,
+                    OnApplyRedirect = TwitterEvents.OnApplyRedirect
                 };
                 options.StateDataFormat = new CustomTwitterStateDataFormat();
                 options.BackchannelHttpHandler = new TwitterMockBackChannelHttpHandler();
@@ -129,11 +129,11 @@ namespace MusicStore
                 options.Caption = "MicrosoftAccount - Requires project changes";
                 options.ClientId = "[ClientId]";
                 options.ClientSecret = "[ClientSecret]";
-                options.Notifications = new OAuthAuthenticationNotifications()
+                options.Events = new OAuthAuthenticationEvents()
                 {
-                    OnAuthenticated = MicrosoftAccountNotifications.OnAuthenticated,
-                    OnReturnEndpoint = MicrosoftAccountNotifications.OnReturnEndpoint,
-                    OnApplyRedirect = MicrosoftAccountNotifications.OnApplyRedirect
+                    OnAuthenticated = MicrosoftAccountEvents.OnAuthenticated,
+                    OnReturnEndpoint = MicrosoftAccountEvents.OnReturnEndpoint,
+                    OnApplyRedirect = MicrosoftAccountEvents.OnApplyRedirect
                 };
                 options.BackchannelHttpHandler = new MicrosoftAccountMockBackChannelHandler();
                 options.StateDataFormat = new CustomStateDataFormat();

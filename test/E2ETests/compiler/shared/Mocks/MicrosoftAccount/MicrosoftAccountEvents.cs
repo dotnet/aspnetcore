@@ -10,10 +10,7 @@ using MusicStore.Mocks.Common;
 
 namespace MusicStore.Mocks.MicrosoftAccount
 {
-    /// <summary>
-    /// Summary description for MicrosoftAccountNotifications
-    /// </summary>
-    internal class MicrosoftAccountNotifications
+    internal class MicrosoftAccountEvents
     {
         internal static async Task OnAuthenticated(OAuthAuthenticatedContext context)
         {
@@ -38,7 +35,7 @@ namespace MusicStore.Mocks.MicrosoftAccount
         {
             if (context.Principal != null && context.SignInScheme == new IdentityCookieOptions().ExternalCookieAuthenticationScheme)
             {
-                //This way we will know all notifications were fired.
+                //This way we will know all events were fired.
                 var identity = context.Principal.Identities.First();
                 var manageStoreClaim = identity?.Claims.Where(c => c.Type == "ManageStore" && c.Value == "false").FirstOrDefault();
                 if (manageStoreClaim != null)

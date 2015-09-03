@@ -8,10 +8,7 @@ using MusicStore.Mocks.Common;
 
 namespace MusicStore.Mocks.Twitter
 {
-    /// <summary>
-    /// Summary description for TwitterNotifications
-    /// </summary>
-    internal class TwitterNotifications
+    internal class TwitterEvents
     {
         internal static async Task OnAuthenticated(TwitterAuthenticatedContext context)
         {
@@ -31,7 +28,7 @@ namespace MusicStore.Mocks.Twitter
         {
             if (context.Principal != null && context.SignInScheme == new IdentityCookieOptions().ExternalCookieAuthenticationScheme)
             {
-                //This way we will know all notifications were fired.
+                //This way we will know all Events were fired.
                 var identity = context.Principal.Identities.First();
                 var manageStoreClaim = identity?.Claims.Where(c => c.Type == "ManageStore" && c.Value == "false").FirstOrDefault();
                 if (manageStoreClaim != null)

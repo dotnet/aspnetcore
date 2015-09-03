@@ -88,12 +88,12 @@ namespace E2ETests
             Assert.Null(_httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)).GetCookieWithName(".AspNet.Microsoft.AspNet.Identity.ExternalLogin"));
             _logger.LogInformation("Successfully signed in with user '{email}'", "AspnetvnextTest@test.com");
 
-            _logger.LogInformation("Verifying if the middleware notifications were fired");
+            _logger.LogInformation("Verifying if the middleware events were fired");
             //Check for a non existing item
             response = await _httpClient.GetAsync(string.Format("Admin/StoreManager/GetAlbumIdFromName?albumName={0}", "123"));
-            //This action requires admin permissions. If notifications are fired this permission is granted
+            //This action requires admin permissions. If events are fired this permission is granted
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-            _logger.LogInformation("Middleware notifications were fired successfully");
+            _logger.LogInformation("Middleware events were fired successfully");
         }
     }
 }
