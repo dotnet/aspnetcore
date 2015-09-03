@@ -11,10 +11,12 @@ using Microsoft.Framework.OptionsModel;
 
 namespace FiltersWebSite
 {
-    public class BasicOptions : AuthenticationOptions
+    public class BasicOptions : AuthenticationOptions, IOptions<BasicOptions>
     {
         public BasicOptions()
         {
         }
+
+        public BasicOptions Value { get { return this; } }
     }
 }
