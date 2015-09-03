@@ -27,9 +27,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [InlineData(typeof(IApiDescriptionProvider), null, -1000)]
         [InlineData(typeof(IFilterProvider), null, -1000)]
         [InlineData(typeof(IActionConstraintProvider), null, -1000)]
-        // REVIEW: Options no longer has order
-        //[InlineData(typeof(IConfigureOptions<RazorViewEngineOptions>), null, -1000)]
-        //[InlineData(typeof(IConfigureOptions<MvcOptions>), null, -1000)]
         public async Task ServiceOrder_GetOrder(Type serviceType, Type actualType, int order)
         {
             // Arrange
