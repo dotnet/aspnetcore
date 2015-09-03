@@ -6,6 +6,7 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNet.WebSockets.Client.Test
@@ -14,7 +15,8 @@ namespace Microsoft.AspNet.WebSockets.Client.Test
     {
         private static string ClientAddress = "ws://localhost:54321/";
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task Connect_Success()
         {
             using (var server = KestrelWebSocketHelpers.CreateServer(async context =>
@@ -30,7 +32,8 @@ namespace Microsoft.AspNet.WebSockets.Client.Test
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task NegotiateSubProtocol_Success()
         {
             using (var server = KestrelWebSocketHelpers.CreateServer(async context =>
@@ -51,7 +54,8 @@ namespace Microsoft.AspNet.WebSockets.Client.Test
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task SendEmptyData_Success()
         {
             using (var server = KestrelWebSocketHelpers.CreateServer(async context =>
@@ -75,7 +79,8 @@ namespace Microsoft.AspNet.WebSockets.Client.Test
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task SendShortData_Success()
         {
             var orriginalData = Encoding.UTF8.GetBytes("Hello World");
@@ -100,7 +105,8 @@ namespace Microsoft.AspNet.WebSockets.Client.Test
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task SendMediumData_Success()
         {
             var orriginalData = Encoding.UTF8.GetBytes(new string('a', 130));
@@ -125,7 +131,8 @@ namespace Microsoft.AspNet.WebSockets.Client.Test
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task SendLongData_Success()
         {
             var orriginalData = Encoding.UTF8.GetBytes(new string('a', 0x1FFFF));
@@ -162,7 +169,8 @@ namespace Microsoft.AspNet.WebSockets.Client.Test
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task SendFragmentedData_Success()
         {
             var orriginalData = Encoding.UTF8.GetBytes("Hello World");
@@ -205,7 +213,8 @@ namespace Microsoft.AspNet.WebSockets.Client.Test
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ReceiveEmptyData_Success()
         {
             var orriginalData = Encoding.UTF8.GetBytes("Hello World");
@@ -229,7 +238,8 @@ namespace Microsoft.AspNet.WebSockets.Client.Test
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ReceiveShortData_Success()
         {
             var orriginalData = Encoding.UTF8.GetBytes("Hello World");
@@ -254,7 +264,8 @@ namespace Microsoft.AspNet.WebSockets.Client.Test
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ReceiveMediumData_Success()
         {
             var orriginalData = Encoding.UTF8.GetBytes(new string('a', 130));
@@ -279,7 +290,8 @@ namespace Microsoft.AspNet.WebSockets.Client.Test
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ReceiveLongDataInSmallBuffer_Success()
         {
             var orriginalData = Encoding.UTF8.GetBytes(new string('a', 0x1FFFF));
@@ -312,7 +324,8 @@ namespace Microsoft.AspNet.WebSockets.Client.Test
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ReceiveLongDataInLargeBuffer_Success()
         {
             var orriginalData = Encoding.UTF8.GetBytes(new string('a', 0x1FFFF));
@@ -337,7 +350,8 @@ namespace Microsoft.AspNet.WebSockets.Client.Test
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ReceiveFragmentedData_Success()
         {
             var orriginalData = Encoding.UTF8.GetBytes("Hello World");
@@ -380,7 +394,8 @@ namespace Microsoft.AspNet.WebSockets.Client.Test
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task SendClose_Success()
         {
             string closeDescription = "Test Closed";
@@ -408,7 +423,8 @@ namespace Microsoft.AspNet.WebSockets.Client.Test
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ReceiveClose_Success()
         {
             string closeDescription = "Test Closed";
@@ -436,7 +452,8 @@ namespace Microsoft.AspNet.WebSockets.Client.Test
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task CloseFromOpen_Success()
         {
             string closeDescription = "Test Closed";
@@ -466,7 +483,8 @@ namespace Microsoft.AspNet.WebSockets.Client.Test
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task CloseFromCloseSent_Success()
         {
             string closeDescription = "Test Closed";
@@ -498,7 +516,8 @@ namespace Microsoft.AspNet.WebSockets.Client.Test
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task CloseFromCloseReceived_Success()
         {
             string closeDescription = "Test Closed";
