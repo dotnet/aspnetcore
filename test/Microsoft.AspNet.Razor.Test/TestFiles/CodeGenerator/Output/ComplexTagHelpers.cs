@@ -265,8 +265,8 @@ if(true) {
 #line default
 #line hidden
 
-                Instrumentation.BeginContext(805, 14, true);
-                WriteLiteral("\r\n            ");
+                Instrumentation.BeginContext(807, 12, true);
+                WriteLiteral("            ");
                 Instrumentation.EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", TagMode.StartTagOnly, "test", async() => {
                 }

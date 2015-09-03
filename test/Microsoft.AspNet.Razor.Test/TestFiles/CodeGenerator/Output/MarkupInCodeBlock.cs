@@ -40,9 +40,6 @@ namespace TestOutput
 #line default
 #line hidden
 
-            Instrumentation.BeginContext(96, 2, true);
-            WriteLiteral("\r\n");
-            Instrumentation.EndContext();
         }
         #pragma warning restore 1998
     }

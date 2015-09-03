@@ -21,8 +21,8 @@ namespace TestOutput
 #line default
 #line hidden
 
-            Instrumentation.BeginContext(47, 33, true);
-            WriteLiteral("\r\n\r\n<div>This is in the Body>\r\n\r\n");
+            Instrumentation.BeginContext(49, 31, true);
+            WriteLiteral("\r\n<div>This is in the Body>\r\n\r\n");
             Instrumentation.EndContext();
             DefineSection("Section2", async(__razor_template_writer) => {
                 Instrumentation.BeginContext(99, 39, true);

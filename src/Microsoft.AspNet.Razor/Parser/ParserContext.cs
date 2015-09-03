@@ -67,6 +67,8 @@ namespace Microsoft.AspNet.Razor.Parser
         public Span LastSpan { get; private set; }
         public bool WhiteSpaceIsSignificantToAncestorBlock { get; set; }
 
+        public bool NullGenerateWhitespaceAndNewLine { get; set; }
+
         public AcceptedCharacters LastAcceptedCharacters
         {
             get

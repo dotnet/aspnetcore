@@ -72,8 +72,8 @@ Write(foo(""));
 #line default
 #line hidden
 
-            Instrumentation.BeginContext(367, 10, true);
-            WriteLiteral("\r\n\r\n<ul>\r\n");
+            Instrumentation.BeginContext(369, 8, true);
+            WriteLiteral("\r\n<ul>\r\n");
             Instrumentation.EndContext();
             Instrumentation.BeginContext(379, 11, false);
 #line 17 "Templates.cshtml"
@@ -156,8 +156,8 @@ WriteTo(__razor_template_writer, item);
 #line default
 #line hidden
 
-    Instrumentation.BeginContext(574, 79, true);
-    WriteLiteralTo(__razor_template_writer, "\r\n        <ul>\r\n            <li>Child Items... ?</li>\r\n        </ul>\r\n    </li>");
+    Instrumentation.BeginContext(576, 77, true);
+    WriteLiteralTo(__razor_template_writer, "        <ul>\r\n            <li>Child Items... ?</li>\r\n        </ul>\r\n    </li>");
     Instrumentation.EndContext();
 }
 )

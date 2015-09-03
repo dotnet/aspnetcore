@@ -35,8 +35,8 @@ namespace TestOutput
 #line default
 #line hidden
 
-            Instrumentation.BeginContext(69, 4, true);
-            WriteLiteral("\r\n\r\n");
+            Instrumentation.BeginContext(71, 2, true);
+            WriteLiteral("\r\n");
             Instrumentation.EndContext();
             DefineSection("MySection", async(__razor_template_writer) => {
                 Instrumentation.BeginContext(93, 21, true);

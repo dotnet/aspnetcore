@@ -22,8 +22,8 @@ namespace TestOutput
 #line default
 #line hidden
 
-            Instrumentation.BeginContext(54, 4, true);
-            WriteLiteral("\r\n\r\n");
+            Instrumentation.BeginContext(56, 2, true);
+            WriteLiteral("\r\n");
             Instrumentation.EndContext();
 #line 6 "ExpressionsInCode.cshtml"
  if(foo != null) {

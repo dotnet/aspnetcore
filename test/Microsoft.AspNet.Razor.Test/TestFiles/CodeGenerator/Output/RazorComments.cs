@@ -40,8 +40,8 @@ namespace TestOutput
 #line default
 #line hidden
 
-            Instrumentation.BeginContext(232, 4, true);
-            WriteLiteral("\r\n\r\n");
+            Instrumentation.BeginContext(234, 2, true);
+            WriteLiteral("\r\n");
             Instrumentation.EndContext();
 #line 12 "RazorComments.cshtml"
    var bar = "@* bar *@"; 
@@ -49,8 +49,8 @@ namespace TestOutput
 #line default
 #line hidden
 
-            Instrumentation.BeginContext(263, 46, true);
-            WriteLiteral("\r\n<p>But this should show the comment syntax: ");
+            Instrumentation.BeginContext(265, 44, true);
+            WriteLiteral("<p>But this should show the comment syntax: ");
             Instrumentation.EndContext();
             Instrumentation.BeginContext(310, 3, false);
 #line 13 "RazorComments.cshtml"

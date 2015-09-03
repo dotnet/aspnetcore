@@ -71,7 +71,19 @@ namespace Microsoft.AspNet.Razor.Parser
             var startOfLine = false;
             while (!EndOfFile && !condition(CurrentSymbol))
             {
-                if (At(HtmlSymbolType.NewLine))
+                if (Context.NullGenerateWhitespaceAndNewLine)
+                {
+                    Context.NullGenerateWhitespaceAndNewLine = false;
+                    Span.ChunkGenerator = SpanChunkGenerator.Null;
+                    AcceptWhile(symbol => symbol.Type == HtmlSymbolType.WhiteSpace);
+                    if (At(HtmlSymbolType.NewLine))
+                    {
+                        AcceptAndMoveNext();
+                    }
+
+                    Output(SpanKind.Markup);
+                }
+                else if (At(HtmlSymbolType.NewLine))
                 {
                     if (last != null)
                     {

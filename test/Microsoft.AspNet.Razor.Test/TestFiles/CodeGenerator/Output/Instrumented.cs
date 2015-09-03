@@ -42,8 +42,8 @@ namespace TestOutput
 #line default
 #line hidden
 
-            Instrumentation.BeginContext(94, 4, true);
-            WriteLiteral("\r\n\r\n");
+            Instrumentation.BeginContext(96, 2, true);
+            WriteLiteral("\r\n");
             Instrumentation.EndContext();
 #line 8 "Instrumented.cshtml"
  while(i <= 10) {

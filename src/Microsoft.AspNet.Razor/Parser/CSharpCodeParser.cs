@@ -316,12 +316,16 @@ namespace Microsoft.AspNet.Razor.Parser
                 Span.ChunkGenerator = SpanChunkGenerator.Null;
             }
 
-            if (!At(CSharpSymbolType.WhiteSpace) && !At(CSharpSymbolType.NewLine))
+            if (!IsNested)
             {
-                PutCurrentBack();
+                EnsureCurrent();
+                if (At(CSharpSymbolType.NewLine) ||
+                    (At(CSharpSymbolType.WhiteSpace) && NextIs(CSharpSymbolType.NewLine)))
+                {
+                    Context.NullGenerateWhitespaceAndNewLine = true;
+                }
             }
 
-            CompleteBlock(insertMarkerIfNecessary: false);
             Output(SpanKind.MetaCode);
         }
 

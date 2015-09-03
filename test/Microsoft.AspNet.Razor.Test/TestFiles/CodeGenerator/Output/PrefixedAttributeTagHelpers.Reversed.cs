@@ -43,8 +43,8 @@ namespace TestOutput
 #line default
 #line hidden
 
-            Instrumentation.BeginContext(280, 51, true);
-            WriteLiteral("\r\n\r\n<div class=\"randomNonTagHelperAttribute\">\r\n    ");
+            Instrumentation.BeginContext(282, 49, true);
+            WriteLiteral("\r\n<div class=\"randomNonTagHelperAttribute\">\r\n    ");
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", TagMode.SelfClosing, "test", async() => {
             }

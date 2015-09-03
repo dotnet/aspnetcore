@@ -291,6 +291,134 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
         }
 
         [Fact]
+        public void ParseDocumentDoesNotRenderExtraNewLineAtTheEndOfVerbatimBlock()
+        {
+            ParseDocumentTest("@{\r\n}\r\n<html>",
+                new MarkupBlock(
+                    Factory.EmptyHtml(),
+                    new StatementBlock(
+                        Factory.CodeTransition(),
+                        Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
+                        Factory.Code("\r\n").AsStatement().AutoCompleteWith(null, false),
+                        Factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
+                    Factory.Markup("\r\n").With(SpanChunkGenerator.Null),
+                    BlockFactory.MarkupTagBlock("<html>")));
+        }
+
+        [Fact]
+        public void ParseDocumentDoesNotRenderExtraWhitespaceAndNewLineAtTheEndOfVerbatimBlock()
+        {
+            ParseDocumentTest("@{\r\n} \t\r\n<html>",
+                new MarkupBlock(
+                    Factory.EmptyHtml(),
+                    new StatementBlock(
+                        Factory.CodeTransition(),
+                        Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
+                        Factory.Code("\r\n").AsStatement().AutoCompleteWith(null, false),
+                        Factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
+                    Factory.Markup(" \t\r\n").With(SpanChunkGenerator.Null),
+                    BlockFactory.MarkupTagBlock("<html>")));
+        }
+
+        [Fact]
+        public void ParseDocumentDoesNotIgnoreNewLineAtTheEndOfMarkupBlock()
+        {
+            ParseDocumentTest("@{\r\n}\r\n<html>\r\n",
+                new MarkupBlock(
+                    Factory.EmptyHtml(),
+                    new StatementBlock(
+                        Factory.CodeTransition(),
+                        Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
+                        Factory.Code("\r\n").AsStatement().AutoCompleteWith(null, false),
+                        Factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
+                    Factory.Markup("\r\n").With(SpanChunkGenerator.Null),
+                    BlockFactory.MarkupTagBlock("<html>"),
+                    Factory.Markup("\r\n")));
+        }
+
+        [Fact]
+        public void ParseDocumentDoesNotIgnoreWhitespaceAtTheEndOfVerbatimBlockIfNoNewlinePresent()
+        {
+            ParseDocumentTest("@{\r\n}   \t<html>\r\n",
+                new MarkupBlock(
+                    Factory.EmptyHtml(),
+                    new StatementBlock(
+                        Factory.CodeTransition(),
+                        Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
+                        Factory.Code("\r\n").AsStatement().AutoCompleteWith(null, false),
+                        Factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
+                    Factory.Markup("   \t"),
+                    BlockFactory.MarkupTagBlock("<html>"),
+                    Factory.Markup("\r\n")));
+        }
+
+        [Fact]
+        public void ParseDocumentHandlesNewLineInNestedBlock()
+        {
+            ParseDocumentTest("@{\r\n@if(true){\r\n} \r\n}\r\n<html>",
+                new MarkupBlock(
+                    Factory.EmptyHtml(),
+                    new StatementBlock(
+                        Factory.CodeTransition(),
+                        Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
+                        Factory.Code("\r\n").AsStatement().AutoCompleteWith(null, false),
+                        new StatementBlock(
+                            Factory.CodeTransition(),
+                            Factory.Code("if(true){\r\n}").AsStatement()),
+                        Factory.Code(" \r\n").AsStatement(),
+                        Factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
+                    Factory.Markup("\r\n").With(SpanChunkGenerator.Null),
+                    BlockFactory.MarkupTagBlock("<html>")));
+        }
+
+        [Fact]
+        public void ParseDocumentHandlesNewLineAndMarkupInNestedBlock()
+        {
+            ParseDocumentTest("@{\r\n@if(true){\r\n} <input> }",
+                new MarkupBlock(
+                    Factory.EmptyHtml(),
+                    new StatementBlock(
+                        Factory.CodeTransition(),
+                        Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
+                        Factory.Code("\r\n").AsStatement().AutoCompleteWith(null, false),
+                        new StatementBlock(
+                            Factory.CodeTransition(),
+                            Factory.Code("if(true){\r\n}").AsStatement()),
+                        new MarkupBlock(
+                            Factory.Markup(" "),
+                            new MarkupTagBlock(
+                                Factory.Markup("<input>").Accepts(AcceptedCharacters.None)),
+                            Factory.Markup(" ").Accepts(AcceptedCharacters.None)),
+                        Factory.EmptyCSharp().AsStatement(),
+                        Factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
+                    Factory.EmptyHtml()));
+        }
+
+        [Fact]
+        public void ParseDocumentHandlesExtraNewLineBeforeMarkupInNestedBlock()
+        {
+            ParseDocumentTest("@{\r\n@if(true){\r\n} \r\n<input> \r\n}<html>",
+                new MarkupBlock(
+                    Factory.EmptyHtml(),
+                    new StatementBlock(
+                        Factory.CodeTransition(),
+                        Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
+                        Factory.Code("\r\n").AsStatement().AutoCompleteWith(null, false),
+                        new StatementBlock(
+                            Factory.CodeTransition(),
+                            Factory.Code("if(true){\r\n}").AsStatement()),
+                        Factory.Code(" \r\n").AsStatement(),
+                        new MarkupBlock(
+                            new MarkupTagBlock(
+                                Factory.Markup("<input>").Accepts(AcceptedCharacters.None)),
+                            Factory.Markup(" \r\n").Accepts(AcceptedCharacters.None)),
+                        Factory.EmptyCSharp().AsStatement(),
+                        Factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
+                    new MarkupTagBlock(
+                        Factory.Markup("<html>"))));
+        }
+
+        [Fact]
         public void ParseSectionIgnoresTagsInContentsOfScriptTag()
         {
             ParseDocumentTest(@"@section Foo { <script>foo<bar baz='@boz'></script> }",
