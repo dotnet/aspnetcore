@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     {
         private List<UvPipeHandle> _dispatchPipes = new List<UvPipeHandle>();
         private int _dispatchIndex;
-        private ArraySegment<ArraySegment<byte>> _1234 = new ArraySegment<ArraySegment<byte>>(new[] { new ArraySegment<byte>(new byte[] { 1, 2, 3, 4 }) });
+        private ArraySegment<ArraySegment<byte>> _binaryOneTwoThreeFour = new ArraySegment<ArraySegment<byte>>(new[] { new ArraySegment<byte>(new byte[] { 1, 2, 3, 4 }) });
 
         protected ListenerPrimary(IMemoryPool memory) : base(memory)
         {
@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 write.Init(Thread.Loop);
                 write.Write2(
                     dispatchPipe,
-                    _1234,
+                    _binaryOneTwoThreeFour,
                     socket,
                     (write2, status, error, state) => 
                     {
