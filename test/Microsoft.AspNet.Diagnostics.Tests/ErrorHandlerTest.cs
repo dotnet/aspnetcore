@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Diagnostics
         {
             using (var server = TestServer.Create(app =>
             {
-                app.UseErrorHandler("/handle-errors");
+                app.UseExceptionHandler("/handle-errors");
 
                 app.Map("/handle-errors", (innerAppBuilder) =>
                 {
@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.Diagnostics
                     Assert.Equal("Something bad happened", exception.Message);
                 });
 
-                app.UseErrorHandler("/handle-errors");
+                app.UseExceptionHandler("/handle-errors");
 
                 app.Map("/handle-errors", (innerAppBuilder) =>
                 {
@@ -124,7 +124,7 @@ namespace Microsoft.AspNet.Diagnostics
                     }
                 });
 
-                app.UseErrorHandler("/handle-errors");
+                app.UseExceptionHandler("/handle-errors");
 
                 app.Map("/handle-errors", (innerAppBuilder) =>
                 {
@@ -171,7 +171,7 @@ namespace Microsoft.AspNet.Diagnostics
             var expectedResponseBody = "Handled error in a custom way.";
             using (var server = TestServer.Create(app =>
             {
-                app.UseErrorHandler("/handle-errors");
+                app.UseExceptionHandler("/handle-errors");
 
                 app.Map("/handle-errors", (innerAppBuilder) =>
                 {
@@ -218,7 +218,7 @@ namespace Microsoft.AspNet.Diagnostics
             var expectedResponseBody = "Hello world!";
             using (var server = TestServer.Create(app =>
             {
-                app.UseErrorHandler("/handle-errors");
+                app.UseExceptionHandler("/handle-errors");
 
                 app.Map("/handle-errors", (innerAppBuilder) =>
                 {
@@ -281,7 +281,7 @@ namespace Microsoft.AspNet.Diagnostics
                     Assert.Equal("Something bad happened", exception.Message);
                 });
 
-                app.UseErrorHandler("/handle-errors");
+                app.UseExceptionHandler("/handle-errors");
 
                 app.Map("/handle-errors", (innerAppBuilder) =>
                 {

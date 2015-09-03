@@ -7,7 +7,7 @@ namespace ErrorPageSample
     {
         public void Configure(IApplicationBuilder app)
         {
-            app.UseErrorPage();
+            app.UseDeveloperExceptionPage();
             app.Run(context =>
             {
                 throw new Exception(string.Concat(

@@ -12,7 +12,7 @@ namespace ErrorHandlerSample
         public void Configure(IApplicationBuilder app)
         {
             // Configure the error handler to show an error page.
-            app.UseErrorHandler(errorApp =>
+            app.UseExceptionHandler(errorApp =>
             {
                 // Normally you'd use MVC or similar to render a nice page.
                 errorApp.Run(async context =>

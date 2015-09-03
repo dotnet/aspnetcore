@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Diagnostics
     /// <summary>
     /// Captures synchronous and asynchronous exceptions from the pipeline and generates HTML error responses.
     /// </summary>
-    public class ErrorPageMiddleware
+    public class DeveloperExceptionPageMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly ErrorPageOptions _options;
@@ -33,11 +33,11 @@ namespace Microsoft.AspNet.Diagnostics
         private readonly IFileProvider _fileProvider;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ErrorPageMiddleware"/> class
+        /// Initializes a new instance of the <see cref="DeveloperExceptionPageMiddleware"/> class
         /// </summary>
         /// <param name="next"></param>
         /// <param name="options"></param>
-        public ErrorPageMiddleware(
+        public DeveloperExceptionPageMiddleware(
             [NotNull] RequestDelegate next,
             [NotNull] ErrorPageOptions options,
             ILoggerFactory loggerFactory,
@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Diagnostics
         {
             _next = next;
             _options = options;
-            _logger = loggerFactory.CreateLogger<ErrorPageMiddleware>();
+            _logger = loggerFactory.CreateLogger<DeveloperExceptionPageMiddleware>();
             _fileProvider = options.FileProvider ?? new PhysicalFileProvider(appEnvironment.ApplicationBasePath);
         }
 

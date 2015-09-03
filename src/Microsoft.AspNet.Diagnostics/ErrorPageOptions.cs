@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Diagnostics
         /// Provides files containing source code used to display contextual information of an exception.
         /// </summary>
         /// <remarks>
-        /// If <c>null</c> <see cref="ErrorPageMiddleware" /> will use a <see cref="PhysicalFileProvider"/>.
+        /// If <c>null</c> <see cref="DeveloperExceptionPageMiddleware" /> will use a <see cref="PhysicalFileProvider"/>.
         /// </remarks>
         public IFileProvider FileProvider { get; set; }
     }
