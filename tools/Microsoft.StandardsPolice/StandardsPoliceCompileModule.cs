@@ -273,7 +273,7 @@ namespace Microsoft.StandardsPolice
         {
         }
 
-        enum ClassZone
+        private enum ClassZone
         {
             Ignored,
             BeforeStart,

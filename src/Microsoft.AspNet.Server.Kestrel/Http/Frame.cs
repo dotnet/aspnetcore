@@ -660,7 +660,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                    statusCode != 304;
         }
 
-        enum Mode
+        private enum Mode
         {
             StartLine,
             MessageHeader,
