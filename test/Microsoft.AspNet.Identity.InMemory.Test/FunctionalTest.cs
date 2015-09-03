@@ -147,7 +147,7 @@ namespace Microsoft.AspNet.Identity.InMemory
             var transaction2 = await SendAsync(server, "http://example.com/twofactorRememeber");
             transaction2.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
 
-            string setCookie = transaction2.SetCookie;
+            var setCookie = transaction2.SetCookie;
             setCookie.ShouldContain(new IdentityCookieOptions().TwoFactorRememberMeCookieAuthenticationScheme + "=");
             setCookie.ShouldContain("; expires=");
 
@@ -170,9 +170,9 @@ namespace Microsoft.AspNet.Identity.InMemory
             var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Add("Cookie", cookie);
 
-            HttpResponseMessage response2 = await server.CreateClient().SendAsync(request);
-            string text = await response2.Content.ReadAsStringAsync();
-            XElement me = XElement.Parse(text);
+            var response2 = await server.CreateClient().SendAsync(request);
+            var text = await response2.Content.ReadAsStringAsync();
+            var me = XElement.Parse(text);
             return me;
         }
 

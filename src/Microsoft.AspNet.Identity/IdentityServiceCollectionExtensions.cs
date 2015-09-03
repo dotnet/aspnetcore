@@ -2,9 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Authentication;
 using Microsoft.AspNet.Identity;
-using Microsoft.Framework.Configuration;
 using Microsoft.Framework.DependencyInjection.Extensions;
 
 namespace Microsoft.Framework.DependencyInjection
@@ -45,7 +43,11 @@ namespace Microsoft.Framework.DependencyInjection
         {
             // Services used by identity
             services.AddOptions();
-            services.AddAuthentication();
+            services.AddAuthentication(options =>
+            {
+                // This is the Default value for ExternalCookieAuthenticationScheme
+                options.SignInScheme = new IdentityCookieOptions().ExternalCookieAuthenticationScheme;
+            });
 
             // Identity services
             services.TryAddSingleton<IdentityMarkerService>();
@@ -64,13 +66,8 @@ namespace Microsoft.Framework.DependencyInjection
 
             if (setupAction != null)
             {
-                services.Configure<IdentityOptions>(setupAction);
+                services.Configure(setupAction);
             }
-            services.Configure<SharedAuthenticationOptions>(options =>
-            {
-                // This is the Default value for ExternalCookieAuthenticationScheme
-                options.SignInScheme = new IdentityCookieOptions().ExternalCookieAuthenticationScheme;
-            });
 
             return new IdentityBuilder(typeof(TUser), typeof(TRole), services);
         }
