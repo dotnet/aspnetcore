@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Server.Kestrel
     /// </summary>
     public class KestrelThread
     {
-        private static Action<object, object> _objectCallback = (cb, obj) => ((Action<object>)cb).Invoke(obj);
+        private static Action<object, object> _objectCallbackAdapter = (callback, state) => ((Action<object>)callback).Invoke(state);
         private KestrelEngine _engine;
         private Thread _thread;
         private UvLoopHandle _loop;
@@ -103,7 +103,7 @@ namespace Microsoft.AspNet.Server.Kestrel
         {
             lock (_workSync)
             {
-                _workAdding.Enqueue(new Work { Callback1 = _objectCallback, Callback2 = callback, State = state });
+                _workAdding.Enqueue(new Work { CallbackAdapter = _objectCallbackAdapter, Callback = callback, State = state });
             }
             _post.Send();
         }
@@ -114,8 +114,8 @@ namespace Microsoft.AspNet.Server.Kestrel
             {
                 _workAdding.Enqueue(new Work
                 {
-                    Callback1 = (state1, state2) => ((Action<T>)state1).Invoke((T)state2),
-                    Callback2 = callback,
+                    CallbackAdapter = (callback2, state2) => ((Action<T>)callback2).Invoke((T)state2),
+                    Callback = callback,
                     State = state
                 });
             }
@@ -129,8 +129,8 @@ namespace Microsoft.AspNet.Server.Kestrel
             {
                 _workAdding.Enqueue(new Work
                 {
-                    Callback1 = _objectCallback,
-                    Callback2 = callback,
+                    CallbackAdapter = _objectCallbackAdapter,
+                    Callback = callback,
                     State = state,
                     Completion = tcs
                 });
@@ -146,8 +146,8 @@ namespace Microsoft.AspNet.Server.Kestrel
             {
                 _workAdding.Enqueue(new Work
                 {
-                    Callback1 = (state1, state2) => ((Action<T>)state1).Invoke((T)state2),
-                    Callback2 = callback,
+                    CallbackAdapter = (state1, state2) => ((Action<T>)state1).Invoke((T)state2),
+                    Callback = callback,
                     State = state,
                     Completion = tcs
                 });
@@ -250,7 +250,7 @@ namespace Microsoft.AspNet.Server.Kestrel
                 var work = queue.Dequeue();
                 try
                 {
-                    work.Callback1(work.Callback2, work.State);
+                    work.CallbackAdapter(work.Callback, work.State);
                     if (work.Completion != null)
                     {
                         ThreadPool.QueueUserWorkItem(
@@ -299,8 +299,8 @@ namespace Microsoft.AspNet.Server.Kestrel
 
         private struct Work
         {
-            public Action<object, object> Callback1;
-            public object Callback2;
+            public Action<object, object> CallbackAdapter;
+            public object Callback;
             public object State;
             public TaskCompletionSource<int> Completion;
         }

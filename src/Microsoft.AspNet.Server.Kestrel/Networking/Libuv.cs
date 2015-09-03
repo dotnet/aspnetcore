@@ -395,6 +395,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
 
         public struct sockaddr
         {
+            // this type represents native memory occupied by sockaddr struct
+            // https://msdn.microsoft.com/en-us/library/windows/desktop/ms740496(v=vs.85).aspx
+            // although the c/c++ header defines it as a 2-byte short followed by a 14-byte array,
+            // the simplest way to reserve the same size in c# is with four nameless long values
+
             private long _field0;
             private long _field1;
             private long _field2;
@@ -405,8 +410,16 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
 
         public struct uv_buf_t
         {
-            public IntPtr _field0;
-            public IntPtr _field1;
+            // this type represents a WSABUF struct on Windows 
+            // https://msdn.microsoft.com/en-us/library/windows/desktop/ms741542(v=vs.85).aspx
+            // and an iovec struct on *nix
+            // http://man7.org/linux/man-pages/man2/readv.2.html
+            // because the order of the fields in these structs is different, the field
+            // names in this type don't have meaningful symbolic names. instead, they are
+            // assigned in the correct order by the constructor at runtime
+
+            private readonly IntPtr _field0;
+            private readonly IntPtr _field1;
 
             public uv_buf_t(IntPtr memory, int len, bool IsWindows)
             {
