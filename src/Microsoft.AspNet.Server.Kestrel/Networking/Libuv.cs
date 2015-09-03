@@ -395,30 +395,30 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
 
         public struct sockaddr
         {
-            private long x0;
-            private long x1;
-            private long x2;
-            private long x3;
+            private long _field0;
+            private long _field1;
+            private long _field2;
+            private long _field3;
 
-            public sockaddr(long ignored) { x3 = x0 = x1 = x2 = x3 = 0; }
+            public sockaddr(long ignored) { _field3 = _field0 = _field1 = _field2 = _field3 = 0; }
         }
 
         public struct uv_buf_t
         {
-            public IntPtr x0;
-            public IntPtr x1;
+            public IntPtr _field0;
+            public IntPtr _field1;
 
             public uv_buf_t(IntPtr memory, int len, bool IsWindows)
             {
                 if (IsWindows)
                 {
-                    x0 = (IntPtr)len;
-                    x1 = memory;
+                    _field0 = (IntPtr)len;
+                    _field1 = memory;
                 }
                 else
                 {
-                    x0 = memory;
-                    x1 = (IntPtr)len;
+                    _field0 = memory;
+                    _field1 = (IntPtr)len;
                 }
             }
         }
