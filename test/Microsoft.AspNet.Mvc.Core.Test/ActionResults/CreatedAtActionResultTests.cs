@@ -97,7 +97,6 @@ namespace Microsoft.AspNet.Mvc.ActionResults
             httpContext.RequestServices = services.Object;
 
             var optionsAccessor = new TestOptionsManager<MvcOptions>();
-            var optionsAccessor = new MockMvcOptionsAccessor();
             optionsAccessor.Value.OutputFormatters.Add(new StringOutputFormatter());
             optionsAccessor.Value.OutputFormatters.Add(new JsonOutputFormatter());
             services.Setup(p => p.GetService(typeof(IOptions<MvcOptions>)))
