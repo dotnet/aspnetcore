@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
 {
     /// <summary>
     /// When a user configures the <see cref="AuthenticationMiddleware{TOptions}"/> to be notified prior to redirecting to an IdentityProvider
-    /// an instance of <see cref="RedirectFromIdentityProviderContext"/> is passed to the 'RedirectToIdentityProviderContext".
+    /// an instance of <see cref="RedirectToIdentityProviderContext"/> is passed to the 'RedirectToIdentityProvider" event.
     /// </summary>
     /// <typeparam name="TMessage">protocol specific message.</typeparam>
     /// <typeparam name="TOptions">protocol specific options.</typeparam>
