@@ -130,15 +130,14 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             mockOpenIdConnectMessage.Setup(m => m.CreateAuthenticationRequestUrl()).Returns(ExpectedAuthorizeRequest);
             mockOpenIdConnectMessage.Setup(m => m.CreateLogoutRequestUrl()).Returns(ExpectedLogoutRequest);
             options.AutomaticAuthentication = true;
-            options.Events =
-                new OpenIdConnectAuthenticationEvents
+            options.Events = new OpenIdConnectAuthenticationEvents()
+            {
+                OnRedirectToIdentityProvider = (context) =>
                 {
-                    RedirectToIdentityProvider = (context) =>
-                    {
-                        context.ProtocolMessage = mockOpenIdConnectMessage.Object;
-                        return Task.FromResult<object>(null);
-                    }
-                };
+                    context.ProtocolMessage = mockOpenIdConnectMessage.Object;
+                    return Task.FromResult<object>(null);
+                }
+            };
         }
 
         /// <summary>
@@ -163,9 +162,9 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             {
                 SetOptions(options, DefaultParameters(new string[] { OpenIdConnectParameterNames.State }), queryValues, stateDataFormat);
                 options.AutomaticAuthentication = challenge.Equals(ChallengeWithOutContext);
-                options.Events = new OpenIdConnectAuthenticationEvents
+                options.Events = new OpenIdConnectAuthenticationEvents()
                 {
-                    RedirectToIdentityProvider = context =>
+                    OnRedirectToIdentityProvider = context =>
                     {
                         context.ProtocolMessage.State = userState;
                         return Task.FromResult<object>(null);
@@ -214,9 +213,9 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             var server = CreateServer(options =>
             {
                 SetOptions(options, DefaultParameters(), queryValues);
-                options.Events = new OpenIdConnectAuthenticationEvents
+                options.Events = new OpenIdConnectAuthenticationEvents()
                 {
-                    RedirectToIdentityProvider = context =>
+                    OnRedirectToIdentityProvider = context =>
                     {
                         context.ProtocolMessage.ClientId = queryValuesSetInEvent.ClientId;
                         context.ProtocolMessage.RedirectUri = queryValuesSetInEvent.RedirectUri;

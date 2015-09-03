@@ -11,45 +11,47 @@ using Microsoft.AspNet.Http;
 namespace Microsoft.AspNet.Authentication.JwtBearer
 {
     /// <summary>
-    /// Jwt bearer token middleware provider
+    /// Jwt bearer token middleware events.
     /// </summary>
-    public class JwtBearerAuthenticationEvents
+    public class JwtBearerAuthenticationEvents : IJwtBearerAuthenticationEvents
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="JwtBearerAuthenticationProvider"/> class
-        /// </summary>
-        public JwtBearerAuthenticationEvents()
-        {
-            ApplyChallenge = context => { context.HttpContext.Response.Headers.Append("WWW-Authenticate", context.Options.Challenge); return Task.FromResult(0); };
-            AuthenticationFailed = context => Task.FromResult(0);
-            MessageReceived = context => Task.FromResult(0);
-            SecurityTokenReceived = context => Task.FromResult(0);
-            SecurityTokenValidated = context => Task.FromResult(0);
-        }
-
         /// <summary>
         /// Invoked if exceptions are thrown during request processing. The exceptions will be re-thrown after this event unless suppressed.
         /// </summary>
-        public Func<AuthenticationFailedContext, Task> AuthenticationFailed { get; set; }
+        public Func<AuthenticationFailedContext, Task> OnAuthenticationFailed { get; set; } = context => Task.FromResult(0);
 
         /// <summary>
         /// Invoked when a protocol message is first received.
         /// </summary>
-        public Func<MessageReceivedContext, Task> MessageReceived { get; set; }
+        public Func<MessageReceivedContext, Task> OnMessageReceived { get; set; } = context => Task.FromResult(0);
 
         /// <summary>
         /// Invoked with the security token that has been extracted from the protocol message.
         /// </summary>
-        public Func<SecurityTokenReceivedContext, Task> SecurityTokenReceived { get; set; }
+        public Func<SecurityTokenReceivedContext, Task> OnSecurityTokenReceived { get; set; } = context => Task.FromResult(0);
 
         /// <summary>
         /// Invoked after the security token has passed validation and a ClaimsIdentity has been generated.
         /// </summary>
-        public Func<SecurityTokenValidatedContext, Task> SecurityTokenValidated { get; set; }
+        public Func<SecurityTokenValidatedContext, Task> OnSecurityTokenValidated { get; set; } = context => Task.FromResult(0);
 
         /// <summary>
         /// Invoked to apply a challenge sent back to the caller.
         /// </summary>
-        public Func<AuthenticationChallengeContext, Task> ApplyChallenge { get; set; }
+        public Func<AuthenticationChallengeContext, Task> OnApplyChallenge { get; set; } = context =>
+        {
+            context.HttpContext.Response.Headers.Append("WWW-Authenticate", context.Options.Challenge);
+            return Task.FromResult(0);
+        };
+
+        public virtual Task AuthenticationFailed(AuthenticationFailedContext context) => OnAuthenticationFailed(context);
+
+        public virtual Task MessageReceived(MessageReceivedContext context) => OnMessageReceived(context);
+
+        public virtual Task SecurityTokenReceived(SecurityTokenReceivedContext context) => OnSecurityTokenReceived(context);
+
+        public virtual Task SecurityTokenValidated(SecurityTokenValidatedContext context) => OnSecurityTokenValidated(context);
+
+        public virtual Task ApplyChallenge(AuthenticationChallengeContext context) => OnApplyChallenge(context);
     }
 }

@@ -160,9 +160,9 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         public bool CacheNonces { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="OpenIdConnectAuthenticationEvents"/> to notify when processing OpenIdConnect messages.
+        /// Gets or sets the <see cref="IOpenIdConnectAuthenticationEvents"/> to notify when processing OpenIdConnect messages.
         /// </summary>
-        public OpenIdConnectAuthenticationEvents Events { get; set; } = new OpenIdConnectAuthenticationEvents();
+        public IOpenIdConnectAuthenticationEvents Events { get; set; } = new OpenIdConnectAuthenticationEvents();
 
         /// <summary>
         /// Gets or sets the <see cref="OpenIdConnectProtocolValidator"/> that is used to ensure that the 'id_token' received

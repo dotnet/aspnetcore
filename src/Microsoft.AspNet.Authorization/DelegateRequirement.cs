@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Authorization
 
         protected override void Handle(AuthorizationContext context, DelegateRequirement requirement)
         {
-            Handler.Invoke(context, requirement);
+            Handler(context, requirement);
         }
     }
 }

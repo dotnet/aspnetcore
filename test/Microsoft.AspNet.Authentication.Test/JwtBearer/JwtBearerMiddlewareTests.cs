@@ -67,22 +67,25 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
             {
                 options.AutomaticAuthentication = true;
 
-                options.Events.MessageReceived = context =>
+                options.Events = new JwtBearerAuthenticationEvents()
                 {
-                    var claims = new[]
+                    OnMessageReceived = context =>
                     {
-                        new Claim(ClaimTypes.NameIdentifier, "Bob le Magnifique"),
-                        new Claim(ClaimTypes.Email, "bob@contoso.com"),
-                        new Claim(ClaimsIdentity.DefaultNameClaimType, "bob")
-                    };
+                        var claims = new[]
+                        {
+                            new Claim(ClaimTypes.NameIdentifier, "Bob le Magnifique"),
+                            new Claim(ClaimTypes.Email, "bob@contoso.com"),
+                            new Claim(ClaimsIdentity.DefaultNameClaimType, "bob")
+                        };
 
-                    context.AuthenticationTicket = new AuthenticationTicket(
-                        new ClaimsPrincipal(new ClaimsIdentity(claims, context.Options.AuthenticationScheme)),
-                        new AuthenticationProperties(), context.Options.AuthenticationScheme);
+                        context.AuthenticationTicket = new AuthenticationTicket(
+                            new ClaimsPrincipal(new ClaimsIdentity(claims, context.Options.AuthenticationScheme)),
+                            new AuthenticationProperties(), context.Options.AuthenticationScheme);
 
-                    context.HandleResponse();
-                    
-                    return Task.FromResult<object>(null);
+                        context.HandleResponse();
+
+                        return Task.FromResult<object>(null);
+                    }
                 };
             });
 
@@ -114,22 +117,25 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
             {
                 options.AutomaticAuthentication = true;
 
-                options.Events.SecurityTokenReceived = context =>
+                options.Events = new JwtBearerAuthenticationEvents()
                 {
-                    var claims = new[]
+                    OnSecurityTokenReceived = context =>
                     {
-                        new Claim(ClaimTypes.NameIdentifier, "Bob le Magnifique"),
-                        new Claim(ClaimTypes.Email, "bob@contoso.com"),
-                        new Claim(ClaimsIdentity.DefaultNameClaimType, "bob")
-                    };
+                        var claims = new[]
+                        {
+                            new Claim(ClaimTypes.NameIdentifier, "Bob le Magnifique"),
+                            new Claim(ClaimTypes.Email, "bob@contoso.com"),
+                            new Claim(ClaimsIdentity.DefaultNameClaimType, "bob")
+                        };
 
-                    context.AuthenticationTicket = new AuthenticationTicket(
-                        new ClaimsPrincipal(new ClaimsIdentity(claims, context.Options.AuthenticationScheme)),
-                        new AuthenticationProperties(), context.Options.AuthenticationScheme);
+                        context.AuthenticationTicket = new AuthenticationTicket(
+                            new ClaimsPrincipal(new ClaimsIdentity(claims, context.Options.AuthenticationScheme)),
+                            new AuthenticationProperties(), context.Options.AuthenticationScheme);
 
-                    context.HandleResponse();
-                    
-                    return Task.FromResult<object>(null);
+                        context.HandleResponse();
+
+                        return Task.FromResult<object>(null);
+                    }
                 };
             });
 
@@ -145,23 +151,26 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
             {
                 options.AutomaticAuthentication = true;
 
-                options.Events.SecurityTokenValidated = context =>
+                options.Events = new JwtBearerAuthenticationEvents()
                 {
-                    // Retrieve the NameIdentifier claim from the identity
-                    // returned by the custom security token validator.
-                    var identity = (ClaimsIdentity)context.AuthenticationTicket.Principal.Identity;
-                    var identifier = identity.FindFirst(ClaimTypes.NameIdentifier);
+                    OnSecurityTokenValidated = context =>
+                    {
+                        // Retrieve the NameIdentifier claim from the identity
+                        // returned by the custom security token validator.
+                        var identity = (ClaimsIdentity)context.AuthenticationTicket.Principal.Identity;
+                        var identifier = identity.FindFirst(ClaimTypes.NameIdentifier);
 
-                    identifier.Value.ShouldBe("Bob le Tout Puissant");
+                        identifier.Value.ShouldBe("Bob le Tout Puissant");
 
-                    // Remove the existing NameIdentifier claim and replace it
-                    // with a new one containing a different value.
-                    identity.RemoveClaim(identifier);
-                    // Make sure to use a different name identifier
-                    // than the one defined by BlobTokenValidator.
-                    identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Bob le Magnifique"));
+                        // Remove the existing NameIdentifier claim and replace it
+                        // with a new one containing a different value.
+                        identity.RemoveClaim(identifier);
+                        // Make sure to use a different name identifier
+                        // than the one defined by BlobTokenValidator.
+                        identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Bob le Magnifique"));
 
-                    return Task.FromResult<object>(null);
+                        return Task.FromResult<object>(null);
+                    }
                 };
 
                 options.SecurityTokenValidators.Add(new BlobTokenValidator(options.AuthenticationScheme));
@@ -179,28 +188,30 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
             {
                 options.AutomaticAuthentication = true;
 
-                options.Events.MessageReceived = context =>
+                options.Events = new JwtBearerAuthenticationEvents()
                 {
-                    context.Token = "CustomToken";
-                    return Task.FromResult<object>(null);
-                };
-                
-                options.Events.SecurityTokenReceived = context =>
-                {
-                    var claims = new[]
+                    OnMessageReceived = context =>
                     {
-                        new Claim(ClaimTypes.NameIdentifier, "Bob le Magnifique"),
-                        new Claim(ClaimTypes.Email, "bob@contoso.com"),
-                        new Claim(ClaimsIdentity.DefaultNameClaimType, "bob")
-                    };
+                        context.Token = "CustomToken";
+                        return Task.FromResult<object>(null);
+                    },
+                    OnSecurityTokenReceived = context =>
+                    {
+                        var claims = new[]
+                        {
+                            new Claim(ClaimTypes.NameIdentifier, "Bob le Magnifique"),
+                            new Claim(ClaimTypes.Email, "bob@contoso.com"),
+                            new Claim(ClaimsIdentity.DefaultNameClaimType, "bob")
+                        };
 
-                    context.AuthenticationTicket = new AuthenticationTicket(
-                        new ClaimsPrincipal(new ClaimsIdentity(claims, context.Options.AuthenticationScheme)),
-                        new AuthenticationProperties(), context.Options.AuthenticationScheme);
+                        context.AuthenticationTicket = new AuthenticationTicket(
+                            new ClaimsPrincipal(new ClaimsIdentity(claims, context.Options.AuthenticationScheme)),
+                            new AuthenticationProperties(), context.Options.AuthenticationScheme);
 
-                    context.HandleResponse();
+                        context.HandleResponse();
 
-                    return Task.FromResult<object>(null);
+                        return Task.FromResult<object>(null);
+                    }
                 };
             });
 
@@ -214,22 +225,25 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
         {
             var server = CreateServer(options =>
             {
-                options.Events.SecurityTokenReceived = context =>
+                options.Events = new JwtBearerAuthenticationEvents()
                 {
-                    var claims = new[]
+                    OnSecurityTokenReceived = context =>
                     {
-                        new Claim(ClaimTypes.NameIdentifier, "Bob le Magnifique"),
-                        new Claim(ClaimTypes.Email, "bob@contoso.com"),
-                        new Claim(ClaimsIdentity.DefaultNameClaimType, "bob")
-                    };
+                        var claims = new[]
+                        {
+                            new Claim(ClaimTypes.NameIdentifier, "Bob le Magnifique"),
+                            new Claim(ClaimTypes.Email, "bob@contoso.com"),
+                            new Claim(ClaimsIdentity.DefaultNameClaimType, "bob")
+                        };
 
-                    context.AuthenticationTicket = new AuthenticationTicket(
-                        new ClaimsPrincipal(new ClaimsIdentity(claims, context.Options.AuthenticationScheme)),
-                        new AuthenticationProperties(), context.Options.AuthenticationScheme);
+                        context.AuthenticationTicket = new AuthenticationTicket(
+                            new ClaimsPrincipal(new ClaimsIdentity(claims, context.Options.AuthenticationScheme)),
+                            new AuthenticationProperties(), context.Options.AuthenticationScheme);
 
-                    context.HandleResponse();
+                        context.HandleResponse();
 
-                    return Task.FromResult<object>(null);
+                        return Task.FromResult<object>(null);
+                    }
                 };
             });
 
@@ -242,22 +256,25 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
         {
             var server = CreateServer(options =>
             {
-                options.Events.SecurityTokenReceived = context =>
+                options.Events = new JwtBearerAuthenticationEvents()
                 {
-                    var claims = new[]
+                    OnSecurityTokenReceived = context =>
                     {
-                        new Claim(ClaimTypes.NameIdentifier, "Bob le Magnifique"),
-                        new Claim(ClaimTypes.Email, "bob@contoso.com"),
-                        new Claim(ClaimsIdentity.DefaultNameClaimType, "bob")
-                    };
+                        var claims = new[]
+                        {
+                            new Claim(ClaimTypes.NameIdentifier, "Bob le Magnifique"),
+                            new Claim(ClaimTypes.Email, "bob@contoso.com"),
+                            new Claim(ClaimsIdentity.DefaultNameClaimType, "bob")
+                        };
 
-                    context.AuthenticationTicket = new AuthenticationTicket(
-                        new ClaimsPrincipal(new ClaimsIdentity(claims, context.Options.AuthenticationScheme)),
-                        new AuthenticationProperties(), context.Options.AuthenticationScheme);
+                        context.AuthenticationTicket = new AuthenticationTicket(
+                            new ClaimsPrincipal(new ClaimsIdentity(claims, context.Options.AuthenticationScheme)),
+                            new AuthenticationProperties(), context.Options.AuthenticationScheme);
 
-                    context.HandleResponse();
+                        context.HandleResponse();
 
-                    return Task.FromResult<object>(null);
+                        return Task.FromResult<object>(null);
+                    }
                 };
             });
 
@@ -267,7 +284,6 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
 
         class BlobTokenValidator : ISecurityTokenValidator
         {
-
             public BlobTokenValidator(string authenticationScheme)
             {
                 AuthenticationScheme = authenticationScheme;
@@ -283,7 +299,6 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
                 {
                     throw new NotImplementedException();
                 }
-
                 set
                 {
                     throw new NotImplementedException();

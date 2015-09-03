@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
         /// The application may implement the interface fully, or it may create an instance of JwtBearerAuthenticationEvents
         /// and assign delegates only to the events it wants to process.
         /// </summary>
-        public JwtBearerAuthenticationEvents Events { get; set; } = new JwtBearerAuthenticationEvents();
+        public IJwtBearerAuthenticationEvents Events { get; set; } = new JwtBearerAuthenticationEvents();
 
         /// <summary>
         /// The HttpMessageHandler used to retrieve metadata.

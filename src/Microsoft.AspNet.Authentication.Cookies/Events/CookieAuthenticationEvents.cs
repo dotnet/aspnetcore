@@ -14,101 +14,70 @@ namespace Microsoft.AspNet.Authentication.Cookies
     public class CookieAuthenticationEvents : ICookieAuthenticationEvents
     {
         /// <summary>
-        /// Create a new instance of the default events.
+        /// A delegate assigned to this property will be invoked when the related method is called
         /// </summary>
-        public CookieAuthenticationEvents()
-        {
-            OnValidatePrincipal = context => Task.FromResult(0);
-            OnResponseSignIn = context => { };
-            OnResponseSignedIn = context => { };
-            OnResponseSignOut = context => { };
-            OnApplyRedirect = context => context.Response.Redirect(context.RedirectUri);
-            OnException = context => { };
-        }
+        public Func<CookieValidatePrincipalContext, Task> OnValidatePrincipal { get; set; } = context => Task.FromResult(0);
 
         /// <summary>
         /// A delegate assigned to this property will be invoked when the related method is called
         /// </summary>
-        public Func<CookieValidatePrincipalContext, Task> OnValidatePrincipal { get; set; }
+        public Action<CookieResponseSignInContext> OnResponseSignIn { get; set; } = context => { };
 
         /// <summary>
         /// A delegate assigned to this property will be invoked when the related method is called
         /// </summary>
-        public Action<CookieResponseSignInContext> OnResponseSignIn { get; set; }
+        public Action<CookieResponseSignedInContext> OnResponseSignedIn { get; set; } = context => { };
 
         /// <summary>
         /// A delegate assigned to this property will be invoked when the related method is called
         /// </summary>
-        public Action<CookieResponseSignedInContext> OnResponseSignedIn { get; set; }
+        public Action<CookieResponseSignOutContext> OnResponseSignOut { get; set; } = context => { };
 
         /// <summary>
         /// A delegate assigned to this property will be invoked when the related method is called
         /// </summary>
-        public Action<CookieResponseSignOutContext> OnResponseSignOut { get; set; }
+        public Action<CookieApplyRedirectContext> OnApplyRedirect { get; set; } = context => context.Response.Redirect(context.RedirectUri);
 
         /// <summary>
         /// A delegate assigned to this property will be invoked when the related method is called
         /// </summary>
-        public Action<CookieApplyRedirectContext> OnApplyRedirect { get; set; }
-
-        /// <summary>
-        /// A delegate assigned to this property will be invoked when the related method is called
-        /// </summary>
-        public Action<CookieExceptionContext> OnException { get; set; }
+        public Action<CookieExceptionContext> OnException { get; set; } = context => { };
 
         /// <summary>
         /// Implements the interface method by invoking the related delegate method
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
-        public virtual Task ValidatePrincipal(CookieValidatePrincipalContext context)
-        {
-            return OnValidatePrincipal.Invoke(context);
-        }
+        public virtual Task ValidatePrincipal(CookieValidatePrincipalContext context) => OnValidatePrincipal(context);
 
         /// <summary>
         /// Implements the interface method by invoking the related delegate method
         /// </summary>
         /// <param name="context"></param>
-        public virtual void ResponseSignIn(CookieResponseSignInContext context)
-        {
-            OnResponseSignIn.Invoke(context);
-        }
+        public virtual void ResponseSignIn(CookieResponseSignInContext context) => OnResponseSignIn(context);
 
         /// <summary>
         /// Implements the interface method by invoking the related delegate method
         /// </summary>
         /// <param name="context"></param>
-        public virtual void ResponseSignedIn(CookieResponseSignedInContext context)
-        {
-            OnResponseSignedIn.Invoke(context);
-        }
+        public virtual void ResponseSignedIn(CookieResponseSignedInContext context) => OnResponseSignedIn(context);
 
         /// <summary>
         /// Implements the interface method by invoking the related delegate method
         /// </summary>
         /// <param name="context"></param>
-        public virtual void ResponseSignOut(CookieResponseSignOutContext context)
-        {
-            OnResponseSignOut.Invoke(context);
-        }
+        public virtual void ResponseSignOut(CookieResponseSignOutContext context) => OnResponseSignOut(context);
 
         /// <summary>
         /// Implements the interface method by invoking the related delegate method
         /// </summary>
         /// <param name="context">Contains information about the event</param>
-        public virtual void ApplyRedirect(CookieApplyRedirectContext context)
-        {
-            OnApplyRedirect.Invoke(context);
-        }
+        public virtual void ApplyRedirect(CookieApplyRedirectContext context) => OnApplyRedirect(context);
 
         /// <summary>
         /// Implements the interface method by invoking the related delegate method
         /// </summary>
         /// <param name="context">Contains information about the event</param>
-        public virtual void Exception(CookieExceptionContext context)
-        {
-            OnException.Invoke(context);
-        }
+        public virtual void Exception(CookieExceptionContext context) => OnException(context);
     }
 }
