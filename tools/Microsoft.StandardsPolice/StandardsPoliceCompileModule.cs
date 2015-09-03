@@ -49,6 +49,41 @@ namespace Microsoft.StandardsPolice
                         location: typeDeclaration.GetLocation()));
                 }
             }
+
+            var usingDirectives = root.DescendantNodes(descendIntoChildren: node => !(node is TypeDeclarationSyntax))
+                .OfType<UsingDirectiveSyntax>()
+                .ToArray();
+
+            var priorUsingDirective = default(UsingDirectiveSyntax);
+            foreach (var usingDirective in usingDirectives)
+            {
+                var acceptableOrder = false;
+                if (!acceptableOrder && priorUsingDirective == null)
+                {
+                    acceptableOrder = true;
+                }
+                if (!acceptableOrder && string.Compare(priorUsingDirective.Name.ToString(), usingDirective.Name.ToString(), StringComparison.OrdinalIgnoreCase) < 0)
+                {
+                    acceptableOrder = true;
+                }
+                if (!acceptableOrder &&
+                    priorUsingDirective.Name.ToString().StartsWith("System.") &&
+                    !usingDirective.Name.ToString().StartsWith("System."))
+                {
+                    acceptableOrder = true;
+                }
+                if (!acceptableOrder)
+                {
+                    diagnostics.Add(Diagnostic.Create(
+                        "SP1004", "StandardsPolice", "namespaces not alphabetized",
+                        DiagnosticSeverity.Warning,
+                        DiagnosticSeverity.Warning,
+                        false,
+                        3,
+                        location: usingDirective.GetLocation()));
+                }
+                priorUsingDirective = usingDirective;
+            }
         }
 
         private static void ScanNamespace(IList<Diagnostic> diagnostics, INamespaceSymbol namespaceSymbol)
