@@ -62,10 +62,10 @@ using System.Globalization
 #line default
 #line hidden
             WriteLiteral("</h2>\r\n        <p><a");
-            WriteAttribute("href", Tuple.Create(" href=\"", 767), Tuple.Create("\"", 858), 
-            Tuple.Create(Tuple.Create("", 774), Tuple.Create<System.Object, System.Int32>(Request.PathBase, 774), false), 
-            Tuple.Create(Tuple.Create("", 791), Tuple.Create<System.Object, System.Int32>(Request.Path, 791), false), Tuple.Create(Tuple.Create("", 804), Tuple.Create("?error=", 804), true), 
-            Tuple.Create(Tuple.Create("", 811), Tuple.Create<System.Object, System.Int32>(Resources.DiagnosticsPageHtml_TestErrorMessage, 811), false));
+            WriteAttribute("href", Tuple.Create(" href=\"", 763), Tuple.Create("\"", 854), 
+            Tuple.Create(Tuple.Create("", 770), Tuple.Create<System.Object, System.Int32>(Request.PathBase, 770), false), 
+            Tuple.Create(Tuple.Create("", 787), Tuple.Create<System.Object, System.Int32>(Request.Path, 787), false), Tuple.Create(Tuple.Create("", 800), Tuple.Create("?error=", 800), true), 
+            Tuple.Create(Tuple.Create("", 807), Tuple.Create<System.Object, System.Int32>(Resources.DiagnosticsPageHtml_TestErrorMessage, 807), false));
             WriteLiteral(">throw InvalidOperationException</a></p>\r\n    </div>\r\n</body>\r\n</html>\r\n");
         }
         #pragma warning restore 1998

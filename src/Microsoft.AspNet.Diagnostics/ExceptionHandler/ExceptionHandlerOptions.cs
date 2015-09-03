@@ -6,10 +6,10 @@ using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Diagnostics
 {
-    public class ErrorHandlerOptions
+    public class ExceptionHandlerOptions
     {
-        public PathString ErrorHandlingPath { get; set; }
+        public PathString ExceptionHandlingPath { get; set; }
 
-        public RequestDelegate ErrorHandler { get; set; }
+        public RequestDelegate ExceptionHandler { get; set; }
     }
 }

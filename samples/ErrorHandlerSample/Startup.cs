@@ -5,7 +5,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.Framework.WebEncoders;
 
-namespace ErrorHandlerSample
+namespace ExceptionHandlerSample
 {
     public class Startup
     {
@@ -35,7 +35,7 @@ namespace ErrorHandlerSample
             });
 
             // We could also configure it to re-execute the request on the normal pipeline with a different path.
-            // app.UseErrorHandler("/error.html");
+            // app.UseExceptionHandler("/error.html");
 
             // The broken section of our application.
             app.Map("/throw", throwApp =>

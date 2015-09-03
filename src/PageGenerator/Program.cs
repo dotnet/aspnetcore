@@ -35,35 +35,36 @@ namespace PageGenerator
                     "Unable to open library {0}. Is it spelled correctly and listed as a dependency in project.json?",
                     args[0]));
             }
-            var viewBasePath = Path.Combine(Path.GetDirectoryName(diagnosticsLibInfo.Path), "Views");
 
-            Console.WriteLine("Generating code files for views in {0}", viewBasePath);
-            Console.WriteLine();
-
-            var cshtmlFiles = GetCshtmlFiles(viewBasePath);
+            var viewDirectories = Directory.EnumerateDirectories(
+                Path.GetDirectoryName(diagnosticsLibInfo.Path), "Views", SearchOption.AllDirectories);
 
             var fileCount = 0;
-            foreach (var fileName in cshtmlFiles)
+            foreach (var viewDir in viewDirectories)
             {
-                Console.WriteLine("  Generating code file for view {0}...", Path.GetFileName(fileName));
-                GenerateCodeFile(fileName, string.Format("{0}.Views", args[0]));
-                Console.WriteLine("      Done!");
-                fileCount++;
+                Console.WriteLine();
+                Console.WriteLine("  Generating code files for views in {0}", viewDir);
+
+                var cshtmlFiles = Directory.EnumerateFiles(viewDir, "*.cshtml");
+
+                if (!cshtmlFiles.Any())
+                {
+                    Console.WriteLine("  No .cshtml files were found.");
+                    continue;
+                }
+
+                foreach (var fileName in cshtmlFiles)
+                {
+                    Console.WriteLine("    Generating code file for view {0}...", Path.GetFileName(fileName));
+                    GenerateCodeFile(fileName, string.Format("{0}.Views", args[0]));
+                    Console.WriteLine("      Done!");
+                    fileCount++;
+                }
             }
 
             Console.WriteLine();
             Console.WriteLine("{0} files successfully generated.", fileCount);
             Console.WriteLine();
-        }
-
-        private static IEnumerable<string> GetCshtmlFiles(string path)
-        {
-            if (!Directory.Exists(path))
-            {
-                throw new ArgumentException("path");
-            }
-
-            return Directory.EnumerateFiles(path, "*.cshtml");
         }
 
         private static void GenerateCodeFile(string cshtmlFilePath, string rootNamespace)
@@ -111,7 +112,7 @@ namespace PageGenerator
                     }
                     var includeFileName = source.Substring(startIndex + startMatch.Length, endIndex - (startIndex + startMatch.Length));
                     includeFileName = SanitizeFileName(includeFileName);
-                    Console.WriteLine("    Inlining file {0}", includeFileName);
+                    Console.WriteLine("      Inlining file {0}", includeFileName);
                     var replacement = File.ReadAllText(Path.Combine(basePath, includeFileName)).Replace("\"", "\\\"").Replace("\r\n", "\\r\\n");
                     source = source.Substring(0, startIndex) + replacement + source.Substring(endIndex + endMatch.Length);
                     startIndex = startIndex + replacement.Length;

@@ -6,17 +6,15 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.TestHost;
 using Xunit;
 
 namespace Microsoft.AspNet.Diagnostics
 {
-    public class ErrorHandlerTest
+    public class ExceptionHandlerTest
     {
         [Theory]
         [InlineData(HttpStatusCode.NotFound)]

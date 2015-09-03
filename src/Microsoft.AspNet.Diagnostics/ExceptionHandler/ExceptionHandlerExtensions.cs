@@ -9,40 +9,40 @@ namespace Microsoft.AspNet.Builder
 {
     public static class ExceptionHandlerExtensions
     {
-        ///// <summary>
-        ///// Adds a middleware to the pipeline that will catch exceptions, log them, reset the request path, and re-execute the request.
-        ///// The request will not be re-executed if the response has already started.
-        ///// </summary>
-        ///// <param name="app"></param>
-        ///// <param name="errorHandlingPath"></param>
-        ///// <returns></returns>
-        //public static IApplicationBuilder UseErrorHandler(this IApplicationBuilder app, string errorHandlingPath)
-        //{
-        //    var options = new ErrorHandlerOptions()
-        //    {
-        //        ErrorHandlingPath = new PathString(errorHandlingPath)
-        //    };
-        //    return app.UseMiddleware<ErrorHandlerMiddleware>(options);
-        //}
+        /// <summary>
+        /// Adds a middleware to the pipeline that will catch exceptions, log them, reset the request path, and re-execute the request.
+        /// The request will not be re-executed if the response has already started.
+        /// </summary>
+        /// <param name="app"></param>
+        /// <param name="errorHandlingPath"></param>
+        /// <returns></returns>
+        public static IApplicationBuilder UseErrorHandler(this IApplicationBuilder app, string errorHandlingPath)
+        {
+            var options = new ExceptionHandlerOptions()
+            {
+                ExceptionHandlingPath = new PathString(errorHandlingPath)
+            };
+            return app.UseMiddleware<ExceptionHandlerMiddleware>(options);
+        }
 
-        ///// <summary>
-        ///// Adds a middleware to the pipeline that will catch exceptions, log them, and re-execute the request in an alternate pipeline.
-        ///// The request will not be re-executed if the response has already started.
-        ///// </summary>
-        ///// <param name="app"></param>
-        ///// <param name="configure"></param>
-        ///// <returns></returns>
-        //public static IApplicationBuilder UseErrorHandler(this IApplicationBuilder app, Action<IApplicationBuilder> configure)
-        //{
-        //    var subAppBuilder = app.New();
-        //    configure(subAppBuilder);
-        //    var errorPipeline = subAppBuilder.Build();
-        //    var options = new ErrorHandlerOptions()
-        //    {
-        //        ErrorHandler = errorPipeline
-        //    };
-        //    return app.UseMiddleware<ErrorHandlerMiddleware>(options);
-        //}
+        /// <summary>
+        /// Adds a middleware to the pipeline that will catch exceptions, log them, and re-execute the request in an alternate pipeline.
+        /// The request will not be re-executed if the response has already started.
+        /// </summary>
+        /// <param name="app"></param>
+        /// <param name="configure"></param>
+        /// <returns></returns>
+        public static IApplicationBuilder UseErrorHandler(this IApplicationBuilder app, Action<IApplicationBuilder> configure)
+        {
+            var subAppBuilder = app.New();
+            configure(subAppBuilder);
+            var errorPipeline = subAppBuilder.Build();
+            var options = new ExceptionHandlerOptions()
+            {
+                ExceptionHandler = errorPipeline
+            };
+            return app.UseMiddleware<ExceptionHandlerMiddleware>(options);
+        }
 
         /// <summary>
         /// Adds a middleware to the pipeline that will catch exceptions, log them, reset the request path, and re-execute the request.
@@ -53,9 +53,9 @@ namespace Microsoft.AspNet.Builder
         /// <returns></returns>
         public static IApplicationBuilder UseExceptionHandler(this IApplicationBuilder app, string errorHandlingPath)
         {
-            var options = new ErrorHandlerOptions()
+            var options = new ExceptionHandlerOptions()
             {
-                ErrorHandlingPath = new PathString(errorHandlingPath)
+                ExceptionHandlingPath = new PathString(errorHandlingPath)
             };
             return app.UseMiddleware<ExceptionHandlerMiddleware>(options);
         }
@@ -72,9 +72,9 @@ namespace Microsoft.AspNet.Builder
             var subAppBuilder = app.New();
             configure(subAppBuilder);
             var errorPipeline = subAppBuilder.Build();
-            var options = new ErrorHandlerOptions()
+            var options = new ExceptionHandlerOptions()
             {
-                ErrorHandler = errorPipeline
+                ExceptionHandler = errorPipeline
             };
             return app.UseMiddleware<ExceptionHandlerMiddleware>(options);
         }
