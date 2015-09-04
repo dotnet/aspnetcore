@@ -12,6 +12,7 @@ using Microsoft.AspNet.Diagnostics.Entity.FunctionalTests.Helpers;
 using Microsoft.AspNet.Diagnostics.Entity.Tests.Helpers;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.TestHost;
+using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Infrastructure;
 using Microsoft.Framework.DependencyInjection;
@@ -71,7 +72,8 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
             }
         }
 
-        [Fact]
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task Error_page_displayed_no_migrations()
         {
             TestServer server = SetupTestServer<BloggingContext, NoMigrationsMiddleware>();
@@ -100,7 +102,8 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
             }
         }
 
-        [Fact]
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task Error_page_displayed_pending_migrations()
         {
             TestServer server = SetupTestServer<BloggingContextWithMigrations, PendingMigrationsMiddleware>();
@@ -133,7 +136,8 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
             }
         }
 
-        [Fact]
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task Error_page_displayed_pending_model_changes()
         {
             TestServer server = SetupTestServer<BloggingContextWithPendingModelChanges, PendingModelChangesMiddleware>();
@@ -165,7 +169,8 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
             }
         }
 
-        [Fact]
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task Pass_thru_when_context_not_in_services()
         {
             using (var database = SqlServerTestStore.CreateScratch())
@@ -218,7 +223,8 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
             }
         }
 
-        [Fact]
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task Pass_thru_when_exception_in_logic()
         {
             using (var database = SqlServerTestStore.CreateScratch())
@@ -251,7 +257,8 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
             }
         }
 
-        [Fact]
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task Error_page_displayed_when_exception_wrapped()
         {
             TestServer server = SetupTestServer<BloggingContext, WrappedExceptionMiddleware>();

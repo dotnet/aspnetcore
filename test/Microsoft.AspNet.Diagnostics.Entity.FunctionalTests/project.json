@@ -3,7 +3,8 @@
         "EntityFramework.SqlServer": "7.0.0-*",
         "Microsoft.AspNet.Diagnostics.Entity": "7.0.0-*",
         "Microsoft.AspNet.Diagnostics.Entity.Tests": "1.0.0",
-        "Microsoft.AspNet.TestHost": "1.0.0-*", 
+        "Microsoft.AspNet.TestHost": "1.0.0-*",
+        "Microsoft.AspNet.Testing": "1.0.0-*",
         "xunit.runner.aspnet": "2.0.0-aspnet-*"
     },
     "commands": {
