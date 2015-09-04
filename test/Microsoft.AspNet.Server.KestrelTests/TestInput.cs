@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Server.Kestrel.Http;
 
 namespace Microsoft.AspNet.Server.KestrelTests
@@ -51,6 +53,26 @@ namespace Microsoft.AspNet.Server.KestrelTests
         {
         }
         public void End(ProduceEndType endType)
+        {
+        }
+
+        void IFrameControl.ProduceContinue()
+        {
+        }
+
+        void IFrameControl.Write(ArraySegment<byte> data)
+        {
+        }
+
+        async Task IFrameControl.WriteAsync(ArraySegment<byte> data, CancellationToken cancellationToken)
+        {
+        }
+
+        void IFrameControl.Flush()
+        {
+        }
+
+        async Task IFrameControl.FlushAsync(CancellationToken cancellationToken)
         {
         }
     }

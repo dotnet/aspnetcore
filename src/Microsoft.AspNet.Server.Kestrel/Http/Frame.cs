@@ -6,7 +6,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.Primitives;
 
@@ -16,10 +18,12 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 {
     public class Frame : FrameContext, IFrameControl
     {
-        private static Encoding _ascii = Encoding.ASCII;
+        private static readonly Encoding _ascii = Encoding.ASCII;
         private static readonly ArraySegment<byte> _endChunkBytes = CreateAsciiByteArraySegment("\r\n");
         private static readonly ArraySegment<byte> _endChunkedResponseBytes = CreateAsciiByteArraySegment("0\r\n\r\n");
         private static readonly ArraySegment<byte> _continueBytes = CreateAsciiByteArraySegment("HTTP/1.1 100 Continue\r\n\r\n");
+        private static readonly ArraySegment<byte> _emptyData = new ArraySegment<byte>(new byte[0]);
+        private static readonly byte[] _hex = Encoding.ASCII.GetBytes("0123456789abcdef");
 
         private Mode _mode;
         private bool _responseStarted;
@@ -65,7 +69,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         public void Consume()
         {
             var input = SocketInput;
-            for (; ;)
+            for (;;)
             {
                 switch (_mode)
                 {
@@ -244,7 +248,19 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
         }
 
-        public void Write(ArraySegment<byte> data, Action<Exception, object> callback, object state)
+        public void Flush()
+        {
+            ProduceStart(immediate: false);
+            SocketOutput.Write(_emptyData, immediate: true);
+        }
+
+        public Task FlushAsync(CancellationToken cancellationToken)
+        {
+            ProduceStart(immediate: false);
+            return SocketOutput.WriteAsync(_emptyData, immediate: true);
+        }
+
+        public void Write(ArraySegment<byte> data)
         {
             ProduceStart(immediate: false);
 
@@ -252,63 +268,80 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {
                 if (data.Count == 0)
                 {
-                    callback(null, state);
                     return;
                 }
-
-                WriteChunkPrefix(data.Count);
+                WriteChunked(data);
             }
+            else
+            {
+                SocketOutput.Write(data, immediate: true);
+            }
+        }
 
-            SocketOutput.Write(data, callback, state, immediate: !_autoChunk);
+        public Task WriteAsync(ArraySegment<byte> data, CancellationToken cancellationToken)
+        {
+            ProduceStart(immediate: false);
 
             if (_autoChunk)
             {
-                WriteChunkSuffix();
+                if (data.Count == 0)
+                {
+                    return TaskUtilities.CompletedTask;
+                }
+                return WriteChunkedAsync(data, cancellationToken);
+            }
+            else
+            {
+                return SocketOutput.WriteAsync(data, immediate: true, cancellationToken: cancellationToken);
             }
         }
 
-        private void WriteChunkPrefix(int numOctets)
+        private void WriteChunked(ArraySegment<byte> data)
         {
-            var numOctetBytes = CreateAsciiByteArraySegment(numOctets.ToString("x") + "\r\n");
-
-            SocketOutput.Write(numOctetBytes,
-                    (error, _) =>
-                    {
-                        if (error != null)
-                        {
-                            Log.LogError("WriteChunkPrefix", error);
-                        }
-                    },
-                    null,
-                    immediate: false);
+            SocketOutput.Write(BeginChunkBytes(data.Count), immediate: false);
+            SocketOutput.Write(data, immediate: false);
+            SocketOutput.Write(_endChunkBytes, immediate: true);
         }
 
-        private void WriteChunkSuffix()
+        private async Task WriteChunkedAsync(ArraySegment<byte> data, CancellationToken cancellationToken)
         {
-            SocketOutput.Write(_endChunkBytes,
-                (error, _) =>
-                {
-                    if (error != null)
-                    {
-                        Log.LogError("WriteChunkSuffix", error);
-                    }
-                },
-                null,
-                immediate: true);
+            await SocketOutput.WriteAsync(BeginChunkBytes(data.Count), immediate: false, cancellationToken: cancellationToken);
+            await SocketOutput.WriteAsync(data, immediate: false, cancellationToken: cancellationToken);
+            await SocketOutput.WriteAsync(_endChunkBytes, immediate: true, cancellationToken: cancellationToken);
+        }
+
+        public static ArraySegment<byte> BeginChunkBytes(int dataCount)
+        {
+            var bytes = new byte[10]
+            {
+                _hex[((dataCount >> 0x1c) & 0x0f)],
+                _hex[((dataCount >> 0x18) & 0x0f)],
+                _hex[((dataCount >> 0x14) & 0x0f)],
+                _hex[((dataCount >> 0x10) & 0x0f)],
+                _hex[((dataCount >> 0x0c) & 0x0f)],
+                _hex[((dataCount >> 0x08) & 0x0f)],
+                _hex[((dataCount >> 0x04) & 0x0f)],
+                _hex[((dataCount >> 0x00) & 0x0f)],
+                (byte)'\r',
+                (byte)'\n',
+            };
+
+            // Determine the most-significant non-zero nibble
+            int total, shift;
+            total = (dataCount > 0xffff) ? 0x10 : 0x00;
+            dataCount >>= total;
+            shift = (dataCount > 0x00ff) ? 0x08 : 0x00;
+            dataCount >>= shift;
+            total |= shift;
+            total |= (dataCount > 0x000f) ? 0x04 : 0x00;
+
+            var offset = 7 - (total >> 2);
+            return new ArraySegment<byte>(bytes, offset, 10 - offset);
         }
 
         private void WriteChunkedResponseSuffix()
         {
-            SocketOutput.Write(_endChunkedResponseBytes,
-                (error, _) =>
-                {
-                    if (error != null)
-                    {
-                        Log.LogError("WriteChunkedResponseSuffix", error);
-                    }
-                },
-                null,
-                immediate: true);
+            SocketOutput.Write(_endChunkedResponseBytes, immediate: true);
         }
 
         public void Upgrade(IDictionary<string, object> options, Func<object, Task> callback)
@@ -332,16 +365,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 RequestHeaders.TryGetValue("Expect", out expect) &&
                 (expect.FirstOrDefault() ?? "").Equals("100-continue", StringComparison.OrdinalIgnoreCase))
             {
-                SocketOutput.Write(
-                    _continueBytes,
-                    (error, _) =>
-                    {
-                        if (error != null)
-                        {
-                            Log.LogError("ProduceContinue ", error);
-                        }
-                    },
-                    null);
+                SocketOutput.Write(_continueBytes);
             }
         }
 
@@ -355,18 +379,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             var status = ReasonPhrases.ToStatus(StatusCode, ReasonPhrase);
 
             var responseHeader = CreateResponseHeader(status, appCompleted, ResponseHeaders);
-            SocketOutput.Write(
-                responseHeader.Item1,
-                (error, state) =>
-                {
-                    if (error != null)
-                    {
-                        Log.LogError("ProduceStart ", error);
-                    }
-                    ((IDisposable)state).Dispose();
-                },
-                responseHeader.Item2,
-                immediate: immediate);
+            SocketOutput.Write(responseHeader.Item1, immediate: immediate);
+            responseHeader.Item2.Dispose();
         }
 
         public void ProduceEnd(Exception ex)
@@ -659,6 +673,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                    statusCode != 205 &&
                    statusCode != 304;
         }
+
 
         private enum Mode
         {

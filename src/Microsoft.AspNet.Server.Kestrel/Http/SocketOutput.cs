@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 using Microsoft.AspNet.Server.Kestrel.Networking;
 
@@ -96,11 +97,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         private void ScheduleWrite()
         {
-            _thread.Post(obj =>
-            {
-                var self = (SocketOutput)obj;
-                self.WriteAllPending();
-            }, this);
+            _thread.Post(_this => _this.WriteAllPending(), this);
         }
 
         // This is called on the libuv event loop
@@ -209,6 +206,35 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 var c = (CallbackContext)obj;
                 c.Callback(c.Error, c.State);
             }, context);
+        }
+
+        void ISocketOutput.Write(ArraySegment<byte> buffer, bool immediate)
+        {
+            ((ISocketOutput)this).WriteAsync(buffer, immediate).Wait();
+        }
+
+        Task ISocketOutput.WriteAsync(ArraySegment<byte> buffer, bool immediate, CancellationToken cancellationToken)
+        {
+            // TODO: Optimize task being used, and remove callback model from the underlying Write
+            var tcs = new TaskCompletionSource<int>();
+
+            Write(
+                buffer,
+                (error, state) =>
+                {
+                    if (error != null)
+                    {
+                        tcs.SetException(error);
+                    }
+                    else
+                    {
+                        tcs.SetResult(0);
+                    }
+                },
+                tcs,
+                immediate: immediate);
+
+            return tcs.Task;
         }
 
         private class CallbackContext

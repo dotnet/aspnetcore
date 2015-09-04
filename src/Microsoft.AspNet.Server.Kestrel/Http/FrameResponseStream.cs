@@ -35,28 +35,12 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         public override void Flush()
         {
-            FlushAsync(CancellationToken.None).Wait();
+            _context.FrameControl.Flush();
         }
 
         public override Task FlushAsync(CancellationToken cancellationToken)
         {
-            var tcs = new TaskCompletionSource<int>();
-            _context.FrameControl.Write(
-                new ArraySegment<byte>(new byte[0]),
-                (error, arg) =>
-                {
-                    var tcsArg = (TaskCompletionSource<int>)arg;
-                    if (error != null)
-                    {
-                        tcsArg.SetException(error);
-                    }
-                    else
-                    {
-                        tcsArg.SetResult(0);
-                    }
-                },
-                tcs);
-            return tcs.Task;
+            return _context.FrameControl.FlushAsync(cancellationToken);
         }
 
         public override long Seek(long offset, SeekOrigin origin)
@@ -76,28 +60,12 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         public override void Write(byte[] buffer, int offset, int count)
         {
-            WriteAsync(buffer, offset, count).Wait();
+            _context.FrameControl.Write(new ArraySegment<byte>(buffer, offset, count));
         }
 
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            var tcs = new TaskCompletionSource<int>();
-            _context.FrameControl.Write(
-                new ArraySegment<byte>(buffer, offset, count),
-                (error, arg) =>
-                {
-                    var tcsArg = (TaskCompletionSource<int>)arg;
-                    if (error != null)
-                    {
-                        tcsArg.SetException(error);
-                    }
-                    else
-                    {
-                        tcsArg.SetResult(0);
-                    }
-                },
-                tcs);
-            return tcs.Task;
+            return _context.FrameControl.WriteAsync(new ArraySegment<byte>(buffer, offset, count), cancellationToken);
         }
     }
 }

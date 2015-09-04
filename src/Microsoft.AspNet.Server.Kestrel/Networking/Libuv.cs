@@ -51,7 +51,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
                 {
                     continue;
                 }
+#pragma warning disable CS0618
                 var value = Marshal.GetDelegateForFunctionPointer(procAddress, field.FieldType);
+#pragma warning restore CS0618
                 field.SetValue(this, value);
             }
         }
