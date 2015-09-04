@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <summary>
-        /// Creates a new <see cref="ModelBindingResult"/> using the provided <paramref cref="key"/>
+        /// Creates a new <see cref="ModelBindingResult"/> using the provided <paramref name="key"/>.
         /// </summary>
         /// <param name="key">The key of the current model binding operation.</param>
         /// <param name="other">The other <see cref="ModelBindingResult" /> to copy from.</param>
