@@ -8,14 +8,6 @@ namespace ServerComparison.FunctionalTests
 {
     public class Helpers
     {
-        public static bool RunningOnMono
-        {
-            get
-            {
-                return Type.GetType("Mono.Runtime") != null;
-            }
-        }
-
         public static string GetApplicationPath()
         {
             return Path.GetFullPath(Path.Combine("..", "ServerComparison.TestSites"));
