@@ -63,24 +63,24 @@ namespace Microsoft.AspNet.Identity
         /// Gets or sets the scheme used to identify external authentication cookies.
         /// </summary>
         /// <value>The scheme used to identify external authentication cookies.</value>
-        public string ExternalCookieAuthenticationScheme { get; set; } = typeof(IdentityCookieOptions).Namespace + ".External.AuthType";
+        public string ExternalCookieAuthenticationScheme { get; set; } = typeof(IdentityCookieOptions).Namespace + ".External";
 
         /// <summary>
         /// Gets or sets the scheme used to identify Two Factor authentication cookies for round tripping user identities.
         /// </summary>
         /// <value>The scheme used to identify user identity 2fa authentication cookies.</value>
-        public string TwoFactorUserIdCookieAuthenticationScheme { get; set; } = typeof(IdentityCookieOptions).Namespace + ".TwoFactorUserId.AuthType";
+        public string TwoFactorUserIdCookieAuthenticationScheme { get; set; } = typeof(IdentityCookieOptions).Namespace + ".TwoFactorUserId";
 
         /// <summary>
         /// Gets or sets the scheme used to identify Two Factor authentication cookies for saving the Remember Me state.
         /// </summary>
         /// <value>The scheme used to identify remember me application authentication cookies.</value>        
-        public string TwoFactorRememberMeCookieAuthenticationScheme { get; set; } = typeof(IdentityCookieOptions).Namespace + ".TwoFactorRemeberMe.AuthType";
+        public string TwoFactorRememberMeCookieAuthenticationScheme { get; set; } = typeof(IdentityCookieOptions).Namespace + ".TwoFactorRemeberMe";
 
         /// <summary>
         /// Gets or sets the authentication type used when constructing an <see cref="ClaimsIdentity"/> from an application cookie.
         /// </summary>
         /// <value>The authentication type used when constructing an <see cref="ClaimsIdentity"/> from an application cookie.</value>
-        public static string ApplicationCookieAuthenticationType { get; set; } = typeof(IdentityCookieOptions).Namespace + ".Application.AuthType";
+        public static string ApplicationCookieAuthenticationType { get; set; } = typeof(IdentityCookieOptions).Namespace + ".Application";
     }
 }
