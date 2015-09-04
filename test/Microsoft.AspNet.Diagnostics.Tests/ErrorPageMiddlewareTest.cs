@@ -15,14 +15,32 @@ using Microsoft.Framework.Caching;
 using Microsoft.Framework.Logging;
 using Microsoft.Dnx.Runtime;
 using Xunit;
+using Microsoft.AspNet.Testing;
 
 namespace Microsoft.AspNet.Diagnostics
 {
     public class ErrorPageMiddlewareTest
     {
+        public static TheoryData RelativePathsData
+        {
+            get
+            {
+                var data = new TheoryData<string>
+                {
+                    "TestFiles/SourceFile.txt"
+                };
+
+                if (!TestPlatformHelper.IsMono)
+                {
+                    data.Add(@"TestFiles\SourceFile.txt");
+                }
+
+                return data;
+            }
+        }
+
         [Theory]
-        [InlineData("TestFiles/SourceFile.txt")]
-        [InlineData(@"TestFiles\SourceFile.txt")]
+        [MemberData(nameof(RelativePathsData))]
         public void UsesDefaultFileProvider_IfNotProvidedOnOptions(string relativePath)
         {
             // Arrange & Act
@@ -42,11 +60,18 @@ namespace Microsoft.AspNet.Diagnostics
             get
             {
                 var rootPath = Directory.GetCurrentDirectory();
-                return new TheoryData<string>()
+
+                var data = new TheoryData<string>()
                 {
-                    Path.Combine(rootPath, "TestFiles/SourceFile.txt"),
-                    Path.Combine(rootPath, @"TestFiles\SourceFile.txt")
+                    Path.Combine(rootPath, "TestFiles/SourceFile.txt")
                 };
+
+                if (!TestPlatformHelper.IsMono)
+                {
+                    Path.Combine(rootPath, @"TestFiles\SourceFile.txt");
+                }
+
+                return data;
             }
         }
 
@@ -72,8 +97,7 @@ namespace Microsoft.AspNet.Diagnostics
         }
 
         [Theory]
-        [InlineData("TestFiles/SourceFile.txt")]
-        [InlineData(@"TestFiles\SourceFile.txt")]
+        [MemberData(nameof(RelativePathsData))]
         public void DisplaysSourceCodeLines_ForRelativePaths(string relativePath)
         {
             // Arrange
