@@ -8,6 +8,7 @@ using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Identity.Test;
+using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Storage;
 using Microsoft.Framework.DependencyInjection;
@@ -53,14 +54,16 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
 
 
         [TestPriority(-1000)]
-        [Fact]
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void DropDatabaseStart()
         {
             DropDb();
         }
 
         [TestPriority(10000)]
-        [Fact]
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void DropDatabaseDone()
         {
             DropDb();
@@ -108,7 +111,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             CreateContext();
         }
 
-        [Fact]
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void EnsureDefaultSchema()
         {
             VerifyDefaultSchema(CreateContext());
@@ -176,7 +180,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             }
         }
 
-        [Fact]
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void CanCreateUserUsingEF()
         {
             using (var db = CreateContext())
@@ -189,7 +194,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             }
         }
 
-        [Fact]
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task CanCreateUsingManager()
         {
             var manager = CreateManager();
@@ -222,7 +228,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             }
         }
 
-        [Fact]
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task LoadFromDbFindByIdTest()
         {
             var db = CreateContext();
@@ -238,7 +245,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             Assert.Equal(2, (await manager.GetRolesAsync(userById)).Count);
         }
 
-        [Fact]
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task LoadFromDbFindByNameTest()
         {
             var db = CreateContext();
@@ -253,7 +261,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             Assert.Equal(2, (await manager.GetRolesAsync(userByName)).Count);
         }
 
-        [Fact]
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task LoadFromDbFindByLoginTest()
         {
             var db = CreateContext();
@@ -268,7 +277,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             Assert.Equal(2, (await manager.GetRolesAsync(userByLogin)).Count);
         }
 
-        [Fact]
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task LoadFromDbFindByEmailTest()
         {
             var db = CreateContext();

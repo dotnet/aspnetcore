@@ -11,6 +11,7 @@ using Microsoft.Data.Entity;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Dnx.Runtime.Infrastructure;
 using Xunit;
+using Microsoft.AspNet.Testing.xunit;
 
 namespace Microsoft.AspNet.Identity.EntityFramework.Test
 {
@@ -35,7 +36,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
         }
 
         [TestPriority(-1000)]
-        [Fact]
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void DropDatabaseStart()
         {
             DropDb();
@@ -57,7 +59,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             return builder;
         }
 
-        [Fact]
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task EnsureStartupUsageWorks()
         {
             var context = CreateContext(true);
@@ -76,7 +79,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             IdentityResultAssert.IsSuccess(await userManager.DeleteAsync(user));
         }
 
-        [Fact]
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task CanIncludeUserClaimsTest()
         {
             // Arrange
@@ -103,7 +107,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             Assert.Equal(10, user.Claims.Count());
         }
 
-        [Fact]
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task CanIncludeUserLoginsTest()
         {
             // Arrange
@@ -130,7 +135,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             Assert.Equal(10, user.Logins.Count());
         }
 
-        [Fact]
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task CanIncludeUserRolesTest()
         {
             // Arrange
@@ -171,7 +177,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             }
         }
 
-        [Fact]
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task CanIncludeRoleClaimsTest()
         {
             // Arrange
@@ -199,7 +206,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
         }
 
         [TestPriority(10000)]
-        [Fact]
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void DropDatabaseDone()
         {
             DropDb();

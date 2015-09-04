@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Identity.Test;
+using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Data.Entity;
 using Xunit;
 
@@ -44,14 +45,16 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
         }
 
         [TestPriority(-1000)]
-        [Fact]
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void DropDatabaseStart()
         {
             DropDb();
         }
 
         [TestPriority(10000)]
-        [Fact]
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void DropDatabaseDone()
         {
             DropDb();
@@ -63,7 +66,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             db.Database.EnsureDeleted();
         }
 
-        [Fact]
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task CanUpdateNameGuid()
         {
             using (var db = CreateContext<Guid>(true))
@@ -80,7 +84,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             }
         }
 
-        [Fact]
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task CanUpdateNameString()
         {
             using (var db = CreateContext<string>(true))
@@ -97,7 +102,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             }
         }
 
-        [Fact]
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task CanCreateUserInt()
         {
             using (var db = CreateContext<int>(true))
@@ -112,7 +118,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             }
         }
 
-        [Fact]
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task CanCreateUserIntViaSet()
         {
             using (var db = CreateContext<int>(true))
@@ -128,7 +135,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             }
         }
 
-        [Fact]
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task CanUpdateNameInt()
         {
             using (var db = CreateContext<int>(true))
@@ -145,7 +153,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             }
         }
 
-        [Fact]
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task CanUpdateNameIntWithSet()
         {
             using (var db = CreateContext<int>(true))
