@@ -11,11 +11,11 @@
 </head>
 <body>
     <h2>Script tag helper test</h2>
-    <script src="~/site.js" data-foo="foo-data1" title="&lt;the title>">
+    <script src="~/styles/site.js" data-foo="foo-data1" title="&lt;the title>">
         // Regular script with comment in body, and extra properties.
     </script>
 
-    <script src="~/blank.js?a=b&c=d" asp-fallback-src="~/site.js?a=b&c=d" asp-fallback-test="false" data-foo="foo-data2" title="&lt;the title>">
+    <script src="~/blank.js?a=b&c=d" asp-fallback-src="~/styles/site.js?a=b&c=d" asp-fallback-test="false" data-foo="foo-data2" title="&lt;the title>">
         // TagHelper script with comment in body, and extra properties.
     </script>
 
@@ -31,14 +31,14 @@
     </script>
 
     <script src="~/blank.js"
-            asp-fallback-src="~/site.js"
+            asp-fallback-src="~/styles/site.js"
             asp-fallback-src-include="**/site2.js"
             asp-fallback-test="false">
         // Fallback to globbed and static src
     </script>
 
     <script src="~/blank.js"
-            asp-fallback-src="~/site.js"
+            asp-fallback-src="~/styles/site.js"
             asp-fallback-src-include="**/site.js"
             asp-fallback-test="false">
         // Fallback to globbed and static src should de-dupe
@@ -49,7 +49,7 @@
     </script>
 
     <script src="~/blank.js"
-            asp-fallback-src="~/site.js"
+            asp-fallback-src="~/styles/site.js"
             asp-fallback-src-exclude="**/site3.js"
             asp-fallback-test="false">
         // Fallback to static and globbed src with missing include
@@ -63,11 +63,11 @@
         // Fallback to globbed src outside of webroot
     </script>
 
-    <script asp-fallback-src="~/site.js" asp-fallback-test="false" data-foo="foo-data3">
+    <script asp-fallback-src="~/styles/site.js" asp-fallback-test="false" data-foo="foo-data3">
         // Valid TagHelper (although no src is provided) script with comment in body, and extra properties.
     </script>
 
-    <script src="~/blank.js" asp-fallback-src="~/site.js">
+    <script src="~/blank.js" asp-fallback-src="~/styles/site.js">
         // Invalid TagHelper script with comment in body.
     </script>
 
@@ -85,12 +85,12 @@
         // Globbed script tag missing include
     </script>
 
-    <script src="~/site.js" asp-src-exclude="**/site2.js">
+    <script src="~/styles/site.js" asp-src-exclude="**/site2.js">
         // Globbed script tag missing include but with static src
     </script>
 
     <!-- Globbed script tag with comma separated include pattern -->
-    <script asp-src-include="~/*.js, ~/sub/*.js"></script>
+    <script asp-src-include="~/styles/*.js, ~/styles/sub/*.js"></script>
 
     <!-- Globbed script tag with missing file -->
     <script asp-src-include="**/notThere.js"></script>
@@ -101,15 +101,15 @@
     <!-- Globbed script tag with file outside of webroot -->
     <script asp-src-include="**/appRoot.js"></script>
 
-    <script src="~/site.js" asp-src-include="**/site2.js">
+    <script src="~/styles/site.js" asp-src-include="**/site2.js">
         // Globbed script tag with existing file and static src
     </script>
 
-    <script src="~/site.js" asp-src-include="**/site.js">
+    <script src="~/styles/site.js" asp-src-include="**/site.js">
         // Globbed script tag with existing file and static src should dedupe
     </script>
 
-    <script src="~/blank.js" asp-fallback-src="~/site.js" asp-fallback-test="false" asp-append-version="true">
+    <script src="~/blank.js" asp-fallback-src="~/styles/site.js" asp-fallback-test="false" asp-append-version="true">
         // TagHelper script with comment in body, and file version.
     </script>
 
@@ -117,7 +117,7 @@
         // Fallback to globbed src with file version.
     </script>
 
-    <script src="~/site.js" asp-append-version="true">
+    <script src="~/styles/site.js" asp-append-version="true">
         // Regular script with comment in body, and file version.
     </script>
 
