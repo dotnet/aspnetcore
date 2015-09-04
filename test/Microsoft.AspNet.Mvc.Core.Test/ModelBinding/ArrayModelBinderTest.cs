@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var result = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.NotNull(result);
+            Assert.NotEqual(ModelBindingResult.NoResult, result);
 
             var array = Assert.IsType<int[]>(result.Model);
             Assert.Equal(new[] { 42, 84 }, array);
@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var result = await binder.BindModelAsync(context);
 
             // Assert
-            Assert.NotNull(result);
+            Assert.NotEqual(ModelBindingResult.NoResult, result);
 
             Assert.Empty(Assert.IsType<string[]>(result.Model));
             Assert.Equal("modelName", result.Key);
@@ -150,7 +150,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var result = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.NotNull(result);
+            Assert.NotEqual(ModelBindingResult.NoResult, result);
             Assert.True(result.IsModelSet);
             Assert.Same(model, result.Model);
 

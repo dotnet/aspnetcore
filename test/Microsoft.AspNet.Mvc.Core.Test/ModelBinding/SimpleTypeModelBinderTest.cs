@@ -116,7 +116,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var result = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.NotNull(result);
+            Assert.NotEqual(ModelBindingResult.NoResult, result);
             Assert.Null(result.Model);
             Assert.False(bindingContext.ModelState.IsValid);
             var error = Assert.Single(bindingContext.ModelState["theModelName"].Errors);

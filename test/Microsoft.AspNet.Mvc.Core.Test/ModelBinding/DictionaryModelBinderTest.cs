@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var result = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.NotNull(result);
+            Assert.NotEqual(ModelBindingResult.NoResult, result);
             Assert.True(result.IsModelSet);
             var dictionary = Assert.IsAssignableFrom<IDictionary<int, string>>(result.Model);
             Assert.True(modelState.IsValid);
@@ -69,7 +69,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var result = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.NotNull(result);
+            Assert.NotEqual(ModelBindingResult.NoResult, result);
             Assert.True(result.IsModelSet);
             Assert.Same(dictionary, result.Model);
             Assert.True(modelState.IsValid);
@@ -132,7 +132,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var result = await binder.BindModelAsync(context);
 
             // Assert
-            Assert.NotNull(result);
+            Assert.NotEqual(ModelBindingResult.NoResult, result);
             Assert.True(result.IsModelSet);
             Assert.Equal(modelName, result.Key);
             Assert.NotNull(result.ValidationNode);
@@ -169,7 +169,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var result = await binder.BindModelAsync(context);
 
             // Assert
-            Assert.NotNull(result);
+            Assert.NotEqual(ModelBindingResult.NoResult, result);
             Assert.True(result.IsModelSet);
             Assert.Equal("prefix", result.Key);
             Assert.NotNull(result.ValidationNode);
@@ -220,7 +220,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var result = await binder.BindModelAsync(context);
 
             // Assert
-            Assert.NotNull(result);
+            Assert.NotEqual(ModelBindingResult.NoResult, result);
             Assert.True(result.IsModelSet);
             Assert.Equal("prefix", result.Key);
             Assert.NotNull(result.ValidationNode);
@@ -261,7 +261,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var result = await binder.BindModelAsync(context);
 
             // Assert
-            Assert.NotNull(result);
+            Assert.NotEqual(ModelBindingResult.NoResult, result);
             Assert.True(result.IsModelSet);
             Assert.Equal("prefix", result.Key);
             Assert.NotNull(result.ValidationNode);
@@ -295,7 +295,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var result = await binder.BindModelAsync(context);
 
             // Assert
-            Assert.NotNull(result);
+            Assert.NotEqual(ModelBindingResult.NoResult, result);
             Assert.True(result.IsModelSet);
             Assert.Equal(modelName, result.Key);
             Assert.NotNull(result.ValidationNode);
@@ -325,7 +325,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var result = await binder.BindModelAsync(context);
 
             // Assert
-            Assert.NotNull(result);
+            Assert.NotEqual(ModelBindingResult.NoResult, result);
 
             Assert.Empty(Assert.IsType<Dictionary<string, string>>(result.Model));
             Assert.Equal("modelName", result.Key);

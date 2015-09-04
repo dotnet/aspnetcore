@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         [InlineData(typeof(int))]
         [InlineData(typeof(int[]))]
         [InlineData(typeof(BindingSource))]
-        public async Task BindModelAsync_ReturnsNotNull_ForAllTypes(Type type)
+        public async Task BindModelAsync_ReturnsNonEmptyResult_ForAllTypes_WithHeaderBindingSource(Type type)
         {
             // Arrange
             var binder = new HeaderModelBinder();
@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var result = await binder.BindModelAsync(modelBindingContext);
 
             // Assert
-            Assert.NotNull(result);
+            Assert.NotEqual(ModelBindingResult.NoResult, result);
         }
 
         [Fact]
@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var result = await binder.BindModelAsync(modelBindingContext);
 
             // Assert
-            Assert.NotNull(result);
+            Assert.NotEqual(ModelBindingResult.NoResult, result);
             Assert.Equal(headerValue.Split(','), result.Model);
         }
 
@@ -68,7 +68,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var result = await binder.BindModelAsync(modelBindingContext);
 
             // Assert
-            Assert.NotNull(result);
+            Assert.NotEqual(ModelBindingResult.NoResult, result);
             Assert.Equal(headerValue, result.Model);
         }
 

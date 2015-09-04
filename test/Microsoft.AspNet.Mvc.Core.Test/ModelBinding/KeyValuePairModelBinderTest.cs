@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var result = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.NotNull(result);
+            Assert.NotEqual(ModelBindingResult.NoResult, result);
             Assert.Null(result.Model);
             Assert.False(bindingContext.ModelState.IsValid);
             Assert.Null(result.ValidationNode);
@@ -97,7 +97,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var result = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.NotNull(result);
+            Assert.NotEqual(ModelBindingResult.NoResult, result);
             Assert.Equal(new KeyValuePair<int, string>(42, "some-value"), result.Model);
             Assert.NotNull(result.ValidationNode);
             Assert.Equal(new KeyValuePair<int, string>(42, "some-value"), result.ValidationNode.Model);
@@ -175,7 +175,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var result = await binder.BindModelAsync(context);
 
             // Assert
-            Assert.NotNull(result);
+            Assert.NotEqual(ModelBindingResult.NoResult, result);
 
             Assert.Equal(default(KeyValuePair<string, string>), Assert.IsType<KeyValuePair<string, string>>(result.Model));
             Assert.Equal("modelName", result.Key);

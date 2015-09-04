@@ -82,7 +82,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var result =  valueProvider.GetValue(name);
 
             // Assert
-            Assert.NotNull(result);
             Assert.Equal("hi", (string)result);
             Assert.Equal(culture, result.Culture);
         }

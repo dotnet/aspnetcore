@@ -162,6 +162,23 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 object.Equals(Model, other.Model);
         }
 
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            if (Key == null)
+            {
+                return "No Result";
+            }
+            else if (IsModelSet)
+            {
+                return $"Success {Key} -> {Model}";
+            }
+            else
+            {
+                return $"Failed {Key}";
+            }
+        }
+
         /// <summary>
         /// Compares <see cref="ModelBindingResult"/> objects for equality.
         /// </summary>

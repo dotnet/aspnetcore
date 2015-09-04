@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
     public class HttpRequestMessageModelBinderTest
     {
         [Fact]
-        public async Task BindModelAsync_ReturnsNotNull_ForHttpRequestMessageType()
+        public async Task BindModelAsync_ReturnsNonEmptyResult_ForHttpRequestMessageType()
         {
             // Arrange
             var binder = new HttpRequestMessageModelBinder();
@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             var result = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.NotNull(result);
+            Assert.NotEqual(ModelBindingResult.NoResult, result);
             Assert.True(result.IsModelSet);
             Assert.Same(expectedModel, result.Model);
             Assert.NotNull(result.ValidationNode);

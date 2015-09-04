@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var result = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.NotNull(result);
+            Assert.NotEqual(ModelBindingResult.NoResult, result);
             Assert.True(result.IsModelSet);
             Assert.NotNull(result.ValidationNode);
             Assert.True(result.ValidationNode.SuppressValidation);
@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var result = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.NotNull(result);
+            Assert.NotEqual(ModelBindingResult.NoResult, result);
             var files = Assert.IsAssignableFrom<IList<IFormFile>>(result.Model);
             Assert.Equal(2, files.Count);
         }
@@ -76,14 +76,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var result = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.NotNull(result);
+            Assert.NotEqual(ModelBindingResult.NoResult, result);
             var file = Assert.IsAssignableFrom<IFormFile>(result.Model);
             Assert.Equal("form-data; name=file; filename=file1.txt",
                          file.ContentDisposition);
         }
 
         [Fact]
-        public async Task FormFileModelBinder_ReturnsNull_WhenNoFilePosted()
+        public async Task FormFileModelBinder_ReturnsNoResult_WhenNoFilePosted()
         {
             // Arrange
             var formFiles = new FormFileCollection();
@@ -95,12 +95,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var result = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.NotNull(result);
+            Assert.NotEqual(ModelBindingResult.NoResult, result);
             Assert.Null(result.Model);
         }
 
         [Fact]
-        public async Task FormFileModelBinder_ReturnsNull_WhenNamesDontMatch()
+        public async Task FormFileModelBinder_ReturnsNoResult_WhenNamesDontMatch()
         {
             // Arrange
             var formFiles = new FormFileCollection();
@@ -113,7 +113,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var result = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.NotNull(result);
+            Assert.NotEqual(ModelBindingResult.NoResult, result);
             Assert.Null(result.Model);
         }
 
@@ -139,7 +139,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var result = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.NotNull(result);
+            Assert.NotEqual(ModelBindingResult.NoResult, result);
             Assert.True(result.IsModelSet);
             var file = Assert.IsAssignableFrom<IFormFile>(result.Model);
             
@@ -149,7 +149,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         [Fact]
-        public async Task FormFileModelBinder_ReturnsNull_WithEmptyContentDisposition()
+        public async Task FormFileModelBinder_ReturnsNoResult_WithEmptyContentDisposition()
         {
             // Arrange
             var formFiles = new FormFileCollection();
@@ -162,12 +162,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var result = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.NotNull(result);
+            Assert.NotEqual(ModelBindingResult.NoResult, result);
             Assert.Null(result.Model);
         }
 
         [Fact]
-        public async Task FormFileModelBinder_ReturnsNull_WithNoFileNameAndZeroLength()
+        public async Task FormFileModelBinder_ReturnsNoResult_WithNoFileNameAndZeroLength()
         {
             // Arrange
             var formFiles = new FormFileCollection();
@@ -180,7 +180,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var result = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.NotNull(result);
+            Assert.NotEqual(ModelBindingResult.NoResult, result);
             Assert.Null(result.Model);
         }
 

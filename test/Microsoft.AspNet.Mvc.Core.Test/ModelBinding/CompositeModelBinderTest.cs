@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var result = await shimBinder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.NotNull(result);
+            Assert.NotEqual(ModelBindingResult.NoResult, result);
             Assert.True(result.IsModelSet);
             Assert.Equal(42, result.Model);
         }
@@ -97,14 +97,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var result = await shimBinder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.NotNull(result);
+            Assert.NotEqual(ModelBindingResult.NoResult, result);
             Assert.True(result.IsModelSet);
             Assert.Equal(string.Empty, result.Key);
             Assert.Equal(expectedModel, result.Model);
         }
 
         [Fact]
-        public async Task ModelBinder_ReturnsNull_IfBinderMatchesButDoesNotSetModel()
+        public async Task ModelBinder_ReturnsNoResult_IfBinderMatchesButDoesNotSetModel()
         {
             // Arrange
             var bindingContext = new ModelBindingContext
@@ -204,7 +204,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         }
 
         [Fact]
-        public async Task ModelBinder_ReturnsNotNull_SetsNullValue_SetsModelStateKey()
+        public async Task ModelBinder_ReturnsNonEmptyResult_SetsNullValue_SetsModelStateKey()
         {
             // Arrange
             var bindingContext = new ModelBindingContext
@@ -231,14 +231,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var result = await composite.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.NotNull(result);
+            Assert.NotEqual(ModelBindingResult.NoResult, result);
             Assert.True(result.IsModelSet);
             Assert.Equal("someName", result.Key);
             Assert.Null(result.Model);
         }
 
         [Fact]
-        public async Task BindModel_UnsuccessfulBind_BinderFails_ReturnsNull()
+        public async Task BindModel_UnsuccessfulBind_BinderFails_ReturnsNoResult()
         {
             // Arrange
             var mockListBinder = new Mock<IModelBinder>();
@@ -265,7 +265,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         }
 
         [Fact]
-        public async Task BindModel_UnsuccessfulBind_SimpleTypeNoFallback_ReturnsNull()
+        public async Task BindModel_UnsuccessfulBind_SimpleTypeNoFallback_ReturnsNoResult()
         {
             // Arrange
             var innerBinder = Mock.Of<IModelBinder>();
@@ -304,7 +304,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var result = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.NotNull(result);
+            Assert.NotEqual(ModelBindingResult.NoResult, result);
             var model = Assert.IsType<SimplePropertiesModel>(result.Model);
             Assert.Equal("firstName-value", model.FirstName);
             Assert.Equal("lastName-value", model.LastName);
@@ -354,7 +354,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var result = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.NotNull(result);
+            Assert.NotEqual(ModelBindingResult.NoResult, result);
             var model = Assert.IsType<Person>(result.Model);
             Assert.Equal("firstName-value", model.FirstName);
             Assert.Equal("lastName-value", model.LastName);
@@ -392,7 +392,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         }
 
         [Fact]
-        public async Task BindModel_DoesNotAddAValidationNode_IfModelBindingResultIsNull()
+        public async Task BindModel_DoesNotAddAValidationNode_IfModelBindingResultIsNoResult()
         {
             // Arrange
             var mockBinder = new Mock<IModelBinder>();
@@ -433,7 +433,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var result = await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.NotNull(result);
+            Assert.NotEqual(ModelBindingResult.NoResult, result);
             Assert.True(result.IsModelSet);
             Assert.Same(validationNode, result.ValidationNode);
         }
