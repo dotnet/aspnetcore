@@ -725,6 +725,8 @@ functions
                 "WebSockets",
                 "Localization",
                 "Session",
+                "BasicMiddleware",
+                "Proxy",
                 "Mvc",
                 "Identity",
                 "Scaffolding",
