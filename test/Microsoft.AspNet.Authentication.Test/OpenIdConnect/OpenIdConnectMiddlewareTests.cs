@@ -83,6 +83,7 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             });
             var transaction = await SendAsync(server, DefaultHost + Challenge);
             transaction.SetCookie.Single().ShouldContain(OpenIdConnectAuthenticationDefaults.CookieNoncePrefix);
+            transaction.SetCookie.Single().ShouldContain("Expires");
         }
 
         [Fact]

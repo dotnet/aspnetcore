@@ -666,7 +666,8 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 new CookieOptions
                 {
                     HttpOnly = true,
-                    Secure = Request.IsHttps
+                    Secure = Request.IsHttps,
+                    Expires = DateTime.UtcNow + Options.ProtocolValidator.NonceLifetime
                 });
         }
 

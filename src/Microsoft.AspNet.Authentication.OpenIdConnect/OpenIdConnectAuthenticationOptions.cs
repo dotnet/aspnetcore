@@ -169,7 +169,11 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         /// is valid per: http://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation 
         /// </summary>
         /// <exception cref="ArgumentNullException">if 'value' is null.</exception>
-        public OpenIdConnectProtocolValidator ProtocolValidator { get; set; } = new OpenIdConnectProtocolValidator { RequireState = false };
+        public OpenIdConnectProtocolValidator ProtocolValidator { get; set; } = new OpenIdConnectProtocolValidator()
+        {
+            RequireState = false,
+            NonceLifetime = TimeSpan.FromMinutes(15)
+        };
 
         /// <summary>
         /// Gets or sets the 'post_logout_redirect_uri'
