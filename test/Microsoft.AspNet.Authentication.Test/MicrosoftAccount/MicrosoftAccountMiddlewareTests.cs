@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
@@ -163,7 +164,7 @@ namespace Microsoft.AspNet.Authentication.Tests.MicrosoftAccount
                 "https://example.com/signin-microsoft?code=TestCode&state=" + UrlEncoder.Default.UrlEncode(state),
                 correlationKey + "=" + correlationValue);
             transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
-            transaction.Response.Headers.Location.ToString().ShouldBe("/me");
+            transaction.Response.Headers.GetValues("Location").First().ShouldBe("/me");
             transaction.SetCookie.Count.ShouldBe(2);
             transaction.SetCookie[0].ShouldContain(correlationKey);
             transaction.SetCookie[1].ShouldContain(".AspNet." + TestExtensions.CookieAuthenticationScheme);

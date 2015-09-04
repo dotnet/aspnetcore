@@ -286,7 +286,7 @@ namespace Microsoft.AspNet.Authentication.Google
                 "https://example.com/signin-google?code=TestCode&state=" + UrlEncoder.Default.UrlEncode(state),
                 correlationKey + "=" + correlationValue);
             transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
-            transaction.Response.Headers.Location.ToString().ShouldBe("/me");
+            transaction.Response.Headers.GetValues("Location").First().ShouldBe("/me");
             transaction.SetCookie.Count.ShouldBe(2);
             transaction.SetCookie[0].ShouldContain(correlationKey);
             transaction.SetCookie[1].ShouldContain(".AspNet." + TestExtensions.CookieAuthenticationScheme);
@@ -434,7 +434,7 @@ namespace Microsoft.AspNet.Authentication.Google
                 "https://example.com/signin-google?code=TestCode&state=" + UrlEncoder.Default.UrlEncode(state),
                 correlationKey + "=" + correlationValue);
             transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
-            transaction.Response.Headers.Location.ToString().ShouldBe("/me");
+            transaction.Response.Headers.GetValues("Location").First().ShouldBe("/me");
             transaction.SetCookie.Count.ShouldBe(2);
             transaction.SetCookie[0].ShouldContain(correlationKey);
             transaction.SetCookie[1].ShouldContain(".AspNet." + TestExtensions.CookieAuthenticationScheme);
@@ -526,7 +526,7 @@ namespace Microsoft.AspNet.Authentication.Google
                 correlationKey + "=" + correlationValue);
 
             transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
-            transaction.Response.Headers.Location.ToString().ShouldBe("/foo");
+            transaction.Response.Headers.GetValues("Location").First().ShouldBe("/foo");
         }
 
 

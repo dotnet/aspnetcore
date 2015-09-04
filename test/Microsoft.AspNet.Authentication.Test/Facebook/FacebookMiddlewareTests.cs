@@ -236,7 +236,7 @@ namespace Microsoft.AspNet.Authentication.Facebook
                 "https://example.com/signin-facebook?code=TestCode&state=" + UrlEncoder.Default.UrlEncode(state),
                 correlationKey + "=" + correlationValue);
             transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
-            transaction.Response.Headers.Location.ToString().ShouldBe("/me");
+            transaction.Response.Headers.GetValues("Location").First().ShouldBe("/me");
             finalUserInfoEndpoint.Count(c => c == '?').ShouldBe(1);
             finalUserInfoEndpoint.ShouldContain("fields=email,timezone,picture");
             finalUserInfoEndpoint.ShouldContain("&access_token=");
