@@ -21,12 +21,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             typeof(MutableObjectModelBinder).GetTypeInfo().GetDeclaredMethod(nameof(CallPropertyAddRange));
 
         /// <inheritdoc />
-        public virtual async Task<ModelBindingResult> BindModelAsync([NotNull] ModelBindingContext bindingContext)
+        public Task<ModelBindingResult> BindModelAsync([NotNull] ModelBindingContext bindingContext)
         {
             ModelBindingHelper.ValidateBindingContext(bindingContext);
             if (!CanBindType(bindingContext.ModelMetadata))
             {
-                return ModelBindingResult.NoResult;
+                return ModelBindingResult.NoResultAsync;
             }
 
             var mutableObjectBinderContext = new MutableObjectBinderContext()
@@ -37,9 +37,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             if (!(CanCreateModel(mutableObjectBinderContext)))
             {
-                return ModelBindingResult.NoResult;
+                return ModelBindingResult.NoResultAsync;
             }
 
+            return BindModelCoreAsync(bindingContext, mutableObjectBinderContext);
+        }
+
+        private async Task<ModelBindingResult> BindModelCoreAsync(
+            ModelBindingContext bindingContext,
+            MutableObjectBinderContext mutableObjectBinderContext)
+        {
             // Create model first (if necessary) to avoid reporting errors about properties when activation fails.
             var model = GetModel(bindingContext);
 

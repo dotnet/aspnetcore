@@ -18,13 +18,22 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     public class FormCollectionModelBinder : IModelBinder
     {
         /// <inheritdoc />
-        public async Task<ModelBindingResult> BindModelAsync([NotNull] ModelBindingContext bindingContext)
+        public Task<ModelBindingResult> BindModelAsync([NotNull] ModelBindingContext bindingContext)
         {
+            // This method is optimized to use cached tasks when possible and avoid allocating
+            // using Task.FromResult. If you need to make changes of this nature, profile
+            // allocations afterwards and look for Task<ModelBindingResult>.
+
             if (bindingContext.ModelType != typeof(IFormCollection))
             {
-                return ModelBindingResult.NoResult;
+                return ModelBindingResult.NoResultAsync;
             }
 
+            return BindModelCoreAsync(bindingContext);
+        }
+
+        private async Task<ModelBindingResult> BindModelCoreAsync(ModelBindingContext bindingContext)
+        {
             object model;
             var request = bindingContext.OperationBindingContext.HttpContext.Request;
             if (request.HasFormContentType)

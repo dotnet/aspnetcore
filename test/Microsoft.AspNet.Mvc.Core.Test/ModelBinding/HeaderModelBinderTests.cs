@@ -72,6 +72,50 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.Equal(headerValue, result.Model);
         }
 
+        [Fact]
+        public async Task HeaderBinder_ReturnsNoResult_ForNullBindingSource()
+        {
+            // Arrange
+            var type = typeof(string);
+            var header = "User-Agent";
+            var headerValue = "UnitTest";
+
+            var binder = new HeaderModelBinder();
+            var modelBindingContext = GetBindingContext(type);
+            modelBindingContext.BindingSource = null;
+
+            modelBindingContext.FieldName = header;
+            modelBindingContext.OperationBindingContext.HttpContext.Request.Headers.Add(header, new[] { headerValue });
+
+            // Act
+            var result = await binder.BindModelAsync(modelBindingContext);
+
+            // Assert
+            Assert.Equal(ModelBindingResult.NoResult, result);
+        }
+
+        [Fact]
+        public async Task HeaderBinder_ReturnsNoResult_ForNonHeaderBindingSource()
+        {
+            // Arrange
+            var type = typeof(string);
+            var header = "User-Agent";
+            var headerValue = "UnitTest";
+
+            var binder = new HeaderModelBinder();
+            var modelBindingContext = GetBindingContext(type);
+            modelBindingContext.BindingSource = BindingSource.Body;
+
+            modelBindingContext.FieldName = header;
+            modelBindingContext.OperationBindingContext.HttpContext.Request.Headers.Add(header, new[] { headerValue });
+
+            // Act
+            var result = await binder.BindModelAsync(modelBindingContext);
+
+            // Assert
+            Assert.Equal(ModelBindingResult.NoResult, result);
+        }
+
         private static ModelBindingContext GetBindingContext(Type modelType)
         {
             var metadataProvider = new TestModelMetadataProvider();

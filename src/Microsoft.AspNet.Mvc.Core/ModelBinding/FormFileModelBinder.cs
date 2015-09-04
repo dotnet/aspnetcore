@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 #if DNXCORE50
 using System.Reflection;
@@ -20,8 +21,23 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     public class FormFileModelBinder : IModelBinder
     {
         /// <inheritdoc />
-        public async Task<ModelBindingResult> BindModelAsync([NotNull] ModelBindingContext bindingContext)
+        public Task<ModelBindingResult> BindModelAsync([NotNull] ModelBindingContext bindingContext)
         {
+            // This method is optimized to use cached tasks when possible and avoid allocating
+            // using Task.FromResult. If you need to make changes of this nature, profile
+            // allocations afterwards and look for Task<ModelBindingResult>.
+
+            if (bindingContext.ModelType != typeof(IFormFile) &&
+                !typeof(IEnumerable<IFormFile>).IsAssignableFrom(bindingContext.ModelType))
+            {
+                return ModelBindingResult.NoResultAsync;
+            }
+
+            return BindModelCoreAsync(bindingContext);
+        }
+
+        private async Task<ModelBindingResult> BindModelCoreAsync(ModelBindingContext bindingContext)
+        { 
             object value;
             if (bindingContext.ModelType == typeof(IFormFile))
             {
@@ -36,6 +52,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             else
             {
                 // This binder does not support the requested type.
+                Debug.Fail("We shouldn't be called without a matching type.");
                 return ModelBindingResult.NoResult;
             }
             

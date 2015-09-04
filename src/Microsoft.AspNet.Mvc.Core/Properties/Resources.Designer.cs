@@ -955,22 +955,6 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         /// <summary>
-        /// The provided binding source '{0}' is not a greedy data source. '{1}' only supports greedy data sources.
-        /// </summary>
-        internal static string BindingSource_MustBeGreedy
-        {
-            get { return GetString("BindingSource_MustBeGreedy"); }
-        }
-
-        /// <summary>
-        /// The provided binding source '{0}' is not a greedy data source. '{1}' only supports greedy data sources.
-        /// </summary>
-        internal static string FormatBindingSource_MustBeGreedy(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("BindingSource_MustBeGreedy"), p0, p1);
-        }
-
-        /// <summary>
         /// The property {0}.{1} could not be found.
         /// </summary>
         internal static string Common_PropertyNotFound

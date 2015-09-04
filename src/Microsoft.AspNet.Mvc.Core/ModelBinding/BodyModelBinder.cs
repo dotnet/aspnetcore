@@ -14,19 +14,35 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     /// An <see cref="IModelBinder"/> which binds models from the request body using an <see cref="IInputFormatter"/>
     /// when a model has the binding source <see cref="BindingSource.Body"/>/
     /// </summary>
-    public class BodyModelBinder : BindingSourceModelBinder
+    public class BodyModelBinder : IModelBinder
     {
-        /// <summary>
-        /// Creates a new <see cref="BodyModelBinder"/>.
-        /// </summary>
-        public BodyModelBinder()
-            : base(BindingSource.Body)
+        /// <inheritdoc />
+        public Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
         {
+            // This method is optimized to use cached tasks when possible and avoid allocating
+            // using Task.FromResult. If you need to make changes of this nature, profile
+            // allocations afterwards and look for Task<ModelBindingResult>.
+
+            var allowedBindingSource = bindingContext.BindingSource;
+            if (allowedBindingSource == null ||
+                !allowedBindingSource.CanAcceptDataFrom(BindingSource.Body))
+            {
+                // Formatters are opt-in. This model either didn't specify [FromBody] or specified something
+                // incompatible so let other binders run.
+                return ModelBindingResult.NoResultAsync;
+            }
+
+            return BindModelCoreAsync(bindingContext);
         }
 
-        /// <inheritdoc />
-        protected async override Task<ModelBindingResult> BindModelCoreAsync(
-            [NotNull] ModelBindingContext bindingContext)
+        /// <summary>
+        /// Attempts to bind the model using formatters.
+        /// </summary>
+        /// <param name="bindingContext">The <see cref="ModelBindingContext"/>.</param>
+        /// <returns>
+        /// A <see cref="Task{ModelBindingResult}"/> which when completed returns a <see cref="ModelBindingResult"/>.
+        /// </returns>
+        private async Task<ModelBindingResult> BindModelCoreAsync([NotNull] ModelBindingContext bindingContext)
         {
             // For compatibility with MVC 5.0 for top level object we want to consider an empty key instead of
             // the parameter name/a custom name. In all other cases (like when binding body to a property) we

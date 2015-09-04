@@ -21,15 +21,24 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private readonly ConcurrentDictionary<Type, ObjectFactory> _typeActivatorCache =
                new ConcurrentDictionary<Type, ObjectFactory>();
 
-        public async Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
+        public Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
         {
+            // This method is optimized to use cached tasks when possible and avoid allocating
+            // using Task.FromResult. If you need to make changes of this nature, profile
+            // allocations afterwards and look for Task<ModelBindingResult>.
+
             if (bindingContext.BinderType == null)
             {
                 // Return NoResult so that we are able to continue with the default set of model binders,
                 // if there is no specific model binder provided.
-                return ModelBindingResult.NoResult;
+                return ModelBindingResult.NoResultAsync;
             }
 
+            return BindModelCoreAsync(bindingContext);
+        }
+
+        private async Task<ModelBindingResult> BindModelCoreAsync(ModelBindingContext bindingContext)
+        {
             var requestServices = bindingContext.OperationBindingContext.HttpContext.RequestServices;
             var createFactory = _typeActivatorCache.GetOrAdd(bindingContext.BinderType, _createFactory);
             var instance = createFactory(requestServices, arguments: null);

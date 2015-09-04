@@ -11,22 +11,21 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     {
         public Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
         {
-            return Task.FromResult(BindModel(bindingContext));
-        }
+            // This method is optimized to use cached tasks when possible and avoid allocating
+            // using Task.FromResult. If you need to make changes of this nature, profile
+            // allocations afterwards and look for Task<ModelBindingResult>.
 
-        public ModelBindingResult BindModel(ModelBindingContext bindingContext)
-        {
             if (bindingContext.ModelMetadata.IsComplexType)
             {
                 // this type cannot be converted
-                return ModelBindingResult.NoResult;
+                return ModelBindingResult.NoResultAsync;
             }
 
             var valueProviderResult = bindingContext.ValueProvider.GetValue(bindingContext.ModelName);
             if (valueProviderResult == ValueProviderResult.None)
             {
                 // no entry
-                return ModelBindingResult.NoResult;
+                return ModelBindingResult.NoResultAsync;
             }
 
             bindingContext.ModelState.SetModelValue(bindingContext.ModelName, valueProviderResult);
@@ -54,16 +53,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                         bindingContext.ModelName,
                         Resources.FormatCommon_ValueNotValidForProperty(model));
 
-                    return ModelBindingResult.Failed(bindingContext.ModelName);
+                    return ModelBindingResult.FailedAsync(bindingContext.ModelName);
                 }
                 else
                 {
                     var validationNode = new ModelValidationNode(
                         bindingContext.ModelName,
-                        bindingContext.ModelMetadata, 
+                        bindingContext.ModelMetadata,
                         model);
 
-                    return ModelBindingResult.Success(bindingContext.ModelName, model, validationNode);
+                    return ModelBindingResult.SuccessAsync(bindingContext.ModelName, model, validationNode);
                 }
             }
             catch (Exception ex)
@@ -72,7 +71,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
                 // Were able to find a converter for the type but conversion failed.
                 // Tell the model binding system to skip other model binders.
-                return ModelBindingResult.Failed(bindingContext.ModelName);
+                return ModelBindingResult.FailedAsync(bindingContext.ModelName);
             }
         }
     }

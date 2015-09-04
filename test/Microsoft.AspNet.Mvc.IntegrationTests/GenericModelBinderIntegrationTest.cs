@@ -148,15 +148,19 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             }
         }
 
-        private class AddressBinder : BindingSourceModelBinder
+        private class AddressBinder : IModelBinder
         {
-            public AddressBinder()
-                : base(BindAddressAttribute.Source)
+            public Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
             {
-            }
+                var allowedBindingSource = bindingContext.BindingSource;
+                if (allowedBindingSource == null || 
+                    !allowedBindingSource.CanAcceptDataFrom(BindAddressAttribute.Source))
+                {
+                    // Binding Sources are opt-in. This model either didn't specify one or specified something
+                    // incompatible so let other binders run.
+                    return ModelBindingResult.NoResultAsync;
+                }
 
-            protected override Task<ModelBindingResult> BindModelCoreAsync(ModelBindingContext bindingContext)
-            {
                 return ModelBindingResult.SuccessAsync(bindingContext.ModelName, new Address(), validationNode: null);
             }
         }

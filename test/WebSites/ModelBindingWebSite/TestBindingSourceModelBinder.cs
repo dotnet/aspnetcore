@@ -10,15 +10,17 @@ using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
 
 namespace ModelBindingWebSite
 {
-    public class TestBindingSourceModelBinder : BindingSourceModelBinder
+    public class TestBindingSourceModelBinder : IModelBinder
     {
-        public TestBindingSourceModelBinder()
-            : base(FromTestAttribute.TestBindingSource)
+        public Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
         {
-        }
+            var allowedBindingSource = bindingContext.BindingSource;
+            if (allowedBindingSource == null ||
+                !allowedBindingSource.CanAcceptDataFrom(FromTestAttribute.TestBindingSource))
+            {
+                return ModelBindingResult.NoResultAsync;
+            }
 
-        protected override Task<ModelBindingResult> BindModelCoreAsync(ModelBindingContext bindingContext)
-        {
             var attributes = ((DefaultModelMetadata)bindingContext.ModelMetadata).Attributes;
             var metadata = attributes.Attributes.OfType<FromTestAttribute>().First();
             var model = metadata.Value;
