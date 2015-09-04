@@ -1,0 +1,4 @@
+language: csharp
+sudo: false
+script:
+  - ./build.sh --quiet verify
