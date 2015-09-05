@@ -86,7 +86,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [Fact]
         public void EngineCanStartAndStop()
         {
-            var engine = new KestrelEngine(LibraryManager, new ShutdownNotImplemented());
+            var engine = new KestrelEngine(LibraryManager, new ShutdownNotImplemented(), new TestLogger());
             engine.Start(1);
             engine.Dispose();
         }
@@ -94,7 +94,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [Fact]
         public void ListenerCanCreateAndDispose()
         {
-            var engine = new KestrelEngine(LibraryManager, new ShutdownNotImplemented());
+            var engine = new KestrelEngine(LibraryManager, new ShutdownNotImplemented(), new TestLogger());
             engine.Start(1);
             var started = engine.CreateServer("http", "localhost", 54321, App);
             started.Dispose();
@@ -105,7 +105,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [Fact]
         public void ConnectionCanReadAndWrite()
         {
-            var engine = new KestrelEngine(LibraryManager, new ShutdownNotImplemented());
+            var engine = new KestrelEngine(LibraryManager, new ShutdownNotImplemented(), new TestLogger());
             engine.Start(1);
             var started = engine.CreateServer("http", "localhost", 54321, App);
 

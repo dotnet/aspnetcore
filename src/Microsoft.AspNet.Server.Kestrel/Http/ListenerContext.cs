@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 
 namespace Microsoft.AspNet.Server.Kestrel.Http
 {
@@ -13,6 +14,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         public ListenerContext(ServiceContext serviceContext)
         {
             Memory = serviceContext.Memory;
+            Log = serviceContext.Log;
         }
 
         public ListenerContext(ListenerContext listenerContext)
@@ -20,6 +22,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             Thread = listenerContext.Thread;
             Application = listenerContext.Application;
             Memory = listenerContext.Memory;
+            Log = listenerContext.Log;
         }
 
         public KestrelThread Thread { get; set; }
@@ -27,5 +30,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         public Func<Frame, Task> Application { get; set; }
 
         public IMemoryPool Memory { get; set; }
+
+        public IKestrelTrace Log { get; }
     }
 }
