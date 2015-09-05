@@ -172,6 +172,7 @@ namespace Microsoft.Framework.WebEncoders
         [InlineData('\uAAE0', '\uAAFF', nameof(UnicodeRanges.MeeteiMayekExtensions))]
         [InlineData('\uAB00', '\uAB2F', nameof(UnicodeRanges.EthiopicExtendedA))]
         [InlineData('\uAB30', '\uAB6F', nameof(UnicodeRanges.LatinExtendedE))]
+        [InlineData('\uAB70', '\uABBF', nameof(UnicodeRanges.CherokeeSupplement))]
         [InlineData('\uABC0', '\uABFF', nameof(UnicodeRanges.MeeteiMayek))]
         [InlineData('\uAC00', '\uD7AF', nameof(UnicodeRanges.HangulSyllables))]
         [InlineData('\uD7B0', '\uD7FF', nameof(UnicodeRanges.HangulJamoExtendedB))]

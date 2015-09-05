@@ -1278,6 +1278,15 @@ namespace Microsoft.Framework.WebEncoders
         private static UnicodeRange _latinExtendedE;
 
         /// <summary>
+        /// A <see cref="UnicodeRange"/> corresponding to the 'Cherokee Supplement' Unicode block (U+AB70..U+ABBF).
+        /// </summary>
+        /// <remarks>
+        /// See http://www.unicode.org/charts/PDF/UAB70.pdf for the full set of characters in this block.
+        /// </remarks>
+        public static UnicodeRange CherokeeSupplement => Volatile.Read(ref _cherokeeSupplement) ?? CreateRange(ref _cherokeeSupplement, first: '\uAB70', last: '\uABBF');
+        private static UnicodeRange _cherokeeSupplement;
+
+        /// <summary>
         /// A <see cref="UnicodeRange"/> corresponding to the 'Meetei Mayek' Unicode block (U+ABC0..U+ABFF).
         /// </summary>
         /// <remarks>
@@ -1303,7 +1312,7 @@ namespace Microsoft.Framework.WebEncoders
         /// </remarks>
         public static UnicodeRange HangulJamoExtendedB => Volatile.Read(ref _hangulJamoExtendedB) ?? CreateRange(ref _hangulJamoExtendedB, first: '\uD7B0', last: '\uD7FF');
         private static UnicodeRange _hangulJamoExtendedB;
-        
+
         /// <summary>
         /// A <see cref="UnicodeRange"/> corresponding to the 'CJK Compatibility Ideographs' Unicode block (U+F900..U+FAFF).
         /// </summary>

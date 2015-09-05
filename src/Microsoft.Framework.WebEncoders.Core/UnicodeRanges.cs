@@ -10,7 +10,7 @@ namespace Microsoft.Framework.WebEncoders
 {
     /// <summary>
     /// Contains predefined <see cref="UnicodeRange"/> instances which correspond to blocks
-    /// from the Unicode 7.0 specification.
+    /// from the Unicode 8.0 specification.
     /// </summary>
     public static partial class UnicodeRanges
     {

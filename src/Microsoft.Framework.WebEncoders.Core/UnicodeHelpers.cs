@@ -28,14 +28,14 @@ namespace Microsoft.Framework.WebEncoders
 
         /// <summary>
         /// Helper method which creates a bitmap of all characters which are
-        /// defined per version 7.0.0 of the Unicode specification.
+        /// defined per version 8.0 of the Unicode specification.
         /// </summary>
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static uint[] CreateDefinedCharacterBitmap()
         {
             // The stream should be exactly 8KB in size.
             var assembly = typeof(UnicodeHelpers).GetTypeInfo().Assembly;
-            var resourceName = assembly.GetName().Name + ".compiler.resources.unicode-7.0.0-defined-characters.bin";
+            var resourceName = assembly.GetName().Name + ".compiler.resources.unicode-defined-chars.bin";
 
             var stream = assembly.GetManifestResourceStream(resourceName);
             if (stream.Length != 8 * 1024)
@@ -72,7 +72,7 @@ namespace Microsoft.Framework.WebEncoders
         }
 
         /// <summary>
-        /// Returns a bitmap of all characters which are defined per version 7.0.0
+        /// Returns a bitmap of all characters which are defined per version 8.0
         /// of the Unicode specification.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -204,7 +204,7 @@ namespace Microsoft.Framework.WebEncoders
         }
 
         /// <summary>
-        /// Returns a value stating whether a character is defined per version 7.0.0
+        /// Returns a value stating whether a character is defined per version 8.0
         /// of the Unicode specification. Certain classes of characters (control chars,
         /// private use, surrogates, some whitespace) are considered "undefined" for
         /// our purposes.

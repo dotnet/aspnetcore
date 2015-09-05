@@ -193,7 +193,7 @@ namespace Microsoft.Framework.WebEncoders
                 }
             }
 
-            // Handle known spans from Unicode 7.0.0's UnicodeData.txt
+            // Handle known spans from Unicode 8.0's UnicodeData.txt
 
             // CJK Ideograph Extension A
             for (int i = '\u3400'; i <= '\u4DB5'; i++)
@@ -201,7 +201,7 @@ namespace Microsoft.Framework.WebEncoders
                 retVal[i] = true;
             }
             // CJK Ideograph
-            for (int i = '\u4E00'; i <= '\u9FCC'; i++)
+            for (int i = '\u4E00'; i <= '\u9FD5'; i++)
             {
                 retVal[i] = true;
             }

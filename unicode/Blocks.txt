@@ -1,13 +1,10 @@
-# Blocks-7.0.0.txt
-# Date: 2014-04-03, 23:23:00 GMT [RP, KW]
+# Blocks-8.0.0.txt
+# Date: 2014-11-10, 23:04:00 GMT [KW]
 #
 # Unicode Character Database
 # Copyright (c) 1991-2014 Unicode, Inc.
 # For terms of use, see http://www.unicode.org/terms_of_use.html
 # For documentation, see http://www.unicode.org/reports/tr44/
-#
-# Note:   The casing of block names is not normative.
-#         For example, "Basic Latin" and "BASIC LATIN" are equivalent.
 #
 # Format:
 # Start Code..End Code; Block Name
@@ -19,6 +16,14 @@
 #         For example, "Latin Extended-A" and "latin extended a" are equivalent.
 #         For more information on the comparison of property values, 
 #            see UAX #44: http://www.unicode.org/reports/tr44/
+#
+#  All block ranges start with a value where (cp MOD 16) = 0,
+#  and end with a value where (cp MOD 16) = 15. In other words,
+#  the last hexadecimal digit of the start of range is ...0 
+#  and the last hexadecimal digit of the end of range is ...F.
+#  This constraint on block ranges guarantees that allocations
+#  are done in terms of whole columns, and that code chart display
+#  never involves splitting columns in the charts.
 #
 #  All code points not explicitly listed for Block
 #  have the value No_Block.
@@ -168,6 +173,7 @@ AA80..AADF; Tai Viet
 AAE0..AAFF; Meetei Mayek Extensions
 AB00..AB2F; Ethiopic Extended-A
 AB30..AB6F; Latin Extended-E
+AB70..ABBF; Cherokee Supplement
 ABC0..ABFF; Meetei Mayek
 AC00..D7AF; Hangul Syllables
 D7B0..D7FF; Hangul Jamo Extended-B
@@ -210,6 +216,7 @@ FFF0..FFFF; Specials
 10840..1085F; Imperial Aramaic
 10860..1087F; Palmyrene
 10880..108AF; Nabataean
+108E0..108FF; Hatran
 10900..1091F; Phoenician
 10920..1093F; Lydian
 10980..1099F; Meroitic Hieroglyphs
@@ -223,6 +230,7 @@ FFF0..FFFF; Specials
 10B60..10B7F; Inscriptional Pahlavi
 10B80..10BAF; Psalter Pahlavi
 10C00..10C4F; Old Turkic
+10C80..10CFF; Old Hungarian
 10E60..10E7F; Rumi Numeral Symbols
 11000..1107F; Brahmi
 11080..110CF; Kaithi
@@ -232,17 +240,21 @@ FFF0..FFFF; Specials
 11180..111DF; Sharada
 111E0..111FF; Sinhala Archaic Numbers
 11200..1124F; Khojki
+11280..112AF; Multani
 112B0..112FF; Khudawadi
 11300..1137F; Grantha
 11480..114DF; Tirhuta
 11580..115FF; Siddham
 11600..1165F; Modi
 11680..116CF; Takri
+11700..1173F; Ahom
 118A0..118FF; Warang Citi
 11AC0..11AFF; Pau Cin Hau
 12000..123FF; Cuneiform
 12400..1247F; Cuneiform Numbers and Punctuation
+12480..1254F; Early Dynastic Cuneiform
 13000..1342F; Egyptian Hieroglyphs
+14400..1467F; Anatolian Hieroglyphs
 16800..16A3F; Bamum Supplement
 16A40..16A6F; Mro
 16AD0..16AFF; Bassa Vah
@@ -257,6 +269,7 @@ FFF0..FFFF; Specials
 1D300..1D35F; Tai Xuan Jing Symbols
 1D360..1D37F; Counting Rod Numerals
 1D400..1D7FF; Mathematical Alphanumeric Symbols
+1D800..1DAAF; Sutton SignWriting
 1E800..1E8DF; Mende Kikakui
 1EE00..1EEFF; Arabic Mathematical Alphabetic Symbols
 1F000..1F02F; Mahjong Tiles
@@ -271,9 +284,11 @@ FFF0..FFFF; Specials
 1F700..1F77F; Alchemical Symbols
 1F780..1F7FF; Geometric Shapes Extended
 1F800..1F8FF; Supplemental Arrows-C
+1F900..1F9FF; Supplemental Symbols and Pictographs
 20000..2A6DF; CJK Unified Ideographs Extension B
 2A700..2B73F; CJK Unified Ideographs Extension C
 2B740..2B81F; CJK Unified Ideographs Extension D
+2B820..2CEAF; CJK Unified Ideographs Extension E
 2F800..2FA1F; CJK Compatibility Ideographs Supplement
 E0000..E007F; Tags
 E0100..E01EF; Variation Selectors Supplement

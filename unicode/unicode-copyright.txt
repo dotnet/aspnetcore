@@ -1,8 +1,8 @@
 ﻿The files Blocks.txt and UnicodeData.txt in this directory were
-retrieved from the following URLs on Saturday, February 7, 2015.
+retrieved from the following URLs on Saturday, September 5, 2015.
 
-http://www.unicode.org/Public/7.0.0/ucd/Blocks.txt
-http://www.unicode.org/Public/7.0.0/ucd/UnicodeData.txt
+http://www.unicode.org/Public/8.0.0/ucd/Blocks.txt
+http://www.unicode.org/Public/8.0.0/ucd/UnicodeData.txt
 
 The below copyright notice applies to these files.
 
