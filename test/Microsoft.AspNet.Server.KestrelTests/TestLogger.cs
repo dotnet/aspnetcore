@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
 
         public bool IsEnabled(LogLevel logLevel)
         {
-            return true;
+            return false;
         }
 
         public IDisposable BeginScopeImpl(object state)
