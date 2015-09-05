@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         public override bool CanSeek => false;
 
-        public override bool CanWrite => false;
+        public override bool CanWrite => true;
 
         public override long Length
         {
