@@ -1,6 +1,8 @@
 {
     "version": "6.0.0-*",
     "shared": "**/*.cs",
-    "dependencies": {
+    "frameworks": {
+      "dnx451": {},
+      "dnxcore50": {}
     }
 }
