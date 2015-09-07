@@ -171,6 +171,14 @@ namespace Microsoft.Framework.Primitives
         [MemberData(nameof(EmptyStringValues))]
         public void DefaultNullOrEmpty_Enumerator(StringValues stringValues)
         {
+            var e = stringValues.GetEnumerator();
+            Assert.Null(e.Current);
+            Assert.False(e.MoveNext());
+            Assert.Null(e.Current);
+            Assert.False(e.MoveNext());
+            Assert.False(e.MoveNext());
+            Assert.False(e.MoveNext());
+
             var e1 = ((IEnumerable<string>)stringValues).GetEnumerator();
             Assert.Null(e1.Current);
             Assert.False(e1.MoveNext());
@@ -192,6 +200,17 @@ namespace Microsoft.Framework.Primitives
         [MemberData(nameof(FilledStringValuesWithExpected))]
         public void Enumerator(StringValues stringValues, string[] expected)
         {
+            var e = stringValues.GetEnumerator();
+            Assert.Null(e.Current);
+            for (int i = 0; i < expected.Length; i++)
+            {
+                Assert.True(e.MoveNext());
+                Assert.Equal(expected[i], e.Current);
+            }
+            Assert.False(e.MoveNext());
+            Assert.False(e.MoveNext());
+            Assert.False(e.MoveNext());
+
             var e1 = ((IEnumerable<string>)stringValues).GetEnumerator();
             Assert.Null(e1.Current);
             for (int i = 0; i < expected.Length; i++)
@@ -244,7 +263,13 @@ namespace Microsoft.Framework.Primitives
         public void CopyTo(StringValues stringValues, string[] expected)
         {
             ICollection<string> collection = stringValues;
+
+            string[] tooSmall = new string[0];
+            Assert.Throws<ArgumentException>(() => collection.CopyTo(tooSmall, 0));
+
             string[] actual = new string[expected.Length];
+            Assert.Throws<ArgumentOutOfRangeException>(() => collection.CopyTo(actual, -1));
+            Assert.Throws<ArgumentException>(() => collection.CopyTo(actual, actual.Length + 1));
             collection.CopyTo(actual, 0);
             Assert.Equal(expected, actual);
         }

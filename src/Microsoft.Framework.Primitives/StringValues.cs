@@ -10,7 +10,7 @@ namespace Microsoft.Framework.Primitives
     /// <summary>
     /// Represents zero/null, one, or many strings in an efficient way.
     /// </summary>
-    public struct StringValues : IList<string>
+    public struct StringValues : IList<string>, IReadOnlyList<string>
     {
         private static readonly string[] EmptyArray = new string[0];
         public static readonly StringValues Empty = new StringValues(EmptyArray);
@@ -63,15 +63,15 @@ namespace Microsoft.Framework.Primitives
             set { throw new NotSupportedException(); }
         }
 
-        public string this[int key]
+        public string this[int index]
         {
             get
             {
                 if (_values != null)
                 {
-                    return _values[key]; // may throw
+                    return _values[index]; // may throw
                 }
-                if (key == 0 && _value != null)
+                if (index == 0 && _value != null)
                 {
                     return _value;
                 }
@@ -114,28 +114,67 @@ namespace Microsoft.Framework.Primitives
 
         int IList<string>.IndexOf(string item)
         {
-            var index = 0;
-            foreach (var value in this)
+            return IndexOf(item);
+        }
+
+        private int IndexOf(string item)
+        {
+            if (_values != null)
             {
-                if (string.Equals(value, item, StringComparison.Ordinal))
+                var values = _values;
+                for (int i = 0; i < values.Length; i++)
                 {
-                    return index;
+                    if (string.Equals(values[i], item, StringComparison.Ordinal))
+                    {
+                        return i;
+                    }
                 }
-                index += 1;
+                return -1;
             }
+
+            if (_value != null)
+            {
+                return string.Equals(_value, item, StringComparison.Ordinal) ? 0 : -1;
+            }
+
             return -1;
         }
 
         bool ICollection<string>.Contains(string item)
         {
-            return ((IList<string>)this).IndexOf(item) >= 0;
+            return IndexOf(item) >= 0;
         }
 
         void ICollection<string>.CopyTo(string[] array, int arrayIndex)
         {
-            for(int i = 0; i < Count; i++)
+            CopyTo(array, arrayIndex);
+        }
+
+        private void CopyTo(string[] array, int arrayIndex)
+        {
+            if (_values != null)
             {
-                array[arrayIndex + i] = this[i];
+                Array.Copy(_values, 0, array, arrayIndex, _values.Length);
+                return;
+            }
+
+            if (_value != null)
+            {
+                if (array == null)
+                {
+                    throw new ArgumentNullException(nameof(array));
+                }
+                if (arrayIndex < 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(arrayIndex));
+                }
+                if (array.Length - arrayIndex < 1)
+                {
+                    throw new ArgumentException(
+                        $"'{nameof(array)}' is not long enough to copy all the items in the collection. Check '{nameof(arrayIndex)}' and '{nameof(array)}' length.");
+                }
+
+                array[arrayIndex] = _value;
             }
         }
 
@@ -164,28 +203,19 @@ namespace Microsoft.Framework.Primitives
             throw new NotSupportedException();
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
+        public Enumerator GetEnumerator()
         {
-            return ((IEnumerable<string>)this).GetEnumerator();
+            return new Enumerator(this);
         }
 
         IEnumerator<string> IEnumerable<string>.GetEnumerator()
         {
-            if (Count == 0)
-            {
-                yield break;
-            }
-            if (_values == null)
-            {
-                yield return _value;
-            }
-            else
-            {
-                for (int i = 0; i < _values.Length; i++)
-                {
-                    yield return _values[i];
-                }
-            }
+            return GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
 
         public static bool IsNullOrEmpty(StringValues value)
@@ -218,16 +248,65 @@ namespace Microsoft.Framework.Primitives
             }
 
             var combined = new string[count1 + count2];
-            var index = 0;
-            foreach (var value in values1)
-            {
-                combined[index++] = value;
-            }
-            foreach (var value in values2)
-            {
-                combined[index++] = value;
-            }
+            values1.CopyTo(combined, 0);
+            values2.CopyTo(combined, count1);
             return new StringValues(combined);
+        }
+
+        public struct Enumerator : IEnumerator<string>
+        {
+            private readonly StringValues _values;
+            private string _current;
+            private int _index;
+
+            public Enumerator(StringValues values)
+            {
+                _values = values;
+                _current = null;
+                _index = 0;
+            }
+
+            public bool MoveNext()
+            {
+                var values = _values._values;
+                if (values != null)
+                {
+                    if (_index < values.Length)
+                    {
+                        _current = values[_index];
+                        _index++;
+                        return true;
+                    }
+
+                    _current = null;
+                    return false;
+                }
+
+                var value = _values._value;
+                if (value != null && _index == 0)
+                {
+                    _current = value;
+                    _index = -1; // sentinel value
+                    return true;
+                }
+
+                _current = null;
+                return false;
+            }
+
+            public string Current => _current;
+
+            object IEnumerator.Current => _current;
+
+            void IEnumerator.Reset()
+            {
+                _current = null;
+                _index = 0;
+            }
+
+            void IDisposable.Dispose()
+            {
+            }
         }
     }
 }
