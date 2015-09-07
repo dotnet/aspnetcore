@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Tracing;
 using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
@@ -16,7 +17,6 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
-using Microsoft.Framework.Notification;
 
 namespace Microsoft.AspNet.Mvc.Actions
 {
@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Mvc.Actions
         private readonly IReadOnlyList<IValueProviderFactory> _valueProviderFactories;
         private readonly IActionBindingContextAccessor _actionBindingContextAccessor;
         private readonly ILogger _logger;
-        private readonly INotifier _notifier;
+        private readonly TelemetrySource _telemetry;
         private readonly int _maxModelValidationErrors;
 
         private IFilterMetadata[] _filters;
@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.Mvc.Actions
             [NotNull] IReadOnlyList<IValueProviderFactory> valueProviderFactories,
             [NotNull] IActionBindingContextAccessor actionBindingContextAccessor,
             [NotNull] ILogger logger,
-            [NotNull] INotifier notifier,
+            [NotNull] TelemetrySource telemetry,
             int maxModelValidationErrors)
         {
             ActionContext = actionContext;
@@ -83,7 +83,7 @@ namespace Microsoft.AspNet.Mvc.Actions
             _valueProviderFactories = valueProviderFactories;
             _actionBindingContextAccessor = actionBindingContextAccessor;
             _logger = logger;
-            _notifier = notifier;
+            _telemetry = telemetry;
             _maxModelValidationErrors = maxModelValidationErrors;
         }
 
@@ -571,9 +571,9 @@ namespace Microsoft.AspNet.Mvc.Actions
 
                     try
                     {
-                        if (_notifier.ShouldNotify("Microsoft.AspNet.Mvc.BeforeActionMethod"))
+                        if (_telemetry.IsEnabled("Microsoft.AspNet.Mvc.BeforeActionMethod"))
                         {
-                            _notifier.Notify(
+                            _telemetry.WriteTelemetry(
                                 "Microsoft.AspNet.Mvc.BeforeActionMethod",
                                 new { actionContext = ActionContext, arguments = _actionExecutingContext.ActionArguments });
                         }
@@ -582,9 +582,9 @@ namespace Microsoft.AspNet.Mvc.Actions
                     }
                     finally
                     {
-                        if (_notifier.ShouldNotify("Microsoft.AspNet.Mvc.AfterActionMethod"))
+                        if (_telemetry.IsEnabled("Microsoft.AspNet.Mvc.AfterActionMethod"))
                         {
-                            _notifier.Notify(
+                            _telemetry.WriteTelemetry(
                                 "Microsoft.AspNet.Mvc.AfterActionMethod",
                                 new { actionContext = ActionContext, result });
                         }
@@ -735,9 +735,9 @@ namespace Microsoft.AspNet.Mvc.Actions
 
         private async Task InvokeResultAsync(IActionResult result)
         {
-            if (_notifier.ShouldNotify("Microsoft.AspNet.Mvc.BeforeActionResult"))
+            if (_telemetry.IsEnabled("Microsoft.AspNet.Mvc.BeforeActionResult"))
             {
-                _notifier.Notify(
+                _telemetry.WriteTelemetry(
                     "Microsoft.AspNet.Mvc.BeforeActionResult",
                     new { actionContext = ActionContext, result });
             }
@@ -748,9 +748,9 @@ namespace Microsoft.AspNet.Mvc.Actions
             }
             finally
             {
-                if (_notifier.ShouldNotify("Microsoft.AspNet.Mvc.AfterActionResult"))
+                if (_telemetry.IsEnabled("Microsoft.AspNet.Mvc.AfterActionResult"))
                 {
-                    _notifier.Notify(
+                    _telemetry.WriteTelemetry(
                         "Microsoft.AspNet.Mvc.AfterActionResult",
                         new { actionContext = ActionContext, result });
                 }

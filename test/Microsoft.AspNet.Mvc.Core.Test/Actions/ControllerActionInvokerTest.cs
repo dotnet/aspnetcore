@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Tracing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -20,7 +21,6 @@ using Microsoft.AspNet.Testing;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.Logging.Testing;
-using Microsoft.Framework.Notification;
 using Microsoft.Framework.OptionsModel;
 using Microsoft.Net.Http.Headers;
 using Moq;
@@ -2046,7 +2046,7 @@ namespace Microsoft.AspNet.Mvc.Actions
                 new IValueProviderFactory[0],
                 new ActionBindingContextAccessor(),
                 new NullLoggerFactory().CreateLogger<ControllerActionInvoker>(),
-                new Notifier(new ProxyNotifierMethodAdapter()),
+                new TelemetryListener("Microsoft.AspNet"),
                 maxAllowedErrorsInModelState);
 
             return invoker;
@@ -2107,7 +2107,7 @@ namespace Microsoft.AspNet.Mvc.Actions
                 new IValueProviderFactory[0],
                 new ActionBindingContextAccessor(),
                 new NullLoggerFactory().CreateLogger<ControllerActionInvoker>(),
-                new Notifier(new ProxyNotifierMethodAdapter()),
+                new TelemetryListener("Microsoft.AspNet"),
                 200);
 
             // Act
@@ -2208,7 +2208,7 @@ namespace Microsoft.AspNet.Mvc.Actions
                 IReadOnlyList<IValueProviderFactory> valueProviderFactories,
                 IActionBindingContextAccessor actionBindingContext,
                 ILogger logger,
-                INotifier notifier,
+                TelemetrySource telemetry,
                 int maxAllowedErrorsInModelState)
                 : base(
                       actionContext,
@@ -2223,7 +2223,7 @@ namespace Microsoft.AspNet.Mvc.Actions
                       valueProviderFactories,
                       actionBindingContext,
                       logger,
-                      notifier,
+                      telemetry,
                       maxAllowedErrorsInModelState)
             {
                 ControllerFactory = controllerFactory;

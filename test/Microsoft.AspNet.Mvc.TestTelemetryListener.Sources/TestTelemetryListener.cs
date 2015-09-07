@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using Microsoft.Framework.Notification;
+using Microsoft.Framework.TelemetryAdapter;
 
-namespace Microsoft.AspNet.Mvc.TestCommon.Notification
+namespace Microsoft.AspNet.Mvc
 {
-    public class TestNotificationListener
+    public class TestTelemetryListener
     {
         public class OnBeforeActionEventData
         {
@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Mvc.TestCommon.Notification
 
         public OnBeforeActionEventData BeforeAction { get; set; }
 
-        [NotificationName("Microsoft.AspNet.Mvc.BeforeAction")]
+        [TelemetryName("Microsoft.AspNet.Mvc.BeforeAction")]
         public virtual void OnBeforeAction(
             IProxyHttpContext httpContext,
             IProxyRouteData routeData,
@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Mvc.TestCommon.Notification
 
         public OnAfterActionEventData AfterAction { get; set; }
 
-        [NotificationName("Microsoft.AspNet.Mvc.AfterAction")]
+        [TelemetryName("Microsoft.AspNet.Mvc.AfterAction")]
         public virtual void OnAfterAction(
             IProxyHttpContext httpContext,
             IProxyActionDescriptor actionDescriptor)
@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.Mvc.TestCommon.Notification
 
         public OnViewResultViewFoundEventData ViewResultViewFound { get; set; }
 
-        [NotificationName("Microsoft.AspNet.Mvc.ViewResultViewFound")]
+        [TelemetryName("Microsoft.AspNet.Mvc.ViewResultViewFound")]
         public virtual void OnViewResultViewFound(
             IProxyActionContext actionContext,
             IProxyActionResult result,
@@ -87,7 +87,7 @@ namespace Microsoft.AspNet.Mvc.TestCommon.Notification
 
         public OnViewResultViewNotFoundEventData ViewResultViewNotFound { get; set; }
 
-        [NotificationName("Microsoft.AspNet.Mvc.ViewResultViewNotFound")]
+        [TelemetryName("Microsoft.AspNet.Mvc.ViewResultViewNotFound")]
         public virtual void OnViewResultViewNotFound(
             IProxyActionContext actionContext,
             IProxyActionResult result,

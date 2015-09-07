@@ -2,17 +2,16 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.Tracing;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Actions;
 using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.AspNet.Mvc.TestCommon.Notification;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
-using Microsoft.Framework.Notification;
 using Microsoft.Framework.OptionsModel;
 using Microsoft.Net.Http.Headers;
 using Moq;
@@ -207,8 +206,14 @@ namespace Microsoft.AspNet.Mvc.ActionResults
                       .Verifiable();
 
             var serviceProvider = new Mock<IServiceProvider>();
-            serviceProvider.Setup(s => s.GetService(typeof(INotifier)))
-                .Returns(new Notifier(new ProxyNotifierMethodAdapter()));
+
+            var telemetry = new TelemetryListener("Microsoft.AspNet");
+            serviceProvider
+                .Setup(s => s.GetService(typeof(TelemetrySource)))
+                .Returns(telemetry);
+            serviceProvider
+                .Setup(s => s.GetService(typeof(TelemetryListener)))
+                .Returns(telemetry);
             serviceProvider.Setup(p => p.GetService(typeof(ICompositeViewEngine)))
                            .Returns(viewEngine.Object);
             serviceProvider.Setup(p => p.GetService(typeof(ILogger<ViewResult>)))
@@ -242,8 +247,8 @@ namespace Microsoft.AspNet.Mvc.ActionResults
             var httpContext = GetHttpContext();
             var context = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
-            var listener = new TestNotificationListener();
-            httpContext.RequestServices.GetRequiredService<INotifier>().EnlistTarget(listener);
+            var listener = new TestTelemetryListener();
+            httpContext.RequestServices.GetRequiredService<TelemetryListener>().SubscribeWithAdapter(listener);
 
             var viewEngine = new Mock<IViewEngine>();
             var view = Mock.Of<IView>();
@@ -276,8 +281,8 @@ namespace Microsoft.AspNet.Mvc.ActionResults
             var httpContext = GetHttpContext();
             var context = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
-            var listener = new TestNotificationListener();
-            httpContext.RequestServices.GetRequiredService<INotifier>().EnlistTarget(listener);
+            var listener = new TestTelemetryListener();
+            httpContext.RequestServices.GetRequiredService<TelemetryListener>().SubscribeWithAdapter(listener);
 
             var viewEngine = new Mock<IViewEngine>();
             var view = Mock.Of<IView>();
@@ -316,9 +321,11 @@ namespace Microsoft.AspNet.Mvc.ActionResults
             serviceProvider.Setup(s => s.GetService(typeof(IOptions<MvcViewOptions>)))
                 .Returns(optionsAccessor.Object);
 
-            serviceProvider.Setup(s => s.GetService(typeof(INotifier)))
-                .Returns(new Notifier(new ProxyNotifierMethodAdapter()));
-
+            var telemetry = new TelemetryListener("Microsoft.AspNet");
+            serviceProvider.Setup(s => s.GetService(typeof(TelemetryListener)))
+                .Returns(telemetry);
+            serviceProvider.Setup(s => s.GetService(typeof(TelemetrySource)))
+                .Returns(telemetry);
             var httpContext = new DefaultHttpContext();
             httpContext.RequestServices = serviceProvider.Object;
 

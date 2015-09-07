@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.Tracing;
+using System.Linq;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.ActionConstraints;
 using Microsoft.AspNet.Mvc.Actions;
@@ -64,7 +66,7 @@ namespace Microsoft.Framework.DependencyInjection
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IActionDescriptorProvider, ControllerActionDescriptorProvider>());
             services.TryAddSingleton<IActionDescriptorsCollectionProvider, DefaultActionDescriptorsCollectionProvider>();
-            
+
             //
             // Action Selection
             //
@@ -132,7 +134,18 @@ namespace Microsoft.Framework.DependencyInjection
         {
             services.AddOptions();
             services.AddRouting();
-            services.AddNotifier();
+
+            // Registered as a Source for us, and as a Listener for consumers.
+            if (!services.Any(s => s.ServiceType == typeof(TelemetrySource)))
+            {
+                var source = new TelemetryListener("Microsoft.AspNet");
+                services.AddInstance<TelemetrySource>(source);
+
+                if (!services.Any(s => s.ServiceType == typeof(TelemetryListener)))
+                {
+                    services.AddInstance<TelemetryListener>(source);
+                }
+            }
         }
     }
 }

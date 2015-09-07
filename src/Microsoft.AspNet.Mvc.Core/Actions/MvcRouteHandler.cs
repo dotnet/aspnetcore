@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.Tracing;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Core;
@@ -10,7 +11,6 @@ using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
-using Microsoft.Framework.Notification;
 
 namespace Microsoft.AspNet.Mvc.Actions
 {
@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Mvc.Actions
         private IActionInvokerFactory _actionInvokerFactory;
         private IActionSelector _actionSelector;
         private ILogger _logger;
-        private INotifier _notifier;
+        private TelemetrySource _telemetry;
 
         public VirtualPathData GetVirtualPath([NotNull] VirtualPathContext context)
         {
@@ -70,9 +70,9 @@ namespace Microsoft.AspNet.Mvc.Actions
             {
                 context.RouteData = newRouteData;
 
-                if (_notifier.ShouldNotify("Microsoft.AspNet.Mvc.BeforeAction"))
+                if (_telemetry.IsEnabled("Microsoft.AspNet.Mvc.BeforeAction"))
                 {
-                    _notifier.Notify(
+                    _telemetry.WriteTelemetry(
                         "Microsoft.AspNet.Mvc.BeforeAction",
                         new { actionDescriptor, httpContext = context.HttpContext, routeData = context.RouteData});
                 }
@@ -87,9 +87,9 @@ namespace Microsoft.AspNet.Mvc.Actions
             }
             finally
             {
-                if (_notifier.ShouldNotify("Microsoft.AspNet.Mvc.AfterAction"))
+                if (_telemetry.IsEnabled("Microsoft.AspNet.Mvc.AfterAction"))
                 {
-                    _notifier.Notify(
+                    _telemetry.WriteTelemetry(
                         "Microsoft.AspNet.Mvc.AfterAction",
                         new { actionDescriptor, httpContext = context.HttpContext });
                 }
@@ -140,9 +140,9 @@ namespace Microsoft.AspNet.Mvc.Actions
                 _logger = factory.CreateLogger<MvcRouteHandler>();
             }
 
-            if (_notifier == null)
+            if (_telemetry == null)
             {
-                _notifier = context.RequestServices.GetRequiredService<INotifier>();
+                _telemetry = context.RequestServices.GetRequiredService<TelemetrySource>();
             }
         }
     }

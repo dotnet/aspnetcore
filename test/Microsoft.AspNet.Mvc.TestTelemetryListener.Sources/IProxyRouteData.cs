@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.Mvc.TestCommon.Notification
+namespace Microsoft.AspNet.Mvc
 {
     public interface IProxyRouteData
     {

@@ -9,8 +9,7 @@ using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 using Microsoft.Net.Http.Headers;
 using Microsoft.Framework.OptionsModel;
-using Microsoft.Framework.Notification;
-using Microsoft.AspNet.Mvc.Actions;
+using System.Diagnostics.Tracing;
 
 namespace Microsoft.AspNet.Mvc.ActionResults
 {
@@ -28,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.ActionResults
         /// Gets or sets the name of the view to render.
         /// </summary>
         /// <remarks>
-        /// When <c>null</c>, defaults to <see cref="ActionDescriptor.Name"/>.
+        /// When <c>null</c>, defaults to <see cref="Actions.ActionDescriptor.Name"/>.
         /// </remarks>
         public string ViewName { get; set; }
 
@@ -61,7 +60,7 @@ namespace Microsoft.AspNet.Mvc.ActionResults
             var viewEngine = ViewEngine ?? services.GetRequiredService<ICompositeViewEngine>();
 
             var logger = services.GetRequiredService<ILogger<ViewResult>>();
-            var notifier = services.GetRequiredService<INotifier>();
+            var telemetry = services.GetRequiredService<TelemetrySource>();
 
             var options = services.GetRequiredService<IOptions<MvcViewOptions>>();
 
@@ -69,9 +68,9 @@ namespace Microsoft.AspNet.Mvc.ActionResults
             var viewEngineResult = viewEngine.FindView(context, viewName);
             if(!viewEngineResult.Success)
             {
-                if (notifier.ShouldNotify("Microsoft.AspNet.Mvc.ViewResultViewNotFound"))
+                if (telemetry.IsEnabled("Microsoft.AspNet.Mvc.ViewResultViewNotFound"))
                 {
-                    notifier.Notify(
+                    telemetry.WriteTelemetry(
                         "Microsoft.AspNet.Mvc.ViewResultViewNotFound",
                         new
                         {
@@ -89,9 +88,9 @@ namespace Microsoft.AspNet.Mvc.ActionResults
             }
 
             var view = viewEngineResult.EnsureSuccessful().View;
-            if (notifier.ShouldNotify("Microsoft.AspNet.Mvc.ViewResultViewFound"))
+            if (telemetry.IsEnabled("Microsoft.AspNet.Mvc.ViewResultViewFound"))
             {
-                notifier.Notify(
+                telemetry.WriteTelemetry(
                     "Microsoft.AspNet.Mvc.ViewResultViewFound",
                     new { actionContext = context, result = this, viewName, view = view });
             }

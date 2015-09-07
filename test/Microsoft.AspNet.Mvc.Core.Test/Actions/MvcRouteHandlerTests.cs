@@ -2,14 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.Tracing;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Internal;
-using Microsoft.AspNet.Mvc.TestCommon.Notification;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.Logging.Testing;
-using Microsoft.Framework.Notification;
 using Microsoft.Framework.OptionsModel;
 using Moq;
 using Xunit;
@@ -158,9 +157,9 @@ namespace Microsoft.AspNet.Mvc.Actions
         public async Task RouteAsync_Notifies_ActionSelected()
         {
             // Arrange
-            var listener = new TestNotificationListener();
+            var listener = new TestTelemetryListener();
 
-            var context = CreateRouteContext(notificationListener: listener);
+            var context = CreateRouteContext(telemetryListener: listener);
             context.RouteData.Values.Add("tag", "value");
 
             var handler = new MvcRouteHandler();
@@ -183,9 +182,9 @@ namespace Microsoft.AspNet.Mvc.Actions
         public async Task RouteAsync_Notifies_ActionInvoked()
         {
             // Arrange
-            var listener = new TestNotificationListener();
+            var listener = new TestTelemetryListener();
 
-            var context = CreateRouteContext(notificationListener: listener);
+            var context = CreateRouteContext(telemetryListener: listener);
 
             var handler = new MvcRouteHandler();
 
@@ -203,7 +202,7 @@ namespace Microsoft.AspNet.Mvc.Actions
             IActionInvokerFactory invokerFactory = null,
             ILoggerFactory loggerFactory = null,
             IOptions<MvcOptions> optionsAccessor = null,
-            object notificationListener = null)
+            object telemetryListener = null)
         {
             if (actionDescriptor == null)
             {
@@ -243,10 +242,10 @@ namespace Microsoft.AspNet.Mvc.Actions
                 optionsAccessor = new TestOptionsManager<MvcOptions>();
             }
 
-            var notifier = new Notifier(new ProxyNotifierMethodAdapter());
-            if (notificationListener != null)
+            var telemetry = new TelemetryListener("Microsoft.AspNet");
+            if (telemetryListener != null)
             {
-                notifier.EnlistTarget(notificationListener);
+                telemetry.SubscribeWithAdapter(telemetryListener);
             }
 
             var httpContext = new Mock<HttpContext>();
@@ -262,8 +261,8 @@ namespace Microsoft.AspNet.Mvc.Actions
                  .Returns(new MvcMarkerService());
             httpContext.Setup(h => h.RequestServices.GetService(typeof(IOptions<MvcOptions>)))
                  .Returns(optionsAccessor);
-            httpContext.Setup(h => h.RequestServices.GetService(typeof(INotifier)))
-                .Returns(notifier);
+            httpContext.Setup(h => h.RequestServices.GetService(typeof(TelemetrySource)))
+                .Returns(telemetry);
 
             return new RouteContext(httpContext.Object);
         }
