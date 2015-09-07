@@ -1332,10 +1332,10 @@ function dnvm-install {
     if (!$IsNuPkg) {
         if ($VersionNuPkgOrAlias -eq "latest") {
             Write-Progress -Activity "Installing runtime" -Status "Determining latest runtime" -Id 1
-            $findPackageResult = Find-Latest -runtimeInfo:$runtimeInfo -Feed:$selectedFeed
+            $findPackageResult = Find-Latest -runtimeInfo:$runtimeInfo -Feed:$selectedFeed -Proxy:$Proxy
         }
         else {
-            $findPackageResult = Find-Package -runtimeInfo:$runtimeInfo -Feed:$selectedFeed
+            $findPackageResult = Find-Package -runtimeInfo:$runtimeInfo -Feed:$selectedFeed -Proxy:$Proxy
         }
         $Version = $findPackageResult.Version
     }
