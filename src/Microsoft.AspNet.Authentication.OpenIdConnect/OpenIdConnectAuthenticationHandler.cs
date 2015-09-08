@@ -344,7 +344,6 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
               && Request.Body.CanRead)
             {
                 var form = await Request.ReadFormAsync();
-                Request.Body.Seek(0, SeekOrigin.Begin);
                 message = new OpenIdConnectMessage(form.Select(pair => new KeyValuePair<string, string[]>(pair.Key, pair.Value)));
             }
 
