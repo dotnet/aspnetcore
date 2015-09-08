@@ -2,7 +2,7 @@
 # Source this file from your .bash-profile or script to use
 
 # "Constants"
-_DNVM_BUILDNUMBER="beta8-15506"
+_DNVM_BUILDNUMBER="beta8-15507"
 _DNVM_AUTHORS="Microsoft Open Technologies, Inc."
 _DNVM_RUNTIME_PACKAGE_NAME="dnx"
 _DNVM_RUNTIME_FRIENDLY_NAME=".NET Execution Environment"
@@ -201,7 +201,12 @@ __dnvm_update_self() {
     if [ ! -e $dnvmFileLocation ]; then
         local formattedDnvmFileLocation=`(echo $dnvmFileLocation | sed s=$HOME=~=g)`
         local formattedDnvmHome=`(echo $_DNVM_DNVM_DIR | sed s=$HOME=~=g)`
-        printf "%b\n" "${Red}$formattedDnvmFileLocation doesn't exist. This command assumes you have installed dnvm in the usual location and are trying to update it. If you want to use update-self then dnvm.sh should be sourced from $formattedDnvmHome ${RCol}"
+        local bashSourceLocation=${BASH_SOURCE}
+        local scriptLocation=$bashSourceLocation
+        if [ -z "${bashSourceLocation}" ]; then
+          local scriptLocation=${(%):-%x}
+        fi
+        printf "%b\n" "${Red}$formattedDnvmFileLocation doesn't exist. This command assumes you have installed dnvm in the usual location and are trying to update it. If you want to use update-self then dnvm.sh should be sourced from $formattedDnvmHome. dnvm is currently sourced from $scriptLocation ${RCol}"
         return 1
     fi
     printf "%b\n" "${Cya}Downloading dnvm.sh from $_DNVM_UPDATE_LOCATION ${RCol}"
@@ -531,7 +536,7 @@ dnvm()
                     shift
 
                     if [[ $arch != "x86" && $arch != "x64" ]]; then
-                        printf "%b\n" "${Red}Architecture must be x86 or x64.${RCol}" 
+                        printf "%b\n" "${Red}Architecture must be x86 or x64.${RCol}"
                         return 1
                     fi
                 elif [[ $1 == "-g" || $1 == "-global" ]]; then
@@ -717,14 +722,14 @@ dnvm()
                         echo "Cannot find $_DNVM_RUNTIME_SHORT_NAME in $runtimeBin. It may have been corrupted. Use '$_DNVM_COMMAND_NAME install $versionOrAlias -f' to attempt to reinstall it"
                     fi
                 ;;
-                "exec") 
+                "exec")
                     (
                         PATH=$(__dnvm_strip_path "$PATH" "/bin")
                         PATH=$(__dnvm_prepend_path "$PATH" "$runtimeBin")
                         $@
                     )
                 ;;
-                "use") 
+                "use")
                     echo "Adding" $runtimeBin "to process PATH"
 
                     PATH=$(__dnvm_strip_path "$PATH" "/bin")
