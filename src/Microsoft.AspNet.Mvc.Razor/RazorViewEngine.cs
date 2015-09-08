@@ -48,10 +48,11 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// Initializes a new instance of the <see cref="RazorViewEngine" /> class.
         /// </summary>
         /// <param name="pageFactory">The page factory used for creating <see cref="IRazorPage"/> instances.</param>
-        public RazorViewEngine(IRazorPageFactory pageFactory,
-                               IRazorViewFactory viewFactory,
-                               IOptions<RazorViewEngineOptions> optionsAccessor,
-                               IViewLocationCache viewLocationCache)
+        public RazorViewEngine(
+            IRazorPageFactory pageFactory,
+            IRazorViewFactory viewFactory,
+            IOptions<RazorViewEngineOptions> optionsAccessor,
+            IViewLocationCache viewLocationCache)
         {
             _pageFactory = pageFactory;
             _viewFactory = viewFactory;
@@ -98,8 +99,9 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <inheritdoc />
-        public ViewEngineResult FindView([NotNull] ActionContext context,
-                                         string viewName)
+        public ViewEngineResult FindView(
+            [NotNull] ActionContext context,
+            string viewName)
         {
             if (string.IsNullOrEmpty(viewName))
             {
@@ -111,8 +113,9 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <inheritdoc />
-        public ViewEngineResult FindPartialView([NotNull] ActionContext context,
-                                                string partialViewName)
+        public ViewEngineResult FindPartialView(
+            [NotNull] ActionContext context,
+            string partialViewName)
         {
             if (string.IsNullOrEmpty(partialViewName))
             {
@@ -124,8 +127,9 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <inheritdoc />
-        public RazorPageResult FindPage([NotNull] ActionContext context,
-                                        string pageName)
+        public RazorPageResult FindPage(
+            [NotNull] ActionContext context,
+            string pageName)
         {
             if (string.IsNullOrEmpty(pageName))
             {
@@ -148,7 +152,9 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <see cref="ActionDescriptor.RouteConstraints"/> for traditional routes to get route values produces
         /// consistently cased results.
         /// </remarks>
-        public static string GetNormalizedRouteValue([NotNull] ActionContext context, [NotNull] string key)
+        public static string GetNormalizedRouteValue(
+            [NotNull] ActionContext context,
+            [NotNull] string key)
         {
             object routeValue;
             if (!context.RouteData.Values.TryGetValue(key, out routeValue))
@@ -191,9 +197,10 @@ namespace Microsoft.AspNet.Mvc.Razor
             return stringRouteValue;
         }
 
-        private RazorPageResult GetRazorPageResult(ActionContext context,
-                                                   string pageName,
-                                                   bool isPartial)
+        private RazorPageResult GetRazorPageResult(
+            ActionContext context,
+            string pageName,
+            bool isPartial)
         {
             if (IsApplicationRelativePath(pageName))
             {
@@ -303,9 +310,10 @@ namespace Microsoft.AspNet.Mvc.Razor
             return new RazorPageResult(pageName, searchedLocations);
         }
 
-        private ViewEngineResult CreateViewEngineResult(RazorPageResult result,
-                                                        IRazorViewFactory razorViewFactory,
-                                                        bool isPartial)
+        private ViewEngineResult CreateViewEngineResult(
+            RazorPageResult result,
+            IRazorViewFactory razorViewFactory,
+            bool isPartial)
         {
             if (result.SearchedLocations != null)
             {
