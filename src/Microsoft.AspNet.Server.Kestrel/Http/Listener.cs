@@ -3,8 +3,8 @@
 
 using Microsoft.AspNet.Server.Kestrel.Networking;
 using System;
-using System.Diagnostics;
 using System.Threading.Tasks;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Server.Kestrel.Http
 {
@@ -50,11 +50,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         /// </summary>
         protected abstract UvStreamHandle CreateListenSocket(string host, int port);
 
-        protected static void ConnectionCallback(UvStreamHandle stream, int status, Exception error, object state)
+        protected void ConnectionCallback(UvStreamHandle stream, int status, Exception error, object state)
         {
             if (error != null)
             {
-                Trace.WriteLine("Listener.ConnectionCallback " + error.ToString());
+                Log.LogError("Listener.ConnectionCallback ", error);
             }
             else
             {

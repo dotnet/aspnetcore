@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Threading;
 using Microsoft.AspNet.Server.Kestrel;
 using Microsoft.AspNet.Server.Kestrel.Http;
+using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 using Microsoft.AspNet.Server.Kestrel.Networking;
 using Microsoft.AspNet.Server.KestrelTests.TestHelpers;
 using Xunit;
@@ -36,7 +37,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 kestrelEngine.Start(count: 1);
 
                 var kestrelThread = kestrelEngine.Threads[0];
-                var socket = new MockSocket(kestrelThread.Loop.ThreadId);
+                var socket = new MockSocket(kestrelThread.Loop.ThreadId, new KestrelTrace(new TestLogger()));
                 var trace = new KestrelTrace(new TestLogger());
                 var socketOutput = new SocketOutput(kestrelThread, socket, trace);
 
@@ -81,7 +82,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 kestrelEngine.Start(count: 1);
 
                 var kestrelThread = kestrelEngine.Threads[0];
-                var socket = new MockSocket(kestrelThread.Loop.ThreadId);
+                var socket = new MockSocket(kestrelThread.Loop.ThreadId, new KestrelTrace(new TestLogger()));
                 var trace = new KestrelTrace(new TestLogger());
                 var socketOutput = new SocketOutput(kestrelThread, socket, trace);
 
@@ -117,7 +118,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
 
         private class MockSocket : UvStreamHandle
         {
-            public MockSocket(int threadId)
+            public MockSocket(int threadId, IKestrelTrace logger) : base(logger)
             {
                 // Set the handle to something other than IntPtr.Zero
                 // so handle.Validate doesn't fail in Libuv.write

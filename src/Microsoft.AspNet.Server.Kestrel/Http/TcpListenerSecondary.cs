@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         /// </summary>
         protected override UvStreamHandle CreateAcceptSocket()
         {
-            var acceptSocket = new UvTcpHandle();
+            var acceptSocket = new UvTcpHandle(Log);
             acceptSocket.Init(Thread.Loop, Thread.QueueCloseHandle);
             return acceptSocket;
         }

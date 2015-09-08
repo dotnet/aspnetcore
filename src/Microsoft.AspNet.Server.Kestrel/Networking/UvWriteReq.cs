@@ -3,8 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Microsoft.AspNet.Server.Kestrel.Infrastructure;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Server.Kestrel.Networking
 {
@@ -13,7 +14,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
     /// </summary>
     public class UvWriteReq : UvRequest
     {
-        private readonly static Libuv.uv_write_cb _uv_write_cb = UvWriteCb;
+        private readonly Libuv.uv_write_cb _uv_write_cb;
 
         private IntPtr _bufs;
 
@@ -22,6 +23,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         private const int BUFFER_COUNT = 4;
 
         private List<GCHandle> _pins = new List<GCHandle>();
+
+        public UvWriteReq(IKestrelTrace logger) : base(logger)
+        {
+            _uv_write_cb = UvWriteCb;
+        }
 
         public void Init(UvLoopHandle loop)
         {
@@ -138,7 +144,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             req._pins.Clear();
         }
 
-        private static void UvWriteCb(IntPtr ptr, int status)
+        private void UvWriteCb(IntPtr ptr, int status)
         {
             var req = FromIntPtr<UvWriteReq>(ptr);
             Unpin(req);
@@ -161,7 +167,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             }
             catch (Exception ex)
             {
-                Trace.WriteLine("UvWriteCb " + ex.ToString());
+                _log.LogError("UvWriteCb", ex);
             }
         }
     }

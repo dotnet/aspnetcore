@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 
 namespace Microsoft.AspNet.Server.Kestrel.Networking
 {
@@ -9,6 +10,10 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
     {
         private static Libuv.uv_async_cb _uv_async_cb = AsyncCb;
         private Action _callback;
+
+        public UvAsyncHandle(IKestrelTrace logger) : base(logger)
+        {
+        }
 
         public void Init(UvLoopHandle loop, Action callback)
         {

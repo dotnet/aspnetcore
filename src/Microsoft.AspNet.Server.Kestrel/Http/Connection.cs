@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using Microsoft.AspNet.Server.Kestrel.Networking;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Server.Kestrel.Http
 {
@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
                 if (errorDone && error != null)
                 {
-                    Trace.WriteLine("Connection.OnRead " + error.ToString());
+                    Log.LogError("Connection.OnRead", error);
                 }
             }
 
@@ -86,7 +86,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
             catch (Exception ex)
             {
-                Trace.WriteLine("Connection._frame.Consume " + ex.ToString());
+                Log.LogError("Connection._frame.Consume ", ex);
             }
         }
 
@@ -121,7 +121,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             {
                                 Log.ConnectionWriteFin(_connectionId, 1);
                                 var self = (Connection)state;
-                                var shutdown = new UvShutdownReq();
+                                var shutdown = new UvShutdownReq(Log);
                                 shutdown.Init(self.Thread.Loop);
                                 shutdown.Shutdown(self._socket, (req, status, _) =>
                                 {

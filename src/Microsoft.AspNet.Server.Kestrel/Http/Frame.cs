@@ -3,11 +3,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Framework.Logging;
 using Microsoft.Framework.Primitives;
 
 // ReSharper disable AccessToModifiedClosure
@@ -276,7 +276,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     {
                         if (error != null)
                         {
-                            Trace.WriteLine("WriteChunkPrefix" + error.ToString());
+                            Log.LogError("WriteChunkPrefix", error);
                         }
                     },
                     null,
@@ -290,7 +290,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 {
                     if (error != null)
                     {
-                        Trace.WriteLine("WriteChunkSuffix" + error.ToString());
+                        Log.LogError("WriteChunkSuffix", error);
                     }
                 },
                 null,
@@ -304,7 +304,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 {
                     if (error != null)
                     {
-                        Trace.WriteLine("WriteChunkedResponseSuffix" + error.ToString());
+                        Log.LogError("WriteChunkedResponseSuffix", error);
                     }
                 },
                 null,
@@ -338,7 +338,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     {
                         if (error != null)
                         {
-                            Trace.WriteLine("ProduceContinue " + error.ToString());
+                            Log.LogError("ProduceContinue ", error);
                         }
                     },
                     null);
@@ -361,7 +361,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 {
                     if (error != null)
                     {
-                        Trace.WriteLine("ProduceStart " + error.ToString());
+                        Log.LogError("ProduceStart ", error);
                     }
                     ((IDisposable)state).Dispose();
                 },

@@ -1,14 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
+using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 
 namespace Microsoft.AspNet.Server.Kestrel.Networking
 {
     public class UvRequest : UvMemory
     {
         private GCHandle _pin;
+
+        protected UvRequest(IKestrelTrace logger) : base (logger)
+        {
+        }
 
         protected override bool ReleaseHandle()
         {

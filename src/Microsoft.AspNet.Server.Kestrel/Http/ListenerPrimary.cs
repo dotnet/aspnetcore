@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
             await Thread.PostAsync(_ =>
             {
-                ListenPipe = new UvPipeHandle();
+                ListenPipe = new UvPipeHandle(Log);
                 ListenPipe.Init(Thread.Loop, false);
                 ListenPipe.Bind(pipeName);
                 ListenPipe.Listen(Constants.ListenBacklog, OnListenPipe, null);
@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 return;
             }
 
-            var dispatchPipe = new UvPipeHandle();
+            var dispatchPipe = new UvPipeHandle(Log);
             dispatchPipe.Init(Thread.Loop, true);
             try
             {
@@ -78,7 +78,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             else
             {
                 var dispatchPipe = _dispatchPipes[index];
-                var write = new UvWriteReq();
+                var write = new UvWriteReq(Log);
                 write.Init(Thread.Loop);
                 write.Write2(
                     dispatchPipe,

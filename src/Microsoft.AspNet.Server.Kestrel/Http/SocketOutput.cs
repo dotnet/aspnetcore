@@ -130,7 +130,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     buffers[i++] = buffer;
                 }
 
-                var writeReq = new UvWriteReq();
+                var writeReq = new UvWriteReq(_log);
                 writeReq.Init(_thread.Loop);
 
                 writeReq.Write(_socket, new ArraySegment<ArraySegment<byte>>(buffers), (r, status, error, state) =>
