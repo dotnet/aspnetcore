@@ -67,7 +67,7 @@ function _WriteOut {
 
 ### Constants
 $ProductVersion="1.0.0"
-$BuildVersion="beta8-15508"
+$BuildVersion="beta8-15509"
 $Authors="Microsoft Open Technologies, Inc."
 
 # If the Version hasn't been replaced...
@@ -982,6 +982,14 @@ filter ColorActive {
             _WriteOut $line
         }
     }
+}
+
+<#
+.SYNOPSIS
+	Displays the DNVM version.
+#>
+function dnvm-version {
+	_WriteOut "$FullVersion"
 }
 
 <#
