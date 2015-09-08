@@ -12,14 +12,13 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
     /// </summary>
     public class UvConnectRequest : UvRequest
     {
-        private readonly Libuv.uv_connect_cb _uv_connect_cb;
+        private readonly static Libuv.uv_connect_cb _uv_connect_cb = UvConnectCb;
 
         private Action<UvConnectRequest, int, Exception, object> _callback;
         private object _state;
 
         public UvConnectRequest(IKestrelTrace logger) : base (logger)
         {
-            _uv_connect_cb = UvConnectCb;
         }
 
         public void Init(UvLoopHandle loop)
@@ -44,7 +43,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             Libuv.pipe_connect(this, pipe, name, _uv_connect_cb);
         }
 
-        private void UvConnectCb(IntPtr ptr, int status)
+        private  static void UvConnectCb(IntPtr ptr, int status)
         {
             var req = FromIntPtr<UvConnectRequest>(ptr);
             req.Unpin();
@@ -67,7 +66,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             }
             catch (Exception ex)
             {
-                _log.LogError("UvConnectRequest", ex);
+                req._log.LogError("UvConnectRequest", ex);
             }
         }
     }

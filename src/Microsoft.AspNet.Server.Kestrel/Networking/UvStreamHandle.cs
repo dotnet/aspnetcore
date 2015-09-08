@@ -10,9 +10,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
 {
     public abstract class UvStreamHandle : UvHandle
     {
-        private readonly Libuv.uv_connection_cb _uv_connection_cb;
-        private readonly Libuv.uv_alloc_cb _uv_alloc_cb;
-        private readonly Libuv.uv_read_cb _uv_read_cb;
+        private readonly static Libuv.uv_connection_cb _uv_connection_cb = UvConnectionCb;
+        private readonly static Libuv.uv_alloc_cb _uv_alloc_cb = UvAllocCb;
+        private readonly static Libuv.uv_read_cb _uv_read_cb = UvReadCb;
 
         public Action<UvStreamHandle, int, Exception, object> _listenCallback;
         public object _listenState;
@@ -25,9 +25,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
 
         protected UvStreamHandle(IKestrelTrace logger) : base(logger)
         {
-            _uv_connection_cb = UvConnectionCb;
-            _uv_alloc_cb = UvAllocCb;
-            _uv_read_cb = UvReadCb;
         }
 
         protected override bool ReleaseHandle()
@@ -122,7 +119,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         }
 
 
-        private void UvConnectionCb(IntPtr handle, int status)
+        private static void UvConnectionCb(IntPtr handle, int status)
         {
             var stream = FromIntPtr<UvStreamHandle>(handle);
 
@@ -135,12 +132,12 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             }
             catch (Exception ex)
             {
-                _log.LogError("UvConnectionCb", ex);
+                stream._log.LogError("UvConnectionCb", ex);
             }
         }
 
 
-        private void UvAllocCb(IntPtr handle, int suggested_size, out Libuv.uv_buf_t buf)
+        private static void UvAllocCb(IntPtr handle, int suggested_size, out Libuv.uv_buf_t buf)
         {
             var stream = FromIntPtr<UvStreamHandle>(handle);
             try
@@ -149,13 +146,13 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             }
             catch (Exception ex)
             {
-                _log.LogError("UvAllocCb", ex);
+                stream._log.LogError("UvAllocCb", ex);
                 buf = stream.Libuv.buf_init(IntPtr.Zero, 0);
                 throw;
             }
         }
 
-        private void UvReadCb(IntPtr handle, int nread, ref Libuv.uv_buf_t buf)
+        private static void UvReadCb(IntPtr handle, int nread, ref Libuv.uv_buf_t buf)
         {
             var stream = FromIntPtr<UvStreamHandle>(handle);
 
@@ -174,7 +171,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             }
             catch (Exception ex)
             {
-                _log.LogError("UbReadCb", ex);
+                stream._log.LogError("UbReadCb", ex);
             }
         }
 

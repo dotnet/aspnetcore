@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
     /// </summary>
     public class UvWriteReq : UvRequest
     {
-        private readonly Libuv.uv_write_cb _uv_write_cb;
+        private readonly static Libuv.uv_write_cb _uv_write_cb = UvWriteCb;
 
         private IntPtr _bufs;
 
@@ -26,7 +26,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
 
         public UvWriteReq(IKestrelTrace logger) : base(logger)
         {
-            _uv_write_cb = UvWriteCb;
         }
 
         public void Init(UvLoopHandle loop)
@@ -144,7 +143,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             req._pins.Clear();
         }
 
-        private void UvWriteCb(IntPtr ptr, int status)
+        private static void UvWriteCb(IntPtr ptr, int status)
         {
             var req = FromIntPtr<UvWriteReq>(ptr);
             Unpin(req);
@@ -167,7 +166,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             }
             catch (Exception ex)
             {
-                _log.LogError("UvWriteCb", ex);
+                req._log.LogError("UvWriteCb", ex);
             }
         }
     }
