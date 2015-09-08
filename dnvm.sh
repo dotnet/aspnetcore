@@ -2,7 +2,7 @@
 # Source this file from your .bash-profile or script to use
 
 # "Constants"
-_DNVM_BUILDNUMBER="beta8-15507"
+_DNVM_BUILDNUMBER="beta8-15508"
 _DNVM_AUTHORS="Microsoft Open Technologies, Inc."
 _DNVM_RUNTIME_PACKAGE_NAME="dnx"
 _DNVM_RUNTIME_FRIENDLY_NAME=".NET Execution Environment"
@@ -798,7 +798,7 @@ dnvm()
             local action="Setting"
             [[ -e "$_DNVM_ALIAS_DIR/$name.alias" ]] && action="Updating"
             echo "$action alias '$name' to '$runtimeFullName'"
-            echo "$runtimeFullName" > "$_DNVM_ALIAS_DIR/$name.alias"
+            echo "$runtimeFullName" >| "$_DNVM_ALIAS_DIR/$name.alias"
         ;;
 
         "unalias" )
