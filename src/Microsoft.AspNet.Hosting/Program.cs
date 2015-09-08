@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Hosting
 {
     public class Program
     {
-        private const string HostingIniFile = "Microsoft.AspNet.Hosting.ini";
+        private const string HostingJsonFile = "Microsoft.AspNet.Hosting.json";
         private const string ConfigFileKey = "config";
 
         private readonly IServiceProvider _serviceProvider;
@@ -25,11 +25,11 @@ namespace Microsoft.AspNet.Hosting
             // Allow the location of the ini file to be specified via a --config command line arg
             var tempBuilder = new ConfigurationBuilder().AddCommandLine(args);
             var tempConfig = tempBuilder.Build();
-            var configFilePath = tempConfig[ConfigFileKey] ?? HostingIniFile;
+            var configFilePath = tempConfig[ConfigFileKey] ?? HostingJsonFile;
 
             var appBasePath = _serviceProvider.GetRequiredService<IApplicationEnvironment>().ApplicationBasePath;
             var builder = new ConfigurationBuilder(appBasePath);
-            builder.AddIniFile(configFilePath, optional: true);
+            builder.AddJsonFile(configFilePath, optional: true);
             builder.AddEnvironmentVariables();
             builder.AddCommandLine(args);
             var config = builder.Build();

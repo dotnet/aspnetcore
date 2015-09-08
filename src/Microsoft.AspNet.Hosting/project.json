@@ -15,7 +15,7 @@
         "Microsoft.Framework.Configuration": "1.0.0-*",
         "Microsoft.Framework.Configuration.CommandLine": "1.0.0-*",
         "Microsoft.Framework.Configuration.EnvironmentVariables": "1.0.0-*",
-        "Microsoft.Framework.Configuration.Ini": "1.0.0-*",
+        "Microsoft.Framework.Configuration.Json": "1.0.0-*",
         "Microsoft.Framework.DependencyInjection": "1.0.0-*",
         "Microsoft.Framework.Logging": "1.0.0-*",
         "Microsoft.Dnx.Runtime.Abstractions": "1.0.0-*",
