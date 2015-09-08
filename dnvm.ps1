@@ -67,7 +67,7 @@ function _WriteOut {
 
 ### Constants
 $ProductVersion="1.0.0"
-$BuildVersion="beta8-15510"
+$BuildVersion="beta8-15511"
 $Authors="Microsoft Open Technologies, Inc."
 
 # If the Version hasn't been replaced...
@@ -400,8 +400,12 @@ function Get-RuntimeAliasOrRuntimeInfo(
     if(Test-Path $aliasPath) {
         $BaseName = Get-Content $aliasPath
 
-        $Architecture = Get-PackageArch $BaseName
-        $Runtime = Get-PackageRuntime $BaseName
+        if(!$Architecture) {
+            $Architecture = Get-PackageArch $BaseName
+        }
+        if(!$Runtime) {
+            $Runtime = Get-PackageRuntime $BaseName
+        }
         $Version = Get-PackageVersion $BaseName
         $OS = Get-PackageOS $BaseName
     }
@@ -1550,7 +1554,7 @@ function dnvm-use {
         return;
     }
     
-    $runtimeInfo = Get-RuntimeAliasOrRuntimeInfo -Version:$VersionOrAlias -Architecture:$Architecture -Runtime:$Runtime -OS:$OS 
+    $runtimeInfo = Get-RuntimeAliasOrRuntimeInfo -Version:$VersionOrAlias -Architecture:$Architecture -Runtime:$Runtime -OS:$OS
     $runtimeFullName = $runtimeInfo.RuntimeName
     $runtimeBin = Get-RuntimePath $runtimeFullName
     if ($runtimeBin -eq $null) {
