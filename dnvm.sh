@@ -2,7 +2,7 @@
 # Source this file from your .bash-profile or script to use
 
 # "Constants"
-_DNVM_BUILDNUMBER="beta8-15509"
+_DNVM_BUILDNUMBER="beta8-15510"
 _DNVM_AUTHORS="Microsoft Open Technologies, Inc."
 _DNVM_RUNTIME_PACKAGE_NAME="dnx"
 _DNVM_RUNTIME_FRIENDLY_NAME=".NET Execution Environment"
@@ -778,7 +778,7 @@ dnvm()
             local name="$1"
 
             if [[ $# == 1 ]]; then
-                [[ ! -e "$_DNVM_ALIAS_DIR/$name.alias" ]] && echo "There is no alias called '$name'" && return
+                [[ ! -e "$_DNVM_ALIAS_DIR/$name.alias" ]] && echo "There is no alias called '$name'" && return 1
                 cat "$_DNVM_ALIAS_DIR/$name.alias"
                 echo ""
                 return
@@ -832,10 +832,12 @@ dnvm()
             local runtimes=""
             for location in `echo $DNX_HOME | tr ":" "\n"`; do
                 location+="/runtimes"
-                local oruntimes="$(find $location -name "$searchGlob" \( -type d -or -type l \) -prune -exec basename {} \;)"
-                for v in `echo $oruntimes | tr "\n" " "`; do
-                    runtimes+="$v:$location"$'\n'
-                done
+                if [ -d "$location" ]; then
+                    local oruntimes="$(find $location -name "$searchGlob" \( -type d -or -type l \) -prune -exec basename {} \;)"
+                    for v in `echo $oruntimes | tr "\n" " "`; do
+                        runtimes+="$v:$location"$'\n'
+                    done
+                fi
             done
 
             [[ -z $runtimes ]] && echo 'No runtimes installed. You can run `dnvm install latest` or `dnvm upgrade` to install a runtime.' && return
@@ -939,4 +941,4 @@ dnvm()
 [[ ":$PATH:" != *":$DNX_USER_HOME/bin:"* ]] && export PATH="$DNX_USER_HOME/bin:$PATH"
 
 # Generate the command function using the constant defined above.
-$_DNVM_COMMAND_NAME list default >/dev/null && $_DNVM_COMMAND_NAME use default >/dev/null || true
+$_DNVM_COMMAND_NAME alias default >/dev/null && $_DNVM_COMMAND_NAME use default >/dev/null || true
