@@ -148,7 +148,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <see cref="ActionDescriptor.RouteConstraints"/> for traditional routes to get route values produces
         /// consistently cased results.
         /// </remarks>
-        internal static string GetNormalizedRouteValue(ActionContext context, string key)
+        public static string GetNormalizedRouteValue([NotNull] ActionContext context, [NotNull] string key)
         {
             object routeValue;
             if (!context.RouteData.Values.TryGetValue(key, out routeValue))
