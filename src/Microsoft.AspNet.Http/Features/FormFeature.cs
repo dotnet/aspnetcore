@@ -152,6 +152,9 @@ namespace Microsoft.AspNet.Http.Features.Internal
                 }
             }
 
+            // Rewind so later readers don't have to.
+            _request.Body.Seek(0, SeekOrigin.Begin);
+
             Form = new FormCollection(formFields, files);
             return Form;
         }

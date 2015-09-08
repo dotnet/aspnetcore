@@ -32,6 +32,8 @@ namespace Microsoft.AspNet.Http.Features.Internal
             // Assert
             Assert.Equal("bar", formCollection["foo"]);
             Assert.Equal("2", formCollection["baz"]);
+            Assert.Equal(0, context.Request.Body.Position);
+            Assert.True(context.Request.Body.CanSeek);
 
             // Cached
             formFeature = context.Features.Get<IFormFeature>();
