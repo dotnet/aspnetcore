@@ -98,7 +98,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 var multipleDirectiveError =
                     "Invalid tag helper directive '{0}'. Cannot have multiple '{0}' directives on a page.";
                 var invalidTagHelperPrefixValueError =
-                    "Invalid tag helper directive '{0}' value. '{1} is not allowed in prefix '{2}'.";
+                    "Invalid tag helper directive '{0}' value. '{1}' is not allowed in prefix '{2}'.";
 
                 return new TheoryData<Dictionary<string, IEnumerable<Type>>, // descriptorAssemblyLookups
                                       IEnumerable<TagHelperDirectiveDescriptor>, // directiveDescriptors
