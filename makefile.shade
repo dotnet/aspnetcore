@@ -2,6 +2,7 @@
 var PROJECT='AspNet'
 var VERSION='0.2.1'
 
+use-teamcity
 use namespace='System'
 use namespace='System.IO'
 use namespace='System.Collections.Generic'

@@ -15,5 +15,5 @@ md .nuget
 copy %CACHED_NUGET% .nuget\nuget.exe > nul
 
 :build
-.nuget\nuget.exe install Sake -version 0.2 -o packages
-packages\Sake.0.2\tools\Sake.exe -I build -f makefile.shade %*
+.nuget\nuget.exe install Sake -version 0.2.2 -o packages -ExcludeVersion
+packages\Sake\tools\Sake.exe -I build -f makefile.shade %*

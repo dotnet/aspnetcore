@@ -6,6 +6,7 @@ use namespace="System.Linq"
 use import="Files"
 use import="BuildEnv"
 use import="Environment"
+use-teamcity
 
 default BASE_DIR='${Directory.GetCurrentDirectory()}'
 default TARGET_DIR='${Path.Combine(BASE_DIR, "artifacts")}'
