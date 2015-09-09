@@ -16,7 +16,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
 
         void ConnectionReadFin(long connectionId);
 
-        void ConnectionWriteFin(long connectionId, int step);
+        void ConnectionWriteFin(long connectionId);
+
+        void ConnectionWroteFin(long connectionId, int status);
 
         void ConnectionKeepAlive(long connectionId);
 

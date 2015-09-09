@@ -21,57 +21,65 @@ namespace Microsoft.AspNet.Server.Kestrel
 
         public void ConnectionStart(long connectionId)
         {
-            _logger.LogDebug(13, $"{nameof(ConnectionStart)} -> Id: {connectionId}");
+            _logger.LogDebug(1, @"Connection id ""{ConnectionId}"" started.", connectionId);
         }
 
         public void ConnectionStop(long connectionId)
         {
-            _logger.LogDebug(14, $"{nameof(ConnectionStop)} -> Id: {connectionId}");
+            _logger.LogDebug(2, @"Connection id ""{ConnectionId}"" stopped.", connectionId);
         }
 
-        public void ConnectionRead(long connectionId, int status)
+        public void ConnectionRead(long connectionId, int count)
         {
-            _logger.LogDebug(4, $"{nameof(ConnectionRead)} -> Id: {connectionId}, Status: {status}");
+            // Don't log for now since this could be *too* verbose.
+            //_logger.LogVerbose(3, @"Connection id ""{ConnectionId}"" received ""{Count}"" bytes.", connectionId, count);
         }
 
         public void ConnectionPause(long connectionId)
         {
-            _logger.LogDebug(5, $"{nameof(ConnectionPause)} -> Id: {connectionId}");
+            _logger.LogDebug(4, @"Connection id ""{ConnectionId}"" paused.", connectionId);
         }
 
         public void ConnectionResume(long connectionId)
         {
-            _logger.LogDebug(6, $"{nameof(ConnectionResume)} -> Id: {connectionId}");
+            _logger.LogDebug(5, @"Connection id ""{ConnectionId}"" resumed.", connectionId);
         }
 
         public void ConnectionReadFin(long connectionId)
         {
-            _logger.LogDebug(7, $"{nameof(ConnectionReadFin)} -> Id: {connectionId}");
+            _logger.LogDebug(6, @"Connection id ""{ConnectionId}"" received FIN.", connectionId);
         }
 
-        public void ConnectionWriteFin(long connectionId, int step)
+        public void ConnectionWriteFin(long connectionId)
         {
-            _logger.LogDebug(8, $"{nameof(ConnectionWriteFin)} -> Id: {connectionId}, Step: {step}");
+            _logger.LogDebug(7, @"Connection id ""{ConnectionId}"" sending FIN.");
+        }
+
+        public void ConnectionWroteFin(long connectionId, int status)
+        {
+            _logger.LogDebug(8, @"Connection id ""{ConnectionId}"" sent FIN with status ""{Status}"".", status);
         }
 
         public void ConnectionKeepAlive(long connectionId)
         {
-            _logger.LogDebug(9, $"{nameof(ConnectionKeepAlive)} -> Id: {connectionId}");
+            _logger.LogDebug(9, @"Connection id ""{ConnectionId}"" completed keep alive response.", connectionId);
         }
 
         public void ConnectionDisconnect(long connectionId)
         {
-            _logger.LogDebug(10, $"{nameof(ConnectionDisconnect)} -> Id: {connectionId}");
+            _logger.LogDebug(10, @"Connection id ""{ConnectionId}"" disconnected.", connectionId);
         }
 
         public void ConnectionWrite(long connectionId, int count)
         {
-            _logger.LogDebug(11, $"{nameof(ConnectionWrite)} -> Id: {connectionId}, Count: {count}");
+            // Don't log for now since this could be *too* verbose.
+            //_logger.LogVerbose(11, @"Connection id ""{ConnectionId}"" sent ""{Count}"" bytes.", connectionId, count);
         }
 
         public void ConnectionWriteCallback(long connectionId, int status)
         {
-            _logger.LogDebug(12, $"{nameof(ConnectionWriteCallback)} -> Id: {connectionId}, Status: {status}");
+            // Don't log for now since this could be *too* verbose.
+            //_logger.LogVerbose(12, @"Connection id ""{ConnectionId}"" finished write with status ""{Status}"".", connectionId, status);
         }
 
         public void Log(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)

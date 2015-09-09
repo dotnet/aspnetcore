@@ -72,13 +72,16 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
             else if (normalDone || errorDone)
             {
-                Log.ConnectionReadFin(_connectionId);
                 SocketInput.RemoteIntakeFin = true;
                 _socket.ReadStop();
 
                 if (errorDone && error != null)
                 {
                     Log.LogError("Connection.OnRead", error);
+                }
+                else
+                {
+                    Log.ConnectionReadFin(_connectionId);
                 }
             }
 
@@ -118,19 +121,19 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         }
                         _connectionState = ConnectionState.Shutdown;
 
-                        Log.ConnectionWriteFin(_connectionId, 0);
+                        Log.ConnectionWriteFin(_connectionId);
                         Thread.Post(
                             state =>
                             {
-                                Log.ConnectionWriteFin(_connectionId, 1);
                                 var self = (Connection)state;
-                                var shutdown = new UvShutdownReq(Log);
+                                var shutdown = new UvShutdownReq(self.Log);
                                 shutdown.Init(self.Thread.Loop);
-                                shutdown.Shutdown(self._socket, (req, status, _) =>
+                                shutdown.Shutdown(self._socket, (req, status, state2) =>
                                 {
-                                    Log.ConnectionWriteFin(_connectionId, 1);
+                                    var self2 = (Connection)state2;
+                                    self2.Log.ConnectionWroteFin(_connectionId, status);
                                     req.Dispose();
-                                }, null);
+                                }, this);
                             },
                             this);
                         break;
