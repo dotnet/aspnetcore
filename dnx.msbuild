@@ -300,7 +300,7 @@
                 <term>BS</term>
                 <Justification>Culture info</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNet.Diagnostics\Views\WelcomePage.cs">
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNet.Diagnostics\WelcomePage\Views\WelcomePage.cs">
                 <term>butt</term>
                 <Justification>not our code, jquery scripts embedded in .cs file</Justification>
             </SrcExclusions>
@@ -329,11 +329,11 @@
                 <term>DMZ</term>
                 <Justification>base64 string</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNet.Diagnostics\Views\WelcomePage.cs">
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNet.Diagnostics\WelcomePage\Views\WelcomePage.cs">
                 <term>FE</term>
                 <Justification>not our code, jquery scripts embedded in .cs file</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNet.Diagnostics\Views\WelcomePage.cs;
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNet.Diagnostics\WelcomePage\Views\WelcomePage.cs;
                                     $(PoliCheckPath)**\src\EntityFramework.Core.FunctionalTests\TestModels\Northwind\NorthwindData.cs">
                 <term>FU</term>
                 <Justification>not our code, jquery scripts embedded in .cs file; Base64 encoded strings</Justification>
@@ -402,7 +402,7 @@
                 <term>races</term>
                 <Justification>refers to race condition; property name</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNet.Diagnostics\Views\WelcomePage.cs;
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNet.Diagnostics\WelcomePage\Views\WelcomePage.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\Colors.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\Program.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\Building\BuildContext.cs;
@@ -454,7 +454,7 @@
             <SrcExclusions Include="$(PoliCheckPath)**\src\EntityFramework.Core.FunctionalTests\AsyncQueryTestBase.cs;
                                     $(PoliCheckPath)**\src\EntityFramework.Core.FunctionalTests\QueryTestBase.cs;
                                     $(PoliCheckPath)**\src\EntityFramework.Core.FunctionalTests\TestModels\Northwind\NorthwindData.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.AspNet.Diagnostics\Views\WelcomePage.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.AspNet.Diagnostics\WelcomePage\Views\WelcomePage.cs;
                                     $(PoliCheckPath)**\src\Microsoft.AspNet.Localization\Internal\CultureInfoList.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Dnx.Compilation.CSharp.Common\CultureInfoCache.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.Globalization.CultureInfoCache\CultureInfoList.cs">
