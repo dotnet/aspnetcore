@@ -112,7 +112,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono.Xml2.XmlTextReader.ReadText is unable to read the XML. This is fixed in mono 4.3.0.
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task Home_CreateUser_ReturnsXmlBasedOnAcceptHeader()

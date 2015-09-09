@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
         private readonly Action<IServiceCollection> _configureServices = new Startup().ConfigureServices;
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono.Xml2.XmlTextReader.ReadText is unable to read the XML. This is fixed in mono 4.3.0.
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task XmlDataContractSerializerOutputFormatterIsCalled()
@@ -68,7 +68,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 await response.Content.ReadAsStringAsync());
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task XmlSerializerFailsAndDataContractSerializerIsCalled()
@@ -116,7 +116,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 await response.Content.ReadAsStringAsync());
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono.Xml2.XmlTextReader.ReadText is unable to read the XML. This is fixed in mono 4.3.0.
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task XmlDataContractSerializerOutputFormatter_WhenDerivedClassIsReturned()

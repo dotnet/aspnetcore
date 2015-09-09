@@ -209,7 +209,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal("The field ID must be between 0 and 100.", json["ID"]);
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/24
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ApiController_RequestProperty()
@@ -233,7 +233,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(expected, content);
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/24
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ApiController_RequestParameter()
@@ -286,14 +286,14 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ApiController_ExplicitChunkedEncoding_IsIgnored()
         {
-            // Arrange		
+            // Arrange
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
             var expected =
                 "POST Hello, HttpResponseMessage world!";
 
-            // Act	
+            // Act
             var request = new HttpRequestMessage();
             request.Method = HttpMethod.Post;
             request.RequestUri = new Uri("http://localhost/api/Blog/HttpRequestMessage/EchoWithResponseMessageChunked");
@@ -304,7 +304,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // the client. So here we explicitly mention to only read the headers and not the body.
             var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
 
-            // Assert		
+            // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.NotNull(response.Content);
             if (!TestPlatformHelper.IsMono)

@@ -9,7 +9,6 @@ using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Testing;
@@ -1262,7 +1261,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
 #if DNX451
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task UpdateVehicle_WithXml_BindsBodyServicesAndHeaders()

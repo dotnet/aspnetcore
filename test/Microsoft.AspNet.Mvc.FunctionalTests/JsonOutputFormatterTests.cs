@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(expectedBody, actualBody);
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task SerializableErrorIsReturnedInExpectedFormat()

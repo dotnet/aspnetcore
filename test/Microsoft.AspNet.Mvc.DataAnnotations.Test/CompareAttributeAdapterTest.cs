@@ -3,6 +3,7 @@
 
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNet.Testing;
+using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
@@ -85,15 +86,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             Assert.Equal("Hello 'MyProperty', goodbye 'OtherProperty'.", rule.ErrorMessage);
         }
 
-        [Fact]
+        [ConditionalFact]
+        // ValidationAttribute in Mono does not read non-public resx properties.
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void ClientRulesWithCompareAttribute_ErrorMessageUsesResourceOverride()
         {
-            if (TestPlatformHelper.IsMono)
-            {
-                // ValidationAttribute in Mono does not read non-public resx properties.
-                return;
-            }
-
             // Arrange
             var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             var metadata = metadataProvider.GetMetadataForProperty(typeof(PropertyNameModel), "MyProperty");

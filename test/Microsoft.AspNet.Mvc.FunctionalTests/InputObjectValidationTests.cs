@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             }
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task CheckIfObjectIsDeserializedWithoutErrors()

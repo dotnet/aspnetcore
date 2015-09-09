@@ -192,7 +192,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 result);
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task CanWrite_IEnumerableOf_SerializableErrors()

@@ -11,7 +11,6 @@ using System.Xml;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Formatters.Xml.Internal;
-using Microsoft.AspNet.Testing;
 using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Net.Http.Headers;
 using Moq;
@@ -93,17 +92,12 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [MemberData(nameof(BasicTypeValues))]
         public async Task WriteAsync_CanWriteBasicTypes(object input, string expectedOutput)
         {
-            // ConditionalThoery seems to throw when used with Member data. Hence using if case here.
-            if (TestPlatformHelper.IsMono)
-            {
-                // Mono issue - https://github.com/aspnet/External/issues/18
-                return;
-            }
-
             // Arrange
             var formatter = new XmlDataContractSerializerOutputFormatter();
             var outputFormatterContext = GetOutputFormatterContext(input, typeof(object));
@@ -119,7 +113,7 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
             XmlAssert.Equal(expectedOutput, content);
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void XmlDataContractSerializer_CachesSerializerForType()
@@ -137,7 +131,7 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
             Assert.Equal(1, formatter.createSerializerCalledCount);
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void DefaultConstructor_ExpectedWriterSettings_Created()
@@ -153,7 +147,7 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
             Assert.False(writerSettings.CheckCharacters);
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task SuppliedWriterSettings_TakeAffect()
@@ -181,7 +175,7 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
             XmlAssert.Equal(expectedOutput, content);
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task WriteAsync_WritesSimpleTypes()
@@ -206,13 +200,13 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
             XmlAssert.Equal(expectedOutput, content);
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task WriteAsync_WritesComplexTypes()
         {
             // Arrange
-            var expectedOutput = 
+            var expectedOutput =
                 "<TestLevelTwo xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\">" +
                 "<SampleString>TestString</SampleString>" +
                 "<TestOne><SampleInt>10</SampleInt><sampleString>TestLevelOne string</sampleString>" +
@@ -241,7 +235,7 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
             XmlAssert.Equal(expectedOutput, content);
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task WriteAsync_WritesOnModifiedWriterSettings()
@@ -272,7 +266,7 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
             XmlAssert.Equal(expectedOutput, content);
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task WriteAsync_WritesUTF16Output()
@@ -302,7 +296,7 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
             XmlAssert.Equal(expectedOutput, content);
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task WriteAsync_WritesIndentedOutput()
@@ -328,7 +322,7 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
             XmlAssert.Equal(expectedOutput, content);
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task WriteAsync_VerifyBodyIsNotClosedAfterOutputIsWritten()
@@ -346,7 +340,7 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
             Assert.True(body.CanRead);
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task WriteAsync_DoesntFlushOutputStream()
@@ -379,17 +373,12 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [MemberData(nameof(TypesForCanWriteResult))]
         public void CanWriteResult_ReturnsExpectedOutput(object input, Type declaredType, bool expectedOutput)
         {
-            // ConditionalThoery seems to throw when used with Member data. Hence using if case here.
-            if (TestPlatformHelper.IsMono)
-            {
-                // Mono issue - https://github.com/aspnet/External/issues/18
-                return;
-            }
-
             // Arrange
             var formatter = new XmlDataContractSerializerOutputFormatter();
             var outputFormatterContext = GetOutputFormatterContext(input, declaredType);
@@ -418,8 +407,10 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [MemberData(nameof(TypesForGetSupportedContentTypes))]
-        public void GetSupportedContentTypes_ReturnsSupportedTypes(Type declaredType,
-            Type runtimeType, object expectedOutput)
+        public void GetSupportedContentTypes_ReturnsSupportedTypes(
+            Type declaredType,
+            Type runtimeType,
+            object expectedOutput)
         {
             // Arrange
             var formatter = new XmlDataContractSerializerOutputFormatter();
@@ -439,7 +430,7 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
             }
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task WriteAsync_ThrowsWhenNotConfiguredWithKnownTypes()
@@ -454,7 +445,7 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
                 async () => await formatter.WriteAsync(outputFormatterContext));
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task WriteAsync_ThrowsWhenNotConfiguredWithPreserveReferences()
@@ -472,7 +463,7 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
                 async () => await formatter.WriteAsync(outputFormatterContext));
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task WriteAsync_WritesWhenConfiguredWithRootName()
@@ -515,7 +506,7 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
             XmlAssert.Equal(expectedOutput, content);
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task WriteAsync_WritesWhenConfiguredWithKnownTypes()
@@ -561,7 +552,7 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
             XmlAssert.Equal(expectedOutput, content);
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task WriteAsync_WritesWhenConfiguredWithPreserveReferences()

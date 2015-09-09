@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             nameof(DataMemberAttribute.IsRequired),
             bool.TrueString);
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ThrowsOnInvalidInput_AndAddsToModelState()
@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 data);
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task RequiredDataIsProvided_AndModelIsBound_NoValidationErrors()
@@ -88,7 +88,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         // Verifies that the model state has errors related to body model validation.
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task DataMissingForRefereneceTypeProperties_AndModelIsBound_AndHasMixedValidationErrors()

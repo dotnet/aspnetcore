@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         private readonly Action<IServiceCollection> _configureServices = new FormatterWebSite.Startup().ConfigureServices;
 
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task CheckIfXmlInputFormatterIsBeingCalled()

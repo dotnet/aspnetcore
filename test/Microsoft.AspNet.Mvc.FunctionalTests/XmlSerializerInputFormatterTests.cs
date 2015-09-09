@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(sampleInputInt.ToString(), await response.Content.ReadAsStringAsync());
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono.Xml2.XmlTextReader.ReadText is unable to read the XML. This is fixed in mono 4.3.0.
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ThrowsOnInvalidInput_AndAddsToModelState()

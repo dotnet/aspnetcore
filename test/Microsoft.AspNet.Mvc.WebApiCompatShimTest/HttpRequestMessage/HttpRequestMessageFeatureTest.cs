@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             Assert.Equal(new HttpMethod("OPTIONS"), request.Method);
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/24
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void HttpRequestMessage_CopiesHeader()

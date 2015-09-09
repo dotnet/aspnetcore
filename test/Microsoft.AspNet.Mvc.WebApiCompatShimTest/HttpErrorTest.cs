@@ -133,7 +133,7 @@ namespace System.Web.Http.Dispatcher
             Assert.Contains("c", data);
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/25
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void HttpError_Roundtrips_WithXmlFormatter()

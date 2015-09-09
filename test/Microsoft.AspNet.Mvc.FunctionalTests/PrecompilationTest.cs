@@ -10,8 +10,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc.Razor.Precompilation;
 using Microsoft.AspNet.Testing.xunit;
-using Microsoft.Framework.DependencyInjection;
 using Microsoft.Dnx.Runtime;
+using Microsoft.Framework.DependencyInjection;
 using PrecompilationWebSite;
 using Xunit;
 
@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
         private readonly Action<IServiceCollection> _configureServices = new Startup().ConfigureServices;
 
-        [ConditionalTheory]
+        [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task PrecompiledView_RendersCorrectly()
         {
@@ -101,7 +101,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.StartsWith(expected, responseContent.Trim());
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task TagHelpersFromTheApplication_CanBeAdded()
         {
@@ -124,7 +124,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(expected, responseLines[1]);
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task TagHelpersFromTheApplication_CanBeRemoved()
         {

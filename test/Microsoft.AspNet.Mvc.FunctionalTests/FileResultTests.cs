@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         private readonly Action<IApplicationBuilder> _app = new FilesWebSite.Startup().Configure;
         private readonly Action<IServiceCollection> _configureServices = new FilesWebSite.Startup().ConfigureServices;
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // https://github.com/aspnet/Mvc/issues/2727
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task FileFromDisk_CanBeEnabled_WithMiddleware()
@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal("This is a sample text file", body);
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // https://github.com/aspnet/Mvc/issues/2727
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task FileFromDisk_ReturnsFileWithFileName()

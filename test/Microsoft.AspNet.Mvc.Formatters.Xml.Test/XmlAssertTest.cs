@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using Microsoft.AspNet.Testing;
 using Microsoft.AspNet.Testing.xunit;
 using Xunit;
@@ -36,21 +35,32 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
             XmlAssert.Equal(input1, input2);
         }
 
+        public static TheoryData<string, string> EmptyElementData
+        {
+            get
+            {
+                var data = new TheoryData<string, string>
+                {
+                    { "<A></A>", "<A></A>" },
+                    { "<A><!-- comment1 --><B></B></A>", "<A><!-- comment1 --><B></B></A>" },
+                    { "<A/>", "<A/>" },
+                };
+
+                // DeepEquals returns false even though the generated XML documents are equal.
+                // This is fixed in Mono 4.3.0
+                if (!TestPlatformHelper.IsMono)
+                {
+                    data.Add("<A><![CDATA[<greeting></greeting>]]></A>", "<A><![CDATA[<greeting></greeting>]]></A>");
+                }
+
+                return data;
+            }
+        }
+
         [Theory]
-        [InlineData("<A></A>", "<A></A>")]
-        [InlineData("<A><!-- comment1 --><B></B></A>", "<A><!-- comment1 --><B></B></A>")]
-        [InlineData("<A/>", "<A/>")]
-        [InlineData("<A><![CDATA[<greeting></greeting>]]></A>", "<A><![CDATA[<greeting></greeting>]]></A>")]
+        [MemberData(nameof(EmptyElementData))]
         public void ReturnsSuccessfully_WithEmptyElements(string input1, string input2)
         {
-            // DeepEquals returns false even though the generated XML documents are equal.
-            // This is fixed in Mono 4.3.0
-            if (TestPlatformHelper.IsMono
-                && input1 == "<A><![CDATA[<greeting></greeting>]]></A>")
-            {
-                return;
-            }
-
             XmlAssert.Equal(input1, input2);
         }
 
@@ -64,7 +74,7 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
             Assert.Throws<EqualException>(() => XmlAssert.Equal(input1, input2));
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // DeepEquals returns false even though the generated XML documents are equal.
         // This is fixed in Mono 4.3.0
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]

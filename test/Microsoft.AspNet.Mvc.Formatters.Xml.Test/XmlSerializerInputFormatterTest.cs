@@ -12,8 +12,8 @@ using System.Xml;
 using System.Xml.Serialization;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Mvc.Formatters.Xml;
 using Microsoft.AspNet.Testing;
+using Microsoft.AspNet.Testing.xunit;
 using Moq;
 using Xunit;
 
@@ -219,15 +219,11 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
             Assert.Equal(expectedInt, dummyModel.SampleInt);
         }
 
-        [Fact]
+        [ConditionalFact]
+        // ReaderQuotas are not honored on Mono
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ReadAsync_ThrowsOnExceededMaxDepth()
         {
-            if (TestPlatformHelper.IsMono)
-            {
-                // ReaderQuotas are not honored on Mono
-                return;
-            }
-
             // Arrange
             var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
                         "<TestLevelTwo><SampleString>test</SampleString>" +
@@ -244,15 +240,11 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
             await Assert.ThrowsAsync(typeof(InvalidOperationException), () => formatter.ReadAsync(context));
         }
 
-        [Fact]
+        [ConditionalFact]
+        // ReaderQuotas are not honored on Mono
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ReadAsync_ThrowsWhenReaderQuotasAreChanged()
         {
-            if (TestPlatformHelper.IsMono)
-            {
-                // ReaderQuotas are not honored on Mono
-                return;
-            }
-
             // Arrange
             var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
                         "<TestLevelTwo><SampleString>test</SampleString>" +

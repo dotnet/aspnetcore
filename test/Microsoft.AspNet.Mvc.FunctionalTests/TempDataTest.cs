@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal("Foo", body);
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/21
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task Redirect_RetainsTempData_EvenIfAccessed()
@@ -145,7 +145,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal("Foo", body);
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/21
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task TempData_ValidTypes_RoundTripProperly()

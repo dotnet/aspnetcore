@@ -114,7 +114,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(expectedOutput, actual);
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ProducesAttribute_WithTypeAndContentType_UsesContentType()
@@ -323,7 +323,7 @@ END:VCARD
             Assert.Equal(expectedBody, body);
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task XmlFormatter_SupportedMediaType_DoesNotChangeAcrossRequests()

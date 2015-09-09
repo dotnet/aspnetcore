@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -84,7 +82,7 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
             Assert.Equal(expectedCanRead, result);
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void XmlDataContractSerializer_CachesSerializerForType()
@@ -130,7 +128,7 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
             Assert.True(formatter.SupportedEncodings.Any(i => i.WebName == "utf-16"));
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ReadAsync_ReadsSimpleTypes()
@@ -159,7 +157,7 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
             Assert.Equal(expectedString, levelOneModel.sampleString);
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ReadAsync_ReadsComplexTypes()
@@ -191,7 +189,7 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
             Assert.Equal(expectedString, levelTwoModel.TestOne.sampleString);
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ReadAsync_ReadsWhenMaxDepthIsModified()
@@ -217,17 +215,11 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
             Assert.Equal(expectedInt, dummyModel.SampleInt);
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ReadAsync_ThrowsOnExceededMaxDepth()
         {
-            if (TestPlatformHelper.IsMono)
-            {
-                // ReaderQuotas are not honored on Mono
-                return;
-            }
-
             // Arrange
             var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
                         "<TestLevelTwo><SampleString>test</SampleString>" +
@@ -242,17 +234,11 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
             await Assert.ThrowsAsync(typeof(SerializationException), async () => await formatter.ReadAsync(context));
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ReadAsync_ThrowsWhenReaderQuotasAreChanged()
         {
-            if (TestPlatformHelper.IsMono)
-            {
-                // ReaderQuotas are not honored on Mono
-                return;
-            }
-
             // Arrange
             var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
                         "<TestLevelTwo><SampleString>test</SampleString>" +
@@ -277,7 +263,7 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
             Assert.Throws(typeof(ArgumentException), () => formatter.MaxDepth = 0);
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ReadAsync_VerifyStreamIsOpenAfterRead()
@@ -297,7 +283,7 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
             Assert.True(context.HttpContext.Request.Body.CanRead);
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ReadAsync_FallsbackToUTF8_WhenCharSet_NotInContentType()
@@ -326,7 +312,7 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
             Assert.Equal(expectedMessage, ex.Message);
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ReadAsync_UsesContentTypeCharSet_ToReadStream()
@@ -352,7 +338,7 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
             Assert.Equal(expectedMessage, ex.Message);
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ReadAsync_IgnoresBOMCharacters()
@@ -385,7 +371,7 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
             Assert.Equal(expectedBytes, Encoding.UTF8.GetBytes(levelTwoModel.SampleString));
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ReadAsync_AcceptsUTF16Characters()
@@ -418,7 +404,7 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
             Assert.Equal(expectedString, levelOneModel.sampleString);
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ReadAsync_ThrowsWhenNotConfiguredWithRootName()
@@ -439,7 +425,7 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
             await Assert.ThrowsAsync(typeof(SerializationException), async () => await formatter.ReadAsync(context));
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ReadAsync_ReadsWhenConfiguredWithRootName()
@@ -477,7 +463,7 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
             Assert.Equal(expectedInt, dummyModel.SampleInt);
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ReadAsync_ThrowsWhenNotConfiguredWithKnownTypes()
@@ -499,7 +485,7 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
             await Assert.ThrowsAsync(typeof(SerializationException), async () => await formatter.ReadAsync(context));
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ReadAsync_ReadsWhenConfiguredWithKnownTypes()
