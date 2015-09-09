@@ -311,8 +311,8 @@ namespace Microsoft.AspNet.Mvc.Core
         [Theory]
         [InlineData(typeof(int), "test string", typeof(string))]
         [InlineData(typeof(string), 23, typeof(int))]
-        [InlineData(typeof(IEnumerable<string>), new[] { "1", "2", "3", }, typeof(object[]))]
-        [InlineData(typeof(List<string>), new[] { 1, 2, 3, }, typeof(object[]))]
+        [InlineData(typeof(IEnumerable<string>), new object[] { "1", "2", "3", }, typeof(object[]))]
+        [InlineData(typeof(List<string>), new object[] { 1, 2, 3, }, typeof(object[]))]
         public void CopyConstructors_OverrideSourceMetadata_IfModelNonNull(
             Type sourceType,
             object instance,
