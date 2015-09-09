@@ -169,7 +169,7 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
 
         public string ExpectedState
         {
-            get { return OpenIdConnectParameterNames.State + "=" + Encoder.UrlEncode(State); }
+            get { return Encoder.UrlEncode(State); }
         }
     }
 }

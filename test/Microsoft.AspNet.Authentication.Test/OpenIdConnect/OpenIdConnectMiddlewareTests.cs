@@ -73,7 +73,7 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
         }
 
         [Fact]
-        public async Task ChallengeWillSetNonceCookie()
+        public async Task ChallengeWillSetNonceAndStateCookies()
         {
             var server = CreateServer(options =>
             {
@@ -82,8 +82,14 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
                 options.Configuration = TestUtilities.DefaultOpenIdConnectConfiguration;
             });
             var transaction = await SendAsync(server, DefaultHost + Challenge);
-            transaction.SetCookie.Single().ShouldContain(OpenIdConnectAuthenticationDefaults.CookieNoncePrefix);
-            transaction.SetCookie.Single().ShouldContain("Expires");
+
+            var firstCookie = transaction.SetCookie.First();
+            firstCookie.ShouldContain(OpenIdConnectAuthenticationDefaults.CookieNoncePrefix);
+            firstCookie.ShouldContain("Expires");
+
+            var secondCookie = transaction.SetCookie.Skip(1).First();
+            secondCookie.ShouldContain(OpenIdConnectAuthenticationDefaults.CookieStatePrefix);
+            secondCookie.ShouldContain("Expires");
         }
 
         [Fact]

@@ -24,14 +24,14 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         public const string Caption = "OpenIdConnect";
 
         /// <summary>
-        /// The prefix used to provide a default OpenIdConnectAuthenticationOptions.CookieName.
-        /// </summary>
-        public const string CookiePrefix = ".AspNet.OpenIdConnect.";
-
-        /// <summary>
-        /// The prefix used to for the a nonce in the cookie.
+        /// The prefix used to for the nonce in the cookie.
         /// </summary>
         public const string CookieNoncePrefix = ".AspNet.OpenIdConnect.Nonce.";
+
+        /// <summary>
+        /// The prefix used for the state in the cookie.
+        /// </summary>
+        public const string CookieStatePrefix = ".AspNet.OpenIdConnect.State.";
 
         /// <summary>
         /// The property for the RedirectUri that was used when asking for a 'authorizationCode'.

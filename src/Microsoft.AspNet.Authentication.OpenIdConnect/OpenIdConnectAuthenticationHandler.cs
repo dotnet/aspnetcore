@@ -11,6 +11,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
@@ -47,6 +48,8 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
     <script>document.form.submit();</script>
 </body>
 </html>";
+
+        private static readonly RandomNumberGenerator CryptoRandom = RandomNumberGenerator.Create();
 
         private OpenIdConnectConfiguration _configuration;
 
@@ -220,6 +223,8 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 }
             }
 
+            GenerateCorrelationId(properties);
+
             var redirectToIdentityProviderContext = new RedirectToIdentityProviderContext(Context, Options)
             {
                 ProtocolMessage = message
@@ -391,6 +396,11 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 {
                     Logger.LogError(Resources.OIDCH_0006_MessageContainsError, message.Error, message.ErrorDescription ?? "ErrorDecription null", message.ErrorUri ?? "ErrorUri null");
                     throw new SecurityTokenException(string.Format(CultureInfo.InvariantCulture, Resources.OIDCH_0006_MessageContainsError, message.Error, message.ErrorDescription ?? "ErrorDecription null", message.ErrorUri ?? "ErrorUri null"));
+                }
+
+                if (!ValidateCorrelationId(properties))
+                {
+                    return null;
                 }
 
                 if (_configuration == null && Options.ConfigurationManager != null)
@@ -712,6 +722,66 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             }
 
             return null;
+        }
+
+        private void GenerateCorrelationId([NotNull] AuthenticationProperties properties)
+        {
+            var correlationKey = OpenIdConnectAuthenticationDefaults.CookieStatePrefix;
+
+            var nonceBytes = new byte[32];
+            CryptoRandom.GetBytes(nonceBytes);
+            var correlationId = TextEncodings.Base64Url.Encode(nonceBytes);
+
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = Request.IsHttps,
+                Expires = DateTime.UtcNow + Options.ProtocolValidator.NonceLifetime
+            };
+
+            properties.Items[correlationKey] = correlationId;
+
+            Response.Cookies.Append(correlationKey + correlationId, NonceProperty, cookieOptions);
+        }
+
+        private bool ValidateCorrelationId([NotNull] AuthenticationProperties properties)
+        {
+            var correlationKey = OpenIdConnectAuthenticationDefaults.CookieStatePrefix;
+
+            string correlationId;
+            if (!properties.Items.TryGetValue(
+                correlationKey,
+                out correlationId))
+            {
+                Logger.LogWarning("{0} state property not found.", correlationKey);
+                return false;
+            }
+
+            properties.Items.Remove(correlationKey);
+
+            var cookieName = correlationKey + correlationId;
+
+            var correlationCookie = Request.Cookies[cookieName];
+            if (string.IsNullOrEmpty(correlationCookie))
+            {
+                Logger.LogWarning("{0} cookie not found.", cookieName);
+                return false;
+            }
+
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = Request.IsHttps
+            };
+            Response.Cookies.Delete(cookieName, cookieOptions);
+
+            if (!string.Equals(correlationCookie, NonceProperty, StringComparison.Ordinal))
+            {
+                Logger.LogWarning("{0} correlation cookie and state property mismatch.", correlationKey);
+                return false;
+            }
+
+            return true;
         }
 
         private AuthenticationProperties GetPropertiesFromState(string state)

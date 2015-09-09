@@ -32,8 +32,8 @@ namespace OpenIdConnectSample
 
             app.UseOpenIdConnectAuthentication(options =>
             {
-                options.ClientId = "fe78e0b4-6fe7-47e6-812c-fb75cee266a4";
-                options.Authority = "https://login.windows.net/cyrano.onmicrosoft.com";
+                options.ClientId = "63a87a83-64b9-4ac1-b2c5-092126f8474f";
+                options.Authority = "https://login.windows.net/tratcheroutlook.onmicrosoft.com";
                 options.RedirectUri = "http://localhost:42023";
             });
 
