@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading;
 using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 using Microsoft.AspNet.Server.Kestrel.Networking;
 using Microsoft.Framework.Logging;
@@ -12,6 +13,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     {
         private static readonly Action<UvStreamHandle, int, Exception, object> _readCallback = ReadCallback;
         private static readonly Func<UvStreamHandle, int, object, Libuv.uv_buf_t> _allocCallback = AllocCallback;
+
+        private static long _lastConnectionId;
 
         private readonly UvStreamHandle _socket;
         private Frame _frame;
@@ -24,6 +27,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             _socket = socket;
             ConnectionControl = this;
+
+            _connectionId = Interlocked.Increment(ref _lastConnectionId);
         }
 
         public void Start()
@@ -31,7 +36,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             Log.ConnectionStart(_connectionId);
 
             SocketInput = new SocketInput(Memory);
-            SocketOutput = new SocketOutput(Thread, _socket, Log);
+            SocketOutput = new SocketOutput(Thread, _socket, _connectionId, Log);
             _frame = new Frame(this);
             _socket.ReadStart(_allocCallback, _readCallback, this);
         }

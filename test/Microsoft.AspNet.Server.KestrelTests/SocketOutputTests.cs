@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 var kestrelThread = kestrelEngine.Threads[0];
                 var socket = new MockSocket(kestrelThread.Loop.ThreadId, new KestrelTrace(new TestLogger()));
                 var trace = new KestrelTrace(new TestLogger());
-                var socketOutput = new SocketOutput(kestrelThread, socket, trace);
+                var socketOutput = new SocketOutput(kestrelThread, socket, 0, trace);
 
                 // I doubt _maxBytesPreCompleted will ever be over a MB. If it is, we should change this test.
                 var bufferSize = 1048576;
@@ -84,7 +84,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 var kestrelThread = kestrelEngine.Threads[0];
                 var socket = new MockSocket(kestrelThread.Loop.ThreadId, new KestrelTrace(new TestLogger()));
                 var trace = new KestrelTrace(new TestLogger());
-                var socketOutput = new SocketOutput(kestrelThread, socket, trace);
+                var socketOutput = new SocketOutput(kestrelThread, socket, 0, trace);
 
                 var bufferSize = maxBytesPreCompleted;
                 var buffer = new ArraySegment<byte>(new byte[bufferSize], 0, bufferSize);
