@@ -50,15 +50,16 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         /// </summary>
         protected abstract UvStreamHandle CreateListenSocket(string host, int port);
 
-        protected void ConnectionCallback(UvStreamHandle stream, int status, Exception error, object state)
+        protected static void ConnectionCallback(UvStreamHandle stream, int status, Exception error, object state)
         {
+            var listener = (Listener) state;
             if (error != null)
             {
-                Log.LogError("Listener.ConnectionCallback ", error);
+                listener.Log.LogError("Listener.ConnectionCallback ", error);
             }
             else
             {
-                ((Listener)state).OnConnection(stream, status);
+                listener.OnConnection(stream, status);
             }
         }
 

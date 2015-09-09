@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             Libuv.pipe_connect(this, pipe, name, _uv_connect_cb);
         }
 
-        private  static void UvConnectCb(IntPtr ptr, int status)
+        private static void UvConnectCb(IntPtr ptr, int status)
         {
             var req = FromIntPtr<UvConnectRequest>(ptr);
             req.Unpin();
