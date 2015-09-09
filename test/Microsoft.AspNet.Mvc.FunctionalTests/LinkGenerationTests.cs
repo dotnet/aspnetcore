@@ -3,28 +3,29 @@
 
 using System;
 using System.Net;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Testing;
-using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class LinkGenerationTests
+    public class LinkGenerationTests : IClassFixture<MvcFixture<BasicWebSite.Startup>>
     {
-        private const string SiteName = nameof(BasicWebSite);
-
         // Some tests require comparing the actual response body against an expected response baseline
         // so they require a reference to the assembly on which the resources are located, in order to
         // make the tests less verbose, we get a reference to the assembly with the resources and we
         // use it on all the rest of the tests.
         private static readonly Assembly _resourcesAssembly = typeof(LinkGenerationTests).GetTypeInfo().Assembly;
 
-        private readonly Action<IApplicationBuilder> _app = new BasicWebSite.Startup().Configure;
-        private readonly Action<IServiceCollection> _configureServices = new BasicWebSite.Startup().ConfigureServices;
+        public LinkGenerationTests(MvcFixture<BasicWebSite.Startup> fixture)
+        {
+            Client = fixture.Client;
+        }
+
+        public HttpClient Client { get; }
 
         [Theory]
         [InlineData("http://pingüino/Home/RedirectToActionReturningTaskAction", "/Home/ActionReturningTask")]
@@ -34,14 +35,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             string url,
             string expected)
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             // Act
-
             // The host is not important as everything runs in memory and tests are isolated from each other.
-            var response = await client.GetAsync(url);
+            var response = await Client.GetAsync(url);
             var responseContent = await response.Content.ReadAsStringAsync();
 
             // Assert
@@ -56,8 +52,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task GeneratedLinks_AreNotPunyEncoded_WhenGeneratedOnViews()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
             var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
             var outputFile = "compiler/resources/BasicWebSite.Home.ActionLinkView.html";
             var expectedContent =
@@ -65,7 +59,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Act
             // The host is not important as everything runs in memory and tests are isolated from each other.
-            var response = await client.GetAsync("http://localhost/Home/ActionLinkView");
+            var response = await Client.GetAsync("http://localhost/Home/ActionLinkView");
             var responseContent = await response.Content.ReadAsStringAsync();
 
             // Assert

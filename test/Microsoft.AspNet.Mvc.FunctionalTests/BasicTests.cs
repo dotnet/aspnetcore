@@ -8,37 +8,34 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Threading.Tasks;
-using BasicWebSite;
-using Microsoft.AspNet.Builder;
-using Microsoft.Framework.DependencyInjection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class BasicTests
+    public class BasicTests : IClassFixture<MvcFixture<BasicWebSite.Startup>>
     {
-        private const string SiteName = nameof(BasicWebSite);
-
         // Some tests require comparing the actual response body against an expected response baseline
         // so they require a reference to the assembly on which the resources are located, in order to
         // make the tests less verbose, we get a reference to the assembly with the resources and we
         // use it on all the rest of the tests.
         private static readonly Assembly _resourcesAssembly = typeof(BasicTests).GetTypeInfo().Assembly;
 
-        private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
-        private readonly Action<IServiceCollection> _configureServices = new Startup().ConfigureServices;
+        public BasicTests(MvcFixture<BasicWebSite.Startup> fixture)
+        {
+            Client = fixture.Client;
+        }
+
+        public HttpClient Client { get; }
 
         [Theory]
-        [InlineData("http://localhost/")]
-        [InlineData("http://localhost/Home")]
-        [InlineData("http://localhost/Home/Index")]
+        [InlineData("")]
+        [InlineData("Home")]
+        [InlineData("Home/Index")]
         public async Task CanRender_ViewsWithLayout(string url)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
             var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
             var outputFile = "compiler/resources/BasicWebSite.Home.Index.html";
             var expectedContent =
@@ -46,7 +43,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Act
             // The host is not important as everything runs in memory and tests are isolated from each other.
-            var response = await client.GetAsync(url);
+            var response = await Client.GetAsync(url);
             var responseContent = await response.Content.ReadAsStringAsync();
 
             // Assert
@@ -64,15 +61,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CanRender_SimpleViews()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
             var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
             var outputFile = "compiler/resources/BasicWebSite.Home.PlainView.html";
             var expectedContent =
                 await ResourceFile.ReadResourceAsync(_resourcesAssembly, outputFile, sourceFile: false);
 
             // Act
-            var response = await client.GetAsync("http://localhost/Home/PlainView");
+            var response = await Client.GetAsync("http://localhost/Home/PlainView");
             var responseContent = await response.Content.ReadAsStringAsync();
 
             // Assert
@@ -90,14 +85,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ViewWithAttributePrefix_RendersWithoutIgnoringPrefix()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
             var outputFile = "compiler/resources/BasicWebSite.Home.ViewWithPrefixedAttributeValue.html";
             var expectedContent =
                 await ResourceFile.ReadResourceAsync(_resourcesAssembly, outputFile, sourceFile: false);
 
             // Act
-            var response = await client.GetAsync("http://localhost/Home/ViewWithPrefixedAttributeValue");
+            var response = await Client.GetAsync("Home/ViewWithPrefixedAttributeValue");
             var responseContent = await response.Content.ReadAsStringAsync();
 
             // Assert
@@ -113,12 +106,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task CanReturn_ResultsWithoutContent()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             // Act
-            var response = await client.GetAsync("http://localhost/Home/NoContentResult");
+            var response = await Client.GetAsync("Home/NoContentResult");
             var responseContent = await response.Content.ReadAsStringAsync();
 
             // Assert
@@ -131,12 +120,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ReturningTaskFromAction_ProducesEmptyResult()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             // Act
-            var response = await client.GetAsync("http://localhost/Home/ActionReturningTask");
+            var response = await Client.GetAsync("Home/ActionReturningTask");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -148,15 +133,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ActionDescriptors_CreatedOncePerRequest()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             var expectedContent = "1";
 
             // Act and Assert
             for (var i = 0; i < 3; i++)
             {
-                var result = await client.GetAsync("http://localhost/Monitor/CountActionDescriptorInvocations");
+                var result = await Client.GetAsync("Monitor/CountActionDescriptorInvocations");
                 Assert.Equal(HttpStatusCode.OK, result.StatusCode);
                 var responseContent = await result.Content.ReadAsStringAsync();
 
@@ -167,12 +149,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ActionWithRequireHttps_RedirectsToSecureUrl_ForNonHttpsGetRequests()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             // Act
-            var response = await client.GetAsync("http://localhost/Home/HttpsOnlyAction");
+            var response = await Client.GetAsync("Home/HttpsOnlyAction");
 
             // Assert
             Assert.Equal(HttpStatusCode.MovedPermanently, response.StatusCode);
@@ -187,12 +165,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ActionWithRequireHttps_ReturnsBadRequestResponse_ForNonHttpsNonGetRequests()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             // Act
-            var response = await client.SendAsync(new HttpRequestMessage(
+            var response = await Client.SendAsync(new HttpRequestMessage(
                 HttpMethod.Post,
                 "http://localhost/Home/HttpsOnlyAction"));
 
@@ -209,12 +183,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [InlineData("POST")]
         public async Task ActionWithRequireHttps_AllowsHttpsRequests(string method)
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = new HttpClient(server.CreateHandler(), false);
-
             // Act
-            var response = await client.SendAsync(new HttpRequestMessage(
+            var response = await Client.SendAsync(new HttpRequestMessage(
                 new HttpMethod(method),
                 "https://localhost/Home/HttpsOnlyAction"));
 
@@ -226,8 +196,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task JsonViewComponent_RendersJson()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = new HttpClient(server.CreateHandler(), false);
             var expectedBody = JsonConvert.SerializeObject(new BasicWebSite.Models.Person()
             {
                 Id = 10,
@@ -235,7 +203,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             });
 
             // Act
-            var response = await client.GetAsync("https://localhost/Home/JsonTextInView");
+            var response = await Client.GetAsync("Home/JsonTextInView");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -249,9 +217,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task JsonHelper_RendersJson()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = new HttpClient(server.CreateHandler(), false);
-
             var json = JsonConvert.SerializeObject(new BasicWebSite.Models.Person()
             {
                 Id = 9000,
@@ -265,7 +230,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 json);
 
             // Act
-            var response = await client.GetAsync("https://localhost/Home/JsonHelperInView");
+            var response = await Client.GetAsync("Home/JsonHelperInView");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -279,9 +244,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task JsonHelperWithSettings_RendersJson()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = new HttpClient(server.CreateHandler(), false);
-
             var json = JsonConvert.SerializeObject(new BasicWebSite.Models.Person()
             {
                 Id = 9000,
@@ -295,7 +257,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 json);
 
             // Act
-            var response = await client.GetAsync("https://localhost/Home/JsonHelperWithSettingsInView");
+            var response = await Client.GetAsync("Home/JsonHelperWithSettingsInView");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -344,12 +306,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [MemberData(nameof(HtmlHelperLinkGenerationData))]
         public async Task HtmlHelperLinkGeneration(string viewName, string expectedLink)
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = new HttpClient(server.CreateHandler(), false);
-
             // Act
-            var response = await client.GetAsync("http://localhost/Links/Index?view=" + viewName);
+            var response = await Client.GetAsync("Links/Index?view=" + viewName);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -360,12 +318,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ConfigureMvc_AddsOptionsProperly()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = new HttpClient(server.CreateHandler(), false);
-
             // Act
-            var response = await client.GetAsync("http://localhost/Home/GetApplicationDescription");
+            var response = await Client.GetAsync("Home/GetApplicationDescription");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -376,12 +330,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task TypesWithoutControllerSuffix_DerivingFromTypesWithControllerSuffix_CanBeAccessed()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = new HttpClient(server.CreateHandler(), false);
-
             // Act
-            var response = await client.GetStringAsync("http://localhost/appointments");
+            var response = await Client.GetStringAsync("appointments");
 
             // Assert
             Assert.Equal("2 appointments available.", response);
@@ -390,12 +340,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task TypesMarkedAsNonAction_AreInaccessible()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = new HttpClient(server.CreateHandler(), false);
-
             // Act
-            var response = await client.GetAsync("http://localhost/SqlData/TruncateAllDbRecords");
+            var response = await Client.GetAsync("SqlData/TruncateAllDbRecords");
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
