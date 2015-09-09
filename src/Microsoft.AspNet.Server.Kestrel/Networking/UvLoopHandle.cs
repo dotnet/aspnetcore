@@ -3,11 +3,16 @@
 
 using System;
 using System.Threading;
+using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 
 namespace Microsoft.AspNet.Server.Kestrel.Networking
 {
     public class UvLoopHandle : UvHandle
     {
+        public UvLoopHandle(IKestrelTrace logger) : base(logger)
+        {
+        }
+
         public void Init(Libuv uv)
         {
             CreateMemory(

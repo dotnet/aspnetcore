@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Microsoft.AspNet.Server.Kestrel;
+using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 using Microsoft.AspNet.Server.Kestrel.Networking;
 using Microsoft.Dnx.Runtime;
 using Microsoft.Dnx.Runtime.Infrastructure;
@@ -13,10 +14,11 @@ namespace Microsoft.AspNet.Server.KestrelTests
 {
     public class MultipleLoopTests
     {
-        Libuv _uv;
+        private readonly Libuv _uv;
+        private readonly IKestrelTrace _logger = new KestrelTrace(new TestLogger());
         public MultipleLoopTests()
         {
-            var engine = new KestrelEngine(LibraryManager, new ShutdownNotImplemented());
+            var engine = new KestrelEngine(LibraryManager, new ShutdownNotImplemented(), new TestLogger());
             _uv = engine.Libuv;
         }
 
@@ -41,8 +43,8 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [Fact]
         public void InitAndCloseServerPipe()
         {
-            var loop = new UvLoopHandle();
-            var pipe = new UvPipeHandle();
+            var loop = new UvLoopHandle(_logger);
+            var pipe = new UvPipeHandle(_logger);
 
             loop.Init(_uv);
             pipe.Init(loop, true);
@@ -59,15 +61,15 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [Fact]
         public void ServerPipeListenForConnections()
         {
-            var loop = new UvLoopHandle();
-            var serverListenPipe = new UvPipeHandle();
+            var loop = new UvLoopHandle(_logger);
+            var serverListenPipe = new UvPipeHandle(_logger);
 
             loop.Init(_uv);
             serverListenPipe.Init(loop, false);
             serverListenPipe.Bind(@"\\.\pipe\ServerPipeListenForConnections");
             serverListenPipe.Listen(128, (_1, status, error, _2) =>
             {
-                var serverConnectionPipe = new UvPipeHandle();
+                var serverConnectionPipe = new UvPipeHandle(_logger);
                 serverConnectionPipe.Init(loop, true);
                 try
                 {
@@ -79,7 +81,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
                     return;
                 }
 
-                var writeRequest = new UvWriteReq();
+                var writeRequest = new UvWriteReq(new KestrelTrace(new TestLogger()));
                 writeRequest.Init(loop);
                 writeRequest.Write(
                     serverConnectionPipe,
@@ -96,9 +98,9 @@ namespace Microsoft.AspNet.Server.KestrelTests
 
             var worker = new Thread(() =>
             {
-                var loop2 = new UvLoopHandle();
-                var clientConnectionPipe = new UvPipeHandle();
-                var connect = new UvConnectRequest();
+                var loop2 = new UvLoopHandle(_logger);
+                var clientConnectionPipe = new UvPipeHandle(_logger);
+                var connect = new UvConnectRequest(new KestrelTrace(new TestLogger()));
 
                 loop2.Init(_uv);
                 clientConnectionPipe.Init(loop2, true);
@@ -134,19 +136,19 @@ namespace Microsoft.AspNet.Server.KestrelTests
         {
             var pipeName = @"\\.\pipe\ServerPipeDispatchConnections" + Guid.NewGuid().ToString("n");
 
-            var loop = new UvLoopHandle();
+            var loop = new UvLoopHandle(_logger);
             loop.Init(_uv);
 
             var serverConnectionPipe = default(UvPipeHandle);
             var serverConnectionPipeAcceptedEvent = new ManualResetEvent(false);
             var serverConnectionTcpDisposedEvent = new ManualResetEvent(false);
 
-            var serverListenPipe = new UvPipeHandle();
+            var serverListenPipe = new UvPipeHandle(_logger);
             serverListenPipe.Init(loop, false);
             serverListenPipe.Bind(pipeName);
             serverListenPipe.Listen(128, (_1, status, error, _2) =>
             {
-                serverConnectionPipe = new UvPipeHandle();
+                serverConnectionPipe = new UvPipeHandle(_logger);
                 serverConnectionPipe.Init(loop, true);
                 try
                 {
@@ -161,18 +163,18 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 }
             }, null);
 
-            var serverListenTcp = new UvTcpHandle();
+            var serverListenTcp = new UvTcpHandle(_logger);
             serverListenTcp.Init(loop);
             serverListenTcp.Bind(new IPEndPoint(0, 54321));
             serverListenTcp.Listen(128, (_1, status, error, _2) =>
             {
-                var serverConnectionTcp = new UvTcpHandle();
+                var serverConnectionTcp = new UvTcpHandle(_logger);
                 serverConnectionTcp.Init(loop);
                 serverListenTcp.Accept(serverConnectionTcp);
 
                 serverConnectionPipeAcceptedEvent.WaitOne();
 
-                var writeRequest = new UvWriteReq();
+                var writeRequest = new UvWriteReq(new KestrelTrace(new TestLogger()));
                 writeRequest.Init(loop);
                 writeRequest.Write2(
                     serverConnectionPipe,
@@ -192,9 +194,9 @@ namespace Microsoft.AspNet.Server.KestrelTests
 
             var worker = new Thread(() =>
             {
-                var loop2 = new UvLoopHandle();
-                var clientConnectionPipe = new UvPipeHandle();
-                var connect = new UvConnectRequest();
+                var loop2 = new UvLoopHandle(_logger);
+                var clientConnectionPipe = new UvPipeHandle(_logger);
+                var connect = new UvConnectRequest(new KestrelTrace(new TestLogger()));
 
                 loop2.Init(_uv);
                 clientConnectionPipe.Init(loop2, true);
@@ -216,7 +218,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
                                 clientConnectionPipe.Dispose();
                                 return;
                             }
-                            var clientConnectionTcp = new UvTcpHandle();
+                            var clientConnectionTcp = new UvTcpHandle(_logger);
                             clientConnectionTcp.Init(loop2);
                             clientConnectionPipe.Accept(clientConnectionTcp);
                             var buf2 = loop2.Libuv.buf_init(Marshal.AllocHGlobal(64), 64);

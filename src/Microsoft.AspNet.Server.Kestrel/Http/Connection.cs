@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 using Microsoft.AspNet.Server.Kestrel.Networking;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Server.Kestrel.Http
 {
@@ -28,10 +28,10 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         public void Start()
         {
-            KestrelTrace.Log.ConnectionStart(_connectionId);
+            Log.ConnectionStart(_connectionId);
 
             SocketInput = new SocketInput(Memory);
-            SocketOutput = new SocketOutput(Thread, _socket);
+            SocketOutput = new SocketOutput(Thread, _socket, Log);
             _frame = new Frame(this);
             _socket.ReadStart(_allocCallback, _readCallback, this);
         }
@@ -63,17 +63,17 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
             if (normalRead)
             {
-                KestrelTrace.Log.ConnectionRead(_connectionId, status);
+                Log.ConnectionRead(_connectionId, status);
             }
             else if (normalDone || errorDone)
             {
-                KestrelTrace.Log.ConnectionReadFin(_connectionId);
+                Log.ConnectionReadFin(_connectionId);
                 SocketInput.RemoteIntakeFin = true;
                 _socket.ReadStop();
 
                 if (errorDone && error != null)
                 {
-                    Trace.WriteLine("Connection.OnRead " + error.ToString());
+                    Log.LogError("Connection.OnRead", error);
                 }
             }
 
@@ -84,19 +84,19 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
             catch (Exception ex)
             {
-                Trace.WriteLine("Connection._frame.Consume " + ex.ToString());
+                Log.LogError("Connection._frame.Consume ", ex);
             }
         }
 
         void IConnectionControl.Pause()
         {
-            KestrelTrace.Log.ConnectionPause(_connectionId);
+            Log.ConnectionPause(_connectionId);
             _socket.ReadStop();
         }
 
         void IConnectionControl.Resume()
         {
-            KestrelTrace.Log.ConnectionResume(_connectionId);
+            Log.ConnectionResume(_connectionId);
             _socket.ReadStart(_allocCallback, _readCallback, this);
         }
 
@@ -113,17 +113,17 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         }
                         _connectionState = ConnectionState.Shutdown;
 
-                        KestrelTrace.Log.ConnectionWriteFin(_connectionId, 0);
+                        Log.ConnectionWriteFin(_connectionId, 0);
                         Thread.Post(
                             state =>
                             {
-                                KestrelTrace.Log.ConnectionWriteFin(_connectionId, 1);
+                                Log.ConnectionWriteFin(_connectionId, 1);
                                 var self = (Connection)state;
-                                var shutdown = new UvShutdownReq();
+                                var shutdown = new UvShutdownReq(Log);
                                 shutdown.Init(self.Thread.Loop);
                                 shutdown.Shutdown(self._socket, (req, status, _) =>
                                 {
-                                    KestrelTrace.Log.ConnectionWriteFin(_connectionId, 1);
+                                    Log.ConnectionWriteFin(_connectionId, 1);
                                     req.Dispose();
                                 }, null);
                             },
@@ -135,7 +135,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             return;
                         }
 
-                        KestrelTrace.Log.ConnectionKeepAlive(_connectionId);
+                        Log.ConnectionKeepAlive(_connectionId);
                         _frame = new Frame(this);
                         Thread.Post(
                             state => ((Frame)state).Consume(),
@@ -148,11 +148,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         }
                         _connectionState = ConnectionState.Disconnected;
 
-                        KestrelTrace.Log.ConnectionDisconnect(_connectionId);
+                        Log.ConnectionDisconnect(_connectionId);
                         Thread.Post(
                             state =>
                             {
-                                KestrelTrace.Log.ConnectionStop(_connectionId);
+                                Log.ConnectionStop(_connectionId);
                                 ((UvHandle)state).Dispose();
                             },
                             _socket);

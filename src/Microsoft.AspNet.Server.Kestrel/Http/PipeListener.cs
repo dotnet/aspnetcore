@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         /// </summary>
         protected override UvStreamHandle CreateListenSocket(string host, int port)
         {
-            var socket = new UvPipeHandle();
+            var socket = new UvPipeHandle(Log);
             socket.Init(Thread.Loop, false);
             socket.Bind(host);
             socket.Listen(Constants.ListenBacklog, ConnectionCallback, this);
@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         /// <param name="status">Connection status</param>
         protected override void OnConnection(UvStreamHandle listenSocket, int status)
         {
-            var acceptSocket = new UvPipeHandle();
+            var acceptSocket = new UvPipeHandle(Log);
             acceptSocket.Init(Thread.Loop, false);
             listenSocket.Accept(acceptSocket);
 

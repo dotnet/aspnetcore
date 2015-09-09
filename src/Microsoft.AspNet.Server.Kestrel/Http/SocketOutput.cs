@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
+using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 using Microsoft.AspNet.Server.Kestrel.Networking;
 
 namespace Microsoft.AspNet.Server.Kestrel.Http
@@ -16,6 +17,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         private readonly KestrelThread _thread;
         private readonly UvStreamHandle _socket;
+        private readonly IKestrelTrace _log;
 
         // This locks access to to all of the below fields
         private readonly object _lockObj = new object();
@@ -29,10 +31,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private WriteContext _nextWriteContext;
         private readonly Queue<CallbackContext> _callbacksPending;
 
-        public SocketOutput(KestrelThread thread, UvStreamHandle socket)
+        public SocketOutput(KestrelThread thread, UvStreamHandle socket, IKestrelTrace log)
         {
             _thread = thread;
             _socket = socket;
+            _log = log;
             _callbacksPending = new Queue<CallbackContext>();
         }
 
@@ -43,7 +46,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             Array.Copy(buffer.Array, buffer.Offset, copy, 0, buffer.Count);
             buffer = new ArraySegment<byte>(copy);
 
-            KestrelTrace.Log.ConnectionWrite(0, buffer.Count);
+            _log.ConnectionWrite(0, buffer.Count);
 
             bool triggerCallbackNow = false;
 
@@ -127,7 +130,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     buffers[i++] = buffer;
                 }
 
-                var writeReq = new UvWriteReq();
+                var writeReq = new UvWriteReq(_log);
                 writeReq.Init(_thread.Loop);
 
                 writeReq.Write(_socket, new ArraySegment<ArraySegment<byte>>(buffers), (r, status, error, state) =>
@@ -152,7 +155,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         // This is called on the libuv event loop
         private void OnWriteCompleted(Queue<ArraySegment<byte>> writtenBuffers, UvWriteReq req, int status, Exception error)
         {
-            KestrelTrace.Log.ConnectionWriteCallback(0, status);
+            _log.ConnectionWriteCallback(0, status);
 
             lock (_lockObj)
             {

@@ -3,11 +3,16 @@
 
 using System;
 using System.Net;
+using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 
 namespace Microsoft.AspNet.Server.Kestrel.Networking
 {
     public class UvTcpHandle : UvStreamHandle
     {
+        public UvTcpHandle(IKestrelTrace logger) : base(logger)
+        {
+        }
+
         public void Init(UvLoopHandle loop)
         {
             CreateMemory(

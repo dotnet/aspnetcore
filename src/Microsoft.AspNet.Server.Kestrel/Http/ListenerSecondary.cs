@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 using Microsoft.AspNet.Server.Kestrel.Networking;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Server.Kestrel.Http
 {
@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             Thread = thread;
             Application = application;
 
-            DispatchPipe = new UvPipeHandle();
+            DispatchPipe = new UvPipeHandle(Log);
 
             var tcs = new TaskCompletionSource<int>();
             Thread.Post(_ =>
@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 try
                 {
                     DispatchPipe.Init(Thread.Loop, true);
-                    var connect = new UvConnectRequest();
+                    var connect = new UvConnectRequest(Log);
                     connect.Init(Thread.Loop);
                     connect.Connect(
                         DispatchPipe,
@@ -67,8 +67,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                                             {
                                                 Exception ex;
                                                 Thread.Loop.Libuv.Check(status2, out ex);
-                                                // TODO: Replace Trace.WriteLine with real logging
-                                                Trace.WriteLine("DispatchPipe.ReadStart " + ex.Message);
+                                                Log.LogError("DispatchPipe.ReadStart", ex);
                                             }
 
                                             DispatchPipe.Dispose();
@@ -89,7 +88,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                                         }
                                         catch (Exception ex)
                                         {
-                                            Trace.WriteLine("DispatchPipe.Accept " + ex.Message);
+                                            Log.LogError("DispatchPipe.Accept", ex);
                                             acceptSocket.Dispose();
                                             return;
                                         }

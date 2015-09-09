@@ -2,8 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Microsoft.AspNet.Server.Kestrel.Infrastructure;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Server.Kestrel.Networking
 {
@@ -21,6 +22,10 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         public Action<UvStreamHandle, int, Exception, object> _readCallback;
         public object _readState;
         private GCHandle _readVitality;
+
+        protected UvStreamHandle(IKestrelTrace logger) : base(logger)
+        {
+        }
 
         protected override bool ReleaseHandle()
         {
@@ -127,7 +132,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             }
             catch (Exception ex)
             {
-                Trace.WriteLine("UvConnectionCb " + ex.ToString());
+                stream._log.LogError("UvConnectionCb", ex);
             }
         }
 
@@ -141,7 +146,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             }
             catch (Exception ex)
             {
-                Trace.WriteLine("UvAllocCb " + ex.ToString());
+                stream._log.LogError("UvAllocCb", ex);
                 buf = stream.Libuv.buf_init(IntPtr.Zero, 0);
                 throw;
             }
@@ -166,7 +171,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             }
             catch (Exception ex)
             {
-                Trace.WriteLine("UbReadCb " + ex.ToString());
+                stream._log.LogError("UbReadCb", ex);
             }
         }
 

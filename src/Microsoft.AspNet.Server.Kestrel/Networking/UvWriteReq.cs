@@ -3,8 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Microsoft.AspNet.Server.Kestrel.Infrastructure;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Server.Kestrel.Networking
 {
@@ -22,6 +23,10 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         private const int BUFFER_COUNT = 4;
 
         private List<GCHandle> _pins = new List<GCHandle>();
+
+        public UvWriteReq(IKestrelTrace logger) : base(logger)
+        {
+        }
 
         public void Init(UvLoopHandle loop)
         {
@@ -161,7 +166,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             }
             catch (Exception ex)
             {
-                Trace.WriteLine("UvWriteCb " + ex.ToString());
+                req._log.LogError("UvWriteCb", ex);
             }
         }
     }

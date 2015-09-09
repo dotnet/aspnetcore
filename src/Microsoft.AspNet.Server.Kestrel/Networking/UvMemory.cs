@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
+using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 
 namespace Microsoft.AspNet.Server.Kestrel.Networking
 {
@@ -15,9 +16,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
     {
         protected Libuv _uv;
         protected int _threadId;
+        protected IKestrelTrace _log;
 
-        public UvMemory() : base(IntPtr.Zero, true)
+        protected UvMemory(IKestrelTrace logger) : base(IntPtr.Zero, true)
         {
+            _log = logger;
         }
 
         public Libuv Libuv { get { return _uv; } }

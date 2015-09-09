@@ -4,11 +4,12 @@
 using Microsoft.AspNet.Server.Kestrel.Networking;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 using Microsoft.Dnx.Runtime;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Server.Kestrel
 {
@@ -30,13 +31,15 @@ namespace Microsoft.AspNet.Server.Kestrel
         private object _workSync = new Object();
         private bool _stopImmediate = false;
         private ExceptionDispatchInfo _closeError;
+        private IKestrelTrace _log;
 
         public KestrelThread(KestrelEngine engine, ServiceContext serviceContext)
         {
             _engine = engine;
             _appShutdown = serviceContext.AppShutdown;
-            _loop = new UvLoopHandle();
-            _post = new UvAsyncHandle();
+            _log = serviceContext.Log;
+            _loop = new UvLoopHandle(_log);
+            _post = new UvAsyncHandle(_log);
             _thread = new Thread(ThreadStart);
             QueueCloseHandle = PostCloseHandle;
         }
@@ -272,7 +275,7 @@ namespace Microsoft.AspNet.Server.Kestrel
                     }
                     else
                     {
-                        Trace.WriteLine("KestrelThread.DoPostWork " + ex.ToString());
+                        _log.LogError("KestrelThread.DoPostWork", ex);
                     }
                 }
             }
@@ -295,7 +298,7 @@ namespace Microsoft.AspNet.Server.Kestrel
                 }
                 catch (Exception ex)
                 {
-                    Trace.WriteLine("KestrelThread.DoPostCloseHandle " + ex.ToString());
+                    _log.LogError("KestrelThread.DoPostCloseHandle", ex);
                 }
             }
         }

@@ -8,6 +8,7 @@ using Microsoft.AspNet.Hosting.Server;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.Dnx.Runtime;
 using Microsoft.Framework.Configuration;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Server.Kestrel
 {
@@ -18,11 +19,13 @@ namespace Microsoft.AspNet.Server.Kestrel
     {
         private readonly ILibraryManager _libraryManager;
         private readonly IApplicationShutdown _appShutdownService;
+        private readonly ILogger _logger;
 
-        public ServerFactory(ILibraryManager libraryManager, IApplicationShutdown appShutdownService)
+        public ServerFactory(ILibraryManager libraryManager, IApplicationShutdown appShutdownService, ILoggerFactory loggerFactory)
         {
             _libraryManager = libraryManager;
             _appShutdownService = appShutdownService;
+            _logger = loggerFactory.CreateLogger("Microsoft.AspNet.Server.Kestrel");
         }
 
         public IFeatureCollection Initialize(IConfiguration configuration)
@@ -48,7 +51,7 @@ namespace Microsoft.AspNet.Server.Kestrel
             try
             {
                 var information = (KestrelServerInformation)serverFeatures.Get<IKestrelServerInformation>();
-                var engine = new KestrelEngine(_libraryManager, _appShutdownService);
+                var engine = new KestrelEngine(_libraryManager, _appShutdownService, _logger);
 
                 disposables.Push(engine);
 

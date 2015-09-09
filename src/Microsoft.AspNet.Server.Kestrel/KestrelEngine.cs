@@ -9,6 +9,7 @@ using Microsoft.AspNet.Server.Kestrel.Http;
 using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 using Microsoft.AspNet.Server.Kestrel.Networking;
 using Microsoft.Dnx.Runtime;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Server.Kestrel
 {
@@ -16,8 +17,8 @@ namespace Microsoft.AspNet.Server.Kestrel
     {
         private readonly ServiceContext _serviceContext;
 
-        public KestrelEngine(ILibraryManager libraryManager, IApplicationShutdown appShutdownService)
-            : this(appShutdownService)
+        public KestrelEngine(ILibraryManager libraryManager, IApplicationShutdown appShutdownService, ILogger logger)
+            : this(appShutdownService, logger)
         {
             Libuv = new Libuv();
 
@@ -62,18 +63,19 @@ namespace Microsoft.AspNet.Server.Kestrel
         }
 
         // For testing
-        internal KestrelEngine(Libuv uv, IApplicationShutdown appShutdownService)
-           : this(appShutdownService)
+        internal KestrelEngine(Libuv uv, IApplicationShutdown appShutdownService, ILogger logger)
+           : this(appShutdownService, logger)
         {
             Libuv = uv;
         }
 
-        private KestrelEngine(IApplicationShutdown appShutdownService)
+        private KestrelEngine(IApplicationShutdown appShutdownService, ILogger logger)
         {
             _serviceContext = new ServiceContext
             {
                 AppShutdown = appShutdownService,
-                Memory = new MemoryPool()
+                Memory = new MemoryPool(),
+                Log = new KestrelTrace(logger)
             };
 
             Threads = new List<KestrelThread>();

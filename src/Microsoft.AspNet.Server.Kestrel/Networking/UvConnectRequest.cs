@@ -2,9 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
+using Microsoft.AspNet.Server.Kestrel.Infrastructure;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Server.Kestrel.Networking
 {
@@ -17,6 +16,10 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
 
         private Action<UvConnectRequest, int, Exception, object> _callback;
         private object _state;
+
+        public UvConnectRequest(IKestrelTrace logger) : base (logger)
+        {
+        }
 
         public void Init(UvLoopHandle loop)
         {
@@ -63,7 +66,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             }
             catch (Exception ex)
             {
-                Trace.WriteLine("UvConnectRequest " + ex.ToString());
+                req._log.LogError("UvConnectRequest", ex);
             }
         }
     }

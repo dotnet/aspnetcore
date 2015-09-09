@@ -1,0 +1,29 @@
+﻿using Microsoft.Framework.Logging;
+
+namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
+{
+    public interface IKestrelTrace : ILogger
+    {
+        void ConnectionStart(long connectionId);
+
+        void ConnectionStop(long connectionId);
+
+        void ConnectionRead(long connectionId, int status);
+
+        void ConnectionPause(long connectionId);
+
+        void ConnectionResume(long connectionId);
+
+        void ConnectionReadFin(long connectionId);
+
+        void ConnectionWriteFin(long connectionId, int step);
+
+        void ConnectionKeepAlive(long connectionId);
+
+        void ConnectionDisconnect(long connectionId);
+
+        void ConnectionWrite(long connectionId, int count);
+
+        void ConnectionWriteCallback(long connectionId, int status);
+    }
+}
