@@ -19,6 +19,7 @@ namespace Microsoft.AspNet.Server.Kestrel
             AppShutdown = context.AppShutdown;
             Memory = context.Memory;
             Log = context.Log;
+            DateHeaderValueManager = context.DateHeaderValueManager;
         }
 
         public IApplicationShutdown AppShutdown { get; set; }
@@ -26,5 +27,7 @@ namespace Microsoft.AspNet.Server.Kestrel
         public IMemoryPool Memory { get; set; }
 
         public IKestrelTrace Log { get; set; }
+
+        public DateHeaderValueManager DateHeaderValueManager { get; set; }
     }
 }

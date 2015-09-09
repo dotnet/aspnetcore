@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Hosting.Server;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Server.Features;
+using Microsoft.AspNet.Server.Kestrel.Http;
 using Microsoft.Dnx.Runtime;
 using Microsoft.Framework.Configuration;
 using Microsoft.Framework.Logging;
@@ -53,9 +54,16 @@ namespace Microsoft.AspNet.Server.Kestrel
             try
             {
                 var information = (KestrelServerInformation)serverFeatures.Get<IKestrelServerInformation>();
-                var engine = new KestrelEngine(_libraryManager, new ServiceContext { AppShutdown = _appShutdownService, Log = new KestrelTrace(_logger) });
+                var dateHeaderValueManager = new DateHeaderValueManager();
+                var engine = new KestrelEngine(_libraryManager, new ServiceContext
+                {
+                    AppShutdown = _appShutdownService,
+                    Log = new KestrelTrace(_logger),
+                    DateHeaderValueManager = dateHeaderValueManager
+                });
 
                 disposables.Push(engine);
+                disposables.Push(dateHeaderValueManager);
 
                 if (information.ThreadCount < 0)
                 {

@@ -101,7 +101,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             _responseHeaders.Reset();
             _responseHeaders.HeaderServer = "Kestrel";
-            _responseHeaders.HeaderDate = DateTime.UtcNow.ToString("r");
+            _responseHeaders.HeaderDate = DateHeaderValueManager.GetDateHeaderValue();
         }
 
         /// <summary>
