@@ -235,15 +235,15 @@
         <Copy SourceFiles="@(AllPackages)" DestinationFolder="$(PackagesOutputPath)" Condition="!Exists('$(PackagesOutputPath)%(FileName)%(Extension)')" />
     </Target>
 
-    <Target Name="VerifySignatures" DependsOnTargets="RebuildPackages" Condition="'$(VerifySignatures)' == 'true'">
-        <RemoveDir Directories="$(CodeSignVerificationPath)" />
-        <MakeDir Directories="$(CodeSignVerificationPath)" />
-
-        <ItemGroup>
-            <PackagesToVerify Include="$(PackagesOutputPath)**\*.nupkg" />
-        </ItemGroup>
-
-        <Exec Command="$(DNXToolsPath)SignVer.exe /z:$(DNXToolsPath) /s /m:$(DNXToolsPath)signver.manifest /i:%(PackagesToVerify.FullPath) /vl /l:$(CodeSignVerificationPath)%(PackagesToVerify.Filename).log "/>
+    <Target Name="NuGetVerify" DependsOnTargets="RebuildPackages" Condition="'$(VerifySignatures)' == 'true'">
+        <PropertyGroup>
+            <DnxToolsFeed>https://www.myget.org/F/dnxtools/api/v3/index.json</DnxToolsFeed>
+            <NuGetFeed>https://api.nuget.org/v3/index.json</NuGetFeed>
+            <CommandsPath>$(DNXToolsPath)commands</CommandsPath>
+        </PropertyGroup>
+        <Exec Command="dnu commands install --source $(DnxToolsFeed) --source $(NuGetFeed) NuGetPackageVerifier --packages &quot;$(CommandsPath)&quot;"/>
+        <Exec Command="$(CommandsPath)\nugetverify &quot;$(PackagesOutputPath)&quot; &quot;$(DNXToolsPath)NuGetPackageVerifier.json&quot;"/>
+        <RemoveDir Directories="$(CommandsPath)"/>
     </Target>
 
     <Target Name="PoliCheck" DependsOnTargets="FindLatestDropShare">
