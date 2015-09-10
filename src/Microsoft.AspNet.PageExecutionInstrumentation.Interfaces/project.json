@@ -12,7 +12,8 @@
         "dnx451": { },
         "dnxcore50": {
             "dependencies": {
-                "System.IO": "4.0.11-beta-*"
+                "System.IO": "4.0.11-beta-*",
+                "System.Resources.ResourceManager": "4.0.1-beta-*"
             }
         }
     }
