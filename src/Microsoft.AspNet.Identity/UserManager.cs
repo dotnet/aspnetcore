@@ -5,12 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
@@ -24,6 +22,9 @@ namespace Microsoft.AspNet.Identity
     /// <typeparam name="TUser">The type encapsulating a user.</typeparam>
     public class UserManager<TUser> : IDisposable where TUser : class
     {
+        protected const string ResetPasswordTokenPurpose = "ResetPassword";
+        protected const string ConfirmEmailTokenPurpose = "EmailConfirmation";
+
         private readonly Dictionary<string, IUserTokenProvider<TUser>> _tokenProviders =
             new Dictionary<string, IUserTokenProvider<TUser>>();
 
@@ -203,7 +204,8 @@ namespace Microsoft.AspNet.Identity
         /// <value>
         /// true if the backing user store supports user emails, otherwise false.
         /// </value>
-        public virtual bool SupportsUserEmail
+        public virtual bool SupportsUserEmail 
+
         {
             get
             {
@@ -720,7 +722,7 @@ namespace Microsoft.AspNet.Identity
         public virtual Task<string> GeneratePasswordResetTokenAsync(TUser user)
         {
             ThrowIfDisposed();
-            return GenerateUserTokenAsync(user, Options.Tokens.PasswordResetTokenProvider, "ResetPassword");
+            return GenerateUserTokenAsync(user, Options.Tokens.PasswordResetTokenProvider, ResetPasswordTokenPurpose);
         }
 
         /// <summary>
@@ -743,7 +745,7 @@ namespace Microsoft.AspNet.Identity
             }
 
             // Make sure the token is valid and the stamp matches
-            if (!await VerifyUserTokenAsync(user, Options.Tokens.PasswordResetTokenProvider, "ResetPassword", token))
+            if (!await VerifyUserTokenAsync(user, Options.Tokens.PasswordResetTokenProvider, ResetPasswordTokenPurpose, token))
             {
                 return IdentityResult.Failed(ErrorDescriber.InvalidToken());
             }
@@ -1265,7 +1267,7 @@ namespace Microsoft.AspNet.Identity
         public virtual Task<string> GenerateEmailConfirmationTokenAsync(TUser user)
         {
             ThrowIfDisposed();
-            return GenerateUserTokenAsync(user, Options.Tokens.EmailConfirmationTokenProvider, "EmailConfirmation");
+            return GenerateUserTokenAsync(user, Options.Tokens.EmailConfirmationTokenProvider, ConfirmEmailTokenPurpose);
         }
 
         /// <summary>
@@ -1286,7 +1288,7 @@ namespace Microsoft.AspNet.Identity
                 throw new ArgumentNullException("user");
             }
 
-            if (!await VerifyUserTokenAsync(user, Options.Tokens.EmailConfirmationTokenProvider, "EmailConfirmation", token))
+            if (!await VerifyUserTokenAsync(user, Options.Tokens.EmailConfirmationTokenProvider, ConfirmEmailTokenPurpose, token))
             {
                 return IdentityResult.Failed(ErrorDescriber.InvalidToken());
             }
@@ -1324,7 +1326,7 @@ namespace Microsoft.AspNet.Identity
         public virtual Task<string> GenerateChangeEmailTokenAsync(TUser user, string newEmail)
         {
             ThrowIfDisposed();
-            return GenerateUserTokenAsync(user, Options.Tokens.ChangeEmailTokenProvider, GetChangeEmailPurpose(newEmail));
+            return GenerateUserTokenAsync(user, Options.Tokens.ChangeEmailTokenProvider, GetChangeEmailTokenPurpose(newEmail));
         }
 
         /// <summary>
@@ -1346,7 +1348,7 @@ namespace Microsoft.AspNet.Identity
             }
 
             // Make sure the token is valid and the stamp matches
-            if (!await VerifyUserTokenAsync(user, Options.Tokens.ChangeEmailTokenProvider, GetChangeEmailPurpose(newEmail), token))
+            if (!await VerifyUserTokenAsync(user, Options.Tokens.ChangeEmailTokenProvider, GetChangeEmailTokenPurpose(newEmail), token))
             {
                 return IdentityResult.Failed(ErrorDescriber.InvalidToken());
             }
@@ -2042,7 +2044,12 @@ namespace Microsoft.AspNet.Identity
         }
 
 
-        private static string GetChangeEmailPurpose(string newEmail)
+        /// <summary>
+        /// Generates the token purpose used to change email
+        /// </summary>
+        /// <param name="newEmail"></param>
+        /// <returns></returns>
+        protected static string GetChangeEmailTokenPurpose(string newEmail)
         {
             return "ChangeEmail:" + newEmail;
         }
