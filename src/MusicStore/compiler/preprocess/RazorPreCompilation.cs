@@ -6,9 +6,7 @@ namespace MusicStore
 {
     public class RazorPreCompilation : RazorPreCompileModule
     {
-        public RazorPreCompilation(IServiceProvider provider,
-                                   IApplicationEnvironment applicationEnvironment)
-            : base(provider)
+        public RazorPreCompilation(IApplicationEnvironment applicationEnvironment)
         {
             GenerateSymbols = string.Equals(applicationEnvironment.Configuration,
                                             "debug",
