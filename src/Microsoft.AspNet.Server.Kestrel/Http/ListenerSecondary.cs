@@ -86,7 +86,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                                         {
                                             DispatchPipe.Accept(acceptSocket);
                                         }
-                                        catch (Exception ex)
+                                        catch (UvException ex)
                                         {
                                             Log.LogError("DispatchPipe.Accept", ex);
                                             acceptSocket.Dispose();

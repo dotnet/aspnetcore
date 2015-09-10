@@ -1,9 +1,11 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Net;
 using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 using Microsoft.AspNet.Server.Kestrel.Networking;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Server.Kestrel.Http
 {
@@ -37,7 +39,16 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             var acceptSocket = new UvTcpHandle(Log);
             acceptSocket.Init(Thread.Loop, Thread.QueueCloseHandle);
-            listenSocket.Accept(acceptSocket);
+
+            try
+            {
+                listenSocket.Accept(acceptSocket);
+            }
+            catch (UvException ex)
+            {
+                Log.LogError("TcpListener.OnConnection", ex);
+                return;
+            }
 
             DispatchConnection(acceptSocket);
         }

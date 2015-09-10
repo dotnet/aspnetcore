@@ -1,11 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Server.Kestrel.Infrastructure;
-using Microsoft.AspNet.Server.Kestrel.Networking;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Server.Kestrel.Infrastructure;
+using Microsoft.AspNet.Server.Kestrel.Networking;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Server.Kestrel.Http
 {
@@ -56,15 +57,18 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
             var dispatchPipe = new UvPipeHandle(Log);
             dispatchPipe.Init(Thread.Loop, true);
+
             try
             {
                 pipe.Accept(dispatchPipe);
             }
-            catch (Exception)
+            catch (UvException ex)
             {
                 dispatchPipe.Dispose();
+                Log.LogError("ListenerPrimary.OnListenPipe", ex);
                 return;
             }
+
             _dispatchPipes.Add(dispatchPipe);
         }
 
