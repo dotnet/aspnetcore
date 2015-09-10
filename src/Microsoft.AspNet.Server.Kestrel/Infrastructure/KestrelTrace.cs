@@ -52,12 +52,12 @@ namespace Microsoft.AspNet.Server.Kestrel
 
         public void ConnectionWriteFin(long connectionId)
         {
-            _logger.LogDebug(7, @"Connection id ""{ConnectionId}"" sending FIN.");
+            _logger.LogDebug(7, @"Connection id ""{ConnectionId}"" sending FIN.", connectionId);
         }
 
         public void ConnectionWroteFin(long connectionId, int status)
         {
-            _logger.LogDebug(8, @"Connection id ""{ConnectionId}"" sent FIN with status ""{Status}"".", status);
+            _logger.LogDebug(8, @"Connection id ""{ConnectionId}"" sent FIN with status ""{Status}"".", connectionId, status);
         }
 
         public void ConnectionKeepAlive(long connectionId)
