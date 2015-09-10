@@ -67,7 +67,7 @@ function _WriteOut {
 
 ### Constants
 $ProductVersion="1.0.0"
-$BuildVersion="beta8-15515"
+$BuildVersion="beta8-15516"
 $Authors="Microsoft Open Technologies, Inc."
 
 # If the Version hasn't been replaced...
@@ -1610,6 +1610,7 @@ function dnvm-run {
     }
     _WriteDebug "> $dnxExe $DnxArguments"
     & $dnxExe @DnxArguments
+    $Script:ExitCode = $LASTEXITCODE
 }
 
 <#
@@ -1651,6 +1652,7 @@ function dnvm-exec {
         $env:PATH = "$runtimeBin;$($env:PATH)"
         & $Command @Arguments
     } finally {
+        $Script:ExitCode = $LASTEXITCODE
         $env:PATH = $oldPath
     }
 }
