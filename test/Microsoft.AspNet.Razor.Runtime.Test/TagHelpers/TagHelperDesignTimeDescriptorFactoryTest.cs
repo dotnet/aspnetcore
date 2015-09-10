@@ -479,7 +479,16 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             var testAssembly = new TestAssembly(location, codeBase);
             var wrappedType = typeof(TWrappedType);
+
             var mockType = new Mock<Type>();
+            var mockReflectedType = mockType.As<IReflectableType>();
+
+            // TypeDelegator inherits from abstract TypeInfo class and has a constructor Moq can use.
+            var mockTypeInfo = new Mock<TypeDelegator>(mockType.Object);
+            mockReflectedType.Setup(type => type.GetTypeInfo()).Returns(mockTypeInfo.Object);
+            mockTypeInfo.Setup(typeInfo => typeInfo.Assembly).Returns(testAssembly);
+            mockTypeInfo.Setup(typeInfo => typeInfo.FullName).Returns(wrappedType.FullName);
+
             mockType.Setup(type => type.Assembly).Returns(testAssembly);
             mockType.Setup(type => type.FullName).Returns(wrappedType.FullName);
             mockType.Setup(type => type.DeclaringType).Returns(wrappedType.DeclaringType);
@@ -503,6 +512,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             public override string Location { get; }
 
             public override string CodeBase { get; }
+
+            public override AssemblyName GetName() { return new AssemblyName("TestAssembly"); }
         }
 
         [OutputElementHint("hinted-value")]
