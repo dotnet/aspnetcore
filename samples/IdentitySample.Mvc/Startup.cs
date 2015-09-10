@@ -19,8 +19,8 @@ namespace IdentitySamples
     {
         public Startup(IApplicationEnvironment env)
         {
-            /* 
-            * Below code demonstrates usage of multiple configuration sources. For instance a setting say 'setting1' is found in both the registered sources, 
+            /*
+            * Below code demonstrates usage of multiple configuration sources. For instance a setting say 'setting1' is found in both the registered sources,
             * then the later source will win. By this way a Local config can be overridden by a different setting while deployed remotely.
             */
             var builder = new ConfigurationBuilder(env.ApplicationBasePath)
@@ -70,7 +70,7 @@ namespace IdentitySamples
 #if DNX451
             var config = new LoggingConfiguration();
 
-            // Step 2. Create targets and add them to the configuration 
+            // Step 2. Create targets and add them to the configuration
             var consoleTarget = new ColoredConsoleTarget();
             config.AddTarget("console", consoleTarget);
             consoleTarget.Layout = @"${date:format=HH\\:MM\\:ss} ${ndc} ${logger} ${message} ";
@@ -79,7 +79,7 @@ namespace IdentitySamples
 
             loggerFactory.AddNLog(new global::NLog.LogFactory(config));
 #endif
-            app.UseErrorPage()
+            app.UseDeveloperExceptionPage()
                .UseStaticFiles()
                .UseIdentity()
                .UseFacebookAuthentication()
@@ -93,7 +93,7 @@ namespace IdentitySamples
                         defaults: new { controller = "Home", action = "Index" });
                 });
 
-            //Populates the Admin user and role 
+            //Populates the Admin user and role
             SampleData.InitializeIdentityDatabaseAsync(app.ApplicationServices).Wait();
         }
 
