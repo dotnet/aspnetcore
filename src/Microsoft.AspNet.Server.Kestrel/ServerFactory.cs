@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.Server.Kestrel
 
                 disposables.Push(engine);
 
-                engine.Start(information.ThreadCount == 0 ? 1 : information.ThreadCount);
+                engine.Start(information.ThreadCount <= 0 ? 1 : information.ThreadCount);
 
                 foreach (var address in information.Addresses)
                 {
