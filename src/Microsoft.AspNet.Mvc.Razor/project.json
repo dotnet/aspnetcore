@@ -11,6 +11,7 @@
   "dependencies": {
     "Microsoft.AspNet.Mvc.Razor.Host": "6.0.0-*",
     "Microsoft.AspNet.Mvc.ViewFeatures": "6.0.0-*",
+    "Microsoft.AspNet.Razor.Runtime.Precompilation":  "4.0.0-*",
     "Microsoft.AspNet.PageExecutionInstrumentation.Interfaces": "1.0.0-*",
     "Microsoft.Framework.HashCodeCombiner.Sources": { "version": "1.0.0-*", "type": "build" },
     "Microsoft.Framework.NotNullAttribute.Sources": { "version": "1.0.0-*", "type": "build" },

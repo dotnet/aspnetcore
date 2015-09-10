@@ -8,8 +8,7 @@ namespace PrecompilationWebSite
 {
     public class RazorPreCompilation : RazorPreCompileModule
     {
-        public RazorPreCompilation(IServiceProvider provider)
-            : base(provider)
+        public RazorPreCompilation()
         {
         }
     }

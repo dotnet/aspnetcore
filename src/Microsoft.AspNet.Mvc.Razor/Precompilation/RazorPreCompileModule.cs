@@ -6,9 +6,7 @@ using System.Collections.Generic;
 using System.Runtime.Versioning;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.Dnx.Compilation.CSharp;
-using Microsoft.Dnx.Runtime;
 using Microsoft.Framework.Caching.Memory;
-using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Razor.Precompilation
@@ -18,19 +16,9 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
     /// </summary>
     public abstract class RazorPreCompileModule : ICompileModule
     {
-        private readonly IAssemblyLoadContext _loadContext;
         private readonly object _memoryCacheLookupLock = new object();
         private readonly Dictionary<PrecompilationCacheKey, MemoryCache> _memoryCacheLookup =
             new Dictionary<PrecompilationCacheKey, MemoryCache>();
-
-        /// <summary>
-        /// Instantiates a new <see cref="RazorPreCompileModule"/> instance.
-        /// </summary>
-        /// <param name="services">The <see cref="IServiceProvider"/> for the application.</param>
-        public RazorPreCompileModule(IServiceProvider services)
-        {
-            _loadContext = services.GetRequiredService<IAssemblyLoadContext>();
-        }
 
         /// <summary>
         /// Gets or sets a value that determines if symbols (.pdb) file for the precompiled views is generated.
@@ -65,7 +53,6 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
 
             var viewCompiler = new RazorPreCompiler(
                 context,
-                _loadContext,
                 fileProvider,
                 memoryCache)
             {

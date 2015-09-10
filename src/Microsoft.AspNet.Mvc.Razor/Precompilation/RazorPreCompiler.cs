@@ -3,21 +3,21 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.Razor.Compilation;
 using Microsoft.AspNet.Mvc.Razor.Directives;
 using Microsoft.AspNet.Mvc.Razor.Internal;
+using Microsoft.AspNet.Razor.Runtime.Precompilation;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Dnx.Compilation;
 using Microsoft.Dnx.Compilation.CSharp;
-using Microsoft.Dnx.Runtime;
 using Microsoft.Framework.Caching.Memory;
 using Microsoft.Framework.Internal;
 
@@ -27,22 +27,22 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
     {
         public RazorPreCompiler(
             [NotNull] BeforeCompileContext compileContext,
-            [NotNull] IAssemblyLoadContext loadContext,
             [NotNull] IFileProvider fileProvider,
             [NotNull] IMemoryCache precompilationCache)
         {
             CompileContext = compileContext;
-            LoadContext = loadContext;
             FileProvider = fileProvider;
+            // There should always be a syntax tree even if there are no files (we generate one)
+            Debug.Assert(compileContext.Compilation.SyntaxTrees.Length > 0);
+            var defines = compileContext.Compilation.SyntaxTrees[0].Options.PreprocessorSymbolNames;
             CompilationSettings = new CompilationSettings
             {
                 CompilationOptions = compileContext.Compilation.Options,
-                // REVIEW: There should always be a syntax tree even if there are no files (we generate one)
-                Defines = compileContext.Compilation.SyntaxTrees[0].Options.PreprocessorSymbolNames,
+                Defines = defines,
                 LanguageVersion = compileContext.Compilation.LanguageVersion
             };
             PreCompilationCache = precompilationCache;
-            TagHelperTypeResolver = new PrecompilationTagHelperTypeResolver(CompileContext, LoadContext);
+            TagHelperTypeResolver = new PrecompilationTagHelperTypeResolver(CompileContext.Compilation);
         }
 
         /// <summary>
@@ -53,8 +53,6 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
         protected IFileProvider FileProvider { get; }
 
         protected BeforeCompileContext CompileContext { get; }
-
-        protected IAssemblyLoadContext LoadContext { get; }
 
         protected CompilationSettings CompilationSettings { get; }
 
