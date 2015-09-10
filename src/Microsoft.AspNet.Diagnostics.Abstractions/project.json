@@ -10,7 +10,8 @@
         "dnx451": { },
         "dnxcore50": {
             "dependencies": {
-                "System.Runtime": "4.0.21-beta-*"
+                "System.Runtime": "4.0.21-beta-*",
+                "System.Resources.ResourceManager": "4.0.1-beta-*"
             }
         }
     }
