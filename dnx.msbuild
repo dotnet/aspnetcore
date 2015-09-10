@@ -398,7 +398,8 @@
                                     $(PoliCheckPath)**\src\EntityFramework.Core.FunctionalTests\TestModels\ConcurrencyModel\Driver.cs;
                                     $(PoliCheckPath)**\src\EntityFramework.Core.FunctionalTests\TestModels\ConcurrencyModel\Team.cs;
                                     $(PoliCheckPath)**\src\EntityFramework.Core.FunctionalTests\OptimisticConcurrencyTestBase.cs;
-                                    $(PoliCheckPath)**\EntityFramework.Core.FunctionalTests.dll">
+                                    $(PoliCheckPath)**\EntityFramework.Core.FunctionalTests.dll;
+                                    $(PoliCheckPath)**\src\Microsoft.AspNet.Razor.Runtime.Precompilation\CodeAnalysisSymbolLookupCache.cs">
                 <term>races</term>
                 <Justification>refers to race condition; property name</Justification>
             </SrcExclusions>
