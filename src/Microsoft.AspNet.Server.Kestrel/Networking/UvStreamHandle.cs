@@ -133,6 +133,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             catch (Exception ex)
             {
                 stream._log.LogError("UvConnectionCb", ex);
+                throw;
             }
         }
 
@@ -172,6 +173,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             catch (Exception ex)
             {
                 stream._log.LogError("UbReadCb", ex);
+                throw;
             }
         }
 

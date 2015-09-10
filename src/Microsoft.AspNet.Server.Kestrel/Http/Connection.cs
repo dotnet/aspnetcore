@@ -93,6 +93,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             catch (Exception ex)
             {
                 Log.LogError("Connection._frame.Consume ", ex);
+                throw;
             }
         }
 

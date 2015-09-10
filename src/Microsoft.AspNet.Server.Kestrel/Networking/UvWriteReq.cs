@@ -167,6 +167,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             catch (Exception ex)
             {
                 req._log.LogError("UvWriteCb", ex);
+                throw;
             }
         }
     }

@@ -276,6 +276,7 @@ namespace Microsoft.AspNet.Server.Kestrel
                     else
                     {
                         _log.LogError("KestrelThread.DoPostWork", ex);
+                        throw;
                     }
                 }
             }
@@ -299,6 +300,7 @@ namespace Microsoft.AspNet.Server.Kestrel
                 catch (Exception ex)
                 {
                     _log.LogError("KestrelThread.DoPostCloseHandle", ex);
+                    throw;
                 }
             }
         }
