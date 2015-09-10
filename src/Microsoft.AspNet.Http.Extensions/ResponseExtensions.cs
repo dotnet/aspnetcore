@@ -4,7 +4,7 @@
 using System;
 using Microsoft.AspNet.Http.Features;
 
-namespace Microsoft.AspNet.Http.Extensions
+namespace Microsoft.AspNet.Http
 {
     public static class ResponseExtensions
     {
