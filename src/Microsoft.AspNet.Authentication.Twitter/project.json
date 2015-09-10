@@ -12,7 +12,6 @@
     "frameworks": {
         "dnx451": {
             "frameworkAssemblies": {
-                "System.Net.Http.WebRequest": "",
                 "System.Net.Http": ""
             }
         },

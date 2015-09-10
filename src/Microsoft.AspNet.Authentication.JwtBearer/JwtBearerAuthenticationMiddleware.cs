@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using Microsoft.AspNet.Builder;
 using Microsoft.Framework.Internal;
@@ -63,7 +62,7 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
                         Options.MetadataAddress += ".well-known/openid-configuration";
                     }
 
-                    var httpClient = new HttpClient(ResolveHttpMessageHandler(Options));
+                    var httpClient = new HttpClient(Options.BackchannelHttpHandler ?? new HttpClientHandler());
                     httpClient.Timeout = Options.BackchannelTimeout;
                     httpClient.MaxResponseContentBufferSize = 1024 * 1024 * 10; // 10 MB
 
@@ -79,29 +78,6 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
         protected override AuthenticationHandler<JwtBearerAuthenticationOptions> CreateHandler()
         {
             return new JwtBearerAuthenticationHandler();
-        }
-
-        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Managed by caller")]
-        private static HttpMessageHandler ResolveHttpMessageHandler(JwtBearerAuthenticationOptions options)
-        {
-            HttpMessageHandler handler = options.BackchannelHttpHandler ??
-#if DNX451
-            new WebRequestHandler();
-            // If they provided a validator, apply it or fail.
-            if (options.BackchannelCertificateValidator != null)
-            {
-                // Set the cert validate callback
-                var webRequestHandler = handler as WebRequestHandler;
-                if (webRequestHandler == null)
-                {
-                    throw new InvalidOperationException(Resources.Exception_ValidatorHandlerMismatch);
-                }
-                webRequestHandler.ServerCertificateValidationCallback = options.BackchannelCertificateValidator.Validate;
-            }
-#else
-            new HttpClientHandler();
-#endif
-            return handler;
         }
     }
 }

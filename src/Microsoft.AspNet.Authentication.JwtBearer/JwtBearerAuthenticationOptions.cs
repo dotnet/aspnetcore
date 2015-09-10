@@ -66,18 +66,6 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
         /// </summary>
         public TimeSpan BackchannelTimeout { get; set; } = TimeSpan.FromMinutes(1);
 
-#if DNX451
-        /// <summary>
-        /// Gets or sets the a pinned certificate validator to use to validate the endpoints used
-        /// when retrieving metadata.
-        /// </summary>
-        /// <value>
-        /// The pinned certificate validator.
-        /// </value>
-        /// <remarks>If this property is null then the default certificate checks are performed,
-        /// validating the subject name and if the signing chain is a trusted party.</remarks>
-        public ICertificateValidator BackchannelCertificateValidator { get; set; }
-#endif
         /// <summary>
         /// Configuration provided directly by the developer. If provided, then MetadataAddress and the Backchannel properties
         /// will not be used. This information should not be updated during request processing.

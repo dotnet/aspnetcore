@@ -102,7 +102,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 Options.TokenValidationParameters.ValidAudience = Options.ClientId;
             }
 
-            Backchannel = new HttpClient(ResolveHttpMessageHandler(Options));
+            Backchannel = new HttpClient(Options.BackchannelHttpHandler ?? new HttpClientHandler());
             Backchannel.DefaultRequestHeaders.UserAgent.ParseAdd("Microsoft ASP.NET OpenIdConnect middleware");
             Backchannel.Timeout = Options.BackchannelTimeout;
             Backchannel.MaxResponseContentBufferSize = 1024 * 1024 * 10; // 10 MB
@@ -147,29 +147,6 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         protected override AuthenticationHandler<OpenIdConnectAuthenticationOptions> CreateHandler()
         {
             return new OpenIdConnectAuthenticationHandler(Backchannel);
-        }
-
-        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Managed by caller")]
-        private static HttpMessageHandler ResolveHttpMessageHandler(OpenIdConnectAuthenticationOptions options)
-        {
-            var handler = options.BackchannelHttpHandler ??
-#if DNX451
-                new WebRequestHandler();
-            // If they provided a validator, apply it or fail.
-            if (options.BackchannelCertificateValidator != null)
-            {
-                // Set the cert validate callback
-                var webRequestHandler = handler as WebRequestHandler;
-                if (webRequestHandler == null)
-                {
-                    throw new InvalidOperationException(Resources.OIDCH_0102_Exception_ValidatorHandlerMismatch);
-                }
-                webRequestHandler.ServerCertificateValidationCallback = options.BackchannelCertificateValidator.Validate;
-            }
-#else
-                new HttpClientHandler();
-#endif
-            return handler;
         }
 
         private class StringSerializer : IDataSerializer<string>

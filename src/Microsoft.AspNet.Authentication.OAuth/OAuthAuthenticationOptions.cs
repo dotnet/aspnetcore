@@ -42,19 +42,6 @@ namespace Microsoft.AspNet.Authentication.OAuth
         /// </summary>
         public string UserInformationEndpoint { get; set; }
 
-#if DNX451
-        /// <summary>
-        /// Gets or sets the a pinned certificate validator to use to validate the endpoints used
-        /// in back channel communications belong to the auth provider.
-        /// </summary>
-        /// <value>
-        /// The pinned certificate validator.
-        /// </value>
-        /// <remarks>If this property is null then the default certificate checks are performed,
-        /// validating the subject name and if the signing chain is a trusted party.</remarks>
-        public ICertificateValidator BackchannelCertificateValidator { get; set; }
-#endif
-
         /// <summary>
         /// Get or sets the text that the user can display on a sign in user interface.
         /// </summary>

@@ -7,7 +7,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
-using System.Security.Claims;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.Framework.Caching.Distributed;
@@ -66,18 +65,6 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         /// </summary>
         public string Authority { get; set; }
 
-#if DNX451
-        /// <summary>
-        /// Gets or sets the a pinned certificate validator to use to validate the endpoints used
-        /// when retrieving metadata.
-        /// </summary>
-        /// <value>
-        /// The pinned certificate validator.
-        /// </value>
-        /// <remarks>If this property is null then the default certificate checks are performed,
-        /// validating the subject name and if the signing chain is a trusted party.</remarks>
-        public ICertificateValidator BackchannelCertificateValidator { get; set; }
-#endif
         /// <summary>
         /// The HttpMessageHandler used to retrieve metadata.
         /// This cannot be set at the same time as BackchannelCertificateValidator unless the value

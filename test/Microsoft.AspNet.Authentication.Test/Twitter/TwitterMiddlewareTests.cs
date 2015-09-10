@@ -48,7 +48,6 @@ namespace Microsoft.AspNet.Authentication.Twitter
                             return null;
                         }
                     };
-                    options.BackchannelCertificateValidator = null;
                 },
                 context => 
                 {
@@ -123,7 +122,6 @@ namespace Microsoft.AspNet.Authentication.Twitter
                             return null;
                         }
                     };
-                    options.BackchannelCertificateValidator = null;
                 },
                 context =>
                 {
