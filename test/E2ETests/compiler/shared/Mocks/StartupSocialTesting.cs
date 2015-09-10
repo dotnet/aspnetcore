@@ -119,9 +119,6 @@ namespace MusicStore
                 };
                 options.StateDataFormat = new CustomTwitterStateDataFormat();
                 options.BackchannelHttpHandler = new TwitterMockBackChannelHttpHandler();
-#if DNX451
-                options.BackchannelCertificateValidator = null;
-#endif
             });
 
             services.AddMicrosoftAccountAuthentication(options =>
