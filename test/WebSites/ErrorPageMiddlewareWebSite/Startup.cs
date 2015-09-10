@@ -18,7 +18,7 @@ namespace ErrorPageMiddlewareWebSite
         {
             app.UseCultureReplacer();
 
-            app.UseErrorPage();
+            app.UseDeveloperExceptionPage();
             app.UseMvc();
         }
     }

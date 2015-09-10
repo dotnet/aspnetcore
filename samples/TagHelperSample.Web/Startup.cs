@@ -26,7 +26,7 @@ namespace TagHelperSample.Web
                 || (name.StartsWith("Microsoft.Net.Http.Server.WebListener", StringComparison.OrdinalIgnoreCase)
                     && logLevel >= LogLevel.Information));
 
-            app.UseErrorPage();
+            app.UseDeveloperExceptionPage();
 
             app.UseStaticFiles();
 
