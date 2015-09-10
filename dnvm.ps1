@@ -67,7 +67,7 @@ function _WriteOut {
 
 ### Constants
 $ProductVersion="1.0.0"
-$BuildVersion="beta8-15514"
+$BuildVersion="beta8-15515"
 $Authors="Microsoft Open Technologies, Inc."
 
 # If the Version hasn't been replaced...
@@ -1598,7 +1598,7 @@ function dnvm-run {
         [Parameter(Mandatory=$false, Position=1, ValueFromRemainingArguments=$true)]
         [object[]]$DnxArguments)
 
-    $runtimeInfo = Get-RuntimeAliasOrRuntimeInfo -Version:$VersionOrAlias
+    $runtimeInfo = Get-RuntimeAliasOrRuntimeInfo -Version:$VersionOrAlias -Runtime:$Runtime -Architecture:$Architecture
 
     $runtimeBin = Get-RuntimePath $runtimeInfo.RuntimeName
     if ($runtimeBin -eq $null) {
@@ -1639,7 +1639,7 @@ function dnvm-exec {
         [Parameter(Mandatory=$false, Position=2, ValueFromRemainingArguments=$true)]
         [object[]]$Arguments)
 
-    $runtimeInfo = Get-RuntimeAliasOrRuntimeInfo -Version:$VersionOrAlias 
+    $runtimeInfo = Get-RuntimeAliasOrRuntimeInfo -Version:$VersionOrAlias -Runtime:$Runtime -Architecture:$Architecture
     $runtimeBin = Get-RuntimePath $runtimeInfo.RuntimeName
 
     if ($runtimeBin -eq $null) {
