@@ -9,6 +9,35 @@ namespace Microsoft.AspNet.Mvc
     /// <summary>
     /// Specifies that a parameter or property should be bound using the request services.
     /// </summary>
+    /// <example>
+    /// In this example, the LocationService property on the VehicleWithDealerViewModel class 
+    /// will be bound to the value resolved for the ILocationService service from the request services.
+    ///
+    /// <code> 
+    /// public class VehicleWithDealerViewModel 
+    /// {
+    ///     [FromServices]
+    ///     public ILocationService LocationService { get; set; }
+    ///
+    ///     public void Update()
+    ///     {
+    ///         LocationService.Update();
+    ///     }
+    /// }
+    /// </code> 
+    ///
+    /// In this example an implementation of IProductModelRequestService is registered as a service.
+    /// Then in the GetProduct action, the parameter is bound to an instance of IProductModelRequestService
+    /// which is resolved from the the request services.
+    ///
+    /// <code>
+    /// [HttpGet]
+    /// public ProductModel GetProduct([FromServices] IProductModelRequestService productModelReqest)
+    /// {
+    ///     return productModelReqest.Value;
+    /// }
+    /// </code>
+    /// </example> 
     [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     public class FromServicesAttribute : Attribute, IBindingSourceMetadata
     {
