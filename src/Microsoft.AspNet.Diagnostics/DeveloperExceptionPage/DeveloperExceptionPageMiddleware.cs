@@ -72,14 +72,8 @@ namespace Microsoft.AspNet.Diagnostics
 
                 try
                 {
+                    context.Response.Clear();
                     context.Response.StatusCode = 500;
-                    context.Response.Headers.Clear();
-
-                    // if buffering is enabled, then clear it as data could have been written into it.
-                    if (context.Response.Body.CanSeek)
-                    {
-                        context.Response.Body.SetLength(0);
-                    }
 
                     await DisplayException(context, ex);
                     return;

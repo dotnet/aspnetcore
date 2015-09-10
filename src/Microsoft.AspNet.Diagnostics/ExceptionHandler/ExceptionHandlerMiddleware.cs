@@ -53,20 +53,14 @@ namespace Microsoft.AspNet.Diagnostics
                 }
                 try
                 {
+                    context.Response.Clear();
                     var exceptionHandlerFeature = new ExceptionHandlerFeature()
                     {
                         Error = ex,
                     };
                     context.Features.Set<IExceptionHandlerFeature>(exceptionHandlerFeature);
                     context.Response.StatusCode = 500;
-                    context.Response.Headers.Clear();
                     context.Response.OnStarting(_clearCacheHeadersDelegate, context.Response);
-
-                    // if buffering is enabled, then clear it as data could have been written into it.
-                    if (context.Response.Body.CanSeek)
-                    {
-                        context.Response.Body.SetLength(0);
-                    }
 
                     await _options.ExceptionHandler(context);
                     // TODO: Optional re-throw? We'll re-throw the original exception by default if the error handler throws.
