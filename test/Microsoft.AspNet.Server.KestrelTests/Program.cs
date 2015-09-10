@@ -13,16 +13,25 @@ namespace Microsoft.AspNet.Server.KestrelTests
     {
         private readonly IApplicationEnvironment env;
         private readonly IServiceProvider sp;
+        private readonly ILibraryManager _libraryManager;
+        private readonly IApplicationShutdown _shutdown;
 
-        public Program(IApplicationEnvironment env, IServiceProvider sp)
+        public Program(
+            IApplicationEnvironment env,
+            IServiceProvider sp,
+            ILibraryManager libraryManager,
+            IApplicationShutdown shutown)
         {
             this.env = env;
             this.sp = sp;
+            _libraryManager = libraryManager;
+            _shutdown = shutown;
         }
 
         public int Main()
         {
-            return new Xunit.Runner.AspNet.Program(env, sp).Main(new string[] {
+            return new Xunit.Runner.Dnx.Program(env, sp, _libraryManager, _shutdown).Main(new string[]
+            {
                 "-class",
                 typeof(MultipleLoopTests).FullName
             });
