@@ -239,7 +239,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // string. We also replace any '*' or '?' characters with regex to match appropriate content.
             // '*' matches 0 or more characters lazily and '?' matches 1 character.
             var pattern = "^" + escaped.Replace(@"\?", ".").Replace(@"\*", ".*?") + "$";
-            var regex = new Regex(pattern, RegexOptions.Singleline);
+            var regex = new Regex(pattern, RegexOptions.Singleline, Constants.RegexMatchTimeout);
 
             return regex.IsMatch(descriptor.TypeName);
         }
