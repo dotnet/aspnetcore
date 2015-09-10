@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Server.Kestrel
         public void ConnectionRead(long connectionId, int count)
         {
             // Don't log for now since this could be *too* verbose.
-            //_logger.LogVerbose(3, @"Connection id ""{ConnectionId}"" received ""{Count}"" bytes.", connectionId, count);
+            // Reserved: Event ID 3
         }
 
         public void ConnectionPause(long connectionId)
@@ -73,13 +73,13 @@ namespace Microsoft.AspNet.Server.Kestrel
         public void ConnectionWrite(long connectionId, int count)
         {
             // Don't log for now since this could be *too* verbose.
-            //_logger.LogVerbose(11, @"Connection id ""{ConnectionId}"" sent ""{Count}"" bytes.", connectionId, count);
+            // Reserved: Event ID 11
         }
 
         public void ConnectionWriteCallback(long connectionId, int status)
         {
             // Don't log for now since this could be *too* verbose.
-            //_logger.LogVerbose(12, @"Connection id ""{ConnectionId}"" finished write with status ""{Status}"".", connectionId, status);
+            // Reserved: Event ID 12
         }
 
         public void Log(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
