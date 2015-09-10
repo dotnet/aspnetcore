@@ -22,7 +22,7 @@ namespace MusicStore
 
         public Startup(IApplicationEnvironment env, IRuntimeEnvironment runtimeEnvironment)
         {
-            //Below code demonstrates usage of multiple configuration sources. For instance a setting say 'setting1' is found in both the registered sources, 
+            //Below code demonstrates usage of multiple configuration sources. For instance a setting say 'setting1' is found in both the registered sources,
             //then the later source will win. By this way a Local config can be overridden by a different setting while deployed remotely.
             var builder = new ConfigurationBuilder(env.ApplicationBasePath)
                         .AddJsonFile("config.json")
@@ -128,7 +128,7 @@ namespace MusicStore
 
             // Display custom error page in production when error occurs
             // During development use the ErrorPage middleware to display error information in the browser
-            app.UseErrorPage();
+            app.UseDeveloperExceptionPage();
 
             app.UseDatabaseErrorPage(DatabaseErrorPageOptions.ShowAll);
 
@@ -149,7 +149,7 @@ namespace MusicStore
             // StatusCode pages to gracefully handle status codes 400-599.
             app.UseStatusCodePagesWithRedirects("~/Home/StatusCodePage");
 
-            app.UseErrorHandler("/Home/Error");
+            app.UseExceptionHandler("/Home/Error");
 
             Configure(app);
         }
@@ -163,7 +163,7 @@ namespace MusicStore
             // StatusCode pages to gracefully handle status codes 400-599.
             app.UseStatusCodePagesWithRedirects("~/Home/StatusCodePage");
 
-            app.UseErrorHandler("/Home/Error");
+            app.UseExceptionHandler("/Home/Error");
 
             Configure(app);
         }

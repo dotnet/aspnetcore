@@ -123,7 +123,7 @@ namespace MusicStore
 
             // Display custom error page in production when error occurs
             // During development use the ErrorPage middleware to display error information in the browser
-            app.UseErrorPage();
+            app.UseDeveloperExceptionPage();
 
             app.UseDatabaseErrorPage(DatabaseErrorPageOptions.ShowAll);
 

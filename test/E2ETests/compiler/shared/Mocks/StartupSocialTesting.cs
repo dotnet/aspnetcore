@@ -174,7 +174,7 @@ namespace MusicStore
 
             // Error page middleware displays a nice formatted HTML page for any unhandled exceptions in the request pipeline.
             // Note: Not recommended for production.
-            app.UseErrorPage();
+            app.UseDeveloperExceptionPage();
 
             app.UseDatabaseErrorPage(DatabaseErrorPageOptions.ShowAll);
 
