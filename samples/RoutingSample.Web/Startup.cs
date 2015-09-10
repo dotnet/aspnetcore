@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Text.RegularExpressions;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
@@ -49,7 +50,11 @@ namespace RoutingSample.Web
             routeBuilder.MapRoute("regexRoute",
                                   "api/r2constraint/{controller}",
                                   new { foo = "Bar2" },
-                                  new { controller = new RegexRouteConstraint(new Regex("^(my.*)$")) });
+                                  new
+                                  {
+                                      controller = new RegexRouteConstraint(
+                                          new Regex("^(my.*)$", RegexOptions.None, TimeSpan.FromSeconds(10)))
+                                  });
 
             routeBuilder.MapRoute("parameterConstraintRoute",
                                   "api/{controller}/{*extra}",

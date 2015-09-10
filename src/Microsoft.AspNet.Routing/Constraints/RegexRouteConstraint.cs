@@ -12,6 +12,8 @@ namespace Microsoft.AspNet.Routing.Constraints
 {
     public class RegexRouteConstraint : IRouteConstraint
     {
+        private static readonly TimeSpan RegexMatchTimeout = TimeSpan.FromSeconds(10);
+
         public RegexRouteConstraint([NotNull] Regex regex)
         {
             Constraint = regex;
@@ -19,7 +21,10 @@ namespace Microsoft.AspNet.Routing.Constraints
 
         public RegexRouteConstraint([NotNull] string regexPattern)
         {
-            Constraint = new Regex(regexPattern, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+            Constraint = new Regex(
+                regexPattern,
+                RegexOptions.CultureInvariant | RegexOptions.IgnoreCase,
+                RegexMatchTimeout);
         }
 
         public Regex Constraint { get; private set; }
