@@ -9,31 +9,8 @@ namespace Microsoft.AspNet.Builder
     /// <summary>
     /// IApplicationBuilder extension methods for the ErrorPageMiddleware.
     /// </summary>
-    public static class ErrorPageExtensions
+    public static class DeveloperExceptionPageExtensions
     {
-        /// <summary>
-        /// Captures synchronous and asynchronous exceptions from the pipeline and generates HTML error responses.
-        /// Full error details are only displayed by default if 'host.AppMode' is set to 'development' in the IApplicationBuilder.Properties.
-        /// </summary>
-        /// <param name="builder"></param>
-        /// <returns></returns>
-        public static IApplicationBuilder UseErrorPage([NotNull] this IApplicationBuilder builder)
-        {
-            return builder.UseErrorPage(new ErrorPageOptions());
-        }
-
-        /// <summary>
-        /// Captures synchronous and asynchronous exceptions from the pipeline and generates HTML error responses.
-        /// Full error details are only displayed by default if 'host.AppMode' is set to 'development' in the IApplicationBuilder.Properties.
-        /// </summary>
-        /// <param name="builder"></param>
-        /// <param name="options"></param>
-        /// <returns></returns>
-        public static IApplicationBuilder UseErrorPage([NotNull] this IApplicationBuilder builder, ErrorPageOptions options)
-        {
-            return builder.UseMiddleware<DeveloperExceptionPageMiddleware>(options);
-        }
-
         /// <summary>
         /// Captures synchronous and asynchronous exceptions from the pipeline and generates HTML error responses.
         /// Full error details are only displayed by default if 'host.AppMode' is set to 'development' in the IApplicationBuilder.Properties.
