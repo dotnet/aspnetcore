@@ -20,6 +20,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
     /// </summary>
     public class RazorCompilationService : IRazorCompilationService
     {
+        private const string RazorErrorCode = "RZ1001";
         private readonly ICompilationService _compilationService;
         private readonly IMvcRazorHost _razorHost;
         private readonly IFileProvider _fileProvider;
@@ -102,6 +103,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         private DiagnosticMessage CreateDiagnosticMessage(RazorError error, string filePath)
         {
             return new DiagnosticMessage(
+                RazorErrorCode,
                 error.Message,
                 $"{error} ({error.Location.LineIndex},{error.Location.CharacterIndex}) {error.Message}",
                 filePath,
