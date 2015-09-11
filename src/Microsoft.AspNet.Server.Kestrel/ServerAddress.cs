@@ -14,6 +14,29 @@ namespace Microsoft.AspNet.Server.Kestrel
         public int Port { get; private set; }
         public string Scheme { get; private set; }
 
+        public override string ToString()
+        {
+            return Scheme.ToLowerInvariant() + "://" + Host.ToLowerInvariant() + ":" + Port.ToString(CultureInfo.InvariantCulture) + Path.ToLowerInvariant();
+        }
+
+        public override int GetHashCode()
+        {
+            return ToString().GetHashCode();
+        }
+
+        public override bool Equals(object obj)
+        {
+            var other = obj as ServerAddress;
+            if (other == null)
+            {
+                return false;
+            }
+            return string.Equals(Scheme, other.Scheme, StringComparison.OrdinalIgnoreCase)
+                && string.Equals(Host, other.Host, StringComparison.OrdinalIgnoreCase)
+                && Port == other.Port
+                && string.Equals(Path, other.Path, StringComparison.OrdinalIgnoreCase);
+        }
+
         public static ServerAddress FromUrl(string url)
         {
             url = url ?? string.Empty;
@@ -21,6 +44,17 @@ namespace Microsoft.AspNet.Server.Kestrel
             int schemeDelimiterStart = url.IndexOf("://", StringComparison.Ordinal);
             if (schemeDelimiterStart < 0)
             {
+                int port;
+                if (int.TryParse(url, NumberStyles.None, CultureInfo.InvariantCulture, out port))
+                {
+                    return new ServerAddress()
+                    {
+                        Scheme = "http",
+                        Host = "+",
+                        Port = port,
+                        Path = "/"
+                    };
+                }
                 return null;
             }
             int schemeDelimiterEnd = schemeDelimiterStart + "://".Length;

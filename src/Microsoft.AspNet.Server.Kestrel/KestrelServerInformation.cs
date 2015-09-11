@@ -3,35 +3,27 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNet.Server.Features;
 using Microsoft.Framework.Configuration;
 
 namespace Microsoft.AspNet.Server.Kestrel
 {
-    public class KestrelServerInformation : IKestrelServerInformation
+    public class KestrelServerInformation : IKestrelServerInformation, IServerAddressesFeature
     {
-        public KestrelServerInformation()
-        {
-            Addresses = new List<ServerAddress>();
-        }
-
-        public IList<ServerAddress> Addresses { get; private set; }
+        public ICollection<string> Addresses { get; } = new List<string>();
 
         public int ThreadCount { get; set; }
 
         public void Initialize(IConfiguration configuration)
         {
-            var urls = configuration["server.urls"];
-            if (string.IsNullOrEmpty(urls))
-            {
-                urls = "http://+:5000/";
-            }
+            var urls = configuration["server.urls"] ?? string.Empty;
             foreach (var url in urls.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
             {
-                var address = ServerAddress.FromUrl(url);
-                if (address != null)
-                {
-                    Addresses.Add(address);
-                }
+                Addresses.Add(url);
+            }
+            if (Addresses.Count == 0)
+            {
+                Addresses.Add("http://+:5000/");
             }
         }
     }

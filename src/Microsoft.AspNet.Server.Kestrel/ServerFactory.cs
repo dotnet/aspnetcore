@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Hosting.Server;
 using Microsoft.AspNet.Http.Features;
+using Microsoft.AspNet.Server.Features;
 using Microsoft.Dnx.Runtime;
 using Microsoft.Framework.Configuration;
 using Microsoft.Framework.Logging;
@@ -34,6 +35,7 @@ namespace Microsoft.AspNet.Server.Kestrel
             information.Initialize(configuration);
             var serverFeatures = new FeatureCollection();
             serverFeatures.Set<IKestrelServerInformation>(information);
+            serverFeatures.Set<IServerAddressesFeature>(information);
             return serverFeatures;
         }
 
@@ -63,18 +65,33 @@ namespace Microsoft.AspNet.Server.Kestrel
                 }
 
                 engine.Start(information.ThreadCount == 0 ? 1 : information.ThreadCount);
+                bool atLeastOneListener = false;
 
                 foreach (var address in information.Addresses)
                 {
-                    disposables.Push(engine.CreateServer(
-                        address.Scheme,
-                        address.Host,
-                        address.Port,
-                        async frame =>
-                        {
-                            var request = new ServerRequest(frame);
-                            await application.Invoke(request.Features).ConfigureAwait(false);
-                        }));
+                    var parsedAddress = ServerAddress.FromUrl(address);
+                    if (parsedAddress == null)
+                    {
+                        throw new FormatException("Unrecognized listening address: " + address);
+                    }
+                    else
+                    {
+                        atLeastOneListener = true;
+                        disposables.Push(engine.CreateServer(
+                            parsedAddress.Scheme,
+                            parsedAddress.Host,
+                            parsedAddress.Port,
+                            async frame =>
+                            {
+                                var request = new ServerRequest(frame);
+                                await application.Invoke(request.Features).ConfigureAwait(false);
+                            }));
+                    }
+                }
+
+                if (!atLeastOneListener)
+                {
+                    throw new InvalidOperationException("No recognized listening addresses were configured.");
                 }
 
                 return disposer;
