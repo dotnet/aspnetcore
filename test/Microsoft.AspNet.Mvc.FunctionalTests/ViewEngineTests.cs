@@ -31,7 +31,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 {
                     "ViewWithLayout",
 @"<layout>
-
 ViewWithLayout-Content
 </layout>"
                 };
@@ -39,7 +38,6 @@ ViewWithLayout-Content
                 {
                     "ViewWithFullPath",
 @"<layout>
-
 ViewWithFullPath-content
 </layout>"
                 };
@@ -47,10 +45,8 @@ ViewWithFullPath-content
                 {
                     "ViewWithNestedLayout",
 @"<layout>
-
 <nested-layout>
 /ViewEngine/ViewWithNestedLayout
-
 ViewWithNestedLayout-Content
 </nested-layout>
 </layout>"
@@ -119,9 +115,7 @@ test-value";
         {
             var expected =
 @"<title>Page title</title>
-
-partial-content
-component-content";
+partial-contentcomponent-content";
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
@@ -212,7 +206,6 @@ expander-partial";
                 {
                     "PartialViewWithNamePassedIn",
 @"<layout>
-
 ViewWithLayout-Content
 </layout>"
                 };
@@ -220,7 +213,6 @@ ViewWithLayout-Content
                 {
                     "ViewWithFullPath",
 @"<layout>
-
 ViewWithFullPath-content
 </layout>"
                 };
@@ -228,10 +220,8 @@ ViewWithFullPath-content
                 {
                     "ViewWithNestedLayout",
 @"<layout>
-
 <nested-layout>
 /PartialViewEngine/ViewWithNestedLayout
-
 ViewWithNestedLayout-Content
 </nested-layout>
 </layout>"
@@ -270,7 +260,6 @@ ViewWithNestedLayout-Content
         {
             // Arrange
             var expected = @"<title>viewstart-value</title>
-
 ~/Views/NestedViewStarts/NestedViewStarts/Layout.cshtml
 index-content";
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
@@ -288,8 +277,7 @@ index-content";
             get
             {
                 var expected1 =
- @"<language-layout>
-View With Layout
+ @"<language-layout>View With Layout
 </language-layout>";
 
                 yield return new[] { "en-GB", expected1 };
@@ -301,8 +289,7 @@ View With Layout
                 }
 
                 var expected2 =
- @"<fr-language-layout>
-View With Layout
+ @"<fr-language-layout>View With Layout
 </fr-language-layout>";
                 yield return new[] { "fr", expected2 };
 
@@ -352,11 +339,9 @@ View With Layout
             // Arrange
             var expected =
 @"<title>View With Component With Layout</title>
-
 Page Content
 <component-title>ViewComponent With Title</component-title>
-<component-body>
-Component With Layout</component-body>";
+<component-body>Component With Layout</component-body>";
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
@@ -402,10 +387,8 @@ Component With Layout</component-body>";
         {
             // Arrange
             var expected =
-@"<layout-for-viewstart-with-layout><layout-for-viewstart-with-layout>
-Partial that specifies Layout
-</layout-for-viewstart-with-layout>Partial that does not specify Layout
-</layout-for-viewstart-with-layout>";
+@"<layout-for-viewstart-with-layout><layout-for-viewstart-with-layout>Partial that specifies Layout
+</layout-for-viewstart-with-layout>Partial that does not specify Layout</layout-for-viewstart-with-layout>";
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
 
@@ -421,8 +404,7 @@ Partial that specifies Layout
         {
             // Arrange
             var expected =
-@"<layout-for-viewstart-with-layout><layout-for-viewstart-with-layout>
-Partial that specifies Layout
+@"<layout-for-viewstart-with-layout><layout-for-viewstart-with-layout>Partial that specifies Layout
 </layout-for-viewstart-with-layout>
 Partial that does not specify Layout
 </layout-for-viewstart-with-layout>";

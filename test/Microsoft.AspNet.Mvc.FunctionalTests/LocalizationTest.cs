@@ -30,8 +30,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             get
             {
                 var expected1 =
- @"<language-layout>
-en-gb-index
+ @"<language-layout>en-gb-index
 partial
 mypartial
 </language-layout>";
@@ -39,8 +38,7 @@ mypartial
                 yield return new[] { "en-GB", expected1 };
 
                 var expected2 =
- @"<fr-language-layout>
-fr-index
+ @"<fr-language-layout>fr-index
 fr-partial
 mypartial
 </fr-language-layout>";
@@ -50,8 +48,7 @@ mypartial
                 {
                     // https://github.com/aspnet/Mvc/issues/2759
                     var expected3 =
- @"<language-layout>
-index
+ @"<language-layout>index
 partial
 mypartial
 </language-layout>";

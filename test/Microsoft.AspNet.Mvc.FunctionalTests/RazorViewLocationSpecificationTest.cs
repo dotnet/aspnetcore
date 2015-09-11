@@ -46,8 +46,7 @@ _ViewStart that specifies partial Layout
         public async Task PartialLayoutPaths_SpecifiedInPage_GetResolvedByViewEngine(string actionName)
         {
             var expected =
-@"<non-shared>
-Layout specified in page
+@"<non-shared>Layout specified in page
 </non-shared>";
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
@@ -65,8 +64,7 @@ Layout specified in page
         public async Task NonPartialLayoutPaths_GetResolvedByViewEngine(string actionName)
         {
             var expected =
-@"<non-shared>
-Page With Non Partial Layout
+@"<non-shared>Page With Non Partial Layout
 </non-shared>";
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
             var client = server.CreateClient();
@@ -86,7 +84,6 @@ Page With Non Partial Layout
         {
             var expected =
 @"<layout>
-
 Non Shared Partial
 
 </layout>";

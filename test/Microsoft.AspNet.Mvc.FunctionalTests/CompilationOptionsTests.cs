@@ -25,12 +25,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 #if DNX451
             var expected =
 @"This method is running from DNX451
-
 This method is only defined in DNX451";
 #elif DNXCORE50
             var expected =
 @"This method is running from DNXCORE50
-
 This method is only defined in DNXCORE50";
 #endif
             var server = TestHelper.CreateServer(_app, SiteName, _configureServices);

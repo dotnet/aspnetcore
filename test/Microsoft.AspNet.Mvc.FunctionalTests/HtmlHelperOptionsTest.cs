@@ -65,7 +65,6 @@ False";
 <div class=""editor-field""><input class=""text-box single-line"" data-val=""true"" data-val-required=""The MyDate field is required."" id=""MyDate"" name=""MyDate"" type=""datetime"" value=""02/01/2000 03:04:05 &#x2B;00:00"" /> <ValidationInView class=""field-validation-valid"" data-valmsg-for=""MyDate"" data-valmsg-replace=""true""></ValidationInView></div>
 
 True
-
 <div class=""validation-summary-errors""><ValidationSummaryInPartialView>MySummary</ValidationSummaryInPartialView>
 <ul><li style=""display:none""></li>
 </ul></div>

@@ -23,7 +23,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             {
                 var expected = @"<div>
 2147483647
-
 viewstart-content
 <p class=""Hello world"">
 page-content
@@ -32,7 +31,6 @@ page-content
 
                 var expectedLineMappings = new[]
                 {
-                    Tuple.Create(90, 1, true),
                     Tuple.Create(92, 16, false),
                     Tuple.Create(108, 1, true),
                     Tuple.Create(0, 2, true),
@@ -52,30 +50,26 @@ page-content
 
                 var expected2 = @"<div>
 2147483647
-
 viewstart-content
 view-with-partial-content
-
 <p class=""class"">partial-content</p>
-
 <p class=""class"">partial-content</p>
 </div>";
                 var expectedLineMappings2 = new[]
                 {
-                    Tuple.Create(90, 1, true),
                     Tuple.Create(92, 16, false),
                     Tuple.Create(108, 1, true),
                     Tuple.Create(0, 26, true),
                     Tuple.Create(27, 39, false),
                     // Html.PartialAsync()
-                    Tuple.Create(27, 3, true),
+                    Tuple.Create(28, 2, true),
                     Tuple.Create(30, 8, true),
                     Tuple.Create(38, 4, false),
                     Tuple.Create(42, 1, true),
                     Tuple.Create(43, 20, true),
                     Tuple.Create(66, 1, true),
                     // Html.RenderPartial()
-                    Tuple.Create(27, 3, true),
+                    Tuple.Create(28, 2, true),
                     Tuple.Create(30, 8, true),
                     Tuple.Create(38, 4, false),
                     Tuple.Create(42, 1, true),
@@ -179,7 +173,6 @@ view-with-partial-content
             // Arrange - 1
             var expectedLineMappings = new[]
             {
-                Tuple.Create(90, 1, true),
                 Tuple.Create(92, 16, false),
                 Tuple.Create(108, 1, true),
                 Tuple.Create(0, 2, true),
