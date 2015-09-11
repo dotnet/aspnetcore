@@ -20,7 +20,6 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
     /// </summary>
     public class RazorCompilationService : IRazorCompilationService
     {
-        private const string RazorErrorCode = "RZ1001";
         private readonly ICompilationService _compilationService;
         private readonly IMvcRazorHost _razorHost;
         private readonly IFileProvider _fileProvider;
@@ -103,15 +102,15 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         private DiagnosticMessage CreateDiagnosticMessage(RazorError error, string filePath)
         {
             return new DiagnosticMessage(
-                RazorErrorCode,
-                error.Message,
-                $"{error} ({error.Location.LineIndex},{error.Location.CharacterIndex}) {error.Message}",
-                filePath,
-                DiagnosticMessageSeverity.Error,
-                error.Location.LineIndex + 1,
-                error.Location.CharacterIndex,
-                error.Location.LineIndex + 1,
-                error.Location.CharacterIndex + error.Length);
+                errorCode: null,
+                message: error.Message,
+                formattedMessage: $"{error} ({error.Location.LineIndex},{error.Location.CharacterIndex}) {error.Message}",
+                filePath: filePath,
+                severity: DiagnosticMessageSeverity.Error,
+                startLine: error.Location.LineIndex + 1,
+                startColumn: error.Location.CharacterIndex,
+                endLine: error.Location.LineIndex + 1,
+                endColumn: error.Location.CharacterIndex + error.Length);
         }
 
         private string ReadFileContentsSafely(string relativePath)
