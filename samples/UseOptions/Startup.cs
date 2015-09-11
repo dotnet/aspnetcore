@@ -9,9 +9,7 @@ namespace UseOptions
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddCors();
-            services.ConfigureCors(
-                options =>
+            services.AddCors(options =>
                     options.AddPolicy("allowSingleOrigin", builder => builder.WithOrigins("http://example.com")));
         }
 

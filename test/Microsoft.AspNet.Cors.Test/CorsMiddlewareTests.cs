@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Cors.Test
             // Arrange
             using (var server = TestServer.Create(app =>
             {
-                app.UseCors(builder => 
+                app.UseCors(builder =>
                     builder.WithOrigins("http://localhost:5001")
                            .WithMethods("PUT")
                            .WithHeaders("Header1")
@@ -70,8 +70,7 @@ namespace Microsoft.AspNet.Cors.Test
             },
             services =>
             {
-                services.AddCors();
-                services.ConfigureCors(options =>
+                services.AddCors(options =>
                 {
                     options.AddPolicy("customPolicy", policy);
                 });
@@ -129,7 +128,7 @@ namespace Microsoft.AspNet.Cors.Test
             // Arrange
             using (var server = TestServer.Create(app =>
             {
-                app.UseCors(builder => 
+                app.UseCors(builder =>
                     builder.WithOrigins("http://localhost:5001")
                            .WithMethods("PUT")
                            .WithHeaders("Header1")
@@ -156,7 +155,7 @@ namespace Microsoft.AspNet.Cors.Test
         [Fact]
         public async Task Uses_PolicyProvider_AsFallback()
         {
-            // Arrange 
+            // Arrange
             var corsService = Mock.Of<ICorsService>();
             var mockProvider = new Mock<ICorsPolicyProvider>();
             mockProvider.Setup(o => o.GetPolicyAsync(It.IsAny<HttpContext>(), It.IsAny<string>()))
@@ -184,7 +183,7 @@ namespace Microsoft.AspNet.Cors.Test
         [Fact]
         public async Task DoesNotSetHeaders_ForNoPolicy()
         {
-            // Arrange 
+            // Arrange
             var corsService = Mock.Of<ICorsService>();
             var mockProvider = new Mock<ICorsPolicyProvider>();
             mockProvider.Setup(o => o.GetPolicyAsync(It.IsAny<HttpContext>(), It.IsAny<string>()))
