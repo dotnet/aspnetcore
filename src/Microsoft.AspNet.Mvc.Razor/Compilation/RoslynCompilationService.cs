@@ -51,12 +51,13 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         /// The <see cref="ICompilerOptionsProvider"/> that provides Roslyn compilation settings.
         /// </param>
         /// <param name="host">The <see cref="IMvcRazorHost"/> that was used to generate the code.</param>
-        public RoslynCompilationService(IApplicationEnvironment environment,
-                                        IAssemblyLoadContextAccessor loaderAccessor,
-                                        ILibraryExporter libraryExporter,
-                                        ICompilerOptionsProvider compilerOptionsProvider,
-                                        IMvcRazorHost host,
-                                        IOptions<RazorViewEngineOptions> optionsAccessor)
+        public RoslynCompilationService(
+            IApplicationEnvironment environment,
+            IAssemblyLoadContextAccessor loaderAccessor,
+            ILibraryExporter libraryExporter,
+            ICompilerOptionsProvider compilerOptionsProvider,
+            IMvcRazorHost host,
+            IOptions<RazorViewEngineOptions> optionsAccessor)
         {
             _environment = environment;
             _loader = loaderAccessor.GetLoadContext(typeof(RoslynCompilationService).GetTypeInfo().Assembly);
@@ -157,7 +158,11 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                     sourceFileContent = ReadFileContentsSafely(_fileProvider, sourceFilePath);
                 }
 
-                var compilationFailure = new CompilationFailure(sourceFilePath, sourceFileContent, compilationContent, group.Select(d => d.ToDiagnosticMessage(_environment.RuntimeFramework)));
+                var compilationFailure = new CompilationFailure(
+                    sourceFilePath,
+                    sourceFileContent,
+                    compilationContent,
+                    group.Select(d => d.ToDiagnosticMessage(_environment.RuntimeFramework)));
 
                 failures.Add(compilationFailure);
             }
