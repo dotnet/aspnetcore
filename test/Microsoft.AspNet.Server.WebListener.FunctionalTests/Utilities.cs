@@ -18,6 +18,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Features;
+using Microsoft.AspNet.Server.Features;
 using Microsoft.Net.Http.Server;
 
 namespace Microsoft.AspNet.Server.WebListener
@@ -88,7 +89,7 @@ namespace Microsoft.AspNet.Server.WebListener
         {
             var factory = new ServerFactory(loggerFactory: null);
             var serverFeatures = factory.Initialize(configuration: null);
-            serverFeatures.Get<Microsoft.Net.Http.Server.WebListener>().UrlPrefixes.Add(UrlPrefix.Create(scheme, host, port, path));
+            serverFeatures.Get<IServerAddressesFeature>().Addresses.Add(UrlPrefix.Create(scheme, host, port, path).ToString());
             return factory.Start(serverFeatures, app);
         }
     }

@@ -2,6 +2,7 @@
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
+using Microsoft.AspNet.Server.Features;
 using Microsoft.Framework.Logging;
 
 namespace HotAddSample
@@ -15,8 +16,8 @@ namespace HotAddSample
         {
             loggerfactory.AddConsole(LogLevel.Information);
 
-            var listener = app.ServerFeatures.Get<Microsoft.Net.Http.Server.WebListener>();
-            listener.UrlPrefixes.Add("http://localhost:12346/pathBase/");
+            var addresses = app.ServerFeatures.Get<IServerAddressesFeature>().Addresses;
+            addresses.Add("http://localhost:12346/pathBase/");
 
             app.Use(async (context, next) =>
             {
@@ -28,7 +29,7 @@ namespace HotAddSample
                     await context.Response.WriteAsync("<html><body>");
                     try
                     {
-                        listener.UrlPrefixes.Add(toAdd);
+                        addresses.Add(toAdd);
                         await context.Response.WriteAsync("Added: " + toAdd);
                     }
                     catch (Exception ex)
@@ -52,7 +53,7 @@ namespace HotAddSample
                 {
                     context.Response.ContentType = "text/html";
                     await context.Response.WriteAsync("<html><body>");
-                    if (listener.UrlPrefixes.Remove(toRemove))
+                    if (addresses.Remove(toRemove))
                     {
                         await context.Response.WriteAsync("Removed: " + toRemove);
                     }
@@ -72,7 +73,7 @@ namespace HotAddSample
                 context.Response.ContentType = "text/html";
                 await context.Response.WriteAsync("<html><body>");
                 await context.Response.WriteAsync("Listening on these prefixes: <br>");
-                foreach (var prefix in listener.UrlPrefixes)
+                foreach (var prefix in addresses)
                 {
                     await context.Response.WriteAsync("<a href=\"" + prefix + "\">" + prefix + "</a> <a href=\"?remove=" + prefix + "\">(remove)</a><br>");
                 }

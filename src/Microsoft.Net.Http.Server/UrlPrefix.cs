@@ -122,6 +122,12 @@ namespace Microsoft.Net.Http.Server
             int delimiterStart1 = whole.IndexOf("://", StringComparison.Ordinal);
             if (delimiterStart1 < 0)
             {
+                int aPort;
+                if (int.TryParse(whole, NumberStyles.None, CultureInfo.InvariantCulture, out aPort))
+                {
+                    return UrlPrefix.Create("http", "localhost", aPort, "/");
+                }
+
                 throw new FormatException("Invalid prefix, missing scheme separator: " + prefix);
             }
             int delimiterEnd1 = delimiterStart1 + "://".Length;

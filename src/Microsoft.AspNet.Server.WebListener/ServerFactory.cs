@@ -35,10 +35,12 @@
 // limitations under the License.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Hosting.Server;
 using Microsoft.AspNet.Http.Features;
+using Microsoft.AspNet.Server.Features;
 using Microsoft.Framework.Configuration;
 using Microsoft.Framework.Logging;
 using Microsoft.Net.Http.Server;
@@ -67,10 +69,10 @@ namespace Microsoft.AspNet.Server.WebListener
         public IFeatureCollection Initialize(IConfiguration configuration)
         {
             Microsoft.Net.Http.Server.WebListener listener = new Microsoft.Net.Http.Server.WebListener(_loggerFactory);
-            ParseAddresses(configuration, listener);
             var serverFeatures = new FeatureCollection();
             serverFeatures.Set(listener);
             serverFeatures.Set(new MessagePump(listener, _loggerFactory));
+            serverFeatures.Set(SplitAddresses(configuration));
             return serverFeatures;
         }
 
@@ -96,22 +98,38 @@ namespace Microsoft.AspNet.Server.WebListener
                 throw new InvalidOperationException("messagePump");
             }
 
+            var addressesFeature = serverFeatures.Get<IServerAddressesFeature>();
+            if (addressesFeature == null)
+            {
+                throw new InvalidOperationException("IServerAddressesFeature");
+            }
+
+            ParseAddresses(addressesFeature.Addresses, messagePump.Listener);
+
             messagePump.Start(app);
             return messagePump;
         }
 
-        private void ParseAddresses(IConfiguration config, Microsoft.Net.Http.Server.WebListener listener)
+        private IServerAddressesFeature SplitAddresses(IConfiguration config)
         {
-            // TODO: Key format?
+            var addressesFeature = new ServerAddressesFeature();
             if (config != null && !string.IsNullOrEmpty(config["server.urls"]))
             {
                 var urls = config["server.urls"];
-                foreach (var value in urls.Split(';'))
+                foreach (var value in urls.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
                 {
-                    listener.UrlPrefixes.Add(UrlPrefix.Create(value));
+                    addressesFeature.Addresses.Add(value);
                 }
             }
-            // TODO: look for just a port option?
+            return addressesFeature;
+        }
+
+        private void ParseAddresses(ICollection<string> addresses, Microsoft.Net.Http.Server.WebListener listener)
+        {
+            foreach (var value in addresses)
+            {
+                listener.UrlPrefixes.Add(UrlPrefix.Create(value));
+            }
         }
     }
 }
