@@ -8,8 +8,6 @@ using System.Text;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.DataProtection;
 using Microsoft.AspNet.Http;
-using Microsoft.Framework.Caching.Distributed;
-using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
@@ -128,13 +126,6 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
 
                     Options.ConfigurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(Options.MetadataAddress, new OpenIdConnectConfigurationRetriever(), Backchannel);
                 }
-            }
-
-            if (Options.CacheNonces && Options.NonceCache == null)
-            {
-                // Use the global distributed cache if the user has not provided his own instance.
-                // Note: GetRequiredService will throw an exception if caching services have not been registered.
-                Options.NonceCache = services.GetRequiredService<IDistributedCache>();
             }
         }
 

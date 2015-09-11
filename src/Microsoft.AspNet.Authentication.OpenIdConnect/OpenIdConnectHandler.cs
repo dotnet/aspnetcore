@@ -16,7 +16,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Http.Features.Authentication;
-using Microsoft.Framework.Caching.Distributed;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
@@ -203,23 +202,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             if (Options.ProtocolValidator.RequireNonce)
             {
                 message.Nonce = Options.ProtocolValidator.GenerateNonce();
-                if (Options.CacheNonces)
-                {
-                    if (await Options.NonceCache.GetAsync(message.Nonce) != null)
-                    {
-                        Logger.LogError(Resources.OIDCH_0033_NonceAlreadyExists, message.Nonce);
-                        throw new OpenIdConnectProtocolException(string.Format(CultureInfo.InvariantCulture, Resources.OIDCH_0033_NonceAlreadyExists, message.Nonce));
-                    }
-
-                    await Options.NonceCache.SetAsync(message.Nonce, new byte[0], new DistributedCacheEntryOptions
-                    {
-                        AbsoluteExpirationRelativeToNow = Options.ProtocolValidator.NonceLifetime
-                    });
-                }
-                else
-                {
-                    WriteNonceCookie(message.Nonce);
-                }
+                WriteNonceCookie(message.Nonce);
             }
 
             GenerateCorrelationId(properties);
@@ -1021,23 +1004,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             string nonce = jwt?.Payload.Nonce;
             if (!string.IsNullOrEmpty(nonce))
             {
-                if (Options.CacheNonces)
-                {
-                    if (await Options.NonceCache.GetAsync(nonce) != null)
-                    {
-                        await Options.NonceCache.RemoveAsync(nonce);
-                    }
-                    else
-                    {
-                        // If the nonce cannot be removed, it was
-                        // already used and MUST be rejected.
-                        nonce = null;
-                    }
-                }
-                else
-                {
-                    nonce = ReadNonceCookie(nonce);
-                }
+                nonce = ReadNonceCookie(nonce);
             }
 
             var protocolValidationContext = new OpenIdConnectProtocolValidationContext

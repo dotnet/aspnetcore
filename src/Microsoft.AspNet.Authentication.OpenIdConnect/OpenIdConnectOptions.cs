@@ -9,7 +9,6 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
-using Microsoft.Framework.Caching.Distributed;
 using Microsoft.Framework.WebEncoders;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
@@ -132,19 +131,6 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         /// Gets or sets the discovery endpoint for obtaining metadata
         /// </summary>
         public string MetadataAddress { get; set; }
-
-        /// <summary>
-        /// The OpenIdConnect protocol http://openid.net/specs/openid-connect-core-1_0.html
-        /// recommends adding a nonce to a request as a mitigation against replay attacks when requesting id_tokens.
-        /// By default the runtime uses cookies with unique names generated from a hash of the nonce.
-        /// </summary>
-        public IDistributedCache NonceCache { get; set; }
-
-        /// <summary>
-        /// Gets or sets the value indicating whether nonces should be stored in the distributed cache or not.
-        /// The default value, <c>false</c>, is used to store nonces in client cookies.
-        /// </summary>
-        public bool CacheNonces { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="IOpenIdConnectEvents"/> to notify when processing OpenIdConnect messages.
