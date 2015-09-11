@@ -12,6 +12,7 @@ using Microsoft.AspNet.Hosting.Startup;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Features.Internal;
+using Microsoft.AspNet.Server.Features;
 using Microsoft.Framework.Configuration;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
@@ -94,6 +95,15 @@ namespace Microsoft.AspNet.Hosting.Internal
                         await application(httpContext);
                     }
                 });
+
+            var serverAddresses = _serverInstance.Get<IServerAddressesFeature>();
+            if (serverAddresses != null)
+            {
+                foreach (var address in serverAddresses.Addresses)
+                {
+                    logger.LogInformation("Now listening on: " + address);
+                }
+            }
 
             _applicationLifetime.NotifyStarted();
 
