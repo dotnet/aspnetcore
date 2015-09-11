@@ -3,8 +3,6 @@
 
 using System.Reflection;
 using System.Resources;
-using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("Microsoft.Framework.Localization.Test")]
 [assembly: AssemblyMetadata("Serviceable", "True")]
 [assembly: NeutralResourcesLanguage("en-us")]
