@@ -8,7 +8,6 @@ using System.Linq;
 using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Text;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.CodeGenerators
 {
@@ -240,28 +239,58 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
         }
 
         // Writes a method invocation for the given instance name.
-        public CSharpCodeWriter WriteInstanceMethodInvocation([NotNull] string instanceName,
-                                                              [NotNull] string methodName,
+        public CSharpCodeWriter WriteInstanceMethodInvocation(string instanceName,
+                                                              string methodName,
                                                               params string[] parameters)
         {
+            if (instanceName == null)
+            {
+                throw new ArgumentNullException(nameof(instanceName));
+            }
+
+            if (methodName == null)
+            {
+                throw new ArgumentNullException(nameof(methodName));
+            }
+
             return WriteInstanceMethodInvocation(instanceName, methodName, endLine: true, parameters: parameters);
         }
 
         // Writes a method invocation for the given instance name.
-        public CSharpCodeWriter WriteInstanceMethodInvocation([NotNull] string instanceName,
-                                                              [NotNull] string methodName,
+        public CSharpCodeWriter WriteInstanceMethodInvocation(string instanceName,
+                                                              string methodName,
                                                               bool endLine,
                                                               params string[] parameters)
         {
+            if (instanceName == null)
+            {
+                throw new ArgumentNullException(nameof(instanceName));
+            }
+
+            if (methodName == null)
+            {
+                throw new ArgumentNullException(nameof(methodName));
+            }
+
             return WriteMethodInvocation(
                 string.Format(CultureInfo.InvariantCulture, InstanceMethodFormat, instanceName, methodName),
                 endLine,
                 parameters);
         }
 
-        public CSharpCodeWriter WriteStartInstanceMethodInvocation([NotNull] string instanceName,
-                                                                   [NotNull] string methodName)
+        public CSharpCodeWriter WriteStartInstanceMethodInvocation(string instanceName,
+                                                                   string methodName)
         {
+            if (instanceName == null)
+            {
+                throw new ArgumentNullException(nameof(instanceName));
+            }
+
+            if (methodName == null)
+            {
+                throw new ArgumentNullException(nameof(methodName));
+            }
+
             return WriteStartMethodInvocation(
                 string.Format(CultureInfo.InvariantCulture, InstanceMethodFormat, instanceName, methodName));
         }

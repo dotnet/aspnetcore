@@ -5,15 +5,18 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Parser
 {
     internal class WhiteSpaceRewriter : MarkupRewriter
     {
-        public WhiteSpaceRewriter([NotNull] Action<SpanBuilder, SourceLocation, string> markupSpanFactory)
+        public WhiteSpaceRewriter(Action<SpanBuilder, SourceLocation, string> markupSpanFactory)
             : base(markupSpanFactory)
         {
+            if (markupSpanFactory == null)
+            {
+                throw new ArgumentNullException(nameof(markupSpanFactory));
+            }
         }
 
         protected override bool CanRewrite(Block block)

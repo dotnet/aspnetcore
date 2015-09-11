@@ -1,8 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNet.Razor.Chunks;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
 {
@@ -10,11 +10,26 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
     {
         private CSharpCodeVisitor _csharpCodeVisitor;
 
-        public CSharpTypeMemberVisitor([NotNull] CSharpCodeVisitor csharpCodeVisitor,
-                                       [NotNull] CSharpCodeWriter writer,
-                                       [NotNull] CodeGeneratorContext context)
+        public CSharpTypeMemberVisitor(CSharpCodeVisitor csharpCodeVisitor,
+                                       CSharpCodeWriter writer,
+                                       CodeGeneratorContext context)
             : base(writer, context)
         {
+            if (csharpCodeVisitor == null)
+            {
+                throw new ArgumentNullException(nameof(csharpCodeVisitor));
+            }
+
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             _csharpCodeVisitor = csharpCodeVisitor;
         }
 

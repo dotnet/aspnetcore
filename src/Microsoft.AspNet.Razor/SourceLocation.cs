@@ -127,8 +127,13 @@ namespace Microsoft.AspNet.Razor
         /// <param name="left">The <see cref="SourceLocation"/> to advance.</param>
         /// <param name="text">The <see cref="string"/> to advance <paramref name="left"/> by.</param>
         /// <returns>The advanced <see cref="SourceLocation"/>.</returns>
-        public static SourceLocation Advance(SourceLocation left, [NotNull] string text)
+        public static SourceLocation Advance(SourceLocation left, string text)
         {
+            if (text == null)
+            {
+                throw new ArgumentNullException(nameof(text));
+            }
+
             var tracker = new SourceLocationTracker(left);
             tracker.UpdateLocation(text);
             return tracker.CurrentLocation;

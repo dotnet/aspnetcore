@@ -13,7 +13,6 @@ using System.Text;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Tokenizer
 {
@@ -22,8 +21,13 @@ namespace Microsoft.AspNet.Razor.Tokenizer
         where TSymbol : SymbolBase<TSymbolType>
     {
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "TextDocumentReader does not require disposal")]
-        protected Tokenizer([NotNull] ITextDocument source)
+        protected Tokenizer(ITextDocument source)
         {
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
             Source = new TextDocumentReader(source);
             Buffer = new StringBuilder();
             CurrentErrors = new List<RazorError>();

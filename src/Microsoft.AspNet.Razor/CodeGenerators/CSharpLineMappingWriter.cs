@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.CodeGenerators
 {
@@ -17,8 +16,13 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
         private SourceLocation _generatedLocation;
         private int _generatedContentLength;
 
-        private CSharpLineMappingWriter([NotNull] CSharpCodeWriter writer, bool addLineMappings)
+        private CSharpLineMappingWriter(CSharpCodeWriter writer, bool addLineMappings)
         {
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
             _writer = writer;
             _addLineMapping = addLineMappings;
             _startIndent = _writer.CurrentIndent;
@@ -54,11 +58,16 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
         /// <param name="documentLocation">The <see cref="SourceLocation"/> of the Razor content being mapping.</param>
         /// <param name="sourceFileName">The input file path.</param>
         public CSharpLineMappingWriter(
-            [NotNull] CSharpCodeWriter writer,
-            [NotNull] SourceLocation documentLocation,
-            [NotNull] string sourceFileName)
+            CSharpCodeWriter writer,
+            SourceLocation documentLocation,
+            string sourceFileName)
             : this(writer, addLineMappings: false)
         {
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
             _writePragmas = true;
             _writer.WriteLineNumberDirective(documentLocation, sourceFileName);
         }

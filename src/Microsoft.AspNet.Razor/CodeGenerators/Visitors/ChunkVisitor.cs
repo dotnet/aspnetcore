@@ -1,17 +1,27 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Razor.Chunks;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
 {
     public abstract class ChunkVisitor<TWriter> : IChunkVisitor
         where TWriter : CodeWriter
     {
-        public ChunkVisitor([NotNull] TWriter writer, [NotNull] CodeGeneratorContext context)
+        public ChunkVisitor(TWriter writer, CodeGeneratorContext context)
         {
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             Writer = writer;
             Context = context;
         }
@@ -19,16 +29,26 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
         protected TWriter Writer { get; private set; }
         protected CodeGeneratorContext Context { get; private set; }
 
-        public void Accept([NotNull] IList<Chunk> chunks)
+        public void Accept(IList<Chunk> chunks)
         {
+            if (chunks == null)
+            {
+                throw new ArgumentNullException(nameof(chunks));
+            }
+
             foreach (Chunk chunk in chunks)
             {
                 Accept(chunk);
             }
         }
 
-        public virtual void Accept([NotNull] Chunk chunk)
+        public virtual void Accept(Chunk chunk)
         {
+            if (chunk == null)
+            {
+                throw new ArgumentNullException(nameof(chunk));
+            }
+
             if (chunk is LiteralChunk)
             {
                 Visit((LiteralChunk)chunk);

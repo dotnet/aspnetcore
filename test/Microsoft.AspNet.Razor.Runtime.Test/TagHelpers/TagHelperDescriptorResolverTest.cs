@@ -1381,7 +1381,6 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
         [Theory]
         [InlineData("", 1)]
-        [InlineData(null, 1)]
         [InlineData("*,", 2)]
         [InlineData("?,", 2)]
         [InlineData(",", 1)]

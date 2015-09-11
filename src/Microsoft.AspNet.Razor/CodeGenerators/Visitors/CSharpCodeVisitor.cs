@@ -1,11 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Globalization;
 using System.Linq;
 using Microsoft.AspNet.Razor.Chunks;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
 {
@@ -18,9 +18,19 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
         private CSharpPaddingBuilder _paddingBuilder;
         private CSharpTagHelperCodeRenderer _tagHelperCodeRenderer;
 
-        public CSharpCodeVisitor([NotNull] CSharpCodeWriter writer, [NotNull] CodeGeneratorContext context)
+        public CSharpCodeVisitor(CSharpCodeWriter writer, CodeGeneratorContext context)
             : base(writer, context)
         {
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             _paddingBuilder = new CSharpPaddingBuilder(context.Host);
         }
 
@@ -35,9 +45,13 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
 
                 return _tagHelperCodeRenderer;
             }
-            [param: NotNull]
             set
             {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
                 _tagHelperCodeRenderer = value;
             }
         }

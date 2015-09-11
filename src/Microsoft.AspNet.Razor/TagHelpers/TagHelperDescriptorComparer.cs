@@ -61,8 +61,13 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         }
 
         /// <inheritdoc />
-        public virtual int GetHashCode([NotNull] TagHelperDescriptor descriptor)
+        public virtual int GetHashCode(TagHelperDescriptor descriptor)
         {
+            if (descriptor == null)
+            {
+                throw new ArgumentNullException(nameof(descriptor));
+            }
+
             var hashCodeCombiner = HashCodeCombiner.Start()
                 .Add(descriptor.TypeName, StringComparer.Ordinal)
                 .Add(descriptor.TagName, StringComparer.OrdinalIgnoreCase)

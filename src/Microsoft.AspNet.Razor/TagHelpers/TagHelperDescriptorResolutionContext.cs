@@ -1,8 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.TagHelpers
 {
@@ -24,9 +24,19 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// <see cref="TagHelperDescriptor"/>s.</param>
         /// <param name="errorSink">Used to aggregate <see cref="RazorError"/>s.</param>
         public TagHelperDescriptorResolutionContext(
-            [NotNull] IEnumerable<TagHelperDirectiveDescriptor> directiveDescriptors,
-            [NotNull] ErrorSink errorSink)
+            IEnumerable<TagHelperDirectiveDescriptor> directiveDescriptors,
+            ErrorSink errorSink)
         {
+            if (directiveDescriptors == null)
+            {
+                throw new ArgumentNullException(nameof(directiveDescriptors));
+            }
+
+            if (errorSink == null)
+            {
+                throw new ArgumentNullException(nameof(errorSink));
+            }
+
             DirectiveDescriptors = new List<TagHelperDirectiveDescriptor>(directiveDescriptors);
             ErrorSink = errorSink;
         }

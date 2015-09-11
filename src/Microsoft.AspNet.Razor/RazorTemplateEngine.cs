@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -11,7 +12,6 @@ using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.CodeGenerators;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Text;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor
 {
@@ -30,8 +30,13 @@ namespace Microsoft.AspNet.Razor
         /// <param name="host">
         /// The host which defines the environment in which the generated template code will live.
         /// </param>
-        public RazorTemplateEngine([NotNull] RazorEngineHost host)
+        public RazorTemplateEngine(RazorEngineHost host)
         {
+            if (host == null)
+            {
+                throw new ArgumentNullException(nameof(host));
+            }
+
             Host = host;
         }
 
@@ -40,8 +45,13 @@ namespace Microsoft.AspNet.Razor
         /// </summary>
         public RazorEngineHost Host { get; }
 
-        public ParserResults ParseTemplate([NotNull] ITextBuffer input)
+        public ParserResults ParseTemplate(ITextBuffer input)
         {
+            if (input == null)
+            {
+                throw new ArgumentNullException(nameof(input));
+            }
+
             return ParseTemplate(input, cancelToken: null);
         }
 
@@ -67,15 +77,25 @@ namespace Microsoft.AspNet.Razor
             "Microsoft.Reliability", "CA2000:Dispose objects before losing scope",
             Justification = "Input object would be disposed if we dispose the wrapper.  We don't own the input so " +
             "we don't want to dispose it")]
-        public ParserResults ParseTemplate([NotNull] ITextBuffer input, CancellationToken? cancelToken)
+        public ParserResults ParseTemplate(ITextBuffer input, CancellationToken? cancelToken)
         {
+            if (input == null)
+            {
+                throw new ArgumentNullException(nameof(input));
+            }
+
             return ParseTemplateCore(input.ToDocument(), sourceFileName: null, cancelToken: cancelToken);
         }
 
         // See ParseTemplate(ITextBuffer, CancellationToken?),
         // this overload simply wraps a TextReader in a TextBuffer (see ITextBuffer and BufferingTextReader)
-        public ParserResults ParseTemplate([NotNull] TextReader input, string sourceFileName)
+        public ParserResults ParseTemplate(TextReader input, string sourceFileName)
         {
+            if (input == null)
+            {
+                throw new ArgumentNullException(nameof(input));
+            }
+
             return ParseTemplateCore(new SeekableTextReader(input), sourceFileName, cancelToken: null);
         }
 
@@ -84,29 +104,49 @@ namespace Microsoft.AspNet.Razor
             "CA2000:Dispose objects before losing scope",
             Justification = "Input object would be disposed if we dispose the wrapper. We don't own the input so " +
             "we don't want to dispose it")]
-        public ParserResults ParseTemplate([NotNull] TextReader input, CancellationToken? cancelToken)
+        public ParserResults ParseTemplate(TextReader input, CancellationToken? cancelToken)
         {
+            if (input == null)
+            {
+                throw new ArgumentNullException(nameof(input));
+            }
+
             return ParseTemplateCore(new SeekableTextReader(input), sourceFileName: null, cancelToken: cancelToken);
         }
 
         protected internal virtual ParserResults ParseTemplateCore(
-            [NotNull] ITextDocument input,
+            ITextDocument input,
             string sourceFileName,
             CancellationToken? cancelToken)
         {
+            if (input == null)
+            {
+                throw new ArgumentNullException(nameof(input));
+            }
+
             // Construct the parser
             var parser = CreateParser(sourceFileName);
             Debug.Assert(parser != null);
             return parser.Parse(input);
         }
 
-        public GeneratorResults GenerateCode([NotNull] ITextBuffer input)
+        public GeneratorResults GenerateCode(ITextBuffer input)
         {
+            if (input == null)
+            {
+                throw new ArgumentNullException(nameof(input));
+            }
+
             return GenerateCode(input, className: null, rootNamespace: null, sourceFileName: null, cancelToken: null);
         }
 
-        public GeneratorResults GenerateCode([NotNull] ITextBuffer input, CancellationToken? cancelToken)
+        public GeneratorResults GenerateCode(ITextBuffer input, CancellationToken? cancelToken)
         {
+            if (input == null)
+            {
+                throw new ArgumentNullException(nameof(input));
+            }
+
             return GenerateCode(
                 input,
                 className: null,
@@ -116,11 +156,16 @@ namespace Microsoft.AspNet.Razor
         }
 
         public GeneratorResults GenerateCode(
-            [NotNull] ITextBuffer input,
+            ITextBuffer input,
             string className,
             string rootNamespace,
             string sourceFileName)
         {
+            if (input == null)
+            {
+                throw new ArgumentNullException(nameof(input));
+            }
+
             return GenerateCode(input, className, rootNamespace, sourceFileName, cancelToken: null);
         }
 
@@ -163,12 +208,17 @@ namespace Microsoft.AspNet.Razor
             Justification = "Input object would be disposed if we dispose the wrapper. We don't own the input so " +
             "we don't want to dispose it")]
         public GeneratorResults GenerateCode(
-            [NotNull] ITextBuffer input,
+            ITextBuffer input,
             string className,
             string rootNamespace,
             string sourceFileName,
             CancellationToken? cancelToken)
         {
+            if (input == null)
+            {
+                throw new ArgumentNullException(nameof(input));
+            }
+
             return GenerateCodeCore(
                 input.ToDocument(),
                 className,
@@ -179,13 +229,23 @@ namespace Microsoft.AspNet.Razor
         }
 
         // See GenerateCode override which takes ITextBuffer, and BufferingTextReader for details.
-        public GeneratorResults GenerateCode([NotNull] TextReader input)
+        public GeneratorResults GenerateCode(TextReader input)
         {
+            if (input == null)
+            {
+                throw new ArgumentNullException(nameof(input));
+            }
+
             return GenerateCode(input, className: null, rootNamespace: null, sourceFileName: null, cancelToken: null);
         }
 
-        public GeneratorResults GenerateCode([NotNull] TextReader input, CancellationToken? cancelToken)
+        public GeneratorResults GenerateCode(TextReader input, CancellationToken? cancelToken)
         {
+            if (input == null)
+            {
+                throw new ArgumentNullException(nameof(input));
+            }
+
             return GenerateCode(
                 input,
                 className: null,
@@ -195,11 +255,16 @@ namespace Microsoft.AspNet.Razor
         }
 
         public GeneratorResults GenerateCode(
-            [NotNull] TextReader input,
+            TextReader input,
             string className,
 
             string rootNamespace, string sourceFileName)
         {
+            if (input == null)
+            {
+                throw new ArgumentNullException(nameof(input));
+            }
+
             return GenerateCode(input, className, rootNamespace, sourceFileName, cancelToken: null);
         }
 
@@ -221,11 +286,16 @@ namespace Microsoft.AspNet.Razor
         /// debugging.
         /// </remarks>
         public GeneratorResults GenerateCode(
-            [NotNull] Stream inputStream,
+            Stream inputStream,
             string className,
             string rootNamespace,
             string sourceFileName)
         {
+            if (inputStream == null)
+            {
+                throw new ArgumentNullException(nameof(inputStream));
+            }
+
             MemoryStream memoryStream = null;
             string checksum = null;
             try
@@ -280,12 +350,17 @@ namespace Microsoft.AspNet.Razor
             Justification = "Input object would be disposed if we dispose the wrapper. We don't own the input so " +
             "we don't want to dispose it")]
         public GeneratorResults GenerateCode(
-            [NotNull] TextReader input,
+            TextReader input,
             string className,
             string rootNamespace,
             string sourceFileName,
             CancellationToken? cancelToken)
         {
+            if (input == null)
+            {
+                throw new ArgumentNullException(nameof(input));
+            }
+
             return GenerateCodeCore(
                 new SeekableTextReader(input),
                 className,
@@ -296,13 +371,18 @@ namespace Microsoft.AspNet.Razor
         }
 
         protected internal virtual GeneratorResults GenerateCodeCore(
-            [NotNull] ITextDocument input,
+            ITextDocument input,
             string className,
             string rootNamespace,
             string sourceFileName,
             string checksum,
             CancellationToken? cancelToken)
         {
+            if (input == null)
+            {
+                throw new ArgumentNullException(nameof(input));
+            }
+
             className = (className ?? Host.DefaultClassName) ?? DefaultClassName;
             rootNamespace = (rootNamespace ?? Host.DefaultNamespace) ?? DefaultNamespace;
 

@@ -1,10 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNet.Razor.Chunks;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
 {
@@ -34,11 +34,21 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
         /// <see cref="CSharpTagHelperAttributeValueVisitor"/> is writing the value.
         /// </param>
         public CSharpTagHelperAttributeValueVisitor(
-            [NotNull] CSharpCodeWriter writer,
-            [NotNull] CodeGeneratorContext context,
+            CSharpCodeWriter writer,
+            CodeGeneratorContext context,
             string attributeTypeName)
             : base(writer, context)
         {
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             _attributeTypeName = attributeTypeName;
         }
 

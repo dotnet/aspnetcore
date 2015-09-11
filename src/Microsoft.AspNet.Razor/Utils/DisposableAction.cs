@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Utils
 {
@@ -11,8 +10,13 @@ namespace Microsoft.AspNet.Razor.Utils
         private Action _action;
         private bool _invoked;
 
-        public DisposableAction([NotNull] Action action)
+        public DisposableAction(Action action)
         {
+            if (action == null)
+            {
+                throw new ArgumentNullException(nameof(action));
+            }
+
             _action = action;
         }
 

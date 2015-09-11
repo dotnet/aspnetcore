@@ -1,12 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Tokenizer
 {
@@ -15,9 +15,14 @@ namespace Microsoft.AspNet.Razor.Tokenizer
     {
         private const char TransitionChar = '@';
 
-        public HtmlTokenizer([NotNull] ITextDocument source)
+        public HtmlTokenizer(ITextDocument source)
             : base(source)
         {
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
             CurrentState = Data;
         }
 
@@ -158,7 +163,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer
 
                     Debug.Fail("Unexpected symbol!");
 #else
-                Debug.Assert(false, "Unexpected symbol");
+                    Debug.Assert(false, "Unexpected symbol");
 #endif
                     return EndSymbol(HtmlSymbolType.Unknown);
             }

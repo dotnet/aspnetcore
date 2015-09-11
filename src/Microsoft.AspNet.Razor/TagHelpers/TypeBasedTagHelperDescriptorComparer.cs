@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -47,8 +47,13 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         }
 
         /// <inheritdoc />
-        public int GetHashCode([NotNull] TagHelperDescriptor descriptor)
+        public int GetHashCode(TagHelperDescriptor descriptor)
         {
+            if (descriptor == null)
+            {
+                throw new ArgumentNullException(nameof(descriptor));
+            }
+
             return HashCodeCombiner.Start()
                 .Add(descriptor.AssemblyName, StringComparer.Ordinal)
                 .Add(descriptor.TypeName, StringComparer.Ordinal)

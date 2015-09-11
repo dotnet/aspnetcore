@@ -8,7 +8,6 @@ using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.CodeGenerators;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.TagHelpers;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor
 {
@@ -54,17 +53,31 @@ namespace Microsoft.AspNet.Razor
         /// Creates a host which uses the specified code language and the HTML markup language
         /// </summary>
         /// <param name="codeLanguage">The code language to use</param>
-        public RazorEngineHost([NotNull] RazorCodeLanguage codeLanguage)
+        public RazorEngineHost(RazorCodeLanguage codeLanguage)
             : this(codeLanguage, () => new HtmlMarkupParser())
         {
+            if (codeLanguage == null)
+            {
+                throw new ArgumentNullException(nameof(codeLanguage));
+            }
         }
 
         [SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors", Justification = "The code path is safe, it is a property setter and not dependent on other state")]
         public RazorEngineHost(
-            [NotNull] RazorCodeLanguage codeLanguage,
-            [NotNull] Func<ParserBase> markupParserFactory)
+            RazorCodeLanguage codeLanguage,
+            Func<ParserBase> markupParserFactory)
             : this()
         {
+            if (codeLanguage == null)
+            {
+                throw new ArgumentNullException(nameof(codeLanguage));
+            }
+
+            if (markupParserFactory == null)
+            {
+                throw new ArgumentNullException(nameof(markupParserFactory));
+            }
+
             CodeLanguage = codeLanguage;
             _markupParserFactory = markupParserFactory;
         }
@@ -170,9 +183,14 @@ namespace Microsoft.AspNet.Razor
         /// <param name="sourceFileName">The file name of the Razor file being parsed.</param>
         /// <returns>Either the same code parser, after modifications, or a different code parser.</returns>
         public virtual RazorParser DecorateRazorParser(
-            [NotNull] RazorParser incomingRazorParser,
+            RazorParser incomingRazorParser,
             string sourceFileName)
         {
+            if (incomingRazorParser == null)
+            {
+                throw new ArgumentNullException(nameof(incomingRazorParser));
+            }
+
             return incomingRazorParser;
         }
 
@@ -181,8 +199,13 @@ namespace Microsoft.AspNet.Razor
         /// </summary>
         /// <param name="incomingCodeParser">The code parser</param>
         /// <returns>Either the same code parser, after modifications, or a different code parser</returns>
-        public virtual ParserBase DecorateCodeParser([NotNull] ParserBase incomingCodeParser)
+        public virtual ParserBase DecorateCodeParser(ParserBase incomingCodeParser)
         {
+            if (incomingCodeParser == null)
+            {
+                throw new ArgumentNullException(nameof(incomingCodeParser));
+            }
+
             return incomingCodeParser;
         }
 
@@ -191,8 +214,13 @@ namespace Microsoft.AspNet.Razor
         /// </summary>
         /// <param name="incomingMarkupParser">The markup parser</param>
         /// <returns>Either the same markup parser, after modifications, or a different markup parser</returns>
-        public virtual ParserBase DecorateMarkupParser([NotNull] ParserBase incomingMarkupParser)
+        public virtual ParserBase DecorateMarkupParser(ParserBase incomingMarkupParser)
         {
+            if (incomingMarkupParser == null)
+            {
+                throw new ArgumentNullException(nameof(incomingMarkupParser));
+            }
+
             return incomingMarkupParser;
         }
 
@@ -201,8 +229,13 @@ namespace Microsoft.AspNet.Razor
         /// </summary>
         /// <param name="incomingChunkGenerator">The chunk generator</param>
         /// <returns>Either the same chunk generator, after modifications, or a different chunk generator</returns>
-        public virtual RazorChunkGenerator DecorateChunkGenerator([NotNull] RazorChunkGenerator incomingChunkGenerator)
+        public virtual RazorChunkGenerator DecorateChunkGenerator(RazorChunkGenerator incomingChunkGenerator)
         {
+            if (incomingChunkGenerator == null)
+            {
+                throw new ArgumentNullException(nameof(incomingChunkGenerator));
+            }
+
             return incomingChunkGenerator;
         }
 
@@ -212,9 +245,14 @@ namespace Microsoft.AspNet.Razor
         /// <param name="incomingBuilder">The code generator</param>
         /// <returns>Either the same code generator, after modifications, or a different code generator.</returns>
         public virtual CodeGenerator DecorateCodeGenerator(
-            [NotNull] CodeGenerator incomingBuilder,
+            CodeGenerator incomingBuilder,
             CodeGeneratorContext context)
         {
+            if (incomingBuilder == null)
+            {
+                throw new ArgumentNullException(nameof(incomingBuilder));
+            }
+
             return incomingBuilder;
         }
 

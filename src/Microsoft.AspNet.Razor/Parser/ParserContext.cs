@@ -12,7 +12,6 @@ using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.AspNet.Razor.Utils;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Parser
 {
@@ -25,12 +24,37 @@ namespace Microsoft.AspNet.Razor.Parser
         private Stack<BlockBuilder> _blockStack = new Stack<BlockBuilder>();
         private readonly ErrorSink _errorSink;
 
-        public ParserContext([NotNull] ITextDocument source,
-                             [NotNull] ParserBase codeParser,
-                             [NotNull] ParserBase markupParser,
-                             [NotNull] ParserBase activeParser,
-                             [NotNull] ErrorSink errorSink)
+        public ParserContext(ITextDocument source,
+                             ParserBase codeParser,
+                             ParserBase markupParser,
+                             ParserBase activeParser,
+                             ErrorSink errorSink)
         {
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
+            if (codeParser == null)
+            {
+                throw new ArgumentNullException(nameof(codeParser));
+            }
+
+            if (markupParser == null)
+            {
+                throw new ArgumentNullException(nameof(markupParser));
+            }
+
+            if (activeParser == null)
+            {
+                throw new ArgumentNullException(nameof(activeParser));
+            }
+
+            if (errorSink == null)
+            {
+                throw new ArgumentNullException(nameof(errorSink));
+            }
+
             if (activeParser != codeParser && activeParser != markupParser)
             {
                 throw new ArgumentException(RazorResources.ActiveParser_Must_Be_Code_Or_Markup_Parser, nameof(activeParser));

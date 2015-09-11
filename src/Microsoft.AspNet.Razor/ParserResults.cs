@@ -1,11 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.TagHelpers;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor
 {
@@ -25,11 +25,25 @@ namespace Microsoft.AspNet.Razor
         /// The <see cref="ErrorSink"/> used to collect <see cref="RazorError"/>s encountered when parsing the
         /// current Razor document.
         /// </param>
-        public ParserResults([NotNull] Block document,
-                             [NotNull] IEnumerable<TagHelperDescriptor> tagHelperDescriptors,
-                             [NotNull] ErrorSink errorSink)
+        public ParserResults(Block document,
+                             IEnumerable<TagHelperDescriptor> tagHelperDescriptors,
+                             ErrorSink errorSink)
             : this(!errorSink.Errors.Any(), document, tagHelperDescriptors, errorSink)
         {
+            if (document == null)
+            {
+                throw new ArgumentNullException(nameof(document));
+            }
+
+            if (tagHelperDescriptors == null)
+            {
+                throw new ArgumentNullException(nameof(tagHelperDescriptors));
+            }
+
+            if (errorSink == null)
+            {
+                throw new ArgumentNullException(nameof(errorSink));
+            }
         }
 
         /// <summary>
@@ -45,10 +59,25 @@ namespace Microsoft.AspNet.Razor
         /// current Razor document.
         /// </param>
         protected ParserResults(bool success,
-                                [NotNull] Block document,
-                                [NotNull] IEnumerable<TagHelperDescriptor> tagHelperDescriptors,
-                                [NotNull] ErrorSink errorSink)
+                                Block document,
+                                IEnumerable<TagHelperDescriptor> tagHelperDescriptors,
+                                ErrorSink errorSink)
         {
+            if (document == null)
+            {
+                throw new ArgumentNullException(nameof(document));
+            }
+
+            if (tagHelperDescriptors == null)
+            {
+                throw new ArgumentNullException(nameof(tagHelperDescriptors));
+            }
+
+            if (errorSink == null)
+            {
+                throw new ArgumentNullException(nameof(errorSink));
+            }
+
             Success = success;
             Document = document;
             TagHelperDescriptors = tagHelperDescriptors;

@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Parser
 {
@@ -14,8 +13,13 @@ namespace Microsoft.AspNet.Razor.Parser
         private Stack<BlockBuilder> _blocks = new Stack<BlockBuilder>();
         private Action<SpanBuilder, SourceLocation, string> _markupSpanFactory;
 
-        protected MarkupRewriter([NotNull] Action<SpanBuilder, SourceLocation, string> markupSpanFactory)
+        protected MarkupRewriter(Action<SpanBuilder, SourceLocation, string> markupSpanFactory)
         {
+            if (markupSpanFactory == null)
+            {
+                throw new ArgumentNullException(nameof(markupSpanFactory));
+            }
+
             _markupSpanFactory = markupSpanFactory;
         }
 

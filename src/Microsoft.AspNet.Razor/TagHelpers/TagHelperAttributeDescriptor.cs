@@ -3,7 +3,6 @@
 
 using System;
 using System.Reflection;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.TagHelpers
 {
@@ -13,6 +12,8 @@ namespace Microsoft.AspNet.Razor.TagHelpers
     public class TagHelperAttributeDescriptor
     {
         private string _typeName;
+        private string _name;
+        private string _propertyName;
 
         /// <summary>
         /// Instantiates a new instance of the <see cref="TagHelperAttributeDescriptor"/> class.
@@ -59,12 +60,43 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// The HTML attribute name or, if <see cref="IsIndexer"/> is <c>true</c>, the prefix for matching attribute
         /// names.
         /// </summary>
-        public string Name { get; [param: NotNull] set; }
+        public string Name
+        {
+            get
+            {
+                return _name;
+            }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                _name = value;
+            }
+        }
+
 
         /// <summary>
         /// The name of the CLR property that corresponds to the HTML attribute.
         /// </summary>
-        public string PropertyName { get; [param: NotNull] set; }
+        public string PropertyName
+        {
+            get
+            {
+                return _propertyName;
+            }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                _propertyName = value;
+            }
+        }
 
         /// <summary>
         /// The full name of the named (see <see name="PropertyName"/>) property's <see cref="Type"/> or, if
@@ -76,8 +108,13 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             {
                 return _typeName;
             }
-            [param: NotNull] set
+            set
             {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
                 _typeName = value;
                 IsStringProperty = string.Equals(_typeName, typeof(string).FullName, StringComparison.Ordinal);
             }

@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Razor.Chunks;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
 {
@@ -14,10 +13,20 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
         private readonly GeneratedTagHelperContext _tagHelperContext;
         private bool _foundTagHelpers;
 
-        public CSharpTagHelperFieldDeclarationVisitor([NotNull] CSharpCodeWriter writer,
-                                                      [NotNull] CodeGeneratorContext context)
+        public CSharpTagHelperFieldDeclarationVisitor(CSharpCodeWriter writer,
+                                                      CodeGeneratorContext context)
             : base(writer, context)
         {
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             _declaredTagHelpers = new HashSet<string>(StringComparer.Ordinal);
             _tagHelperContext = Context.Host.GeneratedClassContext.GeneratedTagHelperContext;
         }
@@ -81,6 +90,11 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
 
         public override void Accept(Chunk chunk)
         {
+            if (chunk == null)
+            {
+                throw new ArgumentNullException(nameof(chunk));
+            }
+
             var parentChunk = chunk as ParentChunk;
 
             // If we're any ParentChunk other than TagHelperChunk then we want to dive into its Children

@@ -17,13 +17,22 @@ namespace Microsoft.AspNet.Razor.Text
             Value = default(TValue);
         }
 
-        public LocationTagged([NotNull] TValue value, int offset, int line, int col)
+        public LocationTagged(TValue value, int offset, int line, int col)
             : this(value, new SourceLocation(offset, line, col))
         {
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
         }
 
-        public LocationTagged([NotNull] TValue value, SourceLocation location)
+        public LocationTagged(TValue value, SourceLocation location)
         {
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
             Location = location;
             Value = value;
         }

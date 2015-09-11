@@ -9,7 +9,6 @@ using System.IO;
 using Microsoft.AspNet.Razor.Editor;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Text;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor
 {
@@ -68,8 +67,13 @@ namespace Microsoft.AspNet.Razor
         /// </summary>
         /// <param name="host">The <see cref="RazorEngineHost"/> which defines the environment in which the generated code will live.  <see cref="F:RazorEngineHost.DesignTimeMode"/> should be set if design-time code mappings are desired</param>
         /// <param name="sourceFileName">The physical path to use in line pragmas</param>
-        public RazorEditorParser([NotNull] RazorEngineHost host, string sourceFileName)
+        public RazorEditorParser(RazorEngineHost host, string sourceFileName)
         {
+            if (host == null)
+            {
+                throw new ArgumentNullException(nameof(host));
+            }
+
             if (string.IsNullOrEmpty(sourceFileName))
             {
                 throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, nameof(sourceFileName));

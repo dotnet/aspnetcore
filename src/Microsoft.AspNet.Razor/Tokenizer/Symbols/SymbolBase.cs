@@ -10,14 +10,19 @@ using Microsoft.Framework.Internal;
 namespace Microsoft.AspNet.Razor.Tokenizer.Symbols
 {
     public abstract class SymbolBase<TType> : ISymbol
-        where TType: struct
+        where TType : struct
     {
         protected SymbolBase(
             SourceLocation start,
-            [NotNull] string content,
+            string content,
             TType type,
             IEnumerable<RazorError> errors)
         {
+            if (content == null)
+            {
+                throw new ArgumentNullException(nameof(content));
+            }
+
             Start = start;
             Content = content;
             Type = type;

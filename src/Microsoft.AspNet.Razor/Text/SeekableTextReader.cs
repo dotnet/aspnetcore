@@ -1,8 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Text
 {
@@ -19,14 +19,22 @@ namespace Microsoft.AspNet.Razor.Text
             UpdateState();
         }
 
-        public SeekableTextReader([NotNull] TextReader source)
+        public SeekableTextReader(TextReader source)
             : this(source.ReadToEnd())
         {
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
         }
 
-        public SeekableTextReader([NotNull] ITextBuffer buffer)
+        public SeekableTextReader(ITextBuffer buffer)
             : this(buffer.ReadToEnd())
         {
+            if (buffer == null)
+            {
+                throw new ArgumentNullException(nameof(buffer));
+            }
         }
 
         public SourceLocation Location

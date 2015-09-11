@@ -26,12 +26,22 @@ namespace Microsoft.AspNet.Razor.Text
         public TextChange(
             int oldPosition,
             int oldLength,
-            [NotNull] ITextBuffer oldBuffer,
+            ITextBuffer oldBuffer,
             int newPosition,
             int newLength,
-            [NotNull] ITextBuffer newBuffer)
+            ITextBuffer newBuffer)
             : this()
         {
+            if (oldBuffer == null)
+            {
+                throw new ArgumentNullException(nameof(oldBuffer));
+            }
+
+            if (newBuffer == null)
+            {
+                throw new ArgumentNullException(nameof(newBuffer));
+            }
+
             if (oldPosition < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(oldPosition), CommonResources.FormatArgument_Must_Be_GreaterThanOrEqualTo(0));

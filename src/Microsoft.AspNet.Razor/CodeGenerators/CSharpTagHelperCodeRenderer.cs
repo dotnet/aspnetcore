@@ -9,7 +9,6 @@ using Microsoft.AspNet.Razor.Chunks;
 using Microsoft.AspNet.Razor.CodeGenerators.Visitors;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Razor.TagHelpers;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.CodeGenerators
 {
@@ -38,10 +37,25 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
         /// <param name="context">A <see cref="CodeGeneratorContext"/> instance that contains information about
         /// the current code generation process.</param>
         public CSharpTagHelperCodeRenderer(
-            [NotNull] IChunkVisitor bodyVisitor,
-            [NotNull] CSharpCodeWriter writer,
-            [NotNull] CodeGeneratorContext context)
+            IChunkVisitor bodyVisitor,
+            CSharpCodeWriter writer,
+            CodeGeneratorContext context)
         {
+            if (bodyVisitor == null)
+            {
+                throw new ArgumentNullException(nameof(bodyVisitor));
+            }
+
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             _bodyVisitor = bodyVisitor;
             _writer = writer;
             _context = context;

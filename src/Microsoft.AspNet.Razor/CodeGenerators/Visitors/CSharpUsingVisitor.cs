@@ -1,11 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.Razor.Chunks;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
 {
@@ -15,9 +15,19 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
 
         private bool _foundTagHelpers;
 
-        public CSharpUsingVisitor([NotNull] CSharpCodeWriter writer, [NotNull] CodeGeneratorContext context)
+        public CSharpUsingVisitor(CSharpCodeWriter writer, CodeGeneratorContext context)
             : base(writer, context)
         {
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             ImportedUsings = new List<string>();
         }
 
@@ -26,6 +36,11 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
         /// <inheritdoc />
         public override void Accept(Chunk chunk)
         {
+            if (chunk == null)
+            {
+                throw new ArgumentNullException(nameof(chunk));
+            }
+
             // If at any ParentChunk other than a TagHelperChunk, then dive into its Children to search for more
             // TagHelperChunk or UsingChunk nodes. This method avoids overriding each of the ParentChunk-specific
             // Visit() methods to dive into Children.

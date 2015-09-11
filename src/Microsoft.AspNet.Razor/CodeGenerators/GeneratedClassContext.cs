@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.CodeGenerators
@@ -24,9 +23,14 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
         public GeneratedClassContext(string executeMethodName,
                                      string writeMethodName,
                                      string writeLiteralMethodName,
-                                     [NotNull] GeneratedTagHelperContext generatedTagHelperContext)
+                                     GeneratedTagHelperContext generatedTagHelperContext)
             : this()
         {
+            if (generatedTagHelperContext == null)
+            {
+                throw new ArgumentNullException(nameof(generatedTagHelperContext));
+            }
+
             if (string.IsNullOrEmpty(executeMethodName))
             {
                 throw new ArgumentException(

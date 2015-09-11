@@ -13,7 +13,6 @@ using Microsoft.AspNet.Razor.Parser.TagHelpers;
 using Microsoft.AspNet.Razor.Parser.TagHelpers.Internal;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.AspNet.Razor.Text;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Parser
 {
@@ -26,23 +25,37 @@ namespace Microsoft.AspNet.Razor.Parser
         /// <param name="markupParser">The <see cref="ParserBase"/> used for parsing markup content.</param>
         /// <param name="tagHelperDescriptorResolver">The <see cref="ITagHelperDescriptorResolver"/> used to resolve
         /// <see cref="TagHelperDescriptor"/>s.</param>
-        public RazorParser([NotNull] ParserBase codeParser,
-                           [NotNull] ParserBase markupParser,
+        public RazorParser(ParserBase codeParser,
+                           ParserBase markupParser,
                            ITagHelperDescriptorResolver tagHelperDescriptorResolver)
             : this(codeParser,
                   markupParser,
                   tagHelperDescriptorResolver,
                   GetDefaultRewriters(markupParser))
         {
+            if (codeParser == null)
+            {
+                throw new ArgumentNullException(nameof(codeParser));
+            }
+
+            if (markupParser == null)
+            {
+                throw new ArgumentNullException(nameof(markupParser));
+            }
         }
 
         /// <summary>
         /// Initializes a new instance of <see cref="RazorParser"/> from the specified <paramref name="parser" />.
         /// </summary>
         /// <param name="parser">The <see cref="RazorParser"/> to copy values from.</param>
-        public RazorParser([NotNull] RazorParser parser)
+        public RazorParser(RazorParser parser)
            : this(parser.CodeParser, parser.MarkupParser, parser.TagHelperDescriptorResolver, parser.Optimizers)
         {
+            if (parser == null)
+            {
+                throw new ArgumentNullException(nameof(parser));
+            }
+
             DesignTimeMode = parser.DesignTimeMode;
         }
 
@@ -210,9 +223,19 @@ namespace Microsoft.AspNet.Razor.Parser
         /// phase.</param>
         /// <returns><see cref="TagHelperDescriptor"/>s that are applicable to the <paramref name="documentRoot"/>
         /// </returns>
-        protected virtual IEnumerable<TagHelperDescriptor> GetTagHelperDescriptors([NotNull] Block documentRoot,
-                                                                                   [NotNull] ErrorSink errorSink)
+        protected virtual IEnumerable<TagHelperDescriptor> GetTagHelperDescriptors(Block documentRoot,
+                                                                                   ErrorSink errorSink)
         {
+            if (documentRoot == null)
+            {
+                throw new ArgumentNullException(nameof(documentRoot));
+            }
+
+            if (errorSink == null)
+            {
+                throw new ArgumentNullException(nameof(errorSink));
+            }
+
             var addOrRemoveTagHelperSpanVisitor =
                 new TagHelperDirectiveSpanVisitor(TagHelperDescriptorResolver, errorSink);
             return addOrRemoveTagHelperSpanVisitor.GetDescriptors(documentRoot);

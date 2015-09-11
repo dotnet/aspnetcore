@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNet.Razor.TagHelpers;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.CodeGenerators
 {
@@ -31,12 +30,32 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
         /// Razor construct e.g. <c>"@(@readonly)"</c>.
         /// </param>
         public virtual void RenderAttributeValue(
-            [NotNull] TagHelperAttributeDescriptor attributeDescriptor,
-            [NotNull] CSharpCodeWriter writer,
-            [NotNull] CodeGeneratorContext context,
-            [NotNull] Action<CSharpCodeWriter> renderAttributeValue,
+            TagHelperAttributeDescriptor attributeDescriptor,
+            CSharpCodeWriter writer,
+            CodeGeneratorContext context,
+            Action<CSharpCodeWriter> renderAttributeValue,
             bool complexValue)
         {
+            if (attributeDescriptor == null)
+            {
+                throw new ArgumentNullException(nameof(attributeDescriptor));
+            }
+
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (renderAttributeValue == null)
+            {
+                throw new ArgumentNullException(nameof(renderAttributeValue));
+            }
+
             renderAttributeValue(writer);
         }
     }

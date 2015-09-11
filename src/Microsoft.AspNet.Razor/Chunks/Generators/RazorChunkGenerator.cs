@@ -4,7 +4,6 @@
 using System;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Chunks.Generators
 {
@@ -14,10 +13,20 @@ namespace Microsoft.AspNet.Razor.Chunks.Generators
 
         public RazorChunkGenerator(
             string className,
-            [NotNull] string rootNamespaceName,
+            string rootNamespaceName,
             string sourceFileName,
-            [NotNull] RazorEngineHost host)
+            RazorEngineHost host)
         {
+            if (rootNamespaceName == null)
+            {
+                throw new ArgumentNullException(nameof(rootNamespaceName));
+            }
+
+            if (host == null)
+            {
+                throw new ArgumentNullException(nameof(host));
+            }
+
             if (string.IsNullOrEmpty(className))
             {
                 throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, nameof(className));

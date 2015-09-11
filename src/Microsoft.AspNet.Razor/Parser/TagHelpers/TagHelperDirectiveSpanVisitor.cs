@@ -1,11 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.TagHelpers;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Parser.TagHelpers
 {
@@ -27,15 +27,30 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
         }
 
         public TagHelperDirectiveSpanVisitor(
-            [NotNull] ITagHelperDescriptorResolver descriptorResolver,
-            [NotNull] ErrorSink errorSink)
+            ITagHelperDescriptorResolver descriptorResolver,
+            ErrorSink errorSink)
         {
+            if (descriptorResolver == null)
+            {
+                throw new ArgumentNullException(nameof(descriptorResolver));
+            }
+
+            if (errorSink == null)
+            {
+                throw new ArgumentNullException(nameof(errorSink));
+            }
+
             _descriptorResolver = descriptorResolver;
             _errorSink = errorSink;
         }
 
-        public IEnumerable<TagHelperDescriptor> GetDescriptors([NotNull] Block root)
+        public IEnumerable<TagHelperDescriptor> GetDescriptors(Block root)
         {
+            if (root == null)
+            {
+                throw new ArgumentNullException(nameof(root));
+            }
+
             _directiveDescriptors = new List<TagHelperDirectiveDescriptor>();
 
             // This will recurse through the syntax tree.
@@ -49,9 +64,19 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
 
         // Allows MVC a chance to override the TagHelperDescriptorResolutionContext
         protected virtual TagHelperDescriptorResolutionContext GetTagHelperDescriptorResolutionContext(
-            [NotNull] IEnumerable<TagHelperDirectiveDescriptor> descriptors,
-            [NotNull] ErrorSink errorSink)
+            IEnumerable<TagHelperDirectiveDescriptor> descriptors,
+            ErrorSink errorSink)
         {
+            if (descriptors == null)
+            {
+                throw new ArgumentNullException(nameof(descriptors));
+            }
+
+            if (errorSink == null)
+            {
+                throw new ArgumentNullException(nameof(errorSink));
+            }
+
             return new TagHelperDescriptorResolutionContext(descriptors, errorSink);
         }
 
