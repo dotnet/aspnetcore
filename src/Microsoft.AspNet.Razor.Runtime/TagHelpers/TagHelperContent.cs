@@ -60,6 +60,14 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         public abstract TagHelperContent Append(string value);
 
         /// <summary>
+        /// Appends <paramref name="value"/> to the existing content. <paramref name="value"/> is assumed
+        /// to be an HTML encoded <see cref="string"/> and no further encoding will be performed.
+        /// </summary>
+        /// <param name="value">The <see cref="string"/> to be appended.</param>
+        /// <returns>A reference to this instance after the append operation has completed.</returns>
+        public abstract TagHelperContent AppendEncoded(string value);
+
+        /// <summary>
         /// Appends the specified <paramref name="format"/> to the existing content after
         /// replacing the format item with the <see cref="string"/> representation of the
         /// <paramref name="arg0"/>.

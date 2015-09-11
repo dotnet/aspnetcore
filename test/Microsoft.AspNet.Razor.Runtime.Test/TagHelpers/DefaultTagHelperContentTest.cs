@@ -613,7 +613,39 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             tagHelperContent.WriteTo(writer, new CommonTestEncoder());
 
             // Assert
-            Assert.Equal("Hello World", writer.ToString());
+            Assert.Equal("HtmlEncode[[Hello ]]HtmlEncode[[World]]", writer.ToString());
+        }
+
+        [Fact]
+        public void Append_WrittenAsEncoded()
+        {
+            // Arrange
+            var tagHelperContent = new DefaultTagHelperContent();
+            tagHelperContent.Append("Hi");
+
+            var writer = new StringWriter();
+
+            // Act
+            tagHelperContent.WriteTo(writer, new CommonTestEncoder());
+
+            // Assert
+            Assert.Equal("HtmlEncode[[Hi]]", writer.ToString());
+        }
+
+        [Fact]
+        public void AppendEncoded_DoesNotGetEncoded()
+        {
+            // Arrange
+            var tagHelperContent = new DefaultTagHelperContent();
+            tagHelperContent.AppendEncoded("Hi");
+
+            var writer = new StringWriter();
+
+            // Act
+            tagHelperContent.WriteTo(writer, new CommonTestEncoder());
+
+            // Assert
+            Assert.Equal("Hi", writer.ToString());
         }
     }
 }

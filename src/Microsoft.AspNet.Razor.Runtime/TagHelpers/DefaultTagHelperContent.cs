@@ -125,6 +125,12 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             return this;
         }
 
+        public override TagHelperContent AppendEncoded(string value)
+        {
+            Buffer.AppendEncoded(value);
+            return this;
+        }
+
         /// <inheritdoc />
         public override TagHelperContent AppendFormat([NotNull] string format, object arg0)
         {
