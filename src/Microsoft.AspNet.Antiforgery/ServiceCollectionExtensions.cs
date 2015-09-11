@@ -1,18 +1,22 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using Microsoft.AspNet.Antiforgery;
 using Microsoft.Framework.DependencyInjection.Extensions;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.Framework.DependencyInjection
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddAntiforgery([NotNull] this IServiceCollection services)
+        public static IServiceCollection AddAntiforgery(this IServiceCollection services)
         {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
             services.AddDataProtection();
             services.AddWebEncoders();
 
@@ -31,9 +35,19 @@ namespace Microsoft.Framework.DependencyInjection
         }
 
         public static IServiceCollection ConfigureAntiforgery(
-            [NotNull] this IServiceCollection services,
-            [NotNull] Action<AntiforgeryOptions> setupAction)
+            this IServiceCollection services,
+            Action<AntiforgeryOptions> setupAction)
         {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            if (setupAction == null)
+            {
+                throw new ArgumentNullException(nameof(setupAction));
+            }
+
             services.Configure(setupAction);
             return services;
         }

@@ -5,7 +5,6 @@ using System;
 using System.IO;
 using Microsoft.AspNet.DataProtection;
 using Microsoft.AspNet.WebUtilities;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Antiforgery
 {
@@ -16,8 +15,13 @@ namespace Microsoft.AspNet.Antiforgery
         private readonly IDataProtector _cryptoSystem;
         private const byte TokenVersion = 0x01;
 
-        public DefaultAntiforgeryTokenSerializer([NotNull] IDataProtectionProvider provider)
+        public DefaultAntiforgeryTokenSerializer(IDataProtectionProvider provider)
         {
+            if (provider == null)
+            {
+                throw new ArgumentNullException(nameof(provider));
+            }
+
             _cryptoSystem = provider.CreateProtector(Purpose);
         }
 
@@ -102,8 +106,13 @@ namespace Microsoft.AspNet.Antiforgery
             return deserializedToken;
         }
 
-        public string Serialize([NotNull] AntiforgeryToken token)
+        public string Serialize(AntiforgeryToken token)
         {
+            if (token == null)
+            {
+                throw new ArgumentNullException(nameof(token));
+            }
+
             using (var stream = new MemoryStream())
             {
                 using (var writer = new BinaryWriter(stream))

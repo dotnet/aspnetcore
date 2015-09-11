@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNet.DataProtection;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.Framework.DependencyInjection;
@@ -40,7 +41,7 @@ namespace Microsoft.AspNet.Antiforgery
 
             var tokenStore = new DefaultAntiforgeryTokenStore(
                 optionsAccessor: new TestOptionsManager(options),
-                tokenSerializer: null);
+                tokenSerializer: Mock.Of<IAntiforgeryTokenSerializer>());
 
             // Act
             var token = tokenStore.GetCookieToken(mockHttpContext.Object);
@@ -75,7 +76,7 @@ namespace Microsoft.AspNet.Antiforgery
 
             var tokenStore = new DefaultAntiforgeryTokenStore(
                 optionsAccessor: new TestOptionsManager(options),
-                tokenSerializer: null);
+                tokenSerializer: Mock.Of<IAntiforgeryTokenSerializer>());
 
             // Act
             var token = tokenStore.GetCookieToken(mockHttpContext.Object);
@@ -97,7 +98,7 @@ namespace Microsoft.AspNet.Antiforgery
 
             var tokenStore = new DefaultAntiforgeryTokenStore(
                 optionsAccessor: new TestOptionsManager(options),
-                tokenSerializer: null);
+                tokenSerializer: Mock.Of<IAntiforgeryTokenSerializer>());
 
             // Act
             var token = tokenStore.GetCookieToken(mockHttpContext);
@@ -176,7 +177,7 @@ namespace Microsoft.AspNet.Antiforgery
 
             var tokenStore = new DefaultAntiforgeryTokenStore(
                 optionsAccessor: new TestOptionsManager(options),
-                tokenSerializer: null);
+                tokenSerializer: Mock.Of<IAntiforgeryTokenSerializer>());
 
             // Act
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(
@@ -208,7 +209,7 @@ namespace Microsoft.AspNet.Antiforgery
 
             var tokenStore = new DefaultAntiforgeryTokenStore(
                 optionsAccessor: new TestOptionsManager(options),
-                tokenSerializer: null);
+                tokenSerializer: new DefaultAntiforgeryTokenSerializer(new EphemeralDataProtectionProvider()));
 
             // Act
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(
@@ -238,7 +239,7 @@ namespace Microsoft.AspNet.Antiforgery
 
             var tokenStore = new DefaultAntiforgeryTokenStore(
                 optionsAccessor: new TestOptionsManager(options),
-                tokenSerializer: null);
+                tokenSerializer: Mock.Of<IAntiforgeryTokenSerializer>());
 
             // Act
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(
@@ -271,7 +272,7 @@ namespace Microsoft.AspNet.Antiforgery
 
             var tokenStore = new DefaultAntiforgeryTokenStore(
                 optionsAccessor: new TestOptionsManager(options),
-                tokenSerializer: null);
+                tokenSerializer: Mock.Of<IAntiforgeryTokenSerializer>());
 
             // Act
             var tokens = await tokenStore.GetRequestTokensAsync(httpContext);

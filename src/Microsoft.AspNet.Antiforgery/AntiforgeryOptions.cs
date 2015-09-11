@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Framework.Internal;
+using System;
 
 namespace Microsoft.AspNet.Antiforgery
 {
@@ -11,6 +11,8 @@ namespace Microsoft.AspNet.Antiforgery
     public class AntiforgeryOptions
     {
         private const string AntiforgeryTokenFieldName = "__RequestVerificationToken";
+        private string _cookieName;
+        private string _formFieldName = AntiforgeryTokenFieldName;
 
         /// <summary>
         /// Specifies the name of the cookie that is used by the antiforgery
@@ -20,12 +22,42 @@ namespace Microsoft.AspNet.Antiforgery
         /// If an explicit name is not provided, the system will automatically
         /// generate a name.
         /// </remarks>
-        public string CookieName { get; [param: NotNull] set; }
+        public string CookieName
+        {
+            get
+            {
+                return _cookieName;
+            }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                _cookieName = value;
+            }
+        }
 
         /// <summary>
         /// Specifies the name of the antiforgery token field that is used by the antiforgery system.
         /// </summary>
-        public string FormFieldName { get; [param: NotNull] set; } = AntiforgeryTokenFieldName;
+        public string FormFieldName
+        {
+            get
+            {
+                return _formFieldName;
+            }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                _formFieldName = value;
+            }
+        }
 
         /// <summary>
         /// Specifies whether SSL is required for the antiforgery system

@@ -3,14 +3,13 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Antiforgery
 {
     // Provides an abstraction around how tokens are persisted and retrieved for a request
     public interface IAntiforgeryTokenStore
     {
-        AntiforgeryToken GetCookieToken([NotNull] HttpContext httpContext);
+        AntiforgeryToken GetCookieToken(HttpContext httpContext);
 
         /// <summary>
         /// Gets the cookie and form tokens from the request. Will throw an exception if either token is
@@ -18,8 +17,8 @@ namespace Microsoft.AspNet.Antiforgery
         /// </summary>
         /// <param name="httpContext">The <see cref="HttpContext"/> for the current request.</param>
         /// <returns>The <see cref="AntiforgeryTokenSet"/>.</returns>
-        Task<AntiforgeryTokenSet> GetRequestTokensAsync([NotNull] HttpContext httpContext);
+        Task<AntiforgeryTokenSet> GetRequestTokensAsync(HttpContext httpContext);
 
-        void SaveCookieToken([NotNull] HttpContext httpContext, [NotNull] AntiforgeryToken token);
+        void SaveCookieToken(HttpContext httpContext, AntiforgeryToken token);
     }
 }

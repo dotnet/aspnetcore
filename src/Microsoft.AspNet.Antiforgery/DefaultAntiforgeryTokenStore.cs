@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Antiforgery
@@ -18,15 +17,30 @@ namespace Microsoft.AspNet.Antiforgery
         private readonly IAntiforgeryTokenSerializer _tokenSerializer;
 
         public DefaultAntiforgeryTokenStore(
-            [NotNull] IOptions<AntiforgeryOptions> optionsAccessor,
-            [NotNull] IAntiforgeryTokenSerializer tokenSerializer)
+            IOptions<AntiforgeryOptions> optionsAccessor,
+            IAntiforgeryTokenSerializer tokenSerializer)
         {
+            if (optionsAccessor == null)
+            {
+                throw new ArgumentNullException(nameof(optionsAccessor));
+            }
+
+            if (tokenSerializer == null)
+            {
+                throw new ArgumentNullException(nameof(tokenSerializer));
+            }
+
             _options = optionsAccessor.Value;
             _tokenSerializer = tokenSerializer;
         }
 
         public AntiforgeryToken GetCookieToken(HttpContext httpContext)
         {
+            if (httpContext == null)
+            {
+                throw new ArgumentNullException(nameof(httpContext));
+            }
+
             var services = httpContext.RequestServices;
             var contextAccessor = services.GetRequiredService<IAntiforgeryContextAccessor>();
             if (contextAccessor.Value != null)
@@ -44,8 +58,13 @@ namespace Microsoft.AspNet.Antiforgery
             return _tokenSerializer.Deserialize(requestCookie);
         }
 
-        public async Task<AntiforgeryTokenSet> GetRequestTokensAsync([NotNull] HttpContext httpContext)
+        public async Task<AntiforgeryTokenSet> GetRequestTokensAsync(HttpContext httpContext)
         {
+            if (httpContext == null)
+            {
+                throw new ArgumentNullException(nameof(httpContext));
+            }
+
             var requestCookie = httpContext.Request.Cookies[_options.CookieName];
             if (string.IsNullOrEmpty(requestCookie))
             {
@@ -74,6 +93,16 @@ namespace Microsoft.AspNet.Antiforgery
 
         public void SaveCookieToken(HttpContext httpContext, AntiforgeryToken token)
         {
+            if (httpContext == null)
+            {
+                throw new ArgumentNullException(nameof(httpContext));
+            }
+
+            if (token == null)
+            {
+                throw new ArgumentNullException(nameof(token));
+            }
+
             // Add the cookie to the request based context.
             // This is useful if the cookie needs to be reloaded in the context of the same request.
 

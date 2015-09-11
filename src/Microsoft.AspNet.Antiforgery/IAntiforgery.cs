@@ -1,9 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Antiforgery
 {
@@ -25,7 +24,7 @@ namespace Microsoft.AspNet.Antiforgery
         /// This method has a side effect:
         /// A response cookie is set if there is no valid cookie associated with the request.
         /// </remarks>
-        string GetHtml([NotNull] HttpContext context);
+        string GetHtml(HttpContext context);
 
         /// <summary>
         /// Generates an <see cref="AntiforgeryTokenSet"/> for this request and stores the cookie token
@@ -37,7 +36,7 @@ namespace Microsoft.AspNet.Antiforgery
         /// This method has a side effect:
         /// A response cookie is set if there is no valid cookie associated with the request.
         /// </remarks>
-        AntiforgeryTokenSet GetAndStoreTokens([NotNull] HttpContext context);
+        AntiforgeryTokenSet GetAndStoreTokens(HttpContext context);
 
         /// <summary>
         /// Generates an <see cref="AntiforgeryTokenSet"/> for this request.
@@ -48,13 +47,13 @@ namespace Microsoft.AspNet.Antiforgery
         /// is responsible for setting the response cookie and injecting the returned
         /// form token as appropriate.
         /// </remarks>
-        AntiforgeryTokenSet GetTokens([NotNull] HttpContext context);
+        AntiforgeryTokenSet GetTokens(HttpContext context);
 
         /// <summary>
         /// Validates an antiforgery token that was supplied as part of the request.
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/> associated with the current request.</param>
-        Task ValidateRequestAsync([NotNull] HttpContext context);
+        Task ValidateRequestAsync(HttpContext context);
 
         /// <summary>
         /// Validates an <see cref="AntiforgeryTokenSet"/> for the current request.
@@ -63,12 +62,12 @@ namespace Microsoft.AspNet.Antiforgery
         /// <param name="antiforgeryTokenSet">
         /// The <see cref="AntiforgeryTokenSet"/> (cookie and form token) for this request.
         /// </param>
-        void ValidateTokens([NotNull] HttpContext context, AntiforgeryTokenSet antiforgeryTokenSet);
+        void ValidateTokens(HttpContext context, AntiforgeryTokenSet antiforgeryTokenSet);
 
         /// <summary>
         /// Generates and stores an antiforgery cookie token if one is not available or not valid.
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/> associated with the current request.</param>
-        void SetCookieTokenAndHeader([NotNull] HttpContext context);
+        void SetCookieTokenAndHeader(HttpContext context);
     }
 }

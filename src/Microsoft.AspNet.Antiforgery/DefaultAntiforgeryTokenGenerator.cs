@@ -35,6 +35,11 @@ namespace Microsoft.AspNet.Antiforgery
             HttpContext httpContext,
             AntiforgeryToken cookieToken)
         {
+            if (httpContext == null)
+            {
+                throw new ArgumentNullException(nameof(httpContext));
+            }
+
             Debug.Assert(IsCookieTokenValid(cookieToken));
 
             var formToken = new AntiforgeryToken()
@@ -92,6 +97,11 @@ namespace Microsoft.AspNet.Antiforgery
             AntiforgeryToken sessionToken,
             AntiforgeryToken fieldToken)
         {
+            if (httpContext == null)
+            {
+                throw new ArgumentNullException(nameof(httpContext));
+            }
+
             if (sessionToken == null)
             {
                 throw new ArgumentNullException(
