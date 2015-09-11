@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Routing
 {
@@ -26,8 +25,13 @@ namespace Microsoft.AspNet.Routing
         /// Creates a new <see cref="RouteData"/> instance with values copied from <paramref name="other"/>.
         /// </summary>
         /// <param name="other">The other <see cref="RouteData"/> instance to copy.</param>
-        public RouteData([NotNull] RouteData other)
+        public RouteData(RouteData other)
         {
+            if (other == null)
+            {
+                throw new ArgumentNullException(nameof(other));
+            }
+
             DataTokens = new Dictionary<string, object>(other.DataTokens, StringComparer.OrdinalIgnoreCase);
             Routers = new List<IRouter>(other.Routers);
             Values = new RouteValueDictionary(other.Values);

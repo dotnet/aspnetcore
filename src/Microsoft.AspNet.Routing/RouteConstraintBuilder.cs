@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Routing.Constraints;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Routing
 {
@@ -28,9 +27,19 @@ namespace Microsoft.AspNet.Routing
         /// <param name="inlineConstraintResolver">The <see cref="IInlineConstraintResolver"/>.</param>
         /// <param name="displayName">The display name (for use in error messages).</param>
         public RouteConstraintBuilder(
-            [NotNull] IInlineConstraintResolver inlineConstraintResolver,
-            [NotNull] string displayName)
+            IInlineConstraintResolver inlineConstraintResolver,
+            string displayName)
         {
+            if (inlineConstraintResolver == null)
+            {
+                throw new ArgumentNullException(nameof(inlineConstraintResolver));
+            }
+
+            if (displayName == null)
+            {
+                throw new ArgumentNullException(nameof(displayName));
+            }
+
             _inlineConstraintResolver = inlineConstraintResolver;
             _displayName = displayName;
 
@@ -84,8 +93,18 @@ namespace Microsoft.AspNet.Routing
         /// For example, the string <code>Product[0-9]+</code> will be converted to the regular expression
         /// <code>^(Product[0-9]+)</code>. See <see cref="System.Text.RegularExpressions.Regex"/> for more details.
         /// </remarks>
-        public void AddConstraint([NotNull] string key, [NotNull] object value)
+        public void AddConstraint(string key, object value)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
             var constraint = value as IRouteConstraint;
             if (constraint == null)
             {
@@ -117,8 +136,18 @@ namespace Microsoft.AspNet.Routing
         /// based on <paramref name="constraintText"/>. See <see cref="RouteOptions.ConstraintMap"/> to register
         /// custom constraint types.
         /// </remarks>
-        public void AddResolvedConstraint([NotNull] string key, [NotNull] string constraintText)
+        public void AddResolvedConstraint(string key, string constraintText)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            if (constraintText == null)
+            {
+                throw new ArgumentNullException(nameof(constraintText));
+            }
+
             var constraint = _inlineConstraintResolver.ResolveConstraint(constraintText);
             if (constraint == null)
             {
@@ -137,9 +166,14 @@ namespace Microsoft.AspNet.Routing
         /// Sets the given key as optional.
         /// </summary>
         /// <param name="key">The key.</param>
-        public void SetOptional([NotNull] string key)
+        public void SetOptional(string key)
         {
-            _optionalParameters.Add(key); 
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            _optionalParameters.Add(key);
         }
 
         private void Add(string key, IRouteConstraint constraint)

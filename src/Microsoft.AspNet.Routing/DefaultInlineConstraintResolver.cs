@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Routing
@@ -39,8 +38,13 @@ namespace Microsoft.AspNet.Routing
         /// The entire string "arg1, arg2, 12" will be treated as a single argument.
         /// In all other cases arguments are split at comma.
         /// </example>
-        public virtual IRouteConstraint ResolveConstraint([NotNull] string inlineConstraint)
+        public virtual IRouteConstraint ResolveConstraint(string inlineConstraint)
         {
+            if (inlineConstraint == null)
+            {
+                throw new ArgumentNullException(nameof(inlineConstraint));
+            }
+
             string constraintKey;
             string argumentString;
             var indexOfFirstOpenParens = inlineConstraint.IndexOf('(');

@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Routing.Template
 {
@@ -16,9 +15,19 @@ namespace Microsoft.AspNet.Routing.Template
         private static readonly char[] Delimiters = new char[] { SeparatorChar };
 
         public TemplateMatcher(
-            [NotNull] RouteTemplate template,
-            [NotNull] IReadOnlyDictionary<string, object> defaults)
+            RouteTemplate template,
+            IReadOnlyDictionary<string, object> defaults)
         {
+            if (template == null)
+            {
+                throw new ArgumentNullException(nameof(template));
+            }
+
+            if (defaults == null)
+            {
+                throw new ArgumentNullException(nameof(defaults));
+            }
+
             Template = template;
             Defaults = defaults ?? RouteValueDictionary.Empty;
         }
@@ -27,8 +36,13 @@ namespace Microsoft.AspNet.Routing.Template
 
         public RouteTemplate Template { get; private set; }
 
-        public IDictionary<string, object> Match([NotNull] string requestPath)
+        public IDictionary<string, object> Match(string requestPath)
         {
+            if (requestPath == null)
+            {
+                throw new ArgumentNullException(nameof(requestPath));
+            }
+
             var requestSegments = requestPath.Split(Delimiters);
 
             var values = new RouteValueDictionary();
@@ -182,7 +196,7 @@ namespace Microsoft.AspNet.Routing.Template
             // In this case we start again from p2 to match the request and we succeed giving
             // the value bar to p2
             if (routeSegment.Parts[indexOfLastSegment].IsOptional &&
-                routeSegment.Parts[indexOfLastSegment - 1].IsOptionalSeperator)            
+                routeSegment.Parts[indexOfLastSegment - 1].IsOptionalSeperator)
             {
                 if (MatchComplexSegmentCore(routeSegment, requestSegment, Defaults, values, indexOfLastSegment))
                 {
@@ -220,7 +234,7 @@ namespace Microsoft.AspNet.Routing.Template
 
             // Find last literal segment and get its last index in the string
             var lastIndex = requestSegment.Length;
-            
+
             TemplatePart parameterNeedsValue = null; // Keeps track of a parameter segment that is pending a value
             TemplatePart lastLiteral = null; // Keeps track of the left-most literal we've encountered
 
@@ -234,7 +248,7 @@ namespace Microsoft.AspNet.Routing.Template
                 if (part.IsParameter)
                 {
                     // Hold on to the parameter so that we can fill it in when we locate the next literal
-                    parameterNeedsValue = part;                    
+                    parameterNeedsValue = part;
                 }
                 else
                 {
@@ -256,10 +270,10 @@ namespace Microsoft.AspNet.Routing.Template
                     var indexOfLiteral = requestSegment.LastIndexOf(part.Text,
                                                                     startIndex,
                                                                     StringComparison.OrdinalIgnoreCase);
-                    if (indexOfLiteral == -1) 
+                    if (indexOfLiteral == -1)
                     {
                         // If we couldn't find this literal index, this segment cannot match
-                        return false;          
+                        return false;
                     }
 
                     // If the first subsegment is a literal, it must match at the right-most extent of the request URI.
@@ -320,7 +334,7 @@ namespace Microsoft.AspNet.Routing.Template
                         // For these segments all parameters must have non-empty values. If the parameter
                         // has an empty value it's not a match.                        
                         return false;
-                        
+
                     }
                     else
                     {

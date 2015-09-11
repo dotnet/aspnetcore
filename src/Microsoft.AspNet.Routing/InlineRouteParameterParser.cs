@@ -1,16 +1,21 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Routing.Template;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Routing
 {
     public static class InlineRouteParameterParser
     {
-        public static TemplatePart ParseRouteParameter([NotNull] string routeParameter)
+        public static TemplatePart ParseRouteParameter(string routeParameter)
         {
+            if (routeParameter == null)
+            {
+                throw new ArgumentNullException(nameof(routeParameter));
+            }
+
             if (routeParameter.Length == 0)
             {
                 return TemplatePart.CreateParameter(

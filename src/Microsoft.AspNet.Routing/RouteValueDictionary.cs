@@ -6,7 +6,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Routing
 {
@@ -85,10 +84,15 @@ namespace Microsoft.AspNet.Routing
         }
 
         /// <inheritdoc />
-        public object this[[NotNull] string key]
+        public object this[string key]
         {
             get
             {
+                if (string.IsNullOrEmpty(key))
+                {
+                    throw new ArgumentNullException(nameof(key));
+                }
+
                 object value;
                 _dictionary.TryGetValue(key, out value);
                 return value;
@@ -96,6 +100,11 @@ namespace Microsoft.AspNet.Routing
 
             set
             {
+                if (string.IsNullOrEmpty(key))
+                {
+                    throw new ArgumentNullException(nameof(key));
+                }
+
                 _dictionary[key] = value;
             }
         }
@@ -191,8 +200,13 @@ namespace Microsoft.AspNet.Routing
         }
 
         /// <inheritdoc />
-        public void Add([NotNull] string key, object value)
+        public void Add(string key, object value)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             _dictionary.Add(key, value);
         }
 
@@ -209,16 +223,26 @@ namespace Microsoft.AspNet.Routing
         }
 
         /// <inheritdoc />
-        public bool ContainsKey([NotNull] string key)
+        public bool ContainsKey(string key)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             return _dictionary.ContainsKey(key);
         }
 
         /// <inheritdoc />
         void ICollection<KeyValuePair<string, object>>.CopyTo(
-            [NotNull] KeyValuePair<string, object>[] array,
+            KeyValuePair<string, object>[] array,
             int arrayIndex)
         {
+            if (array == null)
+            {
+                throw new ArgumentNullException(nameof(array));
+            }
+
             ((ICollection<KeyValuePair<string, object>>)_dictionary).CopyTo(array, arrayIndex);
         }
 
@@ -247,14 +271,24 @@ namespace Microsoft.AspNet.Routing
         }
 
         /// <inheritdoc />
-        public bool Remove([NotNull] string key)
+        public bool Remove(string key)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             return _dictionary.Remove(key);
         }
 
         /// <inheritdoc />
-        public bool TryGetValue([NotNull] string key, out object value)
+        public bool TryGetValue(string key, out object value)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             return _dictionary.TryGetValue(key, out value);
         }
     }

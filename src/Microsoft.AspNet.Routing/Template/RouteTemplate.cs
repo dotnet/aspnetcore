@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Routing.Template
 {
@@ -14,8 +13,13 @@ namespace Microsoft.AspNet.Routing.Template
     {
         private const string SeparatorString = "/";
 
-        public RouteTemplate([NotNull] List<TemplateSegment> segments)
+        public RouteTemplate(List<TemplateSegment> segments)
         {
+            if (segments == null)
+            {
+                throw new ArgumentNullException(nameof(segments));
+            }
+
             Segments = segments;
 
             Parameters = new List<TemplatePart>();

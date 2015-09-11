@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using Microsoft.AspNet.Http;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Routing.Constraints
 {
@@ -14,13 +13,23 @@ namespace Microsoft.AspNet.Routing.Constraints
     {
         private static readonly TimeSpan RegexMatchTimeout = TimeSpan.FromSeconds(10);
 
-        public RegexRouteConstraint([NotNull] Regex regex)
+        public RegexRouteConstraint(Regex regex)
         {
+            if (regex == null)
+            {
+                throw new ArgumentNullException(nameof(regex));
+            }
+
             Constraint = regex;
         }
 
-        public RegexRouteConstraint([NotNull] string regexPattern)
+        public RegexRouteConstraint(string regexPattern)
         {
+            if (regexPattern == null)
+            {
+                throw new ArgumentNullException(nameof(regexPattern));
+            }
+
             Constraint = new Regex(
                 regexPattern,
                 RegexOptions.CultureInvariant | RegexOptions.IgnoreCase,
@@ -29,12 +38,33 @@ namespace Microsoft.AspNet.Routing.Constraints
 
         public Regex Constraint { get; private set; }
 
-        public bool Match([NotNull] HttpContext httpContext,
-                          [NotNull] IRouter route,
-                          [NotNull] string routeKey,
-                          [NotNull] IDictionary<string, object> routeValues,
-                          RouteDirection routeDirection)
+        public bool Match(
+            HttpContext httpContext,
+            IRouter route,
+            string routeKey,
+            IDictionary<string, object> routeValues,
+            RouteDirection routeDirection)
         {
+            if (httpContext == null)
+            {
+                throw new ArgumentNullException(nameof(httpContext));
+            }
+
+            if (route == null)
+            {
+                throw new ArgumentNullException(nameof(route));
+            }
+
+            if (routeKey == null)
+            {
+                throw new ArgumentNullException(nameof(routeKey));
+            }
+
+            if (routeValues == null)
+            {
+                throw new ArgumentNullException(nameof(routeValues));
+            }
+
             object routeValue;
 
             if (routeValues.TryGetValue(routeKey, out routeValue)

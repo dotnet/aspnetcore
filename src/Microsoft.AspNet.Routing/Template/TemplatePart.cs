@@ -1,10 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Routing.Template
 {
@@ -20,12 +20,17 @@ namespace Microsoft.AspNet.Routing.Template
             };
         }
 
-        public static TemplatePart CreateParameter([NotNull] string name,
+        public static TemplatePart CreateParameter(string name,
                                                    bool isCatchAll,
                                                    bool isOptional,
                                                    object defaultValue,
                                                    IEnumerable<InlineConstraint> inlineConstraints)
         {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
             return new TemplatePart()
             {
                 IsParameter = true,

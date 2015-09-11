@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Routing
@@ -31,8 +30,13 @@ namespace Microsoft.AspNet.Routing
             get { return _routes.Count; }
         }
 
-        public void Add([NotNull] IRouter router)
+        public void Add(IRouter router)
         {
+            if (router == null)
+            {
+                throw new ArgumentNullException(nameof(router));
+            }
+
             var namedRouter = router as INamedRouter;
             if (namedRouter != null)
             {

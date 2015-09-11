@@ -1,9 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Http;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Routing
 {
@@ -16,8 +16,13 @@ namespace Microsoft.AspNet.Routing
         /// Initializes a new instance of the <see cref="CompositeRouteConstraint" /> class.
         /// </summary>
         /// <param name="constraints">The child constraints that must match for this constraint to match.</param>
-        public CompositeRouteConstraint([NotNull] IEnumerable<IRouteConstraint> constraints)
+        public CompositeRouteConstraint(IEnumerable<IRouteConstraint> constraints)
         {
+            if (constraints == null)
+            {
+                throw new ArgumentNullException(nameof(constraints));
+            }
+
             Constraints = constraints;
         }
 
@@ -27,12 +32,33 @@ namespace Microsoft.AspNet.Routing
         public IEnumerable<IRouteConstraint> Constraints { get; private set; }
 
         /// <inheritdoc />
-        public bool Match([NotNull] HttpContext httpContext,
-                          [NotNull] IRouter route,
-                          [NotNull] string routeKey,
-                          [NotNull] IDictionary<string, object> values,
-                          RouteDirection routeDirection)
+        public bool Match(
+            HttpContext httpContext,
+            IRouter route,
+            string routeKey,
+            IDictionary<string, object> values,
+            RouteDirection routeDirection)
         {
+            if (httpContext == null)
+            {
+                throw new ArgumentNullException(nameof(httpContext));
+            }
+
+            if (route == null)
+            {
+                throw new ArgumentNullException(nameof(route));
+            }
+
+            if (routeKey == null)
+            {
+                throw new ArgumentNullException(nameof(routeKey));
+            }
+
+            if (values == null)
+            {
+                throw new ArgumentNullException(nameof(values));
+            }
+
             foreach (var constraint in Constraints)
             {
                 if (!constraint.Match(httpContext, route, routeKey, values, routeDirection))

@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Routing.Constraints;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Routing
 {
@@ -28,9 +27,13 @@ namespace Microsoft.AspNet.Routing
             {
                 return _constraintTypeMap;
             }
-            [param: NotNull]
             set
             {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(ConstraintMap));
+                }
+
                 _constraintTypeMap = value;
             }
         }

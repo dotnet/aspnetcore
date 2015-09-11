@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNet.Routing;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.DependencyInjection
 {
@@ -19,8 +18,13 @@ namespace Microsoft.Framework.DependencyInjection
         /// <param name="setupAction">An action to configure the <see cref="RouteOptions"/>.</param>
         public static void ConfigureRouting(
             this IServiceCollection services,
-            [NotNull] Action<RouteOptions> setupAction)
+            Action<RouteOptions> setupAction)
         {
+            if (setupAction == null)
+            {
+                throw new ArgumentNullException(nameof(setupAction));
+            }
+
             services.Configure(setupAction);
         }
     }

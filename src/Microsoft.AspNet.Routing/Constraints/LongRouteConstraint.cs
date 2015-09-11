@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.AspNet.Http;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Routing.Constraints
 {
@@ -15,12 +14,33 @@ namespace Microsoft.AspNet.Routing.Constraints
     public class LongRouteConstraint : IRouteConstraint
     {
         /// <inheritdoc />
-        public bool Match([NotNull] HttpContext httpContext,
-                          [NotNull] IRouter route,
-                          [NotNull] string routeKey,
-                          [NotNull] IDictionary<string, object> values,
-                          RouteDirection routeDirection)
+        public bool Match(
+            HttpContext httpContext,
+            IRouter route,
+            string routeKey,
+            IDictionary<string, object> values,
+            RouteDirection routeDirection)
         {
+            if (httpContext == null)
+            {
+                throw new ArgumentNullException(nameof(httpContext));
+            }
+
+            if (route == null)
+            {
+                throw new ArgumentNullException(nameof(route));
+            }
+
+            if (routeKey == null)
+            {
+                throw new ArgumentNullException(nameof(routeKey));
+            }
+
+            if (values == null)
+            {
+                throw new ArgumentNullException(nameof(values));
+            }
+
             object value;
             if (values.TryGetValue(routeKey, out value) && value != null)
             {
@@ -31,7 +51,7 @@ namespace Microsoft.AspNet.Routing.Constraints
 
                 long result;
                 var valueString = Convert.ToString(value, CultureInfo.InvariantCulture);
-                return Int64.TryParse(valueString, NumberStyles.Integer, CultureInfo.InvariantCulture, out result);
+                return long.TryParse(valueString, NumberStyles.Integer, CultureInfo.InvariantCulture, out result);
             }
 
             return false;

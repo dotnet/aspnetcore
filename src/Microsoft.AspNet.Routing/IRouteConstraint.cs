@@ -3,16 +3,15 @@
 
 using System.Collections.Generic;
 using Microsoft.AspNet.Http;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Routing
 {
     public interface IRouteConstraint
     {
-        bool Match([NotNull] HttpContext httpContext,
-                   [NotNull] IRouter route,
-                   [NotNull] string routeKey,
-                   [NotNull] IDictionary<string, object> values,
+        bool Match(HttpContext httpContext,
+                   IRouter route,
+                   string routeKey,
+                   IDictionary<string, object> values,
                    RouteDirection routeDirection);
     }
 }

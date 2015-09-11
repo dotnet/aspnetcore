@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Framework.Internal;
-
 namespace Microsoft.AspNet.Routing
 {
     /// <summary>
@@ -15,6 +13,6 @@ namespace Microsoft.AspNet.Routing
         /// </summary>
         /// <param name="inlineConstraint">The inline constraint to resolve.</param>
         /// <returns>The <see cref="IRouteConstraint"/> the inline constraint was resolved to.</returns>
-        IRouteConstraint ResolveConstraint([NotNull] string inlineConstraint);
+        IRouteConstraint ResolveConstraint(string inlineConstraint);
     }
 }

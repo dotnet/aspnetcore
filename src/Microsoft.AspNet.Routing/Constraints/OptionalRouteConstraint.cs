@@ -1,9 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Http;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Routing.Constraints
 {
@@ -12,19 +12,45 @@ namespace Microsoft.AspNet.Routing.Constraints
     /// </summary>
     public class OptionalRouteConstraint : IRouteConstraint
     {
-        public OptionalRouteConstraint([NotNull] IRouteConstraint innerConstraint)
+        public OptionalRouteConstraint(IRouteConstraint innerConstraint)
         {
+            if (innerConstraint == null)
+            {
+                throw new ArgumentNullException(nameof(innerConstraint));
+            }
+
             InnerConstraint = innerConstraint;
         }
 
         public IRouteConstraint InnerConstraint { get; }
 
-        public bool Match([NotNull] HttpContext httpContext,
-                          [NotNull] IRouter route,
-                          [NotNull] string routeKey,
-                          [NotNull] IDictionary<string, object> values,
-                          RouteDirection routeDirection)
+        public bool Match(
+            HttpContext httpContext,
+            IRouter route,
+            string routeKey,
+            IDictionary<string, object> values,
+            RouteDirection routeDirection)
         {
+            if (httpContext == null)
+            {
+                throw new ArgumentNullException(nameof(httpContext));
+            }
+
+            if (route == null)
+            {
+                throw new ArgumentNullException(nameof(route));
+            }
+
+            if (routeKey == null)
+            {
+                throw new ArgumentNullException(nameof(routeKey));
+            }
+
+            if (values == null)
+            {
+                throw new ArgumentNullException(nameof(values));
+            }
+
             object value;
             if (values.TryGetValue(routeKey, out value))
             {
