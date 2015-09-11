@@ -275,8 +275,7 @@ namespace Microsoft.AspNet.Session
             {
                 services.AddInstance(typeof(ILoggerFactory), loggerFactory);
                 services.AddCaching();
-                services.AddSession();
-                services.ConfigureSession(o => o.IdleTimeout = TimeSpan.FromMilliseconds(30));
+                services.AddSession(o => o.IdleTimeout = TimeSpan.FromMilliseconds(30));
             }))
             {
                 var client = server.CreateClient();
@@ -328,8 +327,7 @@ namespace Microsoft.AspNet.Session
             {
                 services.AddInstance(typeof(ILoggerFactory), new NullLoggerFactory());
                 services.AddCaching();
-                services.AddSession();
-                services.ConfigureSession(o => o.IdleTimeout = TimeSpan.FromMinutes(20));
+                services.AddSession(o => o.IdleTimeout = TimeSpan.FromMinutes(20));
                 services.Configure<MemoryCacheOptions>(o => o.Clock = clock);
             }))
             {

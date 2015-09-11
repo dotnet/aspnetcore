@@ -25,15 +25,15 @@ namespace Microsoft.Framework.DependencyInjection
         }
 
         /// <summary>
-        /// Configures the session.
+        /// Adds services required for application session state.
         /// </summary>
-        /// <param name="services">The <see cref="IServiceCollection"/> to configure the services.</param>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
         /// <param name="configure">The session options to configure the middleware with.</param>
-        public static void ConfigureSession(
-            [NotNull] this IServiceCollection services,
-            [NotNull] Action<SessionOptions> configure)
+        /// <returns>The <see cref="IServiceCollection"/>.</returns>
+        public static IServiceCollection AddSession([NotNull] this IServiceCollection services, Action<SessionOptions> configure)
         {
             services.Configure(configure);
+            return services.AddSession();
         }
     }
 }

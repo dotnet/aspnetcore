@@ -36,9 +36,7 @@ namespace SessionSample
             // Adds a default in-memory implementation of IDistributedCache
             services.AddCaching();
 
-            services.AddSession();
-
-            services.ConfigureSession(o =>
+            services.AddSession(o =>
             {
                 o.IdleTimeout = TimeSpan.FromSeconds(10);
             });
