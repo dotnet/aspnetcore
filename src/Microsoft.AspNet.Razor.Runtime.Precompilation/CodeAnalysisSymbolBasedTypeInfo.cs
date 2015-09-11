@@ -24,7 +24,8 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
         /// </summary>
         public static readonly System.Reflection.TypeInfo OpenGenericDictionaryTypeInfo =
             typeof(IDictionary<,>).GetTypeInfo();
-        private readonly CodeAnalysisSymbolLookupCache _symbolLookup;
+        private static readonly System.Reflection.TypeInfo TagHelperTypeInfo =
+            typeof(ITagHelper).GetTypeInfo();
         private readonly ITypeSymbol _type;
         private readonly ITypeSymbol _underlyingType;
         private string _fullName;
@@ -34,12 +35,8 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
         /// Initializes a new instance of <see cref="CodeAnalysisSymbolBasedTypeInfo"/>.
         /// </summary>
         /// <param name="propertySymbol">The <see cref="IPropertySymbol"/>.</param>
-        /// <param name="symbolLookup">The <see cref="CodeAnalysisSymbolLookupCache"/>.</param>
-        public CodeAnalysisSymbolBasedTypeInfo(
-            [NotNull] ITypeSymbol type,
-            [NotNull] CodeAnalysisSymbolLookupCache symbolLookup)
+        public CodeAnalysisSymbolBasedTypeInfo([NotNull] ITypeSymbol type)
         {
-            _symbolLookup = symbolLookup;
             _type = type;
             _underlyingType = UnwrapArrayType(type);
         }
@@ -110,7 +107,7 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
             {
                 if (_properties == null)
                 {
-                    _properties = GetProperties(_type, _symbolLookup);
+                    _properties = GetProperties(_type);
                 }
 
                 return _properties;
@@ -122,8 +119,8 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
         {
             get
             {
-                var interfaceSymbol = _symbolLookup.GetSymbol(typeof(ITagHelper).GetTypeInfo());
-                return _type.AllInterfaces.Any(implementedInterface => implementedInterface == interfaceSymbol);
+                return _type.AllInterfaces.Any(
+                    implementedInterface => IsType(implementedInterface, TagHelperTypeInfo));
             }
         }
 
@@ -131,17 +128,15 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
         public IEnumerable<TAttribute> GetCustomAttributes<TAttribute>()
             where TAttribute : Attribute
         {
-            return CodeAnalysisAttributeUtilities.GetCustomAttributes<TAttribute>(_type, _symbolLookup);
+            return CodeAnalysisAttributeUtilities.GetCustomAttributes<TAttribute>(_type);
         }
 
         /// <inheritdoc />
         public ITypeInfo[] GetGenericDictionaryParameters()
         {
-            var dictionarySymbol = _symbolLookup.GetSymbol(OpenGenericDictionaryTypeInfo);
-
             INamedTypeSymbol dictionaryInterface;
             if (_type.Kind == SymbolKind.NamedType &&
-                ((INamedTypeSymbol)_type).ConstructedFrom == dictionarySymbol)
+                IsType(((INamedTypeSymbol)_type).ConstructedFrom, OpenGenericDictionaryTypeInfo))
             {
                 dictionaryInterface = (INamedTypeSymbol)_type;
             }
@@ -149,7 +144,8 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
             {
                 dictionaryInterface = _type
                     .AllInterfaces
-                    .FirstOrDefault(implementedInterface => implementedInterface.ConstructedFrom == dictionarySymbol);
+                    .FirstOrDefault(implementedInterface =>
+                        IsType(implementedInterface.ConstructedFrom, OpenGenericDictionaryTypeInfo));
             }
 
             if (dictionaryInterface != null)
@@ -158,12 +154,30 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
 
                 return new[]
                 {
-                    new CodeAnalysisSymbolBasedTypeInfo(dictionaryInterface.TypeArguments[0], _symbolLookup),
-                    new CodeAnalysisSymbolBasedTypeInfo(dictionaryInterface.TypeArguments[1], _symbolLookup),
+                    new CodeAnalysisSymbolBasedTypeInfo(dictionaryInterface.TypeArguments[0]),
+                    new CodeAnalysisSymbolBasedTypeInfo(dictionaryInterface.TypeArguments[1]),
                 };
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Gets a value that indicates if <paramref name="targetTypeInfo"/> is represented using
+        /// <paramref name="sourceTypeSymbol"/> in the symbol graph.
+        /// </summary>
+        /// <param name="sourceTypeSymbol">The <see cref="ITypeSymbol"/>.</param>
+        /// <param name="targetTypeInfo">The <see cref="System.Reflection.TypeInfo"/>.</param>
+        /// <returns><c>true</c> if <paramref name="targetTypeInfo"/> is a symbol for
+        /// <paramref name="sourceTypeSymbol"/>.</returns>
+        public static bool IsType(
+            ITypeSymbol sourceTypeSymbol,
+            System.Reflection.TypeInfo targetTypeInfo)
+        {
+                return string.Equals(
+                    targetTypeInfo.FullName,
+                    GetFullName(sourceTypeSymbol),
+                    StringComparison.Ordinal);
         }
 
         /// <summary>
@@ -205,9 +219,7 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
         /// <inheritdoc />
         public override int GetHashCode() => FullName.GetHashCode();
 
-        private static List<IPropertyInfo> GetProperties(
-            ITypeSymbol typeSymbol,
-            CodeAnalysisSymbolLookupCache symbolLookup)
+        private static List<IPropertyInfo> GetProperties(ITypeSymbol typeSymbol)
         {
             var properties = new List<IPropertyInfo>();
             var overridenProperties = new HashSet<IPropertySymbol>();
@@ -219,7 +231,7 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
                     var propertySymbol = (IPropertySymbol)member;
                     if (!propertySymbol.IsIndexer && !overridenProperties.Contains(propertySymbol))
                     {
-                        var propertyInfo = new CodeAnalysisSymbolBasedPropertyInfo(propertySymbol, symbolLookup);
+                        var propertyInfo = new CodeAnalysisSymbolBasedPropertyInfo(propertySymbol);
                         properties.Add(propertyInfo);
                     }
 

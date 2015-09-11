@@ -17,20 +17,15 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
     public class CodeAnalysisSymbolBasedPropertyInfo : IPropertyInfo
     {
         private readonly IPropertySymbol _propertySymbol;
-        private readonly CodeAnalysisSymbolLookupCache _symbolLookup;
 
         /// <summary>
         /// Initializes a new instance of <see cref="CodeAnalysisSymbolBasedPropertyInfo"/>.
         /// </summary>
         /// <param name="propertySymbol">The <see cref="IPropertySymbol"/>.</param>
-        /// <param name="symbolLookup">The <see cref="CodeAnalysisSymbolLookupCache"/>.</param>
-        public CodeAnalysisSymbolBasedPropertyInfo(
-            [NotNull] IPropertySymbol propertySymbol,
-            [NotNull] CodeAnalysisSymbolLookupCache symbolLookup)
+        public CodeAnalysisSymbolBasedPropertyInfo([NotNull] IPropertySymbol propertySymbol)
         {
-            _symbolLookup = symbolLookup;
             _propertySymbol = propertySymbol;
-            PropertyType = new CodeAnalysisSymbolBasedTypeInfo(_propertySymbol.Type, _symbolLookup);
+            PropertyType = new CodeAnalysisSymbolBasedTypeInfo(_propertySymbol.Type);
         }
 
         /// <inheritdoc />
@@ -63,7 +58,7 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
         public IEnumerable<TAttribute> GetCustomAttributes<TAttribute>()
             where TAttribute : Attribute
         {
-            return CodeAnalysisAttributeUtilities.GetCustomAttributes<TAttribute>(_propertySymbol, _symbolLookup);
+            return CodeAnalysisAttributeUtilities.GetCustomAttributes<TAttribute>(_propertySymbol);
         }
     }
 }

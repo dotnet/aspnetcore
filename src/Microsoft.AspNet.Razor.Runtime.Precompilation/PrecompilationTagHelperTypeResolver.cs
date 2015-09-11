@@ -19,7 +19,6 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
         private readonly Dictionary<string, IEnumerable<ITypeInfo>> _assemblyLookup
             = new Dictionary<string, IEnumerable<ITypeInfo>>(StringComparer.Ordinal);
         private readonly Compilation _compilation;
-        private readonly CodeAnalysisSymbolLookupCache _symbolLookup;
 
         /// <summary>
         /// Initializes a new instance of <see cref="PrecompilationTagHelperTypeResolver"/>.
@@ -28,11 +27,10 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
         public PrecompilationTagHelperTypeResolver([NotNull] Compilation compilation)
         {
             _compilation = compilation;
-            _symbolLookup = new CodeAnalysisSymbolLookupCache(compilation);
         }
 
         /// <inheritdoc />
-        protected  override IEnumerable<ITypeInfo> GetTopLevelExportedTypes([NotNull] AssemblyName assemblyName)
+        protected override IEnumerable<ITypeInfo> GetTopLevelExportedTypes([NotNull] AssemblyName assemblyName)
         {
             lock (_assemblyLookupLock)
             {
@@ -83,21 +81,21 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
                 Resources.FormatCodeAnalysis_UnableToLoadAssemblyReference(assemblyName));
         }
 
-        private List<ITypeInfo> GetExportedTypes(IAssemblySymbol assembly)
+        private static List<ITypeInfo> GetExportedTypes(IAssemblySymbol assembly)
         {
             var exportedTypes = new List<ITypeInfo>();
             GetExportedTypes(assembly.GlobalNamespace, exportedTypes);
             return exportedTypes;
         }
 
-        private void GetExportedTypes(INamespaceSymbol namespaceSymbol, List<ITypeInfo> exportedTypes)
+        private static void GetExportedTypes(INamespaceSymbol namespaceSymbol, List<ITypeInfo> exportedTypes)
         {
             foreach (var type in namespaceSymbol.GetTypeMembers())
             {
                 if (type.TypeKind == TypeKind.Class &&
                     type.DeclaredAccessibility == Accessibility.Public)
                 {
-                    exportedTypes.Add(new CodeAnalysisSymbolBasedTypeInfo(type, _symbolLookup));
+                    exportedTypes.Add(new CodeAnalysisSymbolBasedTypeInfo(type));
                 }
             }
 

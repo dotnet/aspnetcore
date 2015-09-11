@@ -28,33 +28,29 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
         /// </summary>
         /// <typeparam name="TAttribute">The <see cref="Attribute"/> type.</typeparam>
         /// <param name="symbol">The <see cref="ISymbol"/> to find attributes on.</param>
-        /// <param name="symbolLookup">The <see cref="CodeAnalysisSymbolLookupCache"/>.</param>
         /// <returns></returns>
-        public static IEnumerable<TAttribute> GetCustomAttributes<TAttribute>(
-            [NotNull] ISymbol symbol,
-            [NotNull] CodeAnalysisSymbolLookupCache symbolLookup)
+        public static IEnumerable<TAttribute> GetCustomAttributes<TAttribute>([NotNull] ISymbol symbol)
             where TAttribute : Attribute
         {
             var attributes = symbol.GetAttributes();
             if (attributes.Length > 0)
             {
-                var attributeSymbol = symbolLookup.GetSymbol(typeof(TAttribute).GetTypeInfo());
                 return attributes
-                    .Where(attribute => attribute.AttributeClass == attributeSymbol)
-                    .Select(attribute => CreateAttribute<TAttribute>(attribute, symbolLookup))
+                    .Where(attribute => CodeAnalysisSymbolBasedTypeInfo.IsType(
+                        attribute.AttributeClass,
+                        typeof(TAttribute).GetTypeInfo()))
+                    .Select(attribute => CreateAttribute<TAttribute>(attribute))
                     .ToArray();
             }
 
             return Enumerable.Empty<TAttribute>();
         }
 
-        private static TAttribute CreateAttribute<TAttribute>(
-            AttributeData attributeData,
-            CodeAnalysisSymbolLookupCache symbolLookup)
+        private static TAttribute CreateAttribute<TAttribute>(AttributeData attributeData)
             where TAttribute : Attribute
         {
             TAttribute attribute;
-            var matchInfo = MatchConstructor(typeof(TAttribute), attributeData.ConstructorArguments, symbolLookup);
+            var matchInfo = MatchConstructor(typeof(TAttribute), attributeData.ConstructorArguments);
             Func<object[], Attribute> constructorDelegate;
             if (!_constructorCache.TryGetValue(matchInfo.Constructor, out constructorDelegate))
             {
@@ -80,8 +76,7 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
 
                     var propertyValue = ConvertTypedConstantValue(
                         helper.Property.PropertyType,
-                        item.Value,
-                        symbolLookup);
+                        item.Value);
                     helper.SetValue(attribute, propertyValue);
                 }
             }
@@ -117,10 +112,9 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
 
         private static ConstructorMatchInfo MatchConstructor(
             Type type,
-            ImmutableArray<TypedConstant> symbolConstructorArguments,
-            CodeAnalysisSymbolLookupCache symbolLookup)
+            ImmutableArray<TypedConstant> symbolConstructorArguments)
         {
-            var constructor = FindConstructor(type, symbolConstructorArguments, symbolLookup);
+            var constructor = FindConstructor(type, symbolConstructorArguments);
             var constructorParmaters = constructor.GetParameters();
 
             var arguments = new object[symbolConstructorArguments.Length];
@@ -128,8 +122,7 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
             {
                 var value = ConvertTypedConstantValue(
                     constructorParmaters[i].ParameterType,
-                    symbolConstructorArguments[i],
-                    symbolLookup);
+                    symbolConstructorArguments[i]);
 
                 arguments[i] = value;
             }
@@ -143,8 +136,7 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
 
         private static ConstructorInfo FindConstructor(
             Type type,
-            ImmutableArray<TypedConstant> symbolConstructorArguments,
-            CodeAnalysisSymbolLookupCache symbolLookup)
+            ImmutableArray<TypedConstant> symbolConstructorArguments)
         {
             var constructors = type.GetConstructors();
             foreach (var constructor in constructors)
@@ -163,8 +155,9 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
                         runtimeParameter.IsArray)
                     {
                         var arrayType = (IArrayTypeSymbol)symbolConstructorArguments[index].Type;
-                        if (symbolLookup.GetSymbol(runtimeParameter.GetElementType().GetTypeInfo()) !=
-                            arrayType.ElementType)
+                        if (!CodeAnalysisSymbolBasedTypeInfo.IsType(
+                            arrayType.ElementType,
+                            runtimeParameter.GetElementType().GetTypeInfo()))
                         {
                             parametersMatched = false;
                             break;
@@ -172,8 +165,9 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
                     }
                     else
                     {
-                        var parameterSymbol = symbolLookup.GetSymbol(runtimeParameter.GetTypeInfo());
-                        if (symbolConstructorArguments[index].Type != parameterSymbol)
+                        if (!CodeAnalysisSymbolBasedTypeInfo.IsType(
+                            symbolConstructorArguments[index].Type,
+                            runtimeParameter.GetTypeInfo()))
                         {
                             parametersMatched = false;
                             break;
@@ -192,8 +186,7 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
 
         private static object ConvertTypedConstantValue(
             Type type,
-            TypedConstant constructorArgument,
-            CodeAnalysisSymbolLookupCache symbolLookup)
+            TypedConstant constructorArgument)
         {
             switch (constructorArgument.Kind)
             {
@@ -212,7 +205,7 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
                     for (var index = 0; index < values.Length; index++)
                     {
                         values.SetValue(
-                            ConvertTypedConstantValue(elementType, constructorArgument.Values[index], symbolLookup),
+                            ConvertTypedConstantValue(elementType, constructorArgument.Values[index]),
                             index);
                     }
                     return values;
