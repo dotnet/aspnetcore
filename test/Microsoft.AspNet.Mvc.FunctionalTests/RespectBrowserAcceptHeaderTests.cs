@@ -1,24 +1,24 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc.Formatters.Xml;
 using Microsoft.AspNet.Testing.xunit;
-using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class RespectBrowserAcceptHeaderTests
+    public class RespectBrowserAcceptHeaderTests : IClassFixture<MvcTestFixture<FormatterWebSite.Startup>>
     {
-        private const string SiteName = nameof(FormatterWebSite);
-        private readonly Action<IApplicationBuilder> _app = new FormatterWebSite.Startup().Configure;
-        private readonly Action<IServiceCollection> _configureServices = new FormatterWebSite.Startup().ConfigureServices;
+        public RespectBrowserAcceptHeaderTests(MvcTestFixture<FormatterWebSite.Startup> fixture)
+        {
+            Client = fixture.Client;
+        }
+
+        public HttpClient Client { get; }
 
         [Theory]
         [InlineData("application/xml,*/*;0.2")]
@@ -26,12 +26,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task AllMediaRangeAcceptHeader_FirstFormatterInListWritesResponse(string acceptHeader)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-            client.DefaultRequestHeaders.Add("Accept", acceptHeader);
+            var request = RequestWithAccept("http://localhost/RespectBrowserAcceptHeader/EmployeeInfo", acceptHeader);
 
             // Act
-            var response = await client.GetAsync("http://localhost/RespectBrowserAcceptHeader/EmployeeInfo");
+            var response = await Client.SendAsync(request);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -50,15 +48,16 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task AllMediaRangeAcceptHeader_ProducesAttributeIsHonored(string acceptHeader)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-            client.DefaultRequestHeaders.Add("Accept", acceptHeader);
-            var expectedResponseData = "<RespectBrowserAcceptHeaderController.Employee xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\"" +
-                                       " xmlns=\"http://schemas.datacontract.org/2004/07/FormatterWebSite.Controllers\"><Id>20</Id><Name>Mike" +
-                                       "</Name></RespectBrowserAcceptHeaderController.Employee>";
+            var request = RequestWithAccept(
+                "http://localhost/RespectBrowserAcceptHeader/EmployeeInfoWithProduces",
+                acceptHeader);
+            var expectedResponseData =
+                "<RespectBrowserAcceptHeaderController.Employee xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\"" +
+                " xmlns=\"http://schemas.datacontract.org/2004/07/FormatterWebSite.Controllers\"><Id>20</Id><Name>Mike" +
+                "</Name></RespectBrowserAcceptHeaderController.Employee>";
 
             // Act
-            var response = await client.GetAsync("http://localhost/RespectBrowserAcceptHeader/EmployeeInfoWithProduces");
+            var response = await Client.SendAsync(request);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -77,16 +76,16 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task AllMediaRangeAcceptHeader_WithContentTypeHeader_ContentTypeIsHonored(string acceptHeader)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-            client.DefaultRequestHeaders.Add("Accept", acceptHeader);
-            var requestData = "<RespectBrowserAcceptHeaderController.Employee xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\"" +
-                              " xmlns=\"http://schemas.datacontract.org/2004/07/FormatterWebSite.Controllers\"><Id>35</Id><Name>Jimmy" +
-                              "</Name></RespectBrowserAcceptHeaderController.Employee>";
+            var requestData =
+                "<RespectBrowserAcceptHeaderController.Employee xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\"" +
+                " xmlns=\"http://schemas.datacontract.org/2004/07/FormatterWebSite.Controllers\"><Id>35</Id><Name>Jimmy" +
+                "</Name></RespectBrowserAcceptHeaderController.Employee>";
+            var request = RequestWithAccept("http://localhost/RespectBrowserAcceptHeader/CreateEmployee", acceptHeader);
+            request.Content = new StringContent(requestData, Encoding.UTF8, "application/xml");
+            request.Method = HttpMethod.Post;
 
             // Act
-            var response = await client.PostAsync("http://localhost/RespectBrowserAcceptHeader/CreateEmployee",
-                                                    new StringContent(requestData, Encoding.UTF8, "application/xml"));
+            var response = await Client.SendAsync(request);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -95,6 +94,14 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal("application/xml; charset=utf-8", response.Content.Headers.ContentType.ToString());
             var responseData = await response.Content.ReadAsStringAsync();
             Assert.Equal(requestData, responseData);
+        }
+
+        private static HttpRequestMessage RequestWithAccept(string url, string accept)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+            request.Headers.Add("Accept", accept);
+
+            return request;
         }
     }
 }

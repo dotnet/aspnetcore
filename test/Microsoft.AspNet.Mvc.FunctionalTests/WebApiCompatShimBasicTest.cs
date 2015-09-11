@@ -19,21 +19,25 @@ using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class WebApiCompatShimBasicTest
+    public class WebApiCompatShimBasicTest : IClassFixture<MvcTestFixture<WebApiCompatShimWebSite.Startup>>
     {
         private const string SiteName = nameof(WebApiCompatShimWebSite);
         private readonly Action<IApplicationBuilder> _app = new WebApiCompatShimWebSite.Startup().Configure;
-        private readonly Action<IServiceCollection> _configureServices = new WebApiCompatShimWebSite.Startup().ConfigureServices;
+        private readonly Action<IServiceCollection> _configureServices =
+            new WebApiCompatShimWebSite.Startup().ConfigureServices;
+
+        public WebApiCompatShimBasicTest(MvcTestFixture<WebApiCompatShimWebSite.Startup> fixture)
+        {
+            Client = fixture.Client;
+        }
+
+        public HttpClient Client { get; }
 
         [Fact]
         public async Task ApiController_Activates_HttpContextAndUser()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/api/Blog/BasicApi/WriteToHttpContext");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/api/Blog/BasicApi/WriteToHttpContext");
             var content = await response.Content.ReadAsStringAsync();
 
             // Assert
@@ -46,12 +50,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ApiController_Activates_UrlHelper()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/api/Blog/BasicApi/GenerateUrl");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/api/Blog/BasicApi/GenerateUrl");
             var content = await response.Content.ReadAsStringAsync();
 
             // Assert
@@ -61,24 +61,21 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 content);
         }
 
-#if !DNXCORE50
-
         [Fact]
         public async Task Options_SetsDefaultFormatters()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             var expected = new string[]
             {
                 typeof(JsonMediaTypeFormatter).FullName,
                 typeof(XmlMediaTypeFormatter).FullName,
+#if !DNXCORE50
                 typeof(FormUrlEncodedMediaTypeFormatter).FullName,
+#endif
             };
 
             // Act
-            var response = await client.GetAsync("http://localhost/api/Blog/BasicApi/GetFormatters");
+            var response = await Client.GetAsync("http://localhost/api/Blog/BasicApi/GetFormatters");
             var content = await response.Content.ReadAsStringAsync();
 
             var formatters = JsonConvert.DeserializeObject<string[]>(content);
@@ -88,17 +85,11 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(expected, formatters);
         }
 
-#endif
-
         [Fact]
         public async Task ActionThrowsHttpResponseException_WithStatusCode()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync(
+            // Arrange & Act
+            var response = await Client.GetAsync(
                 "http://localhost/api/Blog/HttpResponseException/ThrowsHttpResponseExceptionWithHttpStatusCode");
 
             // Assert
@@ -110,12 +101,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ActionThrowsHttpResponseException_WithResponse()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync(
+            // Arrange & Act
+            var response = await Client.GetAsync(
                 "http://localhost/api/Blog/HttpResponseException" +
                 "/ThrowsHttpResponseExceptionWithHttpResponseMessage?message=send some message");
 
@@ -128,12 +115,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ActionThrowsHttpResponseException_EnsureGlobalHttpresponseExceptionActionFilter_IsInvoked()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync(
+            // Arrange & Act
+            var response = await Client.GetAsync(
                 "http://localhost/api/Blog/HttpResponseException/ThrowsHttpResponseExceptionEnsureGlobalFilterRunsLast");
 
             // Assert
@@ -146,12 +129,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ActionThrowsHttpResponseException_EnsureGlobalFilterConvention_IsApplied()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync(
+            // Arrange & Act
+            var response = await Client.GetAsync(
                 "http://localhost/api/Blog/" +
                 "HttpResponseException/ThrowsHttpResponseExceptionInjectAFilterToHandleHttpResponseException");
 
@@ -165,12 +144,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ApiController_CanValidateCustomObjectWithPrefix_Fails()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetStringAsync(
+            // Arrange & Act
+            var response = await Client.GetStringAsync(
                 "http://localhost/api/Blog/BasicApi/ValidateObjectWithPrefixFails?prefix=prefix");
 
             // Assert
@@ -182,12 +157,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ApiController_CanValidateCustomObject_IsSuccessFul()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetStringAsync("http://localhost/api/Blog/BasicApi/ValidateObject_Passes");
+            // Arrange & Act
+            var response = await Client.GetStringAsync("http://localhost/api/Blog/BasicApi/ValidateObject_Passes");
 
             // Assert
             Assert.Equal("true", response);
@@ -196,12 +167,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ApiController_CanValidateCustomObject_Fails()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetStringAsync("http://localhost/api/Blog/BasicApi/ValidateObjectFails");
+            // Arrange & Act
+            var response = await Client.GetStringAsync("http://localhost/api/Blog/BasicApi/ValidateObjectFails");
 
             // Assert
             var json = JsonConvert.DeserializeObject<Dictionary<string, string>>(response);
@@ -215,15 +182,11 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_RequestProperty()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            var expected =
-                "POST http://localhost/api/Blog/HttpRequestMessage/EchoProperty localhost " +
+            var expected = "POST http://localhost/api/Blog/HttpRequestMessage/EchoProperty localhost " +
                 "13 Hello, world!";
 
             // Act
-            var response = await client.PostAsync(
+            var response = await Client.PostAsync(
                 "http://localhost/api/Blog/HttpRequestMessage/EchoProperty",
                 new StringContent("Hello, world!"));
             var content = await response.Content.ReadAsStringAsync();
@@ -239,15 +202,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_RequestParameter()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             var expected =
                 "POST http://localhost/api/Blog/HttpRequestMessage/EchoParameter localhost " +
                 "17 Hello, the world!";
 
             // Act
-            var response = await client.PostAsync(
+            var response = await Client.PostAsync(
                 "http://localhost/api/Blog/HttpRequestMessage/EchoParameter",
                 new StringContent("Hello, the world!"));
             var content = await response.Content.ReadAsStringAsync();
@@ -261,14 +221,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_ResponseReturned()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            var expected =
-                "POST Hello, HttpResponseMessage world!";
+            var expected = "POST Hello, HttpResponseMessage world!";
 
             // Act
-            var response = await client.PostAsync(
+            var response = await Client.PostAsync(
                 "http://localhost/api/Blog/HttpRequestMessage/EchoWithResponseMessage",
                 new StringContent("Hello, HttpResponseMessage world!"));
             var content = await response.Content.ReadAsStringAsync();
@@ -287,22 +243,17 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_ExplicitChunkedEncoding_IsIgnored()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            var expected =
-                "POST Hello, HttpResponseMessage world!";
-
-            // Act
+            var expected = "POST Hello, HttpResponseMessage world!";
             var request = new HttpRequestMessage();
             request.Method = HttpMethod.Post;
             request.RequestUri = new Uri("http://localhost/api/Blog/HttpRequestMessage/EchoWithResponseMessageChunked");
             request.Content = new StringContent("Hello, HttpResponseMessage world!");
 
+            // Act
             // HttpClient buffers the response by default and this would set the Content-Length header and so
             // this will not provide us accurate information as to whether the server set the header or
             // the client. So here we explicitly mention to only read the headers and not the body.
-            var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+            var response = await Client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -315,7 +266,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             Assert.Null(response.Headers.TransferEncodingChunked);
 
-            // When HttpClient by default reads and buffers the resposne body, it diposes the
+            // When HttpClient by default reads and buffers the response body, it disposes the
             // response stream for us. But since we are reading the content explicitly, we need
             // to close it.
             var responseStream = await response.Content.ReadAsStreamAsync();
@@ -343,7 +294,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var request = new HttpRequestMessage(
                 HttpMethod.Get,
                 "http://localhost/api/Blog/HttpRequestMessage/GetUser");
-
             request.Headers.Accept.ParseAdd(accept);
 
             // Act
@@ -393,7 +343,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var request = new HttpRequestMessage(
                 HttpMethod.Get,
                 "http://localhost/api/Blog/HttpRequestMessage/Fail");
-
             request.Headers.Accept.ParseAdd(accept);
 
             // Act
@@ -410,9 +359,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_CreateResponse_HardcodedFormatter()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             var request = new HttpRequestMessage(
                 HttpMethod.Get,
                 "http://localhost/api/Blog/HttpRequestMessage/GetUserJson");
@@ -421,7 +367,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/xml"));
 
             // Act
-            var response = await client.SendAsync(request);
+            var response = await Client.SendAsync(request);
             var user = await response.Content.ReadAsAsync<WebApiCompatShimWebSite.User>();
 
             // Assert
@@ -436,13 +382,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task WebApiRouting_AccessMvcController(string url, HttpStatusCode expected)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             var request = new HttpRequestMessage(HttpMethod.Get, url);
 
             // Act
-            var response = await client.SendAsync(request);
+            var response = await Client.SendAsync(request);
 
             // Assert
             Assert.Equal(expected, response.StatusCode);
@@ -454,13 +397,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task WebApiRouting_AccessWebApiController(string url, HttpStatusCode expected)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             var request = new HttpRequestMessage(HttpMethod.Get, url);
 
             // Act
-            var response = await client.SendAsync(request);
+            var response = await Client.SendAsync(request);
 
             // Assert
             Assert.Equal(expected, response.StatusCode);
@@ -470,12 +410,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_Returns_ByteArrayContent()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
             var expectedBody = "Hello from ByteArrayContent!!";
 
             // Act
-            var response = await client.GetAsync("http://localhost/api/Blog/HttpRequestMessage/ReturnByteArrayContent");
+            var response = await Client.GetAsync("http://localhost/api/Blog/HttpRequestMessage/ReturnByteArrayContent");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -490,12 +428,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_Returns_StreamContent()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
             var expectedBody = "This content is from a file";
 
             // Act
-            var response = await client.GetAsync("http://localhost/api/Blog/HttpRequestMessage/ReturnStreamContent");
+            var response = await Client.GetAsync("http://localhost/api/Blog/HttpRequestMessage/ReturnStreamContent");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -513,12 +449,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [InlineData("ReturnPushStreamContentSync", "Hello from PushStreamContent Sync!!")]
         public async Task ApiController_Returns_PushStreamContent(string action, string expectedBody)
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/api/Blog/HttpRequestMessage/" + action);
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/api/Blog/HttpRequestMessage/" + action);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -533,13 +465,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_Returns_PushStreamContentWithCustomHeaders()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
             var expectedBody = "Hello from PushStreamContent with custom headers!!";
             var multipleValues = new[] { "value1", "value2" };
 
             // Act
-            var response = await client.GetAsync("http://localhost/api/Blog/HttpRequestMessage/ReturnPushStreamContentWithCustomHeaders");
+            var response = await Client.GetAsync(
+                "http://localhost/api/Blog/HttpRequestMessage/ReturnPushStreamContentWithCustomHeaders");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);

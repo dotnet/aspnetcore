@@ -4,29 +4,26 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.Framework.DependencyInjection;
-using ResponseCacheWebSite;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class ResponseCacheTest
+    public class ResponseCacheTest : IClassFixture<MvcTestFixture<ResponseCacheWebSite.Startup>>
     {
-        private const string SiteName = nameof(ResponseCacheWebSite);
-        private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
-        private readonly Action<IServiceCollection> _configureServices = new Startup().ConfigureServices;
+        public ResponseCacheTest(MvcTestFixture<ResponseCacheWebSite.Startup> fixture)
+        {
+            Client = fixture.Client;
+        }
+
+        public HttpClient Client { get; }
 
         [Fact]
         public async Task ResponseCache_SetsAllHeaders()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/CacheHeaders/Index");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/CacheHeaders/Index");
 
             // Assert
             var data = Assert.Single(response.Headers.GetValues("Cache-control"));
@@ -50,12 +47,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [MemberData(nameof(CacheControlData))]
         public async Task ResponseCache_SetsDifferentCacheControlHeaders(string url, string expected)
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync(url);
+            // Arrange & Act
+            var response = await Client.GetAsync(url);
 
             // Assert
             var data = Assert.Single(response.Headers.GetValues("Cache-control"));
@@ -65,13 +58,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task SetsHeadersForAllActionsOfClass()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response1 = await client.GetAsync("http://localhost/ClassLevelCache/GetHelloWorld");
-            var response2 = await client.GetAsync("http://localhost/ClassLevelCache/GetFooBar");
+            // Arrange & Act
+            var response1 = await Client.GetAsync("http://localhost/ClassLevelCache/GetHelloWorld");
+            var response2 = await Client.GetAsync("http://localhost/ClassLevelCache/GetFooBar");
 
             // Assert
             var data = Assert.Single(response1.Headers.GetValues("Cache-control"));
@@ -88,12 +77,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task HeadersSetInActionOverridesTheOnesInClass()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/ClassLevelCache/ConflictExistingHeader");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/ClassLevelCache/ConflictExistingHeader");
 
             // Assert
             var data = Assert.Single(response.Headers.GetValues("Cache-control"));
@@ -103,12 +88,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task HeadersToNotCacheAParticularAction()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/ClassLevelCache/DoNotCacheThisAction");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/ClassLevelCache/DoNotCacheThisAction");
 
             // Assert
             var data = Assert.Single(response.Headers.GetValues("Cache-control"));
@@ -118,12 +99,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ClassLevelHeadersAreUnsetByActionLevelHeaders()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/ClassLevelNoStore/CacheThisAction");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/ClassLevelNoStore/CacheThisAction");
 
             // Assert
             var data = Assert.Single(response.Headers.GetValues("Vary"));
@@ -138,12 +115,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task SetsCacheControlPublicByDefault()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/CacheHeaders/SetsCacheControlPublicByDefault");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/CacheHeaders/SetsCacheControlPublicByDefault");
 
             // Assert
             var data = Assert.Single(response.Headers.GetValues("Cache-control"));
@@ -153,13 +126,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ThrowsWhenDurationIsNotSet()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act & Assert
+            // Arrange & Act
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-                    () => client.GetAsync("http://localhost/CacheHeaders/ThrowsWhenDurationIsNotSet"));
+                    () => Client.GetAsync("http://localhost/CacheHeaders/ThrowsWhenDurationIsNotSet"));
             Assert.Equal(
                 "If the 'NoStore' property is not set to true, 'Duration' property must be specified.",
                 ex.Message);
@@ -169,12 +138,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ResponseCache_SetsAllHeaders_FromCacheProfile()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/CacheProfiles/PublicCache30Sec");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/CacheProfiles/PublicCache30Sec");
 
             // Assert
             var data = Assert.Single(response.Headers.GetValues("Cache-control"));
@@ -184,12 +149,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ResponseCache_SetsAllHeaders_ChosesTheRightProfile()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/CacheProfiles/PrivateCache30Sec");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/CacheProfiles/PrivateCache30Sec");
 
             // Assert
             var data = Assert.Single(response.Headers.GetValues("Cache-control"));
@@ -199,12 +160,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ResponseCache_SetsNoCacheHeaders()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/CacheProfiles/NoCache");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/CacheProfiles/NoCache");
 
             // Assert
             var data = Assert.Single(response.Headers.GetValues("Cache-control"));
@@ -216,12 +173,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ResponseCache_AddsHeaders()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/CacheProfiles/CacheProfileAddParameter");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/CacheProfiles/CacheProfileAddParameter");
 
             // Assert
             var data = Assert.Single(response.Headers.GetValues("Cache-control"));
@@ -233,12 +186,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ResponseCache_ModifiesHeaders()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/CacheProfiles/CacheProfileOverride");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/CacheProfiles/CacheProfileOverride");
 
             // Assert
             var data = Assert.Single(response.Headers.GetValues("Cache-control"));
@@ -248,12 +197,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ResponseCache_FallbackToFilter_IfNoAttribute()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/CacheProfiles/FallbackToFilter");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/CacheProfiles/FallbackToFilter");
 
             // Assert
             var data = Assert.Single(response.Headers.GetValues("Cache-control"));
@@ -265,12 +210,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ResponseCacheAttribute_OnAction_OverridesTheValuesOnClass()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/ClassLevelNoStore/CacheThisActionWithProfileSettings");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/ClassLevelNoStore/CacheThisActionWithProfileSettings");
 
             // Assert
             var data = Assert.Single(response.Headers.GetValues("Vary"));
@@ -286,12 +227,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ResponseCacheAttribute_OverridesProfileDuration_FromAttributeProperty()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/CacheProfileOverrides/PublicCache30SecTo15Sec");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/CacheProfileOverrides/PublicCache30SecTo15Sec");
 
             // Assert
             var data = Assert.Single(response.Headers.GetValues("Cache-control"));
@@ -301,12 +238,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ResponseCacheAttribute_OverridesProfileLocation_FromAttributeProperty()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/CacheProfileOverrides/PublicCache30SecToPrivateCache");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/CacheProfileOverrides/PublicCache30SecToPrivateCache");
 
             // Assert
             var data = Assert.Single(response.Headers.GetValues("Cache-control"));
@@ -316,12 +249,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ResponseCacheAttribute_OverridesProfileNoStore_FromAttributeProperty()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/CacheProfileOverrides/PublicCache30SecToNoStore");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/CacheProfileOverrides/PublicCache30SecToNoStore");
 
             // Assert
             var data = Assert.Single(response.Headers.GetValues("Cache-control"));
@@ -331,12 +260,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ResponseCacheAttribute_OverridesProfileVaryBy_FromAttributeProperty()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/CacheProfileOverrides/PublicCache30SecWithVaryByAcceptToVaryByTest");
+            // Arrange & Act
+            var response = await Client.GetAsync(
+                "http://localhost/CacheProfileOverrides/PublicCache30SecWithVaryByAcceptToVaryByTest");
 
             // Assert
             var cacheControl = Assert.Single(response.Headers.GetValues("Cache-control"));
@@ -348,12 +274,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ResponseCacheAttribute_OverridesProfileVaryBy_FromAttributeProperty_AndRemovesVaryHeader()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/CacheProfileOverrides/PublicCache30SecWithVaryByAcceptToVaryByNone");
+            // Arrange & Act
+            var response = await Client.GetAsync(
+                "http://localhost/CacheProfileOverrides/PublicCache30SecWithVaryByAcceptToVaryByNone");
 
             // Assert
             var cacheControl = Assert.Single(response.Headers.GetValues("Cache-control"));

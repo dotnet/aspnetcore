@@ -6,59 +6,57 @@ using Microsoft.Dnx.Runtime;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    // Represents an application environment that overrides the base path of the original
+    // An application environment that overrides the base path of the original
     // application environment in order to make it point to the folder of the original web
-    // aplication so that components like ViewEngines can find views as if they were executing
+    // aaplication so that components like ViewEngines can find views as if they were executing
     // in a regular context.
     public class TestApplicationEnvironment : IApplicationEnvironment
     {
-        private readonly IApplicationEnvironment _originalAppEnvironment;
-        private readonly string _applicationBasePath;
-        private readonly string _applicationName;
+        private readonly IApplicationEnvironment _original;
 
-        public TestApplicationEnvironment(IApplicationEnvironment originalAppEnvironment, string appBasePath, string appName)
+        public TestApplicationEnvironment(IApplicationEnvironment original, string name, string basePath)
         {
-            _originalAppEnvironment = originalAppEnvironment;
-            _applicationBasePath = appBasePath;
-            _applicationName = appName;
+            _original = original;
+            ApplicationName = name;
+            ApplicationBasePath = basePath;
         }
 
-        public string ApplicationName
-        {
-            get { return _applicationName; }
-        }
+        public string ApplicationName { get; }
 
         public string ApplicationVersion
         {
-            get { return _originalAppEnvironment.ApplicationVersion; }
+            get
+            {
+                return _original.ApplicationVersion;
+            }
         }
 
-        public string ApplicationBasePath
-        {
-            get { return _applicationBasePath; }
-        }
+        public string ApplicationBasePath { get; }
 
         public string Configuration
         {
             get
             {
-                return _originalAppEnvironment.Configuration;
+                return _original.Configuration;
             }
         }
 
         public FrameworkName RuntimeFramework
         {
-            get { return _originalAppEnvironment.RuntimeFramework; }
+            get
+            {
+                return _original.RuntimeFramework;
+            }
         }
 
         public object GetData(string name)
         {
-            return _originalAppEnvironment.GetData(name);
+            return _original.GetData(name);
         }
 
         public void SetData(string name, object value)
         {
-            _originalAppEnvironment.SetData(name, value);
+            _original.SetData(name, value);
         }
     }
 }

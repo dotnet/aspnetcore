@@ -1,13 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.Framework.DependencyInjection;
-using ModelBindingWebSite;
 using ModelBindingWebSite.Models;
 using Newtonsoft.Json;
 using Xunit;
@@ -22,28 +18,28 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     /// 3) The server returns the bound object. We verify if the property specified by the expression in step 1
     /// has the expected value.
     /// </summary>
-    public class RoundTripTests
+    public class RoundTripTests : IClassFixture<MvcTestFixture<ModelBindingWebSite.Startup>>
     {
-        private const string SiteName = nameof(ModelBindingWebSite);
-        private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
-        private readonly Action<IServiceCollection> _configureServices = new Startup().ConfigureServices;
+        public RoundTripTests(MvcTestFixture<ModelBindingWebSite.Startup> fixture)
+        {
+            Client = fixture.Client;
+        }
 
-        // Uses the expression p => p.Name
+        public HttpClient Client { get; }
+
         [Fact]
         public async Task RoundTrippedValues_GetsModelBound_ForSimpleExpressions()
         {
             // Arrange
             var expected = "test-name";
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
 
             // Act
-            var expression = await client.GetStringAsync("http://localhost/RoundTrip/GetPerson");
+            var expression = await Client.GetStringAsync("http://localhost/RoundTrip/GetPerson");
             var keyValuePairs = new[]
             {
                 new KeyValuePair<string, string>(expression, expected)
             };
-            var result = await GetPerson(client, keyValuePairs);
+            var result = await GetPerson(Client, keyValuePairs);
 
             // Assert
             Assert.Equal("Name", expression);
@@ -56,16 +52,14 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var expected = 40;
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
 
             // Act
-            var expression = await client.GetStringAsync("http://localhost/RoundTrip/GetPersonParentAge");
+            var expression = await Client.GetStringAsync("http://localhost/RoundTrip/GetPersonParentAge");
             var keyValuePairs = new[]
             {
                 new KeyValuePair<string, string>(expression, expected.ToString())
             };
-            var result = await GetPerson(client, keyValuePairs);
+            var result = await GetPerson(Client, keyValuePairs);
 
             // Assert
             Assert.Equal("Parent.Age", expression);
@@ -78,16 +72,14 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var expected = 12;
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
 
             // Act
-            var expression = await client.GetStringAsync("http://localhost/RoundTrip/GetPersonDependentAge");
+            var expression = await Client.GetStringAsync("http://localhost/RoundTrip/GetPersonDependentAge");
             var keyValuePairs = new[]
             {
                 new KeyValuePair<string, string>(expression, expected.ToString())
             };
-            var result = await GetPerson(client, keyValuePairs);
+            var result = await GetPerson(Client, keyValuePairs);
 
             // Assert
             Assert.Equal("Dependents[0].Age", expression);
@@ -99,17 +91,15 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task RoundTrippedValues_GetsModelBound_ForStringIndexedProperties()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
             var expected = "6 feet";
 
             // Act
-            var expression = await client.GetStringAsync("http://localhost/RoundTrip/GetPersonParentHeightAttribute");
+            var expression = await Client.GetStringAsync("http://localhost/RoundTrip/GetPersonParentHeightAttribute");
             var keyValuePairs = new[]
             {
                 new KeyValuePair<string, string>(expression, expected),
             };
-            var result = await GetPerson(client, keyValuePairs);
+            var result = await GetPerson(Client, keyValuePairs);
 
             // Assert
             Assert.Equal("Parent.Attributes[height]", expression);
@@ -122,16 +112,14 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var expected = "test-nested-name";
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
 
             // Act
-            var expression = await client.GetStringAsync("http://localhost/RoundTrip/GetDependentPersonName");
+            var expression = await Client.GetStringAsync("http://localhost/RoundTrip/GetDependentPersonName");
             var keyValuePairs = new[]
             {
                 new KeyValuePair<string, string>(expression, expected.ToString())
             };
-            var result = await GetPerson(client, keyValuePairs);
+            var result = await GetPerson(Client, keyValuePairs);
 
             // Assert
             Assert.Equal("Dependents[0].Dependents[0].Name", expression);

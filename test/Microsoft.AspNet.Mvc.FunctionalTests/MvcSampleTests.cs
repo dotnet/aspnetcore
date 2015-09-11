@@ -1,30 +1,25 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc.Formatters.Xml;
 using Microsoft.AspNet.Testing.xunit;
-using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class MvcSampleTests
+    public class MvcSampleTests : IClassFixture<MvcTestFixture<MvcSample.Web.Startup>>
     {
-        private const string SiteName = nameof(MvcSample) + "." + nameof(MvcSample.Web);
+        public MvcSampleTests(MvcTestFixture<MvcSample.Web.Startup> fixture)
+        {
+            Client = fixture.Client;
+        }
 
-        // Path relative to Mvc\\test\Microsoft.AspNet.Mvc.FunctionalTests
-        private readonly static string SamplesFolder = Path.Combine("..", "..", "samples");
-
-        private readonly Action<IApplicationBuilder> _app = new MvcSample.Web.Startup().Configure;
-        private readonly Func<IServiceCollection, IServiceProvider> _configureServices = new MvcSample.Web.Startup().ConfigureServices;
+        public HttpClient Client { get; }
 
         [Theory]
         [InlineData("")]                        // Shared/MyView.cshtml
@@ -41,12 +36,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [InlineData("/Home/ValidationSummary")] // Home/ValidationSummary.cshtml
         public async Task Home_Pages_ReturnSuccess(string path)
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, SamplesFolder, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost" + path);
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost" + path);
 
             // Assert
             Assert.NotNull(response);
@@ -69,14 +60,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FormUrlEncoded_ReturnsAppropriateResults(string input, string expectedOutput)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, SamplesFolder, _configureServices);
-            var client = server.CreateClient();
             var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/FormUrlEncoded/IsValidPerson");
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             request.Content = new StringContent(input, Encoding.UTF8, "application/x-www-form-urlencoded");
 
             // Act
-            var response = await client.SendAsync(request);
+            var response = await Client.SendAsync(request);
 
             // Assert
             Assert.Equal(expectedOutput, await response.Content.ReadAsStringAsync());
@@ -85,12 +74,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task FormUrlEncoded_Index_ReturnSuccess()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, SamplesFolder, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/FormUrlEncoded");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/FormUrlEncoded");
 
             // Assert
             Assert.NotNull(response);
@@ -100,12 +85,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task Home_NotFoundAction_Returns404()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, SamplesFolder, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/Home/NotFound");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/Home/NotFound");
 
             // Assert
             Assert.NotNull(response);
@@ -118,13 +99,11 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task Home_CreateUser_ReturnsXmlBasedOnAcceptHeader()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, SamplesFolder, _configureServices);
-            var client = server.CreateClient();
             var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Home/ReturnUser");
             request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/xml;charset=utf-8"));
 
             // Act
-            var response = await client.SendAsync(request);
+            var response = await Client.SendAsync(request);
 
             // Assert
             Assert.NotNull(response);
@@ -145,12 +124,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [InlineData("http://localhost/Filters/NotGrantedClaim", HttpStatusCode.Unauthorized)]
         public async Task FiltersController_Tests(string url, HttpStatusCode statusCode)
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, SamplesFolder, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync(url);
+            // Arrange & Act
+            var response = await Client.GetAsync(url);
 
             // Assert
             Assert.NotNull(response);
@@ -160,12 +135,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task FiltersController_Crash_ThrowsException()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, SamplesFolder, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/Filters/Crash?message=HelloWorld");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/Filters/Crash?message=HelloWorld");
 
             // Assert
             Assert.NotNull(response);

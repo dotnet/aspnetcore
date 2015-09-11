@@ -9,25 +9,37 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Threading.Tasks;
-using HtmlGenerationWebSite;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.TagHelpers;
-using Microsoft.AspNet.Testing;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Extensions;
-using Microsoft.Framework.WebEncoders;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class HtmlGenerationTest
+    public class HtmlGenerationTest :
+        IClassFixture<MvcTestFixture<HtmlGenerationWebSite.Startup>>,
+        IClassFixture<MvcEncodedTestFixture<HtmlGenerationWebSite.Startup>>
     {
         private const string SiteName = nameof(HtmlGenerationWebSite);
         private static readonly Assembly _resourcesAssembly = typeof(HtmlGenerationTest).GetTypeInfo().Assembly;
 
-        private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
-        private readonly Action<IServiceCollection> _configureServices = new Startup().ConfigureServices;
+        private readonly Action<IApplicationBuilder> _app = new HtmlGenerationWebSite.Startup().Configure;
+        private readonly Action<IServiceCollection> _configureServices =
+            new HtmlGenerationWebSite.Startup().ConfigureServices;
+
+        public HtmlGenerationTest(
+            MvcTestFixture<HtmlGenerationWebSite.Startup> fixture,
+            MvcEncodedTestFixture<HtmlGenerationWebSite.Startup> encodedFixture)
+        {
+            Client = fixture.Client;
+            EncodedClient = encodedFixture.Client;
+        }
+
+        public HttpClient Client { get; }
+
+        public HttpClient EncodedClient { get; }
 
         [Theory]
         [InlineData("Index", null)]
@@ -60,8 +72,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task HtmlGenerationWebSite_GeneratesExpectedResults(string action, string antiforgeryPath)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
             var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
             var outputFile = "compiler/resources/HtmlGenerationWebSite.HtmlGeneration_Home." + action + ".html";
             var expectedContent =
@@ -69,7 +79,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Act
             // The host is not important as everything runs in memory and tests are isolated from each other.
-            var response = await client.GetAsync("http://localhost/HtmlGeneration_Home/" + action);
+            var response = await Client.GetAsync("http://localhost/HtmlGeneration_Home/" + action);
             var responseContent = await response.Content.ReadAsStringAsync();
 
             // Assert
@@ -119,14 +129,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task HtmlGenerationWebSite_GenerateEncodedResults(string action, string antiforgeryPath)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, services =>
-            {
-                _configureServices(services);
-                services.AddTransient<IHtmlEncoder, TestHtmlEncoder>();
-                services.AddTransient<IJavaScriptStringEncoder, TestJavaScriptEncoder>();
-                services.AddTransient<IUrlEncoder, TestUrlEncoder>();
-            });
-            var client = server.CreateClient();
             var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
             var outputFile = "compiler/resources/HtmlGenerationWebSite.HtmlGeneration_Home." + action + ".Encoded.html";
             var expectedContent =
@@ -134,7 +136,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Act
             // The host is not important as everything runs in memory and tests are isolated from each other.
-            var response = await client.GetAsync("http://localhost/HtmlGeneration_Home/" + action);
+            var response = await EncodedClient.GetAsync("http://localhost/HtmlGeneration_Home/" + action);
             var responseContent = await response.Content.ReadAsStringAsync();
 
             // Assert
@@ -176,8 +178,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ValidationTagHelpers_GeneratesExpectedSpansAndDivs()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
             var outputFile = "compiler/resources/HtmlGenerationWebSite.HtmlGeneration_Customer.Index.html";
             var expectedContent =
                 await ResourceFile.ReadResourceAsync(_resourcesAssembly, outputFile, sourceFile: false);
@@ -194,7 +194,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             request.Content = new FormUrlEncodedContent(nameValueCollection);
 
             // Act
-            var response = await client.SendAsync(request);
+            var response = await Client.SendAsync(request);
             var responseContent = await response.Content.ReadAsStringAsync();
 
             // Assert
@@ -224,10 +224,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Arrange
             var assertFile =
                 "compiler/resources/CacheTagHelper_CanCachePortionsOfViewsPartialViewsAndViewComponents.Assert";
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-            client.BaseAddress = new Uri("http://localhost");
-            client.DefaultRequestHeaders.Add("Locale", "North");
 
             var outputFile1 = assertFile + "1.txt";
             var expected1 =
@@ -242,8 +238,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Act - 1
             // Verify that content gets cached based on vary-by-params
             var targetUrl = "/catalog?categoryId=1&correlationid=1";
-            var response1 = await client.GetStringAsync(targetUrl);
-            var response2 = await client.GetStringAsync(targetUrl);
+            var request = RequestWithLocale(targetUrl, "North");
+            var response1 = await (await Client.SendAsync(request)).Content.ReadAsStringAsync();
+            request = RequestWithLocale(targetUrl, "North");
+            var response2 = await (await Client.SendAsync(request)).Content.ReadAsStringAsync();
 
             // Assert - 1
 #if GENERATE_BASELINES
@@ -256,8 +254,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Act - 2
             // Verify content gets changed in partials when one of the vary by parameters is changed
             targetUrl = "/catalog?categoryId=3&correlationid=2";
-            var response3 = await client.GetStringAsync(targetUrl);
-            var response4 = await client.GetStringAsync(targetUrl);
+            request = RequestWithLocale(targetUrl, "North");
+            var response3 = await (await Client.SendAsync(request)).Content.ReadAsStringAsync();
+            request = RequestWithLocale(targetUrl, "North");
+            var response4 = await (await Client.SendAsync(request)).Content.ReadAsStringAsync();
 
             // Assert - 2
 #if GENERATE_BASELINES
@@ -269,12 +269,11 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Act - 3
             // Verify content gets changed in a View Component when the Vary-by-header parameters is changed
-            client.DefaultRequestHeaders.Remove("Locale");
-            client.DefaultRequestHeaders.Add("Locale", "East");
-
             targetUrl = "/catalog?categoryId=3&correlationid=3";
-            var response5 = await client.GetStringAsync(targetUrl);
-            var response6 = await client.GetStringAsync(targetUrl);
+            request = RequestWithLocale(targetUrl, "East");
+            var response5 = await (await Client.SendAsync(request)).Content.ReadAsStringAsync();
+            request = RequestWithLocale(targetUrl, "East");
+            var response6 = await (await Client.SendAsync(request)).Content.ReadAsStringAsync();
 
             // Assert - 3
 #if GENERATE_BASELINES
@@ -288,13 +287,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task CacheTagHelper_ExpiresContent_BasedOnExpiresParameter()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-            client.BaseAddress = new Uri("http://localhost");
-
-            // Act - 1
-            var response1 = await client.GetStringAsync("/catalog/2");
+            // Arrange & Act - 1
+            var response1 = await Client.GetStringAsync("/catalog/2");
 
             // Assert - 1
             var expected1 = "Cached content for 2";
@@ -302,7 +296,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Act - 2
             await Task.Delay(TimeSpan.FromSeconds(1));
-            var response2 = await client.GetStringAsync("/catalog/3");
+            var response2 = await Client.GetStringAsync("/catalog/3");
 
             // Assert - 2
             var expected2 = "Cached content for 3";
@@ -312,21 +306,17 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task CacheTagHelper_UsesVaryByCookie_ToVaryContent()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-            client.BaseAddress = new Uri("http://localhost");
-
-            // Act - 1
-            var response1 = await client.GetStringAsync("/catalog/cart?correlationid=1");
+            // Arrange & Act - 1
+            var response1 = await Client.GetStringAsync("/catalog/cart?correlationid=1");
 
             // Assert - 1
             var expected1 = "Cart content for 1";
             Assert.Equal(expected1, response1.Trim());
 
             // Act - 2
-            client.DefaultRequestHeaders.Add("Cookie", "CartId=10");
-            var response2 = await client.GetStringAsync("/catalog/cart?correlationid=2");
+            var request = new HttpRequestMessage(HttpMethod.Get, "/catalog/cart?correlationid=2");
+            request.Headers.Add("Cookie", "CartId=10");
+            var response2 = await (await Client.SendAsync(request)).Content.ReadAsStringAsync();
 
             // Assert - 2
             var expected2 = "Cart content for 2";
@@ -334,8 +324,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Act - 3
             // Resend the cookiesless request and cached result from the first response.
-            client.DefaultRequestHeaders.Remove("Cookie");
-            var response3 = await client.GetStringAsync("/catalog/cart?correlationid=3");
+            var response3 = await Client.GetStringAsync("/catalog/cart?correlationid=3");
 
             // Assert - 3
             Assert.Equal(expected1, response3.Trim());
@@ -344,13 +333,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task CacheTagHelper_VariesByRoute()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-            client.BaseAddress = new Uri("http://localhost");
-
-            // Act - 1
-            var response1 = await client.GetStringAsync(
+            // Arrange & Act - 1
+            var response1 = await Client.GetStringAsync(
                 "/catalog/north-west/confirm-payment?confirmationId=1");
 
             // Assert - 1
@@ -358,7 +342,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(expected1, response1.Trim());
 
             // Act - 2
-            var response2 = await client.GetStringAsync(
+            var response2 = await Client.GetStringAsync(
                 "/catalog/south-central/confirm-payment?confirmationId=2");
 
             // Assert - 2
@@ -366,14 +350,14 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(expected2, response2.Trim());
 
             // Act 3
-            var response3 = await client.GetStringAsync(
+            var response3 = await Client.GetStringAsync(
                 "/catalog/north-west/Silver/confirm-payment?confirmationId=4");
 
             var expected3 = "Welcome Silver member. Your confirmation id is 4. (Region north-west)";
             Assert.Equal(expected3, response3.Trim());
 
             // Act 4
-            var response4 = await client.GetStringAsync(
+            var response4 = await Client.GetStringAsync(
                 "/catalog/north-west/Gold/confirm-payment?confirmationId=5");
 
             var expected4 = "Welcome Gold member. Your confirmation id is 5. (Region north-west)";
@@ -381,13 +365,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Act - 4
             // Resend the responses and expect cached results.
-            response1 = await client.GetStringAsync(
+            response1 = await Client.GetStringAsync(
                 "/catalog/north-west/confirm-payment?confirmationId=301");
-            response2 = await client.GetStringAsync(
+            response2 = await Client.GetStringAsync(
                 "/catalog/south-central/confirm-payment?confirmationId=402");
-            response3 = await client.GetStringAsync(
+            response3 = await Client.GetStringAsync(
                 "/catalog/north-west/Silver/confirm-payment?confirmationId=503");
-            response4 = await client.GetStringAsync(
+            response4 = await Client.GetStringAsync(
                 "/catalog/north-west/Gold/confirm-payment?confirmationId=608");
 
             // Assert - 4
@@ -400,14 +384,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task CacheTagHelper_VariesByUserId()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-            client.BaseAddress = new Uri("http://localhost");
-
-            // Act - 1
-            var response1 = await client.GetStringAsync("/catalog/past-purchases/test1?correlationid=1");
-            var response2 = await client.GetStringAsync("/catalog/past-purchases/test1?correlationid=2");
+            // Arrange & Act - 1
+            var response1 = await Client.GetStringAsync("/catalog/past-purchases/test1?correlationid=1");
+            var response2 = await Client.GetStringAsync("/catalog/past-purchases/test1?correlationid=2");
 
             // Assert - 1
             var expected1 = "Past purchases for user test1 (1)";
@@ -415,8 +394,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(expected1, response2.Trim());
 
             // Act - 2
-            var response3 = await client.GetStringAsync("/catalog/past-purchases/test2?correlationid=3");
-            var response4 = await client.GetStringAsync("/catalog/past-purchases/test2?correlationid=4");
+            var response3 = await Client.GetStringAsync("/catalog/past-purchases/test2?correlationid=3");
+            var response4 = await Client.GetStringAsync("/catalog/past-purchases/test2?correlationid=4");
 
             // Assert - 2
             var expected2 = "Past purchases for user test2 (3)";
@@ -427,13 +406,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task CacheTagHelper_BubblesExpirationOfNestedTagHelpers()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-            client.BaseAddress = new Uri("http://localhost");
-
-            // Act - 1
-            var response1 = await client.GetStringAsync("/categories/Books?correlationId=1");
+            // Arrange & Act - 1
+            var response1 = await Client.GetStringAsync("/categories/Books?correlationId=1");
 
             // Assert - 1
             var expected1 =
@@ -442,7 +416,7 @@ Products: Book1, Book2 (1)";
             Assert.Equal(expected1, response1.Trim(), ignoreLineEndingDifferences: true);
 
             // Act - 2
-            var response2 = await client.GetStringAsync("/categories/Electronics?correlationId=2");
+            var response2 = await Client.GetStringAsync("/categories/Electronics?correlationId=2");
 
             // Assert - 2
             var expected2 =
@@ -452,10 +426,10 @@ Products: Book1, Book2 (1)";
 
             // Act - 3
             // Trigger an expiration
-            var response3 = await client.PostAsync("/categories/update-products", new StringContent(string.Empty));
+            var response3 = await Client.PostAsync("/categories/update-products", new StringContent(string.Empty));
             response3.EnsureSuccessStatusCode();
 
-            var response4 = await client.GetStringAsync("/categories/Electronics?correlationId=3");
+            var response4 = await Client.GetStringAsync("/categories/Electronics?correlationId=3");
 
             // Assert - 3
             var expected3 =
@@ -467,15 +441,10 @@ Products: Laptops (3)";
         [Fact]
         public async Task CacheTagHelper_DoesNotCacheIfDisabled()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-            client.BaseAddress = new Uri("http://localhost");
-
-            // Act
-            var response1 = await client.GetStringAsync("/catalog/GetDealPercentage/20?isEnabled=true");
-            var response2 = await client.GetStringAsync("/catalog/GetDealPercentage/40?isEnabled=true");
-            var response3 = await client.GetStringAsync("/catalog/GetDealPercentage/30?isEnabled=false");
+            // Arrange & Act
+            var response1 = await Client.GetStringAsync("/catalog/GetDealPercentage/20?isEnabled=true");
+            var response2 = await Client.GetStringAsync("/catalog/GetDealPercentage/40?isEnabled=true");
+            var response3 = await Client.GetStringAsync("/catalog/GetDealPercentage/30?isEnabled=false");
 
             // Assert
             Assert.Equal("Deal percentage is 20", response1.Trim());
@@ -538,8 +507,6 @@ Products: Laptops (3)";
         public async Task EditorTemplateWithNoModel_RendersWithCorrectMetadata()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
             var expected = PlatformNormalizer.NormalizeContent(
                 "<label class=\"control-label col-md-2\" for=\"Name\">ItemName</label>" + Environment.NewLine +
                 "<input id=\"Name\" name=\"Name\" type=\"text\" value=\"\" />" + Environment.NewLine + Environment.NewLine +
@@ -548,7 +515,7 @@ Products: Laptops (3)";
                 Environment.NewLine + Environment.NewLine);
 
             // Act
-            var response = await client.GetStringAsync("http://localhost/HtmlGeneration_Home/ItemUsingSharedEditorTemplate");
+            var response = await Client.GetStringAsync("http://localhost/HtmlGeneration_Home/ItemUsingSharedEditorTemplate");
 
             // Assert
             Assert.Equal(expected, response);
@@ -558,16 +525,22 @@ Products: Laptops (3)";
         public async Task EditorTemplateWithSpecificModel_RendersWithCorrectMetadata()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
             var expected = "<label for=\"Description\">ItemDesc</label>" + Environment.NewLine +
                 "<input id=\"Description\" name=\"Description\" type=\"text\" value=\"\" />" + Environment.NewLine + Environment.NewLine;
 
             // Act
-            var response = await client.GetStringAsync("http://localhost/HtmlGeneration_Home/ItemUsingModelSpecificEditorTemplate");
+            var response = await Client.GetStringAsync("http://localhost/HtmlGeneration_Home/ItemUsingModelSpecificEditorTemplate");
 
             // Assert
             Assert.Equal(expected, response);
+        }
+
+        private static HttpRequestMessage RequestWithLocale(string url, string locale)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+            request.Headers.Add("Locale", locale);
+
+            return request;
         }
     }
 }

@@ -3,10 +3,10 @@
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class MvcFixture<TStartup> : MvcFixture
+    public class MvcTestFixture<TStartup> : MvcTestFixture
         where TStartup : new()
     {
-        public MvcFixture()
+        public MvcTestFixture()
             : base(new TStartup())
         {
         }

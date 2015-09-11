@@ -7,29 +7,26 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Routing;
-using Microsoft.Framework.DependencyInjection;
 using Newtonsoft.Json;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class RoutingTests
+    public class RoutingTests : IClassFixture<MvcTestFixture<RoutingWebSite.Startup>>
     {
-        private const string SiteName = nameof(RoutingWebSite);
-        private readonly Action<IApplicationBuilder> _app = new RoutingWebSite.Startup().Configure;
-        private readonly Action<IServiceCollection> _configureServices = new RoutingWebSite.Startup().ConfigureServices;
+        public RoutingTests(MvcTestFixture<RoutingWebSite.Startup> fixture)
+        {
+            Client = fixture.Client;
+        }
+
+        public HttpClient Client { get; }
 
         [Fact]
         public async Task ConventionalRoutedController_ActionIsReachable()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/Home/Index");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/Home/Index");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -52,12 +49,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ConventionalRoutedController_ActionIsReachable_WithDefaults()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -80,12 +73,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ConventionalRoutedController_NonActionIsNotReachable()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/Home/NotAnAction");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/Home/NotAnAction");
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -94,12 +83,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ConventionalRoutedController_InArea_ActionIsReachable()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/Travel/Flight/Index");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/Travel/Flight/Index");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -123,12 +108,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ConventionalRoutedController_InArea_ActionBlockedByHttpMethod()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/Travel/Flight/BuyTickets");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/Travel/Flight/BuyTickets");
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -139,12 +120,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [InlineData("CustomPath", "/Home/OptionalPath/CustomPath")]
         public async Task ConventionalRoutedController_WithOptionalSegment(string optionalSegment, string expected)
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/Home/OptionalPath/" + optionalSegment);
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/Home/OptionalPath/" + optionalSegment);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -158,12 +135,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task AttributeRoutedAction_IsReachable()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/Store/Shop/Products");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/Store/Shop/Products");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -189,12 +162,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [InlineData("http://localhost/api/v2/Maps")]
         public async Task AttributeRoutedAction_MultipleRouteAttributes_WorksWithNameAndOrder(string url)
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync(url);
+            // Arrange & Act
+            var response = await Client.GetAsync(url);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -219,11 +188,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var url = "http://localhost/api/v2/Maps";
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
 
             // Act
-            var response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Post, url));
+            var response = await Client.SendAsync(new HttpRequestMessage(HttpMethod.Post, url));
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -247,11 +214,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var url = "http://localhost/api/v1/Maps";
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
 
             // Act
-            var response = await client.SendAsync(new HttpRequestMessage(new HttpMethod("POST"), url));
+            var response = await Client.SendAsync(new HttpRequestMessage(new HttpMethod("POST"), url));
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -266,12 +231,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             string url,
             string method)
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.SendAsync(new HttpRequestMessage(new HttpMethod(method), url));
+            // Arrange & Act
+            var response = await Client.SendAsync(new HttpRequestMessage(new HttpMethod(method), url));
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -296,12 +257,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task AttributeRoutedAction_MultipleHttpAttributesAndTokenReplacement(string url)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
             var expectedUrl = new Uri(url).AbsolutePath;
 
             // Act
-            var response = await client.GetAsync(url);
+            var response = await Client.GetAsync(url);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -330,12 +289,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             string method)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
             var expectedUrl = new Uri(url).AbsolutePath;
 
             // Act
-            var response = await client.SendAsync(new HttpRequestMessage(new HttpMethod(method), url));
+            var response = await Client.SendAsync(new HttpRequestMessage(new HttpMethod(method), url));
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -345,12 +302,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task AttributeRoutedAction_IsNotReachableWithTraditionalRoute()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/Store/ListProducts");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/Store/ListProducts");
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -361,12 +314,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task AttributeRoutedAction_TriedBeforeConventionalRouting()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/Home/About");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/Home/About");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -382,12 +331,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task AttributeRoutedAction_ControllerLevelRoute_WithActionParameter_IsReachable()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/Blog/Edit/5");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/Blog/Edit/5");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -416,12 +361,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task AttributeRoutedAction_ControllerLevelRoute_IsReachable()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/api/Employee");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/api/Employee");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -429,7 +370,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var body = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<RoutingResult>(body);
 
-            // Assert
             Assert.Contains("/api/Employee", result.ExpectedUrls);
             Assert.Equal("Employee", result.Controller);
             Assert.Equal("List", result.Action);
@@ -446,12 +386,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task AttributeRoutedAction_RouteAttributeOnAction_IsReachable(string method)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
             var message = new HttpRequestMessage(new HttpMethod(method), "http://localhost/Store/Shop/Orders");
 
             // Act
-            var response = await client.SendAsync(message);
+            var response = await Client.SendAsync(message);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -473,12 +411,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task AttributeRoutedAction_RouteAttributeOnActionAndController_IsReachable(string method)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
             var message = new HttpRequestMessage(new HttpMethod(method), "http://localhost/api/Employee/5/Salary");
 
             // Act
-            var response = await client.SendAsync(message);
+            var response = await Client.SendAsync(message);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -495,12 +431,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task AttributeRoutedAction_RouteAttributeOnActionAndHttpGetOnDifferentAction_ReachesHttpGetAction()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
             var message = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Store/Shop/Orders");
 
             // Act
-            var response = await client.SendAsync(message);
+            var response = await Client.SendAsync(message);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -520,12 +454,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task AttributeRoutedAction_ControllerLevelRoute_WithAcceptVerbs_IsReachable(string verb)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
+            var message = new HttpRequestMessage(new HttpMethod(verb), "http://localhost/api/Employee");
 
             // Act
-            var message = new HttpRequestMessage(new HttpMethod(verb), "http://localhost/api/Employee");
-            var response = await client.SendAsync(message);
+            var response = await Client.SendAsync(message);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -544,12 +476,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task AttributeRoutedAction_ControllerLevelRoute_WithAcceptVerbsAndRouteTemplate_IsReachable(string verb)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
+            var message = new HttpRequestMessage(new HttpMethod(verb), "http://localhost/api/Employee/Manager");
 
             // Act
-            var message = new HttpRequestMessage(new HttpMethod(verb), "http://localhost/api/Employee/Manager");
-            var response = await client.SendAsync(message);
+            var response = await Client.SendAsync(message);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -570,13 +500,11 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task AttributeRoutedAction_AcceptVerbsAndRouteTemplate_IsReachable(string verb, string path)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
             var expectedUrl = "/Bank";
+            var message = new HttpRequestMessage(new HttpMethod(verb), "http://localhost/" + path);
 
             // Act
-            var message = new HttpRequestMessage(new HttpMethod(verb), "http://localhost/" + path);
-            var response = await client.SendAsync(message);
+            var response = await Client.SendAsync(message);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -593,12 +521,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task AttributeRoutedAction_WithCustomHttpAttributes_IsReachable()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
+            var message = new HttpRequestMessage(new HttpMethod("MERGE"), "http://localhost/api/Employee/5");
 
             // Act
-            var message = new HttpRequestMessage(new HttpMethod("MERGE"), "http://localhost/api/Employee/5");
-            var response = await client.SendAsync(message);
+            var response = await Client.SendAsync(message);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -606,7 +532,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var body = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<RoutingResult>(body);
 
-            // Assert
             Assert.Contains("/api/Employee/5", result.ExpectedUrls);
             Assert.Equal("Employee", result.Controller);
             Assert.Equal("MergeEmployee", result.Action);
@@ -619,12 +544,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task AttributeRoutedAction_ControllerLevelRoute_CombinedWithActionRoute_IsReachable(string verb, string action)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
+            var message = new HttpRequestMessage(new HttpMethod(verb), "http://localhost/api/Employee/5/Administrator");
 
             // Act
-            var message = new HttpRequestMessage(new HttpMethod(verb), "http://localhost/api/Employee/5/Administrator");
-            var response = await client.SendAsync(message);
+            var response = await Client.SendAsync(message);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -644,12 +567,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task AttributeRoutedAction_ActionLevelRouteWithTildeSlash_OverridesControllerLevelRoute()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/Manager/5");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/Manager/5");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -669,12 +588,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task AttributeRoutedAction_OverrideActionOverridesOrderOnController()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/Team/5");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/Team/5");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -694,12 +609,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task AttributeRoutedAction_OrderOnActionOverridesOrderOnController()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/Teams");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/Teams");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -715,12 +626,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task AttributeRoutedAction_LinkGeneration_OverrideActionOverridesOrderOnController()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetStringAsync("http://localhost/Organization/5");
+            // Arrange & Act
+            var response = await Client.GetStringAsync("http://localhost/Organization/5");
 
             // Assert
             Assert.NotNull(response);
@@ -730,12 +637,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task AttributeRoutedAction_LinkGeneration_OrderOnActionOverridesOrderOnController()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetStringAsync("http://localhost/Teams/AllTeams");
+            // Arrange & Act
+            var response = await Client.GetStringAsync("http://localhost/Teams/AllTeams");
 
             // Assert
             Assert.NotNull(response);
@@ -747,12 +650,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [InlineData("CustomName", "/TeamName/CustomName")]
         public async Task AttributeRoutedAction_PreservesDefaultValue_IfRouteValueIsNull(string teamName, string expected)
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var body = await client.GetStringAsync("http://localhost/TeamName/" + teamName);
+            // Arrange & Act
+            var body = await Client.GetStringAsync("http://localhost/TeamName/" + teamName);
 
             // Assert
             Assert.NotNull(body);
@@ -764,19 +663,16 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task AttributeRoutedAction_LinkToSelf()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
+            var url = LinkFrom("http://localhost/api/Employee").To(new { });
 
             // Act
-            var url = LinkFrom("http://localhost/api/Employee").To(new { });
-            var response = await client.GetAsync(url);
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var response = await Client.GetAsync(url);
 
             // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var body = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<RoutingResult>(body);
 
-            // Assert
             Assert.Equal("Employee", result.Controller);
             Assert.Equal("List", result.Action);
 
@@ -787,19 +683,16 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task AttributeRoutedAction_LinkWithAmbientController()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
+            var url = LinkFrom("http://localhost/api/Employee").To(new { action = "Get", id = 5 });
 
             // Act
-            var url = LinkFrom("http://localhost/api/Employee").To(new { action = "Get", id = 5 });
-            var response = await client.GetAsync(url);
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var response = await Client.GetAsync(url);
 
             // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var body = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<RoutingResult>(body);
 
-            // Assert
             Assert.Equal("Employee", result.Controller);
             Assert.Equal("List", result.Action);
 
@@ -810,20 +703,16 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task AttributeRoutedAction_LinkToAttributeRoutedController()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
+            var url = LinkFrom("http://localhost/api/Employee").To(new { action = "ShowPosts", controller = "Blog" });
 
             // Act
-            var url = LinkFrom("http://localhost/api/Employee").To(new { action = "ShowPosts", controller = "Blog" });
-            var response = await client.GetAsync(url);
-
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var response = await Client.GetAsync(url);
 
             // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var body = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<RoutingResult>(body);
 
-            // Assert
             Assert.Equal("Employee", result.Controller);
             Assert.Equal("List", result.Action);
 
@@ -834,19 +723,16 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task AttributeRoutedAction_LinkToConventionalController()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
+            var url = LinkFrom("http://localhost/api/Employee").To(new { action = "Index", controller = "Home" });
 
             // Act
-            var url = LinkFrom("http://localhost/api/Employee").To(new { action = "Index", controller = "Home" });
-            var response = await client.GetAsync(url);
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var response = await Client.GetAsync(url);
 
             // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var body = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<RoutingResult>(body);
 
-            // Assert
             Assert.Equal("Employee", result.Controller);
             Assert.Equal("List", result.Action);
 
@@ -856,22 +742,21 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Theory]
         [InlineData("GET", "Get")]
         [InlineData("PUT", "Put")]
-        public async Task AttributeRoutedAction_LinkWithName_WithNameInheritedFromControllerRoute(string method, string actionName)
+        public async Task AttributeRoutedAction_LinkWithName_WithNameInheritedFromControllerRoute(
+            string method,
+            string actionName)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
+            var message = new HttpRequestMessage(new HttpMethod(method), "http://localhost/api/Company/5");
 
             // Act
-            var message = new HttpRequestMessage(new HttpMethod(method), "http://localhost/api/Company/5");
-            var response = await client.SendAsync(message);
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var response = await Client.SendAsync(message);
 
             // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var body = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<RoutingResult>(body);
 
-            // Assert
             Assert.Equal("Company", result.Controller);
             Assert.Equal(actionName, result.Action);
 
@@ -882,19 +767,14 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task AttributeRoutedAction_LinkWithName_WithNameOverrridenFromController()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.DeleteAsync("http://localhost/api/Company/5");
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            // Arrange & Act
+            var response = await Client.DeleteAsync("http://localhost/api/Company/5");
 
             // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var body = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<RoutingResult>(body);
 
-            // Assert
             Assert.Equal("Company", result.Controller);
             Assert.Equal("Delete", result.Action);
 
@@ -906,21 +786,17 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task AttributeRoutedAction_Link_WithNonEmptyActionRouteTemplateAndNoActionRouteName()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             var url = LinkFrom("http://localhost")
                 .To(new { id = 5 });
 
             // Act
-            var response = await client.GetAsync("http://localhost/api/Company/5/Employees");
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var response = await Client.GetAsync("http://localhost/api/Company/5/Employees");
 
             // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var body = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<RoutingResult>(body);
 
-            // Assert
             Assert.Equal("Company", result.Controller);
             Assert.Equal("GetEmployees", result.Action);
 
@@ -931,19 +807,14 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task AttributeRoutedAction_LinkWithName_WithNonEmptyActionRouteTemplateAndActionRouteName()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/api/Company/5/Departments");
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/api/Company/5/Departments");
 
             // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var body = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<RoutingResult>(body);
 
-            // Assert
             Assert.Equal("Company", result.Controller);
             Assert.Equal("GetDepartments", result.Action);
 
@@ -959,13 +830,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task AttributeRoutedAction_ThowsIfConventionalRouteWithTheSameName(string url)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             var expectedMessage = "The supplied route name 'DuplicateRoute' is ambiguous and matched more than one route.";
 
             // Act
-            var response = await client.GetAsync(url);
+            var response = await Client.GetAsync(url);
 
             // Assert
             var exception = response.GetServerException();
@@ -976,20 +844,17 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ConventionalRoutedAction_LinkToArea()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
             var url = LinkFrom("http://localhost/")
                 .To(new { action = "BuyTickets", controller = "Flight", area = "Travel" });
-            var response = await client.GetAsync(url);
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            // Act
+            var response = await Client.GetAsync(url);
 
             // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var body = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<RoutingResult>(body);
 
-            // Assert
             Assert.Equal("Home", result.Controller);
             Assert.Equal("Index", result.Action);
 
@@ -1000,19 +865,16 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ConventionalRoutedAction_InArea_ImplicitLinkToArea()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
+            var url = LinkFrom("http://localhost/Travel/Flight").To(new { action = "BuyTickets" });
 
             // Act
-            var url = LinkFrom("http://localhost/Travel/Flight").To(new { action = "BuyTickets" });
-            var response = await client.GetAsync(url);
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var response = await Client.GetAsync(url);
 
             // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var body = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<RoutingResult>(body);
 
-            // Assert
             Assert.Equal("Flight", result.Controller);
             Assert.Equal("Index", result.Action);
 
@@ -1023,19 +885,17 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ConventionalRoutedAction_InArea_ExplicitLeaveArea()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
+            var url = LinkFrom("http://localhost/Travel/Flight")
+                .To(new { action = "Index", controller = "Home", area = "" });
 
             // Act
-            var url = LinkFrom("http://localhost/Travel/Flight").To(new { action = "Index", controller = "Home", area = "" });
-            var response = await client.GetAsync(url);
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var response = await Client.GetAsync(url);
 
             // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var body = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<RoutingResult>(body);
 
-            // Assert
             Assert.Equal("Flight", result.Controller);
             Assert.Equal("Index", result.Action);
 
@@ -1046,19 +906,16 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ConventionalRoutedAction_InArea_ImplicitLeaveArea()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
+            var url = LinkFrom("http://localhost/Travel/Flight").To(new { action = "Contact", controller = "Home", });
 
             // Act
-            var url = LinkFrom("http://localhost/Travel/Flight").To(new { action = "Contact", controller = "Home", });
-            var response = await client.GetAsync(url);
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var response = await Client.GetAsync(url);
 
             // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var body = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<RoutingResult>(body);
 
-            // Assert
             Assert.Equal("Flight", result.Controller);
             Assert.Equal("Index", result.Action);
 
@@ -1069,20 +926,17 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task AttributeRoutedAction_LinkToArea()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
             var url = LinkFrom("http://localhost/api/Employee")
                 .To(new { action = "Schedule", controller = "Rail", area = "Travel" });
-            var response = await client.GetAsync(url);
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            // Act
+            var response = await Client.GetAsync(url);
 
             // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var body = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<RoutingResult>(body);
 
-            // Assert
             Assert.Equal("Employee", result.Controller);
             Assert.Equal("List", result.Action);
 
@@ -1093,19 +947,16 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task AttributeRoutedAction_InArea_ImplicitLinkToArea()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
+            var url = LinkFrom("http://localhost/ContosoCorp/Trains/CheckSchedule").To(new { action = "Index" });
 
             // Act
-            var url = LinkFrom("http://localhost/ContosoCorp/Trains/CheckSchedule").To(new { action = "Index" });
-            var response = await client.GetAsync(url);
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var response = await Client.GetAsync(url);
 
             // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var body = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<RoutingResult>(body);
 
-            // Assert
             Assert.Equal("Rail", result.Controller);
             Assert.Equal("Schedule", result.Action);
 
@@ -1116,20 +967,17 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task AttributeRoutedAction_InArea_ExplicitLeaveArea()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
             var url = LinkFrom("http://localhost/ContosoCorp/Trains/CheckSchedule")
                 .To(new { action = "Index", controller = "Home", area = "" });
-            var response = await client.GetAsync(url);
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            // Act
+            var response = await Client.GetAsync(url);
 
             // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var body = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<RoutingResult>(body);
 
-            // Assert
             Assert.Equal("Rail", result.Controller);
             Assert.Equal("Schedule", result.Action);
 
@@ -1140,20 +988,17 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task AttributeRoutedAction_InArea_ImplicitLeaveArea()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
             var url = LinkFrom("http://localhost/ContosoCorp/Trains")
                 .To(new { action = "Contact", controller = "Home", });
-            var response = await client.GetAsync(url);
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            // Act
+            var response = await Client.GetAsync(url);
 
             // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var body = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<RoutingResult>(body);
 
-            // Assert
             Assert.Equal("Rail", result.Controller);
             Assert.Equal("Index", result.Action);
 
@@ -1164,21 +1009,17 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task AttributeRoutedAction_InArea_LinkToConventionalRoutedActionInArea()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
             var url = LinkFrom("http://localhost/ContosoCorp/Trains")
                 .To(new { action = "Index", controller = "Flight", });
 
-            var response = await client.GetAsync(url);
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            // Act
+            var response = await Client.GetAsync(url);
 
             // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var body = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<RoutingResult>(body);
 
-            // Assert
             Assert.Equal("Rail", result.Controller);
             Assert.Equal("Index", result.Action);
 
@@ -1189,21 +1030,17 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ConventionalRoutedAction_InArea_LinkToAttributeRoutedActionInArea()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
             var url = LinkFrom("http://localhost/Travel/Flight")
                 .To(new { action = "Index", controller = "Rail", });
 
-            var response = await client.GetAsync(url);
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            // Act
+            var response = await Client.GetAsync(url);
 
             // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var body = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<RoutingResult>(body);
 
-            // Assert
             Assert.Equal("Flight", result.Controller);
             Assert.Equal("Index", result.Action);
 
@@ -1214,21 +1051,17 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ConventionalRoutedAction_InArea_LinkToAnotherArea()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
             var url = LinkFrom("http://localhost/Travel/Flight")
                 .To(new { action = "ListUsers", controller = "UserManagement", area = "Admin" });
 
-            var response = await client.GetAsync(url);
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            // Act
+            var response = await Client.GetAsync(url);
 
             // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var body = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<RoutingResult>(body);
 
-            // Assert
             Assert.Equal("Flight", result.Controller);
             Assert.Equal("Index", result.Action);
 
@@ -1239,21 +1072,17 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task AttributeRoutedAction_InArea_LinkToAnotherArea()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
             var url = LinkFrom("http://localhost/ContosoCorp/Trains")
                 .To(new { action = "ListUsers", controller = "UserManagement", area = "Admin" });
 
-            var response = await client.GetAsync(url);
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            // Act
+            var response = await Client.GetAsync(url);
 
             // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var body = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<RoutingResult>(body);
 
-            // Assert
             Assert.Equal("Rail", result.Controller);
             Assert.Equal("Index", result.Action);
 
@@ -1263,12 +1092,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ControllerWithCatchAll_CanReachSpecificCountry()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/api/Products/US/GetProducts");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/api/Products/US/GetProducts");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -1293,12 +1118,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ControllerWithCatchAll_CannotReachWithoutCountry()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/Products/GetProducts");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/Products/GetProducts");
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -1308,19 +1129,15 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ControllerWithCatchAll_GenerateLinkForSpecificCountry()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
+            var url = LinkFrom("http://localhost/")
+                .To(new { action = "GetProducts", controller = "Products", country = "US" });
 
             // Act
-            var url =
-                LinkFrom("http://localhost/")
-                .To(new { action = "GetProducts", controller = "Products", country = "US" });
-            var response = await client.GetAsync(url);
-
-            var body = await response.Content.ReadAsStringAsync();
-            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+            var response = await Client.GetAsync(url);
 
             // Assert
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
             Assert.Equal("/api/Products/US/GetProducts", result.Link);
         }
 
@@ -1328,19 +1145,15 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ControllerWithCatchAll_GenerateLinkForFallback()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
+            var url = LinkFrom("http://localhost/")
+                .To(new { action = "GetProducts", controller = "Products", country = "CA" });
 
             // Act
-            var url =
-                LinkFrom("http://localhost/")
-                .To(new { action = "GetProducts", controller = "Products", country = "CA" });
-            var response = await client.GetAsync(url);
-
-            var body = await response.Content.ReadAsStringAsync();
-            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+            var response = await Client.GetAsync(url);
 
             // Assert
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
             Assert.Equal("/api/Products/CA/GetProducts", result.Link);
         }
 
@@ -1348,19 +1161,15 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ControllerWithCatchAll_GenerateLink_FailsWithoutCountry()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
+            var url = LinkFrom("http://localhost/")
+                .To(new { action = "GetProducts", controller = "Products", country = (string)null });
 
             // Act
-            var url =
-                LinkFrom("http://localhost/")
-                .To(new { action = "GetProducts", controller = "Products", country = (string)null });
-            var response = await client.GetAsync(url);
-
-            var body = await response.Content.ReadAsStringAsync();
-            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+            var response = await Client.GetAsync(url);
 
             // Assert
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
             Assert.Null(result.Link);
         }
 
@@ -1373,13 +1182,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task AttributeRouting_MixedAcceptVerbsAndRoute_Reachable(string path, string verb, string actionName)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             var request = new HttpRequestMessage(new HttpMethod(verb), "http://localhost" + path);
 
             // Act
-            var response = await client.SendAsync(request);
+            var response = await Client.SendAsync(request);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -1400,13 +1206,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task AttributeRouting_MixedAcceptVerbsAndRoute_Unreachable(string path, string verb)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             var request = new HttpRequestMessage(new HttpMethod(verb), "http://localhost" + path);
 
             // Act
-            var response = await client.SendAsync(request);
+            var response = await Client.SendAsync(request);
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -1420,13 +1223,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task AttributeRouting_RouteNameTokenReplace_Reachable(string path, string verb, string actionName)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             var request = new HttpRequestMessage(new HttpMethod(verb), "http://localhost" + path);
 
             // Act
-            var response = await client.SendAsync(request);
+            var response = await Client.SendAsync(request);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);

@@ -1,36 +1,34 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
-using ControllerDiscoveryConventionsWebSite;
-using Microsoft.AspNet.Builder;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Dnx.Runtime;
 using Xunit;
-using Microsoft.AspNet.Mvc.Actions;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class ControllerDiscoveryConventionTests
+    public class ControllerDiscoveryConventionTests :
+        IClassFixture<MvcTestFixture<ControllerDiscoveryConventionsWebSite.Startup>>,
+        IClassFixture<FilteredDefaultAssemblyProviderFixture<ControllerDiscoveryConventionsWebSite.Startup>>
     {
-        private const string SiteName = nameof(ControllerDiscoveryConventionsWebSite);
-        private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
-        private readonly Action<IServiceCollection> _configureServices = new Startup().ConfigureServices;
+        public ControllerDiscoveryConventionTests(
+            MvcTestFixture<ControllerDiscoveryConventionsWebSite.Startup> fixture,
+            FilteredDefaultAssemblyProviderFixture<ControllerDiscoveryConventionsWebSite.Startup> filteredFixture)
+        {
+            Client = fixture.Client;
+            FilteredClient = filteredFixture.Client;
+        }
+
+        public HttpClient Client { get; }
+
+        public HttpClient FilteredClient { get; }
 
         [Fact]
         public async Task AbstractControllers_AreSkipped()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-            client.BaseAddress = new Uri("http://localhost/");
-
-            // Act
-            var response = await client.GetAsync("Abstract/GetValue");
+            // Arrange & Act
+            var response = await Client.GetAsync("Abstract/GetValue");
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -39,13 +37,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task TypesDerivingFromControllerBaseTypesThatDoNotReferenceMvc_AreSkipped()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-            client.BaseAddress = new Uri("http://localhost/");
-
-            // Act
-            var response = await client.GetAsync("SqlTransactionManager/GetValue");
+            // Arrange & Act
+            var response = await Client.GetAsync("SqlTransactionManager/GetValue");
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -54,13 +47,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task TypesMarkedWithNonController_AreSkipped()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-            client.BaseAddress = new Uri("http://localhost/");
-
-            // Act
-            var response = await client.GetAsync("NonController/GetValue");
+            // Arrange & Act
+            var response = await Client.GetAsync("NonController/GetValue");
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -69,13 +57,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task PocoTypesWithControllerSuffix_AreDiscovered()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-            client.BaseAddress = new Uri("http://localhost/");
-
-            // Act
-            var response = await client.GetAsync("Poco/GetValue");
+            // Arrange & Act
+            var response = await Client.GetAsync("Poco/GetValue");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -85,13 +68,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task TypesDerivingFromTypesWithControllerSuffix_AreDiscovered()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-            client.BaseAddress = new Uri("http://localhost/");
-
-            // Act
-            var response = await client.GetAsync("ChildOfAbstract/GetValue");
+            // Arrange & Act
+            var response = await Client.GetAsync("ChildOfAbstract/GetValue");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -101,45 +79,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task TypesDerivingFromApiController_AreDiscovered()
         {
-            // Arrange
-            // TestHelper.CreateServer normally replaces the DefaultAssemblyProvider with a provider that
-            // limits the set of candidate assemblies to the executing application. For this test,
-            // we'll switch it back to using a filtered default assembly provider.
-            var server = TestHelper.CreateServer(
-                _app,
-                SiteName,
-                services =>
-                {
-                    _configureServices(services);
-                    services.AddTransient<IAssemblyProvider, FilteredDefaultAssemblyProvider>();
-                });
-
-            var client = server.CreateClient();
-            client.BaseAddress = new Uri("http://localhost/");
-
-            // Act
-            var response = await client.GetAsync("PersonApi/GetValue");
+            // Arrange & Act
+            var response = await FilteredClient.GetAsync("PersonApi/GetValue");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("PersonApi", await response.Content.ReadAsStringAsync());
-        }
-
-        private class FilteredDefaultAssemblyProvider : DefaultAssemblyProvider
-        {
-            public FilteredDefaultAssemblyProvider(ILibraryManager libraryManager)
-                : base(libraryManager)
-            {
-
-            }
-
-            protected override IEnumerable<Library> GetCandidateLibraries()
-            {
-                var libraries = base.GetCandidateLibraries();
-                // Filter out other WebSite projects
-                return libraries.Where(library => !library.Name.Contains("WebSite") ||
-                        library.Name.Equals(nameof(ControllerDiscoveryConventionsWebSite), StringComparison.Ordinal));
-            }
         }
     }
 }

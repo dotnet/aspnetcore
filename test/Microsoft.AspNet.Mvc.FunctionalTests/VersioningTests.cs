@@ -1,23 +1,23 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.Framework.DependencyInjection;
 using Newtonsoft.Json;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class VersioningTests
+    public class VersioningTests : IClassFixture<MvcTestFixture<VersioningWebSite.Startup>>
     {
-        private const string SiteName = nameof(VersioningWebSite);
-        readonly Action<IApplicationBuilder> _app = new VersioningWebSite.Startup().Configure;
-        private readonly Action<IServiceCollection> _configureServices = new VersioningWebSite.Startup().ConfigureServices;
+        public VersioningTests(MvcTestFixture<VersioningWebSite.Startup> fixture)
+        {
+            Client = fixture.Client;
+        }
+
+        public HttpClient Client { get; }
 
         [Theory]
         [InlineData("1")]
@@ -25,12 +25,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task AttributeRoutedAction_WithVersionedRoutes_IsNotAmbiguous(string version)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
+            var message = new HttpRequestMessage(HttpMethod.Get, "http://localhost/api/Addresses?version=" + version);
 
             // Act
-            var message = new HttpRequestMessage(HttpMethod.Get, "http://localhost/api/Addresses?version=" + version);
-            var response = await client.SendAsync(message);
+            var response = await Client.SendAsync(message);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -38,7 +36,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var body = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<RoutingResult>(body);
 
-            // Assert
             Assert.Contains("api/addresses", result.ExpectedUrls);
             Assert.Equal("Address", result.Controller);
             Assert.Equal("GetV" + version, result.Action);
@@ -50,14 +47,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task AttributeRoutedAction_WithAmbiguousVersionedRoutes_CanBeDisambiguatedUsingOrder(string version)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
             var query = "?version=" + version;
             var message = new HttpRequestMessage(HttpMethod.Get, "http://localhost/api/Addresses/All" + query);
 
             // Act
 
-            var response = await client.SendAsync(message);
+            var response = await Client.SendAsync(message);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -65,7 +60,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var body = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<RoutingResult>(body);
 
-            // Assert
             Assert.Contains("/api/addresses/all?version=" + version, result.ExpectedUrls);
             Assert.Equal("Address", result.Controller);
             Assert.Equal("GetAllV" + version, result.Action);
@@ -75,12 +69,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task VersionedApi_CanReachV1Operations_OnTheSameController_WithNoVersionSpecified()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
+            var message = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Tickets");
 
             // Act
-            var message = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Tickets");
-            var response = await client.SendAsync(message);
+            var response = await Client.SendAsync(message);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -98,12 +90,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task VersionedApi_CanReachV1Operations_OnTheSameController_WithVersionSpecified()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
+            var message = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Tickets?version=2");
 
             // Act
-            var message = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Tickets?version=2");
-            var response = await client.SendAsync(message);
+            var response = await Client.SendAsync(message);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -119,12 +109,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task VersionedApi_CanReachV1OperationsWithParameters_OnTheSameController()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
+            var message = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Tickets/5");
 
             // Act
-            var message = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Tickets/5");
-            var response = await client.SendAsync(message);
+            var response = await Client.SendAsync(message);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -140,12 +128,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task VersionedApi_CanReachV1OperationsWithParameters_OnTheSameController_WithVersionSpecified()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
+            var message = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Tickets/5?version=2");
 
             // Act
-            var message = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Tickets/5?version=2");
-            var response = await client.SendAsync(message);
+            var response = await Client.SendAsync(message);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -169,12 +155,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task VersionedApi_CanReachOtherVersionOperations_OnTheSameController(string version)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
+            var message = new HttpRequestMessage(HttpMethod.Post, "http://localhost/Tickets?version=" + version);
 
             // Act
-            var message = new HttpRequestMessage(HttpMethod.Post, "http://localhost/Tickets?version=" + version);
-            var response = await client.SendAsync(message);
+            var response = await Client.SendAsync(message);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -195,12 +179,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task VersionedApi_CanNotReachOtherVersionOperations_OnTheSameController_WithNoVersionSpecified()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
+            var message = new HttpRequestMessage(HttpMethod.Post, "http://localhost/Tickets");
 
             // Act
-            var message = new HttpRequestMessage(HttpMethod.Post, "http://localhost/Tickets");
-            var response = await client.SendAsync(message);
+            var response = await Client.SendAsync(message);
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -222,12 +204,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             string version)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
+            var message = new HttpRequestMessage(new HttpMethod(method), "http://localhost/Tickets/5?version=" + version);
 
             // Act
-            var message = new HttpRequestMessage(new HttpMethod(method), "http://localhost/Tickets/5?version=" + version);
-            var response = await client.SendAsync(message);
+            var response = await Client.SendAsync(message);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -250,12 +230,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task VersionedApi_CanNotReachOtherVersionOperationsWithParameters_OnTheSameController_WithNoVersionSpecified(string method)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
+            var message = new HttpRequestMessage(new HttpMethod(method), "http://localhost/Tickets/5");
 
             // Act
-            var message = new HttpRequestMessage(new HttpMethod(method), "http://localhost/Tickets/5");
-            var response = await client.SendAsync(message);
+            var response = await Client.SendAsync(message);
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -271,12 +249,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task VersionedApi_CanUseOrderToDisambiguate_OverlappingVersionRanges(string version)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
+            var message = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Books?version=" + version);
 
             // Act
-            var message = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Books?version=" + version);
-            var response = await client.SendAsync(message);
+            var response = await Client.SendAsync(message);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -295,12 +271,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task VersionedApi_OverlappingVersionRanges_FallsBackToLowerOrderAction(string version)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
+            var message = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Books?version=" + version);
 
             // Act
-            var message = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Books?version=" + version);
-            var response = await client.SendAsync(message);
+            var response = await Client.SendAsync(message);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -319,12 +293,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task VersionedApi_CanReachV1Operations_OnTheOriginalController_WithNoVersionSpecified(string method, string action)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
+            var message = new HttpRequestMessage(new HttpMethod(method), "http://localhost/Movies");
 
             // Act
-            var message = new HttpRequestMessage(new HttpMethod(method), "http://localhost/Movies");
-            var response = await client.SendAsync(message);
+            var response = await Client.SendAsync(message);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -342,12 +314,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task VersionedApi_CanReachV1Operations_OnTheOriginalController_WithVersionSpecified(string method, string action)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
+            var message = new HttpRequestMessage(new HttpMethod(method), "http://localhost/Movies?version=2");
 
             // Act
-            var message = new HttpRequestMessage(new HttpMethod(method), "http://localhost/Movies?version=2");
-            var response = await client.SendAsync(message);
+            var response = await Client.SendAsync(message);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -366,12 +336,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task VersionedApi_CanReachV1OperationsWithParameters_OnTheOriginalController(string method, string action)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
+            var message = new HttpRequestMessage(new HttpMethod(method), "http://localhost/Movies/5");
 
             // Act
-            var message = new HttpRequestMessage(new HttpMethod(method), "http://localhost/Movies/5");
-            var response = await client.SendAsync(message);
+            var response = await Client.SendAsync(message);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -389,12 +357,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task VersionedApi_CanReachV1OperationsWithParameters_OnTheOriginalController_WithVersionSpecified(string method, string action)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
+            var message = new HttpRequestMessage(new HttpMethod(method), "http://localhost/Movies/5?version=2");
 
             // Act
-            var message = new HttpRequestMessage(new HttpMethod(method), "http://localhost/Movies/5?version=2");
-            var response = await client.SendAsync(message);
+            var response = await Client.SendAsync(message);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -410,12 +376,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task VersionedApi_CanReachOtherVersionOperationsWithParameters_OnTheV2Controller()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
+            var message = new HttpRequestMessage(HttpMethod.Put, "http://localhost/Movies/5?version=2");
 
             // Act
-            var message = new HttpRequestMessage(HttpMethod.Put, "http://localhost/Movies/5?version=2");
-            var response = await client.SendAsync(message);
+            var response = await Client.SendAsync(message);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -434,12 +398,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task VersionedApi_CanHaveTwoRoutesWithVersionOnTheUrl_OnTheSameAction(string url)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
+            var message = new HttpRequestMessage(HttpMethod.Get, "http://localhost/" + url);
 
             // Act
-            var message = new HttpRequestMessage(HttpMethod.Get, "http://localhost/" + url);
-            var response = await client.SendAsync(message);
+            var response = await Client.SendAsync(message);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -457,12 +419,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task VersionedApi_CanHaveTwoRoutesWithVersionOnTheUrl_OnDifferentActions(string url, string version)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
+            var message = new HttpRequestMessage(HttpMethod.Get, "http://localhost/" + url);
 
             // Act
-            var message = new HttpRequestMessage(HttpMethod.Get, "http://localhost/" + url);
-            var response = await client.SendAsync(message);
+            var response = await Client.SendAsync(message);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -480,12 +440,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task VersionedApi_CanHaveTwoRoutesWithVersionOnTheUrl_OnDifferentActions_WithInlineConstraint(string url, string version)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
+            var message = new HttpRequestMessage(HttpMethod.Post, "http://localhost/" + url);
 
             // Act
-            var message = new HttpRequestMessage(HttpMethod.Post, "http://localhost/" + url);
-            var response = await client.SendAsync(message);
+            var response = await Client.SendAsync(message);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -506,12 +464,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task VersionedApi_CanProvideVersioningInformation_UsingPlainActionConstraint(string url, string query, string actionName)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
+            var message = new HttpRequestMessage(HttpMethod.Get, "http://localhost/" + url + query);
 
             // Act
-            var message = new HttpRequestMessage(HttpMethod.Get, "http://localhost/" + url + query);
-            var response = await client.SendAsync(message);
+            var response = await Client.SendAsync(message);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -527,12 +483,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task VersionedApi_ConstraintOrder_IsRespected()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
+            var message = new HttpRequestMessage(HttpMethod.Post, "http://localhost/" + "Customers?version=2");
 
             // Act
-            var message = new HttpRequestMessage(HttpMethod.Post, "http://localhost/" + "Customers?version=2");
-            var response = await client.SendAsync(message);
+            var response = await Client.SendAsync(message);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -548,12 +502,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task VersionedApi_CanUseConstraintOrder_ToChangeSelectedAction()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
+            var message = new HttpRequestMessage(HttpMethod.Delete, "http://localhost/" + "Customers/5?version=2");
 
             // Act
-            var message = new HttpRequestMessage(HttpMethod.Delete, "http://localhost/" + "Customers/5?version=2");
-            var response = await client.SendAsync(message);
+            var response = await Client.SendAsync(message);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -571,13 +523,11 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task VersionedApi_MultipleVersionsUsingAttributeRouting_OnTheSameMethod(string version)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
             var path = "/" + version + "/Vouchers?version=" + version;
+            var message = new HttpRequestMessage(HttpMethod.Get, "http://localhost" + path);
 
             // Act
-            var message = new HttpRequestMessage(HttpMethod.Get, "http://localhost" + path);
-            var response = await client.SendAsync(message);
+            var response = await Client.SendAsync(message);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);

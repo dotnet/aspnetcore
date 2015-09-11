@@ -3,28 +3,26 @@
 
 using System;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class WebApiCompatShimActionResultTest
+    public class WebApiCompatShimActionResultTest : IClassFixture<MvcTestFixture<WebApiCompatShimWebSite.Startup>>
     {
-        private const string SiteName = nameof(WebApiCompatShimWebSite);
-        private readonly Action<IApplicationBuilder> _app = new WebApiCompatShimWebSite.Startup().Configure;
-        private readonly Action<IServiceCollection> _configureServices = new WebApiCompatShimWebSite.Startup().ConfigureServices;
+        public WebApiCompatShimActionResultTest(MvcTestFixture<WebApiCompatShimWebSite.Startup> fixture)
+        {
+            Client = fixture.Client;
+        }
+
+        public HttpClient Client { get; }
 
         [Fact]
         public async Task ApiController_BadRequest()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/api/Blog/ActionResult/GetBadRequest");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/api/Blog/ActionResult/GetBadRequest");
 
             // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -33,12 +31,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ApiController_BadRequestMessage()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/api/Blog/ActionResult/GetBadRequestMessage");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/api/Blog/ActionResult/GetBadRequestMessage");
             var content = await response.Content.ReadAsStringAsync();
 
             // Assert
@@ -50,13 +44,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_BadRequestModelState()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             var expected = "{\"Message\":\"The request is invalid.\",\"ModelState\":{\"product.Name\":[\"Name is required.\"]}}";
 
             // Act
-            var response = await client.GetAsync("http://localhost/api/Blog/ActionResult/GetBadRequestModelState");
+            var response = await Client.GetAsync("http://localhost/api/Blog/ActionResult/GetBadRequestModelState");
             var content = await response.Content.ReadAsStringAsync();
 
             // Assert
@@ -67,12 +58,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ApiController_Conflict()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/api/Blog/ActionResult/GetConflict");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/api/Blog/ActionResult/GetConflict");
 
             // Assert
             Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
@@ -81,12 +68,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ApiController_Content()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/api/Blog/ActionResult/GetContent");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/api/Blog/ActionResult/GetContent");
             var content = await response.Content.ReadAsStringAsync();
 
             // Assert
@@ -97,12 +80,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ApiController_CreatedRelative()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/api/Blog/ActionResult/GetCreatedRelative");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/api/Blog/ActionResult/GetCreatedRelative");
             var content = await response.Content.ReadAsStringAsync();
 
             // Assert
@@ -114,12 +93,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ApiController_CreatedAbsolute()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/api/Blog/ActionResult/GetCreatedAbsolute");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/api/Blog/ActionResult/GetCreatedAbsolute");
             var content = await response.Content.ReadAsStringAsync();
 
             // Assert
@@ -131,12 +106,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ApiController_CreatedQualified()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/api/Blog/ActionResult/GetCreatedQualified");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/api/Blog/ActionResult/GetCreatedQualified");
             var content = await response.Content.ReadAsStringAsync();
 
             // Assert
@@ -148,12 +119,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ApiController_CreatedUri()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/api/Blog/ActionResult/GetCreatedUri");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/api/Blog/ActionResult/GetCreatedUri");
             var content = await response.Content.ReadAsStringAsync();
 
             // Assert
@@ -165,12 +132,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ApiController_CreatedAtRoute()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/api/Blog/ActionResult/GetCreatedAtRoute");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/api/Blog/ActionResult/GetCreatedAtRoute");
             var content = await response.Content.ReadAsStringAsync();
 
             // Assert
@@ -182,12 +145,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ApiController_InternalServerError()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/api/Blog/ActionResult/GetInternalServerError");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/api/Blog/ActionResult/GetInternalServerError");
 
             // Assert
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
@@ -196,12 +155,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ApiController_InternalServerErrorException()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/api/Blog/ActionResult/GetInternalServerErrorException");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/api/Blog/ActionResult/GetInternalServerErrorException");
             var content = await response.Content.ReadAsStringAsync();
 
             // Assert
@@ -212,12 +167,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ApiController_Json()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/api/Blog/ActionResult/GetJson");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/api/Blog/ActionResult/GetJson");
             var content = await response.Content.ReadAsStringAsync();
 
             // Assert
@@ -229,16 +180,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_JsonSettings()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             var expected =
                 "{" + Environment.NewLine +
                 "  \"Name\": \"Test User\"" + Environment.NewLine +
                 "}";
 
             // Act
-            var response = await client.GetAsync("http://localhost/api/Blog/ActionResult/GetJsonSettings");
+            var response = await Client.GetAsync("http://localhost/api/Blog/ActionResult/GetJsonSettings");
             var content = await response.Content.ReadAsStringAsync();
 
             // Assert
@@ -250,16 +198,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_JsonSettingsEncoding()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             var expected =
                 "{" + Environment.NewLine +
                 "  \"Name\": \"Test User\"" + Environment.NewLine +
                 "}";
 
             // Act
-            var response = await client.GetAsync("http://localhost/api/Blog/ActionResult/GetJsonSettingsEncoding");
+            var response = await Client.GetAsync("http://localhost/api/Blog/ActionResult/GetJsonSettingsEncoding");
             var content = await response.Content.ReadAsStringAsync();
 
             // Assert
@@ -271,12 +216,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ApiController_NotFound()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/api/Blog/ActionResult/GetNotFound");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/api/Blog/ActionResult/GetNotFound");
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -285,12 +226,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ApiController_Ok()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/api/Blog/ActionResult/GetOk");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/api/Blog/ActionResult/GetOk");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -299,12 +236,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ApiController_OkContent()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/api/Blog/ActionResult/GetOkContent");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/api/Blog/ActionResult/GetOkContent");
             var content = await response.Content.ReadAsStringAsync();
 
             // Assert
@@ -315,12 +248,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ApiController_RedirectString()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/api/Blog/ActionResult/GetRedirectString");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/api/Blog/ActionResult/GetRedirectString");
 
             // Assert
             Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
@@ -334,12 +263,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             "/api/Blog/BasicApi/WriteToHttpContext")]
         public async Task ApiController_RedirectUri(string url, string expected)
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync(url);
+            // Arrange & Act
+            var response = await Client.GetAsync(url);
 
             // Assert
             Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
@@ -349,12 +274,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ApiController_ResponseMessage()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/api/Blog/ActionResult/GetResponseMessage");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/api/Blog/ActionResult/GetResponseMessage");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -364,12 +285,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ApiController_StatusCode()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/api/Blog/ActionResult/GetStatusCode");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/api/Blog/ActionResult/GetStatusCode");
 
             // Assert
             Assert.Equal(HttpStatusCode.PaymentRequired, response.StatusCode);

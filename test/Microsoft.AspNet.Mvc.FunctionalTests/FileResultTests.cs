@@ -1,33 +1,30 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Testing.xunit;
-using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class FileResultTests
+    public class FileResultTests : IClassFixture<MvcTestFixture<FilesWebSite.Startup>>
     {
-        private const string SiteName = nameof(FilesWebSite);
-        private readonly Action<IApplicationBuilder> _app = new FilesWebSite.Startup().Configure;
-        private readonly Action<IServiceCollection> _configureServices = new FilesWebSite.Startup().ConfigureServices;
+        public FileResultTests(MvcTestFixture<FilesWebSite.Startup> fixture)
+        {
+            Client = fixture.Client;
+        }
+
+        public HttpClient Client { get; }
 
         [ConditionalFact]
         // https://github.com/aspnet/Mvc/issues/2727
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task FileFromDisk_CanBeEnabled_WithMiddleware()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/DownloadFiles/DowloadFromDisk");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/DownloadFiles/DowloadFromDisk");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -45,12 +42,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task FileFromDisk_ReturnsFileWithFileName()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/DownloadFiles/DowloadFromDiskWithFileName");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/DownloadFiles/DowloadFromDiskWithFileName");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -70,12 +63,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task FileFromStream_ReturnsFile()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/DownloadFiles/DowloadFromStream");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/DownloadFiles/DowloadFromStream");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -91,12 +80,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task FileFromStream_ReturnsFileWithFileName()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/DownloadFiles/DowloadFromStreamWithFileName");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/DownloadFiles/DowloadFromStreamWithFileName");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -116,12 +101,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task FileFromBinaryData_ReturnsFile()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/DownloadFiles/DowloadFromBinaryData");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/DownloadFiles/DowloadFromBinaryData");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -137,12 +118,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task FileFromBinaryData_ReturnsFileWithFileName()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/DownloadFiles/DowloadFromBinaryDataWithFileName");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/DownloadFiles/DowloadFromBinaryDataWithFileName");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -163,12 +140,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FileFromEmbeddedResources_ReturnsFileWithFileName()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
             var expectedBody = "Sample text file as embedded resource.";
 
             // Act
-            var response = await client.GetAsync("http://localhost/EmbeddedFiles/DownloadFileWithFileName");
+            var response = await Client.GetAsync("http://localhost/EmbeddedFiles/DownloadFileWithFileName");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);

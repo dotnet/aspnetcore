@@ -182,7 +182,7 @@ More content from layout",
             Assert.Equal("Initial content", GetTrimmedString(stream));
             waitService.WaitForServer();
 
-            //Assert - 2
+            // Assert - 2
             try
             {
                 GetTrimmedString(stream);

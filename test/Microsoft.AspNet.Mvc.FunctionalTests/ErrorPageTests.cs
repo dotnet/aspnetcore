@@ -1,14 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.IO;
 using System.Net;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using ErrorPageMiddlewareWebSite;
-using Microsoft.AspNet.Builder;
-using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -16,11 +12,14 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     /// <summary>
     /// Functional test to verify the error reporting of Razor compilation by diagnostic middleware.
     /// </summary>
-    public class ErrorPageTests
+    public class ErrorPageTests : IClassFixture<MvcTestFixture<ErrorPageMiddlewareWebSite.Startup>>
     {
-        private const string SiteName = nameof(ErrorPageMiddlewareWebSite);
-        private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
-        private readonly Action<IServiceCollection> _configureServices = new Startup().ConfigureServices;
+        public ErrorPageTests(MvcTestFixture<ErrorPageMiddlewareWebSite.Startup> fixture)
+        {
+            Client = fixture.Client;
+        }
+
+        public HttpClient Client { get; }
 
         [Theory]
         [InlineData("CompilationFailure", "Cannot implicitly convert type &#x27;int&#x27; to &#x27;string&#x27;")]
@@ -31,12 +30,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CompilationFailuresAreListedByErrorPageMiddleware(string action, string expected)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
             var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
 
             // Act
-            var response = await client.GetAsync("http://localhost/" + action);
+            var response = await Client.GetAsync("http://localhost/" + action);
 
             // Assert
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
@@ -52,12 +49,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Arrange
             var expectedMessage = "The type or namespace name &#x27;NamespaceDoesNotExist&#x27; could not be found ("
                 + "are you missing a using directive or an assembly reference?)";
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
             var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
 
             // Act
-            var response = await client.GetAsync("http://localhost/ErrorFromViewImports");
+            var response = await Client.GetAsync("http://localhost/ErrorFromViewImports");
 
             // Assert
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);

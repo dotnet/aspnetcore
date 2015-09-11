@@ -6,21 +6,21 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using JsonPatchWebSite;
 using JsonPatchWebSite.Models;
-using Microsoft.AspNet.Builder;
-using Microsoft.Framework.DependencyInjection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class JsonPatchTest
+    public class JsonPatchTest : IClassFixture<MvcTestFixture<JsonPatchWebSite.Startup>>
     {
-        private const string SiteName = nameof(JsonPatchWebSite);
-        private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
-        private readonly Action<IServiceCollection> _configureServices = new Startup().ConfigureServices;
+        public JsonPatchTest(MvcTestFixture<JsonPatchWebSite.Startup> fixture)
+        {
+            Client = fixture.Client;
+        }
+
+        public HttpClient Client { get; }
 
         [Theory]
         [InlineData("http://localhost/jsonpatch/JsonPatchWithoutModelState")]
@@ -29,9 +29,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task JsonPatch_ValidAddOperation_Success(string url)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             var input = "[{ \"op\": \"add\", " +
                 "\"path\": \"Orders/2\", " +
                "\"value\": { \"OrderName\": \"Name2\" }}]";
@@ -43,7 +40,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             };
 
             // Act
-            var response = await client.SendAsync(request);
+            var response = await Client.SendAsync(request);
 
             // Assert
             var body = await response.Content.ReadAsStringAsync();
@@ -58,9 +55,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task JsonPatch_ValidReplaceOperation_Success(string url)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             var input = "[{ \"op\": \"replace\", " +
                 "\"path\": \"Orders/0/OrderName\", " +
                "\"value\": \"ReplacedOrder\" }]";
@@ -72,7 +66,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             };
 
             // Act
-            var response = await client.SendAsync(request);
+            var response = await Client.SendAsync(request);
 
             // Assert
             var body = await response.Content.ReadAsStringAsync();
@@ -87,9 +81,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task JsonPatch_ValidCopyOperation_Success(string url)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             var input = "[{ \"op\": \"copy\", " +
                 "\"path\": \"Orders/1/OrderName\", " +
                "\"from\": \"Orders/0/OrderName\"}]";
@@ -101,7 +92,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             };
 
             // Act
-            var response = await client.SendAsync(request);
+            var response = await Client.SendAsync(request);
 
             // Assert
             var body = await response.Content.ReadAsStringAsync();
@@ -116,9 +107,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task JsonPatch_ValidMoveOperation_Success(string url)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             var input = "[{ \"op\": \"move\", " +
                 "\"path\": \"Orders/1/OrderName\", " +
                "\"from\": \"Orders/0/OrderName\"}]";
@@ -130,7 +118,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             };
 
             // Act
-            var response = await client.SendAsync(request);
+            var response = await Client.SendAsync(request);
 
             // Assert
             var body = await response.Content.ReadAsStringAsync();
@@ -147,9 +135,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task JsonPatch_ValidRemoveOperation_Success(string url)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             var input = "[{ \"op\": \"remove\", " +
                 "\"path\": \"Orders/1/OrderName\"}]";
             var request = new HttpRequestMessage
@@ -160,7 +145,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             };
 
             // Act
-            var response = await client.SendAsync(request);
+            var response = await Client.SendAsync(request);
 
             // Assert
             var body = await response.Content.ReadAsStringAsync();
@@ -175,9 +160,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task JsonPatch_MultipleValidOperations_Success(string url)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             var input = "[{ \"op\": \"add\", "+
                 "\"path\": \"Orders/2\", " +
                "\"value\": { \"OrderName\": \"Name2\" }}, " +
@@ -195,7 +177,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             };
 
             // Act
-            var response = await client.SendAsync(request);
+            var response = await Client.SendAsync(request);
 
             // Assert
             var body = await response.Content.ReadAsStringAsync();
@@ -262,9 +244,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task JsonPatch_InvalidOperations_failure(string url, string input, string errorMessage)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             var request = new HttpRequestMessage
             {
                 Content = new StringContent(input, Encoding.UTF8, "application/json-patch+json"),
@@ -273,7 +252,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             };
 
             // Act
-            var response = await client.SendAsync(request);
+            var response = await Client.SendAsync(request);
 
             // Assert
             var body = await response.Content.ReadAsStringAsync();
@@ -284,9 +263,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task JsonPatch_InvalidData_FormatterErrorInModelState_Failure()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             var input = "{ \"op\": \"add\", " +
                 "\"path\": \"Orders/2\", " +
                "\"value\": { \"OrderName\": \"Name2\" }}";
@@ -298,7 +274,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             };
 
             // Act
-            var response = await client.SendAsync(request);
+            var response = await Client.SendAsync(request);
 
             // Assert
             var body = await response.Content.ReadAsStringAsync();
@@ -309,9 +285,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task JsonPatch_JsonConverterOnProperty_Success()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             var input = "[{ \"op\": \"add\", " +
                 "\"path\": \"Orders/2\", " +
                "\"value\": { \"OrderType\": \"Type2\" }}]";
@@ -323,7 +296,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             };
 
             // Act
-            var response = await client.SendAsync(request);
+            var response = await Client.SendAsync(request);
 
             // Assert
             var body = await response.Content.ReadAsStringAsync();
@@ -335,9 +308,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task JsonPatch_JsonConverterOnClass_Success()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             var input = "[{ \"op\": \"add\", " +
                 "\"path\": \"ProductCategory\", " +
                "\"value\": { \"CategoryName\": \"Name2\" }}]";
@@ -349,7 +319,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             };
 
             // Act
-            var response = await client.SendAsync(request);
+            var response = await Client.SendAsync(request);
 
             // Assert
             var body = await response.Content.ReadAsStringAsync();

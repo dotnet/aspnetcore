@@ -1,31 +1,27 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class ApplicationModelTest
+    public class ApplicationModelTest : IClassFixture<MvcTestFixture<ApplicationModelWebSite.Startup>>
     {
-        private const string SiteName = nameof(ApplicationModelWebSite);
-        private readonly Action<IApplicationBuilder> _app = new ApplicationModelWebSite.Startup().Configure;
-        private readonly Action<IServiceCollection> _configureServices = new ApplicationModelWebSite.Startup().ConfigureServices;
+        public ApplicationModelTest(MvcTestFixture<ApplicationModelWebSite.Startup> fixture)
+        {
+            Client = fixture.Client;
+        }
+
+        public HttpClient Client { get; }
 
         [Fact]
         public async Task ControllerModel_CustomizedWithAttribute()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/CoolController/GetControllerName");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/CoolController/GetControllerName");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -37,12 +33,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ActionModel_CustomizedWithAttribute()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/ActionModel/ActionName");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/ActionModel/ActionName");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -54,12 +46,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ParameterModel_CustomizedWithAttribute()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/ParameterModel/GetParameterMetadata");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/ParameterModel/GetParameterMetadata");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -71,12 +59,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ApplicationModel_AddPropertyToActionDescriptor_FromApplicationModel()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/Home/GetCommonDescription");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/Home/GetCommonDescription");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -88,12 +72,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ApplicationModel_AddPropertyToActionDescriptor_ControllerModelOverwritesCommonApplicationProperty()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/ApplicationModel/GetControllerDescription");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/ApplicationModel/GetControllerDescription");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -105,12 +85,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ApplicationModel_ProvidesMetadataToActionDescriptor_ActionModelOverwritesControllerModelProperty()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/ApplicationModel/GetActionSpecificDescription");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/ApplicationModel/GetActionSpecificDescription");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -122,12 +98,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ApplicationModelExtensions_AddsConventionToAllControllers()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/Lisence/GetLisence");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/Lisence/GetLisence");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -142,14 +114,11 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApplicationModelExtensions_AddsConventionToAllActions()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Home/GetHelloWorld");
             request.Headers.Add("helloWorld", "HelloWorld");
 
             // Act
-            var response = await client.SendAsync(request);
+            var response = await Client.SendAsync(request);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);

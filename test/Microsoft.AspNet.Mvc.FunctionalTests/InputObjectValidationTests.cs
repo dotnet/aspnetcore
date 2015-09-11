@@ -1,27 +1,27 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Testing;
 using Microsoft.AspNet.Testing.xunit;
-using Microsoft.Framework.DependencyInjection;
 using Newtonsoft.Json;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class InputObjectValidationTests
+    public class InputObjectValidationTests : IClassFixture<MvcTestFixture<FormatterWebSite.Startup>>
     {
-        private const string SiteName = nameof(FormatterWebSite);
-        private readonly Action<IApplicationBuilder> _app = new FormatterWebSite.Startup().Configure;
-        private readonly Action<IServiceCollection> _configureServices = new FormatterWebSite.Startup().ConfigureServices;
+        public InputObjectValidationTests(MvcTestFixture<FormatterWebSite.Startup> fixture)
+        {
+            Client = fixture.Client;
+        }
+
+        public HttpClient Client { get; }
 
         // Parameters: Request Content, Expected status code, Expected model state error message
         public static IEnumerable<object[]> SimpleTypePropertiesModelRequestData
@@ -51,8 +51,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CheckIfObjectIsDeserializedWithoutErrors()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
             var sampleId = 2;
             var sampleName = "SampleUser";
             var sampleAlias = "SampleAlias";
@@ -66,7 +64,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var content = new StringContent(input, Encoding.UTF8, "application/xml");
 
             // Act
-            var response = await client.PostAsync("http://localhost/Validation/Index", content);
+            var response = await Client.PostAsync("http://localhost/Validation/Index", content);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -78,8 +76,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CheckIfObjectIsDeserialized_WithErrors()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
             var sampleId = 0;
             var sampleName = "user";
             var sampleAlias = "a";
@@ -90,7 +86,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var content = new StringContent(input, Encoding.UTF8, "application/json");
 
             // Act
-            var response = await client.PostAsync("http://localhost/Validation/Index", content);
+            var response = await Client.PostAsync("http://localhost/Validation/Index", content);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -108,12 +104,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CheckIfExcludedFieldsAreNotValidated()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
             var content = new StringContent("{\"Alias\":\"xyz\"}", Encoding.UTF8, "application/json");
 
             // Act
-            var response = await client.PostAsync("http://localhost/Validation/GetDeveloperName", content);
+            var response = await Client.PostAsync("http://localhost/Validation/GetDeveloperName", content);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -125,8 +119,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ShallowValidation_HappensOnExcluded_ComplexTypeProperties()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
             var requestData = "{\"Name\":\"Library Manager\", \"Suppliers\": [{\"Name\":\"Contoso Corp\"}]}";
             var content = new StringContent(requestData, Encoding.UTF8, "application/json");
             var expectedModelStateErrorMessage
@@ -135,7 +127,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                                  = "The field Name must be a string or array type with a maximum length of '5'.";
 
             // Act
-            var response = await client.PostAsync("http://localhost/Validation/CreateProject", content);
+            var response = await Client.PostAsync("http://localhost/Validation/CreateProject", content);
 
             // Assert
             Assert.Equal(StatusCodes.Status400BadRequest, (int)response.StatusCode);
@@ -158,12 +150,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             string expectedModelStateErrorMessage)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
             var content = new StringContent(requestContent, Encoding.UTF8, "application/json");
 
             // Act
-            var response = await client.PostAsync(
+            var response = await Client.PostAsync(
                 "http://localhost/Validation/CreateSimpleTypePropertiesModel",
                 content);
 
@@ -181,14 +171,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CheckIfExcludedField_IsNotValidatedForNonBodyBoundModels()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
             var kvps = new List<KeyValuePair<string, string>>();
             kvps.Add(new KeyValuePair<string, string>("Alias", "xyz"));
             var content = new FormUrlEncodedContent(kvps);
 
             // Act
-            var response = await client.PostAsync("http://localhost/Validation/GetDeveloperAlias", content);
+            var response = await Client.PostAsync("http://localhost/Validation/GetDeveloperAlias", content);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);

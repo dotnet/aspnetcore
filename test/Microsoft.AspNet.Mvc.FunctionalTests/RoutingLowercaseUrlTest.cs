@@ -1,22 +1,22 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class RoutingLowercaseUrlTest
+    // This website sets the generation of lowercase URLs to true
+    public class RoutingLowercaseUrlTest : IClassFixture<MvcTestFixture<LowercaseUrlsWebSite.Startup>>
     {
-        private const string SiteName = nameof(LowercaseUrlsWebSite);
+        public RoutingLowercaseUrlTest(MvcTestFixture<LowercaseUrlsWebSite.Startup> fixture)
+        {
+            Client = fixture.Client;
+        }
 
-        // This website sets the generation of lowercase URLs to true
-        private readonly Action<IApplicationBuilder> _app = new LowercaseUrlsWebSite.Startup().Configure;
-        private readonly Action<IServiceCollection> _configureServices = new LowercaseUrlsWebSite.Startup().ConfigureServices;
+        public HttpClient Client { get; }
 
         [Theory]
         // Generating lower case URL doesnt lowercase the query parameters
@@ -35,12 +35,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [InlineData("Api/Employee/GetEmployee/JohnDoe", "/api/employee/getemployee/johndoe")]
         public async Task GenerateLowerCaseUrlsTests(string path, string expectedUrl)
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/" + path);
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/" + path);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);

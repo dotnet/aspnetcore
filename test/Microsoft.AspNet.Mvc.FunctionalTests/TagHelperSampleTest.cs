@@ -1,106 +1,55 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Logging;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class TagHelperSampleTest
+    public class TagHelperSampleTest : IClassFixture<MvcTestFixture<TagHelperSample.Web.Startup>>
     {
-        private const string SiteName = nameof(TagHelperSample) + "." + nameof(TagHelperSample.Web);
-
-        // Path relative to Mvc\\test\Microsoft.AspNet.Mvc.FunctionalTests
-        private readonly static string SamplesFolder = Path.Combine("..", "..", "samples");
-
-        private static readonly List<string> Paths = new List<string>
+        public TagHelperSampleTest(MvcTestFixture<TagHelperSample.Web.Startup> fixture)
         {
-            string.Empty,
-            "/",
-            "/Home/Create",
-            "/Home/Create?Name=Billy&Blurb=hello&DateOfBirth=2000-11-30&YearsEmployeed=0",
-            "/Home/Create",
-            "/Home/Create?Name=Joe&Blurb=goodbye&DateOfBirth=1980-10-20&YearsEmployeed=1",
-            "/Home/Edit/0",
-            "/Home/Edit/0?Name=Bobby&Blurb=howdy&DateOfBirth=1999-11-30&YearsEmployeed=1",
-            "/Home/Edit/1",
-            "/Home/Edit/1?Name=Jack&Blurb=goodbye&DateOfBirth=1979-10-20&YearsEmployeed=4",
-            "/Home/Edit/0",
-            "/Home/Edit/0?Name=Bobby&Blurb=howdy&DateOfBirth=1999-11-30&YearsEmployeed=2",
-            "/Home/Index",
-        };
+            Client = fixture.Client;
+        }
 
-        private readonly ILoggerFactory _loggerFactory = new TestLoggerFactory();
-        private readonly Action<IApplicationBuilder, ILoggerFactory> _app = new TagHelperSample.Web.Startup().Configure;
-        private readonly Action<IServiceCollection> _configureServices = new TagHelperSample.Web.Startup().ConfigureServices;
+        public HttpClient Client { get; }
 
-        [Fact]
-        public async Task Home_Pages_ReturnSuccess()
+        public static TheoryData<string> PathData
         {
-            // Arrange
-            var server = TestHelper.CreateServer(app => _app(app, _loggerFactory), SiteName, SamplesFolder, _configureServices);
-            var client = server.CreateClient();
-
-            for (var index = 0; index < Paths.Count; index++)
+            get
             {
-                // Act
-                var path = Paths[index];
-                var response = await client.GetAsync("http://localhost" + path);
-
-                // Assert
-                Assert.NotNull(response);
-                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                return new TheoryData<string>
+                {
+                    string.Empty,
+                    "/",
+                    "/Home/Create",
+                    "/Home/Create?Name=Billy&Blurb=hello&DateOfBirth=2000-11-30&YearsEmployeed=0",
+                    "/Home/Create",
+                    "/Home/Create?Name=Joe&Blurb=goodbye&DateOfBirth=1980-10-20&YearsEmployeed=1",
+                    "/Home/Edit/0",
+                    "/Home/Edit/0?Name=Bobby&Blurb=howdy&DateOfBirth=1999-11-30&YearsEmployeed=1",
+                    "/Home/Edit/1",
+                    "/Home/Edit/1?Name=Jack&Blurb=goodbye&DateOfBirth=1979-10-20&YearsEmployeed=4",
+                    "/Home/Edit/0",
+                    "/Home/Edit/0?Name=Bobby&Blurb=howdy&DateOfBirth=1999-11-30&YearsEmployeed=2",
+                    "/Home/Index",
+                };
             }
         }
 
-        private class TestLoggerFactory : ILoggerFactory
+        [Theory]
+        [MemberData(nameof(PathData))]
+        public async Task Home_Pages_ReturnSuccess(string path)
         {
-            public LogLevel MinimumLevel { get; set; }
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost" + path);
 
-            public void AddProvider(ILoggerProvider provider)
-            {
-
-            }
-
-            public ILogger CreateLogger(string name)
-            {
-                return new TestLogger();
-            }
-
-            public void Dispose()
-            {
-            }
-        }
-
-        private class TestLogger : ILogger
-        {
-            public bool IsEnabled(LogLevel level)
-            {
-                return false;
-            }
-
-            public IDisposable BeginScopeImpl(object scope)
-            {
-                return new TestDisposable();
-            }
-
-            public void Log(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
-            {
-            }
-        }
-
-        private class TestDisposable : IDisposable
-        {
-            public void Dispose()
-            {
-            }
+            // Assert
+            Assert.NotNull(response);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
     }
 }

@@ -6,30 +6,25 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using InlineConstraints;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Testing;
-using Microsoft.Framework.DependencyInjection;
 using Newtonsoft.Json;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class InlineConstraintTests
+    public class InlineConstraintTests : IClassFixture<MvcTestFixture<InlineConstraints.Startup>>
     {
-        private const string SiteName = nameof(InlineConstraintsWebSite);
-        private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
-        private readonly Action<IServiceCollection> _configureServices = new Startup().ConfigureServices;
+        public InlineConstraintTests(MvcTestFixture<InlineConstraints.Startup> fixture)
+        {
+            Client = fixture.Client;
+        }
+
+        public HttpClient Client { get; }
 
         [Fact]
         public async Task RoutingToANonExistantArea_WithExistConstraint_RoutesToCorrectAction()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/area-exists/Users");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/area-exists/Users");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -40,12 +35,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task RoutingToANonExistantArea_WithoutExistConstraint_RoutesToIncorrectAction()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/area-withoutexists/Users");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/area-withoutexists/Users");
 
             // Assert
             var exception = response.GetServerException();
@@ -62,12 +53,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task GetProductById_IntConstraintForOptionalId_IdPresent()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/products/GetProductById/5");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/products/GetProductById/5");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -81,12 +68,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task GetProductById_IntConstraintForOptionalId_NoId()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/products/GetProductById");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/products/GetProductById");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -98,12 +81,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task GetProductById_IntConstraintForOptionalId_NotIntId()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/products/GetProductById/asdf");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/products/GetProductById/asdf");
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -112,12 +91,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task GetProductByName_AlphaContraintForMandatoryName_ValidName()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/products/GetProductByName/asdf");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/products/GetProductByName/asdf");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -130,12 +105,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task GetProductByName_AlphaContraintForMandatoryName_NonAlphaName()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/products/GetProductByName/asd123");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/products/GetProductByName/asd123");
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -144,12 +115,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task GetProductByName_AlphaContraintForMandatoryName_NoName()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/products/GetProductByName");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/products/GetProductByName");
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -158,13 +125,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task GetProductByManufacturingDate_DateTimeConstraintForMandatoryDateTime_ValidDateTime()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
+            // Arrange & Act
             var response =
-                await client.GetAsync(@"http://localhost/products/GetProductByManufacturingDate/2014-10-11T13:45:30");
+                await Client.GetAsync(@"http://localhost/products/GetProductByManufacturingDate/2014-10-11T13:45:30");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -178,12 +141,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task GetProductByCategoryName_StringLengthConstraint_ForOptionalCategoryName_ValidCatName()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/products/GetProductByCategoryName/Sports");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/products/GetProductByCategoryName/Sports");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -196,13 +155,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task GetProductByCategoryName_StringLengthConstraint_ForOptionalCategoryName_InvalidCatName()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
+            // Arrange & Act
             var response =
-                await client.GetAsync("http://localhost/products/GetProductByCategoryName/SportsSportsSportsSports");
+                await Client.GetAsync("http://localhost/products/GetProductByCategoryName/SportsSportsSportsSports");
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -211,12 +166,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task GetProductByCategoryName_StringLength1To20Constraint_ForOptionalCategoryName_NoCatName()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/products/GetProductByCategoryName");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/products/GetProductByCategoryName");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -228,12 +179,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task GetProductByCategoryId_Int10To100Constraint_ForMandatoryCatId_ValidId()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/products/GetProductByCategoryId/40");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/products/GetProductByCategoryId/40");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -246,12 +193,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task GetProductByCategoryId_Int10To100Constraint_ForMandatoryCatId_InvalidId()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/products/GetProductByCategoryId/5");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/products/GetProductByCategoryId/5");
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -260,12 +203,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task GetProductByCategoryId_Int10To100Constraint_ForMandatoryCatId_NotIntId()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/products/GetProductByCategoryId/asdf");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/products/GetProductByCategoryId/asdf");
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -274,12 +213,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task GetProductByPrice_FloatContraintForOptionalPrice_Valid()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/products/GetProductByPrice/4023.23423");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/products/GetProductByPrice/4023.23423");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -292,12 +227,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task GetProductByPrice_FloatContraintForOptionalPrice_NoPrice()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/products/GetProductByPrice");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/products/GetProductByPrice");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -309,12 +240,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task GetProductByManufacturerId_IntMin10Constraint_ForOptionalManufacturerId_Valid()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/products/GetProductByManufacturerId/57");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/products/GetProductByManufacturerId/57");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -327,12 +254,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task GetProductByManufacturerId_IntMin10Cinstraint_ForOptionalManufacturerId_NoId()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/products/GetProductByManufacturerId");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/products/GetProductByManufacturerId");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -344,12 +267,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task GetUserByName_RegExConstraint_ForMandatoryName_Valid()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/products/GetUserByName/abc");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/products/GetUserByName/abc");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -362,12 +281,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task GetUserByName_RegExConstraint_ForMandatoryName_InValid()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/products/GetUserByName/abcd");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/products/GetUserByName/abcd");
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -376,13 +291,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task GetStoreById_GuidConstraintForOptionalId_Valid()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
+            // Arrange & Act
             var response =
-                await client.GetAsync("http://localhost/Store/GetStoreById/691cf17a-791b-4af8-99fd-e739e168170f");
+                await Client.GetAsync("http://localhost/Store/GetStoreById/691cf17a-791b-4af8-99fd-e739e168170f");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -395,12 +306,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task GetStoreById_GuidConstraintForOptionalId_NoId()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/Store/GetStoreById");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/Store/GetStoreById");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -412,12 +319,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task GetStoreById_GuidConstraintForOptionalId_NotGuidId()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/Store/GetStoreById/691cf17a-791b");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/Store/GetStoreById/691cf17a-791b");
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -426,12 +329,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task GetStoreByLocation_StringLengthConstraint_AlphaConstraint_ForMandatoryLocation_Valid()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/Store/GetStoreByLocation/Bellevue");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/Store/GetStoreByLocation/Bellevue");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -444,12 +343,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task GetStoreByLocation_StringLengthConstraint_AlphaConstraint_ForMandatoryLocation_MoreLength()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/Store/GetStoreByLocation/BellevueRedmond");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/Store/GetStoreByLocation/BellevueRedmond");
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -458,12 +353,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task GetStoreByLocation_StringLengthConstraint_AlphaConstraint_ForMandatoryLocation_LessLength()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/Store/GetStoreByLocation/Be");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/Store/GetStoreByLocation/Be");
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -472,12 +363,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task GetStoreByLocation_StringLengthConstraint_AlphaConstraint_ForMandatoryLocation_NoAlpha()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/Store/GetStoreByLocation/Bell124");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/Store/GetStoreByLocation/Bell124");
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -490,12 +377,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [InlineData("1-234-56789-X", "10 Digit ISBN Number")]
         public async Task CustomInlineConstraint_Add_Update(string isbn, string expectedBody)
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/book/index/" + isbn);
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/book/index/" + isbn);
             var body = await response.Content.ReadAsStringAsync();
 
             // Assert
@@ -505,7 +388,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
         public static IEnumerable<object[]> QueryParameters
         {
-            // The first four parameters are controller name, action name, parameters in the query and their values.   
+            // The first four parameters are controller name, action name, parameters in the query and their values.
             // These are used to generate a link, the last parameter is expected generated link
             get
             {
@@ -649,13 +532,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             string parameterValue,
             string expectedLink)
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
+            // Arrange & Act
             string url;
-
             if (parameterName == null)
             {
                 url = string.Format(
@@ -675,7 +553,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                     parameterValue);
             }
 
-            var response = await client.GetAsync(url);
+            var response = await Client.GetAsync(url);
 
             // Assert
             var body = await response.Content.ReadAsStringAsync();

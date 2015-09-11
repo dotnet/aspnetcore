@@ -1,21 +1,22 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
+using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.Framework.DependencyInjection;
-using RazorWebSite;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class RazorViewLocationSpecificationTest
+    public class RazorViewLocationSpecificationTest : IClassFixture<MvcTestFixture<RazorWebSite.Startup>>
     {
         private const string BaseUrl = "http://localhost/ViewNameSpecification_Home/";
-        private const string SiteName = nameof(RazorWebSite);
-        private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
-        private readonly Action<IServiceCollection> _configureServices = new Startup().ConfigureServices;
+
+        public RazorViewLocationSpecificationTest(MvcTestFixture<RazorWebSite.Startup> fixture)
+        {
+            Client = fixture.Client;
+        }
+
+        public HttpClient Client { get; }
 
         [Theory]
         [InlineData("LayoutSpecifiedWithPartialPathInViewStart")]
@@ -24,15 +25,14 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [InlineData("LayoutSpecifiedWithPartialPathInViewStart_ForViewSpecifiedWithAppRelativePathWithExtension")]
         public async Task PartialLayoutPaths_SpecifiedInViewStarts_GetResolvedByViewEngine(string action)
         {
+            // Arrange
             var expected =
 @"<layout>
 _ViewStart that specifies partial Layout
 </layout>";
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
 
             // Act
-            var body = await client.GetStringAsync(BaseUrl + action);
+            var body = await Client.GetStringAsync(BaseUrl + action);
 
             // Assert
             Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);
@@ -45,14 +45,13 @@ _ViewStart that specifies partial Layout
         [InlineData("LayoutSpecifiedWithPartialPathInPageWithAppRelativePathWithExtension")]
         public async Task PartialLayoutPaths_SpecifiedInPage_GetResolvedByViewEngine(string actionName)
         {
+            // Arrange
             var expected =
 @"<non-shared>Layout specified in page
 </non-shared>";
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
 
             // Act
-            var body = await client.GetStringAsync(BaseUrl + actionName);
+            var body = await Client.GetStringAsync(BaseUrl + actionName);
 
             // Assert
             Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);
@@ -63,14 +62,13 @@ _ViewStart that specifies partial Layout
         [InlineData("LayoutSpecifiedWithNonPartialPathWithExtension")]
         public async Task NonPartialLayoutPaths_GetResolvedByViewEngine(string actionName)
         {
+            // Arrange
             var expected =
 @"<non-shared>Page With Non Partial Layout
 </non-shared>";
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
 
             // Act
-            var body = await client.GetStringAsync(BaseUrl + actionName);
+            var body = await Client.GetStringAsync(BaseUrl + actionName);
 
             // Assert
             Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);
@@ -82,16 +80,15 @@ _ViewStart that specifies partial Layout
         [InlineData("ViewWithPartial_SpecifiedWithAbsoluteNameAndExtension")]
         public async Task PartialsCanBeSpecifiedWithPartialPath(string actionName)
         {
+            // Arrange
             var expected =
 @"<layout>
 Non Shared Partial
 
 </layout>";
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
 
             // Act
-            var body = await client.GetStringAsync(BaseUrl + actionName);
+            var body = await Client.GetStringAsync(BaseUrl + actionName);
 
             // Assert
             Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);

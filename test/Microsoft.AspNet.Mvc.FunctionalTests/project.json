@@ -1,83 +1,83 @@
 {
-    "compile": [
-        "../Microsoft.AspNet.Mvc.Formatters.Xml.Test/XmlAssert.cs"
-    ],
-    "compilationOptions": {
-        "define": [ "__RemoveThisBitTo__GENERATE_BASELINES" ],
-        "warningsAsErrors": true
+  "compile": [
+    "../Microsoft.AspNet.Mvc.Formatters.Xml.Test/XmlAssert.cs"
+  ],
+  "compilationOptions": {
+    "define": [ "__RemoveThisBitTo__GENERATE_BASELINES" ],
+    "warningsAsErrors": true
+  },
+  "dependencies": {
+    "ActionConstraintsWebSite": "1.0.0",
+    "ActionResultsWebSite": "1.0.0",
+    "ActivatorWebSite": "1.0.0",
+    "AddServicesWebSite": "1.0.0",
+    "AntiforgeryTokenWebSite": "1.0.0",
+    "ApiExplorerWebSite": "1.0.0",
+    "ApplicationModelWebSite": "1.0.0",
+    "AutofacWebSite": "1.0.0",
+    "BasicWebSite": "1.0.0",
+    "BestEffortLinkGenerationWebSite": "1.0.0",
+    "CompositeViewEngineWebSite": "1.0.0",
+    "ContentNegotiationWebSite": "1.0.0",
+    "ControllerDiscoveryConventionsWebSite": "1.0.0",
+    "ControllersFromServicesWebSite": "1.0.0",
+    "CorsMiddlewareWebSite": "1.0.0",
+    "CorsWebSite": "1.0.0",
+    "CustomRouteWebSite": "1.0.0",
+    "ErrorPageMiddlewareWebSite": "1.0.0",
+    "FilesWebSite": "1.0.0",
+    "FiltersWebSite": "1.0.0",
+    "FormatFilterWebSite": "1.0.0-*",
+    "FormatterWebSite": "1.0.0",
+    "HtmlGenerationWebSite": "1.0.0",
+    "InlineConstraintsWebSite": "1.0.0",
+    "JsonPatchWebSite": "1.0.0",
+    "LocalizationWebSite": "1.0.0",
+    "LoggingWebSite": "1.0.0",
+    "LowercaseUrlsWebSite": "1.0.0-*",
+    "Microsoft.AspNet.Mvc": "6.0.0-*",
+    "Microsoft.AspNet.Mvc.Formatters.Xml": "6.0.0-*",
+    "Microsoft.AspNet.Mvc.TestCommon": {
+      "version": "6.0.0-*",
+      "type": "build"
     },
-    "dependencies": {
-        "ActionConstraintsWebSite": "1.0.0",
-        "ActionResultsWebSite": "1.0.0",
-        "ActivatorWebSite": "1.0.0",
-        "AddServicesWebSite": "1.0.0",
-        "AntiforgeryTokenWebSite": "1.0.0",
-        "ApiExplorerWebSite": "1.0.0",
-        "ApplicationModelWebSite": "1.0.0",
-        "AutofacWebSite": "1.0.0",
-        "BasicWebSite": "1.0.0",
-        "BestEffortLinkGenerationWebSite": "1.0.0",
-        "CompositeViewEngineWebSite": "1.0.0",
-        "ContentNegotiationWebSite": "1.0.0",
-        "ControllerDiscoveryConventionsWebSite": "1.0.0",
-        "ControllersFromServicesWebSite": "1.0.0",
-        "CorsMiddlewareWebSite": "1.0.0",
-        "CorsWebSite": "1.0.0",
-        "CustomRouteWebSite": "1.0.0",
-        "ErrorPageMiddlewareWebSite": "1.0.0",
-        "FilesWebSite": "1.0.0",
-        "FiltersWebSite": "1.0.0",
-        "FormatFilterWebSite": "1.0.0-*",
-        "FormatterWebSite": "1.0.0",
-        "HtmlGenerationWebSite": "1.0.0",
-        "InlineConstraintsWebSite": "1.0.0",
-        "JsonPatchWebSite": "1.0.0",
-        "LocalizationWebSite": "1.0.0",
-        "LoggingWebSite": "1.0.0",
-        "LowercaseUrlsWebSite": "1.0.0-*",
-        "Microsoft.AspNet.Mvc": "6.0.0-*",
-        "Microsoft.AspNet.Mvc.TestCommon": {
-            "version": "6.0.0-*",
-            "type": "build"
-        },
-        "Microsoft.AspNet.Mvc.TestConfiguration": "1.0.0",
-        "Microsoft.AspNet.Mvc.Formatters.Xml": "6.0.0-*",
-        "Microsoft.AspNet.TestHost": "1.0.0-*",
-        "Microsoft.AspNet.WebUtilities": "1.0.0-*",
-        "Microsoft.Framework.Configuration.Json": "1.0.0-*",
-        "Microsoft.Framework.WebEncoders.Testing": "1.0.0-*",
-        "ModelBindingWebSite": "1.0.0",
-        "MvcSample.Web": "1.0.0",
-        "PrecompilationWebSite": "1.0.0",
-        "RazorEmbeddedViewsWebSite": "1.0.0",
-        "RazorPageExecutionInstrumentationWebSite": "1.0.0",
-        "RazorWebSite": "1.0.0",
-        "RequestServicesWebSite": "1.0.0",
-        "ResponseCacheWebSite": "1.0.0",
-        "RoutingWebSite": "1.0.0",
-        "TagHelperSample.Web": "1.0.0",
-        "TagHelpersWebSite": "1.0.0",
-        "TempDataWebSite": "1.0.0",
-        "UrlHelperWebSite": "1.0.0",
-        "ValidationWebSite": "1.0.0",
-        "ValueProvidersWebSite": "1.0.0",
-        "VersioningWebSite": "1.0.0",
-        "ViewComponentWebSite": "1.0.0",
-        "WebApiCompatShimWebSite": "1.0.0",
-        "XmlFormattersWebSite": "1.0.0",
-        "xunit.runner.aspnet": "2.0.0-aspnet-*"
-    },
-    "commands": {
-        "test": "xunit.runner.aspnet"
-    },
-    "frameworks": {
-        "dnx451": { },
-        "dnxcore50": {
-        }
-    },
-    "exclude": [
-        "wwwroot",
-        "node_modules",
-        "bower_components"
-    ]
+    "Microsoft.AspNet.Mvc.TestConfiguration": "1.0.0",
+    "Microsoft.AspNet.TestHost": "1.0.0-*",
+    "Microsoft.AspNet.WebUtilities": "1.0.0-*",
+    "Microsoft.Framework.Configuration.Json": "1.0.0-*",
+    "Microsoft.Framework.Logging.Testing": "1.0.0-*",
+    "Microsoft.Framework.WebEncoders.Testing": "1.0.0-*",
+    "ModelBindingWebSite": "1.0.0",
+    "MvcSample.Web": "1.0.0",
+    "PrecompilationWebSite": "1.0.0",
+    "RazorEmbeddedViewsWebSite": "1.0.0",
+    "RazorPageExecutionInstrumentationWebSite": "1.0.0",
+    "RazorWebSite": "1.0.0",
+    "RequestServicesWebSite": "1.0.0",
+    "ResponseCacheWebSite": "1.0.0",
+    "RoutingWebSite": "1.0.0",
+    "TagHelperSample.Web": "1.0.0",
+    "TagHelpersWebSite": "1.0.0",
+    "TempDataWebSite": "1.0.0",
+    "UrlHelperWebSite": "1.0.0",
+    "ValidationWebSite": "1.0.0",
+    "ValueProvidersWebSite": "1.0.0",
+    "VersioningWebSite": "1.0.0",
+    "ViewComponentWebSite": "1.0.0",
+    "WebApiCompatShimWebSite": "1.0.0",
+    "XmlFormattersWebSite": "1.0.0",
+    "xunit.runner.aspnet": "2.0.0-aspnet-*"
+  },
+  "commands": {
+    "test": "xunit.runner.aspnet"
+  },
+  "frameworks": {
+    "dnx451": { },
+    "dnxcore50": { }
+  },
+  "exclude": [
+    "wwwroot",
+    "node_modules",
+    "bower_components"
+  ]
 }

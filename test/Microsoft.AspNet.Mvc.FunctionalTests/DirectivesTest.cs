@@ -1,30 +1,30 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
+using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.Framework.DependencyInjection;
-using RazorWebSite;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class DirectivesTest
+    public class DirectivesTest : IClassFixture<MvcTestFixture<RazorWebSite.Startup>>
     {
-        private const string SiteName = nameof(RazorWebSite);
-        private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
-        private readonly Action<IServiceCollection> _configureServices = new Startup().ConfigureServices;
+        public DirectivesTest(MvcTestFixture<RazorWebSite.Startup> fixture)
+        {
+            Client = fixture.Client;
+        }
+
+        public HttpClient Client { get; }
 
         [Fact]
         public async Task ViewsInheritsUsingsAndInjectDirectivesFromViewStarts()
         {
+            // Arrange
             var expected = @"Hello Person1";
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
 
             // Act
-            var body = await client.GetStringAsync("http://localhost/Directives/ViewInheritsInjectAndUsingsFromViewImports");
+            var body = await Client.GetStringAsync(
+                "http://localhost/Directives/ViewInheritsInjectAndUsingsFromViewImports");
 
             // Assert
             Assert.Equal(expected, body.Trim());
@@ -33,12 +33,11 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ViewInheritsBasePageFromViewStarts()
         {
+            // Arrange
             var expected = @"WriteLiteral says:layout:Write says:Write says:Hello Person2";
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
 
             // Act
-            var body = await client.GetStringAsync("http://localhost/Directives/ViewInheritsBasePageFromViewImports");
+            var body = await Client.GetStringAsync("http://localhost/Directives/ViewInheritsBasePageFromViewImports");
 
             // Assert
             Assert.Equal(expected, body.Trim());

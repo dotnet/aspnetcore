@@ -8,9 +8,9 @@ using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class ActivatorTests : IClassFixture<MvcFixture<ActivatorWebSite.Startup>>
+    public class ActivatorTests : IClassFixture<MvcTestFixture<ActivatorWebSite.Startup>>
     {
-        public ActivatorTests(MvcFixture<ActivatorWebSite.Startup> fixture)
+        public ActivatorTests(MvcTestFixture<ActivatorWebSite.Startup> fixture)
         {
             Client = fixture.Client;
         }

@@ -1,33 +1,37 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Threading.Tasks;
-using BasicWebSite;
-using Microsoft.AspNet.Builder;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.WebEncoders;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class TagHelpersTest
+    public class TagHelpersTest :
+        IClassFixture<MvcTestFixture<TagHelpersWebSite.Startup>>,
+        IClassFixture<MvcEncodedTestFixture<TagHelpersWebSite.Startup>>
     {
-        private const string SiteName = nameof(TagHelpersWebSite);
-
         // Some tests require comparing the actual response body against an expected response baseline
         // so they require a reference to the assembly on which the resources are located, in order to
         // make the tests less verbose, we get a reference to the assembly with the resources and we
         // use it on all the rest of the tests.
         private static readonly Assembly _resourcesAssembly = typeof(TagHelpersTest).GetTypeInfo().Assembly;
 
-        private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
-        private readonly Action<IServiceCollection> _configureServices = new Startup().ConfigureServices;
+        public TagHelpersTest(
+            MvcTestFixture<TagHelpersWebSite.Startup> fixture,
+            MvcEncodedTestFixture<TagHelpersWebSite.Startup> encodedFixture)
+        {
+            Client = fixture.Client;
+            EncodedClient = encodedFixture.Client;
+        }
+
+        public HttpClient Client { get; }
+
+        public HttpClient EncodedClient { get; }
 
         [Theory]
         [InlineData("Index")]
@@ -37,8 +41,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CanRenderViewsWithTagHelpers(string action)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
             var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
             var outputFile = "compiler/resources/TagHelpersWebSite.Home." + action + ".html";
             var expectedContent =
@@ -46,7 +48,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Act
             // The host is not important as everything runs in memory and tests are isolated from each other.
-            var response = await client.GetAsync("http://localhost/Home/" + action);
+            var response = await Client.GetAsync("http://localhost/Home/" + action);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -64,12 +66,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CanRenderViewsWithTagHelpersAndUnboundDynamicAttributes_Encoded()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, services =>
-            {
-                _configureServices(services);
-                services.AddTransient<IHtmlEncoder, TestHtmlEncoder>();
-            });
-            var client = server.CreateClient();
             var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
             var outputFile = "compiler/resources/TagHelpersWebSite.Home.UnboundDynamicAttributes.Encoded.html";
             var expectedContent =
@@ -77,7 +73,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Act
             // The host is not important as everything runs in memory and tests are isolated from each other.
-            var response = await client.GetAsync("http://localhost/Home/UnboundDynamicAttributes");
+            var response = await EncodedClient.GetAsync("http://localhost/Home/UnboundDynamicAttributes");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -146,12 +142,8 @@ page:<root>root-content</root>"
         [MemberData(nameof(TagHelpersAreInheritedFromViewImportsPagesData))]
         public async Task TagHelpersAreInheritedFromViewImportsPages(string action, string expected)
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var result = await client.GetStringAsync("http://localhost/Home/" + action);
+            // Arrange & Act
+            var result = await Client.GetStringAsync("http://localhost/Home/" + action);
 
             // Assert
             Assert.Equal(expected, result.Trim(), ignoreLineEndingDifferences: true);
@@ -161,14 +153,12 @@ page:<root>root-content</root>"
         public async Task ViewsWithModelMetadataAttributes_CanRenderForm()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
             var outputFile = "compiler/resources/TagHelpersWebSite.Employee.Create.html";
             var expectedContent =
                 await ResourceFile.ReadResourceAsync(_resourcesAssembly, outputFile, sourceFile: false);
 
             // Act
-            var response = await client.GetAsync("http://localhost/Employee/Create");
+            var response = await Client.GetAsync("http://localhost/Employee/Create");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -189,8 +179,6 @@ page:<root>root-content</root>"
         public async Task ViewsWithModelMetadataAttributes_CanRenderPostedValue()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
             var outputFile = "compiler/resources/TagHelpersWebSite.Employee.Details.AfterCreate.html";
             var expectedContent =
                 await ResourceFile.ReadResourceAsync(_resourcesAssembly, outputFile, sourceFile: false);
@@ -206,7 +194,7 @@ page:<root>root-content</root>"
             var postContent = new FormUrlEncodedContent(validPostValues);
 
             // Act
-            var response = await client.PostAsync("http://localhost/Employee/Create", postContent);
+            var response = await Client.PostAsync("http://localhost/Employee/Create", postContent);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -223,8 +211,6 @@ page:<root>root-content</root>"
         public async Task ViewsWithModelMetadataAttributes_CanHandleInvalidData()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
             var outputFile = "compiler/resources/TagHelpersWebSite.Employee.Create.Invalid.html";
             var expectedContent =
                 await ResourceFile.ReadResourceAsync(_resourcesAssembly, outputFile, sourceFile: false);
@@ -240,7 +226,7 @@ page:<root>root-content</root>"
             var postContent = new FormUrlEncodedContent(validPostValues);
 
             // Act
-            var response = await client.PostAsync("http://localhost/Employee/Create", postContent);
+            var response = await Client.PostAsync("http://localhost/Employee/Create", postContent);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);

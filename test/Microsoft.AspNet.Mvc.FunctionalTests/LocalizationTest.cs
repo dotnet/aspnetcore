@@ -1,29 +1,30 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Http;
 using System.Reflection;
 using System.Resources;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using LocalizationWebSite;
-using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Testing;
-using Microsoft.Framework.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class LocalizationTest
+    public class LocalizationTest : IClassFixture<MvcTestFixture<LocalizationWebSite.Startup>>
     {
         private const string SiteName = nameof(LocalizationWebSite);
         private static readonly Assembly _assembly = typeof(LocalizationTest).GetTypeInfo().Assembly;
 
-        private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
-        private readonly Action<IServiceCollection> _configureServices = new Startup().ConfigureServices;
+        public LocalizationTest(MvcTestFixture<LocalizationWebSite.Startup> fixture)
+        {
+            Client = fixture.Client;
+        }
+
+        public HttpClient Client { get; }
 
         public static IEnumerable<object[]> LocalizationData
         {
@@ -62,15 +63,15 @@ mypartial
         public async Task Localization_SuffixViewName(string value, string expected)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
             var cultureCookie = "c=" + value + "|uic=" + value;
-            client.DefaultRequestHeaders.Add(
+            var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/");
+            request.Headers.Add(
                 "Cookie",
                 new CookieHeaderValue("ASPNET_CULTURE", cultureCookie).ToString());
 
             // Act
-            var body = await client.GetStringAsync("http://localhost/");
+            var response = await Client.SendAsync(request);
+            var body = await response.Content.ReadAsStringAsync();
 
             // Assert
             Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);
@@ -112,23 +113,23 @@ Hi";
         public async Task Localization_Resources_ReturnExpectedValues(string value, string expected)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
             var cultureCookie = "c=" + value + "|uic=" + value;
-            client.DefaultRequestHeaders.Add(
+            var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Home/Locpage");
+            request.Headers.Add(
                 "Cookie",
                 new CookieHeaderValue("ASPNET_CULTURE", cultureCookie).ToString());
 
             if (!value.StartsWith("en"))
             {
-                // Manually generating .resources file since we don't autogenerate .resources file yet. 
+                // Manually generating .resources file since we don't autogenerate .resources file yet.
                 WriteResourceFile("HomeController." + value + ".resx");
                 WriteResourceFile("Views.Shared._LocalizationLayout.cshtml." + value + ".resx");
             }
             WriteResourceFile("Views.Home.Locpage.cshtml." + value + ".resx");
 
             // Act
-            var body = await client.GetStringAsync("http://localhost/Home/Locpage");
+            var response = await Client.SendAsync(request);
+            var body = await response.Content.ReadAsStringAsync();
 
             // Assert
             Assert.Equal(expected, body.Trim());

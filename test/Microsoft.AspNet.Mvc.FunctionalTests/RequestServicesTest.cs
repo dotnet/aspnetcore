@@ -5,19 +5,20 @@ using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     // Each of these tests makes two requests, because we want each test to verify that the data is
     // PER-REQUEST and does not linger around to impact the next request.
-    public class RequestServicesTest
+    public class RequestServicesTest : IClassFixture<MvcTestFixture<RequestServicesWebSite.Startup>>
     {
-        private const string SiteName = nameof(RequestServicesWebSite);
-        private readonly Action<IApplicationBuilder> _app = new RequestServicesWebSite.Startup().Configure;
-        private readonly Action<IServiceCollection> _configureServices = new RequestServicesWebSite.Startup().ConfigureServices;
+        public RequestServicesTest(MvcTestFixture<RequestServicesWebSite.Startup> fixture)
+        {
+            Client = fixture.Client;
+        }
+
+        public HttpClient Client { get; }
 
         [Theory]
         [InlineData("http://localhost/RequestScoped/FromController")]
@@ -28,19 +29,17 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [InlineData("http://localhost/Other/FromActionArgument")]
         public async Task RequestServices(string url)
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act & Assert
             for (var i = 0; i < 2; i++)
             {
+                // Arrange
                 var requestId = Guid.NewGuid().ToString();
                 var request = new HttpRequestMessage(HttpMethod.Get, url);
                 request.Headers.TryAddWithoutValidation("RequestId", requestId);
 
-                var response = await client.SendAsync(request);
+                // Act
+                var response = await Client.SendAsync(request);
 
+                // Assert
                 var body = (await response.Content.ReadAsStringAsync()).Trim();
                 Assert.Equal(requestId, body);
             }
@@ -50,9 +49,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task RequestServices_TagHelper()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             var url = "http://localhost/Other/FromTagHelper";
 
             // Act & Assert
@@ -62,7 +58,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 var request = new HttpRequestMessage(HttpMethod.Get, url);
                 request.Headers.TryAddWithoutValidation("RequestId", requestId);
 
-                var response = await client.SendAsync(request);
+                var response = await Client.SendAsync(request);
 
                 var body = (await response.Content.ReadAsStringAsync()).Trim();
 
@@ -75,9 +71,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task RequestServices_ActionConstraint()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             var url = "http://localhost/Other/FromActionConstraint";
 
             // Act & Assert
@@ -85,7 +78,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var request1 = new HttpRequestMessage(HttpMethod.Get, url);
             request1.Headers.TryAddWithoutValidation("RequestId", requestId1);
 
-            var response1 = await client.SendAsync(request1);
+            var response1 = await Client.SendAsync(request1);
 
             var body1 = (await response1.Content.ReadAsStringAsync()).Trim();
             Assert.Equal(requestId1, body1);
@@ -94,7 +87,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var request2 = new HttpRequestMessage(HttpMethod.Get, url);
             request2.Headers.TryAddWithoutValidation("RequestId", requestId2);
 
-            var response2 = await client.SendAsync(request2);
+            var response2 = await Client.SendAsync(request2);
             Assert.Equal(HttpStatusCode.NotFound, response2.StatusCode);
         }
     }

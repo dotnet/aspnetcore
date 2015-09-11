@@ -1,20 +1,20 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
+using System.Net.Http;
 using System.Threading.Tasks;
-using AutofacWebSite;
-using Microsoft.AspNet.Builder;
-using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class DependencyResolverTests
+    public class DependencyResolverTests : IClassFixture<MvcTestFixture<AutofacWebSite.Startup>>
     {
-        private const string SiteName = nameof(AutofacWebSite);
-        private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
-        private readonly Func<IServiceCollection, IServiceProvider> _configureServices = new Startup().ConfigureServices;
+        public DependencyResolverTests(MvcTestFixture<AutofacWebSite.Startup> fixture)
+        {
+            Client = fixture.Client;
+        }
+
+        public HttpClient Client { get; }
 
         [Theory]
         [InlineData("http://localhost/di", "<p>Builder Output: Hello from builder.</p>")]
@@ -22,14 +22,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task AutofacDIContainerCanUseMvc(string url, string expectedResponseBody)
         {
             // Arrange & Act & Assert (does not throw)
-            // This essentially calls into the Startup.Configuration method
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-
             // Make a request to start resolving DI pieces
-            var response = await server.CreateClient().GetAsync(url);
+            var responseText = await Client.GetStringAsync(url);
 
-            var actualResponseBody = await response.Content.ReadAsStringAsync();
-            Assert.Equal(expectedResponseBody, actualResponseBody);
+            Assert.Equal(expectedResponseBody, responseText);
         }
     }
 }

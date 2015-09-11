@@ -1,21 +1,21 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
+using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Testing;
-using Microsoft.Framework.DependencyInjection;
-using RazorWebSite;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class HtmlHelperOptionsTest
+    public class HtmlHelperOptionsTest : IClassFixture<MvcTestFixture<RazorWebSite.Startup>>
     {
-        private const string SiteName = nameof(RazorWebSite);
-        private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
-        private readonly Action<IServiceCollection> _configureServices = new Startup().ConfigureServices;
+        public HtmlHelperOptionsTest(MvcTestFixture<RazorWebSite.Startup> fixture)
+        {
+            Client = fixture.Client;
+        }
+
+        public HttpClient Client { get; }
 
         [Fact]
         public async Task AppWideDefaultsInViewAndPartialView()
@@ -40,11 +40,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
 False";
 
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             // Act
-            var body = await client.GetStringAsync("http://localhost/HtmlHelperOptions/HtmlHelperOptionsDefaultsInView");
+            var body = await Client.GetStringAsync("http://localhost/HtmlHelperOptions/HtmlHelperOptionsDefaultsInView");
 
             // Assert
             Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);
@@ -75,11 +72,8 @@ True
 
 True";
 
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             // Act
-            var body = await client.GetStringAsync("http://localhost/HtmlHelperOptions/OverrideAppWideDefaultsInView");
+            var body = await Client.GetStringAsync("http://localhost/HtmlHelperOptions/OverrideAppWideDefaultsInView");
 
             // Assert
             // Mono issue - https://github.com/aspnet/External/issues/19

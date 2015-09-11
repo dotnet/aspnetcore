@@ -1,35 +1,31 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class AntiforgeryTests
+    public class AntiforgeryTests : IClassFixture<MvcTestFixture<AntiforgeryTokenWebSite.Startup>>
     {
-        private const string SiteName = nameof(AntiforgeryTokenWebSite);
-        private readonly Action<IApplicationBuilder> _app = new AntiforgeryTokenWebSite.Startup().Configure;
-        private readonly Action<IServiceCollection> _configureServices = new AntiforgeryTokenWebSite.Startup().ConfigureServices;
+        public AntiforgeryTests(MvcTestFixture<AntiforgeryTokenWebSite.Startup> fixture)
+        {
+            Client = fixture.Client;
+        }
+
+        public HttpClient Client { get; }
 
         [Fact]
         public async Task MultipleAFTokensWithinTheSamePage_GeneratesASingleCookieToken()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/Account/Login");
 
-            // Act
-            var response = await client.GetAsync("http://localhost/Account/Login");
-
-            //Assert
+            // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var header = Assert.Single(response.Headers.GetValues("X-Frame-Options"));
             Assert.Equal("SAMEORIGIN", header);
@@ -45,11 +41,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task MultipleFormPostWithingASingleView_AreAllowed()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // do a get response.
-            var getResponse = await client.GetAsync("http://localhost/Account/Login");
+            // Do a get request.
+            var getResponse = await Client.GetAsync("http://localhost/Account/Login");
             var responseBody = await getResponse.Content.ReadAsStringAsync();
 
             // Get the AF token for the second login. If the cookies are generated twice(i.e are different),
@@ -69,7 +62,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             request.Content = new FormUrlEncodedContent(nameValueCollection);
 
             // Act
-            var response = await client.SendAsync(request);
+            var response = await Client.SendAsync(request);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -80,10 +73,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task InvalidCookieToken_Throws()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            var getResponse = await client.GetAsync("http://localhost/Account/Login");
+            var getResponse = await Client.GetAsync("http://localhost/Account/Login");
             var responseBody = await getResponse.Content.ReadAsStringAsync();
             var formToken = AntiforgeryTestHelper.RetrieveAntiforgeryToken(responseBody, "Account/Login");
 
@@ -101,7 +91,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             request.Content = new FormUrlEncodedContent(nameValueCollection);
 
             // Act
-            var response = await client.SendAsync(request);
+            var response = await Client.SendAsync(request);
 
             // Assert
             var exception = response.GetServerException();
@@ -112,10 +102,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task InvalidFormToken_Throws()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            var getResponse = await client.GetAsync("http://localhost/Account/Login");
+            var getResponse = await Client.GetAsync("http://localhost/Account/Login");
             var responseBody = await getResponse.Content.ReadAsStringAsync();
             var cookieToken = AntiforgeryTestHelper.RetrieveAntiforgeryCookie(getResponse);
             var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/Account/Login");
@@ -131,7 +118,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             request.Content = new FormUrlEncodedContent(nameValueCollection);
 
             // Act
-            var response = await client.SendAsync(request);
+            var response = await Client.SendAsync(request);
 
             // Assert
             var exception = response.GetServerException();
@@ -142,16 +129,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task IncompatibleCookieToken_Throws()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             // do a get response.
             // We do two requests to get two different sets of antiforgery cookie and token values.
-            var getResponse1 = await client.GetAsync("http://localhost/Account/Login");
+            var getResponse1 = await Client.GetAsync("http://localhost/Account/Login");
             var responseBody1 = await getResponse1.Content.ReadAsStringAsync();
             var formToken1 = AntiforgeryTestHelper.RetrieveAntiforgeryToken(responseBody1, "Account/Login");
 
-            var getResponse2 = await client.GetAsync("http://localhost/Account/Login");
+            var getResponse2 = await Client.GetAsync("http://localhost/Account/Login");
             var responseBody2 = await getResponse2.Content.ReadAsStringAsync();
             var cookieToken2 = AntiforgeryTestHelper.RetrieveAntiforgeryCookie(getResponse2);
 
@@ -169,7 +153,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             request.Content = new FormUrlEncodedContent(nameValueCollection);
 
             // Act
-            var response = await client.SendAsync(request);
+            var response = await Client.SendAsync(request);
 
             // Assert
             var exception = response.GetServerException();
@@ -180,11 +164,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task MissingCookieToken_Throws()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             // do a get response.
-            var getResponse = await client.GetAsync("http://localhost/Account/Login");
+            var getResponse = await Client.GetAsync("http://localhost/Account/Login");
             var responseBody = await getResponse.Content.ReadAsStringAsync();
             var formToken = AntiforgeryTestHelper.RetrieveAntiforgeryToken(responseBody, "Account/Login");
             var cookieTokenKey = AntiforgeryTestHelper.RetrieveAntiforgeryCookie(getResponse).Key;
@@ -200,7 +181,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             request.Content = new FormUrlEncodedContent(nameValueCollection);
 
             // Act
-            var response = await client.SendAsync(request);
+            var response = await Client.SendAsync(request);
 
             // Assert
             var exception = response.GetServerException();
@@ -213,9 +194,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task MissingAFToken_Throws()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-            var getResponse = await client.GetAsync("http://localhost/Account/Login");
+            var getResponse = await Client.GetAsync("http://localhost/Account/Login");
             var responseBody = await getResponse.Content.ReadAsStringAsync();
             var cookieToken = AntiforgeryTestHelper.RetrieveAntiforgeryCookie(getResponse);
 
@@ -230,7 +209,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             request.Content = new FormUrlEncodedContent(nameValueCollection);
 
             // Act
-            var response = await client.SendAsync(request);
+            var response = await Client.SendAsync(request);
 
             // Assert
             var exception = response.GetServerException();
@@ -241,12 +220,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task SetCookieAndHeaderBeforeFlushAsync_GeneratesCookieTokenAndHeader()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/Account/FlushAsyncLogin");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/Account/FlushAsyncLogin");
 
             // Assert
             var header = Assert.Single(response.Headers.GetValues("X-Frame-Options"));
@@ -260,11 +235,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task SetCookieAndHeaderBeforeFlushAsync_PostToForm()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             // do a get response.
-            var getResponse = await client.GetAsync("http://localhost/Account/FlushAsyncLogin");
+            var getResponse = await Client.GetAsync("http://localhost/Account/FlushAsyncLogin");
             var responseBody = await getResponse.Content.ReadAsStringAsync();
 
             var formToken = AntiforgeryTestHelper.RetrieveAntiforgeryToken(responseBody, "Account/FlushAsyncLogin");
@@ -282,7 +254,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             request.Content = new FormUrlEncodedContent(nameValueCollection);
 
             // Act
-            var response = await client.SendAsync(request);
+            var response = await Client.SendAsync(request);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);

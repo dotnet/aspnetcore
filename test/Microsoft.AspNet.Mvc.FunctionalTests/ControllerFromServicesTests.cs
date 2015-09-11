@@ -12,26 +12,29 @@ using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class ControllerFromServicesTest
+    public class ControllerFromServicesTest : IClassFixture<MvcTestFixture<ControllersFromServicesWebSite.Startup>>
     {
-        private const string SiteName = nameof(ControllersFromServicesWebSite);
-        private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
-        private readonly Func<IServiceCollection, IServiceProvider> _configureServices = new Startup().ConfigureServices;
+        public ControllerFromServicesTest(MvcTestFixture<ControllersFromServicesWebSite.Startup> fixture)
+        {
+            Client = fixture.Client;
+        }
+
+        public HttpClient Client { get; }
 
         [Fact]
         public async Task ControllersWithConstructorInjectionAreCreatedAndActivated()
         {
             // Arrange
             var expected = "/constructorinjection 14 test-header-value";
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-            client.DefaultRequestHeaders.TryAddWithoutValidation("Test-Header", "test-header-value");
+            var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/constructorinjection?value=14");
+            request.Headers.TryAddWithoutValidation("Test-Header", "test-header-value");
 
             // Act
-            var response = await client.GetStringAsync("http://localhost/constructorinjection?value=14");
+            var response = await Client.SendAsync(request);
+            var responseText = await response.Content.ReadAsStringAsync();
 
             // Assert
-            Assert.Equal(expected, response);
+            Assert.Equal(expected, responseText);
         }
 
         [Fact]
@@ -39,11 +42,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var expected = "No schedules available for 23";
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
 
             // Act
-            var response = await client.GetStringAsync("http://localhost/schedule/23");
+            var response = await Client.GetStringAsync("http://localhost/schedule/23");
 
             // Assert
             Assert.Equal(expected, response);
@@ -54,11 +55,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var expected = "4";
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
 
             // Act
-            var response = await client.GetStringAsync("http://localhost/inventory/");
+            var response = await Client.GetStringAsync("http://localhost/inventory/");
 
             // Assert
             Assert.Equal(expected, response);
@@ -69,12 +68,11 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var expected = "Updated record employee303";
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
 
             // Act
-            var response = await client.PutAsync("http://localhost/employee/update_records?recordId=employee303", 
-                                                 new StringContent(string.Empty));
+            var response = await Client.PutAsync(
+                "http://localhost/employee/update_records?recordId=employee303",
+                new StringContent(string.Empty));
 
             // Assert
             response.EnsureSuccessStatusCode();
@@ -86,12 +84,11 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var expected = "Saved record employee #211";
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
 
             // Act
-            var response = await client.PostAsync("http://localhost/employeerecords/save/211",
-                                                  new StringContent(string.Empty));
+            var response = await Client.PostAsync(
+                "http://localhost/employeerecords/save/211",
+                new StringContent(string.Empty));
 
             // Assert
             response.EnsureSuccessStatusCode();
@@ -105,12 +102,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [InlineData("ClientUIStub/GetClientContent/5")]
         public async Task AddControllersFromServices_UsesControllerDiscoveryContentions(string action)
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/" + action);
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/" + action);
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);

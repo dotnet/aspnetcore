@@ -12,9 +12,9 @@ using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class ActionResultTests : IClassFixture<MvcFixture<ActionResultsWebSite.Startup>>
+    public class ActionResultTests : IClassFixture<MvcTestFixture<ActionResultsWebSite.Startup>>
     {
-        public ActionResultTests(MvcFixture<ActionResultsWebSite.Startup> fixture)
+        public ActionResultTests(MvcTestFixture<ActionResultsWebSite.Startup> fixture)
         {
             Client = fixture.Client;
         }

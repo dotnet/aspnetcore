@@ -1,36 +1,41 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
+using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.WebEncoders;
-using RazorWebSite;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class UrlResolutionTest
+    public class UrlResolutionTest :
+        IClassFixture<MvcTestFixture<RazorWebSite.Startup>>,
+        IClassFixture<MvcEncodedTestFixture<RazorWebSite.Startup>>
     {
-        private const string SiteName = nameof(RazorWebSite);
-        private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
-        private readonly Action<IServiceCollection> _configureServices = new Startup().ConfigureServices;
         private static readonly Assembly _resourcesAssembly = typeof(UrlResolutionTest).GetTypeInfo().Assembly;
+
+        public UrlResolutionTest(
+            MvcTestFixture<RazorWebSite.Startup> fixture,
+            MvcEncodedTestFixture<RazorWebSite.Startup> encodedFixture)
+        {
+            Client = fixture.Client;
+            EncodedClient = encodedFixture.Client;
+        }
+
+        public HttpClient Client { get; }
+
+        public HttpClient EncodedClient { get; }
 
         [Fact]
         public async Task AppRelativeUrlsAreResolvedCorrectly()
         {
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-
-            var client = server.CreateClient();
+            // Arrange
             var outputFile = "compiler/resources/RazorWebSite.UrlResolution.Index.html";
             var expectedContent =
                 await ResourceFile.ReadResourceAsync(_resourcesAssembly, outputFile, sourceFile: false);
 
             // Act
-            var response = await client.GetAsync("http://localhost/UrlResolution/Index");
+            var response = await Client.GetAsync("http://localhost/UrlResolution/Index");
             var responseContent = await response.Content.ReadAsStringAsync();
 
             // Assert
@@ -45,18 +50,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task AppRelativeUrlsAreResolvedAndEncodedCorrectly()
         {
-            var server = TestHelper.CreateServer(_app, SiteName, services =>
-            {
-                _configureServices(services);
-                services.AddTransient<IHtmlEncoder, TestHtmlEncoder>();
-            });
-            var client = server.CreateClient();
+            // Arrange
             var outputFile = "compiler/resources/RazorWebSite.UrlResolution.Index.Encoded.html";
             var expectedContent =
                 await ResourceFile.ReadResourceAsync(_resourcesAssembly, outputFile, sourceFile: false);
 
             // Act
-            var response = await client.GetAsync("http://localhost/UrlResolution/Index");
+            var response = await EncodedClient.GetAsync("http://localhost/UrlResolution/Index");
             var responseContent = await response.Content.ReadAsStringAsync();
 
             // Assert

@@ -1,20 +1,20 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
+using System.Net.Http;
 using System.Threading.Tasks;
-using FormatterWebSite;
-using Microsoft.AspNet.Builder;
-using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class StreamOutputFormatterTest
+    public class StreamOutputFormatterTest : IClassFixture<MvcTestFixture<FormatterWebSite.Startup>>
     {
-        private const string SiteName = nameof(FormatterWebSite);
-        private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
-        private readonly Action<IServiceCollection> _configureServices = new Startup().ConfigureServices;
+        public StreamOutputFormatterTest(MvcTestFixture<FormatterWebSite.Startup> fixture)
+        {
+            Client = fixture.Client;
+        }
+
+        public HttpClient Client { get; }
 
         [Theory]
         [InlineData("SimpleMemoryStream", null)]
@@ -24,12 +24,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [InlineData("MemoryStreamOverridesContentTypeWithProduces", "text/plain")]
         public async Task StreamOutputFormatter_ReturnsAppropriateContentAndContentType(string actionName, string contentType)
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/Stream/" + actionName);
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/Stream/" + actionName);
             var body = await response.Content.ReadAsStringAsync();
 
             // Assert

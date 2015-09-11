@@ -3,23 +3,25 @@
 
 using System;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc.ActionConstraints;
 using Microsoft.AspNet.Mvc.Actions;
 using Microsoft.AspNet.Mvc.ApiExplorer;
 using Microsoft.AspNet.Mvc.Filters;
-using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     // Tests that various MVC services have the correct order.
-    public class DefaultOrderTest
+    public class DefaultOrderTest : IClassFixture<MvcTestFixture<BasicWebSite.Startup>>
     {
-        private const string SiteName = nameof(BasicWebSite);
-        private readonly Action<IApplicationBuilder> _app = new BasicWebSite.Startup().Configure;
-        private readonly Action<IServiceCollection> _configureServices = new BasicWebSite.Startup().ConfigureServices;
+        public DefaultOrderTest(MvcTestFixture<BasicWebSite.Startup> fixture)
+        {
+            Client = fixture.Client;
+        }
+
+        public HttpClient Client { get; }
 
         [Theory]
         [InlineData(typeof(IActionDescriptorProvider), typeof(ControllerActionDescriptorProvider), -1000)]
@@ -30,9 +32,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ServiceOrder_GetOrder(Type serviceType, Type actualType, int order)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             var url = "http://localhost/Order/GetServiceOrder?serviceType=" + serviceType.AssemblyQualifiedName;
 
             if (actualType != null)
@@ -41,7 +40,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             }
 
             // Act
-            var response = await client.GetAsync(url);
+            var response = await Client.GetAsync(url);
             var content = await response.Content.ReadAsStringAsync();
 
             // Assert

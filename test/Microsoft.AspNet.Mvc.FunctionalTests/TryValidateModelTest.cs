@@ -8,26 +8,25 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Testing;
-using Microsoft.Framework.DependencyInjection;
 using Newtonsoft.Json;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class TryValidateModelTest
+    public class TryValidateModelTest : IClassFixture<MvcTestFixture<ValidationWebSite.Startup>>
     {
-        private const string SiteName = nameof(ValidationWebSite);
-        private readonly Action<IApplicationBuilder> _app = new ValidationWebSite.Startup().Configure;
-        private readonly Action<IServiceCollection> _configureServices = new ValidationWebSite.Startup().ConfigureServices;
+        public TryValidateModelTest(MvcTestFixture<ValidationWebSite.Startup> fixture)
+        {
+            Client = fixture.Client;
+        }
+
+        public HttpClient Client { get; }
 
         [Fact]
         public async Task TryValidateModel_ClearParameterValidationError_ReturnsErrorsForInvalidProperties()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
             var input = "{ \"Price\": 2, \"Contact\": \"acvrdzersaererererfdsfdsfdsfsdf\", " +
                 "\"ProductDetails\": {\"Detail1\": \"d1\", \"Detail2\": \"d2\", \"Detail3\": \"d3\"}}";
             var content = new StringContent(input, Encoding.UTF8, "application/json");
@@ -36,7 +35,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 "TryValidateModelAfterClearingValidationErrorInParameter?theImpossibleString=test";
 
             // Act
-            var response = await client.PostAsync(url, content);
+            var response = await Client.PostAsync(url, content);
 
             // Assert
             var body = await response.Content.ReadAsStringAsync();
@@ -50,7 +49,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 json["Category"]);
             AssertErrorEquals(
                 "The field Contact Us must be a string with a maximum length of 20." +
-                "The field Contact Us must match the regular expression " + 
+                "The field Contact Us must match the regular expression " +
                 (TestPlatformHelper.IsMono ? "^[0-9]*$." : "'^[0-9]*$'."),
                 json["Contact"]);
         }
@@ -59,13 +58,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task TryValidateModel_InvalidTypeOnDerivedModel_ReturnsErrors()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-            var url =
-                "http://localhost/ModelMetadataTypeValidation/TryValidateModelSoftwareViewModelWithPrefix";
+            var url = "http://localhost/ModelMetadataTypeValidation/TryValidateModelSoftwareViewModelWithPrefix";
 
             // Act
-            var response = await client.GetAsync(url);
+            var response = await Client.GetAsync(url);
 
             // Assert
             var body = await response.Content.ReadAsStringAsync();
@@ -78,13 +74,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task TryValidateModel_ValidDerivedModel_ReturnsEmptyResponseBody()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-            var url =
-                "http://localhost/ModelMetadataTypeValidation/TryValidateModelValidModelNoPrefix";
+            var url = "http://localhost/ModelMetadataTypeValidation/TryValidateModelValidModelNoPrefix";
 
             // Act
-            var response = await client.GetAsync(url);
+            var response = await Client.GetAsync(url);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -96,8 +89,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task TryValidateModel_CollectionsModel_ReturnsErrorsForInvalidProperties()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
             var input = "[ { \"Price\": 2, \"Contact\": \"acvrdzersaererererfdsfdsfdsfsdf\", " +
                 "\"ProductDetails\": {\"Detail1\": \"d1\", \"Detail2\": \"d2\", \"Detail3\": \"d3\"} }," +
                 "{\"Price\": 2, \"Contact\": \"acvrdzersaererererfdsfdsfdsfsdf\", " +
@@ -107,7 +98,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 "http://localhost/ModelMetadataTypeValidation/TryValidateModelWithCollectionsModel";
 
             // Act
-            var response = await client.PostAsync(url, content);
+            var response = await Client.PostAsync(url, content);
 
             // Assert
             var body = await response.Content.ReadAsStringAsync();
@@ -120,7 +111,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 json["[0].Category"]);
             AssertErrorEquals(
                 "The field Contact Us must be a string with a maximum length of 20." +
-                "The field Contact Us must match the regular expression " + 
+                "The field Contact Us must match the regular expression " +
                 (TestPlatformHelper.IsMono ? "^[0-9]*$." : "'^[0-9]*$'."),
                 json["[0].Contact"]);
             Assert.Equal("CompanyName cannot be null or empty.", json["[1].CompanyName"]);
@@ -130,7 +121,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 json["[1].Category"]);
             AssertErrorEquals(
                 "The field Contact Us must be a string with a maximum length of 20." +
-                "The field Contact Us must match the regular expression " + 
+                "The field Contact Us must match the regular expression " +
                 (TestPlatformHelper.IsMono ? "^[0-9]*$." : "'^[0-9]*$'."),
                 json["[1].Contact"]);
         }

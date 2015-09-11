@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Cors.Core;
@@ -12,11 +13,14 @@ using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class CorsMiddlewareTests
+    public class CorsMiddlewareTests : IClassFixture<MvcTestFixture<CorsMiddlewareWebSite.Startup>>
     {
-        private const string SiteName = nameof(CorsMiddlewareWebSite);
-        private readonly Action<IApplicationBuilder> _app = new CorsMiddlewareWebSite.Startup().Configure;
-        private readonly Action<IServiceCollection> _configureServices = new CorsMiddlewareWebSite.Startup().ConfigureServices;
+        public CorsMiddlewareTests(MvcTestFixture<CorsMiddlewareWebSite.Startup> fixture)
+        {
+            Client = fixture.Client;
+        }
+
+        public HttpClient Client { get; }
 
         [Theory]
         [InlineData("GET")]
@@ -25,16 +29,14 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ResourceWithSimpleRequestPolicy_Allows_SimpleRequests(string method)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
             var origin = "http://example.com";
-
-            var requestBuilder = server
-                .CreateRequest("http://localhost/CorsMiddleware/GetExclusiveContent")
-                .AddHeader(CorsConstants.Origin, origin);
+            var request = new HttpRequestMessage(
+                new HttpMethod(method),
+                "http://localhost/CorsMiddleware/GetExclusiveContent");
+            request.Headers.Add(CorsConstants.Origin, origin);
 
             // Act
-            var response = await requestBuilder.SendAsync(method);
+            var response = await Client.SendAsync(request);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -54,18 +56,17 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task PolicyFailed_Disallows_PreFlightRequest(string method)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
+            var request = new HttpRequestMessage(
+                new HttpMethod(CorsConstants.PreflightHttpMethod),
+                "http://localhost/CorsMiddleware/GetExclusiveContent");
 
-            // Adding a custom header makes it a non simple request.
-            var requestBuilder = server
-                .CreateRequest("http://localhost/CorsMiddleware/GetExclusiveContent")
-                .AddHeader(CorsConstants.Origin, "http://example.com")
-                .AddHeader(CorsConstants.AccessControlRequestMethod, method)
-                .AddHeader(CorsConstants.AccessControlRequestHeaders, "Custom");
+            // Adding a custom header makes it a non-simple request.
+            request.Headers.Add(CorsConstants.Origin, "http://example.com");
+            request.Headers.Add(CorsConstants.AccessControlRequestMethod, method);
+            request.Headers.Add(CorsConstants.AccessControlRequestHeaders, "Custom");
 
             // Act
-            var response = await requestBuilder.SendAsync(CorsConstants.PreflightHttpMethod);
+            var response = await Client.SendAsync(request);
 
             // Assert
             // Middleware applied the policy and since that did not pass, there were no access control headers.
@@ -81,16 +82,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task PolicyFailed_Allows_ActualRequest_WithMissingResponseHeaders()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
+            var request = new HttpRequestMessage(HttpMethod.Put, "http://localhost/CorsMiddleware/GetExclusiveContent");
 
             // Adding a custom header makes it a non simple request.
-            var requestBuilder = server
-                .CreateRequest("http://localhost/CorsMiddleware/GetExclusiveContent")
-                .AddHeader(CorsConstants.Origin, "http://example2.com");
+            request.Headers.Add(CorsConstants.Origin, "http://example2.com");
 
             // Act
-            var response = await requestBuilder.SendAsync("PUT");
+            var response = await Client.SendAsync(request);
 
             // Assert
             // Middleware applied the policy and since that did not pass, there were no access control headers.

@@ -1,24 +1,24 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.Framework.DependencyInjection;
 using Newtonsoft.Json;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class WebApiCompatShimParameterBindingTest
+    public class WebApiCompatShimParameterBindingTest : IClassFixture<MvcTestFixture<WebApiCompatShimWebSite.Startup>>
     {
-        private const string SiteName = nameof(WebApiCompatShimWebSite);
-        private readonly Action<IApplicationBuilder> _app = new WebApiCompatShimWebSite.Startup().Configure;
-        private readonly Action<IServiceCollection> _configureServices = new WebApiCompatShimWebSite.Startup().ConfigureServices;
+        public WebApiCompatShimParameterBindingTest(MvcTestFixture<WebApiCompatShimWebSite.Startup> fixture)
+        {
+            Client = fixture.Client;
+        }
+
+        public HttpClient Client { get; }
 
         [Theory]
         [InlineData("http://localhost/api/Blog/Employees/PostByIdDefault/5")]
@@ -26,13 +26,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_SimpleParameter_Default_ReadsFromUrl(string url)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             var request = new HttpRequestMessage(HttpMethod.Post, url);
 
             // Act
-            var response = await client.SendAsync(request);
+            var response = await Client.SendAsync(request);
             var content = await response.Content.ReadAsStringAsync();
 
             // Assert
@@ -44,9 +41,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_SimpleParameter_Default_DoesNotReadFormData()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             var url = "http://localhost/api/Blog/Employees/PostByIdDefault";
             var request = new HttpRequestMessage(HttpMethod.Post, url);
             request.Content = new FormUrlEncodedContent(new Dictionary<string, string>()
@@ -55,7 +49,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             });
 
             // Act
-            var response = await client.SendAsync(request);
+            var response = await Client.SendAsync(request);
             var content = await response.Content.ReadAsStringAsync();
 
             // Assert
@@ -69,13 +63,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_SimpleParameter_ModelBinder_ReadsFromUrl(string url)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             var request = new HttpRequestMessage(HttpMethod.Post, url);
 
             // Act
-            var response = await client.SendAsync(request);
+            var response = await Client.SendAsync(request);
             var content = await response.Content.ReadAsStringAsync();
 
             // Assert
@@ -87,9 +78,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_SimpleParameter_ModelBinder_ReadsFromFormData()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             var url = "http://localhost/api/Blog/Employees/PostByIdModelBinder";
             var request = new HttpRequestMessage(HttpMethod.Post, url);
             request.Content = new FormUrlEncodedContent(new Dictionary<string, string>()
@@ -98,7 +86,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             });
 
             // Act
-            var response = await client.SendAsync(request);
+            var response = await Client.SendAsync(request);
             var content = await response.Content.ReadAsStringAsync();
 
             // Assert
@@ -112,13 +100,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_SimpleParameter_FromQuery_ReadsFromQueryNotRouteData(string url, string expected)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             var request = new HttpRequestMessage(HttpMethod.Post, url);
 
             // Act
-            var response = await client.SendAsync(request);
+            var response = await Client.SendAsync(request);
             var content = await response.Content.ReadAsStringAsync();
 
             // Assert
@@ -130,9 +115,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_SimpleParameter_FromQuery_DoesNotReadFormData()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             var url = "http://localhost/api/Blog/Employees/PostByIdFromQuery";
             var request = new HttpRequestMessage(HttpMethod.Post, url);
             request.Content = new FormUrlEncodedContent(new Dictionary<string, string>()
@@ -141,7 +123,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             });
 
             // Act
-            var response = await client.SendAsync(request);
+            var response = await Client.SendAsync(request);
             var content = await response.Content.ReadAsStringAsync();
 
             // Assert
@@ -153,9 +135,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_ComplexParameter_Default_ReadsFromBody()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             var url = "http://localhost/api/Blog/Employees/PutEmployeeDefault";
             var request = new HttpRequestMessage(HttpMethod.Put, url);
             request.Content = new StringContent(JsonConvert.SerializeObject(new
@@ -166,7 +145,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             request.Content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/json");
 
             // Act
-            var response = await client.SendAsync(request);
+            var response = await Client.SendAsync(request);
             var content = await response.Content.ReadAsStringAsync();
 
             // Assert
@@ -178,9 +157,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_ComplexParameter_ModelBinder_ReadsFormAndUrl()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             var url = "http://localhost/api/Blog/Employees/PutEmployeeModelBinder/5";
             var request = new HttpRequestMessage(HttpMethod.Put, url);
             request.Content = new FormUrlEncodedContent(new Dictionary<string, string>()
@@ -189,7 +165,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             });
 
             // Act
-            var response = await client.SendAsync(request);
+            var response = await Client.SendAsync(request);
             var content = await response.Content.ReadAsStringAsync();
 
             // Assert
@@ -202,9 +178,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_TwoParameters_DefaultSources()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             var url = "http://localhost/api/Blog/Employees/PutEmployeeBothDefault?name=Name_Override";
             var request = new HttpRequestMessage(HttpMethod.Put, url);
             request.Content = new StringContent(JsonConvert.SerializeObject(new
@@ -215,7 +188,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             request.Content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/json");
 
             // Act
-            var response = await client.SendAsync(request);
+            var response = await Client.SendAsync(request);
             var content = await response.Content.ReadAsStringAsync();
 
             // Assert

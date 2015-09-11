@@ -1,26 +1,25 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Testing.xunit;
-using Microsoft.Framework.DependencyInjection;
 using Newtonsoft.Json;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class InputFormatterTests
+    public class InputFormatterTests : IClassFixture<MvcTestFixture<FormatterWebSite.Startup>>
     {
-        private const string SiteName = nameof(FormatterWebSite);
-        private readonly Action<IApplicationBuilder> _app = new FormatterWebSite.Startup().Configure;
-        private readonly Action<IServiceCollection> _configureServices = new FormatterWebSite.Startup().ConfigureServices;
+        public InputFormatterTests(MvcTestFixture<FormatterWebSite.Startup> fixture)
+        {
+            Client = fixture.Client;
+        }
 
+        public HttpClient Client { get; }
 
         [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/18
@@ -28,8 +27,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CheckIfXmlInputFormatterIsBeingCalled()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
             var sampleInputInt = 10;
             var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
                 "<DummyClass xmlns=\"http://schemas.datacontract.org/2004/07/FormatterWebSite\"><SampleInt>"
@@ -37,9 +34,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var content = new StringContent(input, Encoding.UTF8, "application/xml");
 
             // Act
-            var response = await client.PostAsync("http://localhost/Home/Index", content);
+            var response = await Client.PostAsync("http://localhost/Home/Index", content);
 
-            //Assert
+            // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(sampleInputInt.ToString(), await response.Content.ReadAsStringAsync());
         }
@@ -53,16 +50,14 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task JsonInputFormatter_IsSelectedForJsonRequest(string requestContentType)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
             var sampleInputInt = 10;
             var input = "{\"SampleInt\":10}";
             var content = new StringContent(input, Encoding.UTF8, requestContentType);
 
             // Act
-            var response = await client.PostAsync("http://localhost/Home/Index", content);
+            var response = await Client.PostAsync("http://localhost/Home/Index", content);
 
-            //Assert
+            // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(sampleInputInt.ToString(), await response.Content.ReadAsStringAsync());
         }
@@ -78,15 +73,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [InlineData("invalid", false)]
         [InlineData("application/custom", false)]
         [InlineData("image/jpg", false)]
-        public async Task ModelStateErrorValidation_NoInputFormatterFound_ForGivenContentType(string requestContentType,
-                                                                                              bool filterHandlesModelStateError)
+        public async Task ModelStateErrorValidation_NoInputFormatterFound_ForGivenContentType(
+            string requestContentType,
+            bool filterHandlesModelStateError)
         {
             // Arrange
             var actionName = filterHandlesModelStateError ? "ActionFilterHandlesError" : "ActionHandlesError";
             var expectedSource = filterHandlesModelStateError ? "filter" : "action";
-
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
             var input = "{\"SampleInt\":10}";
             var content = new StringContent(input);
             content.Headers.Clear();
@@ -96,7 +89,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/InputFormatter/" + actionName);
             request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/json"));
             request.Content = content;
-            var response = await client.SendAsync(request);
+            var response = await Client.SendAsync(request);
 
             var responseBody = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<FormatterWebSite.ErrorInfo>(responseBody);
@@ -113,18 +106,19 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Theory]
         [InlineData("application/json", "{\"SampleInt\":10}", 10)]
         [InlineData("application/json", "{}", 0)]
-        public async Task JsonInputFormatter_IsModelStateValid_ForValidContentType(string requestContentType, string jsonInput, int expectedSampleIntValue)
+        public async Task JsonInputFormatter_IsModelStateValid_ForValidContentType(
+            string requestContentType,
+            string jsonInput,
+            int expectedSampleIntValue)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
             var content = new StringContent(jsonInput, Encoding.UTF8, requestContentType);
 
             // Act
-            var response = await client.PostAsync("http://localhost/JsonFormatter/ReturnInput/", content);
+            var response = await Client.PostAsync("http://localhost/JsonFormatter/ReturnInput/", content);
             var responseBody = await response.Content.ReadAsStringAsync();
 
-            //Assert
+            // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(expectedSampleIntValue.ToString(), responseBody);
         }
@@ -136,15 +130,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task JsonInputFormatter_ReturnsDefaultValue_ForValueTypes(string input)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
             var content = new StringContent(input, Encoding.UTF8, "application/json");
 
             // Act
-            var response = await client.PostAsync("http://localhost/JsonFormatter/ValueTypeAsBody/", content);
+            var response = await Client.PostAsync("http://localhost/JsonFormatter/ValueTypeAsBody/", content);
             var responseBody = await response.Content.ReadAsStringAsync();
 
-            //Assert
+            // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
             Assert.Equal("0", responseBody);
         }
@@ -154,15 +146,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var expected = "1773";
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
             var content = new StringContent(expected, Encoding.UTF8, "application/json");
 
             // Act
-            var response = await client.PostAsync("http://localhost/JsonFormatter/ValueTypeAsBody/", content);
+            var response = await Client.PostAsync("http://localhost/JsonFormatter/ValueTypeAsBody/", content);
             var responseBody = await response.Content.ReadAsStringAsync();
 
-            //Assert
+            // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(expected, responseBody);
         }
@@ -174,35 +164,36 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task JsonInputFormatter_IsModelStateInvalid_ForEmptyContentType(string jsonInput)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
             var content = new StringContent(jsonInput, Encoding.UTF8, "application/json");
             content.Headers.Clear();
 
             // Act
-            var response = await client.PostAsync("http://localhost/JsonFormatter/ReturnInput/", content);
+            var response = await Client.PostAsync("http://localhost/JsonFormatter/ReturnInput/", content);
             var responseBody = await response.Content.ReadAsStringAsync();
 
-            //Assert
+            // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         }
 
         [Theory]
         [InlineData("application/json", "{\"SampleInt\":10}", 10)]
         [InlineData("application/json", "{}", 0)]
-        public async Task JsonInputFormatter_IsModelStateValid_ForTransferEncodingChunk(string requestContentType, string jsonInput, int expectedSampleIntValue)
+        public async Task JsonInputFormatter_IsModelStateValid_ForTransferEncodingChunk(
+            string requestContentType,
+            string jsonInput,
+            int expectedSampleIntValue)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
             var content = new StringContent(jsonInput, Encoding.UTF8, requestContentType);
-            client.DefaultRequestHeaders.TransferEncodingChunked = true;
+            var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/JsonFormatter/ReturnInput/");
+            request.Headers.TransferEncodingChunked = true;
+            request.Content = content;
 
             // Act
-            var response = await client.PostAsync("http://localhost/JsonFormatter/ReturnInput/", content);
+            var response = await Client.SendAsync(request);
             var responseBody = await response.Content.ReadAsStringAsync();
 
-            //Assert
+            // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(expectedSampleIntValue.ToString(), responseBody);
         }
@@ -213,15 +204,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CustomFormatter_IsSelected_ForSupportedContentTypeAndEncoding(string encoding)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
             var content = new StringContent("Test Content", Encoding.GetEncoding(encoding), "text/plain");
 
             // Act
-            var response = await client.PostAsync("http://localhost/InputFormatter/ReturnInput/", content);
+            var response = await Client.PostAsync("http://localhost/InputFormatter/ReturnInput/", content);
             var responseBody = await response.Content.ReadAsStringAsync();
 
-            //Assert
+            // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("Test Content", responseBody);
         }
@@ -232,15 +221,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CustomFormatter_NotSelected_ForUnsupportedContentType(string contentType)
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
             var content = new StringContent("Test Content", Encoding.UTF8, contentType);
 
             // Act
-            var response = await client.PostAsync("http://localhost/InputFormatter/ReturnInput/", content);
+            var response = await Client.PostAsync("http://localhost/InputFormatter/ReturnInput/", content);
             var responseBody = await response.Content.ReadAsStringAsync();
 
-            //Assert
+            // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         }
     }

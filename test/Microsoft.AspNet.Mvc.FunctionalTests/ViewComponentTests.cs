@@ -1,21 +1,21 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.Framework.DependencyInjection;
-using ViewComponentWebSite;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class ViewComponentTests
+    public class ViewComponentTests : IClassFixture<MvcTestFixture<ViewComponentWebSite.Startup>>
     {
-        private const string SiteName = nameof(ViewComponentWebSite);
-        private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
-        private readonly Action<IServiceCollection> _configureServices = new Startup().ConfigureServices;
+        public ViewComponentTests(MvcTestFixture<ViewComponentWebSite.Startup> fixture)
+        {
+            Client = fixture.Client;
+        }
+
+        public HttpClient Client { get; }
 
         public static IEnumerable<object[]> ViewViewComponents_AreRenderedCorrectlyData
         {
@@ -41,11 +41,8 @@ ViewWithSyncComponents Invoke: hello from viewdatacomponent"
         [MemberData(nameof(ViewViewComponents_AreRenderedCorrectlyData))]
         public async Task ViewViewComponents_AreRenderedCorrectly(string actionName, string expected)
         {
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var body = await client.GetStringAsync("http://localhost/Home/" + actionName);
+            // Arrange & Act
+            var body = await Client.GetStringAsync("http://localhost/Home/" + actionName);
 
             // Assert
             Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);
@@ -54,11 +51,8 @@ ViewWithSyncComponents Invoke: hello from viewdatacomponent"
         [Fact]
         public async Task ViewComponents_SupportsValueType()
         {
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var body = await client.GetStringAsync("http://localhost/Home/ViewWithIntegerViewComponent");
+            // Arrange & Act
+            var body = await Client.GetStringAsync("http://localhost/Home/ViewWithIntegerViewComponent");
 
             // Assert
             Assert.Equal("10", body.Trim());
@@ -67,11 +61,8 @@ ViewWithSyncComponents Invoke: hello from viewdatacomponent"
         [Fact]
         public async Task ViewComponents_InvokeWithViewComponentResult()
         {
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var body = await client.GetStringAsync("http://localhost/ViewComponentResult/Invoke?number=31");
+            // Arrange & Act
+            var body = await Client.GetStringAsync("http://localhost/ViewComponentResult/Invoke?number=31");
 
             // Assert
             Assert.Equal("31", body.Trim());
@@ -86,14 +77,11 @@ ViewWithSyncComponents Invoke: hello from viewdatacomponent"
         [InlineData("http://localhost/Home/ViewComponentWithEnumerableModelUsingUnion", "Union")]
         public async Task ViewComponents_SupportsEnumerableModel(string url, string linqQueryType)
         {
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
+            // Arrange & Act
             // https://github.com/aspnet/Mvc/issues/1354
             // The invoked ViewComponent/View has a model which is an internal type implementing Enumerable.
             // For ex - TestEnumerableObject.Select(t => t) returns WhereSelectListIterator
-            var body = await client.GetStringAsync(url);
+            var body = await Client.GetStringAsync(url);
 
             // Assert
             Assert.Equal("<p>Hello</p><p>World</p><p>Sample</p><p>Test</p>"
@@ -105,11 +93,8 @@ ViewWithSyncComponents Invoke: hello from viewdatacomponent"
         [InlineData("ViewComponentWebSite.Namespace2.SameName")]
         public async Task ViewComponents_FullName(string name)
         {
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var body = await client.GetStringAsync("http://localhost/FullName/Invoke?name=" + name);
+            // Arrange & Act
+            var body = await Client.GetStringAsync("http://localhost/FullName/Invoke?name=" + name);
 
             // Assert
             Assert.Equal(name, body.Trim());
@@ -118,13 +103,11 @@ ViewWithSyncComponents Invoke: hello from viewdatacomponent"
         [Fact]
         public async Task ViewComponents_ShortNameUsedForViewLookup()
         {
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
+            // Arrange
             var name = "ViewComponentWebSite.Integer";
 
             // Act
-            var body = await client.GetStringAsync("http://localhost/FullName/Invoke?name=" + name);
+            var body = await Client.GetStringAsync("http://localhost/FullName/Invoke?name=" + name);
 
             // Assert
             Assert.Equal("17", body.Trim());

@@ -1,22 +1,22 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
+using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.Framework.DependencyInjection;
-using RazorWebSite;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     // Test to verify compilation options from the application are used to compile
     // precompiled and dynamically compiled views.
-    public class CompilationOptionsTests
+    public class CompilationOptionsTests : IClassFixture<MvcTestFixture<RazorWebSite.Startup>>
     {
-        private const string SiteName = nameof(RazorWebSite);
-        private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
-        private readonly Action<IServiceCollection> _configureServices = new Startup().ConfigureServices;
+        public CompilationOptionsTests(MvcTestFixture<RazorWebSite.Startup> fixture)
+        {
+            Client = fixture.Client;
+        }
+
+        public HttpClient Client { get; }
 
         [Fact]
         public async Task CompilationOptions_AreUsedByViewsAndPartials()
@@ -31,11 +31,9 @@ This method is only defined in DNX451";
 @"This method is running from DNXCORE50
 This method is only defined in DNXCORE50";
 #endif
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
 
             // Act
-            var body = await client.GetStringAsync("http://localhost/ViewsConsumingCompilationOptions/");
+            var body = await Client.GetStringAsync("http://localhost/ViewsConsumingCompilationOptions/");
 
             // Assert
             Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);

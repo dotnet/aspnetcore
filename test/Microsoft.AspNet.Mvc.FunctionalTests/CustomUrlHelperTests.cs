@@ -1,11 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -17,26 +15,25 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     /// 1. Based on configuration, generate Content urls pointing to local or a CDN server
     /// 2. Based on configuration, generate lower case urls
     /// </summary>
-    public class CustomUrlHelperTests
+    public class CustomUrlHelperTests : IClassFixture<MvcTestFixture<UrlHelperWebSite.Startup>>
     {
-        private const string SiteName = nameof(UrlHelperWebSite);
-        private readonly Action<IApplicationBuilder> _app = new UrlHelperWebSite.Startup().Configure;
-        private readonly Action<IServiceCollection> _configureServices = new UrlHelperWebSite.Startup().ConfigureServices;
-
         private const string _cdnServerBaseUrl = "http://cdn.contoso.com";
+
+        public CustomUrlHelperTests(MvcTestFixture<UrlHelperWebSite.Startup> fixture)
+        {
+            Client = fixture.Client;
+        }
+
+        public HttpClient Client { get; }
 
         [Fact]
         public async Task CustomUrlHelper_GeneratesUrlFromController()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/Home/UrlContent");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/Home/UrlContent");
             var responseData = await response.Content.ReadAsStringAsync();
 
-            //Assert
+            // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(_cdnServerBaseUrl + "/bootstrap.min.css", responseData);
         }
@@ -44,15 +41,11 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task CustomUrlHelper_GeneratesUrlFromView()
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("http://localhost/Home/Index");
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/Home/Index");
             var responseData = await response.Content.ReadAsStringAsync();
 
-            //Assert
+            // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Contains(_cdnServerBaseUrl + "/bootstrap.min.css", responseData);
         }
@@ -62,15 +55,11 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [InlineData("http://localhost/Home/LinkByUrlAction", "/home/urlcontent")]
         public async Task LowercaseUrls_LinkGeneration(string url, string expectedLink)
         {
-            // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync(url);
+            // Arrange & Act
+            var response = await Client.GetAsync(url);
             var responseData = await response.Content.ReadAsStringAsync();
 
-            //Assert
+            // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(expectedLink, responseData, ignoreCase: false);
         }

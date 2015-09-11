@@ -1,12 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.Framework.DependencyInjection;
 using ModelBindingWebSite;
 using ModelBindingWebSite.Controllers;
 using ModelBindingWebSite.Models;
@@ -15,19 +12,19 @@ using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class ModelBindingFromFormTest
+    public class ModelBindingFromFormTest : IClassFixture<MvcTestFixture<ModelBindingWebSite.Startup>>
     {
-        private const string SiteName = nameof(ModelBindingWebSite);
-        private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
-        private readonly Action<IServiceCollection> _configureServices = new Startup().ConfigureServices;
+        public ModelBindingFromFormTest(MvcTestFixture<ModelBindingWebSite.Startup> fixture)
+        {
+            Client = fixture.Client;
+        }
+
+        public HttpClient Client { get; }
 
         [Fact]
         public async Task FromForm_CustomModelPrefix_ForParameter()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             var url = "http://localhost/FromFormAttribute_Company/CreateCompany";
             var request = new HttpRequestMessage(HttpMethod.Post, url);
             var nameValueCollection = new List<KeyValuePair<string, string>>
@@ -38,7 +35,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             request.Content = new FormUrlEncodedContent(nameValueCollection);
 
             // Act
-            var response = await client.SendAsync(request);
+            var response = await Client.SendAsync(request);
 
             // Assert
             var body = await response.Content.ReadAsStringAsync();
@@ -53,9 +50,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FromForm_CustomModelPrefix_ForCollectionParameter()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             var url = "http://localhost/FromFormAttribute_Company/CreateCompanyFromEmployees";
             var request = new HttpRequestMessage(HttpMethod.Post, url);
             var nameValueCollection = new List<KeyValuePair<string, string>>
@@ -65,7 +59,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             request.Content = new FormUrlEncodedContent(nameValueCollection);
 
             // Act
-            var response = await client.SendAsync(request);
+            var response = await Client.SendAsync(request);
 
             // Assert
             var body = await response.Content.ReadAsStringAsync();
@@ -79,9 +73,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FromForm_CustomModelPrefix_ForProperty()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             var url = "http://localhost/FromFormAttribute_Company/CreateCompany";
             var request = new HttpRequestMessage(HttpMethod.Post, url);
             var nameValueCollection = new List<KeyValuePair<string, string>>
@@ -91,7 +82,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             request.Content = new FormUrlEncodedContent(nameValueCollection);
 
             // Act
-            var response = await client.SendAsync(request);
+            var response = await Client.SendAsync(request);
 
             // Assert
             var body = await response.Content.ReadAsStringAsync();
@@ -105,9 +96,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FromForm_CustomModelPrefix_ForCollectionProperty()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             var url = "http://localhost/FromFormAttribute_Company/CreateDepartment";
             var request = new HttpRequestMessage(HttpMethod.Post, url);
             var nameValueCollection = new List<KeyValuePair<string, string>>
@@ -117,7 +105,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             request.Content = new FormUrlEncodedContent(nameValueCollection);
 
             // Act
-            var response = await client.SendAsync(request);
+            var response = await Client.SendAsync(request);
 
             // Assert
             var body = await response.Content.ReadAsStringAsync();
@@ -132,9 +120,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FromForm_NonExistingValueAddsValidationErrors_OnProperty_UsingCustomModelPrefix()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             var url = "http://localhost/FromFormAttribute_Company/ValidateDepartment";
             var request = new HttpRequestMessage(HttpMethod.Post, url);
 
@@ -143,7 +128,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             request.Content = new FormUrlEncodedContent(nameValueCollection);
 
             // Act
-            var response = await client.SendAsync(request);
+            var response = await Client.SendAsync(request);
 
             // Assert
             var body = await response.Content.ReadAsStringAsync();

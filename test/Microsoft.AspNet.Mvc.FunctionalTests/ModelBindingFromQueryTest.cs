@@ -1,10 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
+using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.Framework.DependencyInjection;
 using ModelBindingWebSite;
 using ModelBindingWebSite.Controllers;
 using ModelBindingWebSite.Models;
@@ -13,25 +11,25 @@ using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class ModelBindingFromQueryTest
+    public class ModelBindingFromQueryTest : IClassFixture<MvcTestFixture<ModelBindingWebSite.Startup>>
     {
-        private const string SiteName = nameof(ModelBindingWebSite);
-        private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
-        private readonly Action<IServiceCollection> _configureServices = new Startup().ConfigureServices;
+        public ModelBindingFromQueryTest(MvcTestFixture<ModelBindingWebSite.Startup> fixture)
+        {
+            Client = fixture.Client;
+        }
+
+        public HttpClient Client { get; }
 
         [Fact]
         public async Task FromQuery_CustomModelPrefix_ForParameter()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             // [FromQuery(Name = "customPrefix")] is used to apply a prefix
             var url =
                 "http://localhost/FromQueryAttribute_Company/CreateCompany?customPrefix.Employees[0].Name=somename";
 
             // Act
-            var response = await client.GetAsync(url);
+            var response = await Client.GetAsync(url);
 
             // Assert
             var body = await response.Content.ReadAsStringAsync();
@@ -45,14 +43,11 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FromQuery_CustomModelPrefix_ForCollectionParameter()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             var url =
                 "http://localhost/FromQueryAttribute_Company/CreateCompanyFromEmployees?customPrefix[0].Name=somename";
 
             // Act
-            var response = await client.GetAsync(url);
+            var response = await Client.GetAsync(url);
 
             // Assert
             var body = await response.Content.ReadAsStringAsync();
@@ -66,15 +61,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FromQuery_CustomModelPrefix_ForProperty()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             // [FromQuery(Name = "EmployeeId")] is used to apply a prefix
             var url =
                 "http://localhost/FromQueryAttribute_Company/CreateCompany?customPrefix.Employees[0].EmployeeId=1234";
 
             // Act
-            var response = await client.GetAsync(url);
+            var response = await Client.GetAsync(url);
 
             // Assert
             var body = await response.Content.ReadAsStringAsync();
@@ -89,13 +81,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FromQuery_CustomModelPrefix_ForCollectionProperty()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             var url = "http://localhost/FromQueryAttribute_Company/CreateDepartment?TestEmployees[0].EmployeeId=1234";
 
             // Act
-            var response = await client.GetAsync(url);
+            var response = await Client.GetAsync(url);
 
             // Assert
             var body = await response.Content.ReadAsStringAsync();
@@ -110,14 +99,11 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FromQuery_NonExistingValueAddsValidationErrors_OnProperty_UsingCustomModelPrefix()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             var url =
                 "http://localhost/FromQueryAttribute_Company/ValidateDepartment?TestEmployees[0].Department=contoso";
 
             // Act
-            var response = await client.GetAsync(url);
+            var response = await Client.GetAsync(url);
 
             // Assert
             var body = await response.Content.ReadAsStringAsync();

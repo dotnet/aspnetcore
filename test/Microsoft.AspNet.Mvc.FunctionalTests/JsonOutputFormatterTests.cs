@@ -1,27 +1,26 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Testing.xunit;
-using Microsoft.Framework.DependencyInjection;
 using Newtonsoft.Json;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class JsonOutputFormatterTests
+    public class JsonOutputFormatterTests : IClassFixture<MvcTestFixture<FormatterWebSite.Startup>>
     {
-        private const string SiteName = nameof(FormatterWebSite);
-        private readonly Action<IApplicationBuilder> _app = new FormatterWebSite.Startup().Configure;
-        private readonly Action<IServiceCollection> _configureServices = new FormatterWebSite.Startup().ConfigureServices;
+        public JsonOutputFormatterTests(MvcTestFixture<FormatterWebSite.Startup> fixture)
+        {
+            Client = fixture.Client;
+        }
 
+        public HttpClient Client { get; }
 
         [Fact]
         public async Task JsonOutputFormatter_ReturnsIndentedJson()
@@ -40,11 +39,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             serializerSettings.Formatting = Formatting.Indented;
             var expectedBody = JsonConvert.SerializeObject(user, serializerSettings);
 
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             // Act
-            var response = await client.GetAsync("http://localhost/JsonFormatter/ReturnsIndentedJson");
+            var response = await Client.GetAsync("http://localhost/JsonFormatter/ReturnsIndentedJson");
 
             // Assert
             var actualBody = await response.Content.ReadAsStringAsync();
@@ -57,9 +53,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task SerializableErrorIsReturnedInExpectedFormat()
         {
             // Arrange
-            var server = TestHelper.CreateServer(_app, SiteName, _configureServices);
-            var client = server.CreateClient();
-
             var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
                 "<Employee xmlns=\"http://schemas.datacontract.org/2004/07/FormatterWebSite\">" +
                 "<Id>2</Id><Name>foo</Name></Employee>";
@@ -72,7 +65,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             request.Content = new StringContent(input, Encoding.UTF8, "application/xml");
 
             // Act
-            var response = await client.SendAsync(request);
+            var response = await Client.SendAsync(request);
 
             // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
