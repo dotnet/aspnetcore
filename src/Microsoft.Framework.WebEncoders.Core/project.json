@@ -20,6 +20,7 @@
                 "System.Diagnostics.Debug": "4.0.11-beta-*",
                 "System.IO": "4.0.11-beta-*",
                 "System.Reflection": "4.0.10-*",
+                "System.Resources.ResourceManager": "4.0.1-beta-",
                 "System.Runtime.Extensions": "4.0.11-beta-*",
                 "System.Threading": "4.0.11-beta-*"
             }

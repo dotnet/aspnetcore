@@ -11,6 +11,10 @@
     "frameworks": {
         "net45" : { },
         "dnx451": { },
-        "dnxcore50": { }
+        "dnxcore50": {
+            "dependencies": {
+                "System.Resources.ResourceManager": "4.0.1-beta-"
+            }
+        }
     }
 }
