@@ -6,13 +6,14 @@
         "url": "https://github.com/aspnet/localization"
     },
     "dependencies": {
+        "Microsoft.Dnx.Runtime.Abstractions": "1.0.0-*",
         "Microsoft.Framework.DependencyInjection.Abstractions": "1.0.0-*",
         "Microsoft.Framework.Localization.Abstractions": "1.0.0-*",
         "Microsoft.Framework.NotNullAttribute.Sources": {
             "type": "build",
             "version": "1.0.0-*"
         },
-        "Microsoft.Dnx.Runtime.Abstractions": "1.0.0-*"
+        "Microsoft.Framework.OptionsModel": "1.0.0-*"
     },
     "frameworks": {
         "dnx451": { },

@@ -4,8 +4,9 @@
 using System;
 using System.Reflection;
 using System.Resources;
-using Microsoft.Framework.Internal;
 using Microsoft.Dnx.Runtime;
+using Microsoft.Framework.Internal;
+using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.Framework.Localization
 {
@@ -18,13 +19,23 @@ namespace Microsoft.Framework.Localization
 
         private readonly IApplicationEnvironment _applicationEnvironment;
 
+        private readonly string _resourcesRelativePath;
+
         /// <summary>
         /// Creates a new <see cref="ResourceManagerStringLocalizer"/>.
         /// </summary>
-        /// <param name="applicationEnvironment"></param>
-        public ResourceManagerStringLocalizerFactory([NotNull] IApplicationEnvironment applicationEnvironment)
+        /// <param name="applicationEnvironment">The <see cref="IApplicationEnvironment"/>.</param>
+        /// <param name="localizationOptions">The <see cref="IOptions{LocalizationOptions}"/>.</param>
+        public ResourceManagerStringLocalizerFactory(
+            [NotNull] IApplicationEnvironment applicationEnvironment,
+            [NotNull] IOptions<LocalizationOptions> localizationOptions)
         {
             _applicationEnvironment = applicationEnvironment;
+            _resourcesRelativePath = localizationOptions.Value.ResourcesPath ?? string.Empty;
+            if (!string.IsNullOrEmpty(_resourcesRelativePath))
+            {
+                _resourcesRelativePath = _resourcesRelativePath.Replace("/", ".") + ".";
+            }
         }
 
         /// <summary>
@@ -37,9 +48,10 @@ namespace Microsoft.Framework.Localization
         {
             var typeInfo = resourceSource.GetTypeInfo();
             var assembly = typeInfo.Assembly;
-            var baseName = typeInfo.FullName;
+            var baseName = _applicationEnvironment.ApplicationName + "." + _resourcesRelativePath + resourceSource.Name;
+
             return new ResourceManagerStringLocalizer(
-                new ResourceManager(resourceSource),
+                new ResourceManager(baseName, assembly),
                 assembly,
                 baseName,
                 _resourceNamesCache);
@@ -51,9 +63,11 @@ namespace Microsoft.Framework.Localization
         /// <param name="baseName">The base name of the resource to load strings from.</param>
         /// <param name="location">The location to load resources from.</param>
         /// <returns>The <see cref="ResourceManagerStringLocalizer"/>.</returns>
-        public IStringLocalizer Create([NotNull] string baseName, [NotNull] string location)
+        public IStringLocalizer Create([NotNull] string baseName, string location)
         {
-            var assembly = Assembly.Load(new AssemblyName(location ?? _applicationEnvironment.ApplicationName));
+            var rootPath = location ?? _applicationEnvironment.ApplicationName;
+            var assembly = Assembly.Load(new AssemblyName(rootPath));
+            baseName = rootPath + "." + _resourcesRelativePath + baseName;
 
             return new ResourceManagerStringLocalizer(
                 new ResourceManager(baseName, assembly),

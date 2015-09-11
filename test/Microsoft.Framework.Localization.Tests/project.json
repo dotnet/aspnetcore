@@ -1,8 +1,9 @@
 {
   "dependencies": {
+    "Microsoft.Framework.DependencyInjection": "1.0.0-*",
+    "Microsoft.Framework.Localization": "1.0.0-*",
     "xunit": "2.1.0-*",
-    "xunit.runner.dnx": "2.1.0-*",
-    "Microsoft.Framework.Localization": "1.0.0-*"
+    "xunit.runner.dnx": "2.1.0-*"
   },
   "frameworks": {
     "dnx451": { },
