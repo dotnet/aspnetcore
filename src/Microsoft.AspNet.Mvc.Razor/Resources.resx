@@ -200,4 +200,7 @@
 
 @{3} "{4}, {5}"</value>
   </data>
+  <data name="LayoutHasCircularReference" xml:space="preserve">
+    <value>A circular layout reference was detected when rendering '{0}'. The layout page '{1}' has already been rendered.</value>
+  </data>
 </root>

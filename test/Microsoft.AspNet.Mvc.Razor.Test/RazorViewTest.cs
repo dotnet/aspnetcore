@@ -8,7 +8,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Internal;
-using Microsoft.AspNet.Mvc.Actions;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.PageExecutionInstrumentation;
 using Microsoft.Framework.WebEncoders.Testing;
@@ -568,11 +567,13 @@ namespace Microsoft.AspNet.Mvc.Razor
                     await v.RenderSectionAsync("sectionA");
                 });
             });
+            nestedLayout.Path = "NestedLayout";
             var baseLayout = new TestableRazorPage(v =>
             {
                 v.HtmlEncoder = htmlEncoder;
                 v.RenderSection("sectionB");
             });
+            baseLayout.Path = "Layout";
 
             var viewEngine = new Mock<IRazorViewEngine>();
             viewEngine.Setup(p => p.FindPage(It.IsAny<ActionContext>(), "NestedLayout"))
@@ -784,6 +785,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                 v.RenderBodyPublic();
                 v.Layout = "~/Shared/Layout2.cshtml";
             });
+            layout1.Path = "~/Shared/Layout1.cshtml";
+
             var layout2 = new TestableRazorPage(v =>
             {
                 v.HtmlEncoder = htmlEncoder;
@@ -791,6 +794,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                 v.Write(v.RenderSection("bar"));
                 v.RenderBodyPublic();
             });
+            layout2.Path = "~/Shared/Layout2.cshtml";
+
             var viewEngine = new Mock<IRazorViewEngine>();
             viewEngine.Setup(p => p.FindPage(It.IsAny<ActionContext>(), "~/Shared/Layout1.cshtml"))
                        .Returns(new RazorPageResult("~/Shared/Layout1.cshtml", layout1));
@@ -810,6 +815,87 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             // Assert
             Assert.Equal(expected, viewContext.Writer.ToString());
+        }
+
+        [Fact]
+        public async Task RenderAsync_Throws_IfLayoutPageReferencesSelf()
+        {
+            // Arrange
+            var expectedMessage = "A circular layout reference was detected when rendering " +
+                "'Shared/Layout.cshtml'. The layout page 'Shared/Layout.cshtml' has already been rendered.";
+            var page = new TestableRazorPage(v =>
+            {
+                v.Layout = "_Layout";
+            });
+            var layout = new TestableRazorPage(v =>
+            {
+                v.Layout = "_Layout";
+                v.RenderBodyPublic();
+            });
+            layout.Path = "Shared/Layout.cshtml";
+
+            var viewEngine = new Mock<IRazorViewEngine>();
+            viewEngine.Setup(p => p.FindPage(It.IsAny<ActionContext>(), "_Layout"))
+                       .Returns(new RazorPageResult("_Layout", layout));
+
+            var view = new RazorView(viewEngine.Object,
+                                     Mock.Of<IRazorPageActivator>(),
+                                     CreateViewStartProvider(),
+                                     page,
+                                     new CommonTestEncoder(),
+                                     isPartial: false);
+            var viewContext = CreateViewContext(view);
+
+            // Act and Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => view.RenderAsync(viewContext));
+
+            // Assert
+            Assert.Equal(expectedMessage, exception.Message);
+        }
+
+        [Fact]
+        public async Task RenderAsync_Throws_IfNestedLayoutPagesResultInCyclicReferences()
+        {
+            // Arrange
+            var expectedMessage = "A circular layout reference was detected when rendering " +
+                "'/Shared/Layout2.cshtml'. The layout page 'Shared/_Layout.cshtml' has already been rendered.";
+            var page = new TestableRazorPage(v =>
+            {
+                v.Layout = "_Layout";
+            });
+            var layout1 = new TestableRazorPage(v =>
+            {
+                v.Layout = "_Layout2";
+                v.RenderBodyPublic();
+            });
+            layout1.Path = "Shared/_Layout.cshtml";
+
+            var layout2 = new TestableRazorPage(v =>
+            {
+                v.Layout = "_Layout";
+                v.RenderBodyPublic();
+            });
+            layout2.Path = "/Shared/Layout2.cshtml";
+
+            var viewEngine = new Mock<IRazorViewEngine>();
+            viewEngine.Setup(p => p.FindPage(It.IsAny<ActionContext>(), "_Layout"))
+                       .Returns(new RazorPageResult("_Layout", layout1));
+            viewEngine.Setup(p => p.FindPage(It.IsAny<ActionContext>(), "_Layout2"))
+                       .Returns(new RazorPageResult("_Layout2", layout2));
+
+            var view = new RazorView(viewEngine.Object,
+                                     Mock.Of<IRazorPageActivator>(),
+                                     CreateViewStartProvider(),
+                                     page,
+                                     new CommonTestEncoder(),
+                                     isPartial: false);
+            var viewContext = CreateViewContext(view);
+
+            // Act and Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => view.RenderAsync(viewContext));
+
+            // Assert
+            Assert.Equal(expectedMessage, exception.Message);
         }
 
         [Fact]
@@ -848,6 +934,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                     await writer.WriteLineAsync(htmlEncoder.HtmlEncode(v.RenderSection("foo").ToString()));
                 });
             });
+            nestedLayout.Path = "~/Shared/Layout2.cshtml";
+
             var baseLayout = new TestableRazorPage(v =>
             {
                 v.HtmlEncoder = htmlEncoder;
@@ -855,6 +943,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                 v.RenderBodyPublic();
                 v.Write(v.RenderSection("foo"));
             });
+            baseLayout.Path = "~/Shared/Layout1.cshtml";
+
             var viewEngine = new Mock<IRazorViewEngine>();
             viewEngine.Setup(p => p.FindPage(It.IsAny<ActionContext>(), "~/Shared/Layout1.cshtml"))
                        .Returns(new RazorPageResult("~/Shared/Layout1.cshtml", nestedLayout));
