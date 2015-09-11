@@ -87,7 +87,7 @@ namespace MusicStore
                 };
             });
 
-            services.ConfigureCors(options =>
+            services.AddCors(options =>
             {
                 options.AddPolicy("CorsPolicy", builder =>
                 {

@@ -138,7 +138,7 @@ namespace MusicStore
                 options.Scope.Add("wl.signin");
             });
 
-            services.ConfigureCors(options =>
+            services.AddCors(options =>
             {
                 options.AddPolicy("CorsPolicy", builder =>
                 {

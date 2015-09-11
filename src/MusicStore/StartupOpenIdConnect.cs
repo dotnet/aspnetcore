@@ -79,7 +79,7 @@ namespace MusicStore
                 options.ClientId = "[ClientId]";
             });
 
-            services.ConfigureCors(options =>
+            services.AddCors(options =>
             {
                 options.AddPolicy("CorsPolicy", builder =>
                 {

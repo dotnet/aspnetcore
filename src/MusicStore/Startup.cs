@@ -89,7 +89,7 @@ namespace MusicStore
                 options.ClientSecret = "GaMQ2hCnqAC6EcDLnXsAeBVIJOLmeutL";
             });
 
-            services.ConfigureCors(options =>
+            services.AddCors(options =>
             {
                 options.AddPolicy("CorsPolicy", builder =>
                 {
