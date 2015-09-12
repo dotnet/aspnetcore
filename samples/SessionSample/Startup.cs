@@ -4,8 +4,6 @@
 using System;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
-using Microsoft.Framework.Caching.Distributed;
-using Microsoft.Framework.Caching.Redis;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
 
