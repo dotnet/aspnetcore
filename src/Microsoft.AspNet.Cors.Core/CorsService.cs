@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Microsoft.AspNet.Http;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 using Microsoft.Framework.Primitives;
 
@@ -23,8 +22,13 @@ namespace Microsoft.AspNet.Cors.Core
         /// Creates a new instance of the <see cref="CorsService"/>.
         /// </summary>
         /// <param name="options">The option model representing <see cref="CorsOptions"/>.</param>
-        public CorsService([NotNull] IOptions<CorsOptions> options)
+        public CorsService(IOptions<CorsOptions> options)
         {
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
             _options = options.Value;
         }
 
@@ -36,15 +40,30 @@ namespace Microsoft.AspNet.Cors.Core
         /// <param name="policyName"></param>
         /// <returns>A <see cref="CorsResult"/> which contains the result of policy evaluation and can be
         /// used by the caller to set appropriate response headers.</returns>
-        public CorsResult EvaluatePolicy([NotNull] HttpContext context, string policyName)
+        public CorsResult EvaluatePolicy(HttpContext context, string policyName)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var policy = _options.GetPolicy(policyName);
             return EvaluatePolicy(context, policy);
         }
 
         /// <inheritdoc />
-        public CorsResult EvaluatePolicy([NotNull] HttpContext context, [NotNull] CorsPolicy policy)
+        public CorsResult EvaluatePolicy(HttpContext context, CorsPolicy policy)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (policy == null)
+            {
+                throw new ArgumentNullException(nameof(policy));
+            }
+
             var corsResult = new CorsResult();
             var accessControlRequestMethod = context.Request.Headers[CorsConstants.AccessControlRequestMethod];
             if (string.Equals(context.Request.Method, CorsConstants.PreflightHttpMethod, StringComparison.Ordinal) &&
@@ -113,6 +132,16 @@ namespace Microsoft.AspNet.Cors.Core
         /// <inheritdoc />
         public virtual void ApplyResult(CorsResult result, HttpResponse response)
         {
+            if (result == null)
+            {
+                throw new ArgumentNullException(nameof(result));
+            }
+
+            if (response == null)
+            {
+                throw new ArgumentNullException(nameof(response));
+            }
+
             var headers = response.Headers;
 
             if (result.AllowedOrigin != null)

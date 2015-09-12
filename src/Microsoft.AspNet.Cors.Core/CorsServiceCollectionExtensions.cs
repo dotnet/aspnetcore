@@ -2,11 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Cors;
 using Microsoft.AspNet.Cors.Core;
-using Microsoft.Framework.Configuration;
 using Microsoft.Framework.DependencyInjection.Extensions;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.DependencyInjection
 {
@@ -22,9 +19,19 @@ namespace Microsoft.Framework.DependencyInjection
         /// <param name="configure">A delegate which is run to configure the services.</param>
         /// <returns></returns>
         public static IServiceCollection ConfigureCors(
-            [NotNull] this IServiceCollection serviceCollection,
-            [NotNull] Action<CorsOptions> configure)
+            this IServiceCollection serviceCollection,
+            Action<CorsOptions> configure)
         {
+            if (serviceCollection == null)
+            {
+                throw new ArgumentNullException(nameof(serviceCollection));
+            }
+
+            if (configure == null)
+            {
+                throw new ArgumentNullException(nameof(configure));
+            }
+
             return serviceCollection.Configure(configure);
         }
 

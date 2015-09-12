@@ -1,9 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Cors.Core
@@ -25,6 +25,11 @@ namespace Microsoft.AspNet.Cors.Core
         /// <inheritdoc />
         public Task<CorsPolicy> GetPolicyAsync(HttpContext context, string policyName)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             return Task.FromResult(_options.GetPolicy(policyName ?? _options.DefaultPolicyName));
         }
     }

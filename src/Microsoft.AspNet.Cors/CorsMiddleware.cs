@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Cors.Core;
 using Microsoft.AspNet.Http;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.Primitives;
 
 namespace Microsoft.AspNet.Cors
@@ -30,11 +29,26 @@ namespace Microsoft.AspNet.Cors
         /// <param name="policyProvider">A policy provider which can get an <see cref="CorsPolicy"/>.</param>
         /// <param name="policyName">An optional name of the policy to be fetched.</param>
         public CorsMiddleware(
-            [NotNull] RequestDelegate next,
-            [NotNull] ICorsService corsService,
-            [NotNull] ICorsPolicyProvider policyProvider,
+            RequestDelegate next,
+            ICorsService corsService,
+            ICorsPolicyProvider policyProvider,
             string policyName)
         {
+            if (next == null)
+            {
+                throw new ArgumentNullException(nameof(next));
+            }
+
+            if (corsService == null)
+            {
+                throw new ArgumentNullException(nameof(corsService));
+            }
+
+            if (policyProvider == null)
+            {
+                throw new ArgumentNullException(nameof(policyProvider));
+            }
+
             _next = next;
             _corsService = corsService;
             _corsPolicyProvider = policyProvider;
@@ -48,10 +62,25 @@ namespace Microsoft.AspNet.Cors
         /// <param name="corsService">An instance of <see cref="ICorsService"/>.</param>
         /// <param name="policy">An instance of the <see cref="CorsPolicy"/> which can be applied.</param>
         public CorsMiddleware(
-           [NotNull] RequestDelegate next,
-           [NotNull] ICorsService corsService,
-           [NotNull] CorsPolicy policy)
+           RequestDelegate next,
+           ICorsService corsService,
+           CorsPolicy policy)
         {
+            if (next == null)
+            {
+                throw new ArgumentNullException(nameof(next));
+            }
+
+            if (corsService == null)
+            {
+                throw new ArgumentNullException(nameof(corsService));
+            }
+
+            if (policy == null)
+            {
+                throw new ArgumentNullException(nameof(policy));
+            }
+
             _next = next;
             _corsService = corsService;
             _policy = policy;
@@ -68,7 +97,7 @@ namespace Microsoft.AspNet.Cors
                     var corsResult = _corsService.EvaluatePolicy(context, corsPolicy);
                     _corsService.ApplyResult(corsResult, context.Response);
 
-                    var accessControlRequestMethod = 
+                    var accessControlRequestMethod =
                         context.Request.Headers[CorsConstants.AccessControlRequestMethod];
                     if (string.Equals(
                             context.Request.Method,

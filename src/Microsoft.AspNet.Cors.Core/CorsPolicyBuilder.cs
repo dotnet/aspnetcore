@@ -4,7 +4,6 @@
 using System;
 using System.Linq;
 using Microsoft.AspNet.Cors.Core;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Cors
 {
@@ -171,8 +170,13 @@ namespace Microsoft.AspNet.Cors
         /// </summary>
         /// <param name="policy">The policy which needs to be combined.</param>
         /// <returns>The current policy builder</returns>
-        private CorsPolicyBuilder Combine([NotNull] CorsPolicy policy)
+        private CorsPolicyBuilder Combine(CorsPolicy policy)
         {
+            if (policy == null)
+            {
+                throw new ArgumentNullException(nameof(policy));
+            }
+
             WithOrigins(policy.Origins.ToArray());
             WithHeaders(policy.Headers.ToArray());
             WithExposedHeaders(policy.ExposedHeaders.ToArray());

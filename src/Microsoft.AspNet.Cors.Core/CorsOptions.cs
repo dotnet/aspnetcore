@@ -3,8 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Cors.Core;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Cors.Core
 {
@@ -22,10 +20,13 @@ namespace Microsoft.AspNet.Cors.Core
             {
                 return _defaultPolicyName;
             }
-
-            [param: NotNull]
             set
             {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
                 _defaultPolicyName = value;
             }
         }
@@ -35,8 +36,18 @@ namespace Microsoft.AspNet.Cors.Core
         /// </summary>
         /// <param name="name">The name of the policy.</param>
         /// <param name="policy">The <see cref="CorsPolicy"/> policy to be added.</param>
-        public void AddPolicy([NotNull] string name, [NotNull] CorsPolicy policy)
+        public void AddPolicy(string name, CorsPolicy policy)
         {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            if (policy == null)
+            {
+                throw new ArgumentNullException(nameof(policy));
+            }
+
             PolicyMap[name] = policy;
         }
 
@@ -45,8 +56,18 @@ namespace Microsoft.AspNet.Cors.Core
         /// </summary>
         /// <param name="name">The name of the policy.</param>
         /// <param name="configurePolicy">A delegate which can use a policy builder to build a policy.</param>
-        public void AddPolicy([NotNull] string name, [NotNull] Action<CorsPolicyBuilder> configurePolicy)
+        public void AddPolicy(string name, Action<CorsPolicyBuilder> configurePolicy)
         {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            if (configurePolicy == null)
+            {
+                throw new ArgumentNullException(nameof(configurePolicy));
+            }
+
             var policyBuilder = new CorsPolicyBuilder();
             configurePolicy(policyBuilder);
             PolicyMap[name] = policyBuilder.Build();
@@ -57,8 +78,13 @@ namespace Microsoft.AspNet.Cors.Core
         /// </summary>
         /// <param name="name">The name of the policy to lookup.</param>
         /// <returns>The <see cref="CorsPolicy"/> if the policy was added.<c>null</c> otherwise.</returns>
-        public CorsPolicy GetPolicy([NotNull] string name)
+        public CorsPolicy GetPolicy(string name)
         {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
             return PolicyMap.ContainsKey(name) ? PolicyMap[name] : null;
         }
     }

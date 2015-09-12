@@ -5,19 +5,11 @@
         "url": "https://github.com/aspnet/cors"
     },
     "dependencies": {
-        "Microsoft.AspNet.Cors.Core": "1.0.0-*",
-        "Microsoft.Framework.NotNullAttribute.Sources": { "version": "1.0.0-*", "type": "build" }
+        "Microsoft.AspNet.Cors.Core": "1.0.0-*"
     },
 
     "frameworks" : {
-        "dnx451" : { 
-            "dependencies": {
-            }
-        },
-        "dnxcore50" : { 
-            "dependencies": {
-                "System.Runtime": "4.0.21-beta-*"
-            }
-        }
+        "dnx451" : { },
+        "dnxcore50" : { }
     }
 }

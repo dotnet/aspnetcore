@@ -3,7 +3,6 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Cors.Core
 {
@@ -18,6 +17,6 @@ namespace Microsoft.AspNet.Cors.Core
         /// <param name="context">The <see cref="HttpContext"/> associated with this call.</param>
         /// <param name="policyName">An optional policy name to look for.</param>
         /// <returns>A <see cref="CorsPolicy"/></returns>
-        Task<CorsPolicy> GetPolicyAsync([NotNull] HttpContext context, string policyName);
+        Task<CorsPolicy> GetPolicyAsync(HttpContext context, string policyName);
     }
 }

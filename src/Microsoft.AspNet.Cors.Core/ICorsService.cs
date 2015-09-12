@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNet.Http;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Cors.Core
 {
@@ -18,7 +17,7 @@ namespace Microsoft.AspNet.Cors.Core
         /// <param name="policy">The <see cref="CorsPolicy"/> which needs to be evaluated.</param>
         /// <returns>A <see cref="CorsResult"/> which contains the result of policy evaluation and can be
         /// used by the caller to set apporpriate response headers.</returns>
-        CorsResult EvaluatePolicy([NotNull] HttpContext context, [NotNull] CorsPolicy policy);
+        CorsResult EvaluatePolicy(HttpContext context, CorsPolicy policy);
 
 
         /// <summary>
@@ -26,7 +25,7 @@ namespace Microsoft.AspNet.Cors.Core
         /// </summary>
         /// <param name="result">The <see cref="CorsResult"/> used to read the allowed values.</param>
         /// <param name="response">The <see cref="HttpResponse"/> associated with the current call.</param>
-        void ApplyResult([NotNull] CorsResult result, [NotNull] HttpResponse response);
+        void ApplyResult(CorsResult result, HttpResponse response);
 
     }
 }

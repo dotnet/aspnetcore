@@ -2,10 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Threading.Tasks;
 using Microsoft.AspNet.Cors;
-using Microsoft.AspNet.Cors.Core;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Builder
 {
@@ -20,8 +17,13 @@ namespace Microsoft.AspNet.Builder
         /// <param name="app">The IApplicationBuilder passed to your Configure method</param>
         /// <param name="policyName">The policy name of a configured policy.</param>
         /// <returns>The original app parameter</returns>
-        public static IApplicationBuilder UseCors([NotNull]this IApplicationBuilder app, string policyName)
+        public static IApplicationBuilder UseCors(this IApplicationBuilder app, string policyName)
         {
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+
             return app.UseMiddleware<CorsMiddleware>(policyName);
         }
 
@@ -32,9 +34,19 @@ namespace Microsoft.AspNet.Builder
         /// <param name="configurePolicy">A delegate which can use a policy builder to build a policy.</param>
         /// <returns>The original app parameter</returns>
         public static IApplicationBuilder UseCors(
-            [NotNull] this IApplicationBuilder app,
-            [NotNull] Action<CorsPolicyBuilder> configurePolicy)
+            this IApplicationBuilder app,
+            Action<CorsPolicyBuilder> configurePolicy)
         {
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+
+            if (configurePolicy == null)
+            {
+                throw new ArgumentNullException(nameof(configurePolicy));
+            }
+
             var policyBuilder = new CorsPolicyBuilder();
             configurePolicy(policyBuilder);
             return app.UseMiddleware<CorsMiddleware>(policyBuilder.Build());
