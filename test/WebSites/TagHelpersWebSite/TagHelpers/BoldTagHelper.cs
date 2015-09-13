@@ -5,7 +5,7 @@ using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 
 namespace TagHelpersWebSite.TagHelpers
 {
-    [TargetElement(Attributes = "bold")]
+    [HtmlTargetElement(Attributes = "bold")]
     public class BoldTagHelper : TagHelper
     {
         public override int Order

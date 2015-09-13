@@ -20,13 +20,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     /// <remarks>
     /// The tag helper won't process for cases with just the 'src' attribute.
     /// </remarks>
-    [TargetElement("script", Attributes = SrcIncludeAttributeName)]
-    [TargetElement("script", Attributes = SrcExcludeAttributeName)]
-    [TargetElement("script", Attributes = FallbackSrcAttributeName)]
-    [TargetElement("script", Attributes = FallbackSrcIncludeAttributeName)]
-    [TargetElement("script", Attributes = FallbackSrcExcludeAttributeName)]
-    [TargetElement("script", Attributes = FallbackTestExpressionAttributeName)]
-    [TargetElement("script", Attributes = AppendVersionAttributeName)]
+    [HtmlTargetElement("script", Attributes = SrcIncludeAttributeName)]
+    [HtmlTargetElement("script", Attributes = SrcExcludeAttributeName)]
+    [HtmlTargetElement("script", Attributes = FallbackSrcAttributeName)]
+    [HtmlTargetElement("script", Attributes = FallbackSrcIncludeAttributeName)]
+    [HtmlTargetElement("script", Attributes = FallbackSrcExcludeAttributeName)]
+    [HtmlTargetElement("script", Attributes = FallbackTestExpressionAttributeName)]
+    [HtmlTargetElement("script", Attributes = AppendVersionAttributeName)]
     public class ScriptTagHelper : UrlResolutionTagHelper
     {
         private const string SrcIncludeAttributeName = "asp-src-include";

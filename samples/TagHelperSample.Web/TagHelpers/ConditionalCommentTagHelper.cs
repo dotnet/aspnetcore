@@ -5,7 +5,7 @@ using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 
 namespace TagHelperSample.Web
 {
-    [TargetElement("iecondition")]
+    [HtmlTargetElement("iecondition")]
     public class ConditionalCommentTagHelper : TagHelper
     {
         public CommentMode Mode { get; set; }

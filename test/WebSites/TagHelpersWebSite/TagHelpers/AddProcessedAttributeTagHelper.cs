@@ -5,7 +5,7 @@ using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 
 namespace TagHelpersWebSite.TagHelpers
 {
-    [TargetElement("input")]
+    [HtmlTargetElement("input")]
     public class AddProcessedAttributeTagHelper : TagHelper
     {
         public override void Process(TagHelperContext context, TagHelperOutput output)

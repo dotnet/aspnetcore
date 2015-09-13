@@ -7,7 +7,7 @@ using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 
 namespace TagHelpersWebSite.TagHelpers
 {
-    [TargetElement("p")]
+    [HtmlTargetElement("p")]
     public class AutoLinkerTagHelper : TagHelper
     {
         public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)

@@ -8,7 +8,7 @@ using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 
 namespace ActivatorWebSite.TagHelpers
 {
-    [TargetElement("div")]
+    [HtmlTargetElement("div")]
     public class RepeatContentTagHelper : TagHelper
     {
         public RepeatContentTagHelper(IHtmlHelper htmlHelper)

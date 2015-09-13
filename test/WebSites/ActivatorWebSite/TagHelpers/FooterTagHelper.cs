@@ -7,7 +7,7 @@ using Microsoft.Framework.WebEncoders;
 
 namespace ActivatorWebSite.TagHelpers
 {
-    [TargetElement("body")]
+    [HtmlTargetElement("body")]
     public class FooterTagHelper : TagHelper
     {
         [HtmlAttributeNotBound]

@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     /// <remarks>
     /// The tag helper won't process for cases with just the 'src' attribute.
     /// </remarks>
-    [TargetElement(
+    [HtmlTargetElement(
         "img",
         Attributes = AppendVersionAttributeName + "," + SrcAttributeName,
         TagStructure = TagStructure.WithoutEndTag)]

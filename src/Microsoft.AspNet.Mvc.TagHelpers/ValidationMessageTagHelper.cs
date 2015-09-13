@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     /// <see cref="ITagHelper"/> implementation targeting any HTML element with an <c>asp-validation-for</c>
     /// attribute.
     /// </summary>
-    [TargetElement("span", Attributes = ValidationForAttributeName)]
+    [HtmlTargetElement("span", Attributes = ValidationForAttributeName)]
     public class ValidationMessageTagHelper : TagHelper
     {
         private const string ValidationForAttributeName = "asp-validation-for";

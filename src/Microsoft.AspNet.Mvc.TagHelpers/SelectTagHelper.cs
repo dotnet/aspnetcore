@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     /// <summary>
     /// <see cref="ITagHelper"/> implementation targeting &lt;select&gt; elements with an <c>asp-for</c> attribute.
     /// </summary>
-    [TargetElement("select", Attributes = ForAttributeName)]
+    [HtmlTargetElement("select", Attributes = ForAttributeName)]
     public class SelectTagHelper : TagHelper
     {
         private const string ForAttributeName = "asp-for";

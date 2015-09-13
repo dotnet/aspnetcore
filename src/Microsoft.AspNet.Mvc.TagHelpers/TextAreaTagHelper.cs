@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     /// <summary>
     /// <see cref="ITagHelper"/> implementation targeting &lt;textarea&gt; elements with an <c>asp-for</c> attribute.
     /// </summary>
-    [TargetElement("textarea", Attributes = ForAttributeName)]
+    [HtmlTargetElement("textarea", Attributes = ForAttributeName)]
     public class TextAreaTagHelper : TagHelper
     {
         private const string ForAttributeName = "asp-for";

@@ -7,7 +7,7 @@ using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 
 namespace ActivatorWebSite.TagHelpers
 {
-    [TargetElement("body")]
+    [HtmlTargetElement("body")]
     public class TitleTagHelper : TagHelper
     {
         public TitleTagHelper(IHtmlHelper htmlHelper)

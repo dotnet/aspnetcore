@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     /// <summary>
     /// <see cref="ITagHelper"/> implementation targeting &lt;label&gt; elements with an <c>asp-for</c> attribute.
     /// </summary>
-    [TargetElement("label", Attributes = ForAttributeName)]
+    [HtmlTargetElement("label", Attributes = ForAttributeName)]
     public class LabelTagHelper : TagHelper
     {
         private const string ForAttributeName = "asp-for";

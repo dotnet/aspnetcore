@@ -5,7 +5,7 @@ using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 
 namespace TagHelpersWebSite.TagHelpers
 {
-    [TargetElement(Attributes = nameof(Surround))]
+    [HtmlTargetElement(Attributes = nameof(Surround))]
     public class SurroundTagHelper : TagHelper
     {
         public override int Order

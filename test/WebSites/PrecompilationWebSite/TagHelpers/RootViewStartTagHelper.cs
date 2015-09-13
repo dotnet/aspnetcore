@@ -5,7 +5,7 @@ using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 
 namespace PrecompilationWebSite.TagHelpers
 {
-    [TargetElement("root")]
+    [HtmlTargetElement("root")]
     public class RootViewStartTagHelper : TagHelper
     {
         public override void Process(TagHelperContext context, TagHelperOutput output)

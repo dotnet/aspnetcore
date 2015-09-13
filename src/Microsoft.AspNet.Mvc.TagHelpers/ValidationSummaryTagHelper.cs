@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     /// <see cref="ITagHelper"/> implementation targeting any HTML element with an <c>asp-validation-summary</c>
     /// attribute.
     /// </summary>
-    [TargetElement("div", Attributes = ValidationSummaryAttributeName)]
+    [HtmlTargetElement("div", Attributes = ValidationSummaryAttributeName)]
     public class ValidationSummaryTagHelper : TagHelper
     {
         private const string ValidationSummaryAttributeName = "asp-validation-summary";

@@ -6,9 +6,9 @@ using Microsoft.AspNet.Razor.TagHelpers;
 
 namespace TagHelpersWebSite.TagHelpers
 {
-    [TargetElement("div")]
-    [TargetElement("style")]
-    [TargetElement("p")]
+    [HtmlTargetElement("div")]
+    [HtmlTargetElement("style")]
+    [HtmlTargetElement("p")]
     public class ConditionTagHelper : TagHelper
     {
         public bool? Condition { get; set; }
