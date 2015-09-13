@@ -40,6 +40,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                                      Mock.Of<IRazorPageActivator>(),
                                      CreateViewStartProvider(),
                                      page,
+                                     new CommonTestEncoder(),
                                      isPartial: true);
             var viewContext = CreateViewContext(view);
             var expected = viewContext.Writer;
@@ -68,6 +69,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                                      activator.Object,
                                      CreateViewStartProvider(),
                                      page,
+                                     new CommonTestEncoder(),
                                      isPartial: true);
 
             var viewContext = CreateViewContext(view);
@@ -131,6 +133,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                                      activator,
                                      CreateViewStartProvider(viewStart),
                                      page,
+                                     new CommonTestEncoder(),
                                      isPartial: false);
 
             var viewContext = CreateViewContext(view);
@@ -155,6 +158,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                                      activator.Object,
                                      CreateViewStartProvider(),
                                      page,
+                                     new CommonTestEncoder(),
                                      isPartial: true);
             var viewContext = CreateViewContext(view);
 
@@ -199,6 +203,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                                      Mock.Of<IRazorPageActivator>(),
                                      viewStartProvider,
                                      page,
+                                     new CommonTestEncoder(),
                                      isPartial: true);
             var viewContext = CreateViewContext(view);
 
@@ -224,6 +229,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                                      Mock.Of<IRazorPageActivator>(),
                                      CreateViewStartProvider(),
                                      page,
+                                     new CommonTestEncoder(),
                                      isPartial: false);
             var viewContext = CreateViewContext(view);
             var original = viewContext.Writer;
@@ -248,6 +254,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                                      Mock.Of<IRazorPageActivator>(),
                                      CreateViewStartProvider(),
                                      page,
+                                     new CommonTestEncoder(),
                                      isPartial: false);
             var viewContext = CreateViewContext(view);
             var original = viewContext.Writer;
@@ -274,6 +281,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                                      activator.Object,
                                      CreateViewStartProvider(),
                                      page,
+                                     new CommonTestEncoder(),
                                      isPartial: false);
             var viewContext = CreateViewContext(view);
 
@@ -316,6 +324,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                                      activator.Object,
                                      CreateViewStartProvider(viewStart1, viewStart2),
                                      page,
+                                     new CommonTestEncoder(),
                                      isPartial: false);
             var viewContext = CreateViewContext(view);
 
@@ -348,6 +357,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                                      Mock.Of<IRazorPageActivator>(),
                                      Mock.Of<IViewStartProvider>(),
                                      page,
+                                     new CommonTestEncoder(),
                                      isPartial: false);
             var viewContext = CreateViewContext(view);
             viewEngine.Setup(v => v.FindPage(viewContext, layoutPath))
@@ -411,6 +421,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                                      activator.Object,
                                      CreateViewStartProvider(),
                                      page,
+                                     new CommonTestEncoder(),
                                      isPartial: false);
             var viewContext = CreateViewContext(view);
             viewEngine.Setup(p => p.FindPage(viewContext, LayoutPath))
@@ -452,6 +463,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                                      Mock.Of<IRazorPageActivator>(),
                                      CreateViewStartProvider(),
                                      page,
+                                     new CommonTestEncoder(),
                                      isPartial: false);
             var viewContext = CreateViewContext(view);
 
@@ -514,6 +526,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                                      Mock.Of<IRazorPageActivator>(),
                                      CreateViewStartProvider(),
                                      page,
+                                     new CommonTestEncoder(),
                                      isPartial: false);
             var viewContext = CreateViewContext(view);
 
@@ -571,6 +584,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                                      Mock.Of<IRazorPageActivator>(),
                                      CreateViewStartProvider(),
                                      page,
+                                     new CommonTestEncoder(),
                                      isPartial: false);
             var viewContext = CreateViewContext(view);
 
@@ -630,6 +644,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                                      Mock.Of<IRazorPageActivator>(),
                                      CreateViewStartProvider(),
                                      page,
+                                     new CommonTestEncoder(),
                                      isPartial: false);
             var viewContext = CreateViewContext(view);
 
@@ -694,6 +709,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                                      Mock.Of<IRazorPageActivator>(),
                                      CreateViewStartProvider(),
                                      page,
+                                     new CommonTestEncoder(),
                                      isPartial: false);
             var viewContext = CreateViewContext(view);
 
@@ -725,6 +741,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                                      Mock.Of<IRazorPageActivator>(),
                                      CreateViewStartProvider(),
                                      page,
+                                     new CommonTestEncoder(),
                                      isPartial: false);
             var viewContext = CreateViewContext(view);
 
@@ -784,6 +801,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                                      Mock.Of<IRazorPageActivator>(),
                                      CreateViewStartProvider(),
                                      page,
+                                     new CommonTestEncoder(),
                                      isPartial: false);
             var viewContext = CreateViewContext(view);
 
@@ -847,6 +865,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                                      Mock.Of<IRazorPageActivator>(),
                                      CreateViewStartProvider(),
                                      page,
+                                     new CommonTestEncoder(),
                                      isPartial: false);
             var viewContext = CreateViewContext(view);
 
@@ -899,6 +918,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                                      Mock.Of<IRazorPageActivator>(),
                                      CreateViewStartProvider(),
                                      page,
+                                     new CommonTestEncoder(),
                                      isPartial: false);
             var viewContext = CreateViewContext(view);
 
@@ -948,6 +968,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                                      Mock.Of<IRazorPageActivator>(),
                                      CreateViewStartProvider(),
                                      page,
+                                     new CommonTestEncoder(),
                                      isPartial: false);
             var viewContext = CreateViewContext(view);
 
@@ -977,6 +998,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                                      Mock.Of<IRazorPageActivator>(),
                                      CreateViewStartProvider(),
                                      page,
+                                     new CommonTestEncoder(),
                                      isPartial: false);
             var viewContext = CreateViewContext(view);
 
@@ -1021,6 +1043,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                                      Mock.Of<IRazorPageActivator>(),
                                      CreateViewStartProvider(),
                                      page,
+                                     new CommonTestEncoder(),
                                      isPartial: false);
             var viewContext = CreateViewContext(view);
 
@@ -1096,6 +1119,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                                      Mock.Of<IRazorPageActivator>(),
                                      viewStartProvider.Object,
                                      page,
+                                     new CommonTestEncoder(),
                                      isPartial: false);
             var viewContext = CreateViewContext(view);
             viewContext.HttpContext.Features.Set<IPageExecutionListenerFeature>(feature.Object);
@@ -1141,6 +1165,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                                      Mock.Of<IRazorPageActivator>(),
                                      Mock.Of<IViewStartProvider>(),
                                      page,
+                                     new CommonTestEncoder(),
                                      isPartial: true);
             var viewContext = CreateViewContext(view);
             viewContext.Writer = writer;
@@ -1172,6 +1197,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                                      Mock.Of<IRazorPageActivator>(),
                                      Mock.Of<IViewStartProvider>(),
                                      page,
+                                     new CommonTestEncoder(),
                                      isPartial);
             var viewContext = CreateViewContext(view);
 
@@ -1211,6 +1237,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                                      Mock.Of<IRazorPageActivator>(),
                                      CreateViewStartProvider(viewStart1, viewStart2),
                                      page,
+                                     new CommonTestEncoder(),
                                      isPartial: false);
             var viewContext = CreateViewContext(view);
 
@@ -1248,6 +1275,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                                      Mock.Of<IRazorPageActivator>(),
                                      CreateViewStartProvider(viewStart1, viewStart2),
                                      page,
+                                     new CommonTestEncoder(),
                                      isPartial: false);
             var viewContext = CreateViewContext(view);
 
@@ -1288,6 +1316,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                                      Mock.Of<IRazorPageActivator>(),
                                      CreateViewStartProvider(viewStart),
                                      page,
+                                     new CommonTestEncoder(),
                                      isPartial: false);
             var viewContext = CreateViewContext(view);
 
@@ -1313,6 +1342,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                                      Mock.Of<IRazorPageActivator>(),
                                      CreateViewStartProvider(),
                                      page,
+                                     new CommonTestEncoder(),
                                      isPartial: true);
             var viewContext = CreateViewContext(view);
 

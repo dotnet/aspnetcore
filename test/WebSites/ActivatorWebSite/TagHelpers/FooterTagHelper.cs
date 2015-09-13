@@ -10,20 +10,16 @@ namespace ActivatorWebSite.TagHelpers
     [TargetElement("body")]
     public class FooterTagHelper : TagHelper
     {
-        public FooterTagHelper(IHtmlEncoder encoder)
-        {
-            Encoder = encoder;
-        }
-
-        public IHtmlEncoder Encoder { get; }
-
         [HtmlAttributeNotBound]
         [ViewContext]
         public ViewContext ViewContext { get; set; }
 
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
-            output.PostContent.SetContent($"<footer>{Encoder.HtmlEncode((string)ViewContext.ViewData["footer"])}</footer>");
+            output.PostContent
+                .AppendEncoded("<footer>")
+                .Append((string)ViewContext.ViewData["footer"])
+                .AppendEncoded("</footer>");
         }
     }
 }

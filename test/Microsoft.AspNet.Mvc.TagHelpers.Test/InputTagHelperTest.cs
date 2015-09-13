@@ -95,7 +95,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             {
                 TagMode = TagMode.SelfClosing,
             };
-            output.Content.SetContent(originalContent);
+            output.Content.AppendEncoded(originalContent);
             var htmlGenerator = new TestableHtmlGenerator(new EmptyModelMetadataProvider());
             var tagHelper = GetTagHelper(htmlGenerator, model: false, propertyName: nameof(Model.IsACar));
 
@@ -270,9 +270,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             {
                 TagMode = TagMode.SelfClosing,
             };
-            output.PreContent.SetContent(expectedPreContent);
-            output.Content.SetContent(originalContent);
-            output.PostContent.SetContent(expectedPostContent);
+            output.PreContent.AppendEncoded(expectedPreContent);
+            output.Content.AppendEncoded(originalContent);
+            output.PostContent.AppendEncoded(expectedPostContent);
 
             var htmlGenerator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
             var tagHelper = GetTagHelper(htmlGenerator.Object, model: false, propertyName: nameof(Model.IsACar));

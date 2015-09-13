@@ -15,7 +15,7 @@ namespace TagHelpersWebSite.TagHelpers
             var childContent = await context.GetChildContentAsync();
 
             // Find Urls in the content and replace them with their anchor tag equivalent.
-            output.Content.SetContent(Regex.Replace(
+            output.Content.AppendEncoded(Regex.Replace(
                 childContent.GetContent(),
                 @"\b(?:https?://|www\.)(\S+)\b",
                 "<strong><a target=\"_blank\" href=\"http://$0\">$0</a></strong>"));

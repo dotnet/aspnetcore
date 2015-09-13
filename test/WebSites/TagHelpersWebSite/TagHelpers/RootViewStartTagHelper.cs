@@ -11,7 +11,7 @@ namespace TagHelpersWebSite.TagHelpers
     {
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
-            output.Content.SetContent("root-content");
+            output.Content.AppendEncoded("root-content");
         }
     }
 }

@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.AspNet.Mvc.Razor.Internal;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.Framework.Internal;
@@ -30,9 +32,12 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <param name="unbufferedWriter">The <see cref="TextWriter"/> to write output to when this instance
         /// is no longer buffering.</param>
         /// <param name="encoding">The character <see cref="Encoding"/> in which the output is written.</param>
-        public RazorTextWriter(TextWriter unbufferedWriter, Encoding encoding)
+        /// <param name="encoder">The HTML encoder.</param>
+        public RazorTextWriter(TextWriter unbufferedWriter, Encoding encoding, IHtmlEncoder encoder)
         {
             UnbufferedWriter = unbufferedWriter;
+            HtmlEncoder = encoder;
+
             BufferedWriter = new StringCollectionTextWriter(encoding);
             TargetWriter = BufferedWriter;
         }
@@ -53,8 +58,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private TextWriter TargetWriter { get; set; }
 
-        [RazorInject]
-        private IHtmlEncoder HtmlEncoder { get; set; }
+        private IHtmlEncoder HtmlEncoder { get; }
 
         /// <inheritdoc />
         public override void Write(char value)
@@ -65,10 +69,10 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <inheritdoc />
         public override void Write(object value)
         {
-            var htmlString = value as HtmlString;
-            if (htmlString != null)
+            var htmlContent = value as IHtmlContent;
+            if (htmlContent != null)
             {
-                htmlString.WriteTo(TargetWriter, HtmlEncoder);
+                htmlContent.WriteTo(TargetWriter, HtmlEncoder);
                 return;
             }
 

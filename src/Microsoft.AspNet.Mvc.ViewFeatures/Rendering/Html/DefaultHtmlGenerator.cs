@@ -539,8 +539,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
             // The first newline is always trimmed when a TextArea is rendered, so we add an extra one
             // in case the value being rendered is something like "\r\nHello".
             var innerContent = new BufferedHtmlContent();
-            innerContent.Append(Environment.NewLine);
-            innerContent.Append(new StringHtmlContent(value));
+            innerContent.Append(HtmlString.NewLine);
+            innerContent.Append(value);
             tagBuilder.InnerHtml = innerContent;
 
             return tagBuilder;
@@ -704,7 +704,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             if (!isHtmlSummaryModified)
             {
-                htmlSummary.AppendLine(HiddenListItem);
+                htmlSummary.AppendEncoded(HiddenListItem);
+                htmlSummary.Append(HtmlString.NewLine);
             }
 
             var unorderedList = new TagBuilder("ul")
@@ -1316,7 +1317,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                         groupBuilder.MergeAttribute("disabled", "disabled");
                     }
 
-                    var optGroupContent = new BufferedHtmlContent().Append(Environment.NewLine);
+                    var optGroupContent = new BufferedHtmlContent().Append(HtmlString.NewLine);
                     foreach (var item in group)
                     {
                         optGroupContent.AppendLine(GenerateOption(item));

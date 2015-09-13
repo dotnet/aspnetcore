@@ -167,7 +167,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var output = new TagHelperOutput(
                 "span",
                 attributes: new TagHelperAttributeList());
-            output.Content.SetContent(outputContent);
+            output.Content.AppendEncoded(outputContent);
 
             var context = new TagHelperContext(
                 allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
@@ -177,7 +177,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 getChildContentAsync: useCachedResult =>
                 {
                     var tagHelperContent = new DefaultTagHelperContent();
-                    tagHelperContent.SetContent(childContent);
+                    tagHelperContent.AppendEncoded(childContent);
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
                 });
 

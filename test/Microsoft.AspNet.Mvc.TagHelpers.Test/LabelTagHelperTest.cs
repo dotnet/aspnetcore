@@ -196,7 +196,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 getChildContentAsync: useCachedResult =>
                 {
                     var tagHelperContent = new DefaultTagHelperContent();
-                    tagHelperContent.SetContent(tagHelperOutputContent.OriginalChildContent);
+                    tagHelperContent.AppendEncoded(tagHelperOutputContent.OriginalChildContent);
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
                 });
             var htmlAttributes = new TagHelperAttributeList
@@ -204,14 +204,14 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 { "class", "form-control" },
             };
             var output = new TagHelperOutput(expectedTagName, htmlAttributes);
-            output.PreContent.SetContent(expectedPreContent);
-            output.PostContent.SetContent(expectedPostContent);
+            output.PreContent.AppendEncoded(expectedPreContent);
+            output.PostContent.AppendEncoded(expectedPostContent);
 
             // LabelTagHelper checks IsContentModified so we don't want to forcibly set it if
             // tagHelperOutputContent.OriginalContent is going to be null or empty.
             if (!string.IsNullOrEmpty(tagHelperOutputContent.OriginalContent))
             {
-                output.Content.SetContent(tagHelperOutputContent.OriginalContent);
+                output.Content.AppendEncoded(tagHelperOutputContent.OriginalContent);
             }
 
             var viewContext = TestableHtmlGenerator.GetViewContext(model, htmlGenerator, metadataProvider);

@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             writer.Write('m');
 
             // Assert
-            Assert.Equal(expected, writer.Content.Entries);
+            Assert.Equal(expected, writer.Entries);
         }
 
         [Fact]
@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             writer.WriteLine(3L);
 
             // Assert
-            Assert.Equal(expected, writer.Content.Entries);
+            Assert.Equal(expected, writer.Entries);
         }
 
         [Fact]
@@ -69,7 +69,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             await writer.WriteLineAsync(input3.Array, input3.Offset, input3.Count);
 
             // Assert
-            var buffer = writer.Content.Entries;
+            var buffer = writer.Entries;
             Assert.Equal(4, buffer.Count);
             Assert.Equal("bcd", buffer[0]);
             Assert.Equal("ef", buffer[1]);
@@ -89,7 +89,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             await writer.WriteLineAsync();
 
             // Assert
-            var actual = writer.Content.Entries;
+            var actual = writer.Entries;
             Assert.Equal<object>(new[] { newLine, newLine }, actual);
         }
 
@@ -111,7 +111,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             await writer.WriteLineAsync(input4);
 
             // Assert
-            var actual = writer.Content.Entries;
+            var actual = writer.Entries;
             Assert.Equal(new[] { input1, input2, newLine, input3, input4, newLine }, actual);
         }
 
@@ -129,11 +129,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             // Assert
             // Make sure content was written to the source.
-            Assert.Equal(2, source.Content.Entries.Count);
-            Assert.Equal(1, target.Content.Entries.Count);
-            var result = Assert.Single(target.Content.Entries);
-            var bufferedHtmlContent = Assert.IsType<BufferedHtmlContent>(result);
-            Assert.Same(source.Content.Entries, bufferedHtmlContent.Entries);
+            Assert.Equal(2, source.Entries.Count);
+            Assert.Equal(1, target.Entries.Count);
+
+            var entry = Assert.Single(target.Entries);
+            Assert.Same(source.Content, entry);
         }
 
         [Fact]

@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.WebEncoders;
 
@@ -19,8 +21,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
     /// </remarks>
     public class StringCollectionTextWriter : TextWriter
     {
+        private const int MaxCharToStringLength = 1024;
         private static readonly Task _completedTask = Task.FromResult(0);
+
         private readonly Encoding _encoding;
+        private readonly StringCollectionTextWriterContent _content;
 
         /// <summary>
         /// Creates a new instance of <see cref="StringCollectionTextWriter"/>.
@@ -29,7 +34,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public StringCollectionTextWriter(Encoding encoding)
         {
             _encoding = encoding;
-            Content = new BufferedHtmlContent();
+            Entries = new List<object>();
+            _content = new StringCollectionTextWriterContent(Entries);
         }
 
         /// <inheritdoc />
@@ -39,15 +45,17 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <summary>
-        /// A collection of entries buffered by this instance of <see cref="StringCollectionTextWriter"/>.
+        /// Gets the content written to the writer as an <see cref="IHtmlContent"/>.
         /// </summary>
+        public IHtmlContent Content => _content;
+
         // internal for testing purposes.
-        internal BufferedHtmlContent Content { get; }
+        internal List<object> Entries { get; }
 
         /// <inheritdoc />
         public override void Write(char value)
         {
-            Content.Append(value.ToString());
+            _content.Append(value.ToString());
         }
 
         /// <inheritdoc />
@@ -62,7 +70,19 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 throw new ArgumentOutOfRangeException(nameof(count));
             }
 
-            Content.Append(buffer, index, count);
+            while (count > 0)
+            {
+                // Split large char arrays into 1KB strings.
+                var currentCount = count;
+                if (MaxCharToStringLength < currentCount)
+                {
+                    currentCount = MaxCharToStringLength;
+                }
+
+                _content.Append(new string(buffer, index, currentCount));
+                index += currentCount;
+                count -= currentCount;
+            }
         }
 
         /// <inheritdoc />
@@ -73,7 +93,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 return;
             }
 
-            Content.Append(value);
+            _content.Append(value);
         }
 
         /// <inheritdoc />
@@ -100,7 +120,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <inheritdoc />
         public override void WriteLine()
         {
-            Content.Append(Environment.NewLine);
+            _content.Append(Environment.NewLine);
         }
 
         /// <inheritdoc />
@@ -149,7 +169,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var targetStringCollectionWriter = writer as StringCollectionTextWriter;
             if (targetStringCollectionWriter != null)
             {
-                targetStringCollectionWriter.Content.Append(Content);
+                targetStringCollectionWriter._content.Append(Content);
             }
             else
             {
@@ -176,6 +196,47 @@ namespace Microsoft.AspNet.Mvc.Rendering
             {
                 Content.WriteTo(writer, HtmlEncoder.Default);
                 return writer.ToString();
+            }
+        }
+
+        internal class StringCollectionTextWriterContent : IHtmlContent
+        {
+            private readonly List<object> _entries;
+
+            public StringCollectionTextWriterContent(List<object> entries)
+            {
+                _entries = entries;
+            }
+
+            public void Append(string value)
+            {
+                _entries.Add(value);
+            }
+
+            public void Append(IHtmlContent content)
+            {
+                _entries.Add(content);
+            }
+
+            public void WriteTo(TextWriter writer, IHtmlEncoder encoder)
+            {
+                foreach (var item in _entries)
+                {
+                    if (item == null)
+                    {
+                        continue;
+                    }
+
+                    var itemAsString = item as string;
+                    if (itemAsString != null)
+                    {
+                        writer.Write(itemAsString);
+                    }
+                    else
+                    {
+                        ((IHtmlContent)item).WriteTo(writer, encoder);
+                    }
+                }
             }
         }
     }

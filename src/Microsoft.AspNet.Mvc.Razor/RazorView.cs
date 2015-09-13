@@ -9,6 +9,7 @@ using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.PageExecutionInstrumentation;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -21,6 +22,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         private readonly IRazorViewEngine _viewEngine;
         private readonly IRazorPageActivator _pageActivator;
         private readonly IViewStartProvider _viewStartProvider;
+        private readonly IHtmlEncoder _htmlEncoder;
         private IPageExecutionListenerFeature _pageExecutionFeature;
 
         /// <summary>
@@ -30,18 +32,21 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <param name="pageActivator">The <see cref="IRazorPageActivator"/> used to activate pages.</param>
         /// <param name="viewStartProvider">The <see cref="IViewStartProvider"/> used for discovery of _ViewStart
         /// <param name="razorPage">The <see cref="IRazorPage"/> instance to execute.</param>
+        /// <param name="htmlEncoder">The HTML encoder.</param>
         /// <param name="isPartial">Determines if the view is to be executed as a partial.</param>
         /// pages</param>
         public RazorView(IRazorViewEngine viewEngine,
                          IRazorPageActivator pageActivator,
                          IViewStartProvider viewStartProvider,
                          IRazorPage razorPage,
+                         IHtmlEncoder htmlEncoder,
                          bool isPartial)
         {
             _viewEngine = viewEngine;
             _pageActivator = pageActivator;
             _viewStartProvider = viewStartProvider;
             RazorPage = razorPage;
+            _htmlEncoder = htmlEncoder;
             IsPartial = isPartial;
         }
 
@@ -77,11 +82,12 @@ namespace Microsoft.AspNet.Mvc.Razor
             await RenderLayoutAsync(context, bodyWriter);
         }
 
-        private async Task<IBufferedTextWriter> RenderPageAsync(IRazorPage page,
-                                                                ViewContext context,
-                                                                bool executeViewStart)
+        private async Task<IBufferedTextWriter> RenderPageAsync(
+            IRazorPage page,
+            ViewContext context,
+            bool executeViewStart)
         {
-            var razorTextWriter = new RazorTextWriter(context.Writer, context.Writer.Encoding);
+            var razorTextWriter = new RazorTextWriter(context.Writer, context.Writer.Encoding, _htmlEncoder);
             var writer = (TextWriter)razorTextWriter;
             var bufferedWriter = (IBufferedTextWriter)razorTextWriter;
 

@@ -3,6 +3,7 @@
 
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -12,6 +13,7 @@ namespace Microsoft.AspNet.Mvc.Razor
     /// </summary>
     public class RazorViewFactory : IRazorViewFactory
     {
+        private readonly IHtmlEncoder _htmlEncoder;
         private readonly IRazorPageActivator _pageActivator;
         private readonly IViewStartProvider _viewStartProvider;
 
@@ -22,10 +24,12 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <param name="viewStartProvider">The <see cref="IViewStartProvider"/> used for discovery of _ViewStart
         /// pages</param>
         public RazorViewFactory(IRazorPageActivator pageActivator,
-                                IViewStartProvider viewStartProvider)
+                                IViewStartProvider viewStartProvider,
+                                IHtmlEncoder htmlEncoder)
         {
             _pageActivator = pageActivator;
             _viewStartProvider = viewStartProvider;
+            _htmlEncoder = htmlEncoder;
         }
 
         /// <inheritdoc />
@@ -33,7 +37,13 @@ namespace Microsoft.AspNet.Mvc.Razor
                              [NotNull] IRazorPage page,
                              bool isPartial)
         {
-            var razorView = new RazorView(viewEngine, _pageActivator, _viewStartProvider, page, isPartial);
+            var razorView = new RazorView(
+                viewEngine,
+                _pageActivator,
+                _viewStartProvider,
+                page,
+                _htmlEncoder,
+                isPartial);
             return razorView;
         }
     }

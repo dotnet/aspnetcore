@@ -283,7 +283,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
                     var innerContent = new BufferedHtmlContent();
                     innerContent.Append(templateBuilderResult);
-                    innerContent.Append(" ");
+                    innerContent.AppendEncoded(" ");
                     innerContent.Append(htmlHelper.ValidationMessage(
                         propertyMetadata.PropertyName,
                         message: null,

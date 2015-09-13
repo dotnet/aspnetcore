@@ -173,7 +173,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var page = CreatePage(v =>
             {
                 v.HtmlEncoder = new CommonTestEncoder();
-                v.StartTagHelperWritingScope(new RazorTextWriter(TextWriter.Null, Encoding.UTF8));
+                v.StartTagHelperWritingScope(new RazorTextWriter(TextWriter.Null, Encoding.UTF8, v.HtmlEncoder));
                 v.Write("Hello ");
                 v.Write("World!");
                 var returnValue = v.EndTagHelperWritingScope();
@@ -1018,15 +1018,11 @@ namespace Microsoft.AspNet.Mvc.Razor
         public async Task Write_WithHtmlString_WritesValueWithoutEncoding()
         {
             // Arrange
-            var writer = new RazorTextWriter(TextWriter.Null, Encoding.UTF8);
-            var stringCollectionWriter = new StringCollectionTextWriter(Encoding.UTF8);
-            stringCollectionWriter.Write("text1");
-            stringCollectionWriter.Write("text2");
+            var writer = new RazorTextWriter(TextWriter.Null, Encoding.UTF8, new CommonTestEncoder());
 
             var page = CreatePage(p =>
             {
                 p.Write(new HtmlString("Hello world"));
-                p.Write(stringCollectionWriter.Content);
             });
             page.ViewContext.Writer = writer;
 
@@ -1034,11 +1030,9 @@ namespace Microsoft.AspNet.Mvc.Razor
             await page.ExecuteAsync();
 
             // Assert
-            var buffer = writer.BufferedWriter.Content.Entries;
-            Assert.Equal(3, buffer.Count);
+            var buffer = writer.BufferedWriter.Entries;
+            Assert.Equal(1, buffer.Count);
             Assert.Equal("Hello world", buffer[0]);
-            Assert.Equal("text1", buffer[1]);
-            Assert.Equal("text2", buffer[2]);
         }
 
         public static TheoryData<TagHelperOutput, string> WriteTagHelper_InputData
@@ -1688,7 +1682,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 uniqueId: string.Empty,
                 executeChildContentAsync: () =>
                 {
-                    defaultTagHelperContent.SetContent(input);
+                    defaultTagHelperContent.AppendEncoded(input);
                     return Task.FromResult(result: true);
                 },
                 startTagHelperWritingScope: () => { },
@@ -1726,11 +1720,12 @@ namespace Microsoft.AspNet.Mvc.Razor
                 startTagHelperWritingScope: () => { },
                 endTagHelperWritingScope: () => new DefaultTagHelperContent());
             tagHelperExecutionContext.Output = new TagHelperOutput("p", new TagHelperAttributeList());
-            tagHelperExecutionContext.Output.Content.SetContent("Hello World!");
+            tagHelperExecutionContext.Output.Content.AppendEncoded("Hello World!");
 
             // Act
             var page = CreatePage(p =>
             {
+                p.HtmlEncoder = new CommonTestEncoder();
                 p.WriteTagHelperToAsync(writer, tagHelperExecutionContext).Wait();
             }, context);
             await page.ExecuteAsync();
@@ -1783,11 +1778,11 @@ namespace Microsoft.AspNet.Mvc.Razor
                 TagMode = tagMode
             };
 
-            output.PreElement.SetContent(preElement);
-            output.PreContent.SetContent(preContent);
-            output.Content.SetContent(content);
-            output.PostContent.SetContent(postContent);
-            output.PostElement.SetContent(postElement);
+            output.PreElement.AppendEncoded(preElement);
+            output.PreContent.AppendEncoded(preContent);
+            output.Content.AppendEncoded(content);
+            output.PostContent.AppendEncoded(postContent);
+            output.PostElement.AppendEncoded(postElement);
 
             return output;
         }
