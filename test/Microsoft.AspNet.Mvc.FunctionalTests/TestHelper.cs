@@ -86,6 +86,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var assemblyProvider = CreateAssemblyProvider(applicationWebSiteName);
             services.AddInstance(assemblyProvider);
 
+            // Avoid using pooled memory, we don't have a guarantee that our services will get disposed.
+            services.AddInstance<IHttpResponseStreamWriterFactory>(new TestHttpResponseStreamWriterFactory());
+
             if (configureServices != null)
             {
                 configureServices(services);

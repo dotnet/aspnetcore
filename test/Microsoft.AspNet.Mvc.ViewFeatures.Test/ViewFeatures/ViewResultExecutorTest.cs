@@ -216,6 +216,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
             var viewExecutor = new ViewResultExecutor(
                 options,
+                new TestHttpResponseStreamWriterFactory(),
                 new CompositeViewEngine(options),
                 telemetry,
                 NullLoggerFactory.Instance);

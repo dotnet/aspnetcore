@@ -8,7 +8,6 @@ using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ViewEngines;
 using Microsoft.AspNet.Routing;
-using Microsoft.Framework.Logging;
 using Microsoft.Framework.Logging.Testing;
 using Microsoft.Net.Http.Headers;
 using Moq;
@@ -217,6 +216,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
             var viewExecutor = new PartialViewResultExecutor(
                 options,
+                new TestHttpResponseStreamWriterFactory(),
                 new CompositeViewEngine(options),
                 telemetry,
                 NullLoggerFactory.Instance);

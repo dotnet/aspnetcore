@@ -16,6 +16,7 @@ using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection.Extensions;
+using Microsoft.Framework.MemoryPool;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.Framework.DependencyInjection
@@ -137,6 +138,9 @@ namespace Microsoft.Framework.DependencyInjection
             services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
             services.TryAddSingleton<IActionBindingContextAccessor, ActionBindingContextAccessor>();
             services.TryAddSingleton<IUrlHelper, UrlHelper>();
+            services.TryAddSingleton<IHttpResponseStreamWriterFactory, MemoryPoolHttpResponseStreamWriterFactory>();
+            services.TryAddSingleton<IArraySegmentPool<byte>, DefaultArraySegmentPool<byte>>();
+            services.TryAddSingleton<IArraySegmentPool<char>, DefaultArraySegmentPool<char>>();
         }
 
         private static void ConfigureDefaultServices(IServiceCollection services)

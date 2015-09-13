@@ -106,6 +106,7 @@ namespace Microsoft.AspNet.Mvc
             var options = new TestOptionsManager<MvcViewOptions>();
             var viewExecutor = new PartialViewResultExecutor(
                 options,
+                new TestHttpResponseStreamWriterFactory(),
                 new CompositeViewEngine(options),
                 new TelemetryListener("Microsoft.AspNet"),
                 NullLoggerFactory.Instance);

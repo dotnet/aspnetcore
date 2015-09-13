@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics.Tracing;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.Mvc.ViewEngines;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
@@ -19,15 +20,17 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         /// Creates a new <see cref="PartialViewResultExecutor"/>.
         /// </summary>
         /// <param name="viewOptions">The <see cref="IOptions{MvcViewOptions}"/>.</param>
+        /// <param name="writerFactory">The <see cref="IHttpResponseStreamWriterFactory"/>.</param>
         /// <param name="viewEngine">The <see cref="ICompositeViewEngine"/>.</param>
         /// <param name="telemetry">The <see cref="TelemetrySource"/>.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         public PartialViewResultExecutor(
             IOptions<MvcViewOptions> viewOptions,
+            IHttpResponseStreamWriterFactory writerFactory,
             ICompositeViewEngine viewEngine,
             TelemetrySource telemetry,
             ILoggerFactory loggerFactory)
-            : base(viewOptions, viewEngine, telemetry)
+            : base(viewOptions, writerFactory, viewEngine, telemetry)
         {
             if (loggerFactory == null)
             {

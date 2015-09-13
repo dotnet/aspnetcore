@@ -19,6 +19,7 @@
       "type": "build"
     },
     "Microsoft.Framework.Logging.Abstractions": "1.0.0-*",
+    "Microsoft.Framework.MemoryPool": "1.0.0-*",
     "Microsoft.Framework.PropertyActivator.Sources": {
       "version": "1.0.0-*",
       "type": "build"

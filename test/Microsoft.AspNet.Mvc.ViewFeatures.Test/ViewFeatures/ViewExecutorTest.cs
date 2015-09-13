@@ -286,6 +286,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
             return new ViewExecutor(
                 new TestOptionsManager<MvcViewOptions>(),
+                new TestHttpResponseStreamWriterFactory(),
                 new Mock<ICompositeViewEngine>(MockBehavior.Strict).Object,
                 listener);
         }

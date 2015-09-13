@@ -13,7 +13,6 @@ using Microsoft.AspNet.Mvc.ViewEngines;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Logging;
 using Microsoft.Framework.Logging.Testing;
 using Moq;
 using Xunit;
@@ -107,6 +106,7 @@ namespace Microsoft.AspNet.Mvc
             var options = new TestOptionsManager<MvcViewOptions>();
             var viewExecutor = new ViewResultExecutor(
                 options,
+                new TestHttpResponseStreamWriterFactory(),
                 new CompositeViewEngine(options),
                 new TelemetryListener("Microsoft.AspNet"),
                NullLoggerFactory.Instance);

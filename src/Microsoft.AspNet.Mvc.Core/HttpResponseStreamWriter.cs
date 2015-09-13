@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Framework.MemoryPool;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -18,10 +19,13 @@ namespace Microsoft.AspNet.Mvc
         /// Default buffer size.
         /// </summary>
         public const int DefaultBufferSize = 1024;
+
         private readonly Stream _stream;
         private Encoder _encoder;
-        private byte[] _byteBuffer;
-        private char[] _charBuffer;
+        private LeasedArraySegment<byte> _leasedByteBuffer;
+        private LeasedArraySegment<char> _leasedCharBuffer;
+        private ArraySegment<byte> _byteBuffer;
+        private ArraySegment<char> _charBuffer;
         private int _charBufferSize;
         private int _charBufferCount;
 
@@ -44,10 +48,54 @@ namespace Microsoft.AspNet.Mvc
 
             _stream = stream;
             Encoding = encoding;
-            _encoder = encoding.GetEncoder();
             _charBufferSize = bufferSize;
-            _charBuffer = new char[bufferSize];
-            _byteBuffer = new byte[encoding.GetMaxByteCount(bufferSize)];
+
+            _encoder = encoding.GetEncoder();
+            _byteBuffer = new ArraySegment<byte>(new byte[encoding.GetMaxByteCount(bufferSize)]);
+            _charBuffer = new ArraySegment<char>(new char[bufferSize]);
+        }
+
+        public HttpResponseStreamWriter(
+            Stream stream,
+            Encoding encoding,
+            LeasedArraySegment<byte> leasedByteBuffer,
+            LeasedArraySegment<char> leasedCharBuffer)
+        {
+            if (stream == null)
+            {
+                throw new ArgumentNullException(nameof(stream));
+            }
+
+            if (encoding == null)
+            {
+                throw new ArgumentNullException(nameof(encoding));
+            }
+
+            if (leasedByteBuffer == null)
+            {
+                throw new ArgumentNullException(nameof(leasedByteBuffer));
+            }
+
+            if (leasedCharBuffer == null)
+            {
+                throw new ArgumentNullException(nameof(leasedCharBuffer));
+            }
+
+            _stream = stream;
+            Encoding = encoding;
+            _leasedByteBuffer = leasedByteBuffer;
+            _leasedCharBuffer = leasedCharBuffer;
+
+            _encoder = encoding.GetEncoder();
+            _byteBuffer = leasedByteBuffer.Data;
+            _charBuffer = leasedCharBuffer.Data;
+
+            // We need to compute the usable size of the char buffer based on the size of the byte buffer.
+            // Encoder.GetBytes assumes that the entirety of the byte[] passed in can be used, and that's not the
+            // case with ArraySegments.
+            _charBufferSize = Math.Min(
+                leasedCharBuffer.Data.Count,
+                encoding.GetMaxCharCount(leasedByteBuffer.Data.Count));
         }
 
         public override Encoding Encoding { get; }
@@ -59,7 +107,7 @@ namespace Microsoft.AspNet.Mvc
                 FlushInternal();
             }
 
-            _charBuffer[_charBufferCount] = value;
+            _charBuffer.Array[_charBuffer.Offset + _charBufferCount] = value;
             _charBufferCount++;
         }
 
@@ -108,7 +156,7 @@ namespace Microsoft.AspNet.Mvc
                 await FlushInternalAsync();
             }
 
-            _charBuffer[_charBufferCount] = value;
+            _charBuffer.Array[_charBuffer.Offset + _charBufferCount] = value;
             _charBufferCount++;
         }
 
@@ -168,6 +216,16 @@ namespace Microsoft.AspNet.Mvc
         protected override void Dispose(bool disposing)
         {
             FlushInternal(flushStream: false, flushEncoder: true);
+
+            if (_leasedByteBuffer != null)
+            {
+                _leasedByteBuffer.Owner.Return(_leasedByteBuffer);
+            }
+
+            if (_leasedCharBuffer != null)
+            {
+                _leasedCharBuffer.Owner.Return(_leasedCharBuffer);
+            }
         }
 
         private void FlushInternal(bool flushStream = false, bool flushEncoder = false)
@@ -177,10 +235,17 @@ namespace Microsoft.AspNet.Mvc
                 return;
             }
 
-            var count = _encoder.GetBytes(_charBuffer, 0, _charBufferCount, _byteBuffer, 0, flushEncoder);
+            var count = _encoder.GetBytes(
+                _charBuffer.Array,
+                _charBuffer.Offset,
+                _charBufferCount,
+                _byteBuffer.Array,
+                _byteBuffer.Offset,
+                flushEncoder);
+
             if (count > 0)
             {
-                _stream.Write(_byteBuffer, 0, count);
+                _stream.Write(_byteBuffer.Array, _byteBuffer.Offset, count);
             }
 
             _charBufferCount = 0;
@@ -198,10 +263,17 @@ namespace Microsoft.AspNet.Mvc
                 return;
             }
 
-            var count = _encoder.GetBytes(_charBuffer, 0, _charBufferCount, _byteBuffer, 0, flushEncoder);
+            var count = _encoder.GetBytes(
+                _charBuffer.Array,
+                _charBuffer.Offset,
+                _charBufferCount,
+                _byteBuffer.Array,
+                _byteBuffer.Offset,
+                flushEncoder);
+
             if (count > 0)
             {
-                await _stream.WriteAsync(_byteBuffer, 0, count);
+                await _stream.WriteAsync(_byteBuffer.Array, _byteBuffer.Offset, count);
             }
 
             _charBufferCount = 0;
@@ -218,8 +290,8 @@ namespace Microsoft.AspNet.Mvc
 
             value.CopyTo(
                 sourceIndex: index,
-                destination: _charBuffer,
-                destinationIndex: _charBufferCount,
+                destination: _charBuffer.Array,
+                destinationIndex: _charBuffer.Offset + _charBufferCount,
                 count: remaining);
 
             _charBufferCount += remaining;
@@ -234,8 +306,8 @@ namespace Microsoft.AspNet.Mvc
             Buffer.BlockCopy(
                 src: values,
                 srcOffset: index * sizeof(char),
-                dst: _charBuffer,
-                dstOffset: _charBufferCount * sizeof(char),
+                dst: _charBuffer.Array,
+                dstOffset: (_charBuffer.Offset + _charBufferCount) * sizeof(char),
                 count: remaining * sizeof(char));
 
             _charBufferCount += remaining;
@@ -244,4 +316,3 @@ namespace Microsoft.AspNet.Mvc
         }
     }
 }
-

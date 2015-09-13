@@ -1,10 +1,12 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Framework.MemoryPool;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc
@@ -349,6 +351,128 @@ namespace Microsoft.AspNet.Mvc
             using (writer)
             {
                 await writer.WriteAsync(data);
+            }
+
+            // Assert
+            Assert.Equal(expectedBytes, stream.ToArray());
+        }
+
+        // None of the code in HttpResponseStreamWriter differs significantly when using pooled buffers.
+        //
+        // This test effectively verifies that things are correctly constructed and disposed. Pooled buffers
+        // throw on the finalizer thread if not disposed, so that's why it's complicated.
+        [Fact]
+        public void HttpResponseStreamWriter_UsingPooledBuffers()
+        {
+            // Arrange
+            var encoding = Encoding.UTF8;
+            var stream = new MemoryStream();
+
+            var expectedBytes = encoding.GetBytes("Hello, World!");
+
+            using (var bytePool = new DefaultArraySegmentPool<byte>())
+            {
+                using (var charPool = new DefaultArraySegmentPool<char>())
+                {
+                    LeasedArraySegment<byte> bytes = null;
+                    LeasedArraySegment<char> chars = null;
+                    HttpResponseStreamWriter writer;
+
+                    try
+                    {
+                        bytes = bytePool.Lease(4096);
+                        chars = charPool.Lease(4096);
+
+                        writer = new HttpResponseStreamWriter(stream, encoding, bytes, chars);
+                    }
+                    catch
+                    {
+                        if (bytes != null)
+                        {
+                            bytes.Owner.Return(bytes);
+                        }
+
+                        if (chars != null)
+                        {
+                            chars.Owner.Return(chars);
+                        }
+
+                        throw;
+                    }
+
+                    // Act
+                    using (writer)
+                    {
+                        writer.Write("Hello, World!");
+                    }
+                }
+            }
+
+            // Assert
+            Assert.Equal(expectedBytes, stream.ToArray());
+        }
+
+        // This covers the case where we need to limit the usable region of the char buffer
+        // based on the size of the byte buffer. See comments in the constructor.
+        [Fact]
+        public void HttpResponseStreamWriter_UsingPooledBuffers_SmallByteBuffer()
+        {
+            // Arrange
+            var encoding = Encoding.UTF8;
+            var stream = new MemoryStream();
+
+            var charBufferSize = encoding.GetMaxCharCount(1024);
+
+            // This content is bigger than the byte buffer can hold, so it will need to be split
+            // into two separate encoding operations.
+            var content = new string('a', charBufferSize + 1);
+            var expectedBytes = encoding.GetBytes(content);
+
+            using (var bytePool = new DefaultArraySegmentPool<byte>())
+            {
+                using (var charPool = new DefaultArraySegmentPool<char>())
+                {
+                    LeasedArraySegment<byte> bytes = null;
+                    LeasedArraySegment<char> chars = null;
+                    HttpResponseStreamWriter writer;
+
+                    try
+                    {
+                        bytes = bytePool.Lease(1024);
+                        chars = charPool.Lease(4096);
+
+                        writer = new HttpResponseStreamWriter(stream, encoding, bytes, chars);
+                    }
+                    catch
+                    {
+                        if (bytes != null)
+                        {
+                            bytes.Owner.Return(bytes);
+                        }
+
+                        if (chars != null)
+                        {
+                            chars.Owner.Return(chars);
+                        }
+
+                        throw;
+                    }
+
+                    // Zero the byte buffer because we're going to examine it.
+                    Array.Clear(bytes.Data.Array, 0, bytes.Data.Array.Length);
+
+                    // Act
+                    using (writer)
+                    {
+                        writer.Write(content);
+                    }
+
+                    // Verify that we didn't buffer overflow 'our' region of the underlying array.
+                    if (bytes.Data.Array.Length > bytes.Data.Count)
+                    {
+                        Assert.Equal((byte)0, bytes.Data.Array[bytes.Data.Count]);
+                    }
+                }
             }
 
             // Assert
