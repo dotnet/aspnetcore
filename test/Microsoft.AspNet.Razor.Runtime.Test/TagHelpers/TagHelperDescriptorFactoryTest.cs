@@ -1104,15 +1104,15 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
         [Theory]
         [MemberData(nameof(InvalidNameData))]
-        public void ValidTargetElementAttributeNames_CreatesErrorOnInvalidNames(
+        public void ValidHtmlTargetElementAttributeNames_CreatesErrorOnInvalidNames(
             string name, string[] expectedErrorMessages)
         {
             // Arrange
             var errorSink = new ErrorSink();
-            var attribute = new TargetElementAttribute(name);
+            var attribute = new HtmlTargetElementAttribute(name);
 
             // Act
-            TagHelperDescriptorFactory.ValidTargetElementAttributeNames(attribute, errorSink);
+            TagHelperDescriptorFactory.ValidHtmlTargetElementAttributeNames(attribute, errorSink);
 
             // Assert
             var errors = errorSink.Errors.ToArray();

@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             }
 
             var attributeDescriptors = GetAttributeDescriptors(typeInfo, designTime, errorSink);
-            var targetElementAttributes = GetValidTargetElementAttributes(typeInfo, errorSink);
+            var targetElementAttributes = GetValidHtmlTargetElementAttributes(typeInfo, errorSink);
             var allowedChildren = GetAllowedChildren(typeInfo, errorSink);
 
             var tagHelperDescriptors =
@@ -79,20 +79,21 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             return tagHelperDescriptors.Distinct(TagHelperDescriptorComparer.Default);
         }
 
-        private static IEnumerable<TargetElementAttribute> GetValidTargetElementAttributes(
+        private static IEnumerable<HtmlTargetElementAttribute> GetValidHtmlTargetElementAttributes(
             ITypeInfo typeInfo,
             ErrorSink errorSink)
         {
-            var targetElementAttributes = typeInfo.GetCustomAttributes<TargetElementAttribute>();
+            var targetElementAttributes = typeInfo.GetCustomAttributes<HtmlTargetElementAttribute>();
 
-            return targetElementAttributes.Where(attribute => ValidTargetElementAttributeNames(attribute, errorSink));
+            return targetElementAttributes.Where(
+                attribute => ValidHtmlTargetElementAttributeNames(attribute, errorSink));
         }
 
         private static IEnumerable<TagHelperDescriptor> BuildTagHelperDescriptors(
             ITypeInfo typeInfo,
             string assemblyName,
             IEnumerable<TagHelperAttributeDescriptor> attributeDescriptors,
-            IEnumerable<TargetElementAttribute> targetElementAttributes,
+            IEnumerable<HtmlTargetElementAttribute> targetElementAttributes,
             IEnumerable<string> allowedChildren,
             bool designTime)
         {
@@ -183,9 +184,10 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             {
                 var valid = TryValidateName(
                     name,
-                    whitespaceError: Resources.FormatTagHelperDescriptorFactory_InvalidRestrictChildrenAttributeNameNullWhitespace(
-                        nameof(RestrictChildrenAttribute),
-                        tagHelperName),
+                    whitespaceError:
+                        Resources.FormatTagHelperDescriptorFactory_InvalidRestrictChildrenAttributeNameNullWhitespace(
+                            nameof(RestrictChildrenAttribute),
+                            tagHelperName),
                     characterErrorBuilder: (invalidCharacter) =>
                         Resources.FormatTagHelperDescriptorFactory_InvalidRestrictChildrenAttributeName(
                             nameof(RestrictChildrenAttribute),
@@ -207,7 +209,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             string typeName,
             string assemblyName,
             IEnumerable<TagHelperAttributeDescriptor> attributeDescriptors,
-            TargetElementAttribute targetElementAttribute,
+            HtmlTargetElementAttribute targetElementAttribute,
             IEnumerable<string> allowedChildren,
             TagHelperDesignTimeDescriptor designTimeDescriptor)
         {
@@ -259,8 +261,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <summary>
         /// Internal for testing.
         /// </summary>
-        internal static bool ValidTargetElementAttributeNames(
-            TargetElementAttribute attribute,
+        internal static bool ValidHtmlTargetElementAttributeNames(
+            HtmlTargetElementAttribute attribute,
             ErrorSink errorSink)
         {
             var validTagName = ValidateName(attribute.Tag, targetingAttributes: false, errorSink: errorSink);
@@ -289,7 +291,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                     TagHelperDescriptorProvider.ElementCatchAllTarget,
                     StringComparison.OrdinalIgnoreCase))
             {
-                // '*' as the entire name is OK in the TargetElement catch-all case.
+                // '*' as the entire name is OK in the HtmlTargetElement catch-all case.
                 return true;
             }
             else if (targetingAttributes &&
@@ -308,9 +310,12 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             var validName = TryValidateName(
                 name,
-                whitespaceError: Resources.FormatTargetElementAttribute_NameCannotBeNullOrWhitespace(targetName),
+                whitespaceError: Resources.FormatHtmlTargetElementAttribute_NameCannotBeNullOrWhitespace(targetName),
                 characterErrorBuilder: (invalidCharacter) =>
-                    Resources.FormatTargetElementAttribute_InvalidName(targetName.ToLower(), name, invalidCharacter),
+                    Resources.FormatHtmlTargetElementAttribute_InvalidName(
+                        targetName.ToLower(),
+                        name,
+                        invalidCharacter),
                 errorSink: errorSink);
 
             return validName;

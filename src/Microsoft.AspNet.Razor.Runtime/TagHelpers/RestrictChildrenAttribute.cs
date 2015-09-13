@@ -9,9 +9,9 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
     /// <summary>
     /// Restricts children of the <see cref="ITagHelper"/>'s element.
     /// </summary>
-    /// <remarks>Combining this attribute with a <see cref="TargetElementAttribute"/> that specifies its
-    /// <see cref="TargetElementAttribute.TagStructure"/> as <see cref="TagStructure.WithoutEndTag"/> will result in
-    /// this attribute being ignored.</remarks>
+    /// <remarks>Combining this attribute with a <see cref="HtmlTargetElementAttribute"/> that specifies its
+    /// <see cref="HtmlTargetElementAttribute.TagStructure"/> as <see cref="TagStructure.WithoutEndTag"/> will result
+    /// in this attribute being ignored.</remarks>
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
     public class RestrictChildrenAttribute : Attribute
     {

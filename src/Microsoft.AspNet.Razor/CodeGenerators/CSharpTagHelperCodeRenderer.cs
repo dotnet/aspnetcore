@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
         public void RenderTagHelper(TagHelperChunk chunk)
         {
             // Remove any duplicate TagHelperDescriptors that reference the same type name. Duplicates can occur when
-            // multiple TargetElement attributes are on a TagHelper type and matches overlap for an HTML element.
+            // multiple HtmlTargetElement attributes are on a TagHelper type and matches overlap for an HTML element.
             // Having more than one descriptor with the same TagHelper type results in generated code that runs
             // the same TagHelper X many times (instead of once) over a single HTML element.
             var tagHelperDescriptors = chunk.Descriptors.Distinct(TypeBasedTagHelperDescriptorComparer.Default);

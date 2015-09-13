@@ -10,30 +10,30 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
     /// Provides an <see cref="ITagHelper"/>'s target.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
-    public sealed class TargetElementAttribute : Attribute
+    public sealed class HtmlTargetElementAttribute : Attribute
     {
         public const string ElementCatchAllTarget = TagHelperDescriptorProvider.ElementCatchAllTarget;
 
         /// <summary>
-        /// Instantiates a new instance of the <see cref="TargetElementAttribute"/> class with <see cref="Tag"/>
+        /// Instantiates a new instance of the <see cref="HtmlTargetElementAttribute"/> class with <see cref="Tag"/>
         /// set to <c>*</c>.
         /// </summary>
         /// <remarks>A <c>*</c> <see cref="Tag"/> value indicates an <see cref="ITagHelper"/>
         /// that targets all HTML elements with the required <see cref="Attributes"/>.</remarks>
-        public TargetElementAttribute()
+        public HtmlTargetElementAttribute()
             : this(ElementCatchAllTarget)
         {
         }
 
         /// <summary>
-        /// Instantiates a new instance of the <see cref="TargetElementAttribute"/> class.
+        /// Instantiates a new instance of the <see cref="HtmlTargetElementAttribute"/> class.
         /// </summary>
         /// <param name="tag">
         /// The HTML tag the <see cref="ITagHelper"/> targets.
         /// </param>
         /// <remarks>A <c>*</c> <paramref name="tag"/> value indicates an <see cref="ITagHelper"/>
         /// that targets all HTML elements with the required <see cref="Attributes"/>.</remarks>
-        public TargetElementAttribute(string tag)
+        public HtmlTargetElementAttribute(string tag)
         {
             Tag = tag;
         }

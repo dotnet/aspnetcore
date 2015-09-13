@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
 {
     [RestrictChildren(Never)]
     [CustomValidation(typeof(TypeDoesNotExist)]
-    [TargetElement("img"
+    [HtmlTargetElement("img"
     public class TypeWithMalformedAttribute
     {
 

@@ -10,8 +10,8 @@ using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 
 namespace Microsoft.AspNet.Razor.Runtime.Precompilation
 {
-    [TargetElement("img", Attributes = AppendVersionAttributeName + "," + SrcAttributeName)]
-    [TargetElement("image", Attributes = SrcAttributeName)]
+    [HtmlTargetElement("img", Attributes = AppendVersionAttributeName + "," + SrcAttributeName)]
+    [HtmlTargetElement("image", Attributes = SrcAttributeName)]
     [EditorBrowsable(EditorBrowsableState.Never)]
     [EnumProperty(DayOfWeek = DayOfWeek.Friday)]
     [CustomValidation(typeof(Validator), "ValidationMethod", ErrorMessageResourceType = typeof(ResourceManager))]

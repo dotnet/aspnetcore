@@ -134,7 +134,7 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
             var actual = Assert.Single(exportedTypes);
             AssertEqual(expected.AsType(), actual);
 
-            AssertAttributes<TargetElementAttribute>(
+            AssertAttributes<HtmlTargetElementAttribute>(
                 expected,
                 actual,
                 (expectedAttribute, actualAttribute) =>
@@ -406,7 +406,7 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
 
             // Assert
             var actual = Assert.Single(exportedTypes);
-            var targetElementAttribute = Assert.Single(actual.GetCustomAttributes<TargetElementAttribute>());
+            var targetElementAttribute = Assert.Single(actual.GetCustomAttributes<HtmlTargetElementAttribute>());
             Assert.Equal("img", targetElementAttribute.Tag);
             Assert.Null(targetElementAttribute.Attributes);
 

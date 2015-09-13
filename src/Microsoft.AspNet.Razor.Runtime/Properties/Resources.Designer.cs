@@ -77,17 +77,17 @@ namespace Microsoft.AspNet.Razor.Runtime
         /// <summary>
         /// {0} name cannot be null or whitespace.
         /// </summary>
-        internal static string TargetElementAttribute_NameCannotBeNullOrWhitespace
+        internal static string HtmlTargetElementAttribute_NameCannotBeNullOrWhitespace
         {
-            get { return GetString("TargetElementAttribute_NameCannotBeNullOrWhitespace"); }
+            get { return GetString("HtmlTargetElementAttribute_NameCannotBeNullOrWhitespace"); }
         }
 
         /// <summary>
         /// {0} name cannot be null or whitespace.
         /// </summary>
-        internal static string FormatTargetElementAttribute_NameCannotBeNullOrWhitespace(object p0)
+        internal static string FormatHtmlTargetElementAttribute_NameCannotBeNullOrWhitespace(object p0)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("TargetElementAttribute_NameCannotBeNullOrWhitespace"), p0);
+            return string.Format(CultureInfo.CurrentCulture, GetString("HtmlTargetElementAttribute_NameCannotBeNullOrWhitespace"), p0);
         }
 
         /// <summary>
@@ -125,17 +125,17 @@ namespace Microsoft.AspNet.Razor.Runtime
         /// <summary>
         /// Tag helpers cannot target {0} name '{1}' because it contains a '{2}' character.
         /// </summary>
-        internal static string TargetElementAttribute_InvalidName
+        internal static string HtmlTargetElementAttribute_InvalidName
         {
-            get { return GetString("TargetElementAttribute_InvalidName"); }
+            get { return GetString("HtmlTargetElementAttribute_InvalidName"); }
         }
 
         /// <summary>
         /// Tag helpers cannot target {0} name '{1}' because it contains a '{2}' character.
         /// </summary>
-        internal static string FormatTargetElementAttribute_InvalidName(object p0, object p1, object p2)
+        internal static string FormatHtmlTargetElementAttribute_InvalidName(object p0, object p1, object p2)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("TargetElementAttribute_InvalidName"), p0, p1, p2);
+            return string.Format(CultureInfo.CurrentCulture, GetString("HtmlTargetElementAttribute_InvalidName"), p0, p1, p2);
         }
 
         /// <summary>

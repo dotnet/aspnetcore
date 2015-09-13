@@ -20,26 +20,26 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
     {
     }
 
-    [TargetElement("p")]
-    [TargetElement("div")]
+    [HtmlTargetElement("p")]
+    [HtmlTargetElement("div")]
     [RestrictChildren("p", "strong")]
     public class MultiTargetRestrictChildrenTagHelper
     {
     }
 
-    [TargetElement("input", TagStructure = TagStructure.WithoutEndTag)]
+    [HtmlTargetElement("input", TagStructure = TagStructure.WithoutEndTag)]
     public class TagStructureTagHelper : TagHelper
     {
     }
 
-    [TargetElement("p", TagStructure = TagStructure.NormalOrSelfClosing)]
-    [TargetElement("input", TagStructure = TagStructure.WithoutEndTag)]
+    [HtmlTargetElement("p", TagStructure = TagStructure.NormalOrSelfClosing)]
+    [HtmlTargetElement("input", TagStructure = TagStructure.WithoutEndTag)]
     public class MultiSpecifiedTagStructureTagHelper : TagHelper
     {
     }
 
-    [TargetElement("p")]
-    [TargetElement("input", TagStructure = TagStructure.WithoutEndTag)]
+    [HtmlTargetElement("p")]
+    [HtmlTargetElement("input", TagStructure = TagStructure.WithoutEndTag)]
     public class MultiWithUnspecifiedTagStructureTagHelper : TagHelper
     {
     }
@@ -90,84 +90,84 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         public override int Property { get; set; }
     }
 
-    [TargetElement("p")]
-    [TargetElement("div")]
+    [HtmlTargetElement("p")]
+    [HtmlTargetElement("div")]
     [EditorBrowsable(EditorBrowsableState.Never)]
     public class MultiEditorBrowsableTagHelper : TagHelper
     {
     }
 
-    [TargetElement(Attributes = "class*")]
+    [HtmlTargetElement(Attributes = "class*")]
     public class AttributeWildcardTargetingTagHelper : TagHelper
     {
     }
 
-    [TargetElement(Attributes = "class*,style*")]
+    [HtmlTargetElement(Attributes = "class*,style*")]
     public class MultiAttributeWildcardTargetingTagHelper : TagHelper
     {
     }
 
-    [TargetElement(Attributes = "class")]
+    [HtmlTargetElement(Attributes = "class")]
     public class AttributeTargetingTagHelper : TagHelper
     {
     }
 
-    [TargetElement(Attributes = "class,style")]
+    [HtmlTargetElement(Attributes = "class,style")]
     public class MultiAttributeTargetingTagHelper : TagHelper
     {
     }
 
-    [TargetElement(Attributes = "custom")]
-    [TargetElement(Attributes = "class,style")]
+    [HtmlTargetElement(Attributes = "custom")]
+    [HtmlTargetElement(Attributes = "class,style")]
     public class MultiAttributeAttributeTargetingTagHelper : TagHelper
     {
     }
 
-    [TargetElement(Attributes = "style")]
+    [HtmlTargetElement(Attributes = "style")]
     public class InheritedAttributeTargetingTagHelper : AttributeTargetingTagHelper
     {
     }
 
-    [TargetElement("input", Attributes = "class")]
+    [HtmlTargetElement("input", Attributes = "class")]
     public class RequiredAttributeTagHelper : TagHelper
     {
     }
 
-    [TargetElement("div", Attributes = "class")]
+    [HtmlTargetElement("div", Attributes = "class")]
     public class InheritedRequiredAttributeTagHelper : RequiredAttributeTagHelper
     {
     }
 
-    [TargetElement("div", Attributes = "class")]
-    [TargetElement("input", Attributes = "class")]
+    [HtmlTargetElement("div", Attributes = "class")]
+    [HtmlTargetElement("input", Attributes = "class")]
     public class MultiAttributeRequiredAttributeTagHelper : TagHelper
     {
     }
 
-    [TargetElement("input", Attributes = "style")]
-    [TargetElement("input", Attributes = "class")]
+    [HtmlTargetElement("input", Attributes = "style")]
+    [HtmlTargetElement("input", Attributes = "class")]
     public class MultiAttributeSameTagRequiredAttributeTagHelper : TagHelper
     {
     }
 
-    [TargetElement("input", Attributes = "class,style")]
+    [HtmlTargetElement("input", Attributes = "class,style")]
     public class MultiRequiredAttributeTagHelper : TagHelper
     {
     }
 
-    [TargetElement("div", Attributes = "style")]
+    [HtmlTargetElement("div", Attributes = "style")]
     public class InheritedMultiRequiredAttributeTagHelper : MultiRequiredAttributeTagHelper
     {
     }
 
-    [TargetElement("div", Attributes = "class,style")]
-    [TargetElement("input", Attributes = "class,style")]
+    [HtmlTargetElement("div", Attributes = "class,style")]
+    [HtmlTargetElement("input", Attributes = "class,style")]
     public class MultiTagMultiRequiredAttributeTagHelper : TagHelper
     {
     }
 
-    [TargetElement("p")]
-    [TargetElement("div")]
+    [HtmlTargetElement("p")]
+    [HtmlTargetElement("div")]
     public class MultiTagTagHelper
     {
         public string ValidAttribute { get; set; }
@@ -177,15 +177,15 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
     {
     }
 
-    [TargetElement("p")]
-    [TargetElement("p")]
-    [TargetElement("div")]
-    [TargetElement("div")]
+    [HtmlTargetElement("p")]
+    [HtmlTargetElement("p")]
+    [HtmlTargetElement("div")]
+    [HtmlTargetElement("div")]
     public class DuplicateTagNameTagHelper
     {
     }
 
-    [TargetElement("data-condition")]
+    [HtmlTargetElement("data-condition")]
     public class OverrideNameTagHelper
     {
     }
@@ -387,8 +387,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
     {
     }
 
-    [TargetElement("a")]
-    [TargetElement("p")]
+    [HtmlTargetElement("a")]
+    [HtmlTargetElement("p")]
     [OutputElementHint("div")]
     public class MulitpleDescriptorTagHelperWithOutputElementHint : TagHelper
     {

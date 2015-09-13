@@ -112,10 +112,10 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Arrange
             var typeInfo = typeof(TypeWithAttributes).GetTypeInfo();
             var runtimeTypeInfo = new RuntimeTypeInfo(typeInfo);
-            var expected = typeInfo.GetCustomAttributes<TargetElementAttribute>();
+            var expected = typeInfo.GetCustomAttributes<HtmlTargetElementAttribute>();
 
             // Act
-            var actual = runtimeTypeInfo.GetCustomAttributes<TargetElementAttribute>();
+            var actual = runtimeTypeInfo.GetCustomAttributes<HtmlTargetElementAttribute>();
 
             // Assert
             Assert.Equal(expected, actual);
@@ -380,8 +380,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             private int Property4 { get; set; }
         }
 
-        [TargetElement("test1")]
-        [TargetElement("test2")]
+        [HtmlTargetElement("test1")]
+        [HtmlTargetElement("test2")]
         private class TypeWithAttributes
         {
         }
