@@ -18,25 +18,25 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <summary>
         /// Instantiates a new instance of the <see cref="RestrictChildrenAttribute"/> class.
         /// </summary>
-        /// <param name="tagName">
+        /// <param name="childTag">
         /// The tag name of an element allowed as a child. Tag helpers must target the element.
         /// </param>
-        /// <param name="tagNames">
+        /// <param name="childTags">
         /// Additional names of elements allowed as children. Tag helpers must target all such elements.
         /// </param>
-        public RestrictChildrenAttribute(string tagName, params string[] tagNames)
+        public RestrictChildrenAttribute(string childTag, params string[] childTags)
         {
-            var concatenatedNames = new string[1 + tagNames.Length];
-            concatenatedNames[0] = tagName;
+            var concatenatedNames = new string[1 + childTags.Length];
+            concatenatedNames[0] = childTag;
 
-            tagNames.CopyTo(concatenatedNames, 1);
+            childTags.CopyTo(concatenatedNames, 1);
 
-            ChildTagNames = concatenatedNames;
+            ChildTags = concatenatedNames;
         }
 
         /// <summary>
         /// Get the names of elements allowed as children. Tag helpers must target all such elements.
         /// </summary>
-        public IEnumerable<string> ChildTagNames { get; }
+        public IEnumerable<string> ChildTags { get; }
     }
 }

@@ -181,8 +181,8 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
                 (expectedAttribute, actualAttribute) =>
                 {
                     Assert.Equal(
-                        expectedAttribute.ChildTagNames,
-                        actualAttribute.ChildTagNames);
+                        expectedAttribute.ChildTags,
+                        actualAttribute.ChildTags);
                 });
 
             // Complex array bindings

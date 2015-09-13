@@ -157,7 +157,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 return null;
             }
 
-            var allowedChildren = restrictChildrenAttribute.ChildTagNames;
+            var allowedChildren = restrictChildrenAttribute.ChildTags;
             var validAllowedChildren = GetValidAllowedChildren(allowedChildren, typeInfo.FullName, errorSink);
 
             if (validAllowedChildren.Any())
