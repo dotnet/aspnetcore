@@ -14,7 +14,6 @@ using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Features.Internal;
 using Microsoft.Framework.Configuration;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Hosting.Internal
@@ -39,10 +38,25 @@ namespace Microsoft.AspNet.Hosting.Internal
         private IFeatureCollection _serverInstance;
 
         public HostingEngine(
-            [NotNull] IServiceCollection appServices, 
-            [NotNull] IStartupLoader startupLoader, 
-            [NotNull] IConfiguration config)
+            IServiceCollection appServices,
+            IStartupLoader startupLoader,
+            IConfiguration config)
         {
+            if (appServices == null)
+            {
+                throw new ArgumentNullException(nameof(appServices));
+            }
+
+            if (startupLoader == null)
+            {
+                throw new ArgumentNullException(nameof(startupLoader));
+            }
+
+            if (config == null)
+            {
+                throw new ArgumentNullException(nameof(config));
+            }
+
             _config = config;
             _applicationServiceCollection = appServices;
             _startupLoader = startupLoader;

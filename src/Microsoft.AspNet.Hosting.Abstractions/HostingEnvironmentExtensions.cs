@@ -3,7 +3,6 @@
 
 using System;
 using System.IO;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Hosting
 {
@@ -14,8 +13,13 @@ namespace Microsoft.AspNet.Hosting
         /// </summary>
         /// <param name="hostingEnvironment">An instance of <see cref="IHostingEnvironment"/> service.</param>
         /// <returns>True if the environment name is Development, otherwise false.</returns>
-        public static bool IsDevelopment([NotNull]this IHostingEnvironment hostingEnvironment)
+        public static bool IsDevelopment(this IHostingEnvironment hostingEnvironment)
         {
+            if (hostingEnvironment == null)
+            {
+                throw new ArgumentNullException(nameof(hostingEnvironment));
+            }
+
             return hostingEnvironment.IsEnvironment(EnvironmentName.Development);
         }
 
@@ -24,8 +28,13 @@ namespace Microsoft.AspNet.Hosting
         /// </summary>
         /// <param name="hostingEnvironment">An instance of <see cref="IHostingEnvironment"/> service.</param>
         /// <returns>True if the environment name is Production, otherwise false.</returns>
-        public static bool IsProduction([NotNull]this IHostingEnvironment hostingEnvironment)
+        public static bool IsProduction(this IHostingEnvironment hostingEnvironment)
         {
+            if (hostingEnvironment == null)
+            {
+                throw new ArgumentNullException(nameof(hostingEnvironment));
+            }
+
             return hostingEnvironment.IsEnvironment(EnvironmentName.Production);
         }
 
@@ -36,9 +45,14 @@ namespace Microsoft.AspNet.Hosting
         /// <param name="environmentName">Environment name to validate against.</param>
         /// <returns>True if the specified name is same as the current environment.</returns>
         public static bool IsEnvironment(
-            [NotNull]this IHostingEnvironment hostingEnvironment,
+            this IHostingEnvironment hostingEnvironment,
             string environmentName)
         {
+            if (hostingEnvironment == null)
+            {
+                throw new ArgumentNullException(nameof(hostingEnvironment));
+            }
+
             return string.Equals(
                 hostingEnvironment.EnvironmentName,
                 environmentName,
@@ -52,9 +66,14 @@ namespace Microsoft.AspNet.Hosting
         /// <param name="virtualPath">Path relative to the root.</param>
         /// <returns>Physical path corresponding to virtual path.</returns>
         public static string MapPath(
-            [NotNull]this IHostingEnvironment hostingEnvironment,
+            this IHostingEnvironment hostingEnvironment,
             string virtualPath)
         {
+            if (hostingEnvironment == null)
+            {
+                throw new ArgumentNullException(nameof(hostingEnvironment));
+            }
+
             if (virtualPath == null)
             {
                 return hostingEnvironment.WebRootPath;

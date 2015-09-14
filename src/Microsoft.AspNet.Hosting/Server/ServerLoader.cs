@@ -5,7 +5,6 @@ using System;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Hosting.Server
 {
@@ -18,8 +17,13 @@ namespace Microsoft.AspNet.Hosting.Server
             _services = services;
         }
 
-        public IServerFactory LoadServerFactory([NotNull] string assemblyName)
+        public IServerFactory LoadServerFactory(string assemblyName)
         {
+            if (assemblyName == null)
+            {
+                throw new ArgumentNullException(nameof(assemblyName));
+            }
+
             if (string.IsNullOrEmpty(assemblyName))
             {
                 throw new ArgumentException(string.Empty, nameof(assemblyName));

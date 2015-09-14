@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Hosting.Internal
 {
@@ -15,14 +14,29 @@ namespace Microsoft.AspNet.Hosting.Internal
         private readonly RequestDelegate _next;
         private readonly IServiceProvider _services;
 
-        public RequestServicesContainerMiddleware([NotNull] RequestDelegate next, [NotNull] IServiceProvider services)
+        public RequestServicesContainerMiddleware(RequestDelegate next, IServiceProvider services)
         {
+            if (next == null)
+            {
+                throw new ArgumentNullException(nameof(next));
+            }
+
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
             _services = services;
             _next = next;
         }
 
-        public async Task Invoke([NotNull] HttpContext httpContext)
+        public async Task Invoke(HttpContext httpContext)
         {
+            if (httpContext == null)
+            {
+                throw new ArgumentNullException(nameof(httpContext));
+            }
+
             // All done if there request services is set
             if (httpContext.RequestServices != null)
             {

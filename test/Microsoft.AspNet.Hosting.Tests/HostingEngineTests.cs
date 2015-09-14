@@ -413,7 +413,7 @@ namespace Microsoft.AspNet.Hosting
 
         private class ReadOnlyFeatureCollection : IFeatureCollection
         {
-            public object this[[NotNull] Type key]
+            public object this[Type key]
             {
                 get { return null; }
                 set { throw new NotSupportedException(); }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.TestHost
 {
@@ -20,10 +19,15 @@ namespace Microsoft.AspNet.TestHost
         private readonly Func<IFeatureCollection, Task> _next;
         private readonly PathString _pathBase;
 
-        internal WebSocketClient([NotNull] Func<IFeatureCollection, Task> next, PathString pathBase)
+        internal WebSocketClient(Func<IFeatureCollection, Task> next, PathString pathBase)
         {
+            if (next == null)
+            {
+                throw new ArgumentNullException(nameof(next));
+            }
+
             _next = next;
-            
+
             // PathString.StartsWithSegments that we use below requires the base path to not end in a slash.
             if (pathBase.HasValue && pathBase.Value.EndsWith("/"))
             {

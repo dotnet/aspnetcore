@@ -5,14 +5,18 @@ using System;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Hosting.Startup
 {
     public class ConfigureServicesBuilder
     {
-        public ConfigureServicesBuilder([NotNull] MethodInfo configureServices)
+        public ConfigureServicesBuilder(MethodInfo configureServices)
         {
+            if (configureServices == null)
+            {
+                throw new ArgumentNullException(nameof(configureServices));
+            }
+
             // Only support IServiceCollection parameters
             var parameters = configureServices.GetParameters();
             if (parameters.Length > 1 ||
@@ -28,8 +32,13 @@ namespace Microsoft.AspNet.Hosting.Startup
 
         public Func<IServiceCollection, IServiceProvider> Build(object instance) => services => Invoke(instance, services);
 
-        private IServiceProvider Invoke(object instance, [NotNull] IServiceCollection exportServices)
+        private IServiceProvider Invoke(object instance, IServiceCollection exportServices)
         {
+            if (exportServices == null)
+            {
+                throw new ArgumentNullException(nameof(exportServices));
+            }
+
             var parameters = new object[MethodInfo.GetParameters().Length];
 
             // Ctor ensures we have at most one IServiceCollection parameter

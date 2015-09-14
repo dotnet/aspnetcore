@@ -14,7 +14,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Internal;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.TestHost
 {
@@ -31,8 +30,13 @@ namespace Microsoft.AspNet.TestHost
         /// Create a new handler.
         /// </summary>
         /// <param name="next">The pipeline entry point.</param>
-        public ClientHandler([NotNull] Func<IFeatureCollection, Task> next, PathString pathBase)
+        public ClientHandler(Func<IFeatureCollection, Task> next, PathString pathBase)
         {
+            if (next == null)
+            {
+                throw new ArgumentNullException(nameof(next));
+            }
+
             _next = next;
 
             // PathString.StartsWithSegments that we use below requires the base path to not end in a slash.
@@ -51,9 +55,14 @@ namespace Microsoft.AspNet.TestHost
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         protected override async Task<HttpResponseMessage> SendAsync(
-            [NotNull] HttpRequestMessage request,
+            HttpRequestMessage request,
             CancellationToken cancellationToken)
         {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
             var state = new RequestState(request, _pathBase);
             var requestContent = request.Content ?? new StreamContent(Stream.Null);
             var body = await requestContent.ReadAsStreamAsync();

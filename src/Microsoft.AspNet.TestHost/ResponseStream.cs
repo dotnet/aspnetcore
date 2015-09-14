@@ -8,7 +8,6 @@ using System.Diagnostics.Contracts;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.TestHost
 {
@@ -30,8 +29,18 @@ namespace Microsoft.AspNet.TestHost
         private bool _firstWrite;
         private Action _abortRequest;
 
-        internal ResponseStream([NotNull] Action onFirstWrite, [NotNull] Action abortRequest)
+        internal ResponseStream(Action onFirstWrite, Action abortRequest)
         {
+            if (onFirstWrite == null)
+            {
+                throw new ArgumentNullException(nameof(onFirstWrite));
+            }
+
+            if (abortRequest == null)
+            {
+                throw new ArgumentNullException(nameof(abortRequest));
+            }
+
             _onFirstWrite = onFirstWrite;
             _firstWrite = true;
             _abortRequest = abortRequest;

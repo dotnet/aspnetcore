@@ -6,8 +6,7 @@
         "url": "git://github.com/aspnet/hosting"
     },
     "dependencies": {
-        "Microsoft.AspNet.Hosting": "1.0.0-*",
-        "Microsoft.Framework.NotNullAttribute.Sources": { "version": "1.0.0-*", "type": "build" }
+        "Microsoft.AspNet.Hosting": "1.0.0-*"
     },
     "frameworks": {
         "dnx451": {
