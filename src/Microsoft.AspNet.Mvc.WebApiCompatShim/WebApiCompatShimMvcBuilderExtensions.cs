@@ -18,9 +18,7 @@ namespace Microsoft.Framework.DependencyInjection
             builder.Services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IConfigureOptions<WebApiCompatShimOptions>, WebApiCompatShimOptionsSetup>());
 
-            // The constructors on DefaultContentNegotiator aren't DI friendly, so just
-            // new it up.
-            builder.Services.TryAdd(ServiceDescriptor.Instance<IContentNegotiator>(new DefaultContentNegotiator()));
+            builder.Services.TryAddSingleton<IContentNegotiator, DefaultContentNegotiator>();
 
             return builder;
         }
