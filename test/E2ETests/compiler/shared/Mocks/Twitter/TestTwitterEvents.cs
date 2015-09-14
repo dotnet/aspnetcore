@@ -8,9 +8,9 @@ using MusicStore.Mocks.Common;
 
 namespace MusicStore.Mocks.Twitter
 {
-    internal class TwitterEvents
+    internal class TestTwitterEvents
     {
-        internal static async Task OnAuthenticated(TwitterAuthenticatedContext context)
+        internal static Task OnAuthenticated(TwitterAuthenticatedContext context)
         {
             if (context.Principal != null)
             {
@@ -21,10 +21,10 @@ namespace MusicStore.Mocks.Twitter
                 context.Principal.Identities.First().AddClaim(new Claim("ManageStore", "false"));
             }
 
-            await Task.FromResult(0);
+            return Task.FromResult(0);
         }
 
-        internal static async Task OnReturnEndpoint(TwitterReturnEndpointContext context)
+        internal static Task OnReturnEndpoint(TwitterReturnEndpointContext context)
         {
             if (context.Principal != null && context.SignInScheme == new IdentityCookieOptions().ExternalCookieAuthenticationScheme)
             {
@@ -38,12 +38,13 @@ namespace MusicStore.Mocks.Twitter
                 }
             }
 
-            await Task.FromResult(0);
+            return Task.FromResult(0);
         }
 
-        internal static void OnApplyRedirect(TwitterApplyRedirectContext context)
+        internal static Task OnApplyRedirect(TwitterApplyRedirectContext context)
         {
             context.Response.Redirect(context.RedirectUri + "&custom_redirect_uri=custom");
+            return Task.FromResult(0);
         }
     }
 } 

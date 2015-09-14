@@ -9,7 +9,7 @@ using MusicStore.Mocks.Common;
 
 namespace MusicStore.Mocks.OpenIdConnect
 {
-    internal class OpenIdConnectEvents
+    internal class TestOpenIdConnectEvents
     {
         private static List<string> eventsFired = new List<string>();
 

@@ -3,34 +3,35 @@ using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Authentication.Google;
+using Microsoft.AspNet.Authentication.MicrosoftAccount;
 using Microsoft.AspNet.Authentication.OAuth;
 using Microsoft.AspNet.Identity;
 using MusicStore.Mocks.Common;
 
-namespace MusicStore.Mocks.Google
+namespace MusicStore.Mocks.MicrosoftAccount
 {
-    internal class GoogleEvents
+    internal class TestMicrosoftAccountEvents
     {
-        internal static async Task OnAuthenticated(OAuthAuthenticatedContext context)
+        internal static Task OnAuthenticated(OAuthAuthenticatedContext context)
         {
             if (context.Principal != null)
             {
                 Helpers.ThrowIfConditionFailed(() => context.AccessToken == "ValidAccessToken", "Access token is not valid");
                 Helpers.ThrowIfConditionFailed(() => context.RefreshToken == "ValidRefreshToken", "Refresh token is not valid");
-                Helpers.ThrowIfConditionFailed(() => GoogleAuthenticationHelper.GetEmail(context.User) == "AspnetvnextTest@gmail.com", "Email is not valid");
-                Helpers.ThrowIfConditionFailed(() => GoogleAuthenticationHelper.GetId(context.User) == "106790274378320830963", "Id is not valid");
-                Helpers.ThrowIfConditionFailed(() => GoogleAuthenticationHelper.GetFamilyName(context.User) == "AspnetvnextTest", "FamilyName is not valid");
-                Helpers.ThrowIfConditionFailed(() => GoogleAuthenticationHelper.GetName(context.User) == "AspnetvnextTest AspnetvnextTest", "Name is not valid");
-                Helpers.ThrowIfConditionFailed(() => context.ExpiresIn.Value == TimeSpan.FromSeconds(1200), "ExpiresIn is not valid");
+                Helpers.ThrowIfConditionFailed(() => MicrosoftAccountHelper.GetFirstName(context.User) == "AspnetvnextTest", "Email is not valid");
+                Helpers.ThrowIfConditionFailed(() => MicrosoftAccountHelper.GetLastName(context.User) == "AspnetvnextTest", "Email is not valid");
+                Helpers.ThrowIfConditionFailed(() => MicrosoftAccountHelper.GetId(context.User) == "fccf9a24999f4f4f", "Id is not valid");
+                Helpers.ThrowIfConditionFailed(() => MicrosoftAccountHelper.GetName(context.User) == "AspnetvnextTest AspnetvnextTest", "Name is not valid");
+                Helpers.ThrowIfConditionFailed(() => context.ExpiresIn.Value == TimeSpan.FromSeconds(3600), "ExpiresIn is not valid");
                 Helpers.ThrowIfConditionFailed(() => context.User != null, "User object is not valid");
+                Helpers.ThrowIfConditionFailed(() => MicrosoftAccountHelper.GetId(context.User) == context.User.SelectToken("id").ToString(), "User id is not valid");
                 context.Principal.Identities.First().AddClaim(new Claim("ManageStore", "false"));
             }
 
-            await Task.FromResult(0);
+            return Task.FromResult(0);
         }
 
-        internal static async Task OnReturnEndpoint(OAuthReturnEndpointContext context)
+        internal static Task OnReturnEndpoint(OAuthReturnEndpointContext context)
         {
             if (context.Principal != null && context.SignInScheme == new IdentityCookieOptions().ExternalCookieAuthenticationScheme)
             {
@@ -44,12 +45,13 @@ namespace MusicStore.Mocks.Google
                 }
             }
 
-            await Task.FromResult(0);
+            return Task.FromResult(0);
         }
 
-        internal static void OnApplyRedirect(OAuthApplyRedirectContext context)
+        internal static Task OnApplyRedirect(OAuthApplyRedirectContext context)
         {
             context.Response.Redirect(context.RedirectUri + "&custom_redirect_uri=custom");
+            return Task.FromResult(0);
         }
     }
 } 
