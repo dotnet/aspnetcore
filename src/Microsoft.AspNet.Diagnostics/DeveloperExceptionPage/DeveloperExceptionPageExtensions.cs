@@ -1,8 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNet.Diagnostics;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Builder
 {
@@ -17,8 +17,13 @@ namespace Microsoft.AspNet.Builder
         /// </summary>
         /// <param name="builder"></param>
         /// <returns></returns>
-        public static IApplicationBuilder UseDeveloperExceptionPage([NotNull] this IApplicationBuilder builder)
+        public static IApplicationBuilder UseDeveloperExceptionPage(this IApplicationBuilder builder)
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
             return builder.UseDeveloperExceptionPage(new ErrorPageOptions());
         }
 
@@ -29,8 +34,13 @@ namespace Microsoft.AspNet.Builder
         /// <param name="builder"></param>
         /// <param name="options"></param>
         /// <returns></returns>
-        public static IApplicationBuilder UseDeveloperExceptionPage([NotNull] this IApplicationBuilder builder, ErrorPageOptions options)
+        public static IApplicationBuilder UseDeveloperExceptionPage(this IApplicationBuilder builder, ErrorPageOptions options)
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
             return builder.UseMiddleware<DeveloperExceptionPageMiddleware>(options);
         }
     }

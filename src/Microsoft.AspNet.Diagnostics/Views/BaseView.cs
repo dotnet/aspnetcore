@@ -9,7 +9,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.Diagnostics.Views
@@ -90,11 +89,26 @@ namespace Microsoft.AspNet.Diagnostics.Views
         /// <param name="trailer">The value and position of the suffix</param>
         /// <param name="values">The <see cref="AttributeValue"/>s to write.</param>
         protected void WriteAttribute(
-            [NotNull] string name,
-            [NotNull] Tuple<string, int> leader,
-            [NotNull] Tuple<string, int> trailer,
+            string name,
+            Tuple<string, int> leader,
+            Tuple<string, int> trailer,
             params AttributeValue[] values)
         {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            if (leader == null)
+            {
+                throw new ArgumentNullException(nameof(leader));
+            }
+
+            if (trailer == null)
+            {
+                throw new ArgumentNullException(nameof(trailer));
+            }
+
             WriteAttributeTo(
                 Output,
                 name,
@@ -112,12 +126,32 @@ namespace Microsoft.AspNet.Diagnostics.Views
         /// <param name="trailer">The value and position of the suffix</param>
         /// <param name="values">The <see cref="AttributeValue"/>s to write.</param>
         protected void WriteAttributeTo(
-            [NotNull] TextWriter writer,
-            [NotNull] string name,
-            [NotNull] Tuple<string, int> leader,
-            [NotNull] Tuple<string, int> trailer,
+            TextWriter writer,
+            string name,
+            Tuple<string, int> leader,
+            Tuple<string, int> trailer,
             params AttributeValue[] values)
         {
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            if (leader == null)
+            {
+                throw new ArgumentNullException(nameof(leader));
+            }
+
+            if (trailer == null)
+            {
+                throw new ArgumentNullException(nameof(trailer));
+            }
+
 
             WriteLiteralTo(writer, leader.Item1);
             foreach (var value in values)

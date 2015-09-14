@@ -3,12 +3,10 @@
 
 
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Diagnostics.Views;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Diagnostics
 {
@@ -25,8 +23,18 @@ namespace Microsoft.AspNet.Diagnostics
         /// </summary>
         /// <param name="next"></param>
         /// <param name="options"></param>
-        public WelcomePageMiddleware([NotNull] RequestDelegate next, [NotNull] WelcomePageOptions options)
+        public WelcomePageMiddleware(RequestDelegate next, WelcomePageOptions options)
         {
+            if (next == null)
+            {
+                throw new ArgumentNullException(nameof(next));
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
             _next = next;
             _options = options;
         }

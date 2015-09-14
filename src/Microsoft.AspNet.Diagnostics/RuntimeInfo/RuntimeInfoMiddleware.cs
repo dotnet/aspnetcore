@@ -1,12 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics.Views;
 using Microsoft.AspNet.Http;
 using Microsoft.Dnx.Runtime;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Diagnostics
 {
@@ -26,11 +26,31 @@ namespace Microsoft.AspNet.Diagnostics
         /// <param name="next"></param>
         /// <param name="options"></param>
         public RuntimeInfoMiddleware(
-            [NotNull] RequestDelegate next,
-            [NotNull] RuntimeInfoPageOptions options,
-            [NotNull] ILibraryManager libraryManager,
-            [NotNull] IRuntimeEnvironment runtimeEnvironment)
+            RequestDelegate next,
+            RuntimeInfoPageOptions options,
+            ILibraryManager libraryManager,
+            IRuntimeEnvironment runtimeEnvironment)
         {
+            if (next == null)
+            {
+                throw new ArgumentNullException(nameof(next));
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            if (libraryManager == null)
+            {
+                throw new ArgumentNullException(nameof(libraryManager));
+            }
+
+            if (runtimeEnvironment == null)
+            {
+                throw new ArgumentNullException(nameof(runtimeEnvironment));
+            }
+
             _next = next;
             _options = options;
             _libraryManager = libraryManager;

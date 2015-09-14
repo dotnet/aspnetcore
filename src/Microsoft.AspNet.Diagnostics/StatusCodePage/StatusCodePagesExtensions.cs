@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Builder
 {
@@ -20,8 +19,13 @@ namespace Microsoft.AspNet.Builder
         /// <param name="app"></param>
         /// <param name="options"></param>
         /// <returns></returns>
-        public static IApplicationBuilder UseStatusCodePages([NotNull]this IApplicationBuilder app, StatusCodePagesOptions options)
+        public static IApplicationBuilder UseStatusCodePages(this IApplicationBuilder app, StatusCodePagesOptions options)
         {
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+
             return app.UseMiddleware<StatusCodePagesMiddleware>(options);
         }
 

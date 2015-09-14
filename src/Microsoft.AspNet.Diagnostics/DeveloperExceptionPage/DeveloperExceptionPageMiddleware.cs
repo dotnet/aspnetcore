@@ -13,10 +13,8 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics.Views;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Features;
 using Microsoft.Dnx.Compilation;
 using Microsoft.Dnx.Runtime;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Diagnostics
@@ -38,11 +36,21 @@ namespace Microsoft.AspNet.Diagnostics
         /// <param name="next"></param>
         /// <param name="options"></param>
         public DeveloperExceptionPageMiddleware(
-            [NotNull] RequestDelegate next,
-            [NotNull] ErrorPageOptions options,
+            RequestDelegate next,
+            ErrorPageOptions options,
             ILoggerFactory loggerFactory,
             IApplicationEnvironment appEnvironment)
         {
+            if (next == null)
+            {
+                throw new ArgumentNullException(nameof(next));
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
             _next = next;
             _options = options;
             _logger = loggerFactory.CreateLogger<DeveloperExceptionPageMiddleware>();

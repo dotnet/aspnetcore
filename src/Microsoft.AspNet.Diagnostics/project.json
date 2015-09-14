@@ -11,10 +11,6 @@
         "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
         "Microsoft.AspNet.WebUtilities": "1.0.0-*",
         "Microsoft.Framework.Logging.Abstractions": "1.0.0-*",
-        "Microsoft.Framework.NotNullAttribute.Sources": {
-            "type": "build",
-            "version": "1.0.0-*"
-        },
         "Microsoft.Framework.OptionsModel": "1.0.0-*",
         "Microsoft.Dnx.Compilation.Abstractions": "1.0.0-*",
         "Microsoft.Framework.WebEncoders.Core": "1.0.0-*"
