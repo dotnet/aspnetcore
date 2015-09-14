@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Cors.Core;
 using Microsoft.Framework.DependencyInjection;
 
 namespace CorsWebSite
@@ -11,7 +12,7 @@ namespace CorsWebSite
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
-            services.ConfigureCors(options =>
+            services.Configure<CorsOptions>(options =>
             {
                 options.AddPolicy(
                     "AllowAnySimpleRequest",
