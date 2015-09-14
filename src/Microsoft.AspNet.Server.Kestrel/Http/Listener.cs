@@ -82,7 +82,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             // If the event loop isn't running and we try to wait on this Post
             // to complete, then KestrelEngine will never be disposed and
             // the exception that stopped the event loop will never be surfaced.
-            if (Thread.FatalError == null)
+            if (Thread.FatalError == null && ListenSocket != null)
             {
                 var tcs = new TaskCompletionSource<int>();
                 Thread.Post(
