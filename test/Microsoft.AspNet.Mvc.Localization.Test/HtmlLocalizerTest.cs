@@ -112,19 +112,29 @@ namespace Microsoft.AspNet.Mvc.Localization.Test
             Assert.Equal(expectedText, localizedHtmlString.Value);
         }
 
+        public static TheoryData<string> InvalidResourceStringData
+        {
+            get
+            {
+                var data = new TheoryData<string>
+                {
+                    "{0",
+                };
+
+                // Mono doesn't like { in an underlying string.Format on Mac.
+                if (!TestPlatformHelper.IsMac || !TestPlatformHelper.IsMono)
+                {
+                    data.Add("{");
+                }
+
+                return data;
+            }
+        }
+
         [Theory]
-        [InlineData("{")]
-        [InlineData("{0")]
+        [MemberData(nameof(InvalidResourceStringData))]
         public void HtmlLocalizer_HtmlWithInvalidResourcestring_ThrowsException(string format)
         {
-            // Mono doesn't like { in an underlying string.Format on Mac.
-            if (TestPlatformHelper.IsMac &&
-                TestPlatformHelper.IsMono &&
-                string.Equals(format, "{", StringComparison.Ordinal))
-            {
-                return;
-            }
-
             // Arrange
             var localizedString = new LocalizedString("Hello", format);
 
@@ -144,6 +154,5 @@ namespace Microsoft.AspNet.Mvc.Localization.Test
 
     public class TestClass
     {
-
     }
 }
