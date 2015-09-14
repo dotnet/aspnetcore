@@ -9,14 +9,14 @@ using Microsoft.Framework.OptionsModel;
 namespace Microsoft.AspNet.Builder
 {
     /// <summary>
-    /// Extension methods for using <see cref="MicrosoftAccountAuthenticationMiddleware"/>
+    /// Extension methods for using <see cref="MicrosoftAccountMiddleware"/>
     /// </summary>
     public static class MicrosoftAccountAuthenticationExtensions
     {
-        public static IApplicationBuilder UseMicrosoftAccountAuthentication([NotNull] this IApplicationBuilder app, Action<MicrosoftAccountAuthenticationOptions> configureOptions = null)
+        public static IApplicationBuilder UseMicrosoftAccountAuthentication([NotNull] this IApplicationBuilder app, Action<MicrosoftAccountOptions> configureOptions = null)
         {
-            return app.UseMiddleware<MicrosoftAccountAuthenticationMiddleware>(
-                 new ConfigureOptions<MicrosoftAccountAuthenticationOptions>(configureOptions ?? (o => { })));
+            return app.UseMiddleware<MicrosoftAccountMiddleware>(
+                 new ConfigureOptions<MicrosoftAccountOptions>(configureOptions ?? (o => { })));
         }
     }
 }

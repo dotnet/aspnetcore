@@ -6,12 +6,12 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
     /// <summary>
     /// This Context can be used to be informed when an 'AuthorizationCode' is redeemed for tokens at the token endpoint.
     /// </summary>
-    public class AuthorizationCodeRedeemedContext : BaseControlContext<OpenIdConnectAuthenticationOptions>
+    public class AuthorizationCodeRedeemedContext : BaseControlContext<OpenIdConnectOptions>
     {
         /// <summary>
         /// Creates a <see cref="AuthorizationCodeRedeemedContext"/>
         /// </summary>
-        public AuthorizationCodeRedeemedContext(HttpContext context, OpenIdConnectAuthenticationOptions options)
+        public AuthorizationCodeRedeemedContext(HttpContext context, OpenIdConnectOptions options)
             : base(context, options)
         {
         }

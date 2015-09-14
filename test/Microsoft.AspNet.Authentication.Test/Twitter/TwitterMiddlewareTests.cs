@@ -24,11 +24,12 @@ namespace Microsoft.AspNet.Authentication.Twitter
                 {
                     options.ConsumerKey = "Test Consumer Key";
                     options.ConsumerSecret = "Test Consumer Secret";
-                    options.Events = new TwitterAuthenticationEvents
+                    options.Events = new TwitterEvents
                     {
                         OnApplyRedirect = context =>
                         {
                             context.Response.Redirect(context.RedirectUri + "&custom=test");
+                            return Task.FromResult(0);
                         }
                     };
                     options.BackchannelHttpHandler = new TestHttpMessageHandler
@@ -135,7 +136,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
             location.ShouldContain("https://twitter.com/oauth/authenticate?oauth_token=");
         }
 
-        private static TestServer CreateServer(Action<TwitterAuthenticationOptions> configure, Func<HttpContext, bool> handler = null)
+        private static TestServer CreateServer(Action<TwitterOptions> configure, Func<HttpContext, bool> handler = null)
         {
             return TestServer.Create(app =>
             {

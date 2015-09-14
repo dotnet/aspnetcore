@@ -9,18 +9,18 @@ using Microsoft.Framework.Internal;
 namespace Microsoft.Framework.DependencyInjection
 {
     /// <summary>
-    /// Extension methods for using <see cref="TwitterAuthenticationMiddleware"/>
+    /// Extension methods for using <see cref="TwitterMiddleware"/>
     /// </summary>
     public static class TwitterAuthenticationExtensions
     {
-        public static IServiceCollection AddTwitterAuthentication([NotNull] this IServiceCollection services, [NotNull] Action<TwitterAuthenticationOptions> configure)
+        public static IServiceCollection AddTwitterAuthentication([NotNull] this IServiceCollection services, [NotNull] Action<TwitterOptions> configure)
         {
             return services.Configure(configure);
         }
 
         public static IServiceCollection AddTwitterAuthentication([NotNull] this IServiceCollection services, [NotNull] IConfiguration config)
         {
-            return services.Configure<TwitterAuthenticationOptions>(config);
+            return services.Configure<TwitterOptions>(config);
         }
     }
 }

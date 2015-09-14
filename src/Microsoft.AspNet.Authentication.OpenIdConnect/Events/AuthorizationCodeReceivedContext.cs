@@ -11,12 +11,12 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
     /// <summary>
     /// This Context can be used to be informed when an 'AuthorizationCode' is received over the OpenIdConnect protocol.
     /// </summary>
-    public class AuthorizationCodeReceivedContext : BaseControlContext<OpenIdConnectAuthenticationOptions>
+    public class AuthorizationCodeReceivedContext : BaseControlContext<OpenIdConnectOptions>
     {
         /// <summary>
         /// Creates a <see cref="AuthorizationCodeReceivedContext"/>
         /// </summary>
-        public AuthorizationCodeReceivedContext(HttpContext context, OpenIdConnectAuthenticationOptions options)
+        public AuthorizationCodeReceivedContext(HttpContext context, OpenIdConnectOptions options)
             : base(context, options)
         { 
         }

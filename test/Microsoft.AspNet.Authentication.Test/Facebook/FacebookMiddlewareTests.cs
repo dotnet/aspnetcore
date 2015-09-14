@@ -43,11 +43,12 @@ namespace Microsoft.AspNet.Authentication.Facebook
                     {
                         options.AppId = "Test App Id";
                         options.AppSecret = "Test App Secret";
-                        options.Events = new OAuthAuthenticationEvents
+                        options.Events = new OAuthEvents
                         {
                             OnApplyRedirect = context =>
                             {
                                 context.Response.Redirect(context.RedirectUri + "&custom=test");
+                                return Task.FromResult(0);
                             }
                         };
                     });
@@ -197,7 +198,7 @@ namespace Microsoft.AspNet.Authentication.Facebook
                         {
                             Sender = req =>
                             {
-                                if (req.RequestUri.GetLeftPart(UriPartial.Path) == FacebookAuthenticationDefaults.TokenEndpoint)
+                                if (req.RequestUri.GetLeftPart(UriPartial.Path) == FacebookDefaults.TokenEndpoint)
                                 {
                                     var res = new HttpResponseMessage(HttpStatusCode.OK);
                                     var tokenResponse = new Dictionary<string, string>

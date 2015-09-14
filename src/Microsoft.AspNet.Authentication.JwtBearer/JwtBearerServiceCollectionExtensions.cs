@@ -13,14 +13,14 @@ namespace Microsoft.Framework.DependencyInjection
     /// </summary>
     public static class JwtBearerServiceCollectionExtensions
     {
-        public static IServiceCollection ConfigureJwtBearerAuthentication([NotNull] this IServiceCollection services, [NotNull] Action<JwtBearerAuthenticationOptions> configure)
+        public static IServiceCollection AddJwtBearerAuthentication([NotNull] this IServiceCollection services, [NotNull] Action<JwtBearerOptions> configure)
         {
             return services.Configure(configure);
         }
 
-        public static IServiceCollection ConfigureJwtBearerAuthentication([NotNull] this IServiceCollection services, [NotNull] IConfiguration config)
+        public static IServiceCollection AddJwtBearerAuthentication([NotNull] this IServiceCollection services, [NotNull] IConfiguration config)
         {
-            return services.ConfigureJwtBearerAuthentication(config);
+            return services.Configure<JwtBearerOptions>(config);
         }
     }
 }

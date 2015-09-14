@@ -52,21 +52,17 @@ namespace CookieSample
                 options.AppSecret = "a124463c4719c94b4228d9a240e5dc1a";
             });
 
-            var googleOptions = new OAuthAuthenticationOptions
+            app.UseOAuthAuthentication(new OAuthOptions
             {
                 AuthenticationScheme = "Google-AccessToken",
                 Caption = "Google-AccessToken",
                 ClientId = "560027070069-37ldt4kfuohhu3m495hk2j4pjp92d382.apps.googleusercontent.com",
                 ClientSecret = "n2Q-GEw9RQjzcRbU3qhfTj8f",
                 CallbackPath = new PathString("/signin-google-token"),
-                AuthorizationEndpoint = GoogleAuthenticationDefaults.AuthorizationEndpoint,
-                TokenEndpoint = GoogleAuthenticationDefaults.TokenEndpoint
-            };
-            googleOptions.Scope.Add("openid");
-            googleOptions.Scope.Add("profile");
-            googleOptions.Scope.Add("email");
-
-            app.UseOAuthAuthentication(googleOptions);
+                AuthorizationEndpoint = GoogleDefaults.AuthorizationEndpoint,
+                TokenEndpoint = GoogleDefaults.TokenEndpoint,
+                Scope = { "openid", "profile", "email" }
+            });
 
             // https://console.developers.google.com/project
             app.UseGoogleAuthentication(options =>
@@ -99,18 +95,17 @@ namespace CookieSample
             The sample app can then be run via:
              dnx . web
             */
-            var msOAuthOptions = new OAuthAuthenticationOptions
+            app.UseOAuthAuthentication(new OAuthOptions
             {
                 AuthenticationScheme = "Microsoft-AccessToken",
                 Caption = "MicrosoftAccount-AccessToken - Requires project changes",
                 ClientId = "00000000480FF62E",
                 ClientSecret = "bLw2JIvf8Y1TaToipPEqxTVlOeJwCUsr",
                 CallbackPath = new PathString("/signin-microsoft-token"),
-                AuthorizationEndpoint = MicrosoftAccountAuthenticationDefaults.AuthorizationEndpoint,
-                TokenEndpoint = MicrosoftAccountAuthenticationDefaults.TokenEndpoint
-            };
-            msOAuthOptions.Scope.Add("wl.basic");
-            app.UseOAuthAuthentication(msOAuthOptions);
+                AuthorizationEndpoint = MicrosoftAccountDefaults.AuthorizationEndpoint,
+                TokenEndpoint = MicrosoftAccountDefaults.TokenEndpoint,
+                Scope = { "wl.basic" }
+            });
 
             app.UseMicrosoftAccountAuthentication(options =>
             {
@@ -121,7 +116,7 @@ namespace CookieSample
             });
 
             // https://github.com/settings/applications/
-            app.UseOAuthAuthentication(new OAuthAuthenticationOptions
+            app.UseOAuthAuthentication(new OAuthOptions
             {
                 AuthenticationScheme = "GitHub-AccessToken",
                 Caption = "Github-AccessToken",
@@ -132,7 +127,7 @@ namespace CookieSample
                 TokenEndpoint = "https://github.com/login/oauth/access_token"
             });
 
-            app.UseOAuthAuthentication(new OAuthAuthenticationOptions
+            app.UseOAuthAuthentication(new OAuthOptions
             {
                 AuthenticationScheme = "GitHub",
                 Caption = "Github",
@@ -145,7 +140,7 @@ namespace CookieSample
                 ClaimsIssuer = "OAuth2-Github",
                 SaveTokensAsClaims = false,
                 // Retrieving user information is unique to each provider.
-                Events = new OAuthAuthenticationEvents
+                Events = new OAuthEvents
                 {
                     OnAuthenticated = async context =>
                     {

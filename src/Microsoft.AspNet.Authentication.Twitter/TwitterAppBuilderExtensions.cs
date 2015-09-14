@@ -9,14 +9,14 @@ using Microsoft.Framework.OptionsModel;
 namespace Microsoft.AspNet.Builder
 {
     /// <summary>
-    /// Extension methods for using <see cref="TwitterAuthenticationMiddleware"/>
+    /// Extension methods for using <see cref="TwitterMiddleware"/>
     /// </summary>
     public static class TwitterAppBuilderExtensions
     {
-        public static IApplicationBuilder UseTwitterAuthentication([NotNull] this IApplicationBuilder app, Action<TwitterAuthenticationOptions> configureOptions = null)
+        public static IApplicationBuilder UseTwitterAuthentication([NotNull] this IApplicationBuilder app, Action<TwitterOptions> configureOptions = null)
         {
-            return app.UseMiddleware<TwitterAuthenticationMiddleware>(
-                 new ConfigureOptions<TwitterAuthenticationOptions>(configureOptions ?? (o => { })));
+            return app.UseMiddleware<TwitterMiddleware>(
+                 new ConfigureOptions<TwitterOptions>(configureOptions ?? (o => { })));
         }
     }
 }

@@ -9,7 +9,7 @@ using Microsoft.Framework.OptionsModel;
 namespace Microsoft.AspNet.Builder
 {
     /// <summary>
-    /// Extension methods for using <see cref="GoogleAuthenticationMiddleware"/>.
+    /// Extension methods for using <see cref="GoogleMiddleware"/>.
     /// </summary>
     public static class GoogleAppBuilderExtensions
     {
@@ -20,10 +20,10 @@ namespace Microsoft.AspNet.Builder
         /// <param name="configureOptions">Used to configure Middleware options.</param>
         /// <param name="optionsName">Name of the options instance to be used</param>
         /// <returns>The updated <see cref="IApplicationBuilder"/>.</returns>
-        public static IApplicationBuilder UseGoogleAuthentication([NotNull] this IApplicationBuilder app, Action<GoogleAuthenticationOptions> configureOptions = null, string optionsName = "")
+        public static IApplicationBuilder UseGoogleAuthentication([NotNull] this IApplicationBuilder app, Action<GoogleOptions> configureOptions = null, string optionsName = "")
         {
-            return app.UseMiddleware<GoogleAuthenticationMiddleware>(
-                 new ConfigureOptions<GoogleAuthenticationOptions>(configureOptions ?? (o => { })));
+            return app.UseMiddleware<GoogleMiddleware>(
+                 new ConfigureOptions<GoogleOptions>(configureOptions ?? (o => { })));
         }
     }
 }

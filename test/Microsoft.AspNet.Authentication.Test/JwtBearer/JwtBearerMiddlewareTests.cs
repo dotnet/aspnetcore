@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
             {
                 options.AutomaticAuthentication = true;
 
-                options.Events = new JwtBearerAuthenticationEvents()
+                options.Events = new JwtBearerEvents()
                 {
                     OnMessageReceived = context =>
                     {
@@ -117,7 +117,7 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
             {
                 options.AutomaticAuthentication = true;
 
-                options.Events = new JwtBearerAuthenticationEvents()
+                options.Events = new JwtBearerEvents()
                 {
                     OnSecurityTokenReceived = context =>
                     {
@@ -151,7 +151,7 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
             {
                 options.AutomaticAuthentication = true;
 
-                options.Events = new JwtBearerAuthenticationEvents()
+                options.Events = new JwtBearerEvents()
                 {
                     OnSecurityTokenValidated = context =>
                     {
@@ -188,7 +188,7 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
             {
                 options.AutomaticAuthentication = true;
 
-                options.Events = new JwtBearerAuthenticationEvents()
+                options.Events = new JwtBearerEvents()
                 {
                     OnMessageReceived = context =>
                     {
@@ -225,7 +225,7 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
         {
             var server = CreateServer(options =>
             {
-                options.Events = new JwtBearerAuthenticationEvents()
+                options.Events = new JwtBearerEvents()
                 {
                     OnSecurityTokenReceived = context =>
                     {
@@ -256,7 +256,7 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
         {
             var server = CreateServer(options =>
             {
-                options.Events = new JwtBearerAuthenticationEvents()
+                options.Events = new JwtBearerEvents()
                 {
                     OnSecurityTokenReceived = context =>
                     {
@@ -324,7 +324,7 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
             }
         }
 
-        private static TestServer CreateServer(Action<JwtBearerAuthenticationOptions> configureOptions, Func<HttpContext, bool> handler = null)
+        private static TestServer CreateServer(Action<JwtBearerOptions> configureOptions, Func<HttpContext, bool> handler = null)
         {
             return TestServer.Create(app =>
             {
@@ -360,17 +360,17 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
                     else if (context.Request.Path == new PathString("/unauthorized"))
                     {
                         // Simulate Authorization failure 
-                        var result = await context.Authentication.AuthenticateAsync(JwtBearerAuthenticationDefaults.AuthenticationScheme);
-                        await context.Authentication.ChallengeAsync(JwtBearerAuthenticationDefaults.AuthenticationScheme);
+                        var result = await context.Authentication.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
+                        await context.Authentication.ChallengeAsync(JwtBearerDefaults.AuthenticationScheme);
                     }
 
                     else if (context.Request.Path == new PathString("/signIn"))
                     {
-                        await Assert.ThrowsAsync<NotSupportedException>(() => context.Authentication.SignInAsync(JwtBearerAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal()));
+                        await Assert.ThrowsAsync<NotSupportedException>(() => context.Authentication.SignInAsync(JwtBearerDefaults.AuthenticationScheme, new ClaimsPrincipal()));
                     }
                     else if (context.Request.Path == new PathString("/signOut"))
                     {
-                        await Assert.ThrowsAsync<NotSupportedException>(() => context.Authentication.SignOutAsync(JwtBearerAuthenticationDefaults.AuthenticationScheme));
+                        await Assert.ThrowsAsync<NotSupportedException>(() => context.Authentication.SignOutAsync(JwtBearerDefaults.AuthenticationScheme));
                     }
                     else
                     {

@@ -9,18 +9,18 @@ using Microsoft.Framework.Internal;
 namespace Microsoft.Framework.DependencyInjection
 {
     /// <summary>
-    /// Extension methods for using <see cref="FacebookAuthenticationMiddleware"/>.
+    /// Extension methods for using <see cref="FacebookMiddleware"/>.
     /// </summary>
     public static class FacebookServiceCollectionExtensions
     {
-        public static IServiceCollection AddFacebookAuthentication([NotNull] this IServiceCollection services, [NotNull] Action<FacebookAuthenticationOptions> configure)
+        public static IServiceCollection AddFacebookAuthentication([NotNull] this IServiceCollection services, [NotNull] Action<FacebookOptions> configure)
         {
             return services.Configure(configure);
         }
 
         public static IServiceCollection AddFacebookAuthentication([NotNull] this IServiceCollection services, [NotNull] IConfiguration config)
         {
-            return services.Configure<FacebookAuthenticationOptions>(config);
+            return services.Configure<FacebookOptions>(config);
         }
     }
 }

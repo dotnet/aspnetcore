@@ -6,9 +6,9 @@ using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Authentication.JwtBearer
 {
-    public class AuthenticationFailedContext : BaseControlContext<JwtBearerAuthenticationOptions>
+    public class AuthenticationFailedContext : BaseControlContext<JwtBearerOptions>
     {
-        public AuthenticationFailedContext(HttpContext context, JwtBearerAuthenticationOptions options)
+        public AuthenticationFailedContext(HttpContext context, JwtBearerOptions options)
             : base(context, options)
         {
         }

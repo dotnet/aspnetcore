@@ -14,9 +14,9 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
     /// </summary>
     /// <typeparam name="TMessage">protocol specific message.</typeparam>
     /// <typeparam name="TOptions">protocol specific options.</typeparam>
-    public class RedirectToIdentityProviderContext : BaseControlContext<OpenIdConnectAuthenticationOptions>
+    public class RedirectToIdentityProviderContext : BaseControlContext<OpenIdConnectOptions>
     {
-        public RedirectToIdentityProviderContext([NotNull] HttpContext context, [NotNull] OpenIdConnectAuthenticationOptions options)
+        public RedirectToIdentityProviderContext([NotNull] HttpContext context, [NotNull] OpenIdConnectOptions options)
             : base(context, options)
         {
         }

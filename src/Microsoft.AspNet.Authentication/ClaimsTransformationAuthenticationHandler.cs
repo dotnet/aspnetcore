@@ -9,11 +9,11 @@ namespace Microsoft.AspNet.Authentication
     /// <summary>
     /// Handler that applies ClaimsTransformation to authentication
     /// </summary>
-    public class ClaimsTransformationAuthenticationHandler : IAuthenticationHandler
+    public class ClaimsTransformationHandler : IAuthenticationHandler
     {
         private readonly IClaimsTransformer _transform;
 
-        public ClaimsTransformationAuthenticationHandler(IClaimsTransformer transform)
+        public ClaimsTransformationHandler(IClaimsTransformer transform)
         {
             _transform = transform;
         }

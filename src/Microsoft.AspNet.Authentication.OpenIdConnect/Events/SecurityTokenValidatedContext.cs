@@ -6,9 +6,9 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace Microsoft.AspNet.Authentication.OpenIdConnect
 {
-    public class SecurityTokenValidatedContext : BaseControlContext<OpenIdConnectAuthenticationOptions>
+    public class SecurityTokenValidatedContext : BaseControlContext<OpenIdConnectOptions>
     {
-        public SecurityTokenValidatedContext(HttpContext context, OpenIdConnectAuthenticationOptions options)
+        public SecurityTokenValidatedContext(HttpContext context, OpenIdConnectOptions options)
             : base(context, options)
         {
         }

@@ -9,7 +9,7 @@ using Microsoft.Framework.OptionsModel;
 namespace Microsoft.AspNet.Builder
 {
     /// <summary>
-    /// Extension methods for using <see cref="FacebookAuthenticationMiddleware"/>.
+    /// Extension methods for using <see cref="FacebookMiddleware"/>.
     /// </summary>
     public static class FacebookAppBuilderExtensions
     {
@@ -18,10 +18,10 @@ namespace Microsoft.AspNet.Builder
         /// </summary>
         /// <param name="app">The <see cref="IApplicationBuilder"/> passed to the configure method.</param>
         /// <returns>The updated <see cref="IApplicationBuilder"/>.</returns>
-        public static IApplicationBuilder UseFacebookAuthentication([NotNull] this IApplicationBuilder app, Action<FacebookAuthenticationOptions> configureOptions = null)
+        public static IApplicationBuilder UseFacebookAuthentication([NotNull] this IApplicationBuilder app, Action<FacebookOptions> configureOptions = null)
         {
-            return app.UseMiddleware<FacebookAuthenticationMiddleware>(
-                 new ConfigureOptions<FacebookAuthenticationOptions>(configureOptions ?? (o => { })));
+            return app.UseMiddleware<FacebookMiddleware>(
+                 new ConfigureOptions<FacebookOptions>(configureOptions ?? (o => { })));
         }
     }
 }

@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Authentication.OAuth
     /// <summary>
     /// Contains information about the login session as well as the user <see cref="System.Security.Claims.ClaimsIdentity"/>.
     /// </summary>
-    public class OAuthAuthenticatedContext : BaseContext<OAuthAuthenticationOptions>
+    public class OAuthAuthenticatedContext : BaseContext<OAuthOptions>
     {
         /// <summary>
         /// Initializes a new <see cref="OAuthAuthenticatedContext"/>.
@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Authentication.OAuth
         /// <param name="tokens">The tokens returned from the token endpoint.</param>
         public OAuthAuthenticatedContext(
             [NotNull] HttpContext context,
-            [NotNull] OAuthAuthenticationOptions options,
+            [NotNull] OAuthOptions options,
             [NotNull] HttpClient backchannel,
             [NotNull] OAuthTokenResponse tokens)
             : this(context, options, backchannel, tokens, user: new JObject())
@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Authentication.OAuth
         /// <param name="user">The JSON-serialized user.</param>
         public OAuthAuthenticatedContext(
             [NotNull] HttpContext context,
-            [NotNull] OAuthAuthenticationOptions options,
+            [NotNull] OAuthOptions options,
             [NotNull] HttpClient backchannel,
             [NotNull] OAuthTokenResponse tokens,
             [NotNull] JObject user)

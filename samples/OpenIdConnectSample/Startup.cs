@@ -41,7 +41,7 @@ namespace OpenIdConnectSample
             {
                 if (!context.User.Identities.Any(identity => identity.IsAuthenticated))
                 {
-                    await context.Authentication.ChallengeAsync(OpenIdConnectAuthenticationDefaults.AuthenticationScheme, new AuthenticationProperties { RedirectUri = "/" });
+                    await context.Authentication.ChallengeAsync(OpenIdConnectDefaults.AuthenticationScheme, new AuthenticationProperties { RedirectUri = "/" });
 
                     context.Response.ContentType = "text/plain";
                     await context.Response.WriteAsync("Hello First timer");

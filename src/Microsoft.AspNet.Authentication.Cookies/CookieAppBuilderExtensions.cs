@@ -38,6 +38,5 @@ namespace Microsoft.AspNet.Builder
             return app.UseMiddleware<CookieAuthenticationMiddleware>(options,
                 new ConfigureOptions<CookieAuthenticationOptions>(o => { }));
         }
-
     }
 }

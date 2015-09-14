@@ -9,18 +9,18 @@ using Microsoft.Framework.Internal;
 namespace Microsoft.Framework.DependencyInjection
 {
     /// <summary>
-    /// Extension methods for using <see cref="GoogleAuthenticationMiddleware"/>.
+    /// Extension methods for using <see cref="GoogleMiddleware"/>.
     /// </summary>
     public static class GoogleServiceCollectionExtensions
     {
-        public static IServiceCollection AddGoogleAuthentication([NotNull] this IServiceCollection services, [NotNull] Action<GoogleAuthenticationOptions> configure)
+        public static IServiceCollection AddGoogleAuthentication([NotNull] this IServiceCollection services, [NotNull] Action<GoogleOptions> configure)
         {
             return services.Configure(configure);
         }
 
         public static IServiceCollection AddGoogleAuthentication([NotNull] this IServiceCollection services, [NotNull] IConfiguration config)
         {
-            return services.Configure<GoogleAuthenticationOptions>(config);
+            return services.Configure<GoogleOptions>(config);
         }
     }
 }

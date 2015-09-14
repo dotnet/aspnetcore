@@ -499,6 +499,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
                     OnResponseSignIn = context =>
                     {
                         context.Properties.ExpiresUtc = clock.UtcNow.Add(TimeSpan.FromMinutes(5));
+                        return Task.FromResult(0);
                     }
                 };
             }, SignInAsAlice);

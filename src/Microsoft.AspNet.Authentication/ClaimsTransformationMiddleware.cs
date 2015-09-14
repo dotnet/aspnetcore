@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Authentication
 
         public async Task Invoke(HttpContext context)
         {
-            var handler = new ClaimsTransformationAuthenticationHandler(Options.Transformer);
+            var handler = new ClaimsTransformationHandler(Options.Transformer);
             handler.RegisterAuthenticationHandler(context.GetAuthentication());
             try {
                 if (Options.Transformer != null)

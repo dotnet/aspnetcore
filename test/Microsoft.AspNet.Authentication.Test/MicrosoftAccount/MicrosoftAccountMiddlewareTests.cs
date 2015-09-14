@@ -32,11 +32,12 @@ namespace Microsoft.AspNet.Authentication.Tests.MicrosoftAccount
                 {
                     options.ClientId = "Test Client Id";
                     options.ClientSecret = "Test Client Secret";
-                    options.Events = new OAuthAuthenticationEvents
+                    options.Events = new OAuthEvents
                     {
                         OnApplyRedirect = context =>
                         {
                             context.Response.Redirect(context.RedirectUri + "&custom=test");
+                            return Task.FromResult(0);
                         }
                     };
                 });
@@ -144,7 +145,7 @@ namespace Microsoft.AspNet.Authentication.Tests.MicrosoftAccount
                             return null;
                         }
                     };
-                    options.Events = new OAuthAuthenticationEvents
+                    options.Events = new OAuthEvents
                     {
                         OnAuthenticated = context =>
                         {
@@ -175,7 +176,7 @@ namespace Microsoft.AspNet.Authentication.Tests.MicrosoftAccount
             transaction.FindClaimValue("RefreshToken").ShouldBe("Test Refresh Token");
         }
 
-        private static TestServer CreateServer(Action<MicrosoftAccountAuthenticationOptions> configureOptions)
+        private static TestServer CreateServer(Action<MicrosoftAccountOptions> configureOptions)
         {
             return TestServer.Create(app =>
             {
