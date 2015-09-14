@@ -6,7 +6,6 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Localization;
 using Microsoft.AspNet.TestHost;
-using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.Framework.Localization.Tests

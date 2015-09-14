@@ -9,7 +9,6 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Localization;
 using Microsoft.AspNet.TestHost;
-using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Globalization;
 using Xunit;
 
