@@ -1,10 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Http
 {
@@ -21,8 +21,13 @@ namespace Microsoft.AspNet.Http
         /// </summary>
         /// <param name="formFile">The <see cref="IFormFile"/>.</param>
         /// <param name="filename">The name of the file to create.</param>
-        public static void SaveAs([NotNull] this IFormFile formFile, string filename)
+        public static void SaveAs(this IFormFile formFile, string filename)
         {
+            if (formFile == null)
+            {
+                throw new ArgumentNullException(nameof(formFile));
+            }
+
             using (var fileStream = new FileStream(filename, FileMode.Create))
             {
                 var inputStream = formFile.OpenReadStream();
@@ -35,10 +40,15 @@ namespace Microsoft.AspNet.Http
         /// </summary>
         /// <param name="formFile">The <see cref="IFormFile"/>.</param>
         /// <param name="filename">The name of the file to create.</param>
-        public async static Task SaveAsAsync([NotNull] this IFormFile formFile,
+        public async static Task SaveAsAsync(this IFormFile formFile,
                                              string filename,
                                              CancellationToken cancellationToken = default(CancellationToken))
         {
+            if (formFile == null)
+            {
+                throw new ArgumentNullException(nameof(formFile));
+            }
+
             using (var fileStream = new FileStream(filename, FileMode.Create))
             {
                 var inputStream = formFile.OpenReadStream();

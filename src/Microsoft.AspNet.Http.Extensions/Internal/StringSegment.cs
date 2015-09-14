@@ -1,5 +1,4 @@
 ﻿using System;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Http.Internal
 {
@@ -80,8 +79,13 @@ namespace Microsoft.AspNet.Http.Internal
             return !left.Equals(right);
         }
 
-        public bool StartsWith([NotNull] string text, StringComparison comparisonType)
+        public bool StartsWith(string text, StringComparison comparisonType)
         {
+            if (text == null)
+            {
+                throw new ArgumentNullException(nameof(text));
+            }
+
             int textLength = text.Length;
             if (!HasValue || _count < textLength)
             {
@@ -91,8 +95,13 @@ namespace Microsoft.AspNet.Http.Internal
             return string.Compare(_buffer, _offset, text, 0, textLength, comparisonType) == 0;
         }
 
-        public bool EndsWith([NotNull] string text, StringComparison comparisonType)
+        public bool EndsWith(string text, StringComparison comparisonType)
         {
+            if (text == null)
+            {
+                throw new ArgumentNullException(nameof(text));
+            }
+
             int textLength = text.Length;
             if (!HasValue || _count < textLength)
             {
@@ -102,8 +111,13 @@ namespace Microsoft.AspNet.Http.Internal
             return string.Compare(_buffer, _offset + _count - textLength, text, 0, textLength, comparisonType) == 0;
         }
 
-        public bool Equals([NotNull] string text, StringComparison comparisonType)
+        public bool Equals(string text, StringComparison comparisonType)
         {
+            if (text == null)
+            {
+                throw new ArgumentNullException(nameof(text));
+            }
+
             int textLength = text.Length;
             if (!HasValue || _count != textLength)
             {

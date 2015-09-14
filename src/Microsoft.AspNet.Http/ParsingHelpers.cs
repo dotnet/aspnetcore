@@ -6,7 +6,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.Primitives;
 using Microsoft.Net.Http.Headers;
 
@@ -444,8 +443,13 @@ namespace Microsoft.AspNet.Http.Internal
 
         #endregion
 
-        public bool StartsWith([NotNull] string text, StringComparison comparisonType)
+        public bool StartsWith(string text, StringComparison comparisonType)
         {
+            if (text == null)
+            {
+                throw new ArgumentNullException(nameof(text));
+            }
+
             int textLength = text.Length;
             if (!HasValue || _count < textLength)
             {
@@ -455,8 +459,13 @@ namespace Microsoft.AspNet.Http.Internal
             return string.Compare(_buffer, _offset, text, 0, textLength, comparisonType) == 0;
         }
 
-        public bool EndsWith([NotNull] string text, StringComparison comparisonType)
+        public bool EndsWith(string text, StringComparison comparisonType)
         {
+            if (text == null)
+            {
+                throw new ArgumentNullException(nameof(text));
+            }
+
             int textLength = text.Length;
             if (!HasValue || _count < textLength)
             {
@@ -466,8 +475,13 @@ namespace Microsoft.AspNet.Http.Internal
             return string.Compare(_buffer, _offset + _count - textLength, text, 0, textLength, comparisonType) == 0;
         }
 
-        public bool Equals([NotNull] string text, StringComparison comparisonType)
+        public bool Equals(string text, StringComparison comparisonType)
         {
+            if (text == null)
+            {
+                throw new ArgumentNullException(nameof(text));
+            }
+
             int textLength = text.Length;
             if (!HasValue || _count != textLength)
             {
@@ -518,14 +532,29 @@ namespace Microsoft.AspNet.Http.Internal
             }
         }
 
-        public static StringValues GetHeaderUnmodified([NotNull] IDictionary<string, StringValues> headers, string key)
+        public static StringValues GetHeaderUnmodified(IDictionary<string, StringValues> headers, string key)
         {
+            if (headers == null)
+            {
+                throw new ArgumentNullException(nameof(headers));
+            }
+
             StringValues values;
             return headers.TryGetValue(key, out values) ? values : StringValues.Empty;
         }
 
-        public static void SetHeader([NotNull] IDictionary<string, StringValues> headers, [NotNull] string key, StringValues value)
+        public static void SetHeader(IDictionary<string, StringValues> headers, string key, StringValues value)
         {
+            if (headers == null)
+            {
+                throw new ArgumentNullException(nameof(headers));
+            }
+
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             if (string.IsNullOrWhiteSpace(key))
             {
                 throw new ArgumentNullException(nameof(key));
@@ -554,8 +583,13 @@ namespace Microsoft.AspNet.Http.Internal
             return value;
         }
 
-        public static long? GetContentLength([NotNull] IHeaderDictionary headers)
+        public static long? GetContentLength(IHeaderDictionary headers)
         {
+            if (headers == null)
+            {
+                throw new ArgumentNullException(nameof(headers));
+            }
+
             const NumberStyles styles = NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite;
             long value;
             var rawValue = headers[HeaderNames.ContentLength];
@@ -569,8 +603,13 @@ namespace Microsoft.AspNet.Http.Internal
             return null;
         }
 
-        public static void SetContentLength([NotNull] IHeaderDictionary headers, long? value)
+        public static void SetContentLength(IHeaderDictionary headers, long? value)
         {
+            if (headers == null)
+            {
+                throw new ArgumentNullException(nameof(headers));
+            }
+
             if (value.HasValue)
             {
                 headers[HeaderNames.ContentLength] = value.Value.ToString(CultureInfo.InvariantCulture);

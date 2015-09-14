@@ -2,10 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Builder.Extensions;
-using Microsoft.Framework.Internal;
+
 
 namespace Microsoft.AspNet.Builder
 {
@@ -23,8 +22,23 @@ namespace Microsoft.AspNet.Builder
         /// <param name="predicate">Invoked with the request environment to determine if the branch should be taken</param>
         /// <param name="configuration">Configures a branch to take</param>
         /// <returns></returns>
-        public static IApplicationBuilder MapWhen([NotNull] this IApplicationBuilder app, [NotNull] Predicate predicate, [NotNull] Action<IApplicationBuilder> configuration)
+        public static IApplicationBuilder MapWhen(this IApplicationBuilder app, Predicate predicate, Action<IApplicationBuilder> configuration)
         {
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+
+            if (predicate == null)
+            {
+                throw new ArgumentNullException(nameof(predicate));
+            }
+
+            if (configuration == null)
+            {
+                throw new ArgumentNullException(nameof(configuration));
+            }
+
             // create branch
             var branchBuilder = app.New();
             configuration(branchBuilder);

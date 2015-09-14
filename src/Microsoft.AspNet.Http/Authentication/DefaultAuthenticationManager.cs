@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Features.Authentication;
 using Microsoft.AspNet.Http.Features.Authentication.Internal;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Http.Authentication.Internal
 {
@@ -47,8 +46,13 @@ namespace Microsoft.AspNet.Http.Authentication.Internal
             return describeContext.Results.Select(description => new AuthenticationDescription(description));
         }
 
-        public override async Task AuthenticateAsync([NotNull] AuthenticateContext context)
+        public override async Task AuthenticateAsync(AuthenticateContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var handler = HttpAuthenticationFeature.Handler;
 
             if (handler != null)
@@ -62,8 +66,13 @@ namespace Microsoft.AspNet.Http.Authentication.Internal
             }
         }
 
-        public override async Task ChallengeAsync([NotNull] string authenticationScheme, AuthenticationProperties properties, ChallengeBehavior behavior)
+        public override async Task ChallengeAsync(string authenticationScheme, AuthenticationProperties properties, ChallengeBehavior behavior)
         {
+            if (authenticationScheme == null)
+            {
+                throw new ArgumentNullException(nameof(authenticationScheme));
+            }
+
             var handler = HttpAuthenticationFeature.Handler;
 
             var challengeContext = new ChallengeContext(authenticationScheme, properties?.Items, behavior);
@@ -78,8 +87,18 @@ namespace Microsoft.AspNet.Http.Authentication.Internal
             }
         }
 
-        public override async Task SignInAsync([NotNull] string authenticationScheme, [NotNull] ClaimsPrincipal principal, AuthenticationProperties properties)
+        public override async Task SignInAsync(string authenticationScheme, ClaimsPrincipal principal, AuthenticationProperties properties)
         {
+            if (authenticationScheme == null)
+            {
+                throw new ArgumentNullException(nameof(authenticationScheme));
+            }
+
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+
             var handler = HttpAuthenticationFeature.Handler;
 
             var signInContext = new SignInContext(authenticationScheme, principal, properties?.Items);
@@ -94,8 +113,13 @@ namespace Microsoft.AspNet.Http.Authentication.Internal
             }
         }
 
-        public override async Task SignOutAsync([NotNull] string authenticationScheme, AuthenticationProperties properties)
+        public override async Task SignOutAsync(string authenticationScheme, AuthenticationProperties properties)
         {
+            if (authenticationScheme == null)
+            {
+                throw new ArgumentNullException(nameof(authenticationScheme));
+            }
+
             var handler = HttpAuthenticationFeature.Handler;
 
             var signOutContext = new SignOutContext(authenticationScheme, properties?.Items);

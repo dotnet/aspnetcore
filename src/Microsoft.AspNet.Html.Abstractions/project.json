@@ -5,6 +5,9 @@
         "type": "git",
         "url": "git://github.com/aspnet/httpabstractions"
     },
+    "compilationOptions": {
+        "warningsAsErrors": true
+    },
     "dependencies": {
         "Microsoft.Framework.WebEncoders.Core": "1.0.0-*"
     },

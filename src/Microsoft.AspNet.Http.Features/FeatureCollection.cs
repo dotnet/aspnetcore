@@ -5,13 +5,12 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Http.Features
 {
     public class FeatureCollection : IFeatureCollection
     {
-        private static KeyComparer FeatureKeyComparer = new FeatureCollection.KeyComparer();
+        private static KeyComparer FeatureKeyComparer = new KeyComparer();
         private readonly IFeatureCollection _defaults;
         private IDictionary<Type, object> _features;
         private volatile int _containerRevision;
@@ -32,15 +31,25 @@ namespace Microsoft.AspNet.Http.Features
 
         public bool IsReadOnly { get { return false; } }
 
-        public object this[[NotNull] Type key]
+        public object this[Type key]
         {
             get
             {
+                if (key == null)
+                {
+                    throw new ArgumentNullException(nameof(key));
+                }
+
                 object result;
                 return _features != null && _features.TryGetValue(key, out result) ? result : _defaults?[key];
             }
             set
             {
+                if (key == null)
+                {
+                    throw new ArgumentNullException(nameof(key));
+                }
+
                 if (value == null)
                 {
                     if (_features != null && _features.Remove(key))

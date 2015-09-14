@@ -3,14 +3,18 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Http.Features.Authentication
 {
     public class SignOutContext
     {
-        public SignOutContext([NotNull] string authenticationScheme, IDictionary<string, string> properties)
+        public SignOutContext(string authenticationScheme, IDictionary<string, string> properties)
         {
+            if (authenticationScheme == null)
+            {
+                throw new ArgumentNullException(nameof(authenticationScheme));
+            }
+
             AuthenticationScheme = authenticationScheme;
             Properties = properties ?? new Dictionary<string, string>(StringComparer.Ordinal);
         }

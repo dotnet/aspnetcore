@@ -3,7 +3,6 @@
 
 using System;
 using System.Linq;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.Primitives;
 using Microsoft.Framework.WebEncoders;
 using Microsoft.Net.Http.Headers;
@@ -19,8 +18,13 @@ namespace Microsoft.AspNet.Http.Internal
         /// Create a new wrapper
         /// </summary>
         /// <param name="headers"></param>
-        public ResponseCookies([NotNull] IHeaderDictionary headers)
+        public ResponseCookies(IHeaderDictionary headers)
         {
+            if (headers == null)
+            {
+                throw new ArgumentNullException(nameof(headers));
+            }
+
             Headers = headers;
         }
 
@@ -49,8 +53,13 @@ namespace Microsoft.AspNet.Http.Internal
         /// <param name="key"></param>
         /// <param name="value"></param>
         /// <param name="options"></param>
-        public void Append(string key, string value, [NotNull] CookieOptions options)
+        public void Append(string key, string value, CookieOptions options)
         {
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
             var setCookieHeaderValue = new SetCookieHeaderValue(
                     UrlEncoder.Default.UrlEncode(key),
                     UrlEncoder.Default.UrlEncode(value))
@@ -91,8 +100,13 @@ namespace Microsoft.AspNet.Http.Internal
         /// </summary>
         /// <param name="key"></param>
         /// <param name="options"></param>
-        public void Delete(string key, [NotNull] CookieOptions options)
+        public void Delete(string key, CookieOptions options)
         {
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
             var encodedKeyPlusEquals = UrlEncoder.Default.UrlEncode(key) + "=";
             bool domainHasValue = !string.IsNullOrEmpty(options.Domain);
             bool pathHasValue = !string.IsNullOrEmpty(options.Path);

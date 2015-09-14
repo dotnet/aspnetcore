@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.Primitives;
 
 namespace Microsoft.AspNet.WebUtilities
@@ -21,13 +20,23 @@ namespace Microsoft.AspNet.WebUtilities
         private readonly string _boundary;
         private MultipartReaderStream _currentStream;
 
-        public MultipartReader([NotNull] string boundary, [NotNull] Stream stream)
+        public MultipartReader(string boundary, Stream stream)
             : this(boundary, stream, DefaultBufferSize)
         {
         }
 
-        public MultipartReader([NotNull] string boundary, [NotNull] Stream stream, int bufferSize)
+        public MultipartReader(string boundary, Stream stream, int bufferSize)
         {
+            if (boundary == null)
+            {
+                throw new ArgumentNullException(nameof(boundary));
+            }
+
+            if (stream == null)
+            {
+                throw new ArgumentNullException(nameof(stream));
+            }
+
             if (bufferSize < boundary.Length + 8) // Size of the boundary + leading and trailing CRLF + leading and trailing '--' markers.
             {
                 throw new ArgumentOutOfRangeException(nameof(bufferSize), bufferSize, "Insufficient buffer space, the buffer must be larger than the boundary: " + boundary);

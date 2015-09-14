@@ -5,7 +5,6 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Http.Internal
 {
@@ -21,8 +20,13 @@ namespace Microsoft.AspNet.Http.Internal
 
         private bool _disposed;
 
-        public ReferenceReadStream([NotNull] Stream inner, long offset, long length)
+        public ReferenceReadStream(Stream inner, long offset, long length)
         {
+            if (inner == null)
+            {
+                throw new ArgumentNullException(nameof(inner));
+            }
+
             _inner = inner;
             _innerOffset = offset;
             _length = length;

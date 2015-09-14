@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Framework.Internal;
+using System;
 
 namespace Microsoft.Net.Http.Headers
 {
@@ -11,9 +11,14 @@ namespace Microsoft.Net.Http.Headers
 
         private GetParsedValueLengthDelegate _getParsedValueLength;
 
-        internal GenericHeaderParser(bool supportsMultipleValues, [NotNull] GetParsedValueLengthDelegate getParsedValueLength)
+        internal GenericHeaderParser(bool supportsMultipleValues, GetParsedValueLengthDelegate getParsedValueLength)
             : base(supportsMultipleValues)
         {
+            if (getParsedValueLength == null)
+            {
+                throw new ArgumentNullException(nameof(getParsedValueLength));
+            }
+
             _getParsedValueLength = getParsedValueLength;
         }
 

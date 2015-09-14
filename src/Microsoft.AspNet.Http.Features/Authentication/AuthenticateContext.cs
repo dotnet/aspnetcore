@@ -1,16 +1,21 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Security.Claims;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Http.Features.Authentication
 {
     public class AuthenticateContext
     {
-        public AuthenticateContext([NotNull] string authenticationScheme)
+        public AuthenticateContext(string authenticationScheme)
         {
+            if (authenticationScheme == null)
+            {
+                throw new ArgumentNullException(nameof(authenticationScheme));
+            }
+
             AuthenticationScheme = authenticationScheme;
         }
 

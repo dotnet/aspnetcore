@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.Framework.DependencyInjection.Extensions;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 using Microsoft.Framework.WebEncoders;
 
@@ -11,13 +10,23 @@ namespace Microsoft.Framework.DependencyInjection
 {
     public static class EncoderServiceCollectionExtensions
     {
-        public static IServiceCollection AddWebEncoders([NotNull] this IServiceCollection services)
+        public static IServiceCollection AddWebEncoders(this IServiceCollection services)
         {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
             return AddWebEncoders(services, configureOptions: null);
         }
 
-        public static IServiceCollection AddWebEncoders([NotNull] this IServiceCollection services, Action<WebEncoderOptions> configureOptions)
+        public static IServiceCollection AddWebEncoders(this IServiceCollection services, Action<WebEncoderOptions> configureOptions)
         {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
             services.AddOptions();
 
             // Register the default encoders

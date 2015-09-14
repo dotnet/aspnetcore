@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Text;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.Net.Http.Headers
 {
@@ -23,13 +22,27 @@ namespace Microsoft.Net.Http.Headers
             // Used by the parser to create a new instance of this type.
         }
 
-        public CookieHeaderValue([NotNull] string name)
+        public CookieHeaderValue(string name)
             : this(name, string.Empty)
         {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
         }
 
-        public CookieHeaderValue([NotNull] string name, [NotNull] string value)
+        public CookieHeaderValue(string name, string value)
         {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
             Name = name;
             Value = value;
         }
@@ -219,16 +232,26 @@ namespace Microsoft.Net.Http.Headers
             return !(c == '"' || c == ',' || c == ';' || c == '\\');
         }
 
-        internal static void CheckNameFormat([NotNull] string name, string parameterName)
+        internal static void CheckNameFormat(string name, string parameterName)
         {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
             if (HttpRuleParser.GetTokenLength(name, 0) != name.Length)
             {
                 throw new ArgumentException("Invalid cookie name: " + name, parameterName);
             }
         }
 
-        internal static void CheckValueFormat([NotNull] string value, string parameterName)
+        internal static void CheckValueFormat(string value, string parameterName)
         {
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
             string temp;
             if (GetCookieValueLength(value, 0, out temp) != value.Length)
             {

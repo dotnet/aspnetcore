@@ -3,7 +3,6 @@
 
 using System;
 using System.Linq;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.Http
@@ -88,8 +87,13 @@ namespace Microsoft.AspNet.Http
         /// </summary>
         /// <param name="uri">The Uri object</param>
         /// <returns>The resulting PathString</returns>
-        public static PathString FromUriComponent([NotNull] Uri uri)
+        public static PathString FromUriComponent(Uri uri)
         {
+            if (uri == null)
+            {
+                throw new ArgumentNullException(nameof(uri));
+            }
+
             // REVIEW: what is the exactly correct thing to do?
             return new PathString("/" + uri.GetComponents(UriComponents.Path, UriFormat.Unescaped));
         }
@@ -128,8 +132,8 @@ namespace Microsoft.AspNet.Http
         /// <returns>The combined PathString value</returns>
         public PathString Add(PathString other)
         {
-            if (HasValue && 
-                other.HasValue && 
+            if (HasValue &&
+                other.HasValue &&
                 Value[Value.Length - 1] == '/')
             {
                 // If the path string has a trailing slash and the other string has a leading slash, we need

@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.Primitives;
 using Microsoft.Framework.WebEncoders;
 
@@ -97,8 +96,13 @@ namespace Microsoft.AspNet.Http
         /// </summary>
         /// <param name="uri">The Uri object</param>
         /// <returns>The resulting QueryString</returns>
-        public static QueryString FromUriComponent([NotNull] Uri uri)
+        public static QueryString FromUriComponent(Uri uri)
         {
+            if (uri == null)
+            {
+                throw new ArgumentNullException(nameof(uri));
+            }
+
             string queryValue = uri.GetComponents(UriComponents.Query, UriFormat.UriEscaped);
             if (!string.IsNullOrEmpty(queryValue))
             {

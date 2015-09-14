@@ -7,7 +7,6 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.WebUtilities
 {
@@ -26,8 +25,18 @@ namespace Microsoft.AspNet.WebUtilities
         /// </summary>
         /// <param name="stream"></param>
         /// <param name="boundary"></param>
-        public MultipartReaderStream([NotNull] BufferedReadStream stream, [NotNull] string boundary, bool expectLeadingCrlf = true)
+        public MultipartReaderStream(BufferedReadStream stream, string boundary, bool expectLeadingCrlf = true)
         {
+            if (stream == null)
+            {
+                throw new ArgumentNullException(nameof(stream));
+            }
+
+            if (boundary == null)
+            {
+                throw new ArgumentNullException(nameof(boundary));
+            }
+
             _innerStream = stream;
             _innerOffset = _innerStream.CanSeek ? _innerStream.Position : 0;
             if (expectLeadingCrlf)

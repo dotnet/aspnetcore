@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.WebEncoders
 {
@@ -25,8 +24,13 @@ namespace Microsoft.Framework.WebEncoders
         /// <summary>
         /// Instantiates the filter by cloning the allow list of another <see cref="ICodePointFilter"/>.
         /// </summary>
-        public CodePointFilter([NotNull] ICodePointFilter other)
+        public CodePointFilter(ICodePointFilter other)
         {
+            if (other == null)
+            {
+                throw new ArgumentNullException(nameof(other));
+            }
+
             CodePointFilter otherAsCodePointFilter = other as CodePointFilter;
             if (otherAsCodePointFilter != null)
             {
@@ -85,8 +89,13 @@ namespace Microsoft.Framework.WebEncoders
         /// <returns>
         /// The 'this' instance.
         /// </returns>
-        public CodePointFilter AllowChars([NotNull] string chars)
+        public CodePointFilter AllowChars(string chars)
         {
+            if (chars == null)
+            {
+                throw new ArgumentNullException(nameof(chars));
+            }
+
             for (int i = 0; i < chars.Length; i++)
             {
                 _allowedCharsBitmap.AllowCharacter(chars[i]);
@@ -100,8 +109,13 @@ namespace Microsoft.Framework.WebEncoders
         /// <returns>
         /// The 'this' instance.
         /// </returns>
-        public CodePointFilter AllowFilter([NotNull] ICodePointFilter filter)
+        public CodePointFilter AllowFilter(ICodePointFilter filter)
         {
+            if (filter == null)
+            {
+                throw new ArgumentNullException(nameof(filter));
+            }
+
             foreach (var allowedCodePoint in filter.GetAllowedCodePoints())
             {
                 // If the code point can't be represented as a BMP character, skip it.
@@ -120,8 +134,13 @@ namespace Microsoft.Framework.WebEncoders
         /// <returns>
         /// The 'this' instance.
         /// </returns>
-        public CodePointFilter AllowRange([NotNull] UnicodeRange range)
+        public CodePointFilter AllowRange(UnicodeRange range)
         {
+            if (range == null)
+            {
+                throw new ArgumentNullException(nameof(range));
+            }
+
             int firstCodePoint = range.FirstCodePoint;
             int rangeSize = range.RangeSize;
             for (int i = 0; i < rangeSize; i++)
@@ -197,8 +216,13 @@ namespace Microsoft.Framework.WebEncoders
         /// <returns>
         /// The 'this' instance.
         /// </returns>
-        public CodePointFilter ForbidChars([NotNull] string chars)
+        public CodePointFilter ForbidChars(string chars)
         {
+            if (chars == null)
+            {
+                throw new ArgumentNullException(nameof(chars));
+            }
+
             for (int i = 0; i < chars.Length; i++)
             {
                 _allowedCharsBitmap.ForbidCharacter(chars[i]);
@@ -212,8 +236,13 @@ namespace Microsoft.Framework.WebEncoders
         /// <returns>
         /// The 'this' instance.
         /// </returns>
-        public CodePointFilter ForbidRange([NotNull] UnicodeRange range)
+        public CodePointFilter ForbidRange(UnicodeRange range)
         {
+            if (range == null)
+            {
+                throw new ArgumentNullException(nameof(range));
+            }
+
             int firstCodePoint = range.FirstCodePoint;
             int rangeSize = range.RangeSize;
             for (int i = 0; i < rangeSize; i++)

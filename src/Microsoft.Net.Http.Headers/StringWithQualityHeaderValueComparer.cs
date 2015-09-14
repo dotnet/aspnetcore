@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.Net.Http.Headers
 {
@@ -39,9 +38,19 @@ namespace Microsoft.Net.Http.Headers
         /// <param name="stringWithQuality1">The first value to compare.</param>
         /// <param name="stringWithQuality2">The second value to compare</param>
         /// <returns>The result of the comparison.</returns>
-        public int Compare([NotNull] StringWithQualityHeaderValue stringWithQuality1,
-                           [NotNull] StringWithQualityHeaderValue stringWithQuality2)
+        public int Compare(StringWithQualityHeaderValue stringWithQuality1,
+                           StringWithQualityHeaderValue stringWithQuality2)
         {
+            if (stringWithQuality1 == null)
+            {
+                throw new ArgumentNullException(nameof(stringWithQuality1));
+            }
+
+            if (stringWithQuality2 == null)
+            {
+                throw new ArgumentNullException(nameof(stringWithQuality2));
+            }
+
             var quality1 = stringWithQuality1.Quality ?? HeaderQuality.Match;
             var quality2 = stringWithQuality2.Quality ?? HeaderQuality.Match;
             var qualityDifference = quality1 - quality2;

@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.WebUtilities;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.Primitives;
 using Microsoft.Net.Http.Headers;
 
@@ -19,13 +18,23 @@ namespace Microsoft.AspNet.Http.Features.Internal
     {
         private readonly HttpRequest _request;
 
-        public FormFeature([NotNull] IFormCollection form)
+        public FormFeature(IFormCollection form)
         {
+            if (form == null)
+            {
+                throw new ArgumentNullException(nameof(form));
+            }
+
             Form = form;
         }
 
-        public FormFeature([NotNull] HttpRequest request)
+        public FormFeature(HttpRequest request)
         {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
             _request = request;
         }
 

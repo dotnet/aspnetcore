@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Text;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.Net.Http.Headers
 {
@@ -33,13 +32,23 @@ namespace Microsoft.Net.Http.Headers
             // Used by the parser to create a new instance of this type.
         }
 
-        public SetCookieHeaderValue([NotNull] string name)
+        public SetCookieHeaderValue(string name)
             : this(name, string.Empty)
         {
         }
 
-        public SetCookieHeaderValue([NotNull] string name, [NotNull] string value)
+        public SetCookieHeaderValue(string name, string value)
         {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
             Name = name;
             Value = value;
         }

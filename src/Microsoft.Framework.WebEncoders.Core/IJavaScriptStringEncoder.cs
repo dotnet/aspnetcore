@@ -1,9 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.IO;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.WebEncoders
 {
@@ -19,7 +17,7 @@ namespace Microsoft.Framework.WebEncoders
         /// <remarks>
         /// The encoded value is appropriately encoded for inclusion inside a quoted JSON string.
         /// </remarks>
-        void JavaScriptStringEncode([NotNull] char[] value, int startIndex, int charCount, [NotNull] TextWriter output);
+        void JavaScriptStringEncode(char[] value, int startIndex, int charCount, TextWriter output);
 
         /// <summary>
         /// JavaScript-escapes a given input string.
@@ -37,6 +35,6 @@ namespace Microsoft.Framework.WebEncoders
         /// <remarks>
         /// The encoded value is appropriately encoded for inclusion inside a quoted JSON string.
         /// </remarks>
-        void JavaScriptStringEncode([NotNull] string value, int startIndex, int charCount, [NotNull] TextWriter output);
+        void JavaScriptStringEncode(string value, int startIndex, int charCount, TextWriter output);
     }
 }

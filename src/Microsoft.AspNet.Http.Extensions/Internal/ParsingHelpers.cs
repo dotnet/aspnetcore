@@ -2,10 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.Primitives;
 
 namespace Microsoft.AspNet.Http.Internal
@@ -35,14 +33,24 @@ namespace Microsoft.AspNet.Http.Internal
             }
         }
 
-        public static StringValues GetHeaderUnmodified([NotNull] IDictionary<string, StringValues> headers, string key)
+        public static StringValues GetHeaderUnmodified(IDictionary<string, StringValues> headers, string key)
         {
+            if (headers == null)
+            {
+                throw new ArgumentNullException(nameof(headers));
+            }
+
             StringValues values;
             return headers.TryGetValue(key, out values) ? values : StringValues.Empty;
         }
 
-        public static void SetHeaderJoined([NotNull] IDictionary<string, StringValues> headers, [NotNull] string key, StringValues value)
+        public static void SetHeaderJoined(IDictionary<string, StringValues> headers, string key, StringValues value)
         {
+            if (headers == null)
+            {
+                throw new ArgumentNullException(nameof(headers));
+            }
+
             if (string.IsNullOrWhiteSpace(key))
             {
                 throw new ArgumentNullException(nameof(key));
@@ -89,8 +97,13 @@ namespace Microsoft.AspNet.Http.Internal
             return value;
         }
 
-        public static void SetHeaderUnmodified([NotNull] IDictionary<string, StringValues> headers, [NotNull] string key, StringValues? values)
+        public static void SetHeaderUnmodified(IDictionary<string, StringValues> headers, string key, StringValues? values)
         {
+            if (headers == null)
+            {
+                throw new ArgumentNullException(nameof(headers));
+            }
+
             if (string.IsNullOrWhiteSpace(key))
             {
                 throw new ArgumentNullException(nameof(key));
@@ -105,8 +118,18 @@ namespace Microsoft.AspNet.Http.Internal
             }
         }
 
-        public static void AppendHeaderJoined([NotNull] IDictionary<string, StringValues> headers, [NotNull] string key, params string[] values)
+        public static void AppendHeaderJoined(IDictionary<string, StringValues> headers, string key, params string[] values)
         {
+            if (headers == null)
+            {
+                throw new ArgumentNullException(nameof(headers));
+            }
+
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             if (values == null || values.Length == 0)
             {
                 return;
@@ -123,8 +146,18 @@ namespace Microsoft.AspNet.Http.Internal
             }
         }
 
-        public static void AppendHeaderUnmodified([NotNull] IDictionary<string, StringValues> headers, [NotNull] string key, StringValues values)
+        public static void AppendHeaderUnmodified(IDictionary<string, StringValues> headers, string key, StringValues values)
         {
+            if (headers == null)
+            {
+                throw new ArgumentNullException(nameof(headers));
+            }
+
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             if (values.Count == 0)
             {
                 return;

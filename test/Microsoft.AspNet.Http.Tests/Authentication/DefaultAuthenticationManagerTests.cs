@@ -24,7 +24,6 @@ namespace Microsoft.AspNet.Http.Authentication.Internal
 
         [Theory]
         [InlineData("")]
-        [InlineData(null)]
         [InlineData("Foo")]
         public async Task ChallengeWithNoAuthMiddlewareMayThrow(string scheme)
         {

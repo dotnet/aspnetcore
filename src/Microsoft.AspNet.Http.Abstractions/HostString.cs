@@ -4,7 +4,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Http
 {
@@ -135,8 +134,13 @@ namespace Microsoft.AspNet.Http
         /// </summary>
         /// <param name="uri"></param>
         /// <returns></returns>
-        public static HostString FromUriComponent([NotNull] Uri uri)
+        public static HostString FromUriComponent(Uri uri)
         {
+            if (uri == null)
+            {
+                throw new ArgumentNullException(nameof(uri));
+            }
+
             return new HostString(uri.GetComponents(
                 UriComponents.NormalizedHost | // Always convert punycode to Unicode.
                 UriComponents.HostAndPort, UriFormat.Unescaped));

@@ -4,7 +4,6 @@
 using System;
 using System.IO;
 using Microsoft.AspNet.WebUtilities;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Http.Internal
 {
@@ -39,8 +38,13 @@ namespace Microsoft.AspNet.Http.Internal
             }
         }
 
-        public static HttpRequest EnableRewind([NotNull] this HttpRequest request, int bufferThreshold = DefaultBufferThreshold)
+        public static HttpRequest EnableRewind(this HttpRequest request, int bufferThreshold = DefaultBufferThreshold)
         {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
             var body = request.Body;
             if (!body.CanSeek)
             {

@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Extensions;
 using Microsoft.AspNet.Http.Features;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Http
 {
@@ -20,8 +19,13 @@ namespace Microsoft.AspNet.Http
         /// </summary>
         /// <param name="response"></param>
         /// <returns>True if sendfile feature exists in the response.</returns>
-        public static bool SupportsSendFile([NotNull] this HttpResponse response)
+        public static bool SupportsSendFile(this HttpResponse response)
         {
+            if (response == null)
+            {
+                throw new ArgumentNullException(nameof(response));
+            }
+
             return response.HttpContext.Features.Get<IHttpSendFileFeature>() != null;
         }
 
@@ -31,8 +35,18 @@ namespace Microsoft.AspNet.Http
         /// <param name="response"></param>
         /// <param name="fileName"></param>
         /// <returns></returns>
-        public static Task SendFileAsync([NotNull] this HttpResponse response, [NotNull] string fileName)
+        public static Task SendFileAsync(this HttpResponse response, string fileName)
         {
+            if (response == null)
+            {
+                throw new ArgumentNullException(nameof(response));
+            }
+
+            if (fileName == null)
+            {
+                throw new ArgumentNullException(nameof(fileName));
+            }
+
             return response.SendFileAsync(fileName, 0, null, CancellationToken.None);
         }
 
@@ -45,8 +59,18 @@ namespace Microsoft.AspNet.Http
         /// <param name="count">The number of types to send, or null to send the remainder of the file.</param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public static Task SendFileAsync([NotNull] this HttpResponse response, [NotNull] string fileName, long offset, long? count, CancellationToken cancellationToken)
+        public static Task SendFileAsync(this HttpResponse response, string fileName, long offset, long? count, CancellationToken cancellationToken)
         {
+            if (response == null)
+            {
+                throw new ArgumentNullException(nameof(response));
+            }
+
+            if (fileName == null)
+            {
+                throw new ArgumentNullException(nameof(fileName));
+            }
+
             var sendFile = response.HttpContext.Features.Get<IHttpSendFileFeature>();
             if (sendFile == null)
             {

@@ -11,9 +11,7 @@ using Xunit;
 
 namespace Microsoft.AspNet.Builder.Extensions
 {
-    using AppFunc = Func<IDictionary<string, object>, Task>;
     using Predicate = Func<HttpContext, bool>;
-    using PredicateAsync = Func<HttpContext, Task<bool>>;
 
     public class MapPredicateMiddlewareTests
     {
@@ -56,15 +54,12 @@ namespace Microsoft.AspNet.Builder.Extensions
             var builder = new ApplicationBuilder(serviceProvider: null);
             var noMiddleware = new ApplicationBuilder(serviceProvider: null).Build();
             var noOptions = new MapWhenOptions();
-            // TODO: [NotNull] Assert.Throws<ArgumentNullException>(() => builder.MapWhen(null, UseNotImplemented));
-            // TODO: [NotNull] Assert.Throws<ArgumentNullException>(() => builder.MapWhen(NotImplementedPredicate, (Action<IBuilder>)null));
-            // TODO: [NotNull] Assert.Throws<ArgumentNullException>(() => new MapWhenMiddleware(null, noOptions));
-            // TODO: [NotNull] Assert.Throws<ArgumentNullException>(() => new MapWhenMiddleware(noMiddleware, null));
-
-            // TODO: [NotNull] Assert.Throws<ArgumentNullException>(() => builder.MapWhenAsync(null, UseNotImplemented));
-            // TODO: [NotNull] Assert.Throws<ArgumentNullException>(() => builder.MapWhenAsync(NotImplementedPredicateAsync, (Action<IBuilder>)null));
-            // TODO: [NotNull] Assert.Throws<ArgumentNullException>(() => new MapWhenMiddleware(null, noOptions));
-            // TODO: [NotNull] Assert.Throws<ArgumentNullException>(() => new MapWhenMiddleware(noMiddleware, null));
+            Assert.Throws<ArgumentNullException>(() => builder.MapWhen(null, UseNotImplemented));
+            Assert.Throws<ArgumentNullException>(() => builder.MapWhen(NotImplementedPredicate, configuration: null));
+            Assert.Throws<ArgumentNullException>(() => new MapWhenMiddleware(null, noOptions));
+            Assert.Throws<ArgumentNullException>(() => new MapWhenMiddleware(noMiddleware, null));
+            Assert.Throws<ArgumentNullException>(() => new MapWhenMiddleware(null, noOptions));
+            Assert.Throws<ArgumentNullException>(() => new MapWhenMiddleware(noMiddleware, null));
         }
 
         [Fact]

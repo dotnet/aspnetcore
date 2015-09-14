@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Http.Headers;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.Primitives;
 using Microsoft.Net.Http.Headers;
 
@@ -26,13 +25,33 @@ namespace Microsoft.AspNet.Http
 
         // These are all shared helpers used by both RequestHeaders and ResponseHeaders
 
-        internal static DateTimeOffset? GetDate([NotNull] this IHeaderDictionary headers, [NotNull] string name)
+        internal static DateTimeOffset? GetDate(this IHeaderDictionary headers, string name)
         {
+            if (headers == null)
+            {
+                throw new ArgumentNullException(nameof(headers));
+            }
+
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
             return headers.Get<DateTimeOffset?>(name);
         }
 
-        internal static void Set([NotNull] this IHeaderDictionary headers, [NotNull] string name, object value)
+        internal static void Set(this IHeaderDictionary headers, string name, object value)
         {
+            if (headers == null)
+            {
+                throw new ArgumentNullException(nameof(headers));
+            }
+
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
             if (value == null)
             {
                 headers.Remove(name);
@@ -43,8 +62,18 @@ namespace Microsoft.AspNet.Http
             }
         }
 
-        internal static void SetList<T>([NotNull] this IHeaderDictionary headers, [NotNull] string name, IList<T> values)
+        internal static void SetList<T>(this IHeaderDictionary headers, string name, IList<T> values)
         {
+            if (headers == null)
+            {
+                throw new ArgumentNullException(nameof(headers));
+            }
+
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
             if (values == null || values.Count == 0)
             {
                 headers.Remove(name);
@@ -55,8 +84,18 @@ namespace Microsoft.AspNet.Http
             }
         }
 
-        internal static void SetDate([NotNull] this IHeaderDictionary headers, [NotNull] string name, DateTimeOffset? value)
+        internal static void SetDate(this IHeaderDictionary headers, string name, DateTimeOffset? value)
         {
+            if (headers == null)
+            {
+                throw new ArgumentNullException(nameof(headers));
+            }
+
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
             if (value.HasValue)
             {
                 headers[name] = HeaderUtilities.FormatDate(value.Value);
@@ -89,8 +128,13 @@ namespace Microsoft.AspNet.Http
             { typeof(SetCookieHeaderValue), new Func<IList<string>, IList<SetCookieHeaderValue>>(value => { IList<SetCookieHeaderValue> result; return SetCookieHeaderValue.TryParseList(value, out result) ? result : null; })  },
         };
 
-        internal static T Get<T>([NotNull] this IHeaderDictionary headers, string name)
+        internal static T Get<T>(this IHeaderDictionary headers, string name)
         {
+            if (headers == null)
+            {
+                throw new ArgumentNullException(nameof(headers));
+            }
+
             object temp;
             if (KnownParsers.TryGetValue(typeof(T), out temp))
             {
@@ -107,8 +151,13 @@ namespace Microsoft.AspNet.Http
             return GetViaReflection<T>(value);
         }
 
-        internal static IList<T> GetList<T>([NotNull] this IHeaderDictionary headers, string name)
+        internal static IList<T> GetList<T>(this IHeaderDictionary headers, string name)
         {
+            if (headers == null)
+            {
+                throw new ArgumentNullException(nameof(headers));
+            }
+
             object temp;
             if (KnownListParsers.TryGetValue(typeof(T), out temp))
             {
@@ -169,11 +218,11 @@ namespace Microsoft.AspNet.Http
                     if (string.Equals("TryParseList", methodInfo.Name, StringComparison.Ordinal)
                         && methodInfo.ReturnParameter.ParameterType.Equals(typeof(Boolean)))
                     {
-                            var methodParams = methodInfo.GetParameters();
-                            return methodParams.Length == 2
-                                && methodParams[0].ParameterType.Equals(typeof(IList<string>))
-                                && methodParams[1].IsOut
-                                && methodParams[1].ParameterType.Equals(typeof(IList<T>).MakeByRefType());
+                        var methodParams = methodInfo.GetParameters();
+                        return methodParams.Length == 2
+                            && methodParams[0].ParameterType.Equals(typeof(IList<string>))
+                            && methodParams[1].IsOut
+                            && methodParams[1].ParameterType.Equals(typeof(IList<T>).MakeByRefType());
                     }
                     return false;
                 }).FirstOrDefault();

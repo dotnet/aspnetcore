@@ -6,7 +6,6 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.WebUtilities
 {
@@ -21,8 +20,13 @@ namespace Microsoft.AspNet.WebUtilities
         private int _bufferCount = 0;
         private bool _disposed;
 
-        public BufferedReadStream([NotNull] Stream inner, int bufferSize)
+        public BufferedReadStream(Stream inner, int bufferSize)
         {
+            if (inner == null)
+            {
+                throw new ArgumentNullException(nameof(inner));
+            }
+
             _inner = inner;
             _buffer = new byte[bufferSize];
         }

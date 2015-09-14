@@ -43,10 +43,8 @@ namespace Microsoft.AspNet.Builder.Extensions
             var builder = new ApplicationBuilder(serviceProvider: null);
             var noMiddleware = new ApplicationBuilder(serviceProvider: null).Build();
             var noOptions = new MapOptions();
-            // TODO: [NotNull] Assert.Throws<ArgumentNullException>(() => builder.Map(null, ActionNotImplemented));
-            // TODO: [NotNull] Assert.Throws<ArgumentNullException>(() => builder.Map("/foo", (Action<IBuilder>)null));
-            // TODO: [NotNull] Assert.Throws<ArgumentNullException>(() => new MapMiddleware(null, noOptions));
-            // TODO: [NotNull] Assert.Throws<ArgumentNullException>(() => new MapMiddleware(noMiddleware, null));
+            Assert.Throws<ArgumentNullException>(() => builder.Map("/foo", configuration: null));
+            Assert.Throws<ArgumentNullException>(() => new MapMiddleware(noMiddleware, null));
         }
 
         [Theory]

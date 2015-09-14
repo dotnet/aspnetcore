@@ -95,11 +95,21 @@ namespace Microsoft.AspNet.Http.Internal
 
         public override void OnStarting(Func<object, Task> callback, object state)
         {
+            if (callback == null)
+            {
+                throw new ArgumentNullException(nameof(callback));
+            }
+
             HttpResponseFeature.OnStarting(callback, state);
         }
 
         public override void OnCompleted(Func<object, Task> callback, object state)
         {
+            if (callback == null)
+            {
+                throw new ArgumentNullException(nameof(callback));
+            }
+
             HttpResponseFeature.OnCompleted(callback, state);
         }
 

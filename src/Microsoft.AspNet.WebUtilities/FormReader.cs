@@ -7,7 +7,6 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.Primitives;
 
 namespace Microsoft.AspNet.WebUtilities
@@ -23,13 +22,28 @@ namespace Microsoft.AspNet.WebUtilities
         private int _bufferOffset;
         private int _bufferCount;
 
-        public FormReader([NotNull] string data)
+        public FormReader(string data)
         {
+            if (data == null)
+            {
+                throw new ArgumentNullException(nameof(data));
+            }
+
             _reader = new StringReader(data);
         }
 
-        public FormReader([NotNull] Stream stream, [NotNull] Encoding encoding)
+        public FormReader(Stream stream, Encoding encoding)
         {
+            if (stream == null)
+            {
+                throw new ArgumentNullException(nameof(stream));
+            }
+
+            if (encoding == null)
+            {
+                throw new ArgumentNullException(nameof(encoding));
+            }
+
             _reader = new StreamReader(stream, encoding, detectEncodingFromByteOrderMarks: true, bufferSize: 1024 * 2, leaveOpen: true);
         }
 
@@ -160,7 +174,7 @@ namespace Microsoft.AspNet.WebUtilities
             while (pair.HasValue)
             {
                 accumulator.Append(pair.Value.Key, pair.Value.Value);
-                pair =  reader.ReadNextPair();
+                pair = reader.ReadNextPair();
             }
 
             return accumulator.GetResults();

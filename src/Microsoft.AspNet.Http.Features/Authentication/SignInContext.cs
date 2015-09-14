@@ -4,14 +4,23 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Http.Features.Authentication
 {
     public class SignInContext
     {
-        public SignInContext([NotNull] string authenticationScheme, [NotNull] ClaimsPrincipal principal, IDictionary<string, string> properties)
+        public SignInContext(string authenticationScheme, ClaimsPrincipal principal, IDictionary<string, string> properties)
         {
+            if (authenticationScheme == null)
+            {
+                throw new ArgumentNullException(nameof(authenticationScheme));
+            }
+
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+
             AuthenticationScheme = authenticationScheme;
             Principal = principal;
             Properties = properties ?? new Dictionary<string, string>(StringComparer.Ordinal);

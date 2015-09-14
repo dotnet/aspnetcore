@@ -4,7 +4,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.Primitives;
 
 namespace Microsoft.AspNet.Http.Internal
@@ -22,8 +21,13 @@ namespace Microsoft.AspNet.Http.Internal
         /// Initializes a new instance of the <see cref="T:Microsoft.Owin.HeaderDictionary" /> class.
         /// </summary>
         /// <param name="store">The underlying data store.</param>
-        public HeaderDictionary([NotNull] IDictionary<string, StringValues> store)
+        public HeaderDictionary(IDictionary<string, StringValues> store)
         {
+            if (store == null)
+            {
+                throw new ArgumentNullException(nameof(store));
+            }
+
             Store = store;
         }
 

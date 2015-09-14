@@ -3,7 +3,6 @@
 
 using System;
 using System.Diagnostics;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.WebUtilities
 {
@@ -21,8 +20,13 @@ namespace Microsoft.AspNet.WebUtilities
         /// The input must not contain any whitespace or padding characters.
         /// Throws FormatException if the input is malformed.
         /// </remarks>
-        public static byte[] Base64UrlDecode([NotNull] string input)
+        public static byte[] Base64UrlDecode(string input)
         {
+            if (input == null)
+            {
+                throw new ArgumentNullException(nameof(input));
+            }
+
             return Base64UrlDecode(input, 0, input.Length);
         }
 
@@ -37,8 +41,13 @@ namespace Microsoft.AspNet.WebUtilities
         /// The input must not contain any whitespace or padding characters.
         /// Throws FormatException if the input is malformed.
         /// </remarks>
-        public static byte[] Base64UrlDecode([NotNull] string input, int offset, int count)
+        public static byte[] Base64UrlDecode(string input, int offset, int count)
         {
+            if (input == null)
+            {
+                throw new ArgumentNullException(nameof(input));
+            }
+
             ValidateParameters(input.Length, offset, count);
 
             // Special-case empty input
@@ -83,8 +92,13 @@ namespace Microsoft.AspNet.WebUtilities
         /// </summary>
         /// <param name="input">The binary input to encode.</param>
         /// <returns>The base64url-encoded form of the input.</returns>
-        public static string Base64UrlEncode([NotNull] byte[] input)
+        public static string Base64UrlEncode(byte[] input)
         {
+            if (input == null)
+            {
+                throw new ArgumentNullException(nameof(input));
+            }
+
             return Base64UrlEncode(input, 0, input.Length);
         }
 
@@ -95,8 +109,13 @@ namespace Microsoft.AspNet.WebUtilities
         /// <param name="offset">The offset into <paramref name="input"/> at which to begin encoding.</param>
         /// <param name="count">The number of bytes of <paramref name="input"/> to encode.</param>
         /// <returns>The base64url-encoded form of the input.</returns>
-        public static string Base64UrlEncode([NotNull] byte[] input, int offset, int count)
+        public static string Base64UrlEncode(byte[] input, int offset, int count)
         {
+            if (input == null)
+            {
+                throw new ArgumentNullException(nameof(input));
+            }
+
             ValidateParameters(input.Length, offset, count);
 
             // Special-case empty input

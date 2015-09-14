@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Http
 {
@@ -91,8 +90,13 @@ namespace Microsoft.AspNet.Http
         /// </summary>
         /// <param name="uri">The Uri object</param>
         /// <returns>The resulting FragmentString</returns>
-        public static FragmentString FromUriComponent([NotNull] Uri uri)
+        public static FragmentString FromUriComponent(Uri uri)
         {
+            if (uri == null)
+            {
+                throw new ArgumentNullException(nameof(uri));
+            }
+
             string fragmentValue = uri.GetComponents(UriComponents.Fragment, UriFormat.UriEscaped);
             if (!string.IsNullOrEmpty(fragmentValue))
             {

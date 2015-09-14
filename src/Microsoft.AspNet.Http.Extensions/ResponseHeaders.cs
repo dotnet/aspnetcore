@@ -5,15 +5,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.Http.Extensions;
-using Microsoft.Framework.Internal;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Http.Headers
 {
     public class ResponseHeaders
     {
-        public ResponseHeaders([NotNull] IHeaderDictionary headers)
+        public ResponseHeaders(IHeaderDictionary headers)
         {
+            if (headers == null)
+            {
+                throw new ArgumentNullException(nameof(headers));
+            }
+
             Headers = headers;
         }
 
@@ -165,23 +169,53 @@ namespace Microsoft.AspNet.Http.Headers
             return Headers.GetList<T>(name);
         }
 
-        public void Set([NotNull] string name, object value)
+        public void Set(string name, object value)
         {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
             Headers.Set(name, value);
         }
 
-        public void SetList<T>([NotNull] string name, IList<T> values)
+        public void SetList<T>(string name, IList<T> values)
         {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
             Headers.SetList<T>(name, values);
         }
 
-        public void Append([NotNull] string name, [NotNull] object value)
+        public void Append(string name, object value)
         {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
             Headers.Append(name, value.ToString());
         }
 
-        public void AppendList<T>([NotNull] string name, [NotNull] IList<T> values)
+        public void AppendList<T>(string name, IList<T> values)
         {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            if (values == null)
+            {
+                throw new ArgumentNullException(nameof(values));
+            }
+
             Headers.Append(name, values.Select(value => value.ToString()).ToArray());
         }
     }

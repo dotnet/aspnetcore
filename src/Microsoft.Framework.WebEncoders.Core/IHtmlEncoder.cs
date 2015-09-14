@@ -1,9 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.IO;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.WebEncoders
 {
@@ -20,7 +18,7 @@ namespace Microsoft.Framework.WebEncoders
         /// The encoded value is also appropriately encoded for inclusion inside an HTML attribute
         /// as long as the attribute value is surrounded by single or double quotes.
         /// </remarks>
-        void HtmlEncode([NotNull] char[] value, int startIndex, int charCount, [NotNull] TextWriter output);
+        void HtmlEncode(char[] value, int startIndex, int charCount, TextWriter output);
 
         /// <summary>
         /// HTML-encodes a given input string.
@@ -42,6 +40,6 @@ namespace Microsoft.Framework.WebEncoders
         /// The encoded value is also appropriately encoded for inclusion inside an HTML attribute
         /// as long as the attribute value is surrounded by single or double quotes.
         /// </remarks>
-        void HtmlEncode([NotNull] string value, int startIndex, int charCount, [NotNull] TextWriter output);
+        void HtmlEncode(string value, int startIndex, int charCount, TextWriter output);
     }
 }

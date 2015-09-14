@@ -6,10 +6,8 @@
         "url": "git://github.com/aspnet/httpabstractions"
     },
     "compilationOptions": {
-        "allowUnsafe": true
-    },
-    "dependencies": {
-        "Microsoft.Framework.NotNullAttribute.Sources": { "type": "build", "version": "1.0.0-*" }
+        "allowUnsafe": true,
+        "warningsAsErrors": true
     },
     "frameworks": {
         "net45": { },

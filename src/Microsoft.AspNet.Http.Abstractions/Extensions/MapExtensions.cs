@@ -4,7 +4,6 @@
 using System;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Builder.Extensions;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Builder
 {
@@ -18,8 +17,18 @@ namespace Microsoft.AspNet.Builder
         /// <param name="pathMatch">The path to match</param>
         /// <param name="configuration">The branch to take for positive path matches</param>
         /// <returns></returns>
-        public static IApplicationBuilder Map([NotNull] this IApplicationBuilder app, PathString pathMatch, [NotNull] Action<IApplicationBuilder> configuration)
+        public static IApplicationBuilder Map(this IApplicationBuilder app, PathString pathMatch, Action<IApplicationBuilder> configuration)
         {
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+
+            if (configuration == null)
+            {
+                throw new ArgumentNullException(nameof(configuration));
+            }
+
             if (pathMatch.HasValue && pathMatch.Value.EndsWith("/", StringComparison.Ordinal))
             {
                 throw new ArgumentException("The path must not end with a '/'", nameof(pathMatch));

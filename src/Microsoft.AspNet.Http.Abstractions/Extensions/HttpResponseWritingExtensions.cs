@@ -5,7 +5,6 @@ using System;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Http
 {
@@ -21,8 +20,18 @@ namespace Microsoft.AspNet.Http
         /// <param name="text"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public static Task WriteAsync([NotNull] this HttpResponse response, [NotNull] string text, CancellationToken cancellationToken = default(CancellationToken))
+        public static Task WriteAsync(this HttpResponse response, string text, CancellationToken cancellationToken = default(CancellationToken))
         {
+            if (response == null)
+            {
+                throw new ArgumentNullException(nameof(response));
+            }
+
+            if (text == null)
+            {
+                throw new ArgumentNullException(nameof(text));
+            }
+
             return response.WriteAsync(text, Encoding.UTF8, cancellationToken);
         }
 
@@ -34,8 +43,23 @@ namespace Microsoft.AspNet.Http
         /// <param name="encoding"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public static Task WriteAsync([NotNull] this HttpResponse response, [NotNull] string text, [NotNull] Encoding encoding, CancellationToken cancellationToken = default(CancellationToken))
+        public static Task WriteAsync(this HttpResponse response, string text, Encoding encoding, CancellationToken cancellationToken = default(CancellationToken))
         {
+            if (response == null)
+            {
+                throw new ArgumentNullException(nameof(response));
+            }
+
+            if (text == null)
+            {
+                throw new ArgumentNullException(nameof(text));
+            }
+
+            if (encoding == null)
+            {
+                throw new ArgumentNullException(nameof(encoding));
+            }
+
             byte[] data = encoding.GetBytes(text);
             return response.Body.WriteAsync(data, 0, data.Length, cancellationToken);
         }

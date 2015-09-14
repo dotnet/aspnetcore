@@ -5,11 +5,8 @@
     "type": "git",
     "url": "git://github.com/aspnet/httpabstractions"
   },
-  "dependencies": {
-    "Microsoft.Framework.NotNullAttribute.Sources": {
-      "type": "build",
-      "version": "1.0.0-*"
-    }
+  "compilationOptions": {
+    "warningsAsErrors": true
   },
   "frameworks": {
     "net451": { },

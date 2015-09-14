@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Http.Features
 {
@@ -24,6 +23,6 @@ namespace Microsoft.AspNet.Http.Features
         /// </summary>
         /// <param name="key"></param>
         /// <returns>The requested feature, or null if it is not present.</returns>
-        object this[[NotNull] Type key] { get; set; }
+        object this[Type key] { get; set; }
     }
 }

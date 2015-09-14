@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.WebUtilities
 {
@@ -30,18 +29,38 @@ namespace Microsoft.AspNet.WebUtilities
 
         // TODO: allow for an optional buffer size limit to prevent filling hard disks. 1gb?
         public FileBufferingReadStream(
-            [NotNull] Stream inner,
+            Stream inner,
             int memoryThreshold,
-            [NotNull] Func<string> tempFileDirectoryAccessor)
+            Func<string> tempFileDirectoryAccessor)
         {
+            if (inner == null)
+            {
+                throw new ArgumentNullException(nameof(inner));
+            }
+
+            if (tempFileDirectoryAccessor == null)
+            {
+                throw new ArgumentNullException(nameof(tempFileDirectoryAccessor));
+            }
+
             _inner = inner;
             _memoryThreshold = memoryThreshold;
             _tempFileDirectoryAccessor = tempFileDirectoryAccessor;
         }
 
         // TODO: allow for an optional buffer size limit to prevent filling hard disks. 1gb?
-        public FileBufferingReadStream([NotNull] Stream inner, int memoryThreshold, [NotNull] string tempFileDirectory)
+        public FileBufferingReadStream(Stream inner, int memoryThreshold, string tempFileDirectory)
         {
+            if (inner == null)
+            {
+                throw new ArgumentNullException(nameof(inner));
+            }
+
+            if (tempFileDirectory == null)
+            {
+                throw new ArgumentNullException(nameof(tempFileDirectory));
+            }
+
             _inner = inner;
             _memoryThreshold = memoryThreshold;
             _tempFileDirectory = tempFileDirectory;

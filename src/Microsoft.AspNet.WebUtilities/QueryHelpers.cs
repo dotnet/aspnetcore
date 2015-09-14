@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.Primitives;
 using Microsoft.Framework.WebEncoders;
 
@@ -19,10 +18,25 @@ namespace Microsoft.AspNet.WebUtilities
         /// <param name="name">The name of the query key.</param>
         /// <param name="value">The query value.</param>
         /// <returns>The combined result.</returns>
-        public static string AddQueryString([NotNull] string uri, [NotNull] string name, [NotNull] string value)
+        public static string AddQueryString(string uri, string name, string value)
         {
+            if (uri == null)
+            {
+                throw new ArgumentNullException(nameof(uri));
+            }
+
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
             return AddQueryString(
-                uri, new [] { new KeyValuePair<string, string>(name, value) });
+                uri, new[] { new KeyValuePair<string, string>(name, value) });
         }
 
         /// <summary>
@@ -31,15 +45,35 @@ namespace Microsoft.AspNet.WebUtilities
         /// <param name="uri">The base uri.</param>
         /// <param name="queryString">A collection of name value query pairs to append.</param>
         /// <returns>The combined result.</returns>
-        public static string AddQueryString([NotNull] string uri, [NotNull] IDictionary<string, string> queryString)
+        public static string AddQueryString(string uri, IDictionary<string, string> queryString)
         {
+            if (uri == null)
+            {
+                throw new ArgumentNullException(nameof(uri));
+            }
+
+            if (queryString == null)
+            {
+                throw new ArgumentNullException(nameof(queryString));
+            }
+
             return AddQueryString(uri, (IEnumerable<KeyValuePair<string, string>>)queryString);
         }
 
         private static string AddQueryString(
-            [NotNull] string uri,
-            [NotNull] IEnumerable<KeyValuePair<string, string>> queryString)
+            string uri,
+            IEnumerable<KeyValuePair<string, string>> queryString)
         {
+            if (uri == null)
+            {
+                throw new ArgumentNullException(nameof(uri));
+            }
+
+            if (queryString == null)
+            {
+                throw new ArgumentNullException(nameof(queryString));
+            }
+
             var anchorIndex = uri.IndexOf('#');
             var uriToBeAppended = uri;
             var anchorText = "";

@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.Http.Internal;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.Primitives;
 using Microsoft.Net.Http.Headers;
 
@@ -19,18 +18,28 @@ namespace Microsoft.AspNet.Http.Features.Internal
         private StringValues _original;
         private IReadableStringCollection _parsedValues;
 
-        public RequestCookiesFeature([NotNull] IDictionary<string, StringValues> cookies)
+        public RequestCookiesFeature(IDictionary<string, StringValues> cookies)
             : this(new ReadableStringCollection(cookies))
         {
         }
 
-        public RequestCookiesFeature([NotNull] IReadableStringCollection cookies)
+        public RequestCookiesFeature(IReadableStringCollection cookies)
         {
+            if (cookies == null)
+            {
+                throw new ArgumentNullException(nameof(cookies));
+            }
+
             _parsedValues = cookies;
         }
 
-        public RequestCookiesFeature([NotNull] IFeatureCollection features)
+        public RequestCookiesFeature(IFeatureCollection features)
         {
+            if (features == null)
+            {
+                throw new ArgumentNullException(nameof(features));
+            }
+
             _features = features;
         }
 

@@ -3,18 +3,23 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Http.Features.Authentication
 {
     public class ChallengeContext
     {
-        public ChallengeContext([NotNull] string authenticationScheme) : this(authenticationScheme, properties: null, behavior: ChallengeBehavior.Automatic)
+        public ChallengeContext(string authenticationScheme)
+            : this(authenticationScheme, properties: null, behavior: ChallengeBehavior.Automatic)
         {
         }
 
-        public ChallengeContext([NotNull] string authenticationScheme, IDictionary<string, string> properties, ChallengeBehavior behavior)
+        public ChallengeContext(string authenticationScheme, IDictionary<string, string> properties, ChallengeBehavior behavior)
         {
+            if (authenticationScheme == null)
+            {
+                throw new ArgumentNullException(nameof(authenticationScheme));
+            }
+
             AuthenticationScheme = authenticationScheme;
             Properties = properties ?? new Dictionary<string, string>(StringComparer.Ordinal);
             Behavior = behavior;

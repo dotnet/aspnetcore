@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.WebEncoders
 {
@@ -51,9 +50,13 @@ namespace Microsoft.Framework.WebEncoders
         /// set returned by <paramref name="filter"/>'s <see cref="ICodePointFilter.GetAllowedCodePoints"/>
         /// method will be escaped.
         /// </summary>
-        public JavaScriptStringEncoder([NotNull] ICodePointFilter filter)
+        public JavaScriptStringEncoder(ICodePointFilter filter)
             : this(new JavaScriptStringUnicodeEncoder(CodePointFilter.Wrap(filter)))
         {
+            if (filter == null)
+            {
+                throw new ArgumentNullException(nameof(filter));
+            }
         }
 
         private JavaScriptStringEncoder(JavaScriptStringUnicodeEncoder innerEncoder)
@@ -97,6 +100,16 @@ namespace Microsoft.Framework.WebEncoders
         /// </summary>
         public void JavaScriptStringEncode(char[] value, int startIndex, int charCount, TextWriter output)
         {
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
+            if (output == null)
+            {
+                throw new ArgumentNullException(nameof(output));
+            }
+
             _innerUnicodeEncoder.Encode(value, startIndex, charCount, output);
         }
 
@@ -113,6 +126,16 @@ namespace Microsoft.Framework.WebEncoders
         /// </summary>
         public void JavaScriptStringEncode(string value, int startIndex, int charCount, TextWriter output)
         {
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
+            if (output == null)
+            {
+                throw new ArgumentNullException(nameof(output));
+            }
+
             _innerUnicodeEncoder.Encode(value, startIndex, charCount, output);
         }
 

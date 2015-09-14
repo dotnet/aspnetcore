@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.WebUtilities;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.Primitives;
 
 namespace Microsoft.AspNet.Http.Features.Internal
@@ -18,18 +17,32 @@ namespace Microsoft.AspNet.Http.Features.Internal
         private string _original;
         private IReadableStringCollection _parsedValues;
 
-        public QueryFeature([NotNull] IDictionary<string, StringValues> query)
+        public QueryFeature(IDictionary<string, StringValues> query)
             : this(new ReadableStringCollection(query))
         {
+            if (query == null)
+            {
+                throw new ArgumentNullException(nameof(query));
+            }
         }
 
-        public QueryFeature([NotNull] IReadableStringCollection query)
+        public QueryFeature(IReadableStringCollection query)
         {
+            if (query == null)
+            {
+                throw new ArgumentNullException(nameof(query));
+            }
+
             _parsedValues = query;
         }
 
-        public QueryFeature([NotNull] IFeatureCollection features)
+        public QueryFeature(IFeatureCollection features)
         {
+            if (features == null)
+            {
+                throw new ArgumentNullException(nameof(features));
+            }
+
             _features = features;
         }
 
