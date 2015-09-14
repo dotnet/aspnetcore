@@ -24,6 +24,14 @@ namespace Microsoft.AspNet.Html.Abstractions
         IHtmlContentBuilder Append(string unencoded);
 
         /// <summary>
+        /// Appends an HTML encoded <see cref="string"/> value. The value is treated as HTML encoded as-provided, and
+        /// no further encoding will be performed.
+        /// </summary>
+        /// <param name="content">The HTML encoded <see cref="string"/> to append.</param>
+        /// <returns>The <see cref="IHtmlContentBuilder"/>.</returns>
+        IHtmlContentBuilder AppendEncoded(string encoded);
+
+        /// <summary>
         /// Clears the content.
         /// </summary>
         void Clear();
