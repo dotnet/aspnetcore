@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNet.Http.Features;
+using Microsoft.AspNet.Server.Features;
 using Microsoft.Dnx.Runtime;
 using Microsoft.Framework.Configuration;
 using Microsoft.Framework.DependencyInjection;
@@ -22,7 +24,7 @@ namespace Microsoft.AspNet.Hosting
 
         public void Main(string[] args)
         {
-            // Allow the location of the ini file to be specified via a --config command line arg
+            // Allow the location of the json file to be specified via a --config command line arg
             var tempBuilder = new ConfigurationBuilder().AddCommandLine(args);
             var tempConfig = tempBuilder.Build();
             var configFilePath = tempConfig[ConfigFileKey] ?? HostingJsonFile;
@@ -35,11 +37,23 @@ namespace Microsoft.AspNet.Hosting
             var config = builder.Build();
 
             var host = new WebHostBuilder(_serviceProvider, config).Build();
-            using (host.Start())
+            using (var app = host.Start())
             {
+                var hostingEnv = app.Services.GetRequiredService<IHostingEnvironment>();
+                Console.WriteLine("Hosting environment: " + hostingEnv.EnvironmentName);
+
+                var serverAddresses = app.ServerFeatures.Get<IServerAddressesFeature>();
+                if (serverAddresses != null)
+                {
+                    foreach (var address in serverAddresses.Addresses)
+                    {
+                        Console.WriteLine("Now listening on: " + address);
+                    }
+                }
+
                 Console.WriteLine("Application started. Press Ctrl+C to shut down.");
 
-                var appShutdownService = host.ApplicationServices.GetRequiredService<IApplicationShutdown>();
+                var appShutdownService = app.Services.GetRequiredService<IApplicationShutdown>();
                 Console.CancelKeyPress += (sender, eventArgs) =>
                 {
                     appShutdownService.RequestShutdown();

@@ -7,7 +7,7 @@ namespace Microsoft.AspNet.Hosting.Internal
 {
     public interface IHostingEngine
     {
-        IDisposable Start();
+        IApplication Start();
 
         // Accessing this will block Use methods
         IServiceProvider ApplicationServices { get; }

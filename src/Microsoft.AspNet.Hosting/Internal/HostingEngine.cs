@@ -73,7 +73,7 @@ namespace Microsoft.AspNet.Hosting.Internal
             }
         }
 
-        public virtual IDisposable Start()
+        public virtual IApplication Start()
         {
             EnsureApplicationServices();
 
@@ -96,23 +96,14 @@ namespace Microsoft.AspNet.Hosting.Internal
                     }
                 });
 
-            var serverAddresses = _serverInstance.Get<IServerAddressesFeature>();
-            if (serverAddresses != null)
-            {
-                foreach (var address in serverAddresses.Addresses)
-                {
-                    logger.LogInformation("Now listening on: " + address);
-                }
-            }
-
             _applicationLifetime.NotifyStarted();
 
-            return new Disposable(() =>
+            return new Application(ApplicationServices, _serverInstance, new Disposable(() =>
             {
                 _applicationLifetime.NotifyStopping();
                 server.Dispose();
                 _applicationLifetime.NotifyStopped();
-            });
+            }));
         }
 
         private void EnsureApplicationServices()
