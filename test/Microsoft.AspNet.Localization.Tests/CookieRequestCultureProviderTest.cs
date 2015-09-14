@@ -40,7 +40,7 @@ namespace Microsoft.Framework.Localization.Tests
                 var value = CookieRequestCultureProvider.MakeCookieValue(requestCulture);
                 client.DefaultRequestHeaders.Add("Cookie", new CookieHeaderValue("Preferences", value).ToString());
                 var response = await client.GetAsync(string.Empty);
-                Assert.Equal("c=ar-SA|uic=ar-SA",value);
+                Assert.Equal("c=ar-SA|uic=ar-SA", value);
             }
         }
 
