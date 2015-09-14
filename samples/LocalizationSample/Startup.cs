@@ -86,6 +86,7 @@ $@"<!doctype html>
 </head>
 <body>");
                 await context.Response.WriteAsync($"<h1>{SR["Request Localization Sample"]}</h1>");
+                await context.Response.WriteAsync($"<h1>{SR["Hello"]}</h1>");
                 await context.Response.WriteAsync("<form id=\"theForm\" method=\"get\">");
                 await context.Response.WriteAsync($"<label for=\"culture\">{SR["Culture"]}: </label>");
                 await context.Response.WriteAsync("<select id=\"culture\" name=\"culture\">");
