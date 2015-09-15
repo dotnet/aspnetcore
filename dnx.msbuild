@@ -466,6 +466,10 @@
                 <term>wang</term>
                 <Justification>Data from Northwind database</Justification>
             </SrcExclusions>
+            <SrcExclusions Include="$(PoliCheckPath)**\src\EntityFramework.SqlServer\Storage\SqlServerTypeMapper.cs">
+                <term>national</term>
+                <Justification>Refers to SQL Server datatype</Justification>
+            </SrcExclusions>
         </ItemGroup>
 
         <PoliCheck
