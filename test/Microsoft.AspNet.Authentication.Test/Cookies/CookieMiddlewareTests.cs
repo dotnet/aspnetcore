@@ -19,7 +19,6 @@ using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Http.Features.Authentication;
 using Microsoft.AspNet.TestHost;
 using Microsoft.Framework.DependencyInjection;
-using Shouldly;
 using Xunit;
 
 namespace Microsoft.AspNet.Authentication.Cookies
@@ -33,7 +32,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
             {
             });
             var response = await server.CreateClient().GetAsync("http://example.com/normal");
-            response.StatusCode.ShouldBe(HttpStatusCode.OK);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
         [Theory]
@@ -49,12 +48,12 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
             var transaction = await SendAsync(server, "http://example.com/protected");
 
-            transaction.Response.StatusCode.ShouldBe(auto ? HttpStatusCode.Redirect : HttpStatusCode.Unauthorized);
+            Assert.Equal(auto ? HttpStatusCode.Redirect : HttpStatusCode.Unauthorized, transaction.Response.StatusCode);
             if (auto)
             {
                 var location = transaction.Response.Headers.Location;
-                location.LocalPath.ShouldBe("/login");
-                location.Query.ShouldBe("?ReturnUrl=%2Fprotected");
+                Assert.Equal("/login", location.LocalPath);
+                Assert.Equal("?ReturnUrl=%2Fprotected", location.Query);
             }
         }
 
@@ -65,9 +64,9 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
             var transaction = await SendAsync(server, "http://example.com/protected/CustomRedirect");
 
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             var location = transaction.Response.Headers.Location;
-            location.ToString().ShouldBe("http://example.com/Account/Login?ReturnUrl=%2FCustomRedirect");
+            Assert.Equal("http://example.com/Account/Login?ReturnUrl=%2FCustomRedirect", location.ToString());
         }
 
         private Task SignInAsAlice(HttpContext context)
@@ -101,12 +100,12 @@ namespace Microsoft.AspNet.Authentication.Cookies
             var transaction = await SendAsync(server, "http://example.com/testpath");
 
             var setCookie = transaction.SetCookie;
-            setCookie.ShouldStartWith("TestCookie=");
-            setCookie.ShouldContain("; path=/");
-            setCookie.ShouldContain("; HttpOnly");
-            setCookie.ShouldNotContain("; expires=");
-            setCookie.ShouldNotContain("; domain=");
-            setCookie.ShouldNotContain("; secure");
+            Assert.StartsWith("TestCookie=", setCookie);
+            Assert.Contains("; path=/", setCookie);
+            Assert.Contains("; httponly", setCookie);
+            Assert.DoesNotContain("; expires=", setCookie);
+            Assert.DoesNotContain("; domain=", setCookie);
+            Assert.DoesNotContain("; secure", setCookie);
         }
 
         [Fact]
@@ -157,11 +156,11 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
             if (shouldBeSecureOnly)
             {
-                setCookie.ShouldContain("; secure");
+                Assert.Contains("; secure", setCookie);
             }
             else
             {
-                setCookie.ShouldNotContain("; secure");
+                Assert.DoesNotContain("; secure", setCookie);
             }
         }
 
@@ -181,11 +180,11 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
             var setCookie1 = transaction1.SetCookie;
 
-            setCookie1.ShouldContain("TestCookie=");
-            setCookie1.ShouldContain(" path=/foo");
-            setCookie1.ShouldContain(" domain=another.com");
-            setCookie1.ShouldContain(" secure");
-            setCookie1.ShouldContain(" HttpOnly");
+            Assert.Contains("TestCookie=", setCookie1);
+            Assert.Contains(" path=/foo", setCookie1);
+            Assert.Contains(" domain=another.com", setCookie1);
+            Assert.Contains(" secure", setCookie1);
+            Assert.Contains(" httponly", setCookie1);
 
             var server2 = CreateServer(options =>
             {
@@ -198,11 +197,11 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
             var setCookie2 = transaction2.SetCookie;
 
-            setCookie2.ShouldContain("SecondCookie=");
-            setCookie2.ShouldContain(" path=/base");
-            setCookie2.ShouldNotContain(" domain=");
-            setCookie2.ShouldNotContain(" secure");
-            setCookie2.ShouldNotContain(" HttpOnly");
+            Assert.Contains("SecondCookie=", setCookie2);
+            Assert.Contains(" path=/base", setCookie2);
+            Assert.DoesNotContain(" domain=", setCookie2);
+            Assert.DoesNotContain(" secure", setCookie2);
+            Assert.DoesNotContain(" httponly", setCookie2);
         }
 
         [Fact]
@@ -218,7 +217,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
             var transaction2 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
 
-            FindClaimValue(transaction2, ClaimTypes.Name).ShouldBe("Alice");
+            Assert.Equal("Alice", FindClaimValue(transaction2, ClaimTypes.Name));
         }
 
         [Fact]
@@ -260,10 +259,9 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
             var transaction2 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
 
-            FindClaimValue(transaction2, ClaimTypes.Name).ShouldBe("Alice");
-            FindClaimValue(transaction2, "xform").ShouldBe("yup");
-            FindClaimValue(transaction2, "sync").ShouldBe(null);
-
+            Assert.Equal("Alice", FindClaimValue(transaction2, ClaimTypes.Name));
+            Assert.Equal("yup", FindClaimValue(transaction2, "xform"));
+            Assert.Null(FindClaimValue(transaction2, "sync"));
         }
 
         [Fact]
@@ -289,12 +287,12 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
             var transaction4 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
 
-            transaction2.SetCookie.ShouldBe(null);
-            FindClaimValue(transaction2, ClaimTypes.Name).ShouldBe("Alice");
-            transaction3.SetCookie.ShouldBe(null);
-            FindClaimValue(transaction3, ClaimTypes.Name).ShouldBe("Alice");
-            transaction4.SetCookie.ShouldBe(null);
-            FindClaimValue(transaction4, ClaimTypes.Name).ShouldBe(null);
+            Assert.Null(transaction2.SetCookie);
+            Assert.Equal("Alice", FindClaimValue(transaction2, ClaimTypes.Name));
+            Assert.Null(transaction3.SetCookie);
+            Assert.Equal("Alice", FindClaimValue(transaction3, ClaimTypes.Name));
+            Assert.Null(transaction4.SetCookie);
+            Assert.Null(FindClaimValue(transaction4, ClaimTypes.Name));
         }
 
         [Fact]
@@ -324,12 +322,12 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
             var transaction4 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
 
-            transaction2.SetCookie.ShouldBe(null);
-            FindClaimValue(transaction2, ClaimTypes.Name).ShouldBe("Alice");
-            transaction3.SetCookie.ShouldBe(null);
-            FindClaimValue(transaction3, ClaimTypes.Name).ShouldBe("Alice");
-            transaction4.SetCookie.ShouldBe(null);
-            FindClaimValue(transaction4, ClaimTypes.Name).ShouldBe(null);
+            Assert.Null(transaction2.SetCookie);
+            Assert.Equal("Alice", FindClaimValue(transaction2, ClaimTypes.Name));
+            Assert.Null(transaction3.SetCookie);
+            Assert.Equal("Alice", FindClaimValue(transaction3, ClaimTypes.Name));
+            Assert.Null(transaction4.SetCookie);
+            Assert.Null(FindClaimValue(transaction4, ClaimTypes.Name));
         }
 
         [Fact]
@@ -358,8 +356,8 @@ namespace Microsoft.AspNet.Authentication.Cookies
             clock.Add(TimeSpan.FromMinutes(11));
 
             var transaction2 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
-            transaction2.SetCookie.ShouldBe(null);
-            FindClaimValue(transaction2, ClaimTypes.Name).ShouldBe(null);
+            Assert.Null(transaction2.SetCookie);
+            Assert.Null(FindClaimValue(transaction2, ClaimTypes.Name));
         }
 
         [Fact]
@@ -388,8 +386,8 @@ namespace Microsoft.AspNet.Authentication.Cookies
             var transaction1 = await SendAsync(server, "http://example.com/testpath");
 
             var transaction2 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
-            transaction2.SetCookie.ShouldContain(".AspNet.Cookies=; expires=");
-            FindClaimValue(transaction2, ClaimTypes.Name).ShouldBe(null);
+            Assert.Contains(".AspNet.Cookies=; expires=", transaction2.SetCookie);
+            Assert.Null(FindClaimValue(transaction2, ClaimTypes.Name));
         }
 
         [Fact]
@@ -415,28 +413,28 @@ namespace Microsoft.AspNet.Authentication.Cookies
                     new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity("Alice", "Cookies")))));
 
             var transaction1 = await SendAsync(server, "http://example.com/testpath");
-
+            
             var transaction2 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
-            transaction2.SetCookie.ShouldNotBe(null);
-            FindClaimValue(transaction2, ClaimTypes.Name).ShouldBe("Alice");
+            Assert.NotNull(transaction2.SetCookie);
+            Assert.Equal("Alice", FindClaimValue(transaction2, ClaimTypes.Name));
 
             clock.Add(TimeSpan.FromMinutes(5));
 
             var transaction3 = await SendAsync(server, "http://example.com/me/Cookies", transaction2.CookieNameValue);
-            transaction3.SetCookie.ShouldNotBe(null);
-            FindClaimValue(transaction3, ClaimTypes.Name).ShouldBe("Alice");
+            Assert.NotNull(transaction3.SetCookie);
+            Assert.Equal("Alice", FindClaimValue(transaction3, ClaimTypes.Name));
 
             clock.Add(TimeSpan.FromMinutes(6));
 
             var transaction4 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
-            transaction4.SetCookie.ShouldBe(null);
-            FindClaimValue(transaction4, ClaimTypes.Name).ShouldBe(null);
+            Assert.Null(transaction4.SetCookie);
+            Assert.Null(FindClaimValue(transaction4, ClaimTypes.Name));
 
             clock.Add(TimeSpan.FromMinutes(5));
 
             var transaction5 = await SendAsync(server, "http://example.com/me/Cookies", transaction2.CookieNameValue);
-            transaction5.SetCookie.ShouldBe(null);
-            FindClaimValue(transaction5, ClaimTypes.Name).ShouldBe(null);
+            Assert.Null(transaction5.SetCookie);
+            Assert.Null(FindClaimValue(transaction5, ClaimTypes.Name));
         }
 
         [Fact]
@@ -463,26 +461,26 @@ namespace Microsoft.AspNet.Authentication.Cookies
             var transaction1 = await SendAsync(server, "http://example.com/testpath");
 
             var transaction2 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
-            transaction2.SetCookie.ShouldNotBe(null);
-            FindClaimValue(transaction2, ClaimTypes.Name).ShouldBe("Alice");
+            Assert.NotNull(transaction2.SetCookie);
+            Assert.Equal("Alice", FindClaimValue(transaction2, ClaimTypes.Name));
 
             clock.Add(TimeSpan.FromMinutes(5));
 
             var transaction3 = await SendAsync(server, "http://example.com/me/Cookies", transaction2.CookieNameValue);
-            transaction3.SetCookie.ShouldNotBe(null);
-            FindClaimValue(transaction3, ClaimTypes.Name).ShouldBe("Alice");
+            Assert.NotNull(transaction3.SetCookie);
+            Assert.Equal("Alice", FindClaimValue(transaction3, ClaimTypes.Name));
 
             clock.Add(TimeSpan.FromMinutes(6));
 
             var transaction4 = await SendAsync(server, "http://example.com/me/Cookies", transaction3.CookieNameValue);
-            transaction4.SetCookie.ShouldNotBe(null);
-            FindClaimValue(transaction4, ClaimTypes.Name).ShouldBe("Alice");
+            Assert.NotNull(transaction4.SetCookie);
+            Assert.Equal("Alice", FindClaimValue(transaction4, ClaimTypes.Name));
 
             clock.Add(TimeSpan.FromMinutes(11));
 
             var transaction5 = await SendAsync(server, "http://example.com/me/Cookies", transaction4.CookieNameValue);
-            transaction5.SetCookie.ShouldBe(null);
-            FindClaimValue(transaction5, ClaimTypes.Name).ShouldBe(null);
+            Assert.Null(transaction5.SetCookie);
+            Assert.Null(FindClaimValue(transaction5, ClaimTypes.Name));
         }
 
         [Fact]
@@ -507,20 +505,20 @@ namespace Microsoft.AspNet.Authentication.Cookies
             var transaction1 = await SendAsync(server, "http://example.com/testpath");
 
             var transaction2 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
-            transaction2.SetCookie.ShouldBe(null);
-            FindClaimValue(transaction2, ClaimTypes.Name).ShouldBe("Alice");
+            Assert.Null(transaction2.SetCookie);
+            Assert.Equal("Alice", FindClaimValue(transaction2, ClaimTypes.Name));
 
             clock.Add(TimeSpan.FromMinutes(3));
 
             var transaction3 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
-            transaction3.SetCookie.ShouldBe(null);
-            FindClaimValue(transaction3, ClaimTypes.Name).ShouldBe("Alice");
+            Assert.Null(transaction3.SetCookie);
+            Assert.Equal("Alice", FindClaimValue(transaction3, ClaimTypes.Name));
 
             clock.Add(TimeSpan.FromMinutes(3));
 
             var transaction4 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
-            transaction4.SetCookie.ShouldBe(null);
-            FindClaimValue(transaction4, ClaimTypes.Name).ShouldBe(null);
+            Assert.Null(transaction4.SetCookie);
+            Assert.Null(FindClaimValue(transaction4, ClaimTypes.Name));
         }
 
         [Fact]
@@ -537,27 +535,27 @@ namespace Microsoft.AspNet.Authentication.Cookies
             var transaction1 = await SendAsync(server, "http://example.com/testpath");
 
             var transaction2 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
-            transaction2.SetCookie.ShouldBe(null);
-            FindClaimValue(transaction2, ClaimTypes.Name).ShouldBe("Alice");
+            Assert.Null(transaction2.SetCookie);
+            Assert.Equal("Alice", FindClaimValue(transaction2, ClaimTypes.Name));
 
             clock.Add(TimeSpan.FromMinutes(4));
 
             var transaction3 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
-            transaction3.SetCookie.ShouldBe(null);
-            FindClaimValue(transaction3, ClaimTypes.Name).ShouldBe("Alice");
+            Assert.Null(transaction3.SetCookie);
+            Assert.Equal("Alice", FindClaimValue(transaction3, ClaimTypes.Name));
 
             clock.Add(TimeSpan.FromMinutes(4));
 
             // transaction4 should arrive with a new SetCookie value
             var transaction4 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
-            transaction4.SetCookie.ShouldNotBe(null);
-            FindClaimValue(transaction4, ClaimTypes.Name).ShouldBe("Alice");
+            Assert.NotNull(transaction4.SetCookie);
+            Assert.Equal("Alice", FindClaimValue(transaction4, ClaimTypes.Name));
 
             clock.Add(TimeSpan.FromMinutes(4));
 
             var transaction5 = await SendAsync(server, "http://example.com/me/Cookies", transaction4.CookieNameValue);
-            transaction5.SetCookie.ShouldBe(null);
-            FindClaimValue(transaction5, ClaimTypes.Name).ShouldBe("Alice");
+            Assert.Null(transaction5.SetCookie);
+            Assert.Equal("Alice", FindClaimValue(transaction5, ClaimTypes.Name));
         }
 
         [Fact]
@@ -595,9 +593,9 @@ namespace Microsoft.AspNet.Authentication.Cookies
             var url = "http://example.com/challenge";
             var transaction2 = await SendAsync(server, url, transaction1.CookieNameValue);
 
-            transaction2.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+            Assert.Equal(HttpStatusCode.Redirect, transaction2.Response.StatusCode);
             var location = transaction2.Response.Headers.Location;
-            location.LocalPath.ShouldBe("/Account/AccessDenied");
+            Assert.Equal("/Account/AccessDenied", location.LocalPath);
         }
 
         [Theory]
@@ -616,9 +614,9 @@ namespace Microsoft.AspNet.Authentication.Cookies
             var url = "http://example.com/challenge";
             var transaction = await SendAsync(server, url);
 
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             var location = transaction.Response.Headers.Location;
-            location.LocalPath.ShouldBe("/Account/Login");
+            Assert.Equal("/Account/Login", location.LocalPath);
         }
 
         [Theory]
@@ -637,9 +635,9 @@ namespace Microsoft.AspNet.Authentication.Cookies
             var url = "http://example.com/forbid";
             var transaction = await SendAsync(server, url);
 
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             var location = transaction.Response.Headers.Location;
-            location.LocalPath.ShouldBe("/Account/AccessDenied");
+            Assert.Equal("/Account/AccessDenied", location.LocalPath);
         }
 
         [Fact]
@@ -657,10 +655,10 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
             var transaction2 = await SendAsync(server, "http://example.com/challenge", transaction1.CookieNameValue);
 
-            transaction2.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+            Assert.Equal(HttpStatusCode.Redirect, transaction2.Response.StatusCode);
 
             var location = transaction2.Response.Headers.Location;
-            location.LocalPath.ShouldBe("/accessdenied");
+            Assert.Equal("/accessdenied", location.LocalPath);
         }
 
         [Fact]
@@ -677,7 +675,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
             var transaction2 = await SendAsync(server, "http://example.com/challenge", transaction1.CookieNameValue);
 
-            transaction2.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+            Assert.Equal(HttpStatusCode.Redirect, transaction2.Response.StatusCode);
         }
 
         [Fact]
@@ -694,7 +692,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
             var transaction2 = await SendAsync(server, "http://example.com/unauthorized", transaction1.CookieNameValue);
 
-            transaction2.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+            Assert.Equal(HttpStatusCode.Redirect, transaction2.Response.StatusCode);
         }
 
         [Fact]
@@ -709,11 +707,11 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
             var transaction = await server.SendAsync("http://example.com/login");
 
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
 
             var location = transaction.Response.Headers.Location;
-            location.LocalPath.ShouldBe("/page");
-            location.Query.ShouldBe("?ReturnUrl=%2F");
+            Assert.Equal("/page", location.LocalPath);
+            Assert.Equal("?ReturnUrl=%2F", location.Query);
         }
 
         [Fact]
@@ -728,7 +726,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
             }, services => services.AddAuthentication());
 
             var transaction = await server.SendAsync("http://example.com");
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
+            Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
         }
 
 /*        [Fact]
@@ -743,7 +741,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
             var transaction = await server.SendAsync("http://example.com");
 
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
+            Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
             Assert.True(transaction.SetCookie[0].StartsWith(".AspNet.Cookies="));
         }
 
@@ -759,7 +757,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
             var transaction = await server.SendAsync("http://example.com");
 
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
+            Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
             Assert.True(transaction.SetCookie[0].StartsWith("One="));
         }*/
 
@@ -775,8 +773,8 @@ namespace Microsoft.AspNet.Authentication.Cookies
                 services => services.AddAuthentication());
 
             var transaction = await server.SendAsync("http://example.com/notlogin?ReturnUrl=%2Fpage");
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
-            transaction.SetCookie.ShouldNotBe(null);
+            Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
+            Assert.NotNull(transaction.SetCookie);
         }
 
         [Fact]
@@ -792,11 +790,11 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
             var transaction = await server.SendAsync("http://example.com/login?ReturnUrl=%2Fpage");
 
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
-            transaction.SetCookie.ShouldNotBe(null);
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
+            Assert.NotNull(transaction.SetCookie);
 
             var location = transaction.Response.Headers.Location;
-            location.OriginalString.ShouldBe("/page");
+            Assert.Equal("/page", location.OriginalString);
         }
 
         [Fact]
@@ -810,8 +808,8 @@ namespace Microsoft.AspNet.Authentication.Cookies
             services => services.AddAuthentication());
 
             var transaction = await server.SendAsync("http://example.com/notlogout?ReturnUrl=%2Fpage");
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
-            transaction.SetCookie[0].ShouldContain(".AspNet.Cookies=; expires=");
+            Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
+            Assert.Contains(".AspNet.Cookies=; expires=", transaction.SetCookie[0]);
         }
 
         [Fact]
@@ -826,11 +824,11 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
             var transaction = await server.SendAsync("http://example.com/logout?ReturnUrl=%2Fpage");
 
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
-            transaction.SetCookie[0].ShouldContain(".AspNet.Cookies=; expires=");
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
+            Assert.Contains(".AspNet.Cookies=; expires=", transaction.SetCookie[0]);
 
             var location = transaction.Response.Headers.Location;
-            location.OriginalString.ShouldBe("/page");
+            Assert.Equal("/page", location.OriginalString);
         }
 
         [Fact]
@@ -844,10 +842,10 @@ namespace Microsoft.AspNet.Authentication.Cookies
                 services => services.AddAuthentication());
             var transaction = await server.SendAsync("http://example.com/forbid");
 
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
 
             var location = transaction.Response.Headers.Location;
-            location.LocalPath.ShouldBe("/denied");
+            Assert.Equal("/denied", location.LocalPath);
         }
 
         [Fact]
@@ -862,11 +860,11 @@ namespace Microsoft.AspNet.Authentication.Cookies
                 services => services.AddAuthentication());
             var transaction = await server.SendAsync("http://example.com/base/login");
 
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
 
             var location = transaction.Response.Headers.Location;
-            location.LocalPath.ShouldBe("/base/page");
-            location.Query.ShouldBe("?ReturnUrl=%2F");
+            Assert.Equal("/base/page", location.LocalPath);
+            Assert.Equal("?ReturnUrl=%2F", location.Query);
         }
 
         [Fact]
@@ -881,10 +879,10 @@ namespace Microsoft.AspNet.Authentication.Cookies
                 services => services.AddAuthentication());
             var transaction = await server.SendAsync("http://example.com/base/forbid");
 
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
 
             var location = transaction.Response.Headers.Location;
-            location.LocalPath.ShouldBe("/base/denied");
+            Assert.Equal("/base/denied", location.LocalPath);
         }
 
         [Fact]
@@ -907,7 +905,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
             services => services.AddAuthentication());
 
             var transaction = await SendAsync(server1, "http://example.com/stuff");
-            transaction.SetCookie.ShouldNotBe(null);
+            Assert.NotNull(transaction.SetCookie);
 
             var server2 = TestServer.Create(app =>
             {
@@ -926,7 +924,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
             },
             services => services.AddAuthentication());
             var transaction2 = await SendAsync(server2, "http://example.com/stuff", transaction.CookieNameValue);
-            FindClaimValue(transaction2, ClaimTypes.Name).ShouldBe("Alice");
+            Assert.Equal("Alice", FindClaimValue(transaction2, ClaimTypes.Name));
         }
 
         private class NoOpDataProtector : IDataProtector

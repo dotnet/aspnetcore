@@ -16,7 +16,6 @@ using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.TestHost;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.WebEncoders;
-using Shouldly;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -65,9 +64,9 @@ namespace Microsoft.AspNet.Authentication.Facebook
                     return true;
                 });
             var transaction = await server.SendAsync("http://example.com/challenge");
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             var query = transaction.Response.Headers.Location.Query;
-            query.ShouldContain("custom=test");
+            Assert.Contains("custom=test", query);
         }
 
         [Fact]
@@ -90,14 +89,14 @@ namespace Microsoft.AspNet.Authentication.Facebook
                 },
                 handler: null);
             var transaction = await server.SendAsync("http://example.com/base/login");
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             var location = transaction.Response.Headers.Location.AbsoluteUri;
-            location.ShouldContain("https://www.facebook.com/v2.2/dialog/oauth");
-            location.ShouldContain("response_type=code");
-            location.ShouldContain("client_id=");
-            location.ShouldContain("redirect_uri=" + UrlEncoder.Default.UrlEncode("http://example.com/base/signin-facebook"));
-            location.ShouldContain("scope=");
-            location.ShouldContain("state=");
+            Assert.Contains("https://www.facebook.com/v2.2/dialog/oauth", location);
+            Assert.Contains("response_type=code", location);
+            Assert.Contains("client_id=", location);
+            Assert.Contains("redirect_uri=" + UrlEncoder.Default.UrlEncode("http://example.com/base/signin-facebook"), location);
+            Assert.Contains("scope=", location);
+            Assert.Contains("state=", location);
         }
 
         [Fact]
@@ -121,14 +120,14 @@ namespace Microsoft.AspNet.Authentication.Facebook
                 },
                 handler: null);
             var transaction = await server.SendAsync("http://example.com/login");
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             var location = transaction.Response.Headers.Location.AbsoluteUri;
-            location.ShouldContain("https://www.facebook.com/v2.2/dialog/oauth");
-            location.ShouldContain("response_type=code");
-            location.ShouldContain("client_id=");
-            location.ShouldContain("redirect_uri="+ UrlEncoder.Default.UrlEncode("http://example.com/signin-facebook"));
-            location.ShouldContain("scope=");
-            location.ShouldContain("state=");
+            Assert.Contains("https://www.facebook.com/v2.2/dialog/oauth", location);
+            Assert.Contains("response_type=code", location);
+            Assert.Contains("client_id=", location);
+            Assert.Contains("redirect_uri="+ UrlEncoder.Default.UrlEncode("http://example.com/signin-facebook"), location);
+            Assert.Contains("scope=", location);
+            Assert.Contains("state=", location);
         }
 
         [Fact]
@@ -163,14 +162,14 @@ namespace Microsoft.AspNet.Authentication.Facebook
                     return true;
                 });
             var transaction = await server.SendAsync("http://example.com/challenge");
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             var location = transaction.Response.Headers.Location.AbsoluteUri;
-            location.ShouldContain("https://www.facebook.com/v2.2/dialog/oauth");
-            location.ShouldContain("response_type=code");
-            location.ShouldContain("client_id=");
-            location.ShouldContain("redirect_uri=");
-            location.ShouldContain("scope=");
-            location.ShouldContain("state=");
+            Assert.Contains("https://www.facebook.com/v2.2/dialog/oauth", location);
+            Assert.Contains("response_type=code", location);
+            Assert.Contains("client_id=", location);
+            Assert.Contains("redirect_uri=", location);
+            Assert.Contains("scope=", location);
+            Assert.Contains("state=", location);
         }
 
         [Fact]
@@ -236,11 +235,11 @@ namespace Microsoft.AspNet.Authentication.Facebook
             var transaction = await server.SendAsync(
                 "https://example.com/signin-facebook?code=TestCode&state=" + UrlEncoder.Default.UrlEncode(state),
                 correlationKey + "=" + correlationValue);
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
-            transaction.Response.Headers.GetValues("Location").First().ShouldBe("/me");
-            finalUserInfoEndpoint.Count(c => c == '?').ShouldBe(1);
-            finalUserInfoEndpoint.ShouldContain("fields=email,timezone,picture");
-            finalUserInfoEndpoint.ShouldContain("&access_token=");
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
+            Assert.Equal("/me", transaction.Response.Headers.GetValues("Location").First());
+            Assert.Equal(1, finalUserInfoEndpoint.Count(c => c == '?'));
+            Assert.Contains("fields=email,timezone,picture", finalUserInfoEndpoint);
+            Assert.Contains("&access_token=", finalUserInfoEndpoint);
         }
 
         private static TestServer CreateServer(Action<IApplicationBuilder> configure, Action<IServiceCollection> configureServices, Func<HttpContext, bool> handler)

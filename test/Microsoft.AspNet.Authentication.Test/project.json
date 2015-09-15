@@ -1,28 +1,25 @@
 {
-    "compilationOptions": {
-        "warningsAsErrors": true
-    },
-    "dependencies": {
-        "Microsoft.AspNet.Authentication.Cookies": "1.0.0-*",
-        "Microsoft.AspNet.Authentication.Facebook": "1.0.0-*",
-        "Microsoft.AspNet.Authentication.Google": "1.0.0-*",
-        "Microsoft.AspNet.Authentication.JwtBearer": "1.0.0-*",
-        "Microsoft.AspNet.Authentication.MicrosoftAccount": "1.0.0-*",
-        "Microsoft.AspNet.Authentication.OpenIdConnect": "1.0.0-*",
-        "Microsoft.AspNet.Authentication.Twitter": "1.0.0-*",
-        "Microsoft.AspNet.DataProtection": "1.0.0-*",
-        "Microsoft.AspNet.TestHost": "1.0.0-*",
-        "Moq": "4.2.1312.1622",
-        "xunit.runner.aspnet": "2.0.0-aspnet-*"
-    },
-    "commands": {
-        "test": "xunit.runner.aspnet"
-    },
-    "frameworks": {
-        "dnx451": {
-            "dependencies": {
-                "Shouldly": "1.1.1.1"
-            }
-        }
+  "compilationOptions": {
+    "warningsAsErrors": true
+  },
+  "dependencies": {
+    "Microsoft.AspNet.Authentication.Cookies": "1.0.0-*",
+    "Microsoft.AspNet.Authentication.Facebook": "1.0.0-*",
+    "Microsoft.AspNet.Authentication.Google": "1.0.0-*",
+    "Microsoft.AspNet.Authentication.JwtBearer": "1.0.0-*",
+    "Microsoft.AspNet.Authentication.MicrosoftAccount": "1.0.0-*",
+    "Microsoft.AspNet.Authentication.OpenIdConnect": "1.0.0-*",
+    "Microsoft.AspNet.Authentication.Twitter": "1.0.0-*",
+    "Microsoft.AspNet.DataProtection": "1.0.0-*",
+    "Microsoft.AspNet.TestHost": "1.0.0-*",
+    "Moq": "4.2.1312.1622",
+    "xunit.runner.aspnet": "2.0.0-aspnet-*"
+  },
+  "commands": {
+    "test": "xunit.runner.aspnet"
+  },
+  "frameworks": {
+    "dnx451": {
     }
+  }
 }

@@ -17,7 +17,6 @@ using Microsoft.AspNet.TestHost;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.WebEncoders;
 using Newtonsoft.Json;
-using Shouldly;
 using Xunit;
 
 namespace Microsoft.AspNet.Authentication.Google
@@ -33,17 +32,17 @@ namespace Microsoft.AspNet.Authentication.Google
                 options.ClientSecret = "Test Secret";
             });
             var transaction = await server.SendAsync("https://example.com/challenge");
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             var location = transaction.Response.Headers.Location.ToString();
-            location.ShouldContain("https://accounts.google.com/o/oauth2/auth?response_type=code");
-            location.ShouldContain("&client_id=");
-            location.ShouldContain("&redirect_uri=");
-            location.ShouldContain("&scope=");
-            location.ShouldContain("&state=");
+            Assert.Contains("https://accounts.google.com/o/oauth2/auth?response_type=code", location);
+            Assert.Contains("&client_id=", location);
+            Assert.Contains("&redirect_uri=", location);
+            Assert.Contains("&scope=", location);
+            Assert.Contains("&state=", location);
 
-            location.ShouldNotContain("access_type=");
-            location.ShouldNotContain("approval_prompt=");
-            location.ShouldNotContain("login_hint=");
+            Assert.DoesNotContain("access_type=", location);
+            Assert.DoesNotContain("approval_prompt=", location);
+            Assert.DoesNotContain("login_hint=", location);
         }
 
         [Fact]
@@ -55,7 +54,7 @@ namespace Microsoft.AspNet.Authentication.Google
                 options.ClientSecret = "Test Secret";
             });
             var transaction = await server.SendAsync("https://example.com/signIn");
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
+            Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
         }
 
         [Fact]
@@ -67,7 +66,7 @@ namespace Microsoft.AspNet.Authentication.Google
                 options.ClientSecret = "Test Secret";
             });
             var transaction = await server.SendAsync("https://example.com/signOut");
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
+            Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
         }
 
         [Fact]
@@ -79,7 +78,7 @@ namespace Microsoft.AspNet.Authentication.Google
                 options.ClientSecret = "Test Secret";
             });
             var transaction = await server.SendAsync("https://example.com/signOut");
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
+            Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
         }
 
         [Fact]
@@ -92,13 +91,13 @@ namespace Microsoft.AspNet.Authentication.Google
                 options.AutomaticAuthentication = true;
             });
             var transaction = await server.SendAsync("https://example.com/401");
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             var location = transaction.Response.Headers.Location.ToString();
-            location.ShouldContain("https://accounts.google.com/o/oauth2/auth?response_type=code");
-            location.ShouldContain("&client_id=");
-            location.ShouldContain("&redirect_uri=");
-            location.ShouldContain("&scope=");
-            location.ShouldContain("&state=");
+            Assert.Contains("https://accounts.google.com/o/oauth2/auth?response_type=code", location);
+            Assert.Contains("&client_id=", location);
+            Assert.Contains("&redirect_uri=", location);
+            Assert.Contains("&scope=", location);
+            Assert.Contains("&state=", location);
         }
 
         [Fact]
@@ -110,7 +109,7 @@ namespace Microsoft.AspNet.Authentication.Google
                 options.ClientSecret = "Test Secret";
             });
             var transaction = await server.SendAsync("https://example.com/challenge");
-            transaction.SetCookie.Single().ShouldContain(".AspNet.Correlation.Google=");
+            Assert.Contains(".AspNet.Correlation.Google=", transaction.SetCookie.Single());
         }
 
         [Fact]
@@ -123,7 +122,7 @@ namespace Microsoft.AspNet.Authentication.Google
                 options.AutomaticAuthentication = true;
             });
             var transaction = await server.SendAsync("https://example.com/401");
-            transaction.SetCookie.Single().ShouldContain(".AspNet.Correlation.Google=");
+            Assert.Contains(".AspNet.Correlation.Google=", transaction.SetCookie.Single());
         }
 
         [Fact]
@@ -135,9 +134,9 @@ namespace Microsoft.AspNet.Authentication.Google
                 options.ClientSecret = "Test Secret";
             });
             var transaction = await server.SendAsync("https://example.com/challenge");
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             var query = transaction.Response.Headers.Location.Query;
-            query.ShouldContain("&scope=" + UrlEncoder.Default.UrlEncode("openid profile email"));
+            Assert.Contains("&scope=" + UrlEncoder.Default.UrlEncode("openid profile email"), query);
         }
 
         [Fact]
@@ -150,9 +149,9 @@ namespace Microsoft.AspNet.Authentication.Google
                 options.AutomaticAuthentication = true;
             });
             var transaction = await server.SendAsync("https://example.com/401");
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             var query = transaction.Response.Headers.Location.Query;
-            query.ShouldContain("&scope=" + UrlEncoder.Default.UrlEncode("openid profile email"));
+            Assert.Contains("&scope=" + UrlEncoder.Default.UrlEncode("openid profile email"), query);
         }
 
         [Fact]
@@ -183,12 +182,12 @@ namespace Microsoft.AspNet.Authentication.Google
                     return Task.FromResult<object>(null);
                 });
             var transaction = await server.SendAsync("https://example.com/challenge2");
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             var query = transaction.Response.Headers.Location.Query;
-            query.ShouldContain("scope=" + UrlEncoder.Default.UrlEncode("https://www.googleapis.com/auth/plus.login"));
-            query.ShouldContain("access_type=offline");
-            query.ShouldContain("approval_prompt=force");
-            query.ShouldContain("login_hint=" + UrlEncoder.Default.UrlEncode("test@example.com"));
+            Assert.Contains("scope=" + UrlEncoder.Default.UrlEncode("https://www.googleapis.com/auth/plus.login"), query);
+            Assert.Contains("access_type=offline", query);
+            Assert.Contains("approval_prompt=force", query);
+            Assert.Contains("login_hint=" + UrlEncoder.Default.UrlEncode("test@example.com"), query);
         }
 
         [Fact]
@@ -208,9 +207,9 @@ namespace Microsoft.AspNet.Authentication.Google
                 };
             });
             var transaction = await server.SendAsync("https://example.com/challenge");
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             var query = transaction.Response.Headers.Location.Query;
-            query.ShouldContain("custom=test");
+            Assert.Contains("custom=test", query);
         }
 
         [Fact]
@@ -222,7 +221,7 @@ namespace Microsoft.AspNet.Authentication.Google
                 options.ClientSecret = "Test Secret";
             });
             var transaction = await server.SendAsync("https://example.com/signin-google?code=TestCode");
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.InternalServerError);
+            Assert.Equal(HttpStatusCode.InternalServerError, transaction.Response.StatusCode);
         }
 
         [Theory]
@@ -286,24 +285,24 @@ namespace Microsoft.AspNet.Authentication.Google
             var transaction = await server.SendAsync(
                 "https://example.com/signin-google?code=TestCode&state=" + UrlEncoder.Default.UrlEncode(state),
                 correlationKey + "=" + correlationValue);
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
-            transaction.Response.Headers.GetValues("Location").First().ShouldBe("/me");
-            transaction.SetCookie.Count.ShouldBe(2);
-            transaction.SetCookie[0].ShouldContain(correlationKey);
-            transaction.SetCookie[1].ShouldContain(".AspNet." + TestExtensions.CookieAuthenticationScheme);
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
+            Assert.Equal("/me", transaction.Response.Headers.GetValues("Location").First());
+            Assert.Equal(2, transaction.SetCookie.Count);
+            Assert.Contains(correlationKey, transaction.SetCookie[0]);
+            Assert.Contains(".AspNet." + TestExtensions.CookieAuthenticationScheme, transaction.SetCookie[1]);
 
             var authCookie = transaction.AuthenticationCookieValue;
             transaction = await server.SendAsync("https://example.com/me", authCookie);
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
+            Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
             var expectedIssuer = claimsIssuer ?? GoogleDefaults.AuthenticationScheme;
-            transaction.FindClaimValue(ClaimTypes.Name, expectedIssuer).ShouldBe("Test Name");
-            transaction.FindClaimValue(ClaimTypes.NameIdentifier, expectedIssuer).ShouldBe("Test User ID");
-            transaction.FindClaimValue(ClaimTypes.GivenName, expectedIssuer).ShouldBe("Test Given Name");
-            transaction.FindClaimValue(ClaimTypes.Surname, expectedIssuer).ShouldBe("Test Family Name");
-            transaction.FindClaimValue(ClaimTypes.Email, expectedIssuer).ShouldBe("Test email");
+            Assert.Equal("Test Name", transaction.FindClaimValue(ClaimTypes.Name, expectedIssuer));
+            Assert.Equal("Test User ID", transaction.FindClaimValue(ClaimTypes.NameIdentifier, expectedIssuer));
+            Assert.Equal("Test Given Name", transaction.FindClaimValue(ClaimTypes.GivenName, expectedIssuer));
+            Assert.Equal("Test Family Name", transaction.FindClaimValue(ClaimTypes.Surname, expectedIssuer));
+            Assert.Equal("Test email", transaction.FindClaimValue(ClaimTypes.Email, expectedIssuer));
 
             // Ensure claims transformation 
-            transaction.FindClaimValue("xform").ShouldBe("yup");
+            Assert.Equal("yup", transaction.FindClaimValue("xform"));
         }
 
         [Fact]
@@ -332,8 +331,8 @@ namespace Microsoft.AspNet.Authentication.Google
             var transaction = await server.SendAsync(
                 "https://example.com/signin-google?code=TestCode&state=" + UrlEncoder.Default.UrlEncode(state),
                 correlationKey + "=" + correlationValue);
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
-            transaction.Response.Headers.Location.ToString().ShouldContain("error=access_denied");
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
+            Assert.Contains("error=access_denied", transaction.Response.Headers.Location.ToString());
         }
 
         [Fact]
@@ -362,8 +361,8 @@ namespace Microsoft.AspNet.Authentication.Google
             var transaction = await server.SendAsync(
                 "https://example.com/signin-google?code=TestCode&state=" + UrlEncoder.Default.UrlEncode(state),
                 correlationKey + "=" + correlationValue);
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
-            transaction.Response.Headers.Location.ToString().ShouldContain("error=access_denied");
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
+            Assert.Contains("error=access_denied", transaction.Response.Headers.Location.ToString());
         }
 
         [Fact]
@@ -434,16 +433,16 @@ namespace Microsoft.AspNet.Authentication.Google
             var transaction = await server.SendAsync(
                 "https://example.com/signin-google?code=TestCode&state=" + UrlEncoder.Default.UrlEncode(state),
                 correlationKey + "=" + correlationValue);
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
-            transaction.Response.Headers.GetValues("Location").First().ShouldBe("/me");
-            transaction.SetCookie.Count.ShouldBe(2);
-            transaction.SetCookie[0].ShouldContain(correlationKey);
-            transaction.SetCookie[1].ShouldContain(".AspNet." + TestExtensions.CookieAuthenticationScheme);
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
+            Assert.Equal("/me", transaction.Response.Headers.GetValues("Location").First());
+            Assert.Equal(2, transaction.SetCookie.Count);
+            Assert.Contains(correlationKey, transaction.SetCookie[0]);
+            Assert.Contains(".AspNet." + TestExtensions.CookieAuthenticationScheme, transaction.SetCookie[1]);
 
             var authCookie = transaction.AuthenticationCookieValue;
             transaction = await server.SendAsync("https://example.com/me", authCookie);
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
-            transaction.FindClaimValue("RefreshToken").ShouldBe("Test Refresh Token");
+            Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
+            Assert.Equal("Test Refresh Token", transaction.FindClaimValue("RefreshToken"));
         }
 
         [Fact]
@@ -526,8 +525,8 @@ namespace Microsoft.AspNet.Authentication.Google
                 "https://example.com/signin-google?code=TestCode&state=" + UrlEncoder.Default.UrlEncode(state),
                 correlationKey + "=" + correlationValue);
 
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
-            transaction.Response.Headers.GetValues("Location").First().ShouldBe("/foo");
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
+            Assert.Equal("/foo", transaction.Response.Headers.GetValues("Location").First());
         }
 
 

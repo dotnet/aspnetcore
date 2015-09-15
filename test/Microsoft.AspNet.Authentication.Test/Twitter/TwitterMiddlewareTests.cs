@@ -10,7 +10,6 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.TestHost;
 using Microsoft.Framework.DependencyInjection;
-using Shouldly;
 using Xunit;
 
 namespace Microsoft.AspNet.Authentication.Twitter
@@ -57,9 +56,9 @@ namespace Microsoft.AspNet.Authentication.Twitter
                     return true;
                 });
             var transaction = await server.SendAsync("http://example.com/challenge");
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             var query = transaction.Response.Headers.Location.Query;
-            query.ShouldContain("custom=test");
+            Assert.Contains("custom=test", query);
         }
 
         [Fact]
@@ -71,7 +70,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
                 options.ConsumerSecret = "Test Consumer Secret";
             });
             var transaction = await server.SendAsync("https://example.com/signIn");
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
+            Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
         }
 
         [Fact]
@@ -83,7 +82,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
                 options.ConsumerSecret = "Test Consumer Secret";
             });
             var transaction = await server.SendAsync("https://example.com/signOut");
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
+            Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
         }
 
         [Fact]
@@ -95,7 +94,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
                 options.ConsumerSecret = "Test Consumer Secret";
             });
             var transaction = await server.SendAsync("https://example.com/signOut");
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
+            Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
         }
 
 
@@ -131,9 +130,9 @@ namespace Microsoft.AspNet.Authentication.Twitter
                     return true;
                 });
             var transaction = await server.SendAsync("http://example.com/challenge");
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             var location = transaction.Response.Headers.Location.AbsoluteUri;
-            location.ShouldContain("https://twitter.com/oauth/authenticate?oauth_token=");
+            Assert.Contains("https://twitter.com/oauth/authenticate?oauth_token=", location);
         }
 
         private static TestServer CreateServer(Action<TwitterOptions> configure, Func<HttpContext, bool> handler = null)

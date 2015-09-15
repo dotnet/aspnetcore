@@ -17,7 +17,6 @@ using Microsoft.AspNet.TestHost;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.WebEncoders;
 using Newtonsoft.Json;
-using Shouldly;
 using Xunit;
 
 namespace Microsoft.AspNet.Authentication.Tests.MicrosoftAccount
@@ -42,9 +41,9 @@ namespace Microsoft.AspNet.Authentication.Tests.MicrosoftAccount
                     };
                 });
             var transaction = await server.SendAsync("http://example.com/challenge");
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             var query = transaction.Response.Headers.Location.Query;
-            query.ShouldContain("custom=test");
+            Assert.Contains("custom=test", query);
         }
 
         [Fact]
@@ -56,7 +55,7 @@ namespace Microsoft.AspNet.Authentication.Tests.MicrosoftAccount
                 options.ClientSecret = "Test Secret";
             });
             var transaction = await server.SendAsync("https://example.com/signIn");
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
+            Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
         }
 
         [Fact]
@@ -68,7 +67,7 @@ namespace Microsoft.AspNet.Authentication.Tests.MicrosoftAccount
                 options.ClientSecret = "Test Secret";
             });
             var transaction = await server.SendAsync("https://example.com/signOut");
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
+            Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
         }
 
         [Fact]
@@ -80,7 +79,7 @@ namespace Microsoft.AspNet.Authentication.Tests.MicrosoftAccount
                 options.ClientSecret = "Test Secret";
             });
             var transaction = await server.SendAsync("https://example.com/signOut");
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
+            Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
         }
 
         [Fact]
@@ -93,14 +92,14 @@ namespace Microsoft.AspNet.Authentication.Tests.MicrosoftAccount
                     options.ClientSecret = "Test Client Secret";
                 });
             var transaction = await server.SendAsync("http://example.com/challenge");
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             var location = transaction.Response.Headers.Location.AbsoluteUri;
-            location.ShouldContain("https://login.live.com/oauth20_authorize.srf");
-            location.ShouldContain("response_type=code");
-            location.ShouldContain("client_id=");
-            location.ShouldContain("redirect_uri=");
-            location.ShouldContain("scope=");
-            location.ShouldContain("state=");
+            Assert.Contains("https://login.live.com/oauth20_authorize.srf", location);
+            Assert.Contains("response_type=code", location);
+            Assert.Contains("client_id=", location);
+            Assert.Contains("redirect_uri=", location);
+            Assert.Contains("scope=", location);
+            Assert.Contains("state=", location);
         }
 
         [Fact]
@@ -164,16 +163,16 @@ namespace Microsoft.AspNet.Authentication.Tests.MicrosoftAccount
             var transaction = await server.SendAsync(
                 "https://example.com/signin-microsoft?code=TestCode&state=" + UrlEncoder.Default.UrlEncode(state),
                 correlationKey + "=" + correlationValue);
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
-            transaction.Response.Headers.GetValues("Location").First().ShouldBe("/me");
-            transaction.SetCookie.Count.ShouldBe(2);
-            transaction.SetCookie[0].ShouldContain(correlationKey);
-            transaction.SetCookie[1].ShouldContain(".AspNet." + TestExtensions.CookieAuthenticationScheme);
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
+            Assert.Equal("/me", transaction.Response.Headers.GetValues("Location").First());
+            Assert.Equal(2, transaction.SetCookie.Count);
+            Assert.Contains(correlationKey, transaction.SetCookie[0]);
+            Assert.Contains(".AspNet." + TestExtensions.CookieAuthenticationScheme, transaction.SetCookie[1]);
 
             var authCookie = transaction.AuthenticationCookieValue;
             transaction = await server.SendAsync("https://example.com/me", authCookie);
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
-            transaction.FindClaimValue("RefreshToken").ShouldBe("Test Refresh Token");
+            Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
+            Assert.Equal("Test Refresh Token", transaction.FindClaimValue("RefreshToken"));
         }
 
         private static TestServer CreateServer(Action<MicrosoftAccountOptions> configureOptions)

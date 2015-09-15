@@ -20,7 +20,6 @@ using Microsoft.Framework.OptionsModel;
 using Microsoft.Framework.WebEncoders;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Moq;
-using Shouldly;
 using Xunit;
 
 namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
@@ -41,20 +40,20 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
         public void LoggingLevel()
         {
             var logger = new InMemoryLogger(LogLevel.Debug);
-            logger.IsEnabled(LogLevel.Critical).ShouldBe<bool>(true);
-            logger.IsEnabled(LogLevel.Debug).ShouldBe<bool>(true);
-            logger.IsEnabled(LogLevel.Error).ShouldBe<bool>(true);
-            logger.IsEnabled(LogLevel.Information).ShouldBe<bool>(true);
-            logger.IsEnabled(LogLevel.Verbose).ShouldBe<bool>(true);
-            logger.IsEnabled(LogLevel.Warning).ShouldBe<bool>(true);
+            Assert.True(logger.IsEnabled(LogLevel.Critical));
+            Assert.True(logger.IsEnabled(LogLevel.Debug));
+            Assert.True(logger.IsEnabled(LogLevel.Error));
+            Assert.True(logger.IsEnabled(LogLevel.Information));
+            Assert.True(logger.IsEnabled(LogLevel.Verbose));
+            Assert.True(logger.IsEnabled(LogLevel.Warning));
 
             logger = new InMemoryLogger(LogLevel.Critical);
-            logger.IsEnabled(LogLevel.Critical).ShouldBe<bool>(true);
-            logger.IsEnabled(LogLevel.Debug).ShouldBe<bool>(false);
-            logger.IsEnabled(LogLevel.Error).ShouldBe<bool>(false);
-            logger.IsEnabled(LogLevel.Information).ShouldBe<bool>(false);
-            logger.IsEnabled(LogLevel.Verbose).ShouldBe<bool>(false);
-            logger.IsEnabled(LogLevel.Warning).ShouldBe<bool>(false);
+            Assert.True(logger.IsEnabled(LogLevel.Critical));
+            Assert.False(logger.IsEnabled(LogLevel.Debug));
+            Assert.False(logger.IsEnabled(LogLevel.Error));
+            Assert.False(logger.IsEnabled(LogLevel.Information));
+            Assert.False(logger.IsEnabled(LogLevel.Verbose));
+            Assert.False(logger.IsEnabled(LogLevel.Warning));
         }
 
         [Theory, MemberData("AuthenticateCoreStateDataSet")]

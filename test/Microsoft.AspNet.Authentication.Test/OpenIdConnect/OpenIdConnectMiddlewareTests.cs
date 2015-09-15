@@ -20,7 +20,6 @@ using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.WebEncoders;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Moq;
-using Shouldly;
 using Xunit;
 
 namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
@@ -51,9 +50,9 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
                 options.AuthenticationMethod = OpenIdConnectRedirectBehavior.FormPost;
             });
             var transaction = await SendAsync(server, DefaultHost + Challenge);
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
-            transaction.Response.Content.Headers.ContentType.MediaType.ShouldBe("text/html");
-            transaction.ResponseText.ShouldContain("form");
+            Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
+            Assert.Equal("text/html", transaction.Response.Content.Headers.ContentType.MediaType);
+            Assert.Contains("form", transaction.ResponseText);
         }
 
         [Fact]
@@ -68,7 +67,7 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             });
 
             var transaction = await SendAsync(server, DefaultHost + Challenge);
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             queryValues.CheckValues(transaction.Response.Headers.Location.AbsoluteUri, DefaultParameters());
         }
 
@@ -84,12 +83,12 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             var transaction = await SendAsync(server, DefaultHost + Challenge);
 
             var firstCookie = transaction.SetCookie.First();
-            firstCookie.ShouldContain(OpenIdConnectDefaults.CookieNoncePrefix);
-            firstCookie.ShouldContain("Expires");
+            Assert.Contains(OpenIdConnectDefaults.CookieNoncePrefix, firstCookie);
+            Assert.Contains("expires", firstCookie);
 
             var secondCookie = transaction.SetCookie.Skip(1).First();
-            secondCookie.ShouldContain(OpenIdConnectDefaults.CookieStatePrefix);
-            secondCookie.ShouldContain("Expires");
+            Assert.Contains(OpenIdConnectDefaults.CookieStatePrefix, secondCookie);
+            Assert.Contains("expires", secondCookie);
         }
 
         [Fact]
@@ -102,7 +101,7 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             });
 
             var transaction = await SendAsync(server, DefaultHost + Challenge);
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             queryValues.CheckValues(transaction.Response.Headers.Location.AbsoluteUri, DefaultParameters());
         }
 
@@ -127,7 +126,7 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             };
             var server = CreateServer(SetProtocolMessageOptions);
             var transaction = await SendAsync(server, DefaultHost + challenge);
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             queryValues.CheckValues(transaction.Response.Headers.Location.AbsoluteUri, new string[] {});
         }
 
@@ -181,7 +180,7 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             }, null, properties);
 
             var transaction = await SendAsync(server, DefaultHost + challenge);
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
 
             if (challenge != ChallengeWithProperties)
             {
@@ -234,7 +233,7 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             });
 
             var transaction = await SendAsync(server, DefaultHost + Challenge);
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             queryValuesSetInEvent.CheckValues(transaction.Response.Headers.Location.AbsoluteUri, DefaultParameters());
         }
 
@@ -301,8 +300,8 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             });
 
             var transaction = await SendAsync(server, DefaultHost + Signout);
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
-            transaction.Response.Headers.Location.AbsoluteUri.ShouldBe(configuration.EndSessionEndpoint);
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
+            Assert.Equal(configuration.EndSessionEndpoint, transaction.Response.Headers.Location.AbsoluteUri);
         }
 
         [Fact]
@@ -318,8 +317,8 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             });
 
             var transaction = await SendAsync(server, DefaultHost + Signout);
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
-            transaction.Response.Headers.Location.AbsoluteUri.ShouldContain(UrlEncoder.Default.UrlEncode("https://example.com/logout"));
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
+            Assert.Contains(UrlEncoder.Default.UrlEncode("https://example.com/logout"), transaction.Response.Headers.Location.AbsoluteUri);
         }
 
         [Fact]
@@ -335,8 +334,8 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             });
 
             var transaction = await SendAsync(server, "https://example.com/signout_with_specific_redirect_uri");
-            transaction.Response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
-            transaction.Response.Headers.Location.AbsoluteUri.ShouldContain(UrlEncoder.Default.UrlEncode("http://www.example.com/specific_redirect_uri"));
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
+            Assert.Contains(UrlEncoder.Default.UrlEncode("http://www.example.com/specific_redirect_uri"), transaction.Response.Headers.Location.AbsoluteUri);
         }
 
         private static TestServer CreateServer(Action<OpenIdConnectOptions> configureOptions, Func<HttpContext, Task> handler = null, AuthenticationProperties properties = null)
@@ -466,21 +465,21 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
         {
             DateTime utcNow = DateTime.UtcNow;
 
-            GetNonceExpirationTime(noncePrefix + DateTime.MaxValue.Ticks.ToString(CultureInfo.InvariantCulture) + nonceDelimiter, TimeSpan.FromHours(1)).ShouldBe(DateTime.MaxValue);
+            Assert.Equal(DateTime.MaxValue, GetNonceExpirationTime(noncePrefix + DateTime.MaxValue.Ticks.ToString(CultureInfo.InvariantCulture) + nonceDelimiter, TimeSpan.FromHours(1)));
 
-            GetNonceExpirationTime(noncePrefix + DateTime.MinValue.Ticks.ToString(CultureInfo.InvariantCulture) + nonceDelimiter, TimeSpan.FromHours(1)).ShouldBe(DateTime.MinValue + TimeSpan.FromHours(1));
+            Assert.Equal(DateTime.MinValue + TimeSpan.FromHours(1), GetNonceExpirationTime(noncePrefix + DateTime.MinValue.Ticks.ToString(CultureInfo.InvariantCulture) + nonceDelimiter, TimeSpan.FromHours(1)));
 
-            GetNonceExpirationTime(noncePrefix + utcNow.Ticks.ToString(CultureInfo.InvariantCulture) + nonceDelimiter, TimeSpan.FromHours(1)).ShouldBe(utcNow + TimeSpan.FromHours(1));
+            Assert.Equal(utcNow + TimeSpan.FromHours(1), GetNonceExpirationTime(noncePrefix + utcNow.Ticks.ToString(CultureInfo.InvariantCulture) + nonceDelimiter, TimeSpan.FromHours(1)));
 
-            GetNonceExpirationTime(noncePrefix, TimeSpan.FromHours(1)).ShouldBe(DateTime.MinValue);
+            Assert.Equal(DateTime.MinValue, GetNonceExpirationTime(noncePrefix, TimeSpan.FromHours(1)));
 
-            GetNonceExpirationTime("", TimeSpan.FromHours(1)).ShouldBe(DateTime.MinValue);
+            Assert.Equal(DateTime.MinValue, GetNonceExpirationTime("", TimeSpan.FromHours(1)));
 
-            GetNonceExpirationTime(noncePrefix + noncePrefix, TimeSpan.FromHours(1)).ShouldBe(DateTime.MinValue);
+            Assert.Equal(DateTime.MinValue, GetNonceExpirationTime(noncePrefix + noncePrefix, TimeSpan.FromHours(1)));
 
-            GetNonceExpirationTime(noncePrefix + utcNow.Ticks.ToString(CultureInfo.InvariantCulture) + nonceDelimiter + utcNow.Ticks.ToString(CultureInfo.InvariantCulture) + nonceDelimiter, TimeSpan.FromHours(1)).ShouldBe(utcNow + TimeSpan.FromHours(1));
+            Assert.Equal(utcNow + TimeSpan.FromHours(1), GetNonceExpirationTime(noncePrefix + utcNow.Ticks.ToString(CultureInfo.InvariantCulture) + nonceDelimiter + utcNow.Ticks.ToString(CultureInfo.InvariantCulture) + nonceDelimiter, TimeSpan.FromHours(1)));
 
-            GetNonceExpirationTime(utcNow.Ticks.ToString(CultureInfo.InvariantCulture) + nonceDelimiter + utcNow.Ticks.ToString(CultureInfo.InvariantCulture) + nonceDelimiter, TimeSpan.FromHours(1)).ShouldBe(DateTime.MinValue);
+            Assert.Equal(DateTime.MinValue, GetNonceExpirationTime(utcNow.Ticks.ToString(CultureInfo.InvariantCulture) + nonceDelimiter + utcNow.Ticks.ToString(CultureInfo.InvariantCulture) + nonceDelimiter, TimeSpan.FromHours(1)));
         }
 
         private static DateTime GetNonceExpirationTime(string keyname, TimeSpan nonceLifetime)

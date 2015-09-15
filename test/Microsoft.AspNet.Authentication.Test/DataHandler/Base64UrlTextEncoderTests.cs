@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Shouldly;
 using Xunit;
 
 namespace Microsoft.AspNet.Authentication
@@ -24,7 +23,7 @@ namespace Microsoft.AspNet.Authentication
 
                 for (int index = 0; index != length; ++index)
                 {
-                    result[index].ShouldBe(data[index]);
+                    Assert.Equal(data[index], result[index]);
                 }
             }
         }
