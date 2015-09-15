@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Html.Abstractions
         /// Appends a <see cref="string"/> value. The value is treated as unencoded as-provided, and will be HTML
         /// encoded before writing to output.
         /// </summary>
-        /// <param name="content">The <see cref="string"/> to append.</param>
+        /// <param name="unencoded">The <see cref="string"/> to append.</param>
         /// <returns>The <see cref="IHtmlContentBuilder"/>.</returns>
         IHtmlContentBuilder Append(string unencoded);
 
@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Html.Abstractions
         /// Appends an HTML encoded <see cref="string"/> value. The value is treated as HTML encoded as-provided, and
         /// no further encoding will be performed.
         /// </summary>
-        /// <param name="content">The HTML encoded <see cref="string"/> to append.</param>
+        /// <param name="encoded">The HTML encoded <see cref="string"/> to append.</param>
         /// <returns>The <see cref="IHtmlContentBuilder"/>.</returns>
         IHtmlContentBuilder AppendEncoded(string encoded);
 
