@@ -14,6 +14,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Actions;
 using Microsoft.AspNet.Mvc.Razor.Internal;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.PageExecutionInstrumentation;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.Framework.DependencyInjection;
@@ -434,17 +435,34 @@ namespace Microsoft.AspNet.Mvc.Razor
                     // an attribute value that may have been quoted with single quotes, must handle any double quotes
                     // in the value. Writing the value out surrounded by double quotes.
                     //
-                    // Do not combine following condition with check of escapeQuotes; htmlContent.ToString() can be
-                    // expensive when the IHtmlContent is created with a BufferedHtmlContent.
-                    var stringValue = htmlContent.ToString();
-                    if (stringValue.Contains("\""))
+                    // This is really not optimal from a perf point of view, but it's the best we can do for right now.
+                    using (var stringWriter = new StringWriter())
                     {
-                        writer.Write(stringValue.Replace("\"", "&quot;"));
+                        htmlContent.WriteTo(stringWriter, encoder);
+
+                        var stringValue = stringWriter.ToString();
+                        if (stringValue.Contains("\""))
+                        {
+                            stringValue = stringValue.Replace("\"", "&quot;");
+                        }
+
+                        writer.Write(stringValue);
                         return;
                     }
                 }
 
-                htmlContent.WriteTo(writer, encoder);
+                var htmlTextWriter = writer as HtmlTextWriter;
+                if (htmlTextWriter == null)
+                {
+                    htmlContent.WriteTo(writer, encoder);
+                }
+                else
+                {
+                    // This special case alows us to keep buffering as IHtmlContent until we get to the 'final'
+                    // TextWriter.
+                    htmlTextWriter.Write(htmlContent);
+                }
+
                 return;
             }
 
@@ -618,9 +636,13 @@ namespace Microsoft.AspNet.Mvc.Razor
                     WriteUnprefixedAttributeValueTo(valueBuffer, value);
                 }
 
-                var htmlString = new HtmlString(valueBuffer.ToString());
+                using (var stringWriter = new StringWriter())
+                {
+                    valueBuffer.Content.WriteTo(stringWriter, HtmlEncoder);
 
-                executionContext.AddHtmlAttribute(attributeName, htmlString);
+                    var htmlString = new HtmlString(stringWriter.ToString());
+                    executionContext.AddHtmlAttribute(attributeName, htmlString);
+                }
             }
         }
 

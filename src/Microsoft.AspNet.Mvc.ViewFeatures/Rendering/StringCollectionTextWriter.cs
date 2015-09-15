@@ -3,23 +3,26 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.WebEncoders;
+using Microsoft.AspNet.Mvc.ViewFeatures;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
     /// <summary>
-    /// A <see cref="TextWriter"/> that represents individual write operations as a sequence of strings.
+    /// A <see cref="HtmlTextWriter"/> that stores individual write operations as a sequence of
+    /// <see cref="string"/> and <see cref="IHtmlContent"/> instances.
     /// </summary>
     /// <remarks>
     /// This is primarily designed to avoid creating large in-memory strings.
     /// Refer to https://aspnetwebstack.codeplex.com/workitem/585 for more details.
     /// </remarks>
-    public class StringCollectionTextWriter : TextWriter
+    public class StringCollectionTextWriter : HtmlTextWriter
     {
         private const int MaxCharToStringLength = 1024;
         private static readonly Task _completedTask = Task.FromResult(0);
@@ -93,6 +96,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 return;
             }
 
+            _content.Append(value);
+        }
+
+        /// <inheritdoc />
+        public override void Write(IHtmlContent value)
+        {
             _content.Append(value);
         }
 
@@ -189,17 +198,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return _completedTask;
         }
 
-        /// <inheritdoc />
-        public override string ToString()
-        {
-            using (var writer = new StringWriter())
-            {
-                Content.WriteTo(writer, HtmlEncoder.Default);
-                return writer.ToString();
-            }
-        }
-
-        internal class StringCollectionTextWriterContent : IHtmlContent
+        [DebuggerDisplay("{DebuggerToString()}")]
+        private class StringCollectionTextWriterContent : IHtmlContent
         {
             private readonly List<object> _entries;
 
@@ -236,6 +236,15 @@ namespace Microsoft.AspNet.Mvc.Rendering
                     {
                         ((IHtmlContent)item).WriteTo(writer, encoder);
                     }
+                }
+            }
+
+            private string DebuggerToString()
+            {
+                using (var writer = new StringWriter())
+                {
+                    WriteTo(writer, HtmlEncoder.Default);
+                    return writer.ToString();
                 }
             }
         }

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Testing;
 using Microsoft.Framework.WebEncoders.Testing;
 using Moq;
@@ -213,6 +214,73 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             // Assert
             var actual = writer.BufferedWriter.Entries;
             Assert.Equal<object>(new[] { input1, input2, newLine, input3, input4, newLine }, actual);
+        }
+
+        [Fact]
+        public void Write_HtmlContent_AddsToEntries()
+        {
+            // Arrange
+            var writer = new RazorTextWriter(TextWriter.Null, Encoding.UTF8, new CommonTestEncoder());
+            var content = new HtmlString("Hello, world!");
+
+            // Act
+            writer.Write(content);
+
+            // Assert
+            Assert.Collection(
+                writer.BufferedWriter.Entries,
+                item => Assert.Same(content, item));
+        }
+
+        [Fact]
+        public void Write_Object_HtmlContent_AddsToEntries()
+        {
+            // Arrange
+            var writer = new RazorTextWriter(TextWriter.Null, Encoding.UTF8, new CommonTestEncoder());
+            var content = new HtmlString("Hello, world!");
+
+            // Act
+            writer.Write((object)content);
+
+            // Assert
+            Assert.Collection(
+                writer.BufferedWriter.Entries,
+                item => Assert.Same(content, item));
+        }
+
+        [Fact]
+        public void WriteLine_Object_HtmlContent_AddsToEntries()
+        {
+            // Arrange
+            var writer = new RazorTextWriter(TextWriter.Null, Encoding.UTF8, new CommonTestEncoder());
+            var content = new HtmlString("Hello, world!");
+
+            // Act
+            writer.WriteLine(content);
+
+            // Assert
+            Assert.Collection(
+                writer.BufferedWriter.Entries,
+                item => Assert.Same(content, item),
+                item => Assert.Equal(Environment.NewLine, item));
+        }
+
+        [Fact]
+        public void Write_HtmlContent_AfterFlush_GoesToStream()
+        {
+            // Arrange
+            var stringWriter = new StringWriter();
+
+            var writer = new RazorTextWriter(stringWriter, Encoding.UTF8, new CommonTestEncoder());
+            writer.Flush();
+
+            var content = new HtmlString("Hello, world!");
+
+            // Act
+            writer.Write(content);
+
+            // Assert
+            Assert.Equal("Hello, world!", stringWriter.ToString());
         }
 
         [Fact]

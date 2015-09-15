@@ -10,26 +10,6 @@ namespace Microsoft.AspNet.Mvc.Rendering
     public class StringHtmlContentTest
     {
         [Fact]
-        public void ToString_ReturnsAString()
-        {
-            // Arrange & Act
-            var content = new StringHtmlContent("Hello World");
-
-            // Assert
-            Assert.Equal("Hello World", content.ToString());
-        }
-
-        [Fact]
-        public void ToString_ReturnsNullForNullInput()
-        {
-            // Arrange & Act
-            var content = new StringHtmlContent(null);
-
-            // Assert
-            Assert.Null(content.ToString());
-        }
-
-        [Fact]
         public void WriteTo_WritesContent()
         {
             // Arrange & Act

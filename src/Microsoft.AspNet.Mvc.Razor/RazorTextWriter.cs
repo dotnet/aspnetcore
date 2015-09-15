@@ -2,20 +2,19 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Html.Abstractions;
-using Microsoft.AspNet.Mvc.Razor.Internal;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
     /// <summary>
-    /// A <see cref="TextWriter"/> that is backed by a unbuffered writer (over the Response stream) and a buffered
+    /// An <see cref="HtmlTextWriter"/> that is backed by a unbuffered writer (over the Response stream) and a buffered
     /// <see cref="StringCollectionTextWriter"/>. When <c>Flush</c> or <c>FlushAsync</c> is invoked, the writer
     /// copies all content from the buffered writer to the unbuffered one and switches to writing to the unbuffered
     /// writer for all further write operations.
@@ -24,7 +23,7 @@ namespace Microsoft.AspNet.Mvc.Razor
     /// This type is designed to avoid creating large in-memory strings when buffering and supporting the contract that
     /// <see cref="RazorPage.FlushAsync"/> expects.
     /// </remarks>
-    public class RazorTextWriter : TextWriter, IBufferedTextWriter
+    public class RazorTextWriter : HtmlTextWriter, IBufferedTextWriter
     {
         /// <summary>
         /// Creates a new instance of <see cref="RazorTextWriter"/>.
@@ -67,19 +66,6 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <inheritdoc />
-        public override void Write(object value)
-        {
-            var htmlContent = value as IHtmlContent;
-            if (htmlContent != null)
-            {
-                htmlContent.WriteTo(TargetWriter, HtmlEncoder);
-                return;
-            }
-
-            base.Write(value);
-        }
-
-        /// <inheritdoc />
         public override void Write([NotNull] char[] buffer, int index, int count)
         {
             if (index < 0)
@@ -100,6 +86,20 @@ namespace Microsoft.AspNet.Mvc.Razor
             if (!string.IsNullOrEmpty(value))
             {
                 TargetWriter.Write(value);
+            }
+        }
+
+        /// <inheritdoc />
+        public override void Write(IHtmlContent value)
+        {
+            var htmlTextWriter = TargetWriter as HtmlTextWriter;
+            if (htmlTextWriter == null)
+            {
+                value.WriteTo(TargetWriter, HtmlEncoder);
+            }
+            else
+            {
+                htmlTextWriter.Write(value);
             }
         }
 

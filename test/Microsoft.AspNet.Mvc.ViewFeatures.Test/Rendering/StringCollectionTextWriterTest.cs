@@ -116,6 +116,55 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         [Fact]
+        public void Write_HtmlContent_AddsToEntries()
+        {
+            // Arrange
+            var writer = new StringCollectionTextWriter(Encoding.UTF8);
+            var content = new HtmlString("Hello, world!");
+
+            // Act
+            writer.Write(content);
+
+            // Assert
+            Assert.Collection(
+                writer.Entries,
+                item => Assert.Same(content, item));
+        }
+
+        [Fact]
+        public void Write_Object_HtmlContent_AddsToEntries()
+        {
+            // Arrange
+            var writer = new StringCollectionTextWriter(Encoding.UTF8);
+            var content = new HtmlString("Hello, world!");
+
+            // Act
+            writer.Write((object)content);
+
+            // Assert
+            Assert.Collection(
+                writer.Entries,
+                item => Assert.Same(content, item));
+        }
+
+        [Fact]
+        public void WriteLine_Object_HtmlContent_AddsToEntries()
+        {
+            // Arrange
+            var writer = new StringCollectionTextWriter(Encoding.UTF8);
+            var content = new HtmlString("Hello, world!");
+
+            // Act
+            writer.WriteLine(content);
+
+            // Assert
+            Assert.Collection(
+                writer.Entries,
+                item => Assert.Same(content, item),
+                item => Assert.Equal(Environment.NewLine, item));
+        }
+
+        [Fact]
         public void Copy_CopiesContent_IfTargetTextWriterIsAStringCollectionTextWriter()
         {
             // Arrange

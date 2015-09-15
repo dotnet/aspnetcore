@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.TestCommon;
@@ -847,7 +848,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var htmlAttribute = Assert.Single(executionContext.HTMLAttributes);
             Assert.Equal("someattr", htmlAttribute.Name, StringComparer.Ordinal);
             Assert.IsType<HtmlString>(htmlAttribute.Value);
-            Assert.Equal(expectedValue, htmlAttribute.Value.ToString(), StringComparer.Ordinal);
+            Assert.Equal(expectedValue, HtmlContentUtilities.HtmlContentToString((IHtmlContent)htmlAttribute.Value));
             Assert.False(htmlAttribute.Minimized);
             var allAttribute = Assert.Single(executionContext.AllAttributes);
             Assert.Equal("someattr", allAttribute.Name, StringComparer.Ordinal);
@@ -1032,7 +1033,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             // Assert
             var buffer = writer.BufferedWriter.Entries;
             Assert.Equal(1, buffer.Count);
-            Assert.Equal("Hello world", buffer[0]);
+            Assert.Equal("Hello world", HtmlContentUtilities.HtmlContentToString(((IHtmlContent)buffer[0])));
         }
 
         public static TheoryData<TagHelperOutput, string> WriteTagHelper_InputData
@@ -1660,7 +1661,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             await page.ExecuteAsync();
 
             // Assert
-            Assert.Equal(expected, writer.ToString());
+            Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(writer.Content));
         }
 
         [Theory]
@@ -1702,7 +1703,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             await page.ExecuteAsync();
 
             // Assert
-            Assert.Equal(expected, writer.ToString());
+            Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(writer.Content));
         }
 
         [Fact]
@@ -1731,7 +1732,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             await page.ExecuteAsync();
 
             // Assert
-            Assert.Equal("<p>Hello World!</p>", writer.ToString());
+            Assert.Equal("<p>Hello World!</p>", HtmlContentUtilities.HtmlContentToString(writer.Content));
         }
 
         [Theory]
@@ -1760,7 +1761,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             await page.ExecuteAsync();
 
             // Assert
-            Assert.Equal(expected, writer.ToString());
+            Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(writer.Content));
         }
 
         private static TagHelperOutput GetTagHelperOutput(

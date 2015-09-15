@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Diagnostics;
 using System.IO;
 using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.Framework.Internal;
@@ -11,6 +12,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
     /// <summary>
     /// String content which gets encoded when written.
     /// </summary>
+    [DebuggerDisplay("{DebuggerToString()}")]
     public class StringHtmlContent : IHtmlContent
     {
         private readonly string _input;
@@ -30,10 +32,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
             encoder.HtmlEncode(_input, writer);
         }
 
-        /// <inheritdoc />
-        public override string ToString()
+        private string DebuggerToString()
         {
-            return _input;
+            using (var writer = new StringWriter())
+            {
+                WriteTo(writer, HtmlEncoder.Default);
+                return writer.ToString();
+            }
         }
     }
 }

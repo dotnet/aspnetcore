@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Text;
@@ -13,6 +14,7 @@ using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
+    [DebuggerDisplay("{DebuggerToString()}")]
     public class TagBuilder : IHtmlContent
     {
         public TagBuilder(string tagName)
@@ -224,6 +226,15 @@ namespace Microsoft.AspNet.Mvc.Rendering
                     writer.Write(TagName);
                     writer.Write(">");
                     break;
+            }
+        }
+
+        private string DebuggerToString()
+        {
+            using (var writer = new StringWriter())
+            {
+                WriteTo(writer, HtmlEncoder.Default);
+                return writer.ToString();
             }
         }
 
