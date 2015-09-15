@@ -85,7 +85,7 @@ namespace Microsoft.AspNet.Identity
         {
             if (manager == null)
             {
-                throw new ArgumentNullException("manager");
+                throw new ArgumentNullException(nameof(manager));
             }
             var userId = await manager.GetUserIdAsync(user);
             return "Totp:" + purpose + ":" + userId;

@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             ThrowIfDisposed();
             if (role == null)
             {
-                throw new ArgumentNullException("role");
+                throw new ArgumentNullException(nameof(role));
             }
             Context.Add(role);
             await SaveChanges(cancellationToken);
@@ -85,7 +85,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             ThrowIfDisposed();
             if (role == null)
             {
-                throw new ArgumentNullException("role");
+                throw new ArgumentNullException(nameof(role));
             }
             Context.Attach(role);
             role.ConcurrencyStamp = Guid.NewGuid().ToString();
@@ -107,7 +107,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             ThrowIfDisposed();
             if (role == null)
             {
-                throw new ArgumentNullException("role");
+                throw new ArgumentNullException(nameof(role));
             }
             Context.Remove(role);
             try
@@ -127,7 +127,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             ThrowIfDisposed();
             if (role == null)
             {
-                throw new ArgumentNullException("role");
+                throw new ArgumentNullException(nameof(role));
             }
             return Task.FromResult(ConvertIdToString(role.Id));
         }
@@ -138,7 +138,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             ThrowIfDisposed();
             if (role == null)
             {
-                throw new ArgumentNullException("role");
+                throw new ArgumentNullException(nameof(role));
             }
             return Task.FromResult(role.Name);
         }
@@ -149,7 +149,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             ThrowIfDisposed();
             if (role == null)
             {
-                throw new ArgumentNullException("role");
+                throw new ArgumentNullException(nameof(role));
             }
             role.Name = roleName;
             return Task.FromResult(0);
@@ -244,7 +244,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             ThrowIfDisposed();
             if (role == null)
             {
-                throw new ArgumentNullException("role");
+                throw new ArgumentNullException(nameof(role));
             }
 
             return await RoleClaims.Where(rc => rc.RoleId.Equals(role.Id)).Select(c => new Claim(c.ClaimType, c.ClaimValue)).ToListAsync(cancellationToken);
@@ -255,11 +255,11 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             ThrowIfDisposed();
             if (role == null)
             {
-                throw new ArgumentNullException("role");
+                throw new ArgumentNullException(nameof(role));
             }
             if (claim == null)
             {
-                throw new ArgumentNullException("claim");
+                throw new ArgumentNullException(nameof(claim));
             }
 
             RoleClaims.Add(new IdentityRoleClaim<TKey> { RoleId = role.Id, ClaimType = claim.Type, ClaimValue = claim.Value });
@@ -272,11 +272,11 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             ThrowIfDisposed();
             if (role == null)
             {
-                throw new ArgumentNullException("role");
+                throw new ArgumentNullException(nameof(role));
             }
             if (claim == null)
             {
-                throw new ArgumentNullException("claim");
+                throw new ArgumentNullException(nameof(claim));
             }
             var claims = await RoleClaims.Where(rc => rc.RoleId.Equals(role.Id) && rc.ClaimValue == claim.Value && rc.ClaimType == claim.Type).ToListAsync(cancellationToken);
             foreach (var c in claims)
