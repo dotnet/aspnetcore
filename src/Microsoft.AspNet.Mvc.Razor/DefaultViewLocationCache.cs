@@ -3,8 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Linq;
-using System.Text;
+using System.Collections.Generic;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Razor
@@ -14,23 +13,22 @@ namespace Microsoft.AspNet.Mvc.Razor
     /// </summary>
     public class DefaultViewLocationCache : IViewLocationCache
     {
-        private const char CacheKeySeparator = ':';
-
         // A mapping of keys generated from ViewLocationExpanderContext to view locations.
-        private readonly ConcurrentDictionary<string, ViewLocationCacheResult> _cache;
+        private readonly ConcurrentDictionary<ViewLocationCacheKey, ViewLocationCacheResult> _cache;
 
         /// <summary>
         /// Initializes a new instance of <see cref="DefaultViewLocationCache"/>.
         /// </summary>
         public DefaultViewLocationCache()
         {
-            _cache = new ConcurrentDictionary<string, ViewLocationCacheResult>(StringComparer.Ordinal);
+            _cache = new ConcurrentDictionary<ViewLocationCacheKey, ViewLocationCacheResult>(
+                ViewLocationCacheKeyComparer.Instance);
         }
 
         /// <inheritdoc />
         public ViewLocationCacheResult Get([NotNull] ViewLocationExpanderContext context)
         {
-            var cacheKey = GenerateKey(context);
+            var cacheKey = GenerateKey(context, copyViewExpanderValues: false);
             ViewLocationCacheResult result;
             if (_cache.TryGetValue(cacheKey, out result))
             {
@@ -45,46 +43,124 @@ namespace Microsoft.AspNet.Mvc.Razor
             [NotNull] ViewLocationExpanderContext context,
             [NotNull] ViewLocationCacheResult value)
         {
-            var cacheKey = GenerateKey(context);
+            var cacheKey = GenerateKey(context, copyViewExpanderValues: true);
             _cache.TryAdd(cacheKey, value);
         }
 
-        internal static string GenerateKey(ViewLocationExpanderContext context)
+        // Internal for unit testing
+        internal static ViewLocationCacheKey GenerateKey(
+            ViewLocationExpanderContext context,
+            bool copyViewExpanderValues)
         {
-            var keyBuilder = new StringBuilder();
-            var routeValues = context.ActionContext.RouteData.Values;
             var controller = RazorViewEngine.GetNormalizedRouteValue(
                 context.ActionContext,
                 RazorViewEngine.ControllerKey);
 
-            // format is "{viewName}:{isPartial}:{controllerName}:{areaName}:"
-            keyBuilder.Append(context.ViewName)
-                      .Append(CacheKeySeparator)
-                      .Append(context.IsPartial ? 1 : 0)
-                      .Append(CacheKeySeparator)
-                      .Append(controller);
+            var area = RazorViewEngine.GetNormalizedRouteValue(
+                context.ActionContext,
+                RazorViewEngine.AreaKey);
 
-            var area = RazorViewEngine.GetNormalizedRouteValue(context.ActionContext, RazorViewEngine.AreaKey);
-            if (!string.IsNullOrEmpty(area))
+
+            var values = context.Values;
+            if (values != null && copyViewExpanderValues)
             {
-                keyBuilder.Append(CacheKeySeparator)
-                          .Append(area);
+                // When performing a Get, avoid creating a copy of the values dictionary
+                values = new Dictionary<string, string>(values, StringComparer.Ordinal);
             }
 
-            if (context.Values != null)
+            return new ViewLocationCacheKey(
+                context.ViewName,
+                controller,
+                area,
+                context.IsPartial,
+                values);
+        }
+
+        // Internal for unit testing
+        internal class ViewLocationCacheKeyComparer : IEqualityComparer<ViewLocationCacheKey>
+        {
+            public static readonly ViewLocationCacheKeyComparer Instance = new ViewLocationCacheKeyComparer();
+
+            public bool Equals(ViewLocationCacheKey x, ViewLocationCacheKey y)
             {
-                var valuesDictionary = context.Values;
-                foreach (var item in valuesDictionary.OrderBy(k => k.Key, StringComparer.Ordinal))
+                if (x.IsPartial != y.IsPartial ||
+                    !string.Equals(x.ViewName, y.ViewName, StringComparison.Ordinal) ||
+                    !string.Equals(x.ControllerName, y.ControllerName, StringComparison.Ordinal) ||
+                    !string.Equals(x.AreaName, y.AreaName, StringComparison.Ordinal))
                 {
-                    keyBuilder.Append(CacheKeySeparator)
-                              .Append(item.Key)
-                              .Append(CacheKeySeparator)
-                              .Append(item.Value);
+                    return false;
                 }
+
+                if (ReferenceEquals(x.Values, y.Values))
+                {
+                    return true;
+                }
+
+                if (x.Values == null || y.Values == null || (x.Values.Count != y.Values.Count))
+                {
+                    return false;
+                }
+
+                foreach (var item in x.Values)
+                {
+                    string yValue;
+                    if (!y.Values.TryGetValue(item.Key, out yValue) ||
+                        !string.Equals(item.Value, yValue, StringComparison.Ordinal))
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
             }
 
-            var cacheKey = keyBuilder.ToString();
-            return cacheKey;
+            public int GetHashCode(ViewLocationCacheKey key)
+            {
+                var hashCodeCombiner = HashCodeCombiner.Start();
+                hashCodeCombiner.Add(key.IsPartial ? 1 : 0);
+                hashCodeCombiner.Add(key.ViewName, StringComparer.Ordinal);
+                hashCodeCombiner.Add(key.ControllerName, StringComparer.Ordinal);
+                hashCodeCombiner.Add(key.AreaName, StringComparer.Ordinal);
+
+                if (key.Values != null)
+                {
+                    foreach (var item in key.Values)
+                    {
+                        hashCodeCombiner.Add(item.Key, StringComparer.Ordinal);
+                        hashCodeCombiner.Add(item.Value, StringComparer.Ordinal);
+                    }
+                }
+
+                return hashCodeCombiner;
+            }
+        }
+
+        // Internal for unit testing
+        internal struct ViewLocationCacheKey
+        {
+            public ViewLocationCacheKey(
+                string viewName,
+                string controllerName,
+                string areaName,
+                bool isPartial,
+                IDictionary<string, string> values)
+            {
+                ViewName = viewName;
+                ControllerName = controllerName;
+                AreaName = areaName;
+                IsPartial = isPartial;
+                Values = values;
+            }
+
+            public string ViewName { get; }
+
+            public string ControllerName { get; }
+
+            public string AreaName { get; }
+
+            public bool IsPartial { get; }
+
+            public IDictionary<string, string> Values { get; }
         }
     }
 }

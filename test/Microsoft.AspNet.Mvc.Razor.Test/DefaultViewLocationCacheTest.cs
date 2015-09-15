@@ -43,9 +43,12 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
         }
 
+        private static DefaultViewLocationCache.ViewLocationCacheKeyComparer CacheKeyComparer =>
+            DefaultViewLocationCache.ViewLocationCacheKeyComparer.Instance;
+
         [Theory]
         [MemberData(nameof(CacheEntryData))]
-        public void Get_GeneratesCacheKeyIfItemDoesNotExist(ViewLocationExpanderContext context)
+        public void Get_ReturnsNoneResultIfItemDoesNotExist(ViewLocationExpanderContext context)
         {
             // Arrange
             var cache = new DefaultViewLocationCache();
@@ -85,129 +88,390 @@ namespace Microsoft.AspNet.Mvc.Razor
             Assert.Equal(value, result);
         }
 
-        public static IEnumerable<object[]> CacheKeyData
+        [Theory]
+        [InlineData("View1", "View2")]
+        [InlineData("View1", "view1")]
+        public void ViewLocationCacheKeyComparer_EqualsReturnsFalseIfViewNamesAreDifferent(
+            string viewName1,
+            string viewName2)
         {
-            get
-            {
-                yield return new object[]
-                {
-                    new ViewLocationExpanderContext(GetActionContext(), "test", isPartial: false),
-                    "test:0:mycontroller"
-                };
+            // Arrange
+            var actionContext = GetActionContext();
+            var viewLocationExpanderContext1 = new ViewLocationExpanderContext(
+                actionContext,
+                viewName1,
+                isPartial: true);
+            var viewLocationExpanderContext2 = new ViewLocationExpanderContext(
+               actionContext,
+               viewName2,
+               isPartial: true);
 
-                yield return new object[]
-                {
-                    new ViewLocationExpanderContext(GetActionContext(), "test", isPartial: true),
-                    "test:1:mycontroller"
-                };
+            // Act
+            var key1 = DefaultViewLocationCache.GenerateKey(
+                viewLocationExpanderContext1,
+                copyViewExpanderValues: false);
 
-                var areaActionContext = GetActionContext("controller2", "myarea");
-                yield return new object[]
-                {
-                    new ViewLocationExpanderContext(areaActionContext, "test2", isPartial: false),
-                    "test2:0:controller2:myarea"
-                };
-                yield return new object[]
-                {
-                    new ViewLocationExpanderContext(areaActionContext, "test2", isPartial: true),
-                    "test2:1:controller2:myarea"
-                };
+            var key2 = DefaultViewLocationCache.GenerateKey(
+                viewLocationExpanderContext2,
+                copyViewExpanderValues: false);
 
-                var actionContext = GetActionContext("controller3", "area3");
-                var values = new Dictionary<string, string>(StringComparer.Ordinal)
-                {
-                    { "culture", "fr" },
-                    { "theme", "sleek" }
-                };
-                var expanderContext = new ViewLocationExpanderContext(actionContext, "test3", isPartial: false)
-                {
-                    Values = values
-                };
+            var result = CacheKeyComparer.Equals(key1, key2);
+            var hash1 = CacheKeyComparer.GetHashCode(key1);
+            var hash2 = CacheKeyComparer.GetHashCode(key2);
 
-                yield return new object[]
-                {
-                    expanderContext,
-                    "test3:0:controller3:area3:culture:fr:theme:sleek"
-                };
-
-                expanderContext = new ViewLocationExpanderContext(actionContext, "test3", isPartial: true)
-                {
-                    Values = values
-                };
-                yield return new object[]
-                {
-                    expanderContext,
-                    "test3:1:controller3:area3:culture:fr:theme:sleek"
-                };
-
-                yield return new object[]
-                {
-                    new ViewLocationExpanderContext(
-                        GetActionContextWithActionDescriptor(
-                            new Dictionary<string, object>()
-                            {
-                                {"controller", "MyController" },
-                            },
-                            new Dictionary<string, string>()
-                            {
-                                {"controller", "mycontroller" },
-                            },
-                            isAttributeRouted: true),
-                        "test",
-                        isPartial: false),
-                    "test:0:mycontroller"
-                };
-
-                yield return new object[]
-                {
-                    new ViewLocationExpanderContext(
-                        GetActionContextWithActionDescriptor(
-                            new Dictionary<string, object>()
-                            {
-                                {"controller", "MyController" },
-                            },
-                            new Dictionary<string, string>()
-                            {
-                                {"controller", "mycontroller" },
-                            },
-                            isAttributeRouted: true),
-                        "test",
-                        isPartial: false),
-                    "test:0:mycontroller"
-                };
-
-                yield return new object[]
-                {
-                    new ViewLocationExpanderContext(
-                        GetActionContextWithActionDescriptor(
-                            new Dictionary<string, object>()
-                            {
-                                {"controller", "mycontroller" },
-                            },
-                            new Dictionary<string, string>()
-                            {
-                            },
-                            isAttributeRouted: true),
-                        "test",
-                        isPartial: false),
-                    "test:0:mycontroller"
-                };
-            }
+            // Assert
+            Assert.False(result);
+            Assert.NotEqual(hash1, hash2);
         }
 
         [Theory]
-        [MemberData(nameof(CacheKeyData))]
-        public void CacheKeyIsComputedBasedOnValuesInExpander(ViewLocationExpanderContext context, string expected)
+        [InlineData(false, true)]
+        [InlineData(true, false)]
+        public void ViewLocationCacheKeyComparer_EqualsReturnsFalseIfIsPartialAreDifferent(
+            bool isPartial1,
+            bool isPartial2)
         {
+            // Arrange
+            var actionContext = GetActionContext();
+            var viewLocationExpanderContext1 = new ViewLocationExpanderContext(
+                actionContext,
+                "View1",
+                isPartial1);
+            var viewLocationExpanderContext2 = new ViewLocationExpanderContext(
+               actionContext,
+               "View1",
+               isPartial2);
+
             // Act
-            var result = DefaultViewLocationCache.GenerateKey(context);
+            var key1 = DefaultViewLocationCache.GenerateKey(
+                viewLocationExpanderContext1,
+                copyViewExpanderValues: false);
+
+            var key2 = DefaultViewLocationCache.GenerateKey(
+                viewLocationExpanderContext2,
+                copyViewExpanderValues: false);
+
+            var result = CacheKeyComparer.Equals(key1, key2);
+            var hash1 = CacheKeyComparer.GetHashCode(key1);
+            var hash2 = CacheKeyComparer.GetHashCode(key2);
 
             // Assert
-            Assert.Equal(expected, result);
+            Assert.False(result);
+            Assert.NotEqual(hash1, hash2);
         }
 
-        public static ActionContext GetActionContext(string controller = "mycontroller",
-                                                     string area = null)
+        [Theory]
+        [InlineData("Controller1", "Controller2")]
+        [InlineData("controller1", "Controller1")]
+        public void ViewLocationCacheKeyComparer_EqualsReturnsFalseIfIsControllerNamesAreDifferent(
+            string controller1,
+            string controller2)
+        {
+            // Arrange
+            var viewLocationExpanderContext1 = new ViewLocationExpanderContext(
+                GetActionContext(controller1),
+                "View1",
+                isPartial: false);
+            var viewLocationExpanderContext2 = new ViewLocationExpanderContext(
+               GetActionContext(controller2),
+               "View1",
+               isPartial: false);
+
+            // Act
+            var key1 = DefaultViewLocationCache.GenerateKey(
+                viewLocationExpanderContext1,
+                copyViewExpanderValues: false);
+
+            var key2 = DefaultViewLocationCache.GenerateKey(
+                viewLocationExpanderContext2,
+                copyViewExpanderValues: false);
+
+            var result = CacheKeyComparer.Equals(key1, key2);
+            var hash1 = CacheKeyComparer.GetHashCode(key1);
+            var hash2 = CacheKeyComparer.GetHashCode(key2);
+
+            // Assert
+            Assert.False(result);
+            Assert.NotEqual(hash1, hash2);
+        }
+
+        [Theory]
+        [InlineData("area1", null)]
+        [InlineData("Area1", "Area2")]
+        [InlineData("area1", "aRea1")]
+        public void ViewLocationCacheKeyComparer_EqualsReturnsFalseIfIsAreaNamesAreDifferent(
+            string area1,
+            string area2)
+        {
+            // Arrange
+            var viewLocationExpanderContext1 = new ViewLocationExpanderContext(
+                GetActionContext("Controller1", area1),
+                "View1",
+                isPartial: false);
+            var viewLocationExpanderContext2 = new ViewLocationExpanderContext(
+               GetActionContext("Controller1", area2),
+               "View1",
+               isPartial: false);
+
+            // Act
+            var key1 = DefaultViewLocationCache.GenerateKey(
+                viewLocationExpanderContext1,
+                copyViewExpanderValues: false);
+
+            var key2 = DefaultViewLocationCache.GenerateKey(
+                viewLocationExpanderContext2,
+                copyViewExpanderValues: false);
+
+            var result = CacheKeyComparer.Equals(key1, key2);
+            var hash1 = CacheKeyComparer.GetHashCode(key1);
+            var hash2 = CacheKeyComparer.GetHashCode(key2);
+
+            // Assert
+            Assert.False(result);
+            Assert.NotEqual(hash1, hash2);
+        }
+
+        [Fact]
+        public void ViewLocationCacheKeyComparer_EqualsReturnsTrueIfControllerAreaAndViewNamesAreIdentical()
+        {
+            // Arrange
+            var viewLocationExpanderContext1 = new ViewLocationExpanderContext(
+                GetActionContext("Controller1", "Area1"),
+                "View1",
+                isPartial: false);
+            var viewLocationExpanderContext2 = new ViewLocationExpanderContext(
+               GetActionContext("Controller1", "Area1"),
+               "View1",
+               isPartial: false);
+
+            // Act
+            var key1 = DefaultViewLocationCache.GenerateKey(
+                viewLocationExpanderContext1,
+                copyViewExpanderValues: false);
+
+            var key2 = DefaultViewLocationCache.GenerateKey(
+                viewLocationExpanderContext2,
+                copyViewExpanderValues: false);
+
+            var result = CacheKeyComparer.Equals(key1, key2);
+            var hash1 = CacheKeyComparer.GetHashCode(key1);
+            var hash2 = CacheKeyComparer.GetHashCode(key2);
+
+            // Assert
+            Assert.True(result);
+            Assert.Equal(hash1, hash2);
+        }
+
+        [Fact]
+        public void ViewLocationCacheKeyComparer_EqualsReturnsFalseIfViewLocationExpanderIsNullForEitherKey()
+        {
+            // Arrange
+            var viewLocationExpanderContext1 = new ViewLocationExpanderContext(
+                GetActionContext("Controller1", "Area1"),
+                "View1",
+                isPartial: false);
+            viewLocationExpanderContext1.Values = new Dictionary<string, string>
+            {
+                { "somekey", "somevalue" }
+            };
+
+            var viewLocationExpanderContext2 = new ViewLocationExpanderContext(
+               GetActionContext("Controller1", "Area1"),
+               "View1",
+               isPartial: false);
+
+            // Act
+            var key1 = DefaultViewLocationCache.GenerateKey(
+                viewLocationExpanderContext1,
+                copyViewExpanderValues: false);
+
+            var key2 = DefaultViewLocationCache.GenerateKey(
+                viewLocationExpanderContext2,
+                copyViewExpanderValues: false);
+
+            var result = CacheKeyComparer.Equals(key1, key2);
+            var hash1 = CacheKeyComparer.GetHashCode(key1);
+            var hash2 = CacheKeyComparer.GetHashCode(key2);
+
+            // Assert
+            Assert.False(result);
+            Assert.NotEqual(hash1, hash2);
+        }
+
+        [Fact]
+        public void ViewLocationCacheKeyComparer_EqualsReturnsFalseIfExpanderValueCountIsDifferent()
+        {
+            // Arrange
+            var viewLocationExpanderContext1 = new ViewLocationExpanderContext(
+                GetActionContext("Controller1", "Area1"),
+                "View1",
+                isPartial: false);
+            viewLocationExpanderContext1.Values = new Dictionary<string, string>
+            {
+                { "somekey", "somevalue" }
+            };
+
+            var viewLocationExpanderContext2 = new ViewLocationExpanderContext(
+               GetActionContext("Controller1", "Area1"),
+               "View1",
+               isPartial: false);
+            viewLocationExpanderContext2.Values = new Dictionary<string, string>
+            {
+                { "somekey", "somevalue" },
+                { "somekey2", "somevalue2" },
+            };
+
+            // Act
+            var key1 = DefaultViewLocationCache.GenerateKey(
+                viewLocationExpanderContext1,
+                copyViewExpanderValues: false);
+
+            var key2 = DefaultViewLocationCache.GenerateKey(
+                viewLocationExpanderContext2,
+                copyViewExpanderValues: false);
+
+            var result = CacheKeyComparer.Equals(key1, key2);
+            var hash1 = CacheKeyComparer.GetHashCode(key1);
+            var hash2 = CacheKeyComparer.GetHashCode(key2);
+
+            // Assert
+            Assert.False(result);
+            Assert.NotEqual(hash1, hash2);
+        }
+
+        [Theory]
+        [InlineData("key1", "key2")]
+        [InlineData("Key1", "key1")]
+        public void ViewLocationCacheKeyComparer_EqualsReturnsFalseIfKeysAreDifferent(
+            string keyName1,
+            string keyName2)
+        {
+            // Arrange
+            var viewLocationExpanderContext1 = new ViewLocationExpanderContext(
+                GetActionContext("Controller1", "Area1"),
+                "View1",
+                isPartial: false);
+            viewLocationExpanderContext1.Values = new Dictionary<string, string>
+            {
+                { keyName1, "somevalue" }
+            };
+
+            var viewLocationExpanderContext2 = new ViewLocationExpanderContext(
+               GetActionContext("Controller1", "Area1"),
+               "View1",
+               isPartial: false);
+            viewLocationExpanderContext2.Values = new Dictionary<string, string>
+            {
+                { keyName2, "somevalue" },
+            };
+
+            // Act
+            var key1 = DefaultViewLocationCache.GenerateKey(
+                viewLocationExpanderContext1,
+                copyViewExpanderValues: false);
+
+            var key2 = DefaultViewLocationCache.GenerateKey(
+                viewLocationExpanderContext2,
+                copyViewExpanderValues: false);
+
+            var result = CacheKeyComparer.Equals(key1, key2);
+            var hash1 = CacheKeyComparer.GetHashCode(key1);
+            var hash2 = CacheKeyComparer.GetHashCode(key2);
+
+            // Assert
+            Assert.False(result);
+            Assert.NotEqual(hash1, hash2);
+        }
+
+        [Theory]
+        [InlineData("value1", null)]
+        [InlineData("value1", "value2")]
+        [InlineData("value1", "Value1")]
+        public void ViewLocationCacheKeyComparer_EqualsReturnsFalseIfValuesAreDifferent(
+            string value1,
+            string value2)
+        {
+            // Arrange
+            var viewLocationExpanderContext1 = new ViewLocationExpanderContext(
+                GetActionContext("Controller1", "Area1"),
+                "View1",
+                isPartial: false);
+            viewLocationExpanderContext1.Values = new Dictionary<string, string>
+            {
+                { "somekey", value1 }
+            };
+
+            var viewLocationExpanderContext2 = new ViewLocationExpanderContext(
+               GetActionContext("Controller1", "Area1"),
+               "View1",
+               isPartial: false);
+            viewLocationExpanderContext2.Values = new Dictionary<string, string>
+            {
+                { "somekey", value2 },
+            };
+
+            // Act
+            var key1 = DefaultViewLocationCache.GenerateKey(
+                viewLocationExpanderContext1,
+                copyViewExpanderValues: false);
+
+            var key2 = DefaultViewLocationCache.GenerateKey(
+                viewLocationExpanderContext2,
+                copyViewExpanderValues: false);
+
+            var result = CacheKeyComparer.Equals(key1, key2);
+            var hash1 = CacheKeyComparer.GetHashCode(key1);
+            var hash2 = CacheKeyComparer.GetHashCode(key2);
+
+            // Assert
+            Assert.False(result);
+            Assert.NotEqual(hash1, hash2);
+        }
+
+        public void ViewLocationCacheKeyComparer_EqualsReturnsTrueIfValuesAreSame()
+        {
+            // Arrange
+            var viewLocationExpanderContext1 = new ViewLocationExpanderContext(
+                GetActionContext("Controller1", "Area1"),
+                "View1",
+                isPartial: false);
+            viewLocationExpanderContext1.Values = new Dictionary<string, string>
+            {
+                { "somekey1", "value1" },
+                { "somekey2", "value2" },
+            };
+
+            var viewLocationExpanderContext2 = new ViewLocationExpanderContext(
+               GetActionContext("Controller1", "Area1"),
+               "View1",
+               isPartial: false);
+            viewLocationExpanderContext2.Values = new Dictionary<string, string>
+            {
+                { "somekey2", "value2" },
+                { "somekey1", "value1" },
+            };
+
+            // Act
+            var key1 = DefaultViewLocationCache.GenerateKey(
+                viewLocationExpanderContext1,
+                copyViewExpanderValues: false);
+
+            var key2 = DefaultViewLocationCache.GenerateKey(
+                viewLocationExpanderContext2,
+                copyViewExpanderValues: false);
+
+            var result = CacheKeyComparer.Equals(key1, key2);
+            var hash1 = CacheKeyComparer.GetHashCode(key1);
+            var hash2 = CacheKeyComparer.GetHashCode(key2);
+
+            // Assert
+            Assert.True(result);
+            Assert.Equal(hash1, hash2);
+        }
+
+        public static ActionContext GetActionContext(
+            string controller = "mycontroller",
+            string area = null)
         {
             var routeData = new RouteData();
             routeData.Values["controller"] = controller;
