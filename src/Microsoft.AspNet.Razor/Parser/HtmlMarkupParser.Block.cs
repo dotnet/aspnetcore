@@ -5,8 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Microsoft.AspNet.Razor.Editor;
 using Microsoft.AspNet.Razor.Chunks.Generators;
+using Microsoft.AspNet.Razor.Editor;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
@@ -937,9 +937,17 @@ namespace Microsoft.AspNet.Razor.Parser
                     }
                     else if (string.Equals(tagName, ScriptTagName, StringComparison.OrdinalIgnoreCase))
                     {
-                        CompleteTagBlockWithSpan(tagBlockWrapper, AcceptedCharacters.None, SpanKind.Markup);
+                        if (!CurrentScriptTagExpectsHtml())
+                        {
+                            CompleteTagBlockWithSpan(tagBlockWrapper, AcceptedCharacters.None, SpanKind.Markup);
 
-                        SkipToEndScriptAndParseCode(endTagAcceptedCharacters: AcceptedCharacters.None);
+                            SkipToEndScriptAndParseCode(endTagAcceptedCharacters: AcceptedCharacters.None);
+                        }
+                        else
+                        {
+                            // Push the script tag onto the tag stack, it should be treated like all other HTML tags.
+                            tags.Push(tag);
+                        }
                     }
                     else
                     {

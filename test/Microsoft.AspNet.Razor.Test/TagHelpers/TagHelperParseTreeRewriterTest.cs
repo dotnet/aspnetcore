@@ -18,6 +18,273 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
 {
     public class TagHelperParseTreeRewriterTest : TagHelperRewritingTestBase
     {
+        public static TheoryData InvalidHtmlScriptBlockData
+        {
+            get
+            {
+                var factory = CreateDefaultSpanFactory();
+                var blockFactory = new BlockFactory(factory);
+
+                return new TheoryData<string, MarkupBlock>
+                {
+                    {
+                        "<script type><input /></script>",
+                        new MarkupBlock(
+                            new MarkupTagBlock(
+                                factory.Markup("<script"),
+                                new MarkupBlock(factory.Markup(" type")),
+                                factory.Markup(">")),
+                            factory.Markup("<input />"),
+                            blockFactory.MarkupTagBlock("</script>"))
+                    },
+                    {
+                        "<script types='text/html'><input /></script>",
+                        new MarkupBlock(
+                            new MarkupTagBlock(
+                                factory.Markup("<script"),
+                                new MarkupBlock(
+                                    new AttributeBlockChunkGenerator(
+                                        name: "types",
+                                        prefix: new LocationTagged<string>(" types='", 7, 0, 7),
+                                        suffix: new LocationTagged<string>("'", 24, 0, 24)),
+                                    factory.Markup(" types='").With(SpanChunkGenerator.Null),
+                                    factory.Markup("text/html").With(
+                                        new LiteralAttributeChunkGenerator(
+                                            prefix: new LocationTagged<string>(string.Empty, 15, 0, 15),
+                                            value: new LocationTagged<string>("text/html", 15, 0, 15))),
+                                    factory.Markup("'").With(SpanChunkGenerator.Null)),
+                                factory.Markup(">")),
+                            factory.Markup("<input />"),
+                            blockFactory.MarkupTagBlock("</script>"))
+                    },
+                    {
+                        "<script type='text/html invalid'><input /></script>",
+                        new MarkupBlock(
+                            new MarkupTagBlock(
+                                factory.Markup("<script"),
+                                new MarkupBlock(
+                                    new AttributeBlockChunkGenerator(
+                                        name: "type",
+                                        prefix: new LocationTagged<string>(" type='", 7, 0, 7),
+                                        suffix: new LocationTagged<string>("'", 31, 0, 31)),
+                                    factory.Markup(" type='").With(SpanChunkGenerator.Null),
+                                    factory.Markup("text/html").With(
+                                        new LiteralAttributeChunkGenerator(
+                                            prefix: new LocationTagged<string>(string.Empty, 14, 0, 14),
+                                            value: new LocationTagged<string>("text/html", 14, 0, 14))),
+                                    factory.Markup(" invalid").With(
+                                        new LiteralAttributeChunkGenerator(
+                                            prefix: new LocationTagged<string>(" ", 23, 0, 23),
+                                            value: new LocationTagged<string>("invalid", 24, 0, 24))),
+                                    factory.Markup("'").With(SpanChunkGenerator.Null)),
+                                factory.Markup(">")),
+                            factory.Markup("<input />"),
+                            blockFactory.MarkupTagBlock("</script>"))
+                    },
+                    {
+                        "<script type='text/ng-*' type='text/html'><input /></script>",
+                        new MarkupBlock(
+                            new MarkupTagBlock(
+                                factory.Markup("<script"),
+                                new MarkupBlock(
+                                    new AttributeBlockChunkGenerator(
+                                        name: "type",
+                                        prefix: new LocationTagged<string>(" type='", 7, 0, 7),
+                                        suffix: new LocationTagged<string>("'", 23, 0, 23)),
+                                    factory.Markup(" type='").With(SpanChunkGenerator.Null),
+                                    factory.Markup("text/ng-*").With(
+                                        new LiteralAttributeChunkGenerator(
+                                            prefix: new LocationTagged<string>(string.Empty, 14, 0, 14),
+                                            value: new LocationTagged<string>("text/ng-*", 14, 0, 14))),
+                                    factory.Markup("'").With(SpanChunkGenerator.Null)),
+                                new MarkupBlock(
+                                    new AttributeBlockChunkGenerator(
+                                        name: "type",
+                                        prefix: new LocationTagged<string>(" type='", 24, 0, 24),
+                                        suffix: new LocationTagged<string>("'", 40, 0, 40)),
+                                    factory.Markup(" type='").With(SpanChunkGenerator.Null),
+                                    factory.Markup("text/html").With(
+                                        new LiteralAttributeChunkGenerator(
+                                            prefix: new LocationTagged<string>(string.Empty, 31, 0, 31),
+                                            value: new LocationTagged<string>("text/html", 31, 0, 31))),
+                                    factory.Markup("'").With(SpanChunkGenerator.Null)),
+                                factory.Markup(">")),
+                            factory.Markup("<input />"),
+                            blockFactory.MarkupTagBlock("</script>"))
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(InvalidHtmlScriptBlockData))]
+        public void TagHelperParseTreeRewriter_DoesNotUnderstandTagHelpersInInvalidHtmlTypedScriptTags(
+            string documentContent,
+            MarkupBlock expectedOutput)
+        {
+            RunParseTreeRewriterTest(documentContent, expectedOutput, "input");
+        }
+
+        public static TheoryData HtmlScriptBlockData
+        {
+            get
+            {
+                var factory = CreateDefaultSpanFactory();
+                var blockFactory = new BlockFactory(factory);
+
+                return new TheoryData<string, MarkupBlock>
+                {
+                    {
+                        "<script type='text/html'><input /></script>",
+                        new MarkupBlock(
+                            new MarkupTagBlock(
+                                factory.Markup("<script"),
+                                new MarkupBlock(
+                                    new AttributeBlockChunkGenerator(
+                                        name: "type",
+                                        prefix: new LocationTagged<string>(" type='", 7, 0, 7),
+                                        suffix: new LocationTagged<string>("'", 23, 0, 23)),
+                                    factory.Markup(" type='").With(SpanChunkGenerator.Null),
+                                    factory.Markup("text/html").With(
+                                        new LiteralAttributeChunkGenerator(
+                                            prefix: new LocationTagged<string>(string.Empty, 14, 0, 14),
+                                            value: new LocationTagged<string>("text/html", 14, 0, 14))),
+                                    factory.Markup("'").With(SpanChunkGenerator.Null)),
+                                factory.Markup(">")),
+                            new MarkupTagHelperBlock("input", TagMode.SelfClosing),
+                            blockFactory.MarkupTagBlock("</script>"))
+                    },
+                    {
+                        "<script id='scriptTag' type='text/html' class='something'><input /></script>",
+                        new MarkupBlock(
+                            new MarkupTagBlock(
+                                factory.Markup("<script"),
+                                new MarkupBlock(
+                                    new AttributeBlockChunkGenerator(
+                                        name: "id",
+                                        prefix: new LocationTagged<string>(" id='", 7, 0, 7),
+                                        suffix: new LocationTagged<string>("'", 21, 0, 21)),
+                                    factory.Markup(" id='").With(SpanChunkGenerator.Null),
+                                    factory.Markup("scriptTag").With(
+                                        new LiteralAttributeChunkGenerator(
+                                            prefix: new LocationTagged<string>(string.Empty, 12, 0, 12),
+                                            value: new LocationTagged<string>("scriptTag", 12, 0, 12))),
+                                    factory.Markup("'").With(SpanChunkGenerator.Null)),
+                                new MarkupBlock(
+                                    new AttributeBlockChunkGenerator(
+                                        name: "type",
+                                        prefix: new LocationTagged<string>(" type='", 22, 0, 22),
+                                        suffix: new LocationTagged<string>("'", 38, 0, 38)),
+                                    factory.Markup(" type='").With(SpanChunkGenerator.Null),
+                                    factory.Markup("text/html").With(
+                                        new LiteralAttributeChunkGenerator(
+                                            prefix: new LocationTagged<string>(string.Empty, 29, 0, 29),
+                                            value: new LocationTagged<string>("text/html", 29, 0, 29))),
+                                    factory.Markup("'").With(SpanChunkGenerator.Null)),
+                                new MarkupBlock(
+                                    new AttributeBlockChunkGenerator(
+                                        name: "class",
+                                        prefix: new LocationTagged<string>(" class='", 39, 0, 39),
+                                        suffix: new LocationTagged<string>("'", 56, 0, 56)),
+                                    factory.Markup(" class='").With(SpanChunkGenerator.Null),
+                                    factory.Markup("something").With(
+                                        new LiteralAttributeChunkGenerator(
+                                            prefix: new LocationTagged<string>(string.Empty, 47, 0, 47),
+                                            value: new LocationTagged<string>("something", 47, 0, 47))),
+                                    factory.Markup("'").With(SpanChunkGenerator.Null)),
+                                factory.Markup(">")),
+                            new MarkupTagHelperBlock("input", TagMode.SelfClosing),
+                            blockFactory.MarkupTagBlock("</script>"))
+                    },
+                    {
+                        "<script type='text/html'><p><script type='text/html'><input /></script></p></script>",
+                        new MarkupBlock(
+                            new MarkupTagBlock(
+                                factory.Markup("<script"),
+                                new MarkupBlock(
+                                    new AttributeBlockChunkGenerator(
+                                        name: "type",
+                                        prefix: new LocationTagged<string>(" type='", 7, 0, 7),
+                                        suffix: new LocationTagged<string>("'", 23, 0, 23)),
+                                    factory.Markup(" type='").With(SpanChunkGenerator.Null),
+                                    factory.Markup("text/html").With(
+                                        new LiteralAttributeChunkGenerator(
+                                            prefix: new LocationTagged<string>(string.Empty, 14, 0, 14),
+                                            value: new LocationTagged<string>("text/html", 14, 0, 14))),
+                                    factory.Markup("'").With(SpanChunkGenerator.Null)),
+                                factory.Markup(">")),
+                            new MarkupTagHelperBlock("p",
+                                new MarkupTagBlock(
+                                    factory.Markup("<script"),
+                                    new MarkupBlock(
+                                        new AttributeBlockChunkGenerator(
+                                            name: "type",
+                                            prefix: new LocationTagged<string>(" type='", 35, 0, 35),
+                                            suffix: new LocationTagged<string>("'", 51, 0, 51)),
+                                        factory.Markup(" type='").With(SpanChunkGenerator.Null),
+                                        factory.Markup("text/html").With(
+                                            new LiteralAttributeChunkGenerator(
+                                                prefix: new LocationTagged<string>(string.Empty, 42, 0, 42),
+                                                value: new LocationTagged<string>("text/html", 42, 0, 42))),
+                                        factory.Markup("'").With(SpanChunkGenerator.Null)),
+                                    factory.Markup(">")),
+                                new MarkupTagHelperBlock("input", TagMode.SelfClosing),
+                                blockFactory.MarkupTagBlock("</script>")),
+                            blockFactory.MarkupTagBlock("</script>"))
+                    },
+                    {
+                        "<script type='text/html'><p><script type='text/ html'><input /></script></p></script>",
+                        new MarkupBlock(
+                            new MarkupTagBlock(
+                                factory.Markup("<script"),
+                                new MarkupBlock(
+                                    new AttributeBlockChunkGenerator(
+                                        name: "type",
+                                        prefix: new LocationTagged<string>(" type='", 7, 0, 7),
+                                        suffix: new LocationTagged<string>("'", 23, 0, 23)),
+                                    factory.Markup(" type='").With(SpanChunkGenerator.Null),
+                                    factory.Markup("text/html").With(
+                                        new LiteralAttributeChunkGenerator(
+                                            prefix: new LocationTagged<string>(string.Empty, 14, 0, 14),
+                                            value: new LocationTagged<string>("text/html", 14, 0, 14))),
+                                    factory.Markup("'").With(SpanChunkGenerator.Null)),
+                                factory.Markup(">")),
+                            new MarkupTagHelperBlock("p",
+                                new MarkupTagBlock(
+                                    factory.Markup("<script"),
+                                    new MarkupBlock(
+                                        new AttributeBlockChunkGenerator(
+                                            name: "type",
+                                            prefix: new LocationTagged<string>(" type='", 35, 0, 35),
+                                            suffix: new LocationTagged<string>("'", 52, 0, 52)),
+                                        factory.Markup(" type='").With(SpanChunkGenerator.Null),
+                                        factory.Markup("text/").With(
+                                            new LiteralAttributeChunkGenerator(
+                                                prefix: new LocationTagged<string>(string.Empty, 42, 0, 42),
+                                                value: new LocationTagged<string>("text/", 42, 0, 42))),
+                                        factory.Markup(" html").With(
+                                            new LiteralAttributeChunkGenerator(
+                                                prefix: new LocationTagged<string>(" ", 47, 0, 47),
+                                                value: new LocationTagged<string>("html", 48, 0, 48))),
+                                        factory.Markup("'").With(SpanChunkGenerator.Null)),
+                                    factory.Markup(">")),
+                                factory.Markup("<input />"),
+                                blockFactory.MarkupTagBlock("</script>")),
+                            blockFactory.MarkupTagBlock("</script>"))
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(HtmlScriptBlockData))]
+        public void TagHelperParseTreeRewriter_UnderstandsTagHelpersInHtmlTypedScriptTags(
+            string documentContent,
+            MarkupBlock expectedOutput)
+        {
+            RunParseTreeRewriterTest(documentContent, expectedOutput, "p", "input");
+        }
+
         [Fact]
         public void Rewrite_CanHandleInvalidChildrenWithWhitespace()
         {

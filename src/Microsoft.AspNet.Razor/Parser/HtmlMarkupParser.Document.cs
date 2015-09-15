@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
+using System.Linq;
+using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
 
@@ -9,6 +12,9 @@ namespace Microsoft.AspNet.Razor.Parser
 {
     public partial class HtmlMarkupParser
     {
+        private static readonly char[] ValidAfterTypeAttributeNameCharacters =
+            new[] { ' ', '\t', '\r', '\n', '\f', '=' };
+
         public override void ParseDocument()
         {
             if (Context == null)
@@ -50,7 +56,7 @@ namespace Microsoft.AspNet.Razor.Parser
                         return;
                     }
 
-                    // We should behave like a normal tag that has a parser escape, fall through to the normal 
+                    // We should behave like a normal tag that has a parser escape, fall through to the normal
                     // tag logic.
                 }
                 else if (NextIs(HtmlSymbolType.QuestionMark))
@@ -79,7 +85,9 @@ namespace Microsoft.AspNet.Razor.Parser
                     Optional(HtmlSymbolType.ForwardSlash);
                     Optional(HtmlSymbolType.CloseAngle);
 
-                    if (scriptTag)
+                    // If the script tag expects javascript content then we should do minimal parsing until we reach
+                    // the end script tag. Don't want to incorrectly parse a "var tag = '<input />';" as an HTML tag.
+                    if (scriptTag && !CurrentScriptTagExpectsHtml())
                     {
                         Output(SpanKind.Markup);
                         tagBlock.Dispose();
@@ -106,6 +114,55 @@ namespace Microsoft.AspNet.Razor.Parser
                 // End tag block
                 tagBlock.Dispose();
             }
+        }
+
+        private bool CurrentScriptTagExpectsHtml()
+        {
+            var blockBuilder = Context.CurrentBlock;
+
+            Debug.Assert(blockBuilder != null);
+
+            var typeAttribute = blockBuilder.Children
+                .OfType<Block>()
+                .Where(block =>
+                    block.ChunkGenerator is AttributeBlockChunkGenerator &&
+                    block.Children.Count() >= 2)
+                .FirstOrDefault(IsTypeAttribute);
+
+            if (typeAttribute != null)
+            {
+                var contentValues = typeAttribute.Children
+                    .OfType<Span>()
+                    .Where(childSpan => childSpan.ChunkGenerator is LiteralAttributeChunkGenerator)
+                    .Select(childSpan => childSpan.Content);
+
+                var scriptType = string.Concat(contentValues).Trim();
+
+                // Does not allow charset parameter (or any other parameters).
+                return string.Equals(scriptType, "text/html", StringComparison.OrdinalIgnoreCase);
+            }
+
+            return false;
+        }
+
+        private static bool IsTypeAttribute(Block block)
+        {
+            var span = block.Children.First() as Span;
+
+            if (span == null)
+            {
+                return false;
+            }
+
+            var trimmedStartContent = span.Content.TrimStart();
+            if (trimmedStartContent.StartsWith("type", StringComparison.OrdinalIgnoreCase) &&
+                (trimmedStartContent.Length == 4 ||
+                ValidAfterTypeAttributeNameCharacters.Contains(trimmedStartContent[4])))
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }
