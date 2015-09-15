@@ -4,9 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
-using Microsoft.AspNet.Mvc.Razor.Precompilation;
-using Microsoft.Dnx.Runtime;
 using Moq;
 using Xunit;
 
@@ -14,8 +11,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
 {
     public class CompilerCacheTest
     {
-        private const string ViewPath = "Views/Home/Index.cshtml";
-        private const string PrecompiledViewsPath = "Views/Home/Precompiled.cshtml";
+        private const string ViewPath = "/Views/Home/Index.cshtml";
+        private const string PrecompiledViewsPath = "/Views/Home/Precompiled.cshtml";
         private readonly IDictionary<string, Type> _precompiledViews = new Dictionary<string, Type>
         {
             { PrecompiledViewsPath, typeof(PreCompile) }
@@ -64,6 +61,36 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             Assert.Same(expected, actual);
             Assert.Equal("hello world", actual.CompiledContent);
             Assert.Same(type, actual.CompiledType);
+        }
+
+        [Theory]
+        [InlineData("/Areas/Finances/Views/Home/Index.cshtml")]
+        [InlineData(@"Areas\Finances\Views\Home\Index.cshtml")]
+        [InlineData(@"\Areas\Finances\Views\Home\Index.cshtml")]
+        [InlineData(@"\Areas\Finances\Views/Home\Index.cshtml")]
+        public void GetOrAdd_NormalizesPathSepartorForPaths(string relativePath)
+        {
+            // Arrange
+            var viewPath = "/Areas/Finances/Views/Home/Index.cshtml";
+            var fileProvider = new TestFileProvider();
+            fileProvider.AddFile(viewPath, "some content");
+            var cache = new CompilerCache(fileProvider);
+            var type = typeof(TestView);
+            var expected = UncachedCompilationResult.Successful(type, "hello world");
+
+            // Act - 1
+            var result1 = cache.GetOrAdd(@"Areas\Finances\Views\Home\Index.cshtml", _ => expected);
+
+            // Assert - 1
+            var compilationResult = Assert.IsType<UncachedCompilationResult>(result1.CompilationResult);
+            Assert.Same(expected, compilationResult);
+            Assert.Same(type, compilationResult.CompiledType);
+
+            // Act - 2
+            var result2 = cache.GetOrAdd(relativePath, ThrowsIfCalled);
+
+            // Assert - 2
+            Assert.Same(type, result2.CompilationResult.CompiledType);
         }
 
         [Fact]
@@ -269,6 +296,52 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             // Assert 3
             Assert.NotSame(CompilerCacheResult.FileNotFound, result2);
             Assert.Same(typeof(PreCompile), result3.CompilationResult.CompiledType);
+        }
+
+        [Theory]
+        [InlineData("/Areas/Finances/Views/Home/Index.cshtml")]
+        [InlineData(@"Areas\Finances\Views\Home\Index.cshtml")]
+        [InlineData(@"\Areas\Finances\Views\Home\Index.cshtml")]
+        [InlineData(@"\Areas\Finances\Views/Home\Index.cshtml")]
+        public void GetOrAdd_NormalizesPathSepartorForPathsThatArePrecompiled(string relativePath)
+        {
+            // Arrange
+            var expected = typeof(PreCompile);
+            var viewPath = "/Areas/Finances/Views/Home/Index.cshtml";
+            var cache = new CompilerCache(
+                new TestFileProvider(),
+                new Dictionary<string, Type>
+                {
+                    { viewPath, expected }
+                });
+
+            // Act
+            var result = cache.GetOrAdd(relativePath, ThrowsIfCalled);
+
+            // Assert
+            Assert.Same(expected, result.CompilationResult.CompiledType);
+        }
+
+        [Theory]
+        [InlineData(@"Areas\Finances\Views\Home\Index.cshtml")]
+        [InlineData(@"\Areas\Finances\Views\Home\Index.cshtml")]
+        [InlineData(@"\Areas\Finances\Views/Home\Index.cshtml")]
+        public void ConstructorNormalizesPrecompiledViewPath(string viewPath)
+        {
+            // Arrange
+            var expected = typeof(PreCompile);
+            var cache = new CompilerCache(
+                new TestFileProvider(),
+                new Dictionary<string, Type>
+                {
+                    { viewPath, expected }
+                });
+
+            // Act
+            var result = cache.GetOrAdd("/Areas/Finances/Views/Home/Index.cshtml", ThrowsIfCalled);
+
+            // Assert
+            Assert.Same(expected, result.CompilationResult.CompiledType);
         }
 
         private class TestView

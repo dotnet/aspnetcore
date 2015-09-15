@@ -25,6 +25,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
 {
     public class RazorPreCompiler
     {
+        private const string CacheKeyDirectorySeparator = "/";
+
         public RazorPreCompiler(
             [NotNull] BeforeCompileContext compileContext,
             [NotNull] IFileProvider fileProvider,
@@ -226,13 +228,13 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
             {
                 if (fileInfo.IsDirectory)
                 {
-                    var subPath = Path.Combine(root, fileInfo.Name);
+                    var subPath = CombinePath(root, fileInfo.Name);
                     GetFileInfosRecursive(subPath, razorFiles);
                 }
                 else if (Path.GetExtension(fileInfo.Name)
                          .Equals(FileExtension, StringComparison.OrdinalIgnoreCase))
                 {
-                    var relativePath = Path.Combine(root, fileInfo.Name);
+                    var relativePath = CombinePath(root, fileInfo.Name);
                     var info = new RelativeFileInfo(fileInfo, relativePath);
                     razorFiles.Add(info);
                 }
@@ -289,6 +291,13 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
         {
             stream.Position = 0;
             return new NonDisposableStream(stream);
+        }
+
+        private static string CombinePath(string root, string name)
+        {
+            // We use string.Join instead of Path.Combine here to ensure that the path
+            // separator we produce matches the one used by the CompilerCache.
+            return string.Join(CacheKeyDirectorySeparator, root, name);
         }
 
         private class PrecompileRazorFileInfoCollection : RazorFileInfoCollection
