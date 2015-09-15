@@ -141,7 +141,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 var data = Marshal.AllocCoTaskMem(500);
                 tcp2.ReadStart(
                     (a, b, c) => _uv.buf_init(data, 500),
-                    (__, nread, error2, state2) =>
+                    (__, nread, errCode, error2, state2) =>
                     {
                         bytesRead += nread;
                         if (nread == 0)
@@ -197,7 +197,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 var data = Marshal.AllocCoTaskMem(500);
                 tcp2.ReadStart(
                     (a, b, c) => tcp2.Libuv.buf_init(data, 500),
-                    (__, nread, error2, state2) =>
+                    (__, nread, errCode, error2, state2) =>
                     {
                         bytesRead += nread;
                         if (nread == 0)

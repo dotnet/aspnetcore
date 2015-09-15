@@ -11,6 +11,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.Primitives;
+using System.Numerics;
+using Microsoft.AspNet.Hosting.Builder;
 
 // ReSharper disable AccessToModifiedClosure
 
@@ -25,24 +27,22 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private static readonly ArraySegment<byte> _emptyData = new ArraySegment<byte>(new byte[0]);
         private static readonly byte[] _hex = Encoding.ASCII.GetBytes("0123456789abcdef");
 
-        private Mode _mode;
-        private bool _responseStarted;
-        private bool _keepAlive;
-        private bool _autoChunk;
+        private readonly object _onStartingSync = new Object();
+        private readonly object _onCompletedSync = new Object();
         private readonly FrameRequestHeaders _requestHeaders = new FrameRequestHeaders();
         private readonly FrameResponseHeaders _responseHeaders = new FrameResponseHeaders();
 
         private List<KeyValuePair<Func<object, Task>, object>> _onStarting;
         private List<KeyValuePair<Func<object, Task>, object>> _onCompleted;
-        private object _onStartingSync = new Object();
-        private object _onCompletedSync = new Object();
+
+        private bool _responseStarted;
+        private bool _keepAlive;
+        private bool _autoChunk;
 
         public Frame(ConnectionContext context) : base(context)
         {
             FrameControl = this;
-            StatusCode = 200;
-            RequestHeaders = _requestHeaders;
-            ResponseHeaders = _responseHeaders;
+            Reset();
         }
 
         public string Method { get; set; }
@@ -66,95 +66,112 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             get { return _responseStarted; }
         }
 
-        public void Consume()
+        public void Reset()
         {
-            var input = SocketInput;
-            for (;;)
-            {
-                switch (_mode)
-                {
-                    case Mode.StartLine:
-                        if (input.Buffer.Count == 0 && input.RemoteIntakeFin)
-                        {
-                            _mode = Mode.Terminated;
-                            break;
-                        }
+            _onStarting = null;
+            _onCompleted = null;
 
-                        if (!TakeStartLine(input))
-                        {
-                            if (input.RemoteIntakeFin)
-                            {
-                                _mode = Mode.Terminated;
-                                break;
-                            }
-                            return;
-                        }
+            _responseStarted = false;
+            _keepAlive = false;
+            _autoChunk = false;
 
-                        _mode = Mode.MessageHeader;
-                        break;
+            _requestHeaders.Reset();
+            ResetResponseHeaders();
 
-                    case Mode.MessageHeader:
-                        if (input.Buffer.Count == 0 && input.RemoteIntakeFin)
-                        {
-                            _mode = Mode.Terminated;
-                            break;
-                        }
+            Method = null;
+            RequestUri = null;
+            Path = null;
+            QueryString = null;
+            HttpVersion = null;
+            RequestHeaders = _requestHeaders;
+            MessageBody = null;
+            RequestBody = null;
+            StatusCode = 200;
+            ReasonPhrase = null;
+            ResponseHeaders = _responseHeaders;
+            ResponseBody = null;
+            DuplexStream = null;
 
-                        var endOfHeaders = false;
-                        while (!endOfHeaders)
-                        {
-                            if (!TakeMessageHeader(input, out endOfHeaders))
-                            {
-                                if (input.RemoteIntakeFin)
-                                {
-                                    _mode = Mode.Terminated;
-                                    break;
-                                }
-                                return;
-                            }
-                        }
-
-                        if (_mode == Mode.Terminated)
-                        {
-                            // If we broke out of the above while loop in the Terminated
-                            // state, we don't want to transition to the MessageBody state.
-                            break;
-                        }
-
-                        _mode = Mode.MessageBody;
-                        Execute();
-                        break;
-
-                    case Mode.MessageBody:
-                        if (MessageBody.LocalIntakeFin)
-                        {
-                            // NOTE: stop reading and resume on keepalive?
-                            return;
-                        }
-                        MessageBody.Consume();
-                        // NOTE: keep looping?
-                        return;
-
-                    case Mode.Terminated:
-                        ConnectionControl.End(ProduceEndType.SocketShutdownSend);
-                        ConnectionControl.End(ProduceEndType.SocketDisconnect);
-                        return;
-                }
-            }
         }
 
-        private void Execute()
+        public void ResetResponseHeaders()
         {
-            MessageBody = MessageBody.For(
-                HttpVersion,
-                RequestHeaders,
-                this);
-            _keepAlive = MessageBody.RequestKeepAlive;
-            RequestBody = new FrameRequestStream(MessageBody);
-            ResponseBody = new FrameResponseStream(this);
-            DuplexStream = new FrameDuplexStream(RequestBody, ResponseBody);
-            SocketInput.Free();
-            Task.Run(ExecuteAsync);
+            _responseHeaders.Reset();
+            _responseHeaders.HeaderServer = "Kestrel";
+            _responseHeaders.HeaderDate = DateTime.UtcNow.ToString("r");
+        }
+
+        public async Task ProcessFraming()
+        {
+            var terminated = false;
+            while (!terminated)
+            {
+                while (!terminated && !TakeStartLine(SocketInput))
+                {
+                    terminated = SocketInput.RemoteIntakeFin;
+                    if (!terminated)
+                    {
+                        await SocketInput;
+                    }
+                    else
+                    {
+                        var x = 5;
+                    }
+                }
+
+                while (!terminated && !TakeMessageHeader2(SocketInput))
+                {
+                    terminated = SocketInput.RemoteIntakeFin;
+                    if (!terminated)
+                    {
+                        await SocketInput;
+                    }
+                    else
+                    {
+                        var x = 5;
+                    }
+                }
+
+                if (!terminated)
+                {
+                    MessageBody = MessageBody.For(HttpVersion, _requestHeaders, this);
+                    _keepAlive = MessageBody.RequestKeepAlive;
+                    RequestBody = new FrameRequestStream(MessageBody);
+                    ResponseBody = new FrameResponseStream(this);
+                    DuplexStream = new FrameDuplexStream(RequestBody, ResponseBody);
+
+                    Exception error = null;
+                    try
+                    {
+                        await Application.Invoke(this).ConfigureAwait(false);
+
+                        // Trigger FireOnStarting if ProduceStart hasn't been called yet.
+                        // We call it here, so it can go through our normal error handling
+                        // and respond with a 500 if an OnStarting callback throws.
+                        if (!_responseStarted)
+                        {
+                            FireOnStarting();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        error = ex;
+                    }
+                    finally
+                    {
+                        FireOnCompleted();
+                        ProduceEnd(error);
+                    }
+
+                    terminated = !_keepAlive;
+                }
+
+                Reset();
+            }
+
+            // Connection Terminated!
+            ConnectionControl.End(ProduceEndType.SocketShutdownSend);
+            ConnectionControl.End(ProduceEndType.SocketDisconnect);
         }
 
         public void OnStarting(Func<object, Task> callback, object state)
@@ -219,32 +236,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         // Ignore exceptions
                     }
                 }
-            }
-        }
-
-        private async Task ExecuteAsync()
-        {
-            Exception error = null;
-            try
-            {
-                await Application.Invoke(this).ConfigureAwait(false);
-
-                // Trigger FireOnStarting if ProduceStart hasn't been called yet.
-                // We call it here, so it can go through our normal error handling
-                // and respond with a 500 if an OnStarting callback throws.
-                if (!_responseStarted)
-                {
-                    FireOnStarting();
-                }
-            }
-            catch (Exception ex)
-            {
-                error = ex;
-            }
-            finally
-            {
-                FireOnCompleted();
-                ProduceEnd(error);
             }
         }
 
@@ -402,8 +393,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     // the app func has failed. https://github.com/aspnet/KestrelHttpServer/issues/43
                     _onStarting = null;
 
-                    ResponseHeaders = new FrameResponseHeaders();
-                    ResponseHeaders["Content-Length"] = new[] { "0" };
+                    ResetResponseHeaders();
+                    _responseHeaders.HeaderContentLength = "0";
                 }
             }
 
@@ -522,58 +513,39 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             return new Tuple<ArraySegment<byte>, IDisposable>(writer.Buffer, writer);
         }
 
-        private bool TakeStartLine(SocketInput baton)
+        private bool TakeStartLine(SocketInput input)
         {
-            var remaining = baton.Buffer;
-            if (remaining.Count < 2)
+            var begin = input.GetIterator();
+            if (begin.IsDefault) return false;
+
+            var end = begin.IndexOf(' ');
+            var method = begin.GetString(end);
+
+            char chFound;
+            begin = end.Add(1);
+            end = begin.IndexOfAny(' ', '?', out chFound);
+            var requestUri = begin.GetString(end);
+
+            begin = end;
+            end = chFound == '?' ? begin.IndexOf(' ') : begin;
+            var queryString = begin.GetString(end);
+
+            begin = end.Add(1);
+            end = begin.IndexOf('\r');
+            var httpVersion = begin.GetString(end);
+
+            end = end.Add(1);
+            if (end.Peek() != '\n')
             {
                 return false;
             }
-            var firstSpace = -1;
-            var secondSpace = -1;
-            var questionMark = -1;
-            var ch0 = remaining.Array[remaining.Offset];
-            for (var index = 0; index != remaining.Count - 1; ++index)
-            {
-                var ch1 = remaining.Array[remaining.Offset + index + 1];
-                if (ch0 == '\r' && ch1 == '\n')
-                {
-                    if (secondSpace == -1)
-                    {
-                        throw new InvalidOperationException("INVALID REQUEST FORMAT");
-                    }
-                    Method = GetString(remaining, 0, firstSpace);
-                    RequestUri = GetString(remaining, firstSpace + 1, secondSpace);
-                    if (questionMark == -1)
-                    {
-                        Path = RequestUri;
-                        QueryString = string.Empty;
-                    }
-                    else
-                    {
-                        Path = GetString(remaining, firstSpace + 1, questionMark);
-                        QueryString = GetString(remaining, questionMark, secondSpace);
-                    }
-                    HttpVersion = GetString(remaining, secondSpace + 1, index);
-                    baton.Skip(index + 2);
-                    return true;
-                }
 
-                if (ch0 == ' ' && firstSpace == -1)
-                {
-                    firstSpace = index;
-                }
-                else if (ch0 == ' ' && firstSpace != -1 && secondSpace == -1)
-                {
-                    secondSpace = index;
-                }
-                else if (ch0 == '?' && firstSpace != -1 && questionMark == -1 && secondSpace == -1)
-                {
-                    questionMark = index;
-                }
-                ch0 = ch1;
-            }
-            return false;
+            Method = method;
+            RequestUri = requestUri;
+            QueryString = queryString;
+            HttpVersion = httpVersion;
+            input.JumpTo(end.Add(1));
+            return true;
         }
 
         static string GetString(ArraySegment<byte> range, int startIndex, int endIndex)
@@ -581,6 +553,68 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             return Encoding.UTF8.GetString(range.Array, range.Offset + startIndex, endIndex - startIndex);
         }
 
+        private bool TakeMessageHeader2(SocketInput baton)
+        {
+            char chFirst;
+            char chSecond;
+            var scan = baton.GetIterator();
+            while (!scan.IsDefault)
+            {
+                var beginName = scan;
+                scan = scan.IndexOfAny(':', '\r', out chFirst);
+
+                var endName = scan;
+                chSecond = scan.MoveNext();
+
+                if (chFirst == '\r' && chSecond == '\n')
+                {
+                    baton.JumpTo(scan.Add(1));
+                    return true;
+                }
+                if (chFirst == char.MinValue)
+                {
+                    return false;
+                }
+
+                while (
+                    chSecond == ' ' ||
+                    chSecond == '\t' ||
+                    chSecond == '\r' ||
+                    chSecond == '\n')
+                {
+                    chSecond = scan.MoveNext();
+                }
+
+                var beginValue = scan;
+                var wrapping = false;
+                while (!scan.IsDefault)
+                {
+                    var endValue = scan = scan.IndexOf('\r');
+                    chFirst = scan.MoveNext();
+                    if (chFirst != '\n')
+                    {
+                        continue;
+                    }
+                    chSecond = scan.MoveNext();
+                    if (chSecond == ' ' || chSecond == '\t')
+                    {
+                        wrapping = true;
+                        continue;
+                    }
+                    var name = beginName.GetArraySegment(endName);
+                    var value = beginValue.GetString(endValue);
+                    if (wrapping)
+                    {
+                        value = value.Replace("\r\n", " ");
+                    }
+
+                    _requestHeaders.Append(name.Array, name.Offset, name.Count, value);
+                    break;
+                }
+            }
+
+            return false;
+        }
 
         private bool TakeMessageHeader(SocketInput baton, out bool endOfHeaders)
         {
@@ -672,15 +706,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                    statusCode != 204 &&
                    statusCode != 205 &&
                    statusCode != 304;
-        }
-
-
-        private enum Mode
-        {
-            StartLine,
-            MessageHeader,
-            MessageBody,
-            Terminated,
         }
     }
 }

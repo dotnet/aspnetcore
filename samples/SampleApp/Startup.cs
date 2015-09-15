@@ -16,7 +16,7 @@ namespace SampleApp
 
             loggerFactory.AddConsole(LogLevel.Debug);
 
-            app.Run(context =>
+            app.Run(async context =>
             {
                 Console.WriteLine("{0} {1}{2}{3}",
                     context.Request.Method,
@@ -24,9 +24,11 @@ namespace SampleApp
                     context.Request.Path,
                     context.Request.QueryString);
 
+                await context.Request.Body.CopyToAsync(Console.OpenStandardOutput());
+
                 context.Response.ContentLength = 11;
                 context.Response.ContentType = "text/plain";
-                return context.Response.WriteAsync("Hello world");
+                await context.Response.WriteAsync("Hello world");
             });
         }
     }

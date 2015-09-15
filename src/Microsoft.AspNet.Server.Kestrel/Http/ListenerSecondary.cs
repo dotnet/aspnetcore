@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
                                 DispatchPipe.ReadStart(
                                     (_1, _2, _3) => buf,
-                                    (_1, status2, error2, state2) =>
+                                    (_1, status2, errCode, error2, state2) =>
                                     {
                                         if (status2 < 0)
                                         {

@@ -13,9 +13,10 @@ namespace Microsoft.AspNet.Server.KestrelTests
         public TestInput()
         {
             var memory = new MemoryPool();
+            var memory2 = new MemoryPool2();
             FrameContext = new FrameContext
             {
-                SocketInput = new SocketInput(memory),
+                SocketInput = new SocketInput(memory2),
                 Memory = memory,
                 ConnectionControl = this,
                 FrameControl = this
@@ -28,9 +29,10 @@ namespace Microsoft.AspNet.Server.KestrelTests
         {
             var encoding = System.Text.Encoding.ASCII;
             var count = encoding.GetByteCount(text);
-            var buffer = FrameContext.SocketInput.Available(text.Length);
-            count = encoding.GetBytes(text, 0, text.Length, buffer.Array, buffer.Offset);
-            FrameContext.SocketInput.Extend(count);
+            var buffer = FrameContext.SocketInput.Pin(text.Length);
+            count = encoding.GetBytes(text, 0, text.Length, buffer.Data.Array, buffer.Data.Offset);
+            FrameContext.SocketInput.Unpin(count);
+            FrameContext.SocketInput.SetCompleted(null);
             if (fin)
             {
                 FrameContext.SocketInput.RemoteIntakeFin = true;

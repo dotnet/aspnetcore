@@ -24,7 +24,6 @@ namespace Microsoft.AspNet.Server.KestrelTests
             var stream = new FrameRequestStream(body);
 
             input.Add("Hello", true);
-            body.Consume();
 
             var buffer1 = new byte[1024];
             var count1 = stream.Read(buffer1, 0, 1024);
@@ -43,7 +42,6 @@ namespace Microsoft.AspNet.Server.KestrelTests
             var stream = new FrameRequestStream(body);
 
             input.Add("Hello", true);
-            body.Consume();
 
             var buffer1 = new byte[1024];
             var count1 = await stream.ReadAsync(buffer1, 0, 1024);

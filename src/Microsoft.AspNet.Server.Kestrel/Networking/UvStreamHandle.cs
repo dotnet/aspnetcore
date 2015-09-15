@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         private GCHandle _listenVitality;
 
         public Func<UvStreamHandle, int, object, Libuv.uv_buf_t> _allocCallback;
-        public Action<UvStreamHandle, int, Exception, object> _readCallback;
+        public Action<UvStreamHandle, int, int, Exception, object> _readCallback;
         public object _readState;
         private GCHandle _readVitality;
 
@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
 
         public void ReadStart(
             Func<UvStreamHandle, int, object, Libuv.uv_buf_t> allocCallback,
-            Action<UvStreamHandle, int, Exception, object> readCallback,
+            Action<UvStreamHandle, int, int, Exception, object> readCallback,
             object state)
         {
             if (_readVitality.IsAllocated)
@@ -163,11 +163,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
                 {
                     Exception error;
                     stream._uv.Check(nread, out error);
-                    stream._readCallback(stream, 0, error, stream._readState);
+                    stream._readCallback(stream, 0, nread, error, stream._readState);
                 }
                 else
                 {
-                    stream._readCallback(stream, nread, null, stream._readState);
+                    stream._readCallback(stream, nread, 0, null, stream._readState);
                 }
             }
             catch (Exception ex)

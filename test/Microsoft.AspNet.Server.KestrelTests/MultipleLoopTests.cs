@@ -112,7 +112,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
                     connect.Dispose();
                     clientConnectionPipe.ReadStart(
                         (_3, cb, _4) => buf,
-                        (_3, status2, error2, _4) =>
+                        (_3, status2, errCode, error2, _4) =>
                         {
                             if (status2 == 0)
                             {
@@ -211,7 +211,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
 
                     clientConnectionPipe.ReadStart(
                         (_3, cb, _4) => buf,
-                        (_3, status2, error2, _4) =>
+                        (_3, status2, errCode2, error2, _4) =>
                         {
                             if (status2 == 0)
                             {
@@ -224,7 +224,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
                             var buf2 = loop2.Libuv.buf_init(Marshal.AllocHGlobal(64), 64);
                             clientConnectionTcp.ReadStart(
                                 (_5, cb, _6) => buf2,
-                                (_5, status3, error3, _6) =>
+                                (_5, status3, errCode3, error3, _6) =>
                                 {
                                     if (status3 == 0)
                                     {

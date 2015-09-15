@@ -3,25 +3,45 @@
 
 using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Server.Kestrel.Http
 {
-    public class SocketInput
+    public class SocketInput : ICriticalNotifyCompletion
     {
-        private readonly IMemoryPool _memory;
-        private GCHandle _gcHandle;
+        private static readonly Action _awaitableIsCompleted = () => { };
+        private static readonly Action _awaitableIsNotCompleted = () => { };
 
-        public SocketInput(IMemoryPool memory)
+        private readonly MemoryPool2 _memory;
+
+        private Action _awaitableState;
+        private Exception _awaitableError;
+
+        private MemoryPoolBlock2 _head;
+        private MemoryPoolBlock2 _tail;
+        private MemoryPoolBlock2 _pinned;
+        private readonly object _syncHeadAndTail = new Object();
+
+        public SocketInput(MemoryPool2 memory)
         {
             _memory = memory;
-            Buffer = new ArraySegment<byte>(_memory.Empty, 0, 0);
+            _awaitableState = _awaitableIsNotCompleted;
         }
 
         public ArraySegment<byte> Buffer { get; set; }
 
         public bool RemoteIntakeFin { get; set; }
 
+        public bool IsCompleted
+        {
+            get
+            {
+                return Equals(_awaitableState, _awaitableIsCompleted);
+            }
+        }
 
         public void Skip(int count)
         {
@@ -35,80 +55,183 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             return taken;
         }
 
-        public void Free()
+        public PinResult Pin(int minimumSize)
         {
-            if (Buffer.Count == 0 && Buffer.Array.Length != 0)
+            lock (_syncHeadAndTail)
             {
-                _memory.FreeByte(Buffer.Array);
-                Buffer = new ArraySegment<byte>(_memory.Empty, 0, 0);
-            }
-        }
-
-        public ArraySegment<byte> Available(int minimumSize)
-        {
-            if (Buffer.Count == 0 && Buffer.Offset != 0)
-            {
-                Buffer = new ArraySegment<byte>(Buffer.Array, 0, 0);
-            }
-
-            var availableSize = Buffer.Array.Length - Buffer.Offset - Buffer.Count;
-
-            if (availableSize < minimumSize)
-            {
-                if (availableSize + Buffer.Offset >= minimumSize)
+                if (_tail != null && minimumSize <= _tail.Data.Offset + _tail.Data.Count - _tail.End)
                 {
-                    Array.Copy(Buffer.Array, Buffer.Offset, Buffer.Array, 0, Buffer.Count);
-                    if (Buffer.Count != 0)
+                    _pinned = _tail;
+                    var data = new ArraySegment<byte>(_pinned.Data.Array, _pinned.End, _pinned.Data.Offset + _pinned.Data.Count - _pinned.End);
+                    var dataPtr = _pinned.Pin();
+                    return new PinResult
                     {
-                        Buffer = new ArraySegment<byte>(Buffer.Array, 0, Buffer.Count);
-                    }
-                    availableSize = Buffer.Array.Length - Buffer.Offset - Buffer.Count;
-                }
-                else
-                {
-                    var largerSize = Buffer.Array.Length + Math.Max(Buffer.Array.Length, minimumSize);
-                    var larger = new ArraySegment<byte>(_memory.AllocByte(largerSize), 0, Buffer.Count);
-                    if (Buffer.Count != 0)
-                    {
-                        Array.Copy(Buffer.Array, Buffer.Offset, larger.Array, 0, Buffer.Count);
-                    }
-                    _memory.FreeByte(Buffer.Array);
-                    Buffer = larger;
-                    availableSize = Buffer.Array.Length - Buffer.Offset - Buffer.Count;
+                        Data = data,
+                        DataPtr = dataPtr,
+                    };
                 }
             }
-            return new ArraySegment<byte>(Buffer.Array, Buffer.Offset + Buffer.Count, availableSize);
-        }
 
-        public void Extend(int count)
-        {
-            Debug.Assert(count >= 0);
-            Debug.Assert(Buffer.Offset >= 0);
-            Debug.Assert(Buffer.Offset <= Buffer.Array.Length);
-            Debug.Assert(Buffer.Offset + Buffer.Count <= Buffer.Array.Length);
-            Debug.Assert(Buffer.Offset + Buffer.Count + count <= Buffer.Array.Length);
-
-            Buffer = new ArraySegment<byte>(Buffer.Array, Buffer.Offset, Buffer.Count + count);
-        }
-
-        public IntPtr Pin(int minimumSize)
-        {
-            var segment = Available(minimumSize);
-            _gcHandle = GCHandle.Alloc(segment.Array, GCHandleType.Pinned);
-            return _gcHandle.AddrOfPinnedObject() + segment.Offset;
+            _pinned = _memory.Lease(minimumSize);
+            return new PinResult
+            {
+                Data = _pinned.Data,
+                DataPtr = _pinned.Pin()
+            };
         }
 
         public void Unpin(int count)
         {
-            // read_cb may called without an earlier alloc_cb 
-            // this does not need to be thread-safe
-            // IsAllocated is checked only because Unpin can be called redundantly
-            if (_gcHandle.IsAllocated)
+            // Unpin may called without an earlier Pin 
+            if (_pinned != null)
             {
-                _gcHandle.Free();
-                Extend(count);
+                lock (_syncHeadAndTail)
+                {
+                    _pinned.End += count;
+                    if (_head == null)
+                    {
+                        _head = _tail = _pinned;
+                    }
+                    else if (_tail == _pinned)
+                    {
+                        // NO-OP: this was a read into unoccupied tail-space
+                    }
+                    else
+                    {
+                        _tail.Next = _pinned;
+                        _tail = _pinned;
+                    }
+                }
+                _pinned = null;
             }
         }
 
+        public SocketInput GetAwaiter()
+        {
+            return this;
+        }
+
+
+        public void OnCompleted(Action continuation)
+        {
+            var awaitableState = Interlocked.CompareExchange(
+                ref _awaitableState,
+                continuation,
+                _awaitableIsNotCompleted);
+
+            if (awaitableState == _awaitableIsNotCompleted)
+            {
+                return;
+            }
+            else if (awaitableState == _awaitableIsCompleted)
+            {
+                Task.Run(continuation);
+            }
+            else
+            {
+                // THIS IS AN ERROR STATE - ONLY ONE WAITER CAN WAIT
+            }
+        }
+
+        public void UnsafeOnCompleted(Action continuation)
+        {
+            OnCompleted(continuation);
+        }
+
+        public void SetCompleted(Exception error)
+        {
+            if (error != null)
+            {
+                _awaitableError = error;
+            }
+
+            var awaitableState = Interlocked.Exchange(
+                ref _awaitableState,
+                _awaitableIsCompleted);
+
+            if (awaitableState != _awaitableIsCompleted &&
+                awaitableState != _awaitableIsNotCompleted)
+            {
+                Task.Run(awaitableState);
+            }
+        }
+
+        public void SetNotCompleted()
+        {
+            if (RemoteIntakeFin || _awaitableError != null)
+            {
+                // TODO: Race condition - setting either of these can leave awaitable not completed
+                return;
+            }
+            var awaitableState = Interlocked.CompareExchange(
+                ref _awaitableState,
+                _awaitableIsNotCompleted,
+                _awaitableIsCompleted);
+
+            if (awaitableState == _awaitableIsNotCompleted)
+            {
+                return;
+            }
+            else if (awaitableState == _awaitableIsCompleted)
+            {
+                return;
+            }
+            else
+            {
+                // THIS IS AN ERROR STATE - ONLY ONE WAITER MAY EXIST
+            }
+        }
+
+        public void GetResult()
+        {
+            var error = _awaitableError;
+            if (error != null)
+            {
+                throw new AggregateException(error);
+            }
+        }
+
+        public MemoryPoolBlock2.Iterator GetIterator()
+        {
+            lock (_syncHeadAndTail)
+            {
+                return new MemoryPoolBlock2.Iterator(_head);
+            }
+        }
+
+        public void JumpTo(MemoryPoolBlock2.Iterator iterator)
+        {
+            MemoryPoolBlock2 returnStart;
+            MemoryPoolBlock2 returnEnd;
+            lock (_syncHeadAndTail)
+            {
+                // TODO: leave _pinned intact
+
+                returnStart = _head;
+                returnEnd = iterator.Block;
+                _head = iterator.Block;
+                if (_head == null)
+                {
+                    _tail = null;
+                    SetNotCompleted();
+                }
+                else
+                {
+                    _head.Start = iterator.Index;
+                }
+            }
+            while (returnStart != returnEnd)
+            {
+                var returnBlock = returnStart;
+                returnStart = returnStart.Next;
+                returnBlock.Pool.Return(returnBlock);
+            }
+        }
+
+        public struct PinResult
+        {
+            public ArraySegment<byte> Data;
+            public IntPtr DataPtr;
+        }
     }
 }

@@ -5,15 +5,6 @@ using Microsoft.Framework.Primitives;
 
 namespace Microsoft.AspNet.Server.Kestrel.Http 
 {
-    public partial class FrameResponseHeaders
-    {
-        public FrameResponseHeaders()
-        {
-            _Server = "Kestrel";
-            _Date = DateTime.UtcNow.ToString("r");
-            _bits = 67108868L;
-        }
-    }
 
     public partial class FrameRequestHeaders 
     {
@@ -60,6 +51,828 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private StringValues _TE;
         private StringValues _Translate;
         private StringValues _UserAgent;
+
+        
+        public StringValues HeaderCacheControl
+        {
+            get
+            {
+                if (((_bits & 1L) != 0))
+                {
+                    return _CacheControl;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 1L;
+                _CacheControl = value;
+            }
+        }
+        
+        public StringValues HeaderConnection
+        {
+            get
+            {
+                if (((_bits & 2L) != 0))
+                {
+                    return _Connection;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 2L;
+                _Connection = value;
+            }
+        }
+        
+        public StringValues HeaderDate
+        {
+            get
+            {
+                if (((_bits & 4L) != 0))
+                {
+                    return _Date;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 4L;
+                _Date = value;
+            }
+        }
+        
+        public StringValues HeaderKeepAlive
+        {
+            get
+            {
+                if (((_bits & 8L) != 0))
+                {
+                    return _KeepAlive;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 8L;
+                _KeepAlive = value;
+            }
+        }
+        
+        public StringValues HeaderPragma
+        {
+            get
+            {
+                if (((_bits & 16L) != 0))
+                {
+                    return _Pragma;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 16L;
+                _Pragma = value;
+            }
+        }
+        
+        public StringValues HeaderTrailer
+        {
+            get
+            {
+                if (((_bits & 32L) != 0))
+                {
+                    return _Trailer;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 32L;
+                _Trailer = value;
+            }
+        }
+        
+        public StringValues HeaderTransferEncoding
+        {
+            get
+            {
+                if (((_bits & 64L) != 0))
+                {
+                    return _TransferEncoding;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 64L;
+                _TransferEncoding = value;
+            }
+        }
+        
+        public StringValues HeaderUpgrade
+        {
+            get
+            {
+                if (((_bits & 128L) != 0))
+                {
+                    return _Upgrade;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 128L;
+                _Upgrade = value;
+            }
+        }
+        
+        public StringValues HeaderVia
+        {
+            get
+            {
+                if (((_bits & 256L) != 0))
+                {
+                    return _Via;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 256L;
+                _Via = value;
+            }
+        }
+        
+        public StringValues HeaderWarning
+        {
+            get
+            {
+                if (((_bits & 512L) != 0))
+                {
+                    return _Warning;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 512L;
+                _Warning = value;
+            }
+        }
+        
+        public StringValues HeaderAllow
+        {
+            get
+            {
+                if (((_bits & 1024L) != 0))
+                {
+                    return _Allow;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 1024L;
+                _Allow = value;
+            }
+        }
+        
+        public StringValues HeaderContentLength
+        {
+            get
+            {
+                if (((_bits & 2048L) != 0))
+                {
+                    return _ContentLength;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 2048L;
+                _ContentLength = value;
+            }
+        }
+        
+        public StringValues HeaderContentType
+        {
+            get
+            {
+                if (((_bits & 4096L) != 0))
+                {
+                    return _ContentType;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 4096L;
+                _ContentType = value;
+            }
+        }
+        
+        public StringValues HeaderContentEncoding
+        {
+            get
+            {
+                if (((_bits & 8192L) != 0))
+                {
+                    return _ContentEncoding;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 8192L;
+                _ContentEncoding = value;
+            }
+        }
+        
+        public StringValues HeaderContentLanguage
+        {
+            get
+            {
+                if (((_bits & 16384L) != 0))
+                {
+                    return _ContentLanguage;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 16384L;
+                _ContentLanguage = value;
+            }
+        }
+        
+        public StringValues HeaderContentLocation
+        {
+            get
+            {
+                if (((_bits & 32768L) != 0))
+                {
+                    return _ContentLocation;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 32768L;
+                _ContentLocation = value;
+            }
+        }
+        
+        public StringValues HeaderContentMD5
+        {
+            get
+            {
+                if (((_bits & 65536L) != 0))
+                {
+                    return _ContentMD5;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 65536L;
+                _ContentMD5 = value;
+            }
+        }
+        
+        public StringValues HeaderContentRange
+        {
+            get
+            {
+                if (((_bits & 131072L) != 0))
+                {
+                    return _ContentRange;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 131072L;
+                _ContentRange = value;
+            }
+        }
+        
+        public StringValues HeaderExpires
+        {
+            get
+            {
+                if (((_bits & 262144L) != 0))
+                {
+                    return _Expires;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 262144L;
+                _Expires = value;
+            }
+        }
+        
+        public StringValues HeaderLastModified
+        {
+            get
+            {
+                if (((_bits & 524288L) != 0))
+                {
+                    return _LastModified;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 524288L;
+                _LastModified = value;
+            }
+        }
+        
+        public StringValues HeaderAccept
+        {
+            get
+            {
+                if (((_bits & 1048576L) != 0))
+                {
+                    return _Accept;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 1048576L;
+                _Accept = value;
+            }
+        }
+        
+        public StringValues HeaderAcceptCharset
+        {
+            get
+            {
+                if (((_bits & 2097152L) != 0))
+                {
+                    return _AcceptCharset;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 2097152L;
+                _AcceptCharset = value;
+            }
+        }
+        
+        public StringValues HeaderAcceptEncoding
+        {
+            get
+            {
+                if (((_bits & 4194304L) != 0))
+                {
+                    return _AcceptEncoding;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 4194304L;
+                _AcceptEncoding = value;
+            }
+        }
+        
+        public StringValues HeaderAcceptLanguage
+        {
+            get
+            {
+                if (((_bits & 8388608L) != 0))
+                {
+                    return _AcceptLanguage;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 8388608L;
+                _AcceptLanguage = value;
+            }
+        }
+        
+        public StringValues HeaderAuthorization
+        {
+            get
+            {
+                if (((_bits & 16777216L) != 0))
+                {
+                    return _Authorization;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 16777216L;
+                _Authorization = value;
+            }
+        }
+        
+        public StringValues HeaderCookie
+        {
+            get
+            {
+                if (((_bits & 33554432L) != 0))
+                {
+                    return _Cookie;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 33554432L;
+                _Cookie = value;
+            }
+        }
+        
+        public StringValues HeaderExpect
+        {
+            get
+            {
+                if (((_bits & 67108864L) != 0))
+                {
+                    return _Expect;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 67108864L;
+                _Expect = value;
+            }
+        }
+        
+        public StringValues HeaderFrom
+        {
+            get
+            {
+                if (((_bits & 134217728L) != 0))
+                {
+                    return _From;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 134217728L;
+                _From = value;
+            }
+        }
+        
+        public StringValues HeaderHost
+        {
+            get
+            {
+                if (((_bits & 268435456L) != 0))
+                {
+                    return _Host;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 268435456L;
+                _Host = value;
+            }
+        }
+        
+        public StringValues HeaderIfMatch
+        {
+            get
+            {
+                if (((_bits & 536870912L) != 0))
+                {
+                    return _IfMatch;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 536870912L;
+                _IfMatch = value;
+            }
+        }
+        
+        public StringValues HeaderIfModifiedSince
+        {
+            get
+            {
+                if (((_bits & 1073741824L) != 0))
+                {
+                    return _IfModifiedSince;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 1073741824L;
+                _IfModifiedSince = value;
+            }
+        }
+        
+        public StringValues HeaderIfNoneMatch
+        {
+            get
+            {
+                if (((_bits & 2147483648L) != 0))
+                {
+                    return _IfNoneMatch;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 2147483648L;
+                _IfNoneMatch = value;
+            }
+        }
+        
+        public StringValues HeaderIfRange
+        {
+            get
+            {
+                if (((_bits & 4294967296L) != 0))
+                {
+                    return _IfRange;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 4294967296L;
+                _IfRange = value;
+            }
+        }
+        
+        public StringValues HeaderIfUnmodifiedSince
+        {
+            get
+            {
+                if (((_bits & 8589934592L) != 0))
+                {
+                    return _IfUnmodifiedSince;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 8589934592L;
+                _IfUnmodifiedSince = value;
+            }
+        }
+        
+        public StringValues HeaderMaxForwards
+        {
+            get
+            {
+                if (((_bits & 17179869184L) != 0))
+                {
+                    return _MaxForwards;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 17179869184L;
+                _MaxForwards = value;
+            }
+        }
+        
+        public StringValues HeaderProxyAuthorization
+        {
+            get
+            {
+                if (((_bits & 34359738368L) != 0))
+                {
+                    return _ProxyAuthorization;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 34359738368L;
+                _ProxyAuthorization = value;
+            }
+        }
+        
+        public StringValues HeaderReferer
+        {
+            get
+            {
+                if (((_bits & 68719476736L) != 0))
+                {
+                    return _Referer;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 68719476736L;
+                _Referer = value;
+            }
+        }
+        
+        public StringValues HeaderRange
+        {
+            get
+            {
+                if (((_bits & 137438953472L) != 0))
+                {
+                    return _Range;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 137438953472L;
+                _Range = value;
+            }
+        }
+        
+        public StringValues HeaderTE
+        {
+            get
+            {
+                if (((_bits & 274877906944L) != 0))
+                {
+                    return _TE;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 274877906944L;
+                _TE = value;
+            }
+        }
+        
+        public StringValues HeaderTranslate
+        {
+            get
+            {
+                if (((_bits & 549755813888L) != 0))
+                {
+                    return _Translate;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 549755813888L;
+                _Translate = value;
+            }
+        }
+        
+        public StringValues HeaderUserAgent
+        {
+            get
+            {
+                if (((_bits & 1099511627776L) != 0))
+                {
+                    return _UserAgent;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 1099511627776L;
+                _UserAgent = value;
+            }
+        }
+        
 
         protected override int GetCountFast()
         {
@@ -2993,6 +3806,48 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         protected override void ClearFast()
         {
             _bits = 0;
+            
+            _CacheControl = StringValues.Empty;
+            _Connection = StringValues.Empty;
+            _Date = StringValues.Empty;
+            _KeepAlive = StringValues.Empty;
+            _Pragma = StringValues.Empty;
+            _Trailer = StringValues.Empty;
+            _TransferEncoding = StringValues.Empty;
+            _Upgrade = StringValues.Empty;
+            _Via = StringValues.Empty;
+            _Warning = StringValues.Empty;
+            _Allow = StringValues.Empty;
+            _ContentLength = StringValues.Empty;
+            _ContentType = StringValues.Empty;
+            _ContentEncoding = StringValues.Empty;
+            _ContentLanguage = StringValues.Empty;
+            _ContentLocation = StringValues.Empty;
+            _ContentMD5 = StringValues.Empty;
+            _ContentRange = StringValues.Empty;
+            _Expires = StringValues.Empty;
+            _LastModified = StringValues.Empty;
+            _Accept = StringValues.Empty;
+            _AcceptCharset = StringValues.Empty;
+            _AcceptEncoding = StringValues.Empty;
+            _AcceptLanguage = StringValues.Empty;
+            _Authorization = StringValues.Empty;
+            _Cookie = StringValues.Empty;
+            _Expect = StringValues.Empty;
+            _From = StringValues.Empty;
+            _Host = StringValues.Empty;
+            _IfMatch = StringValues.Empty;
+            _IfModifiedSince = StringValues.Empty;
+            _IfNoneMatch = StringValues.Empty;
+            _IfRange = StringValues.Empty;
+            _IfUnmodifiedSince = StringValues.Empty;
+            _MaxForwards = StringValues.Empty;
+            _ProxyAuthorization = StringValues.Empty;
+            _Referer = StringValues.Empty;
+            _Range = StringValues.Empty;
+            _TE = StringValues.Empty;
+            _Translate = StringValues.Empty;
+            _UserAgent = StringValues.Empty;
             MaybeUnknown?.Clear();
         }
         
@@ -4619,6 +5474,608 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private StringValues _SetCookie;
         private StringValues _Vary;
         private StringValues _WWWAuthenticate;
+
+        
+        public StringValues HeaderCacheControl
+        {
+            get
+            {
+                if (((_bits & 1L) != 0))
+                {
+                    return _CacheControl;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 1L;
+                _CacheControl = value;
+            }
+        }
+        
+        public StringValues HeaderConnection
+        {
+            get
+            {
+                if (((_bits & 2L) != 0))
+                {
+                    return _Connection;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 2L;
+                _Connection = value;
+            }
+        }
+        
+        public StringValues HeaderDate
+        {
+            get
+            {
+                if (((_bits & 4L) != 0))
+                {
+                    return _Date;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 4L;
+                _Date = value;
+            }
+        }
+        
+        public StringValues HeaderKeepAlive
+        {
+            get
+            {
+                if (((_bits & 8L) != 0))
+                {
+                    return _KeepAlive;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 8L;
+                _KeepAlive = value;
+            }
+        }
+        
+        public StringValues HeaderPragma
+        {
+            get
+            {
+                if (((_bits & 16L) != 0))
+                {
+                    return _Pragma;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 16L;
+                _Pragma = value;
+            }
+        }
+        
+        public StringValues HeaderTrailer
+        {
+            get
+            {
+                if (((_bits & 32L) != 0))
+                {
+                    return _Trailer;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 32L;
+                _Trailer = value;
+            }
+        }
+        
+        public StringValues HeaderTransferEncoding
+        {
+            get
+            {
+                if (((_bits & 64L) != 0))
+                {
+                    return _TransferEncoding;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 64L;
+                _TransferEncoding = value;
+            }
+        }
+        
+        public StringValues HeaderUpgrade
+        {
+            get
+            {
+                if (((_bits & 128L) != 0))
+                {
+                    return _Upgrade;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 128L;
+                _Upgrade = value;
+            }
+        }
+        
+        public StringValues HeaderVia
+        {
+            get
+            {
+                if (((_bits & 256L) != 0))
+                {
+                    return _Via;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 256L;
+                _Via = value;
+            }
+        }
+        
+        public StringValues HeaderWarning
+        {
+            get
+            {
+                if (((_bits & 512L) != 0))
+                {
+                    return _Warning;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 512L;
+                _Warning = value;
+            }
+        }
+        
+        public StringValues HeaderAllow
+        {
+            get
+            {
+                if (((_bits & 1024L) != 0))
+                {
+                    return _Allow;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 1024L;
+                _Allow = value;
+            }
+        }
+        
+        public StringValues HeaderContentLength
+        {
+            get
+            {
+                if (((_bits & 2048L) != 0))
+                {
+                    return _ContentLength;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 2048L;
+                _ContentLength = value;
+            }
+        }
+        
+        public StringValues HeaderContentType
+        {
+            get
+            {
+                if (((_bits & 4096L) != 0))
+                {
+                    return _ContentType;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 4096L;
+                _ContentType = value;
+            }
+        }
+        
+        public StringValues HeaderContentEncoding
+        {
+            get
+            {
+                if (((_bits & 8192L) != 0))
+                {
+                    return _ContentEncoding;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 8192L;
+                _ContentEncoding = value;
+            }
+        }
+        
+        public StringValues HeaderContentLanguage
+        {
+            get
+            {
+                if (((_bits & 16384L) != 0))
+                {
+                    return _ContentLanguage;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 16384L;
+                _ContentLanguage = value;
+            }
+        }
+        
+        public StringValues HeaderContentLocation
+        {
+            get
+            {
+                if (((_bits & 32768L) != 0))
+                {
+                    return _ContentLocation;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 32768L;
+                _ContentLocation = value;
+            }
+        }
+        
+        public StringValues HeaderContentMD5
+        {
+            get
+            {
+                if (((_bits & 65536L) != 0))
+                {
+                    return _ContentMD5;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 65536L;
+                _ContentMD5 = value;
+            }
+        }
+        
+        public StringValues HeaderContentRange
+        {
+            get
+            {
+                if (((_bits & 131072L) != 0))
+                {
+                    return _ContentRange;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 131072L;
+                _ContentRange = value;
+            }
+        }
+        
+        public StringValues HeaderExpires
+        {
+            get
+            {
+                if (((_bits & 262144L) != 0))
+                {
+                    return _Expires;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 262144L;
+                _Expires = value;
+            }
+        }
+        
+        public StringValues HeaderLastModified
+        {
+            get
+            {
+                if (((_bits & 524288L) != 0))
+                {
+                    return _LastModified;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 524288L;
+                _LastModified = value;
+            }
+        }
+        
+        public StringValues HeaderAcceptRanges
+        {
+            get
+            {
+                if (((_bits & 1048576L) != 0))
+                {
+                    return _AcceptRanges;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 1048576L;
+                _AcceptRanges = value;
+            }
+        }
+        
+        public StringValues HeaderAge
+        {
+            get
+            {
+                if (((_bits & 2097152L) != 0))
+                {
+                    return _Age;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 2097152L;
+                _Age = value;
+            }
+        }
+        
+        public StringValues HeaderETag
+        {
+            get
+            {
+                if (((_bits & 4194304L) != 0))
+                {
+                    return _ETag;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 4194304L;
+                _ETag = value;
+            }
+        }
+        
+        public StringValues HeaderLocation
+        {
+            get
+            {
+                if (((_bits & 8388608L) != 0))
+                {
+                    return _Location;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 8388608L;
+                _Location = value;
+            }
+        }
+        
+        public StringValues HeaderProxyAutheticate
+        {
+            get
+            {
+                if (((_bits & 16777216L) != 0))
+                {
+                    return _ProxyAutheticate;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 16777216L;
+                _ProxyAutheticate = value;
+            }
+        }
+        
+        public StringValues HeaderRetryAfter
+        {
+            get
+            {
+                if (((_bits & 33554432L) != 0))
+                {
+                    return _RetryAfter;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 33554432L;
+                _RetryAfter = value;
+            }
+        }
+        
+        public StringValues HeaderServer
+        {
+            get
+            {
+                if (((_bits & 67108864L) != 0))
+                {
+                    return _Server;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 67108864L;
+                _Server = value;
+            }
+        }
+        
+        public StringValues HeaderSetCookie
+        {
+            get
+            {
+                if (((_bits & 134217728L) != 0))
+                {
+                    return _SetCookie;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 134217728L;
+                _SetCookie = value;
+            }
+        }
+        
+        public StringValues HeaderVary
+        {
+            get
+            {
+                if (((_bits & 268435456L) != 0))
+                {
+                    return _Vary;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 268435456L;
+                _Vary = value;
+            }
+        }
+        
+        public StringValues HeaderWWWAuthenticate
+        {
+            get
+            {
+                if (((_bits & 536870912L) != 0))
+                {
+                    return _WWWAuthenticate;
+                }
+                else
+                {
+                    return StringValues.Empty;
+                }
+            }
+            set
+            {
+                _bits |= 536870912L;
+                _WWWAuthenticate = value;
+            }
+        }
+        
 
         protected override int GetCountFast()
         {
@@ -6790,6 +8247,37 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         protected override void ClearFast()
         {
             _bits = 0;
+            
+            _CacheControl = StringValues.Empty;
+            _Connection = StringValues.Empty;
+            _Date = StringValues.Empty;
+            _KeepAlive = StringValues.Empty;
+            _Pragma = StringValues.Empty;
+            _Trailer = StringValues.Empty;
+            _TransferEncoding = StringValues.Empty;
+            _Upgrade = StringValues.Empty;
+            _Via = StringValues.Empty;
+            _Warning = StringValues.Empty;
+            _Allow = StringValues.Empty;
+            _ContentLength = StringValues.Empty;
+            _ContentType = StringValues.Empty;
+            _ContentEncoding = StringValues.Empty;
+            _ContentLanguage = StringValues.Empty;
+            _ContentLocation = StringValues.Empty;
+            _ContentMD5 = StringValues.Empty;
+            _ContentRange = StringValues.Empty;
+            _Expires = StringValues.Empty;
+            _LastModified = StringValues.Empty;
+            _AcceptRanges = StringValues.Empty;
+            _Age = StringValues.Empty;
+            _ETag = StringValues.Empty;
+            _Location = StringValues.Empty;
+            _ProxyAutheticate = StringValues.Empty;
+            _RetryAfter = StringValues.Empty;
+            _Server = StringValues.Empty;
+            _SetCookie = StringValues.Empty;
+            _Vary = StringValues.Empty;
+            _WWWAuthenticate = StringValues.Empty;
             MaybeUnknown?.Clear();
         }
         

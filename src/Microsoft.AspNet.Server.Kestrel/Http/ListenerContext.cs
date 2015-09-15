@@ -22,6 +22,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             Thread = listenerContext.Thread;
             Application = listenerContext.Application;
             Memory = listenerContext.Memory;
+            Memory2 = listenerContext.Memory2;
             Log = listenerContext.Log;
         }
 
@@ -30,6 +31,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         public Func<Frame, Task> Application { get; set; }
 
         public IMemoryPool Memory { get; set; }
+
+        public MemoryPool2 Memory2 { get; set; }
 
         public IKestrelTrace Log { get; }
     }

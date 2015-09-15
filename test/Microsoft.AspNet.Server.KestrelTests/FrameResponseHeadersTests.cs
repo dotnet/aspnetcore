@@ -14,7 +14,8 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [Fact]
         public void InitialDictionaryContainsServerAndDate()
         {
-            IDictionary<string, StringValues> headers = new FrameResponseHeaders();
+            var frame = new Frame(new ConnectionContext());
+            IDictionary<string, StringValues> headers = frame.ResponseHeaders;
 
             Assert.Equal(2, headers.Count);
 

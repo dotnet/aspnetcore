@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
         {
             var testInput = new TestInput();
             var context = new ConnectionContext();
-            context.SocketInput = new SocketInput(new MemoryPool());
+            context.SocketInput = new SocketInput(new MemoryPool2());
 
             var exchanger = new MessageBodyExchanger(testInput.FrameContext);
 
@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
         {
             var testInput = new TestInput();
             var context = new ConnectionContext();
-            context.SocketInput = new SocketInput(new MemoryPool());
+            context.SocketInput = new SocketInput(new MemoryPool2());
 
             var exchanger = new MessageBodyExchanger(testInput.FrameContext);
 
@@ -84,7 +84,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
         {
             var testInput = new TestInput();
             var context = new ConnectionContext();
-            context.SocketInput = new SocketInput(new MemoryPool());
+            context.SocketInput = new SocketInput(new MemoryPool2());
 
             var exchanger = new MessageBodyExchanger(testInput.FrameContext);
 
@@ -117,7 +117,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
         {
             var testInput = new TestInput();
             var context = new ConnectionContext();
-            context.SocketInput = new SocketInput(new MemoryPool());
+            context.SocketInput = new SocketInput(new MemoryPool2());
 
             var exchanger = new MessageBodyExchanger(testInput.FrameContext);
 
@@ -155,7 +155,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
 
             var testInput = new TestInput();
             var context = new ConnectionContext();
-            context.SocketInput = new SocketInput(new MemoryPool());
+            context.SocketInput = new SocketInput(new MemoryPool2());
 
             var exchanger = new MessageBodyExchanger(testInput.FrameContext);
 

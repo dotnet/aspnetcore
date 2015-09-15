@@ -119,6 +119,31 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             return result;
         }
 
+        public Task<int> ReadAsync(ArraySegment<byte> buffer, CancellationToken cancellationToken)
+        {
+            Task<int> result = null;
+            var send100Continue = false;
+            result = ReadAsyncImplementation(buffer, cancellationToken);
+            if (!result.IsCompleted)
+            {
+                lock (_sync)
+                {
+                    send100Continue = _send100Continue;
+                    _send100Continue = false;
+                }
+            }
+            if (send100Continue)
+            {
+                _context.FrameControl.ProduceContinue();
+            }
+            return result;
+        }
+
+        public virtual Task<int> ReadAsyncImplementation(ArraySegment<byte> buffer, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException("TODO");
+        }
+
         static void CompletePending(object state)
         {
             while (((MessageBodyExchanger)state).CompletePending())

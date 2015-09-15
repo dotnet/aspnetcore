@@ -171,24 +171,34 @@ using Microsoft.Framework.Primitives;
 
 namespace Microsoft.AspNet.Server.Kestrel.Http 
 {{
-    public partial class FrameResponseHeaders
-    {{
-        public FrameResponseHeaders()
-        {{
-            _Server = ""Kestrel"";
-            _Date = DateTime.UtcNow.ToString(""r"");
-            _bits = {
-                1L << responseHeaders.First(header => header.Name == "Server").Index |
-                1L << responseHeaders.First(header => header.Name == "Date").Index
-            }L;
-        }}
-    }}
 {Each(loops, loop => $@"
     public partial class {loop.ClassName} 
     {{
         private long _bits = 0;
         {Each(loop.Headers, header => @"
         private StringValues _" + header.Identifier + ";")}
+
+        {Each(loop.Headers, header => $@"
+        public StringValues Header{header.Identifier}
+        {{
+            get
+            {{
+                if ({header.TestBit()})
+                {{
+                    return _{header.Identifier};
+                }}
+                else
+                {{
+                    return StringValues.Empty;
+                }}
+            }}
+            set
+            {{
+                {header.SetBit()};
+                _{header.Identifier} = value;
+            }}
+        }}
+        ")}
 
         protected override int GetCountFast()
         {{
@@ -322,6 +332,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         protected override void ClearFast()
         {{
             _bits = 0;
+            {Each(loop.Headers, header => $@"
+            _{header.Identifier} = StringValues.Empty;")}
             MaybeUnknown?.Clear();
         }}
         

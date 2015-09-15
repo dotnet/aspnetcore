@@ -21,7 +21,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {
                 return GetValueFast(key);
             }
-
             set
             {
                 SetValueFast(key, value);
@@ -35,6 +34,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         ICollection<string> IDictionary<string, StringValues>.Keys => ((IDictionary<string, StringValues>)this).Select(pair => pair.Key).ToList();
 
         ICollection<StringValues> IDictionary<string, StringValues>.Values => ((IDictionary<string, StringValues>)this).Select(pair => pair.Value).ToList();
+
+        public void Reset()
+        {
+            ClearFast();
+        }
 
         protected static StringValues AppendValue(StringValues existing, string append)
         {

@@ -72,13 +72,13 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            return _body.ReadAsync(new ArraySegment<byte>(buffer, offset, count));
+            return _body.ReadAsync(new ArraySegment<byte>(buffer, offset, count), cancellationToken);
         }
 
         public Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken, object state)
         {
             var tcs = new TaskCompletionSource<int>(state);
-            var task = _body.ReadAsync(new ArraySegment<byte>(buffer, offset, count));
+            var task = _body.ReadAsync(new ArraySegment<byte>(buffer, offset, count), cancellationToken);
             task.ContinueWith((task2, state2) =>
             {
                 var tcs2 = (TaskCompletionSource<int>)state2;
