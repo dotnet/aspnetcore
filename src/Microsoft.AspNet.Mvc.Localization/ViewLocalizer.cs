@@ -103,7 +103,6 @@ namespace Microsoft.AspNet.Mvc.Localization
             {
                 baseName = baseName.Substring(1);
             }
-            baseName = _applicationName + "." + baseName;
             _localizer = _localizerFactory.Create(baseName, _applicationName);
         }
 

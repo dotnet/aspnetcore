@@ -1,10 +1,12 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Linq;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Extensions;
+using Microsoft.Framework.Localization;
 using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.Mvc.Localization.Internal
@@ -13,7 +15,8 @@ namespace Microsoft.AspNet.Mvc.Localization.Internal
     {
         public static void AddLocalizationServices(
             IServiceCollection services,
-            LanguageViewLocationExpanderFormat format)
+            LanguageViewLocationExpanderFormat format,
+            Action<LocalizationOptions> setupAction)
         {
             services.Configure<RazorViewEngineOptions>(
                 options =>
@@ -29,7 +32,7 @@ namespace Microsoft.AspNet.Mvc.Localization.Internal
                 services.TryAdd(ServiceDescriptor.Instance<IHtmlEncoder>(HtmlEncoder.Default));
             }
 
-            services.AddLocalization();
+            services.AddLocalization(setupAction);
         }
     }
 }
