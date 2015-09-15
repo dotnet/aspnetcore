@@ -46,7 +46,7 @@ namespace Microsoft.Framework.DependencyInjection
             {
                 services.Configure(setupAction);
             }
-
+            services.AddOptions();
             return services;
         }
     }

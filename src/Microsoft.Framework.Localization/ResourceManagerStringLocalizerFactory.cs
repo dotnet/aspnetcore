@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
 using System;
+using System.IO;
 using System.Reflection;
 using System.Resources;
 using Microsoft.Dnx.Runtime;
@@ -34,7 +35,8 @@ namespace Microsoft.Framework.Localization
             _resourcesRelativePath = localizationOptions.Value.ResourcesPath ?? string.Empty;
             if (!string.IsNullOrEmpty(_resourcesRelativePath))
             {
-                _resourcesRelativePath = _resourcesRelativePath.Replace("/", ".") + ".";
+                _resourcesRelativePath = _resourcesRelativePath.Replace(Path.AltDirectorySeparatorChar, '.')
+                    .Replace(Path.DirectorySeparatorChar, '.') + ".";
             }
         }
 

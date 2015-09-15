@@ -11,6 +11,6 @@ namespace Microsoft.Framework.Localization
         /// <summary>
         /// The relative path under application root where resource files are located.
         /// </summary>
-        public string ResourcesPath { get; set; }
+        public string ResourcesPath { get; set; } = string.Empty;
     }
 }

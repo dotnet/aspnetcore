@@ -16,7 +16,7 @@ namespace LocalizationSample
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddLocalization();
+            services.AddLocalization(options => options.ResourcesPath = "My/Resources");
         }
 
         public void Configure(IApplicationBuilder app, IStringLocalizer<Startup> SR)
