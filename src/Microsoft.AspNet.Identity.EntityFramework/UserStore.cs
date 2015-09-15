@@ -979,7 +979,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             ThrowIfDisposed();
             if (String.IsNullOrEmpty(roleName))
             {
-                throw new ArgumentNullException(nameof(role));
+                throw new ArgumentNullException(nameof(roleName));
             }
 
             var role = await Roles.Where(x => x.Name.Equals(roleName)).FirstOrDefaultAsync(cancellationToken);
