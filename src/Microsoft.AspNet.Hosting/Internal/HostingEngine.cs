@@ -127,6 +127,7 @@ namespace Microsoft.AspNet.Hosting.Internal
                 _applicationLifetime.NotifyStopping();
                 server.Dispose();
                 _applicationLifetime.NotifyStopped();
+                (_applicationServices as IDisposable)?.Dispose();
             }));
         }
 
