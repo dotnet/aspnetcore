@@ -318,7 +318,7 @@ namespace Microsoft.AspNet.Authorization.Test
             var user = new ClaimsPrincipal(
                 new ClaimsIdentity(
                     new Claim[] {
-                        new Claim(ClaimTypes.Role, ""),
+                        new Claim(ClaimTypes.Role, "none"),
                     },
                     "Basic")
                 );
