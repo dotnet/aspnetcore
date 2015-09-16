@@ -150,12 +150,6 @@
   <data name="OIDCH_0033_NonceAlreadyExists" xml:space="preserve">
     <value>OIDCH_0033: ProtocolValidator.RequireNonce == true. The generated nonce already exists: this usually indicates the nonce is not unique or has been used. The nonce is: '{0}'.</value>
   </data>
-  <data name="OIDCH_0034_RedirectToIdentityProviderContextHandledResponse" xml:space="preserve">
-    <value>OIDCH_0034: RedirectToIdentityProviderContext.HandledResponse</value>
-  </data>
-  <data name="OIDCH_0035_RedirectToIdentityProviderContextSkipped" xml:space="preserve">
-    <value>OIDCH_0035: RedirectToIdentityProviderContext.Skipped</value>
-  </data>
   <data name="OIDCH_0036_UriIsNotWellFormed" xml:space="preserve">
     <value>OIDCH_0036: Uri.IsWellFormedUriString(redirectUri, UriKind.Absolute) returned 'false', redirectUri is: '{0}'.</value>
   </data>
@@ -195,23 +189,11 @@
   <data name="OIDCH_0007_UpdatingConfiguration" xml:space="preserve">
     <value>OIDCH_0007: Updating configuration</value>
   </data>
-  <data name="OIDCH_0008_SecurityTokenReceivedContextHandledResponse" xml:space="preserve">
-    <value>OIDCH_0008: SecurityTokenReceivedContext.HandledResponse</value>
-  </data>
-  <data name="OIDCH_0009_SecurityTokenReceivedContextSkipped" xml:space="preserve">
-    <value>OIDCH_0009: SecurityTokenReceivedContext.Skipped</value>
-  </data>
   <data name="OIDCH_0010_ValidatedSecurityTokenNotJwt" xml:space="preserve">
     <value>OIDCH_0010: Validated Security Token must be a JwtSecurityToken was: '{0}'.</value>
   </data>
   <data name="OIDCH_0011_UnableToValidateToken" xml:space="preserve">
     <value>OIDCH_0011: Unable to validate the 'id_token', no suitable ISecurityTokenValidator was found for: '{0}'."</value>
-  </data>
-  <data name="OIDCH_0012_SecurityTokenValidatedContextHandledResponse" xml:space="preserve">
-    <value>OIDCH_0012: SecurityTokenValidatedContext.HandledResponse</value>
-  </data>
-  <data name="OIDCH_0013_SecurityTokenValidatedContextSkipped" xml:space="preserve">
-    <value>OIDCH_0013: SecurityTokenValidatedContext.Skipped</value>
   </data>
   <data name="OIDCH_0014_AuthorizationCodeReceived" xml:space="preserve">
     <value>OIDCH_0014: AuthorizationCode received: '{0}'.</value>
@@ -239,9 +221,6 @@
   </data>
   <data name="OIDCH_0041_Subject_Claim_Not_Found" xml:space="preserve">
     <value>OIDCH_0041: Subject claim not found in {0}.</value>
-  </data>
-  <data name="OIDCH_0042_AuthorizationCodeRedeemed" xml:space="preserve">
-    <value>OIDCH_0042: Authorization Code redeemed:  '{0}'</value>
   </data>
   <data name="OIDCH_0043_AuthorizationCodeRedeemedContextHandledResponse" xml:space="preserve">
     <value>OIDCH_0043: AuthorizationCodeRedeemedContext.HandledResponse</value>

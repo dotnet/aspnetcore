@@ -187,38 +187,6 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         }
 
         /// <summary>
-        /// OIDCH_0034: RedirectToIdentityProviderContext.HandledResponse
-        /// </summary>
-        internal static string OIDCH_0034_RedirectToIdentityProviderContextHandledResponse
-        {
-            get { return GetString("OIDCH_0034_RedirectToIdentityProviderContextHandledResponse"); }
-        }
-
-        /// <summary>
-        /// OIDCH_0034: RedirectToIdentityProviderContext.HandledResponse
-        /// </summary>
-        internal static string FormatOIDCH_0034_RedirectToIdentityProviderContextHandledResponse()
-        {
-            return GetString("OIDCH_0034_RedirectToIdentityProviderContextHandledResponse");
-        }
-
-        /// <summary>
-        /// OIDCH_0035: RedirectToIdentityProviderContext.Skipped
-        /// </summary>
-        internal static string OIDCH_0035_RedirectToIdentityProviderContextSkipped
-        {
-            get { return GetString("OIDCH_0035_RedirectToIdentityProviderContextSkipped"); }
-        }
-
-        /// <summary>
-        /// OIDCH_0035: RedirectToIdentityProviderContext.Skipped
-        /// </summary>
-        internal static string FormatOIDCH_0035_RedirectToIdentityProviderContextSkipped()
-        {
-            return GetString("OIDCH_0035_RedirectToIdentityProviderContextSkipped");
-        }
-
-        /// <summary>
         /// OIDCH_0036: Uri.IsWellFormedUriString(redirectUri, UriKind.Absolute) returned 'false', redirectUri is: '{0}'.
         /// </summary>
         internal static string OIDCH_0036_UriIsNotWellFormed
@@ -427,38 +395,6 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         }
 
         /// <summary>
-        /// OIDCH_0008: SecurityTokenReceivedContext.HandledResponse
-        /// </summary>
-        internal static string OIDCH_0008_SecurityTokenReceivedContextHandledResponse
-        {
-            get { return GetString("OIDCH_0008_SecurityTokenReceivedContextHandledResponse"); }
-        }
-
-        /// <summary>
-        /// OIDCH_0008: SecurityTokenReceivedContext.HandledResponse
-        /// </summary>
-        internal static string FormatOIDCH_0008_SecurityTokenReceivedContextHandledResponse()
-        {
-            return GetString("OIDCH_0008_SecurityTokenReceivedContextHandledResponse");
-        }
-
-        /// <summary>
-        /// OIDCH_0009: SecurityTokenReceivedContext.Skipped
-        /// </summary>
-        internal static string OIDCH_0009_SecurityTokenReceivedContextSkipped
-        {
-            get { return GetString("OIDCH_0009_SecurityTokenReceivedContextSkipped"); }
-        }
-
-        /// <summary>
-        /// OIDCH_0009: SecurityTokenReceivedContext.Skipped
-        /// </summary>
-        internal static string FormatOIDCH_0009_SecurityTokenReceivedContextSkipped()
-        {
-            return GetString("OIDCH_0009_SecurityTokenReceivedContextSkipped");
-        }
-
-        /// <summary>
         /// OIDCH_0010: Validated Security Token must be a JwtSecurityToken was: '{0}'.
         /// </summary>
         internal static string OIDCH_0010_ValidatedSecurityTokenNotJwt
@@ -488,38 +424,6 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         internal static string FormatOIDCH_0011_UnableToValidateToken(object p0)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("OIDCH_0011_UnableToValidateToken"), p0);
-        }
-
-        /// <summary>
-        /// OIDCH_0012: SecurityTokenValidatedContext.HandledResponse
-        /// </summary>
-        internal static string OIDCH_0012_SecurityTokenValidatedContextHandledResponse
-        {
-            get { return GetString("OIDCH_0012_SecurityTokenValidatedContextHandledResponse"); }
-        }
-
-        /// <summary>
-        /// OIDCH_0012: SecurityTokenValidatedContext.HandledResponse
-        /// </summary>
-        internal static string FormatOIDCH_0012_SecurityTokenValidatedContextHandledResponse()
-        {
-            return GetString("OIDCH_0012_SecurityTokenValidatedContextHandledResponse");
-        }
-
-        /// <summary>
-        /// OIDCH_0013: SecurityTokenValidatedContext.Skipped
-        /// </summary>
-        internal static string OIDCH_0013_SecurityTokenValidatedContextSkipped
-        {
-            get { return GetString("OIDCH_0013_SecurityTokenValidatedContextSkipped"); }
-        }
-
-        /// <summary>
-        /// OIDCH_0013: SecurityTokenValidatedContext.Skipped
-        /// </summary>
-        internal static string FormatOIDCH_0013_SecurityTokenValidatedContextSkipped()
-        {
-            return GetString("OIDCH_0013_SecurityTokenValidatedContextSkipped");
         }
 
         /// <summary>
@@ -664,22 +568,6 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         internal static string FormatOIDCH_0041_Subject_Claim_Not_Found(object p0)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("OIDCH_0041_Subject_Claim_Not_Found"), p0);
-        }
-
-        /// <summary>
-        /// OIDCH_0042: Authorization Code redeemed:  '{0}'
-        /// </summary>
-        internal static string OIDCH_0042_AuthorizationCodeRedeemed
-        {
-            get { return GetString("OIDCH_0042_AuthorizationCodeRedeemed"); }
-        }
-
-        /// <summary>
-        /// OIDCH_0042: Authorization Code redeemed:  '{0}'
-        /// </summary>
-        internal static string FormatOIDCH_0042_AuthorizationCodeRedeemed(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("OIDCH_0042_AuthorizationCodeRedeemed"), p0);
         }
 
         /// <summary>

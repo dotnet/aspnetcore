@@ -1,7 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Newtonsoft.Json.Linq;
 
@@ -15,7 +14,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         public OpenIdConnectTokenEndpointResponse(JObject jsonResponse)
         {
             JsonResponse = jsonResponse;
-            Message = new OpenIdConnectMessage()
+            ProtocolMessage = new OpenIdConnectMessage()
             {
                 AccessToken = JsonResponse.Value<string>(OpenIdConnectParameterNames.AccessToken),
                 IdToken = JsonResponse.Value<string>(OpenIdConnectParameterNames.IdToken),
@@ -27,7 +26,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         /// <summary>
         /// OpenIdConnect message that contains the id token and access tokens
         /// </summary>
-        public OpenIdConnectMessage Message { get; set; }
+        public OpenIdConnectMessage ProtocolMessage { get; set; }
 
         /// <summary>
         /// Json response returned from the token endpoint

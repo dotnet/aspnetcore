@@ -5,13 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Features.Authentication;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.Primitives;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Authentication

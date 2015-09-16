@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             return Task.FromResult(new OpenIdConnectTokenEndpointResponse(jsonResponse));
         }
 
-        protected override Task<AuthenticationTicket> GetUserInformationAsync(AuthenticationProperties properties, OpenIdConnectMessage message, AuthenticationTicket ticket)
+        protected override Task<AuthenticationTicket> GetUserInformationAsync(OpenIdConnectMessage message, AuthenticationTicket ticket)
         {
             var claimsIdentity = (ClaimsIdentity)ticket.Principal.Identity;
             if (claimsIdentity == null)

@@ -11,9 +11,19 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
     public interface IOpenIdConnectEvents
     {
         /// <summary>
+        /// Invoked when the authentication process completes.
+        /// </summary>
+        Task AuthenticationCompleted(AuthenticationCompletedContext context);
+
+        /// <summary>
         /// Invoked if exceptions are thrown during request processing. The exceptions will be re-thrown after this event unless suppressed.
         /// </summary>
         Task AuthenticationFailed(AuthenticationFailedContext context);
+
+        /// <summary>
+        /// Invoked after the id token has passed validation and a ClaimsIdentity has been generated.
+        /// </summary>
+        Task AuthenticationValidated(AuthenticationValidatedContext context);
 
         /// <summary>
         /// Invoked after security token validation if an authorization code is present in the protocol message.
@@ -21,9 +31,9 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         Task AuthorizationCodeReceived(AuthorizationCodeReceivedContext context);
 
         /// <summary>
-        /// Invoked after "authorization code" is redeemed for tokens at the token endpoint.
+        /// Invoked when an authorization response is received.
         /// </summary>
-        Task AuthorizationCodeRedeemed(AuthorizationCodeRedeemedContext context);
+        Task AuthorizationResponseReceived(AuthorizationResponseReceivedContext context);
 
         /// <summary>
         /// Invoked when a protocol message is first received.
@@ -31,18 +41,23 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         Task MessageReceived(MessageReceivedContext context);
 
         /// <summary>
-        /// Invoked to manipulate redirects to the identity provider for SignIn, SignOut, or Challenge.
+        /// Invoked before redirecting to the identity provider to authenticate.
         /// </summary>
-        Task RedirectToIdentityProvider(RedirectToIdentityProviderContext context);
+        Task RedirectToAuthenticationEndpoint(RedirectContext context);
 
         /// <summary>
-        /// Invoked with the security token that has been extracted from the protocol message.
+        /// Invoked before redirecting to the identity provider to sign out.
         /// </summary>
-        Task SecurityTokenReceived(SecurityTokenReceivedContext context);
+        Task RedirectToEndSessionEndpoint(RedirectContext context);
 
         /// <summary>
-        /// Invoked after the security token has passed validation and a ClaimsIdentity has been generated.
+        /// Invoked after "authorization code" is redeemed for tokens at the token endpoint.
         /// </summary>
-        Task SecurityTokenValidated(SecurityTokenValidatedContext context);
+        Task TokenResponseReceived(TokenResponseReceivedContext context);
+
+        /// <summary>
+        /// Invoked when user information is retrieved from the UserInfoEndpoint.
+        /// </summary>
+        Task UserInformationReceived(UserInformationReceivedContext context);
     }
 }
