@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             var innerContent = data is JsonString ? data.ToString() : JsonConvert.SerializeObject(data);
             innerContent.Replace("<", "\u003C").Replace(">", "\u003E");
-            builder.InnerHtml = new HtmlString(innerContent);
+            builder.InnerHtml.SetContentEncoded(innerContent);
 
             return builder;
         }

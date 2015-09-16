@@ -221,8 +221,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
             {
                 var nullOptionTag = new TagBuilder("option");
                 nullOptionTag.Attributes["value"] = string.Empty;
-                nullOptionTag.SetInnerText(nullOption);
-                tag.InnerHtml = nullOptionTag;
+                nullOptionTag.InnerHtml.SetContent(nullOption);
+                tag.InnerHtml.SetContent(nullOptionTag);
             }
 
             var clientValidators = html.GetClientValidationRules(metadata, null);
@@ -269,19 +269,19 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 if (string.Equals(validator.ValidationType, "required"))
                 {
                     tag.Attributes["ng-show"] = string.Format("({0}.submitAttempted || {0}.{1}.$dirty || {0}.{1}.visited) && {0}.{1}.$error.{2}", formName, modelName, "required");
-                    tag.SetInnerText(validator.ErrorMessage);
+                    tag.InnerHtml.SetContent(validator.ErrorMessage);
                 }
                 else if (string.Equals(validator.ValidationType, "length"))
                 {
                     tag.Attributes["ng-show"] = string.Format("({0}.submitAttempted || {0}.{1}.$dirty || {0}.{1}.visited) && ({0}.{1}.$error.minlength || {0}.{1}.$error.maxlength)",
                         formName, modelName);
-                    tag.SetInnerText(validator.ErrorMessage);
+                    tag.InnerHtml.SetContent(validator.ErrorMessage);
                 }
                 else if (string.Equals(validator.ValidationType, "range"))
                 {
                     tag.Attributes["ng-show"] = string.Format("({0}.submitAttempted || {0}.{1}.$dirty || {0}.{1}.visited) && ({0}.{1}.$error.min || {0}.{1}.$error.max)",
                         formName, modelName);
-                    tag.SetInnerText(validator.ErrorMessage);
+                    tag.InnerHtml.SetContent(validator.ErrorMessage);
                 }
                 // TODO: Regex, equalto, remote
                 else
