@@ -52,13 +52,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
             selectTag.AddCssClass("tri-state");
             selectTag.Attributes["disabled"] = "disabled";
 
-            var content = new BufferedHtmlContent();
             foreach (var item in TriStateValues(value))
             {
-                content.Append(DefaultHtmlGenerator.GenerateOption(item, item.Text));
+                selectTag.InnerHtml.Append(DefaultHtmlGenerator.GenerateOption(item, item.Text));
             }
-
-            selectTag.InnerHtml = content;
+            
             return selectTag;
         }
 
@@ -251,14 +249,14 @@ namespace Microsoft.AspNet.Mvc.Rendering
                     if (!string.IsNullOrEmpty(label))
                     {
                         var labelTag = new TagBuilder("div");
-                        labelTag.SetInnerText(label);
+                        labelTag.InnerHtml.SetContent(label);
                         labelTag.AddCssClass("display-label");
                         content.AppendLine(labelTag);
                     }
 
                     var valueDivTag = new TagBuilder("div");
                     valueDivTag.AddCssClass("display-field");
-                    valueDivTag.InnerHtml = templateBuilderResult;
+                    valueDivTag.InnerHtml.SetContent(templateBuilderResult);
                     content.AppendLine(valueDivTag);
                 }
                 else
@@ -304,7 +302,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             var hyperlinkTag = new TagBuilder("a");
             hyperlinkTag.MergeAttribute("href", uriString);
-            hyperlinkTag.SetInnerText(linkedText);
+            hyperlinkTag.InnerHtml.SetContent(linkedText);
             return hyperlinkTag;
         }
     }

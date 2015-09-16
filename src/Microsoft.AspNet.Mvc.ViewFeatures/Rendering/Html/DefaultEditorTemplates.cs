@@ -274,22 +274,20 @@ namespace Microsoft.AspNet.Mvc.Rendering
                     {
                         var labelTag = new TagBuilder("div");
                         labelTag.AddCssClass("editor-label");
-                        labelTag.InnerHtml = label;
+                        labelTag.InnerHtml.SetContent(label);
                         content.AppendLine(labelTag);
                     }
 
                     var valueDivTag = new TagBuilder("div");
                     valueDivTag.AddCssClass("editor-field");
-
-                    var innerContent = new BufferedHtmlContent();
-                    innerContent.Append(templateBuilderResult);
-                    innerContent.AppendEncoded(" ");
-                    innerContent.Append(htmlHelper.ValidationMessage(
+                    
+                    valueDivTag.InnerHtml.Append(templateBuilderResult);
+                    valueDivTag.InnerHtml.AppendEncoded(" ");
+                    valueDivTag.InnerHtml.Append(htmlHelper.ValidationMessage(
                         propertyMetadata.PropertyName,
                         message: null,
                         htmlAttributes: null,
                         tag: null));
-                    valueDivTag.InnerHtml = innerContent;
 
                     content.AppendLine(valueDivTag);
                 }

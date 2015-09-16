@@ -24,13 +24,18 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             TagName = tagName;
             Attributes = new SortedDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            InnerHtml = new BufferedHtmlContent();
         }
 
-        public IDictionary<string, string> Attributes { get; private set; }
+        /// <summary>
+        /// Gets the set of attributes that will be written to the tag.
+        /// </summary>
+        public IDictionary<string, string> Attributes { get; }
 
-        public IHtmlContent InnerHtml { get; [param: NotNull] set; } = HtmlString.Empty;
+        public IHtmlContentBuilder InnerHtml { get; }
 
-        public string TagName { get; private set; }
+        public string TagName { get; }
 
         /// <summary>
         /// The <see cref="Rendering.TagRenderMode"/> with which the tag is written.
@@ -185,11 +190,6 @@ namespace Microsoft.AspNet.Mvc.Rendering
                     MergeAttribute(key, value, replaceExisting);
                 }
             }
-        }
-
-        public void SetInnerText(string innerText)
-        {
-            InnerHtml = new StringHtmlContent(innerText);
         }
 
         /// <inheritdoc />

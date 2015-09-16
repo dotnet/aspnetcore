@@ -271,7 +271,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var idString =
                 TagBuilder.CreateSanitizedId(GetFullHtmlFieldName(viewContext, expression), IdAttributeDotReplacement);
             tagBuilder.Attributes.Add("for", idString);
-            tagBuilder.SetInnerText(resolvedLabelText);
+            tagBuilder.InnerHtml.SetContent(resolvedLabelText);
             tagBuilder.MergeAttributes(GetHtmlAttributeDictionaryOrNull(htmlAttributes), replaceExisting: true);
 
             return tagBuilder;
@@ -440,10 +440,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
             // Convert each ListItem to an <option> tag and wrap them with <optgroup> if requested.
             var listItemBuilder = GenerateGroupsAndOptions(optionLabel, selectList);
 
-            var tagBuilder = new TagBuilder("select")
-            {
-                InnerHtml = listItemBuilder
-            };
+            var tagBuilder = new TagBuilder("select");
+            tagBuilder.InnerHtml.SetContent(listItemBuilder);
             tagBuilder.MergeAttributes(GetHtmlAttributeDictionaryOrNull(htmlAttributes));
             tagBuilder.MergeAttribute("name", fullName, true /* replaceExisting */);
             tagBuilder.GenerateId(fullName, IdAttributeDotReplacement);
@@ -537,11 +535,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
 
             // The first newline is always trimmed when a TextArea is rendered, so we add an extra one
-            // in case the value being rendered is something like "\r\nHello".
-            var innerContent = new BufferedHtmlContent();
-            innerContent.Append(HtmlString.NewLine);
-            innerContent.Append(value);
-            tagBuilder.InnerHtml = innerContent;
+            // in case the value being rendered is something like "\r\nHello"
+            tagBuilder.InnerHtml.AppendLine();
+            tagBuilder.InnerHtml.Append(value);
 
             return tagBuilder;
         }
@@ -630,11 +626,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             if (!string.IsNullOrEmpty(message))
             {
-                tagBuilder.SetInnerText(message);
+                tagBuilder.InnerHtml.SetContent(message);
             }
             else if (modelError != null)
             {
-                tagBuilder.SetInnerText(ValidationHelpers.GetUserErrorMessageOrDefault(modelError, modelState));
+                tagBuilder.InnerHtml.SetContent(
+                    ValidationHelpers.GetUserErrorMessageOrDefault(modelError, modelState));
             }
 
             if (formContext != null)
@@ -672,7 +669,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                     headerTag = viewContext.ValidationSummaryMessageElement;
                 }
                 var messageTag = new TagBuilder(headerTag);
-                messageTag.SetInnerText(message);
+                messageTag.InnerHtml.SetContent(message);
                 wrappedMessage.AppendLine(messageTag);
             }
             else
@@ -682,10 +679,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             // If excludePropertyErrors is true, describe any validation issue with the current model in a single item.
             // Otherwise, list individual property errors.
-            var htmlSummary = new BufferedHtmlContent();
             var isHtmlSummaryModified = false;
             var modelStates = ValidationHelpers.GetModelStateList(viewContext.ViewData, excludePropertyErrors);
 
+            var htmlSummary = new TagBuilder("ul");
             foreach (var modelState in modelStates)
             {
                 foreach (var modelError in modelState.Errors)
@@ -695,8 +692,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
                     if (!string.IsNullOrEmpty(errorText))
                     {
                         var listItem = new TagBuilder("li");
-                        listItem.SetInnerText(errorText);
-                        htmlSummary.AppendLine(listItem);
+                        listItem.InnerHtml.SetContent(errorText);
+                        htmlSummary.InnerHtml.AppendLine(listItem);
                         isHtmlSummaryModified = true;
                     }
                 }
@@ -704,14 +701,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             if (!isHtmlSummaryModified)
             {
-                htmlSummary.AppendEncoded(HiddenListItem);
-                htmlSummary.Append(HtmlString.NewLine);
+                htmlSummary.InnerHtml.AppendEncoded(HiddenListItem);
+                htmlSummary.InnerHtml.AppendLine();
             }
-
-            var unorderedList = new TagBuilder("ul")
-            {
-                InnerHtml = htmlSummary
-            };
 
             var tagBuilder = new TagBuilder("div");
             tagBuilder.MergeAttributes(GetHtmlAttributeDictionaryOrNull(htmlAttributes));
@@ -724,11 +716,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
             {
                 tagBuilder.AddCssClass(HtmlHelper.ValidationSummaryCssClassName);
             }
-
-            var innerContent = new BufferedHtmlContent();
-            innerContent.Append(wrappedMessage);
-            innerContent.Append(unorderedList);
-            tagBuilder.InnerHtml = innerContent;
+            
+            tagBuilder.InnerHtml.Append(wrappedMessage);
+            tagBuilder.InnerHtml.Append(htmlSummary);
 
             if (formContext != null && !excludePropertyErrors)
             {
@@ -911,7 +901,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         internal static TagBuilder GenerateOption(SelectListItem item, string text)
         {
             var tagBuilder = new TagBuilder("option");
-            tagBuilder.SetInnerText(text);
+            tagBuilder.InnerHtml.SetContent(text);
 
             if (item.Value != null)
             {
@@ -1117,10 +1107,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
             [NotNull] string url,
             object htmlAttributes)
         {
-            var tagBuilder = new TagBuilder("a")
-            {
-                InnerHtml = new StringHtmlContent(linkText),
-            };
+            var tagBuilder = new TagBuilder("a");
+            tagBuilder.InnerHtml.SetContent(linkText);
 
             tagBuilder.MergeAttributes(GetHtmlAttributeDictionaryOrNull(htmlAttributes));
             tagBuilder.MergeAttribute("href", url);
@@ -1317,13 +1305,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
                         groupBuilder.MergeAttribute("disabled", "disabled");
                     }
 
-                    var optGroupContent = new BufferedHtmlContent().Append(HtmlString.NewLine);
+                    groupBuilder.InnerHtml.AppendLine();
                     foreach (var item in group)
                     {
-                        optGroupContent.AppendLine(GenerateOption(item));
+                        groupBuilder.InnerHtml.AppendLine(GenerateOption(item));
                     }
-
-                    groupBuilder.InnerHtml = optGroupContent;
+                    
                     listItemBuilder.AppendLine(groupBuilder);
                 }
                 else

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Actions;
 using Microsoft.AspNet.Mvc.ModelBinding;
@@ -13,7 +14,6 @@ using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing;
-using Microsoft.Framework.WebEncoders;
 using Moq;
 using Xunit;
 
@@ -131,11 +131,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         public async Task ProcessAsync_MergesTagBuilderFromGenerateValidationSummary()
         {
             // Arrange
-            var tagBuilder = new TagBuilder("span2")
-            {
-                InnerHtml = new HtmlString("New HTML")
-            };
-
+            var tagBuilder = new TagBuilder("span2");
+            tagBuilder.InnerHtml.SetContentEncoded("New HTML");
             tagBuilder.Attributes.Add("data-foo", "bar");
             tagBuilder.Attributes.Add("data-hello", "world");
             tagBuilder.Attributes.Add("anything", "something");
@@ -225,10 +222,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         public async Task ProcessAsync_GeneratesValidationSummaryWhenNotNone(ValidationSummary validationSummary)
         {
             // Arrange
-            var tagBuilder = new TagBuilder("span2")
-            {
-                InnerHtml = new HtmlString("New HTML")
-            };
+            var tagBuilder = new TagBuilder("span2");
+            tagBuilder.InnerHtml.SetContentEncoded("New HTML");
 
             var generator = new Mock<IHtmlGenerator>();
             generator

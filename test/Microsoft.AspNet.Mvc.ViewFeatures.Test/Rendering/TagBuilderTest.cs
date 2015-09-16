@@ -3,8 +3,8 @@
 
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.AspNet.Mvc.TestCommon;
 using Microsoft.Framework.WebEncoders.Testing;
 using Xunit;
 
@@ -92,21 +92,6 @@ namespace Microsoft.AspNet.Mvc.Core.Rendering
             }
         }
 
-        [Fact]
-        public void SetInnerText_HtmlEncodesValue()
-        {
-            // Arrange
-            var tagBuilder = new TagBuilder("p");
-
-            // Act
-            tagBuilder.SetInnerText("TestValue");
-
-            // Assert
-            Assert.Equal(
-                "HtmlEncode[[TestValue]]",
-                HtmlContentUtilities.HtmlContentToString(tagBuilder.InnerHtml));
-        }
-
         [Theory]
         [InlineData("HelloWorld", "HelloWorld")]
         [InlineData("¡HelloWorld", "zHelloWorld")]
@@ -118,6 +103,24 @@ namespace Microsoft.AspNet.Mvc.Core.Rendering
 
             // Assert
             Assert.Equal(output, result);
+        }
+
+        [Fact]
+        public void WriteTo_IncludesInnerHtml()
+        {
+            // Arrange
+            var tagBuilder = new TagBuilder("p");
+            tagBuilder.InnerHtml.AppendEncoded("<span>Hello</span>");
+            tagBuilder.InnerHtml.Append(", World!");
+
+            // Act
+            using (var writer = new StringWriter())
+            {
+                tagBuilder.WriteTo(writer, new CommonTestEncoder());
+
+                // Assert
+                Assert.Equal("<p><span>Hello</span>HtmlEncode[[, World!]]</p>", writer.ToString());
+            }
         }
     }
 }
