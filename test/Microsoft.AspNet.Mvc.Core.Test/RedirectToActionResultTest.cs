@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Actions;
 using Microsoft.AspNet.Mvc.Routing;
@@ -44,7 +45,7 @@ namespace Microsoft.AspNet.Mvc
         }
 
         [Fact]
-        public void RedirectToAction_Execute_ThrowsOnNullUrl()
+        public async Task RedirectToAction_Execute_ThrowsOnNullUrl()
         {
             // Arrange
             var httpContext = new Mock<HttpContext>();
@@ -60,7 +61,7 @@ namespace Microsoft.AspNet.Mvc
             };
 
             // Act & Assert
-            ExceptionAssert.ThrowsAsync<InvalidOperationException>(
+            await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
                 async () =>
                 {
                     await result.ExecuteResultAsync(actionContext);
