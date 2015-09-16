@@ -32,6 +32,7 @@ namespace Microsoft.AspNet.Hosting.Internal
         public void Dispose()
         {
             _stop.Dispose();
+            (_services as IDisposable)?.Dispose();
         }
     }
 }

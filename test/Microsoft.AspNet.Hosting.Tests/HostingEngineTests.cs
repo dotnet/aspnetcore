@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Hosting.Fakes;
 using Microsoft.AspNet.Hosting.Internal;
 using Microsoft.AspNet.Hosting.Server;
 using Microsoft.AspNet.Hosting.Startup;
@@ -90,6 +91,32 @@ namespace Microsoft.AspNet.Hosting
             engine.Dispose();
 
             Assert.Equal(1, _startInstances[0].DisposeCalls);
+        }
+
+        [Fact]
+        public void HostingEngineDisposesServiceProvider()
+        {
+            var engine = CreateBuilder()
+                .UseServer(this)
+                .UseServices(s =>
+                {
+                    s.AddTransient<IFakeService, FakeService>();
+                    s.AddSingleton<IFakeSingletonService, FakeService>();
+                })
+                .UseStartup("Microsoft.AspNet.Hosting.Tests")
+                .Build()
+                .Start();
+
+            var singleton = (FakeService)engine.Services.GetService<IFakeSingletonService>();
+            var transient = (FakeService)engine.Services.GetService<IFakeService>();
+
+            Assert.False(singleton.Disposed);
+            Assert.False(transient.Disposed);
+
+            engine.Dispose();
+
+            Assert.True(singleton.Disposed);
+            Assert.True(transient.Disposed);
         }
 
         [Fact]
