@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Tracing;
 using System.Linq;
 using System.Threading;
 using Microsoft.AspNet.Builder;
@@ -82,6 +83,7 @@ namespace Microsoft.AspNet.Hosting.Internal
             var logger = _applicationServices.GetRequiredService<ILogger<HostingEngine>>();
             var contextFactory = _applicationServices.GetRequiredService<IHttpContextFactory>();
             var contextAccessor = _applicationServices.GetRequiredService<IHttpContextAccessor>();
+            var telemetrySource = _applicationServices.GetRequiredService<TelemetrySource>();
             var server = ServerFactory.Start(_serverInstance,
                 async features =>
                 {
@@ -89,10 +91,32 @@ namespace Microsoft.AspNet.Hosting.Internal
                     httpContext.ApplicationServices = _applicationServices;
                     var requestIdentifier = GetRequestIdentifier(httpContext);
 
-                    using (logger.BeginScope("Request Id: {RequestId}", requestIdentifier))
+                    if (telemetrySource.IsEnabled("Microsoft.AspNet.Hosting.BeginRequest"))
                     {
-                        contextAccessor.HttpContext = httpContext;
-                        await application(httpContext);
+                        telemetrySource.WriteTelemetry("Microsoft.AspNet.Hosting.BeginRequest", new { httpContext = httpContext });
+                    }
+
+                    try
+                    {
+                        using (logger.BeginScope("Request Id: {RequestId}", requestIdentifier))
+                        {
+                            contextAccessor.HttpContext = httpContext;
+                            await application(httpContext);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        if (telemetrySource.IsEnabled("Microsoft.AspNet.Hosting.UnhandledException"))
+                        {
+                            telemetrySource.WriteTelemetry("Microsoft.AspNet.Hosting.UnhandledException", new { httpContext = httpContext, exception = ex });
+                        }
+
+                        throw;
+                    }
+
+                    if (telemetrySource.IsEnabled("Microsoft.AspNet.Hosting.EndRequest"))
+                    {
+                        telemetrySource.WriteTelemetry("Microsoft.AspNet.Hosting.EndRequest", new { httpContext = httpContext });
                     }
                 });
 

@@ -2,6 +2,7 @@
     "dependencies": {
         "Microsoft.AspNet.Testing": "1.0.0-*",
         "Microsoft.AspNet.TestHost": "1.0.0-*",
+        "Microsoft.Framework.TelemetryAdapter": "1.0.0-*",
         "xunit.runner.aspnet": "2.0.0-aspnet-*"
     },
     "commands": {

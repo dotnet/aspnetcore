@@ -19,10 +19,15 @@
         "Microsoft.Framework.DependencyInjection": "1.0.0-*",
         "Microsoft.Framework.Logging": "1.0.0-*",
         "Microsoft.Dnx.Runtime.Abstractions": "1.0.0-*",
-        "Newtonsoft.Json": "6.0.6"
+        "Newtonsoft.Json": "6.0.6",
+        "System.Diagnostics.Tracing.Telemetry": "4.0.0-beta-*"
     },
     "frameworks": {
-        "dnx451": { },
+        "dnx451": {
+            "frameworkAssemblies": {
+                "System.Runtime": ""
+            }
+        },
         "dnxcore50": {
             "dependencies": {
                 "System.Console": "4.0.0-beta-*"

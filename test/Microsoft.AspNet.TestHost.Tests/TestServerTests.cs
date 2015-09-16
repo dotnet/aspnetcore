@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.Tracing;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -13,6 +14,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.Framework.Configuration;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
+using Microsoft.Framework.TelemetryAdapter;
 using Xunit;
 
 namespace Microsoft.AspNet.TestHost
@@ -308,6 +310,111 @@ namespace Microsoft.AspNet.TestHost
             HttpResponseMessage result = await server.CreateClient().GetAsync("/");
             Assert.Equal(HttpStatusCode.OK, result.StatusCode);
             Assert.Equal("FoundFoo:False", await result.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
+        public async Task BeginEndTelemetryAvailable()
+        {
+            TelemetryListener telemetryListener = null;
+            var server = TestServer.Create(app =>
+            {
+                telemetryListener = app.ApplicationServices.GetRequiredService<TelemetryListener>();
+                app.Run(context =>
+                {
+                    return context.Response.WriteAsync("Hello World");
+                });
+            });
+            var listener = new TestTelemetryListener();
+            telemetryListener.SubscribeWithAdapter(listener);
+            var result = await server.CreateClient().GetStringAsync("/path");
+
+            Assert.Equal("Hello World", result);
+            Assert.NotNull(listener.BeginRequest?.HttpContext);
+            Assert.NotNull(listener.EndRequest?.HttpContext);
+            Assert.Null(listener.UnhandledException);
+        }
+
+        [Fact]
+        public async Task ExceptionTelemetryAvailable()
+        {
+            TelemetryListener telemetryListener = null;
+            var server = TestServer.Create(app =>
+            {
+                telemetryListener = app.ApplicationServices.GetRequiredService<TelemetryListener>();
+                app.Run(context =>
+                {
+                    throw new Exception("Test exception");
+                });
+            });
+            var listener = new TestTelemetryListener();
+            telemetryListener.SubscribeWithAdapter(listener);
+            await Assert.ThrowsAsync<Exception>(() => server.CreateClient().GetAsync("/path"));
+
+            Assert.NotNull(listener.BeginRequest?.HttpContext);
+            Assert.Null(listener.EndRequest?.HttpContext);
+            Assert.NotNull(listener.UnhandledException?.HttpContext);
+            Assert.NotNull(listener.UnhandledException?.Exception);
+        }
+
+        public class TestTelemetryListener
+        {
+            public class OnBeginRequestEventData
+            {
+                public IProxyHttpContext HttpContext { get; set; }
+            }
+
+            public OnBeginRequestEventData BeginRequest { get; set; }
+
+            [TelemetryName("Microsoft.AspNet.Hosting.BeginRequest")]
+            public virtual void OnBeginRequest(IProxyHttpContext httpContext)
+            {
+                BeginRequest = new OnBeginRequestEventData()
+                {
+                    HttpContext = httpContext,
+                };
+            }
+
+            public class OnEndRequestEventData
+            {
+                public IProxyHttpContext HttpContext { get; set; }
+            }
+
+            public OnEndRequestEventData EndRequest { get; set; }
+
+            [TelemetryName("Microsoft.AspNet.Hosting.EndRequest")]
+            public virtual void OnEndRequest(IProxyHttpContext httpContext)
+            {
+                EndRequest = new OnEndRequestEventData()
+                {
+                    HttpContext = httpContext,
+                };
+            }
+
+            public class OnUnhandledExceptionEventData
+            {
+                public IProxyHttpContext HttpContext { get; set; }
+                public IProxyException Exception { get; set; }
+            }
+
+            public OnUnhandledExceptionEventData UnhandledException { get; set; }
+
+            [TelemetryName("Microsoft.AspNet.Hosting.UnhandledException")]
+            public virtual void OnUnhandledException(IProxyHttpContext httpContext, IProxyException exception)
+            {
+                UnhandledException = new OnUnhandledExceptionEventData()
+                {
+                    HttpContext = httpContext,
+                    Exception = exception,
+                };
+            }
+        }
+
+        public interface IProxyHttpContext
+        {
+        }
+
+        public interface IProxyException
+        {
         }
 
         public class Startup

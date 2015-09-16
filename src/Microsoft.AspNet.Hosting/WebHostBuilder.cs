@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.Tracing;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting.Builder;
 using Microsoft.AspNet.Hosting.Internal;
@@ -90,6 +91,10 @@ namespace Microsoft.AspNet.Hosting
             services.AddTransient<IHttpContextFactory, HttpContextFactory>();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddLogging();
+
+            var telemetrySource = new TelemetryListener("Microsoft.AspNet");
+            services.AddInstance<TelemetrySource>(telemetrySource);
+            services.AddInstance<TelemetryListener>(telemetrySource);
 
             // Conjure up a RequestServices
             services.AddTransient<IStartupFilter, AutoRequestServicesStartupFilter>();
