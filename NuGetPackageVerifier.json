@@ -1,0 +1,39 @@
+{
+    "adx": { // Packages written by the ADX team and that ship on NuGet.org
+        "rules": [
+            "AssemblyHasDocumentFileRule",
+            "AssemblyHasVersionAttributesRule",
+            "AssemblyHasServicingAttributeRule",
+            "AssemblyHasNeutralResourcesLanguageAttributeRule",
+            "SatellitePackageRule",
+            "StrictSemanticVersionValidationRule"
+        ],
+        "packages": {
+            "Microsoft.AspNet.Mvc": { },
+            "Microsoft.AspNet.Mvc.Abstractions": { },
+            "Microsoft.AspNet.Mvc.ApiExplorer": { },
+            "Microsoft.AspNet.Mvc.Core": { },
+            "Microsoft.AspNet.Mvc.Cors": { },
+            "Microsoft.AspNet.Mvc.DataAnnotations": { },
+            "Microsoft.AspNet.Mvc.Formatters.Json": { },
+            "Microsoft.AspNet.Mvc.Formatters.Xml": { },
+            "Microsoft.AspNet.Mvc.Localization": { },
+            "Microsoft.AspNet.Mvc.Razor": { },
+            "Microsoft.AspNet.Mvc.Razor.Host": { },
+            "Microsoft.AspNet.Mvc.TagHelpers": { },
+            "Microsoft.AspNet.Mvc.ViewFeatures": { },
+            "Microsoft.AspNet.Mvc.WebApiCompatShim": { },
+            "Microsoft.AspNet.PageExecutionInstrumentation.Interfaces": { }
+        }
+    },
+    "Default": { // Rules to run for packages not listed in any other set.
+        "rules": [
+            "AssemblyHasDocumentFileRule",
+            "AssemblyHasVersionAttributesRule",
+            "AssemblyHasServicingAttributeRule",
+            "AssemblyHasNeutralResourcesLanguageAttributeRule",
+            "SatellitePackageRule",
+            "StrictSemanticVersionValidationRule"
+        ]
+    }
+}
