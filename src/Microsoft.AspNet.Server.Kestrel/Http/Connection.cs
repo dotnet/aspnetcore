@@ -125,8 +125,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         Thread.Post(
                             _this =>
                             {
-                                var self = (Connection)state;
-                                var shutdown = new UvShutdownReq(self.Log);
+                                var shutdown = new UvShutdownReq(_this.Log);
                                 shutdown.Init(_this.Thread.Loop);
                                 shutdown.Shutdown(_this._socket, (req, status, state2) =>
                                 {
@@ -144,10 +143,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         }
 
                         Log.ConnectionKeepAlive(_connectionId);
-                        _frame = new Frame(this);
-                        Thread.Post(
-                            state => ((Frame)state).Consume(),
-                            _frame);
                         break;
                     case ProduceEndType.SocketDisconnect:
                         if (_connectionState == ConnectionState.Disconnected)
