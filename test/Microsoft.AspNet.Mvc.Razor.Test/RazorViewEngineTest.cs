@@ -338,8 +338,9 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
 
         [Theory]
         [MemberData(nameof(ViewLocationExpanderTestData))]
-        public void FindView_UsesViewLocationExpandersToLocateViews(IDictionary<string, object> routeValues,
-                                                                    IEnumerable<string> expectedSeeds)
+        public void FindView_UsesViewLocationExpandersToLocateViews(
+            IDictionary<string, object> routeValues,
+            IEnumerable<string> expectedSeeds)
         {
             // Arrange
             var pageFactory = new Mock<IRazorPageFactory>();
@@ -589,8 +590,9 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
 
         [Theory]
         [MemberData(nameof(ViewLocationExpanderTestData))]
-        public void FindPage_UsesViewLocationExpander_ToExpandPaths(IDictionary<string, object> routeValues,
-                                                                    IEnumerable<string> expectedSeeds)
+        public void FindPage_UsesViewLocationExpander_ToExpandPaths(
+            IDictionary<string, object> routeValues,
+            IEnumerable<string> expectedSeeds)
         {
             // Arrange
             var page = Mock.Of<IRazorPage>();
@@ -1082,10 +1084,11 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             }
         }
 
-        private RazorViewEngine CreateViewEngine(IRazorPageFactory pageFactory = null,
-                                                 IRazorViewFactory viewFactory = null,
-                                                 IEnumerable<IViewLocationExpander> expanders = null,
-                                                 IViewLocationCache cache = null)
+        private RazorViewEngine CreateViewEngine(
+            IRazorPageFactory pageFactory = null,
+            IRazorViewFactory viewFactory = null,
+            IEnumerable<IViewLocationExpander> expanders = null,
+            IViewLocationCache cache = null)
         {
             pageFactory = pageFactory ?? Mock.Of<IRazorPageFactory>();
             viewFactory = viewFactory ?? Mock.Of<IRazorViewFactory>();
@@ -1176,10 +1179,11 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
 
         private class OverloadedLocationViewEngine : RazorViewEngine
         {
-            public OverloadedLocationViewEngine(IRazorPageFactory pageFactory,
-                                                IRazorViewFactory viewFactory,
-                                                IOptions<RazorViewEngineOptions> optionsAccessor,
-                                                IViewLocationCache cache)
+            public OverloadedLocationViewEngine(
+                IRazorPageFactory pageFactory,
+                IRazorViewFactory viewFactory,
+                IOptions<RazorViewEngineOptions> optionsAccessor,
+                IViewLocationCache cache)
                 : base(pageFactory, viewFactory, optionsAccessor, cache)
             {
             }

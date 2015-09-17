@@ -25,8 +25,9 @@ namespace Microsoft.AspNet.Mvc.ViewEngines
             get { return View != null; }
         }
 
-        public static ViewEngineResult NotFound([NotNull] string viewName,
-                                                [NotNull] IEnumerable<string> searchedLocations)
+        public static ViewEngineResult NotFound(
+            [NotNull] string viewName,
+            [NotNull] IEnumerable<string> searchedLocations)
         {
             return new ViewEngineResult
             {

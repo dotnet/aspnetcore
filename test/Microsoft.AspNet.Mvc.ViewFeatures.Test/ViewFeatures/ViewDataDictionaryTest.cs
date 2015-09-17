@@ -792,8 +792,9 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
         private class TestViewDataDictionary : ViewDataDictionary
         {
-            public TestViewDataDictionary(IModelMetadataProvider modelMetadataProvider,
-                                          ModelStateDictionary modelState)
+            public TestViewDataDictionary(
+                IModelMetadataProvider modelMetadataProvider,
+                ModelStateDictionary modelState)
                 : base(modelMetadataProvider, modelState)
             {
             }

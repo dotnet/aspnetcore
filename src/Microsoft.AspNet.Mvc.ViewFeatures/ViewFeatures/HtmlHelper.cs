@@ -283,10 +283,11 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         }
 
         /// <inheritdoc />
-        public IHtmlContent Display(string expression,
-                                  string templateName,
-                                  string htmlFieldName,
-                                  object additionalViewData)
+        public IHtmlContent Display(
+            string expression,
+            string templateName,
+            string htmlFieldName,
+            object additionalViewData)
         {
             var metadata = ExpressionMetadataProvider.FromStringExpression(expression, ViewData, MetadataProvider);
 

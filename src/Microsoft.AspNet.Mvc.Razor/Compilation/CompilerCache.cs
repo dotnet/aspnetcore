@@ -49,11 +49,6 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             IDictionary<string, Type> precompiledViews)
             : this(fileProvider)
         {
-            if (fileProvider == null)
-            {
-                throw new ArgumentNullException(nameof(fileProvider));
-            }
-
             if (precompiledViews == null)
             {
                 throw new ArgumentNullException(nameof(precompiledViews));

@@ -45,8 +45,10 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             return results;
         }
 
-        private static void ValidateUnobtrusiveValidationRule(ModelClientValidationRule rule,
-            IDictionary<string, object> resultsDictionary, string dictionaryKey)
+        private static void ValidateUnobtrusiveValidationRule(
+            ModelClientValidationRule rule,
+            IDictionary<string, object> resultsDictionary,
+            string dictionaryKey)
         {
             if (string.IsNullOrEmpty(rule.ValidationType))
             {

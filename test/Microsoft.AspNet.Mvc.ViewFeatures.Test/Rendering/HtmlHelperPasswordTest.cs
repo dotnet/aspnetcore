@@ -41,8 +41,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         [Theory]
         [MemberData(nameof(PasswordWithViewDataAndAttributesData))]
-        public void Password_UsesAttributeValueWhenValueArgumentIsNull(ViewDataDictionary<PasswordModel> vdd,
-                                                                      object attributes)
+        public void Password_UsesAttributeValueWhenValueArgumentIsNull(
+            ViewDataDictionary<PasswordModel> vdd,
+            object attributes)
         {
             // Arrange
             var expected = @"<input id=""HtmlEncode[[Property1]]"" name=""HtmlEncode[[Property1]]"" test-key=""HtmlEncode[[test-value]]"" type=""HtmlEncode[[password]]"" " +
@@ -58,8 +59,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         [Theory]
         [MemberData(nameof(PasswordWithViewDataAndAttributesData))]
-        public void Password_UsesExplicitValue_IfSpecified(ViewDataDictionary<PasswordModel> vdd,
-                                                           object attributes)
+        public void Password_UsesExplicitValue_IfSpecified(
+            ViewDataDictionary<PasswordModel> vdd,
+            object attributes)
         {
             // Arrange
             var expected = @"<input id=""HtmlEncode[[Property1]]"" name=""HtmlEncode[[Property1]]"" test-key=""HtmlEncode[[test-value]]"" type=""HtmlEncode[[password]]"" " +
@@ -219,8 +221,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         [Theory]
         [MemberData(nameof(PasswordWithViewDataAndAttributesData))]
-        public void PasswordForWithAttributes_GeneratesExpectedValue(ViewDataDictionary<PasswordModel> vdd,
-                                                                     object htmlAttributes)
+        public void PasswordForWithAttributes_GeneratesExpectedValue(
+            ViewDataDictionary<PasswordModel> vdd,
+            object htmlAttributes)
         {
             // Arrange
             var expected = @"<input id=""HtmlEncode[[Property1]]"" name=""HtmlEncode[[Property1]]"" test-key=""HtmlEncode[[test-value]]"" type=""HtmlEncode[[password]]"" " +

@@ -64,8 +64,9 @@ namespace Microsoft.AspNet.Mvc.Razor
         [InlineData("Foo?", "Foo?")]
         [InlineData("Foo[[]][]", "Foo[[]][]")]
         [InlineData("$rootnamespace$.MyModel", "$rootnamespace$.MyModel")]
-        public void ParseModelKeyword_InfersBaseType_FromModelName(string modelName,
-                                                                   string expectedModel)
+        public void ParseModelKeyword_InfersBaseType_FromModelName(
+            string modelName,
+            string expectedModel)
         {
             // Arrange
             var documentContent = "@model " + modelName + Environment.NewLine + "Bar";
@@ -270,9 +271,10 @@ namespace Microsoft.AspNet.Mvc.Razor
         [InlineData("  Microsoft.AspNet.Mvc.IHtmlHelper<MyNullableModel[]?>  MyHelper  ",
                     "Microsoft.AspNet.Mvc.IHtmlHelper<MyNullableModel[]?>", "MyHelper")]
         [InlineData("    TestService    @class ", "TestService", "@class")]
-        public void ParseInjectKeyword_InfersTypeAndPropertyName(string injectStatement,
-                                                                 string expectedService,
-                                                                 string expectedPropertyName)
+        public void ParseInjectKeyword_InfersTypeAndPropertyName(
+            string injectStatement,
+            string expectedService,
+            string expectedPropertyName)
         {
             // Arrange
             var documentContent = "@inject " + injectStatement;
@@ -348,9 +350,10 @@ namespace Microsoft.AspNet.Mvc.Razor
         [Theory]
         [InlineData("IMyService              Service                ", "IMyService", "Service")]
         [InlineData("           TestService    @namespace  ", "TestService", "@namespace")]
-        public void ParseInjectKeyword_ParsesUpToNewLine(string injectStatement,
-                                                         string expectedService,
-                                                         string expectedPropertyName)
+        public void ParseInjectKeyword_ParsesUpToNewLine(
+            string injectStatement,
+            string expectedService,
+            string expectedPropertyName)
         {
             // Arrange
             var documentContent = "@inject " + injectStatement + Environment.NewLine + "Bar";
@@ -514,9 +517,10 @@ namespace Microsoft.AspNet.Mvc.Razor
             Assert.Equal(expectedErrors, errors);
         }
 
-        private static List<Span> ParseDocument(string documentContents,
-                                                List<RazorError> errors = null,
-                                                List<LineMapping> lineMappings = null)
+        private static List<Span> ParseDocument(
+            string documentContents,
+            List<RazorError> errors = null,
+            List<LineMapping> lineMappings = null)
         {
             errors = errors ?? new List<RazorError>();
             var markupParser = new HtmlMarkupParser();

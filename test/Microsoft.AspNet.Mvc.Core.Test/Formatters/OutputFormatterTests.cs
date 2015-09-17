@@ -42,10 +42,11 @@ namespace Microsoft.AspNet.Mvc.Formatters
 
         [Theory]
         [MemberData(nameof(SelectResponseCharacterEncodingData))]
-        public void SelectResponseCharacterEncoding_SelectsEncoding(string acceptCharsetHeaders,
-                                                                    string requestEncoding,
-                                                                    string[] supportedEncodings,
-                                                                    string expectedEncoding)
+        public void SelectResponseCharacterEncoding_SelectsEncoding(
+            string acceptCharsetHeaders,
+            string requestEncoding,
+            string[] supportedEncodings,
+            string expectedEncoding)
         {
             // Arrange
             var mockHttpContext = new Mock<HttpContext>();

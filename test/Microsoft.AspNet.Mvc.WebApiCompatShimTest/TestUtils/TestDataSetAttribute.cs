@@ -28,38 +28,56 @@ namespace Microsoft.TestCommon
             ExtraDataSets = new List<Tuple<Type, string>>();
         }
 
-        public TestDataSetAttribute(Type declaringType, string propertyName,
-                                    Type declaringType1, string propertyName1,
-                                    TestDataVariations testDataVariations = TestCommon.TestDataVariations.All)
+        public TestDataSetAttribute(
+            Type declaringType,
+            string propertyName,
+            Type declaringType1,
+            string propertyName1,
+            TestDataVariations testDataVariations = TestCommon.TestDataVariations.All)
             : this(declaringType, propertyName, testDataVariations)
         {
             ExtraDataSets = new List<Tuple<Type, string>> { Tuple.Create(declaringType1, propertyName1) };
         }
 
-        public TestDataSetAttribute(Type declaringType, string propertyName,
-            Type declaringType1, string propertyName1,
-            Type declaringType2, string propertyName2,
+        public TestDataSetAttribute(
+            Type declaringType,
+            string propertyName,
+            Type declaringType1,
+            string propertyName1,
+            Type declaringType2,
+            string propertyName2,
             TestDataVariations testDataVariations = TestCommon.TestDataVariations.All)
             : this(declaringType, propertyName, testDataVariations)
         {
             ExtraDataSets = new List<Tuple<Type, string>> { Tuple.Create(declaringType1, propertyName1), Tuple.Create(declaringType2, propertyName2) };
         }
 
-        public TestDataSetAttribute(Type declaringType, string propertyName,
-            Type declaringType1, string propertyName1,
-            Type declaringType2, string propertyName2,
-            Type declaringType3, string propertyName3,
+        public TestDataSetAttribute(
+            Type declaringType,
+            string propertyName,
+            Type declaringType1,
+            string propertyName1,
+            Type declaringType2,
+            string propertyName2,
+            Type declaringType3,
+            string propertyName3,
             TestDataVariations testDataVariations = TestCommon.TestDataVariations.All)
             : this(declaringType, propertyName, testDataVariations)
         {
             ExtraDataSets = new List<Tuple<Type, string>> { Tuple.Create(declaringType1, propertyName1), Tuple.Create(declaringType2, propertyName2), Tuple.Create(declaringType3, propertyName3) };
         }
 
-        public TestDataSetAttribute(Type declaringType, string propertyName,
-            Type declaringType1, string propertyName1,
-            Type declaringType2, string propertyName2,
-            Type declaringType3, string propertyName3,
-            Type declaringType4, string propertyName4,
+        public TestDataSetAttribute(
+            Type declaringType,
+            string propertyName,
+            Type declaringType1,
+            string propertyName1,
+            Type declaringType2,
+            string propertyName2,
+            Type declaringType3,
+            string propertyName3,
+            Type declaringType4,
+            string propertyName4,
             TestDataVariations testDataVariations = TestCommon.TestDataVariations.All)
             : this(declaringType, propertyName, testDataVariations)
         {

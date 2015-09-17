@@ -17,8 +17,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         {
         }
 
-        public ModelClientValidationRule([NotNull] string validationType,
-                                         [NotNull] string errorMessage)
+        public ModelClientValidationRule(
+            [NotNull] string validationType,
+            [NotNull] string errorMessage)
         {
             ValidationType = validationType;
             ErrorMessage = errorMessage;

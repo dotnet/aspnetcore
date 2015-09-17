@@ -237,10 +237,11 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             return options;
         }
 
-        private static void AddStringCollectionKey(StringBuilder builder,
-                                                     string keyName,
-                                                     string value,
-                                                     IReadableStringCollection sourceCollection)
+        private static void AddStringCollectionKey(
+            StringBuilder builder,
+            string keyName,
+            string value,
+            IReadableStringCollection sourceCollection)
         {
             if (!string.IsNullOrEmpty(value))
             {

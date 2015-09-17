@@ -700,7 +700,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 p.WriteAttribute("href",
                                  new PositionTagged<string>("prefix", 0),
                                  new PositionTagged<string>("suffix", 10),
-                                 new AttributeValue(new PositionTagged<string>("", 6),
+                                 new AttributeValue(new PositionTagged<string>(string.Empty, 6),
                                                     new PositionTagged<object>("true", 6),
                                                     literal: false));
             });
@@ -756,7 +756,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     {
                         new AttributeValue[] {
                             new AttributeValue(
-                                new PositionTagged<string>("", 9),
+                                new PositionTagged<string>(string.Empty, 9),
                                 new PositionTagged<object>("Hello", 9),
                                 literal: true)
                         },
@@ -778,7 +778,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                                 new PositionTagged<object>(null, 10),
                                 literal: false)
                         },
-                        ""
+                        string.Empty
                     },
                     {
                         new AttributeValue[] {
@@ -806,7 +806,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     {
                         new AttributeValue[] {
                             new AttributeValue(
-                                new PositionTagged<string>("", 9),
+                                new PositionTagged<string>(string.Empty, 9),
                                 new PositionTagged<object>("prefix", 9),
                                 literal: true),
                             new AttributeValue(
@@ -859,7 +859,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         [Theory]
-        [InlineData(null, "")]
+        [InlineData(null, string.Empty)]
         [InlineData(false, "False")]
         public void AddHtmlAttributeValues_OnlyAddsToAllAttributesWhenAttributeRemoved(
             object attributeValue,
@@ -939,7 +939,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     {
                         new AttributeValue[] {
                             new AttributeValue(
-                                new PositionTagged<string>("", 9),
+                                new PositionTagged<string>(string.Empty, 9),
                                 new PositionTagged<object>(true, 9),
                                 literal: false)
                         },
@@ -948,20 +948,20 @@ namespace Microsoft.AspNet.Mvc.Razor
                     {
                         new AttributeValue[] {
                             new AttributeValue(
-                                new PositionTagged<string>("", 9),
+                                new PositionTagged<string>(string.Empty, 9),
                                 new PositionTagged<object>(false, 9),
                                 literal: false)
                         },
-                        ""
+                        string.Empty
                     },
                     {
                         new AttributeValue[] {
                             new AttributeValue(
-                                new PositionTagged<string>("", 9),
+                                new PositionTagged<string>(string.Empty, 9),
                                 new PositionTagged<object>(null, 9),
                                 literal: false)
                         },
-                        ""
+                        string.Empty
                     },
                     {
                         new AttributeValue[] {
@@ -1007,7 +1007,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             page.HtmlEncoder = new CommonTestEncoder();
             var writer = new StringWriter();
             var prefix = new PositionTagged<string>("someattr=", 0);
-            var suffix = new PositionTagged<string>("", 0);
+            var suffix = new PositionTagged<string>(string.Empty, 0);
 
             // Act
             page.WriteAttributeTo(writer, "someattr", prefix, suffix, attributeValues);
@@ -1059,7 +1059,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     },
                     {
                         GetTagHelperOutput(
-                            tagName:     "",
+                            tagName:     string.Empty,
                             attributes:  new TagHelperAttributeList(),
                             tagMode: TagMode.StartTagAndEndTag,
                             preElement:  null,
@@ -1358,7 +1358,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     },
                     {
                         GetTagHelperOutput(
-                            tagName:     "",
+                            tagName:     string.Empty,
                             attributes:  new TagHelperAttributeList(),
                             tagMode: TagMode.StartTagAndEndTag,
                             preElement:  "Before",
@@ -1370,7 +1370,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     },
                     {
                         GetTagHelperOutput(
-                            tagName:     "",
+                            tagName:     string.Empty,
                             attributes:  new TagHelperAttributeList { { "test", "testVal" } },
                             tagMode: TagMode.SelfClosing,
                             preElement:  "Before",
@@ -1406,7 +1406,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     },
                     {
                         GetTagHelperOutput(
-                            tagName:     "",
+                            tagName:     string.Empty,
                             attributes:  new TagHelperAttributeList { { "test", "testVal" } },
                             tagMode: TagMode.StartTagOnly,
                             preElement:  "Before",
@@ -1454,7 +1454,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     },
                     {
                         GetTagHelperOutput(
-                            tagName:     "",
+                            tagName:     string.Empty,
                             attributes:  new TagHelperAttributeList(),
                             tagMode: TagMode.StartTagAndEndTag,
                             preElement:  null,
@@ -1466,7 +1466,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     },
                     {
                         GetTagHelperOutput(
-                            tagName:     "",
+                            tagName:     string.Empty,
                             attributes:  new TagHelperAttributeList { { "test", "testVal" } },
                             tagMode: TagMode.SelfClosing,
                             preElement:  null,
@@ -1502,7 +1502,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     },
                     {
                         GetTagHelperOutput(
-                            tagName:     "",
+                            tagName:     string.Empty,
                             attributes:  new TagHelperAttributeList { { "test", "testVal" } },
                             tagMode: TagMode.StartTagOnly,
                             preElement:  null,
@@ -1574,7 +1574,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     },
                     {
                         GetTagHelperOutput(
-                            tagName:     "",
+                            tagName:     string.Empty,
                             attributes:  new TagHelperAttributeList(),
                             tagMode: TagMode.SelfClosing,
                             preElement:  "Before",
@@ -1598,7 +1598,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     },
                     {
                         GetTagHelperOutput(
-                            tagName:     "",
+                            tagName:     string.Empty,
                             attributes:  new TagHelperAttributeList(),
                             tagMode: TagMode.StartTagOnly,
                             preElement:  "Before",
@@ -1610,7 +1610,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     },
                     {
                         GetTagHelperOutput(
-                            tagName:     "",
+                            tagName:     string.Empty,
                             attributes:  new TagHelperAttributeList(),
                             tagMode: TagMode.StartTagAndEndTag,
                             preElement:  "Before",
@@ -1622,7 +1622,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     },
                     {
                         GetTagHelperOutput(
-                            tagName:     "",
+                            tagName:     string.Empty,
                             attributes:  new TagHelperAttributeList { { "test", "testVal" } },
                             tagMode: TagMode.StartTagAndEndTag,
                             preElement:  "Before",

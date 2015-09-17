@@ -16,8 +16,9 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
                      " Routes: {AttributeRoutes.Count}, Filters: {Filters.Count}")]
     public class ControllerModel
     {
-        public ControllerModel([NotNull] TypeInfo controllerType,
-                               [NotNull] IReadOnlyList<object> attributes)
+        public ControllerModel(
+            [NotNull] TypeInfo controllerType,
+            [NotNull] IReadOnlyList<object> attributes)
         {
             ControllerType = controllerType;
 

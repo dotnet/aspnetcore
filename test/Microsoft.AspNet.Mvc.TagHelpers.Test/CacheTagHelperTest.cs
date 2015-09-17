@@ -777,8 +777,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                                    new HtmlHelperOptions());
         }
 
-        private static TagHelperContext GetTagHelperContext(string id = "testid",
-                                                            string childContent = "some child content")
+        private static TagHelperContext GetTagHelperContext(
+            string id = "testid",
+            string childContent = "some child content")
         {
             return new TagHelperContext(
                 allAttributes: new TagHelperAttributeList(),

@@ -233,10 +233,11 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
         public class TagHelperOutputContent
         {
-            public TagHelperOutputContent(string originalChildContent,
-                                          string outputContent,
-                                          string expectedContent,
-                                          string expectedId)
+            public TagHelperOutputContent(
+                string originalChildContent,
+                string outputContent,
+                string expectedContent,
+                string expectedId)
             {
                 OriginalChildContent = originalChildContent;
                 OriginalContent = outputContent;

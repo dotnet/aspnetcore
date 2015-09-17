@@ -9,8 +9,10 @@ namespace Microsoft.AspNet.JsonPatch.Helpers
     // Helper methods to allow case-insensitive key search
     internal static class ExpandoObjectDictionaryExtensions
     {
-        internal static void SetValueForCaseInsensitiveKey(this IDictionary<string, object> propertyDictionary,
-        string key, object value)
+        internal static void SetValueForCaseInsensitiveKey(
+            this IDictionary<string, object> propertyDictionary,
+            string key,
+            object value)
         {
             foreach (KeyValuePair<string, object> kvp in propertyDictionary)
             {
@@ -22,8 +24,9 @@ namespace Microsoft.AspNet.JsonPatch.Helpers
             }
         }
 
-        internal static void RemoveValueForCaseInsensitiveKey(this IDictionary<string, object> propertyDictionary,
-        string key)
+        internal static void RemoveValueForCaseInsensitiveKey(
+            this IDictionary<string, object> propertyDictionary,
+            string key)
         {
             string realKey = null;
             foreach (KeyValuePair<string, object> kvp in propertyDictionary)
@@ -40,9 +43,10 @@ namespace Microsoft.AspNet.JsonPatch.Helpers
                 propertyDictionary.Remove(realKey);
             }
         }
-        
-        internal static object GetValueForCaseInsensitiveKey(this IDictionary<string, object> propertyDictionary,
-         string key)
+
+        internal static object GetValueForCaseInsensitiveKey(
+            this IDictionary<string, object> propertyDictionary,
+            string key)
         {
             foreach (KeyValuePair<string, object> kvp in propertyDictionary)
             {
@@ -51,12 +55,13 @@ namespace Microsoft.AspNet.JsonPatch.Helpers
                     return kvp.Value;
                 }
             }
-        
+
             throw new ArgumentException(Resources.FormatDictionaryKeyNotFound(key));
         }
-        
-        internal static bool ContainsCaseInsensitiveKey(this IDictionary<string, object> propertyDictionary,
-        string key)
+
+        internal static bool ContainsCaseInsensitiveKey(
+            this IDictionary<string, object> propertyDictionary,
+            string key)
         {
             foreach (KeyValuePair<string, object> kvp in propertyDictionary)
             {
@@ -65,8 +70,8 @@ namespace Microsoft.AspNet.JsonPatch.Helpers
                     return true;
                 }
             }
-            return false;
 
+            return false;
         }
     }
 }

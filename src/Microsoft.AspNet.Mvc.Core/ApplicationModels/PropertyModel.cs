@@ -20,8 +20,9 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         /// </summary>
         /// <param name="propertyInfo">The <see cref="PropertyInfo"/> for the underlying property.</param>
         /// <param name="attributes">Any attributes which are annotated on the property.</param>
-        public PropertyModel([NotNull] PropertyInfo propertyInfo,
-                             [NotNull] IReadOnlyList<object> attributes)
+        public PropertyModel(
+            [NotNull] PropertyInfo propertyInfo,
+            [NotNull] IReadOnlyList<object> attributes)
         {
             PropertyInfo = propertyInfo;
 

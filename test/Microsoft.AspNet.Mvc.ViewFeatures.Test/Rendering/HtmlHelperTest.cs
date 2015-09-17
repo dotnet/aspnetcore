@@ -137,8 +137,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         [Theory]
         [MemberData(nameof(IgnoreCaseTestData))]
-        public void AnonymousObjectToHtmlAttributes_IgnoresPropertyCase(object htmlAttributeObject,
-                                                                        KeyValuePair<string, object> expectedEntry)
+        public void AnonymousObjectToHtmlAttributes_IgnoresPropertyCase(
+            object htmlAttributeObject,
+            KeyValuePair<string, object> expectedEntry)
         {
             // Act
             var result = HtmlHelper.AnonymousObjectToHtmlAttributes(htmlAttributeObject);

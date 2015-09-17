@@ -38,11 +38,11 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// pages</param>
         public RazorView(
             IRazorViewEngine viewEngine,
-                         IRazorPageActivator pageActivator,
-                         IViewStartProvider viewStartProvider,
-                         IRazorPage razorPage,
-                         IHtmlEncoder htmlEncoder,
-                         bool isPartial)
+            IRazorPageActivator pageActivator,
+            IViewStartProvider viewStartProvider,
+            IRazorPage razorPage,
+            IHtmlEncoder htmlEncoder,
+            bool isPartial)
         {
             _viewEngine = viewEngine;
             _pageActivator = pageActivator;
@@ -76,11 +76,6 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <inheritdoc />
         public virtual async Task RenderAsync(ViewContext context)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));

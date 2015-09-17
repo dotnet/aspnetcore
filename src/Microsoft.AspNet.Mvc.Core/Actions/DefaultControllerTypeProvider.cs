@@ -46,8 +46,9 @@ namespace Microsoft.AspNet.Mvc.Actions
         /// <param name="typeInfo">The <see cref="TypeInfo"/>.</param>
         /// <param name="candidateAssemblies">The set of candidate assemblies.</param>
         /// <returns><c>true</c> if the <paramref name="typeInfo"/> is a controller. Otherwise <c>false</c>.</returns>
-        protected internal virtual bool IsController([NotNull] TypeInfo typeInfo,
-                                                     [NotNull] ISet<Assembly> candidateAssemblies)
+        protected internal virtual bool IsController(
+            [NotNull] TypeInfo typeInfo,
+            [NotNull] ISet<Assembly> candidateAssemblies)
         {
             if (!typeInfo.IsClass)
             {

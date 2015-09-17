@@ -107,8 +107,12 @@ namespace Microsoft.AspNet.Mvc.Internal
         }
 #if DNX451
         /// <inheritdoc />
-        public override IAsyncResult BeginRead(byte[] buffer, int offset, int count,
-            AsyncCallback callback, object state)
+        public override IAsyncResult BeginRead(
+            byte[] buffer,
+            int offset,
+            int count,
+            AsyncCallback callback,
+            object state)
         {
             return _innerStream.BeginRead(buffer, offset, count, callback, state);
         }
@@ -162,8 +166,12 @@ namespace Microsoft.AspNet.Mvc.Internal
         }
 #if DNX451
         /// <inheritdoc />
-        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count,
-            AsyncCallback callback, object state)
+        public override IAsyncResult BeginWrite(
+            byte[] buffer,
+            int offset,
+            int count,
+            AsyncCallback callback,
+            object state)
         {
             return _innerStream.BeginWrite(buffer, offset, count, callback, state);
         }

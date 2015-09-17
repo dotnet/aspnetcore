@@ -22,8 +22,9 @@ namespace Microsoft.AspNet.Mvc
         {
         }
 
-        private static void ConfigureRazor(RazorViewEngineOptions razorOptions,
-                                           IApplicationEnvironment applicationEnvironment)
+        private static void ConfigureRazor(
+            RazorViewEngineOptions razorOptions,
+            IApplicationEnvironment applicationEnvironment)
         {
             razorOptions.FileProvider = new PhysicalFileProvider(applicationEnvironment.ApplicationBasePath);
         }

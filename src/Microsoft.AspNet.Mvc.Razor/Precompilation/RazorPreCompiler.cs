@@ -331,9 +331,10 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
 
         private class PrecompileRazorFileInfoCollection : RazorFileInfoCollection
         {
-            public PrecompileRazorFileInfoCollection(string assemblyResourceName,
-                                                     string symbolsResourceName,
-                                                     IReadOnlyList<RazorFileInfo> fileInfos)
+            public PrecompileRazorFileInfoCollection(
+                string assemblyResourceName,
+                string symbolsResourceName,
+                IReadOnlyList<RazorFileInfo> fileInfos)
             {
                 AssemblyResourceName = assemblyResourceName;
                 SymbolsResourceName = symbolsResourceName;

@@ -12,8 +12,9 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
     [DebuggerDisplay("ParameterModel: Name={ParameterName}")]
     public class ParameterModel
     {
-        public ParameterModel([NotNull] ParameterInfo parameterInfo,
-                              [NotNull] IReadOnlyList<object> attributes)
+        public ParameterModel(
+            [NotNull] ParameterInfo parameterInfo,
+            [NotNull] IReadOnlyList<object> attributes)
         {
             ParameterInfo = parameterInfo;
 

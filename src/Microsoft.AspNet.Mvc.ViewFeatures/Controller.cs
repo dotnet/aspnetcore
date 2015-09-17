@@ -570,8 +570,10 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="routeValues">The parameters for a route.</param>
         /// <returns>The created <see cref="RedirectToActionResult"/> for the response.</returns>
         [NonAction]
-        public virtual RedirectToActionResult RedirectToAction(string actionName, string controllerName,
-                                        object routeValues)
+        public virtual RedirectToActionResult RedirectToAction(
+            string actionName,
+            string controllerName,
+            object routeValues)
         {
             return new RedirectToActionResult(actionName, controllerName, PropertyHelper.ObjectToDictionary(routeValues))
             {
@@ -627,8 +629,10 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="routeValues">The parameters for a route.</param>
         /// <returns>The created <see cref="RedirectToActionResult"/> for the response.</returns>
         [NonAction]
-        public virtual RedirectToActionResult RedirectToActionPermanent(string actionName, string controllerName,
-                                        object routeValues)
+        public virtual RedirectToActionResult RedirectToActionPermanent(
+            string actionName,
+            string controllerName,
+            object routeValues)
         {
             return new RedirectToActionResult(
                 actionName,
@@ -984,10 +988,11 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="value">The content value to format in the entity body.</param>
         /// <returns>The created <see cref="CreatedAtRouteResult"/> for the response.</returns>
         [NonAction]
-        public virtual CreatedAtActionResult CreatedAtAction(string actionName,
-                                                             string controllerName,
-                                                             object routeValues,
-                                                             object value)
+        public virtual CreatedAtActionResult CreatedAtAction(
+            string actionName,
+            string controllerName,
+            object routeValues,
+            object value)
         {
             var disposableValue = value as IDisposable;
             if (disposableValue != null)
@@ -1419,7 +1424,7 @@ namespace Microsoft.AspNet.Mvc
         /// <returns><c>true</c> if the <see cref="ModelState"/> is valid;<c>false</c> otherwise.</returns>
         [NonAction]
         public virtual bool TryValidateModel(
-            [NotNull] object model, 
+            [NotNull] object model,
             string prefix)
         {
             if (BindingContext == null)

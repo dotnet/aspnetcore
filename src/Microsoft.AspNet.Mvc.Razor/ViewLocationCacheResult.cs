@@ -30,11 +30,6 @@ namespace Microsoft.AspNet.Mvc.Razor
                 throw new ArgumentNullException(nameof(foundLocation));
             }
 
-            if (searchedLocations == null)
-            {
-                throw new ArgumentNullException(nameof(searchedLocations));
-            }
-
             ViewLocation = foundLocation;
             SearchedLocations = searchedLocations;
             IsFoundResult = true;

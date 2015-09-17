@@ -16,8 +16,9 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
                      " Route: {AttributeRouteModel?.Template}, Filters: {Filters.Count}")]
     public class ActionModel
     {
-        public ActionModel([NotNull] MethodInfo actionMethod,
-                           [NotNull] IReadOnlyList<object> attributes)
+        public ActionModel(
+            [NotNull] MethodInfo actionMethod,
+            [NotNull] IReadOnlyList<object> attributes)
         {
             ActionMethod = actionMethod;
 

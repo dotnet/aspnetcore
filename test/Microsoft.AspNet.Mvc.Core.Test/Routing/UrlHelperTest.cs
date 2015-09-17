@@ -25,9 +25,10 @@ namespace Microsoft.AspNet.Mvc.Routing
         [InlineData("/myapproot", null, null)]
         [InlineData("", "/Home/About", "/Home/About")]
         [InlineData("/myapproot", "/test", "/test")]
-        public void Content_ReturnsContentPath_WhenItDoesNotStartWithToken(string appRoot,
-                                                                           string contentPath,
-                                                                           string expectedPath)
+        public void Content_ReturnsContentPath_WhenItDoesNotStartWithToken(
+            string appRoot,
+            string contentPath,
+            string expectedPath)
         {
             // Arrange
             var context = CreateHttpContext(GetServices(), appRoot);
@@ -49,9 +50,10 @@ namespace Microsoft.AspNet.Mvc.Routing
         [InlineData("", "~/Home/About", "/Home/About")]
         [InlineData("/", "~", "/")]
         [InlineData("/myapproot", "~/Content/bootstrap.css", "/myapproot/Content/bootstrap.css")]
-        public void Content_ReturnsAppRelativePath_WhenItStartsWithToken(string appRoot,
-                                                                         string contentPath,
-                                                                         string expectedPath)
+        public void Content_ReturnsAppRelativePath_WhenItStartsWithToken(
+            string appRoot,
+            string contentPath,
+            string expectedPath)
         {
             // Arrange
             var context = CreateHttpContext(GetServices(), appRoot);

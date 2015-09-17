@@ -14,9 +14,10 @@ namespace Microsoft.AspNet.Mvc.Razor
         [Theory]
         [InlineData("SomeType", "SomeType", "SomeMethod(__model => __model.MyValue)")]
         [InlineData("SomeType", "SomeType2", "MyValue")]
-        public void RenderAttributeValue_RendersModelExpressionsCorrectly(string modelExpressionType,
-                                                                          string propertyType,
-                                                                          string expectedValue)
+        public void RenderAttributeValue_RendersModelExpressionsCorrectly(
+            string modelExpressionType,
+            string propertyType,
+            string expectedValue)
         {
             // Arrange
             var renderer = new MvcTagHelperAttributeValueCodeRenderer(

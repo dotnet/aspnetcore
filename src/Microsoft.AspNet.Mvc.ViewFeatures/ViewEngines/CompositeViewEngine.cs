@@ -24,22 +24,25 @@ namespace Microsoft.AspNet.Mvc.ViewEngines
         public IReadOnlyList<IViewEngine> ViewEngines { get; }
 
         /// <inheritdoc />
-        public ViewEngineResult FindPartialView([NotNull] ActionContext context,
-                                                [NotNull] string partialViewName)
+        public ViewEngineResult FindPartialView(
+            [NotNull] ActionContext context,
+            [NotNull] string partialViewName)
         {
             return FindView(context, partialViewName, partial: true);
         }
 
         /// <inheritdoc />
-        public ViewEngineResult FindView([NotNull] ActionContext context,
-                                         [NotNull] string viewName)
+        public ViewEngineResult FindView(
+            [NotNull] ActionContext context,
+            [NotNull] string viewName)
         {
             return FindView(context, viewName, partial: false);
         }
 
-        private ViewEngineResult FindView(ActionContext context,
-                                          string viewName,
-                                          bool partial)
+        private ViewEngineResult FindView(
+            ActionContext context,
+            string viewName,
+            bool partial)
         {
             var searchedLocations = Enumerable.Empty<string>();
             foreach (var engine in ViewEngines)

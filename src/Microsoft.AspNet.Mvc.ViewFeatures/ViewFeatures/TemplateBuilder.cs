@@ -23,14 +23,15 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures.Internal
         private bool _readOnly;
         private object _additionalViewData;
 
-        public TemplateBuilder([NotNull] IViewEngine viewEngine,
-                               [NotNull] ViewContext viewContext,
-                               [NotNull] ViewDataDictionary viewData,
-                               [NotNull] ModelExplorer modelExplorer,
-                               string htmlFieldName,
-                               string templateName,
-                               bool readOnly,
-                               object additionalViewData)
+        public TemplateBuilder(
+            [NotNull] IViewEngine viewEngine,
+            [NotNull] ViewContext viewContext,
+            [NotNull] ViewDataDictionary viewData,
+            [NotNull] ModelExplorer modelExplorer,
+            string htmlFieldName,
+            string templateName,
+            bool readOnly,
+            object additionalViewData)
         {
             _viewEngine = viewEngine;
             _viewContext = viewContext;

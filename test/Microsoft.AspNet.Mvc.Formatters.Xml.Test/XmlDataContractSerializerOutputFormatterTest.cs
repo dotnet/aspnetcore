@@ -598,7 +598,9 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
             XmlAssert.Equal(expectedOutput, content);
         }
 
-        private OutputFormatterContext GetOutputFormatterContext(object outputValue, Type outputType,
+        private OutputFormatterContext GetOutputFormatterContext(
+            object outputValue,
+            Type outputType,
             string contentType = "application/xml; charset=utf-8")
         {
             return new OutputFormatterContext

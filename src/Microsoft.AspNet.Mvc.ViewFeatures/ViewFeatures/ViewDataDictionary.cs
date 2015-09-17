@@ -28,8 +28,9 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         /// </param>
         /// <param name="modelState"><see cref="ModelStateDictionary"/> instance for this scope.</param>
         /// <remarks>For use when creating a <see cref="ViewDataDictionary"/> for a new top-level scope.</remarks>
-        public ViewDataDictionary([NotNull] IModelMetadataProvider metadataProvider,
-                                  [NotNull] ModelStateDictionary modelState)
+        public ViewDataDictionary(
+            [NotNull] IModelMetadataProvider metadataProvider,
+            [NotNull] ModelStateDictionary modelState)
             : this(metadataProvider, modelState, declaredModelType: typeof(object))
         {
         }

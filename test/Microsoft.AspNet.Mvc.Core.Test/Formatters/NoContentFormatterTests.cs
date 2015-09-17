@@ -33,10 +33,11 @@ namespace Microsoft.AspNet.Mvc.Formatters
 
         [Theory]
         [MemberData(nameof(OutputFormatterContextValues_CanWriteType))]
-        public void CanWriteResult_ByDefault_ReturnsTrue_IfTheValueIsNull(object value,
-                                                                          bool declaredTypeAsString,
-                                                                          bool expectedCanwriteResult,
-                                                                          bool useNonNullContentType)
+        public void CanWriteResult_ByDefault_ReturnsTrue_IfTheValueIsNull(
+            object value,
+            bool declaredTypeAsString,
+            bool expectedCanwriteResult,
+            bool useNonNullContentType)
         {
             // Arrange
             var typeToUse = declaredTypeAsString ? typeof(string) : typeof(object);

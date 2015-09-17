@@ -802,7 +802,8 @@ namespace Microsoft.AspNet.Mvc.Actions
         private class MethodToActionMap :
             Dictionary<MethodInfo, IDictionary<ActionModel, IList<ControllerActionDescriptor>>>
         {
-            public void AddToMethodInfo(ActionModel action,
+            public void AddToMethodInfo(
+                ActionModel action,
                 IList<ControllerActionDescriptor> actionDescriptors)
             {
                 IDictionary<ActionModel, IList<ControllerActionDescriptor>> actionsForMethod = null;

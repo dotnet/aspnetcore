@@ -31,8 +31,9 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
         }
 
         // Internal for unit testing
-        internal DefaultChunkTreeCache(IFileProvider fileProvider,
-                                      MemoryCacheOptions options)
+        internal DefaultChunkTreeCache(
+            IFileProvider fileProvider,
+            MemoryCacheOptions options)
         {
             _fileProvider = fileProvider;
             _chunkTreeCache = new MemoryCache(options);

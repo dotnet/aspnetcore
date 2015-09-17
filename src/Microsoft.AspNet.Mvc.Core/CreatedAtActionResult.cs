@@ -25,10 +25,11 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="controllerName">The name of the controller to use for generating the URL.</param>
         /// <param name="routeValues">The route data to use for generating the URL.</param>
         /// <param name="value">The value to format in the entity body.</param>
-        public CreatedAtActionResult(string actionName,
-                                     string controllerName,
-                                     object routeValues,
-                                     object value)
+        public CreatedAtActionResult(
+            string actionName,
+            string controllerName,
+            object routeValues,
+            object value)
             : base(value)
         {
             ActionName = actionName;

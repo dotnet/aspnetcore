@@ -457,9 +457,10 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        internal static void ValidateBindingContext(ModelBindingContext bindingContext,
-                                                    Type requiredType,
-                                                    bool allowNullModel)
+        internal static void ValidateBindingContext(
+            ModelBindingContext bindingContext,
+            Type requiredType,
+            bool allowNullModel)
         {
             ValidateBindingContext(bindingContext);
 

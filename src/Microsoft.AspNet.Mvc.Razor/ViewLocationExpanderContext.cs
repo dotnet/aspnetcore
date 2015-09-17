@@ -17,9 +17,10 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <param name="actionContext">The <see cref="Mvc.ActionContext"/> for the current executing action.</param>
         /// <param name="viewName">The view name.</param>
         /// <param name="isPartial">Determines if the view being discovered is a partial.</param>
-        public ViewLocationExpanderContext(ActionContext actionContext,
-                                           string viewName,
-                                           bool isPartial)
+        public ViewLocationExpanderContext(
+            ActionContext actionContext,
+            string viewName,
+            bool isPartial)
         {
             if (actionContext == null)
             {

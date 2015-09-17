@@ -45,9 +45,10 @@ namespace Microsoft.AspNet.Mvc
         [Theory]
         [InlineData("", "/Home/About", "/Home/About")]
         [InlineData("/myapproot", "/test", "/test")]
-        public void Execute_ReturnsContentPath_WhenItDoesNotStartWithTilde(string appRoot,
-                                                                           string contentPath,
-                                                                           string expectedPath)
+        public void Execute_ReturnsContentPath_WhenItDoesNotStartWithTilde(
+            string appRoot,
+            string contentPath,
+            string expectedPath)
         {
             // Arrange
             var httpResponse = new Mock<HttpResponse>();
@@ -72,9 +73,10 @@ namespace Microsoft.AspNet.Mvc
         [InlineData("/", "~/", "/")]
         [InlineData("", "~/Home/About", "/Home/About")]
         [InlineData("/myapproot", "~/", "/myapproot/")]
-        public void Execute_ReturnsAppRelativePath_WhenItStartsWithTilde(string appRoot,
-                                                                         string contentPath,
-                                                                         string expectedPath)
+        public void Execute_ReturnsAppRelativePath_WhenItStartsWithTilde(
+            string appRoot,
+            string contentPath,
+            string expectedPath)
         {
             // Arrange
             var httpResponse = new Mock<HttpResponse>();
@@ -110,10 +112,11 @@ namespace Microsoft.AspNet.Mvc
             return serviceCollection.BuildServiceProvider();
         }
 
-        private static HttpContext GetHttpContext(string appRoot,
-                                                     string contentPath,
-                                                     string expectedPath,
-                                                     HttpResponse response)
+        private static HttpContext GetHttpContext(
+            string appRoot,
+            string contentPath,
+            string expectedPath,
+            HttpResponse response)
         {
             var httpContext = new Mock<HttpContext>();
             var actionContext = GetActionContext(httpContext.Object);

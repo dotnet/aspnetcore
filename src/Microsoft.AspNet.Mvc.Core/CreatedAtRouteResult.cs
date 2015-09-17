@@ -36,9 +36,10 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="routeName">The name of the route to use for generating the URL.</param>
         /// <param name="routeValues">The route data to use for generating the URL.</param>
         /// <param name="value">The value to format in the entity body.</param>
-        public CreatedAtRouteResult(string routeName,
-                                    object routeValues,
-                                    object value)
+        public CreatedAtRouteResult(
+            string routeName,
+            object routeValues,
+            object value)
             : base(value)
         {
             RouteName = routeName;

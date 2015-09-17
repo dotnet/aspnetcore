@@ -234,9 +234,10 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private class TestableMvcRazorParser : MvcRazorParser
         {
-            public TestableMvcRazorParser(RazorParser parser,
-                                          IReadOnlyList<ChunkTree> chunkTrees,
-                                          IReadOnlyList<Chunk> defaultInheritedChunks)
+            public TestableMvcRazorParser(
+                RazorParser parser,
+                IReadOnlyList<ChunkTree> chunkTrees,
+                IReadOnlyList<Chunk> defaultInheritedChunks)
                 : base(parser, chunkTrees, defaultInheritedChunks, typeof(ModelExpression).FullName)
             {
             }

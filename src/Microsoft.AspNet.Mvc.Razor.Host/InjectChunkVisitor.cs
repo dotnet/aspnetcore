@@ -12,9 +12,10 @@ namespace Microsoft.AspNet.Mvc.Razor
     {
         private readonly string _injectAttribute;
 
-        public InjectChunkVisitor(CSharpCodeWriter writer,
-                                  CodeGeneratorContext context,
-                                  string injectAttributeName)
+        public InjectChunkVisitor(
+            CSharpCodeWriter writer,
+            CodeGeneratorContext context,
+            string injectAttributeName)
             : base(writer, context)
         {
             if (writer == null)

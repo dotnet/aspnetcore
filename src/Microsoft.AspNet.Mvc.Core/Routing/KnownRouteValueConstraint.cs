@@ -17,11 +17,12 @@ namespace Microsoft.AspNet.Mvc.Routing
     {
         private RouteValuesCollection _cachedValuesCollection;
 
-        public bool Match([NotNull] HttpContext httpContext,
-                          [NotNull] IRouter route,
-                          [NotNull] string routeKey,
-                          [NotNull] IDictionary<string, object> values,
-                          RouteDirection routeDirection)
+        public bool Match(
+            [NotNull] HttpContext httpContext,
+            [NotNull] IRouter route,
+            [NotNull] string routeKey,
+            [NotNull] IDictionary<string, object> values,
+            RouteDirection routeDirection)
         {
             object value;
             if (values.TryGetValue(routeKey, out value))
