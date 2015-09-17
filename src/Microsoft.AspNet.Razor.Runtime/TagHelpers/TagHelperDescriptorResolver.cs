@@ -8,7 +8,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.TagHelpers;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 {
@@ -52,8 +51,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         }
 
         /// <inheritdoc />
-        public IEnumerable<TagHelperDescriptor> Resolve([NotNull] TagHelperDescriptorResolutionContext context)
+        public IEnumerable<TagHelperDescriptor> Resolve(TagHelperDescriptorResolutionContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var resolvedDescriptors = new HashSet<TagHelperDescriptor>(TagHelperDescriptorComparer.Default);
 
             // tagHelperPrefix directives do not affect which TagHelperDescriptors are added or removed from the final

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 #if !DNXCORE50
@@ -8,7 +8,6 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Xml.Linq;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Runtime
 {
@@ -76,8 +75,13 @@ namespace Microsoft.AspNet.Razor.Runtime
         /// </summary>
         /// <param name="type">The <see cref="Type"/> to get the identifier for.</param>
         /// <returns>The <see cref="string"/> identifier for the given <paramref name="type"/>.</returns>
-        public static string GetId([NotNull] Type type)
+        public static string GetId(Type type)
         {
+            if (type == null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
             return $"T:{type.FullName}";
         }
 
@@ -86,8 +90,13 @@ namespace Microsoft.AspNet.Razor.Runtime
         /// </summary>
         /// <param name="propertyInfo">The <see cref="PropertyInfo"/> to get the identifier for.</param>
         /// <returns>The <see cref="string"/> identifier for the given <paramref name="propertyInfo"/>.</returns>
-        public static string GetId([NotNull] PropertyInfo propertyInfo)
+        public static string GetId(PropertyInfo propertyInfo)
         {
+            if (propertyInfo == null)
+            {
+                throw new ArgumentNullException(nameof(propertyInfo));
+            }
+
             var declaringTypeInfo = propertyInfo.DeclaringType;
             return $"P:{declaringTypeInfo.FullName}.{propertyInfo.Name}";
         }

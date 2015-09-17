@@ -132,72 +132,132 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         }
 
         /// <inheritdoc />
-        public override TagHelperContent AppendFormat([NotNull] string format, object arg0)
+        public override TagHelperContent AppendFormat(string format, object arg0)
         {
+            if (format == null)
+            {
+                throw new ArgumentNullException(nameof(format));
+            }
+
             Buffer.Append(string.Format(format, arg0));
             return this;
         }
 
         /// <inheritdoc />
-        public override TagHelperContent AppendFormat([NotNull] string format, object arg0, object arg1)
+        public override TagHelperContent AppendFormat(string format, object arg0, object arg1)
         {
+            if (format == null)
+            {
+                throw new ArgumentNullException(nameof(format));
+            }
+
             Buffer.Append(string.Format(format, arg0, arg1));
             return this;
         }
 
         /// <inheritdoc />
-        public override TagHelperContent AppendFormat([NotNull] string format, object arg0, object arg1, object arg2)
+        public override TagHelperContent AppendFormat(string format, object arg0, object arg1, object arg2)
         {
+            if (format == null)
+            {
+                throw new ArgumentNullException(nameof(format));
+            }
+
             Buffer.Append(string.Format(format, arg0, arg1, arg2));
             return this;
         }
 
         /// <inheritdoc />
-        public override TagHelperContent AppendFormat([NotNull] string format, params object[] args)
+        public override TagHelperContent AppendFormat(string format, params object[] args)
         {
+            if (format == null)
+            {
+                throw new ArgumentNullException(nameof(format));
+            }
+
             Buffer.Append(string.Format(format, args));
             return this;
         }
 
         /// <inheritdoc />
         public override TagHelperContent AppendFormat(
-            [NotNull] IFormatProvider provider,
-            [NotNull] string format,
+            IFormatProvider provider,
+            string format,
             object arg0)
         {
+            if (provider == null)
+            {
+                throw new ArgumentNullException(nameof(provider));
+            }
+
+            if (format == null)
+            {
+                throw new ArgumentNullException(nameof(format));
+            }
+
             Buffer.Append(string.Format(provider, format, arg0));
             return this;
         }
 
         /// <inheritdoc />
         public override TagHelperContent AppendFormat(
-            [NotNull] IFormatProvider provider,
-            [NotNull] string format,
+            IFormatProvider provider,
+            string format,
             object arg0,
             object arg1)
         {
+            if (provider == null)
+            {
+                throw new ArgumentNullException(nameof(provider));
+            }
+
+            if (format == null)
+            {
+                throw new ArgumentNullException(nameof(format));
+            }
+
             Buffer.Append(string.Format(provider, format, arg0, arg1));
             return this;
         }
 
         /// <inheritdoc />
         public override TagHelperContent AppendFormat(
-            [NotNull] IFormatProvider provider,
-            [NotNull] string format,
+            IFormatProvider provider,
+            string format,
             object arg0,
             object arg1,
             object arg2)
         {
+            if (provider == null)
+            {
+                throw new ArgumentNullException(nameof(provider));
+            }
+
+            if (format == null)
+            {
+                throw new ArgumentNullException(nameof(format));
+            }
+
             Buffer.Append(string.Format(provider, format, arg0, arg1, arg2));
             return this;
         }
 
         /// <inheritdoc />
         public override TagHelperContent AppendFormat(
-            [NotNull] IFormatProvider provider,
-            [NotNull] string format,
+            IFormatProvider provider,
+            string format,
             params object[] args)
         {
+            if (provider == null)
+            {
+                throw new ArgumentNullException(nameof(provider));
+            }
+
+            if (format == null)
+            {
+                throw new ArgumentNullException(nameof(format));
+            }
+
             Buffer.Append(string.Format(provider, format, args));
             return this;
         }
@@ -232,8 +292,18 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         }
 
         /// <inheritdoc />
-        public override void WriteTo([NotNull] TextWriter writer, [NotNull] IHtmlEncoder encoder)
+        public override void WriteTo(TextWriter writer, IHtmlEncoder encoder)
         {
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            if (encoder == null)
+            {
+                throw new ArgumentNullException(nameof(encoder));
+            }
+
             Buffer.WriteTo(writer, encoder);
         }
 

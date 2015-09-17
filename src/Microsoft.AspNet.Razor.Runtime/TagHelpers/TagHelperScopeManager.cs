@@ -34,13 +34,38 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <param name="endTagHelperWritingScope">A delegate used to end a writing scope in a Razor page.</param>
         /// <returns>A <see cref="TagHelperExecutionContext"/> to use.</returns>
         public TagHelperExecutionContext Begin(
-            [NotNull] string tagName,
+            string tagName,
             TagMode tagMode,
-            [NotNull] string uniqueId,
-            [NotNull] Func<Task> executeChildContentAsync,
-            [NotNull] Action startTagHelperWritingScope,
-            [NotNull] Func<TagHelperContent> endTagHelperWritingScope)
+            string uniqueId,
+            Func<Task> executeChildContentAsync,
+            Action startTagHelperWritingScope,
+            Func<TagHelperContent> endTagHelperWritingScope)
         {
+            if (tagName == null)
+            {
+                throw new ArgumentNullException(nameof(tagName));
+            }
+
+            if (uniqueId == null)
+            {
+                throw new ArgumentNullException(nameof(uniqueId));
+            }
+
+            if (executeChildContentAsync == null)
+            {
+                throw new ArgumentNullException(nameof(executeChildContentAsync));
+            }
+
+            if (startTagHelperWritingScope == null)
+            {
+                throw new ArgumentNullException(nameof(startTagHelperWritingScope));
+            }
+
+            if (endTagHelperWritingScope == null)
+            {
+                throw new ArgumentNullException(nameof(endTagHelperWritingScope));
+            }
+
             IDictionary<object, object> items;
 
             // If we're not wrapped by another TagHelper, then there will not be a parentExecutionContext.

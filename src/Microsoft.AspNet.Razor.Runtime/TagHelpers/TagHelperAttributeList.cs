@@ -25,9 +25,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <paramref name="attributes"/>.
         /// </summary>
         /// <param name="attributes">The collection to wrap.</param>
-        public TagHelperAttributeList([NotNull] IEnumerable<TagHelperAttribute> attributes)
+        public TagHelperAttributeList(IEnumerable<TagHelperAttribute> attributes)
             : base(attributes)
         {
+            if (attributes == null)
+            {
+                throw new ArgumentNullException(nameof(attributes));
+            }
         }
 
         /// <inheritdoc />
@@ -40,9 +44,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             {
                 return base[index];
             }
-            [param: NotNull]
             set
             {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
                 if (value.Name == null)
                 {
                     throw new ArgumentException(
@@ -83,15 +91,29 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// attributes["name"] = new TagHelperAttribute("name", "value");
         /// </code>
         /// </example>
-        public new TagHelperAttribute this[[NotNull] string name]
+        public new TagHelperAttribute this[string name]
         {
             get
             {
+                if (name == null)
+                {
+                    throw new ArgumentNullException(nameof(name));
+                }
+
                 return base[name];
             }
-            [param: NotNull]
             set
             {
+                if (name == null)
+                {
+                    throw new ArgumentNullException(nameof(name));
+                }
+
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
                 // Name will be null if user attempts to set the attribute via an implicit conversion:
                 // output.Attributes["someName"] = "someValue"
                 if (value.Name == null)
@@ -152,8 +174,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// </summary>
         /// <param name="name">The <see cref="TagHelperAttribute.Name"/> of the attribute to add.</param>
         /// <param name="value">The <see cref="TagHelperAttribute.Value"/> of the attribute to add.</param>
-        public void Add([NotNull] string name, object value)
+        public void Add(string name, object value)
         {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
             Attributes.Add(new TagHelperAttribute(name, value));
         }
 
@@ -161,8 +188,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <remarks>
         /// <paramref name="attribute"/>'s <see cref="TagHelperAttribute.Name"/> must not be <c>null</c>.
         /// </remarks>
-        public void Add([NotNull] TagHelperAttribute attribute)
+        public void Add(TagHelperAttribute attribute)
         {
+            if (attribute == null)
+            {
+                throw new ArgumentNullException(nameof(attribute));
+            }
+
             if (attribute.Name == null)
             {
                 throw new ArgumentException(
@@ -179,8 +211,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <remarks>
         /// <paramref name="attribute"/>'s <see cref="TagHelperAttribute.Name"/> must not be <c>null</c>.
         /// </remarks>
-        public void Insert(int index, [NotNull] TagHelperAttribute attribute)
+        public void Insert(int index, TagHelperAttribute attribute)
         {
+            if (attribute == null)
+            {
+                throw new ArgumentNullException(nameof(attribute));
+            }
+
             if (attribute.Name == null)
             {
                 throw new ArgumentException(
@@ -194,8 +231,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         }
 
         /// <inheritdoc />
-        public void CopyTo([NotNull] TagHelperAttribute[] array, int index)
+        public void CopyTo(TagHelperAttribute[] array, int index)
         {
+            if (array == null)
+            {
+                throw new ArgumentNullException(nameof(array));
+            }
+
             Attributes.CopyTo(array, index);
         }
 
@@ -203,8 +245,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <remarks>
         /// <paramref name="attribute"/>s <see cref="TagHelperAttribute.Name"/> is compared case-insensitively.
         /// </remarks>
-        public bool Remove([NotNull] TagHelperAttribute attribute)
+        public bool Remove(TagHelperAttribute attribute)
         {
+            if (attribute == null)
+            {
+                throw new ArgumentNullException(nameof(attribute));
+            }
+
             return Attributes.Remove(attribute);
         }
 
@@ -225,8 +272,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <c>true</c> if at least 1 <see cref="TagHelperAttribute"/> was removed; otherwise, <c>false</c>.
         /// </returns>
         /// <remarks><paramref name="name"/> is compared case-insensitively.</remarks>
-        public bool RemoveAll([NotNull] string name)
+        public bool RemoveAll(string name)
         {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
             return Attributes.RemoveAll(attribute => NameEquals(name, attribute)) > 0;
         }
 

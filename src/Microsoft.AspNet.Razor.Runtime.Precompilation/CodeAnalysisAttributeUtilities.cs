@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -29,9 +29,14 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
         /// <typeparam name="TAttribute">The <see cref="Attribute"/> type.</typeparam>
         /// <param name="symbol">The <see cref="ISymbol"/> to find attributes on.</param>
         /// <returns></returns>
-        public static IEnumerable<TAttribute> GetCustomAttributes<TAttribute>([NotNull] ISymbol symbol)
+        public static IEnumerable<TAttribute> GetCustomAttributes<TAttribute>(ISymbol symbol)
             where TAttribute : Attribute
         {
+            if (symbol == null)
+            {
+                throw new ArgumentNullException(nameof(symbol));
+            }
+
             var attributes = symbol.GetAttributes();
             if (attributes.Length > 0)
             {

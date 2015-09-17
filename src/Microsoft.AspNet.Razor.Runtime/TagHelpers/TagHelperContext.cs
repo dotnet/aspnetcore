@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 {
@@ -26,11 +25,31 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <param name="getChildContentAsync">A delegate used to execute and retrieve the rendered child content
         /// asynchronously.</param>
         public TagHelperContext(
-            [NotNull] IEnumerable<IReadOnlyTagHelperAttribute> allAttributes,
-            [NotNull] IDictionary<object, object> items,
-            [NotNull] string uniqueId,
-            [NotNull] Func<bool, Task<TagHelperContent>> getChildContentAsync)
+            IEnumerable<IReadOnlyTagHelperAttribute> allAttributes,
+            IDictionary<object, object> items,
+            string uniqueId,
+            Func<bool, Task<TagHelperContent>> getChildContentAsync)
         {
+            if (allAttributes == null)
+            {
+                throw new ArgumentNullException(nameof(allAttributes));
+            }
+
+            if (items == null)
+            {
+                throw new ArgumentNullException(nameof(items));
+            }
+
+            if (uniqueId == null)
+            {
+                throw new ArgumentNullException(nameof(uniqueId));
+            }
+
+            if (getChildContentAsync == null)
+            {
+                throw new ArgumentNullException(nameof(getChildContentAsync));
+            }
+
             AllAttributes = new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
                 allAttributes.Select(attribute => new TagHelperAttribute(attribute.Name, attribute.Value)));
             Items = items;

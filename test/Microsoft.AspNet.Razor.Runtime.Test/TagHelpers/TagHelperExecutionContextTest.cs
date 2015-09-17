@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var executionContext = new TagHelperExecutionContext(
                 "p",
                 tagMode: TagMode.StartTagAndEndTag,
-                items: null,
+                items: new Dictionary<object, object>(),
                 uniqueId: string.Empty,
                 executeChildContentAsync: () =>
                 {
@@ -91,7 +91,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var executionContext = new TagHelperExecutionContext(
                 "p",
                 tagMode: TagMode.StartTagAndEndTag,
-                items: null,
+                items: new Dictionary<object, object>(),
                 uniqueId: string.Empty,
                 executeChildContentAsync: () =>
                 {
@@ -120,7 +120,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var executionContext = new TagHelperExecutionContext(
                 "p",
                 tagMode: TagMode.StartTagAndEndTag,
-                items: null,
+                items: new Dictionary<object, object>(),
                 uniqueId: string.Empty,
                 executeChildContentAsync: () => { return Task.FromResult(result: true); },
                 startTagHelperWritingScope: () => { },
@@ -145,7 +145,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var executionContext = new TagHelperExecutionContext(
                 "p",
                 tagMode: TagMode.StartTagAndEndTag,
-                items: null,
+                items: new Dictionary<object, object>(),
                 uniqueId: string.Empty,
                 executeChildContentAsync: () =>
                 {

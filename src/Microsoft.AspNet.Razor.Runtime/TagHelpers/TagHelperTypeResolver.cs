@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 {
@@ -29,8 +28,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         public IEnumerable<ITypeInfo> Resolve(
             string name,
             SourceLocation documentLocation,
-            [NotNull] ErrorSink errorSink)
+            ErrorSink errorSink)
         {
+            if (errorSink == null)
+            {
+                throw new ArgumentNullException(nameof(errorSink));
+            }
+
             if (string.IsNullOrEmpty(name))
             {
                 var errorLength = name == null ? 1 : Math.Max(name.Length, 1);
@@ -71,8 +75,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <returns>
         /// An <see cref="IEnumerable{ITypeInfo}"/> of types exported from the given <paramref name="assemblyName"/>.
         /// </returns>
-        protected virtual IEnumerable<ITypeInfo> GetTopLevelExportedTypes([NotNull] AssemblyName assemblyName)
+        protected virtual IEnumerable<ITypeInfo> GetTopLevelExportedTypes(AssemblyName assemblyName)
         {
+            if (assemblyName == null)
+            {
+                throw new ArgumentNullException(nameof(assemblyName));
+            }
+
             var exportedTypeInfos = GetExportedTypes(assemblyName);
 
             return exportedTypeInfos

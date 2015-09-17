@@ -8,7 +8,6 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using Microsoft.AspNet.Razor.TagHelpers;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 {
@@ -54,10 +53,20 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// </returns>
         public static IEnumerable<TagHelperDescriptor> CreateDescriptors(
             string assemblyName,
-            [NotNull] ITypeInfo typeInfo,
+            ITypeInfo typeInfo,
             bool designTime,
-            [NotNull] ErrorSink errorSink)
+            ErrorSink errorSink)
         {
+            if (typeInfo == null)
+            {
+                throw new ArgumentNullException(nameof(typeInfo));
+            }
+
+            if (errorSink == null)
+            {
+                throw new ArgumentNullException(nameof(errorSink));
+            }
+
             if (ShouldSkipDescriptorCreation(designTime, typeInfo))
             {
                 return Enumerable.Empty<TagHelperDescriptor>();

@@ -9,10 +9,6 @@
         "warningsAsErrors": true
     },
     "dependencies": {
-        "Microsoft.Framework.NotNullAttribute.Sources": {
-            "version": "1.0.0-*",
-            "type": "build"
-        },
         "Microsoft.Framework.PropertyActivator.Sources": {
             "version": "1.0.0-*",
             "type": "build"

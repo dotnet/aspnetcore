@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 #if !DNXCORE50 // Cannot accurately resolve the location of the documentation XML file in coreclr.
@@ -9,7 +9,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Razor.TagHelpers;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 {
@@ -27,8 +26,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// </param>
         /// <returns>A <see cref="TagHelperDesignTimeDescriptor"/> that describes design time specific information
         /// for the given <paramref name="type"/>.</returns>
-        public static TagHelperDesignTimeDescriptor CreateDescriptor([NotNull] Type type)
+        public static TagHelperDesignTimeDescriptor CreateDescriptor(Type type)
         {
+            if (type == null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
             var id = XmlDocumentationProvider.GetId(type);
             var documentationDescriptor = CreateDocumentationDescriptor(type.Assembly, id);
 
@@ -62,8 +66,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <returns>A <see cref="TagHelperAttributeDesignTimeDescriptor"/> that describes design time specific
         /// information for the given <paramref name="propertyInfo"/>.</returns>
         public static TagHelperAttributeDesignTimeDescriptor CreateAttributeDescriptor(
-            [NotNull] PropertyInfo propertyInfo)
+            PropertyInfo propertyInfo)
         {
+            if (propertyInfo == null)
+            {
+                throw new ArgumentNullException(nameof(propertyInfo));
+            }
+
             var id = XmlDocumentationProvider.GetId(propertyInfo);
             var declaringAssembly = propertyInfo.DeclaringType.Assembly;
             var documentationDescriptor = CreateDocumentationDescriptor(declaringAssembly, id);

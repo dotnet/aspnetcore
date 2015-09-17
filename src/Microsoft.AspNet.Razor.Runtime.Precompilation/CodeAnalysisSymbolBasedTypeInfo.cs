@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,7 +9,6 @@ using System.Reflection;
 using System.Text;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.CodeAnalysis;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Runtime.Precompilation
 {
@@ -35,8 +34,13 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
         /// Initializes a new instance of <see cref="CodeAnalysisSymbolBasedTypeInfo"/>.
         /// </summary>
         /// <param name="propertySymbol">The <see cref="IPropertySymbol"/>.</param>
-        public CodeAnalysisSymbolBasedTypeInfo([NotNull] ITypeSymbol type)
+        public CodeAnalysisSymbolBasedTypeInfo(ITypeSymbol type)
         {
+            if (type == null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
             _type = type;
             _underlyingType = UnwrapArrayType(type);
         }
@@ -174,10 +178,10 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
             ITypeSymbol sourceTypeSymbol,
             System.Reflection.TypeInfo targetTypeInfo)
         {
-                return string.Equals(
-                    targetTypeInfo.FullName,
-                    GetFullName(sourceTypeSymbol),
-                    StringComparison.Ordinal);
+            return string.Equals(
+                targetTypeInfo.FullName,
+                GetFullName(sourceTypeSymbol),
+                StringComparison.Ordinal);
         }
 
         /// <summary>
@@ -185,8 +189,13 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
         /// </summary>
         /// <param name="symbol">The <see cref="ITypeSymbol" /> to generate the name for.</param>
         /// <returns>The assembly qualified name.</returns>
-        public static string GetAssemblyQualifiedName([NotNull] ITypeSymbol symbol)
+        public static string GetAssemblyQualifiedName(ITypeSymbol symbol)
         {
+            if (symbol == null)
+            {
+                throw new ArgumentNullException(nameof(symbol));
+            }
+
             var builder = new StringBuilder();
             GetAssemblyQualifiedName(builder, symbol);
 

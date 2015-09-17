@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 {
@@ -25,9 +24,14 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <paramref name="attribute"/>.
         /// </summary>
         /// <param name="attribute">A <see cref="IReadOnlyTagHelperAttribute"/> whose values should be copied.</param>
-        public TagHelperAttribute([NotNull] IReadOnlyTagHelperAttribute attribute)
-            : this (attribute?.Name, attribute?.Value)
+        public TagHelperAttribute(IReadOnlyTagHelperAttribute attribute)
+            : this(attribute?.Name, attribute?.Value)
         {
+            if (attribute == null)
+            {
+                throw new ArgumentNullException(nameof(attribute));
+            }
+
             Minimized = attribute.Minimized;
         }
 

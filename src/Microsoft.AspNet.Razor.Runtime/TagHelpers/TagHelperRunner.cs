@@ -1,9 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 {
@@ -19,8 +19,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// </param>
         /// <returns>Resulting <see cref="TagHelperOutput"/> from processing all of the
         /// <paramref name="executionContext"/>'s <see cref="ITagHelper"/>s.</returns>
-        public async Task<TagHelperOutput> RunAsync([NotNull] TagHelperExecutionContext executionContext)
+        public async Task<TagHelperOutput> RunAsync(TagHelperExecutionContext executionContext)
         {
+            if (executionContext == null)
+            {
+                throw new ArgumentNullException(nameof(executionContext));
+            }
+
             var tagHelperContext = new TagHelperContext(
                 executionContext.AllAttributes,
                 executionContext.Items,

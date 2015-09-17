@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.CodeAnalysis;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Runtime.Precompilation
 {
@@ -22,8 +21,13 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
         /// Initializes a new instance of <see cref="CodeAnalysisSymbolBasedPropertyInfo"/>.
         /// </summary>
         /// <param name="propertySymbol">The <see cref="IPropertySymbol"/>.</param>
-        public CodeAnalysisSymbolBasedPropertyInfo([NotNull] IPropertySymbol propertySymbol)
+        public CodeAnalysisSymbolBasedPropertyInfo(IPropertySymbol propertySymbol)
         {
+            if (propertySymbol == null)
+            {
+                throw new ArgumentNullException(nameof(propertySymbol));
+            }
+
             _propertySymbol = propertySymbol;
             PropertyType = new CodeAnalysisSymbolBasedTypeInfo(_propertySymbol.Type);
         }

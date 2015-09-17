@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Framework.Internal;
+using System;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 {
@@ -23,8 +23,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <param name="attributes">The HTML attributes.</param>
         public TagHelperOutput(
             string tagName,
-            [NotNull] TagHelperAttributeList attributes)
+            TagHelperAttributeList attributes)
         {
+            if (attributes == null)
+            {
+                throw new ArgumentNullException(nameof(attributes));
+            }
+
             TagName = tagName;
             Attributes = new TagHelperAttributeList(attributes);
         }

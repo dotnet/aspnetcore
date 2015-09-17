@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 {
@@ -18,8 +17,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <param name="outputElement">
         /// The HTML element the <see cref="ITagHelper"/> may output.
         /// </param>
-        public OutputElementHintAttribute([NotNull] string outputElement)
+        public OutputElementHintAttribute(string outputElement)
         {
+            if (outputElement == null)
+            {
+                throw new ArgumentNullException(nameof(outputElement));
+            }
+
             OutputElement = outputElement;
         }
 

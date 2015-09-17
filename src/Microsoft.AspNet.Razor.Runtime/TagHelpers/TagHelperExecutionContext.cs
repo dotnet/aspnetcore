@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 {
@@ -45,14 +44,44 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <param name="startTagHelperWritingScope">A delegate used to start a writing scope in a Razor page.</param>
         /// <param name="endTagHelperWritingScope">A delegate used to end a writing scope in a Razor page.</param>
         public TagHelperExecutionContext(
-            [NotNull] string tagName,
+            string tagName,
             TagMode tagMode,
-            [NotNull] IDictionary<object, object> items,
-            [NotNull] string uniqueId,
-            [NotNull] Func<Task> executeChildContentAsync,
-            [NotNull] Action startTagHelperWritingScope,
-            [NotNull] Func<TagHelperContent> endTagHelperWritingScope)
+            IDictionary<object, object> items,
+            string uniqueId,
+            Func<Task> executeChildContentAsync,
+            Action startTagHelperWritingScope,
+            Func<TagHelperContent> endTagHelperWritingScope)
         {
+            if (tagName == null)
+            {
+                throw new ArgumentNullException(nameof(tagName));
+            }
+
+            if (items == null)
+            {
+                throw new ArgumentNullException(nameof(items));
+            }
+
+            if (uniqueId == null)
+            {
+                throw new ArgumentNullException(nameof(uniqueId));
+            }
+
+            if (executeChildContentAsync == null)
+            {
+                throw new ArgumentNullException(nameof(executeChildContentAsync));
+            }
+
+            if (startTagHelperWritingScope == null)
+            {
+                throw new ArgumentNullException(nameof(startTagHelperWritingScope));
+            }
+
+            if (endTagHelperWritingScope == null)
+            {
+                throw new ArgumentNullException(nameof(endTagHelperWritingScope));
+            }
+
             _tagHelpers = new List<ITagHelper>();
             _executeChildContentAsync = executeChildContentAsync;
             _startTagHelperWritingScope = startTagHelperWritingScope;
@@ -127,8 +156,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// Tracks the given <paramref name="tagHelper"/>.
         /// </summary>
         /// <param name="tagHelper">The tag helper to track.</param>
-        public void Add([NotNull] ITagHelper tagHelper)
+        public void Add(ITagHelper tagHelper)
         {
+            if (tagHelper == null)
+            {
+                throw new ArgumentNullException(nameof(tagHelper));
+            }
+
             _tagHelpers.Add(tagHelper);
         }
 
@@ -136,8 +170,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// Tracks the minimized HTML attribute in <see cref="AllAttributes"/> and <see cref="HTMLAttributes"/>.
         /// </summary>
         /// <param name="name">The minimized HTML attribute name.</param>
-        public void AddMinimizedHtmlAttribute([NotNull] string name)
+        public void AddMinimizedHtmlAttribute(string name)
         {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
             HTMLAttributes.Add(
                 new TagHelperAttribute
                 {
@@ -157,8 +196,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// </summary>
         /// <param name="name">The HTML attribute name.</param>
         /// <param name="value">The HTML attribute value.</param>
-        public void AddHtmlAttribute([NotNull] string name, object value)
+        public void AddHtmlAttribute(string name, object value)
         {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
             HTMLAttributes.Add(name, value);
             AllAttributes.Add(name, value);
         }
@@ -168,8 +212,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// </summary>
         /// <param name="name">The bound attribute name.</param>
         /// <param name="value">The attribute value.</param>
-        public void AddTagHelperAttribute([NotNull] string name, object value)
+        public void AddTagHelperAttribute(string name, object value)
         {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
             AllAttributes.Add(name, value);
         }
 

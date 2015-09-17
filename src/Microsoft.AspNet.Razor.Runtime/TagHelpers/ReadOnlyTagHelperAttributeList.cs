@@ -32,8 +32,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <paramref name="attributes"/>.
         /// </summary>
         /// <param name="attributes">The collection to wrap.</param>
-        public ReadOnlyTagHelperAttributeList([NotNull] IEnumerable<TAttribute> attributes)
+        public ReadOnlyTagHelperAttributeList(IEnumerable<TAttribute> attributes)
         {
+            if (attributes == null)
+            {
+                throw new ArgumentNullException(nameof(attributes));
+            }
+
             Attributes = new List<TAttribute>(attributes);
         }
 
@@ -64,10 +69,15 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// matching <paramref name="name"/>.
         /// </returns>
         /// <remarks><paramref name="name"/> is compared case-insensitively.</remarks>
-        public TAttribute this[[NotNull] string name]
+        public TAttribute this[string name]
         {
             get
             {
+                if (name == null)
+                {
+                    throw new ArgumentNullException(nameof(name));
+                }
+
                 return Attributes.FirstOrDefault(attribute => NameEquals(name, attribute));
             }
         }
@@ -93,8 +103,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <remarks>
         /// <paramref name="item"/>s <see cref="IReadOnlyTagHelperAttribute.Name"/> is compared case-insensitively.
         /// </remarks>
-        public bool Contains([NotNull] TAttribute item)
+        public bool Contains(TAttribute item)
         {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
             return Attributes.Contains(item);
         }
 
@@ -109,8 +124,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <see cref="IReadOnlyTagHelperAttribute.Name"/> exists in the collection; otherwise, <c>false</c>.
         /// </returns>
         /// <remarks><paramref name="name"/> is compared case-insensitively.</remarks>
-        public bool ContainsName([NotNull] string name)
+        public bool ContainsName(string name)
         {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
             return Attributes.Any(attribute => NameEquals(name, attribute));
         }
 
@@ -124,8 +144,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <remarks>
         /// <paramref name="item"/>s <see cref="IReadOnlyTagHelperAttribute.Name"/> is compared case-insensitively.
         /// </remarks>
-        public int IndexOf([NotNull] TAttribute item)
+        public int IndexOf(TAttribute item)
         {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
             return Attributes.IndexOf(item);
         }
 
@@ -141,8 +166,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <returns><c>true</c> if a <typeparamref name="TAttribute"/> with the same
         /// <see cref="IReadOnlyTagHelperAttribute.Name"/> exists in the collection; otherwise, <c>false</c>.</returns>
         /// <remarks><paramref name="name"/> is compared case-insensitively.</remarks>
-        public bool TryGetAttribute([NotNull] string name, out TAttribute attribute)
+        public bool TryGetAttribute(string name, out TAttribute attribute)
         {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
             attribute = Attributes.FirstOrDefault(attr => NameEquals(name, attr));
 
             return attribute != null;
@@ -160,8 +190,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <returns><c>true</c> if at least one <typeparamref name="TAttribute"/> with the same
         /// <see cref="IReadOnlyTagHelperAttribute.Name"/> exists in the collection; otherwise, <c>false</c>.</returns>
         /// <remarks><paramref name="name"/> is compared case-insensitively.</remarks>
-        public bool TryGetAttributes([NotNull] string name, out IEnumerable<TAttribute> attributes)
+        public bool TryGetAttributes(string name, out IEnumerable<TAttribute> attributes)
         {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
             attributes = Attributes.Where(attribute => NameEquals(name, attribute));
 
             return attributes.Any();
@@ -187,8 +222,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <param name="attribute">The attribute to compare against.</param>
         /// <returns><c>true</c> if <paramref name="name"/> case-insensitively matches <paramref name="attribute"/>s
         /// <see cref="TagHelperAttribute.Name"/>.</returns>
-        protected static bool NameEquals(string name, [NotNull] TAttribute attribute)
+        protected static bool NameEquals(string name, TAttribute attribute)
         {
+            if (attribute == null)
+            {
+                throw new ArgumentNullException(nameof(attribute));
+            }
+
             return string.Equals(name, attribute.Name, StringComparison.OrdinalIgnoreCase);
         }
     }

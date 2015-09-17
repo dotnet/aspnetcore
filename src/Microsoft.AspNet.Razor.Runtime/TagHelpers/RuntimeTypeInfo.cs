@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -27,8 +27,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// Initializes a new instance of <see cref="RuntimeTypeInfo"/>
         /// </summary>
         /// <param name="propertyInfo">The <see cref="System.Reflection.TypeInfo"/> instance to adapt.</param>
-        public RuntimeTypeInfo([NotNull] TypeInfo typeInfo)
+        public RuntimeTypeInfo(TypeInfo typeInfo)
         {
+            if (typeInfo == null)
+            {
+                throw new ArgumentNullException(nameof(typeInfo));
+            }
+
             TypeInfo = typeInfo;
         }
 

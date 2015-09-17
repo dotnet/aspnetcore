@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.CodeAnalysis;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Razor.Runtime.Precompilation
 {
@@ -24,14 +23,24 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
         /// Initializes a new instance of <see cref="PrecompilationTagHelperTypeResolver"/>.
         /// </summary>
         /// <param name="compilation">The <see cref="Compilation"/>.</param>
-        public PrecompilationTagHelperTypeResolver([NotNull] Compilation compilation)
+        public PrecompilationTagHelperTypeResolver(Compilation compilation)
         {
+            if (compilation == null)
+            {
+                throw new ArgumentNullException(nameof(compilation));
+            }
+
             _compilation = compilation;
         }
 
         /// <inheritdoc />
-        protected override IEnumerable<ITypeInfo> GetTopLevelExportedTypes([NotNull] AssemblyName assemblyName)
+        protected override IEnumerable<ITypeInfo> GetTopLevelExportedTypes(AssemblyName assemblyName)
         {
+            if (assemblyName == null)
+            {
+                throw new ArgumentNullException(nameof(assemblyName));
+            }
+
             lock (_assemblyLookupLock)
             {
                 IEnumerable<ITypeInfo> result;
