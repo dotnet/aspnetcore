@@ -729,7 +729,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
             Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
         }
 
-/*        [Fact]
+        [Fact]
         public async Task UseCookieWithInstanceDoesntUseSharedOptions()
         {
             var server = TestServer.Create(app =>
@@ -759,7 +759,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
             Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
             Assert.True(transaction.SetCookie[0].StartsWith("One="));
-        }*/
+        }
 
         [Fact]
         public async Task MapWithSignInOnlyRedirectToReturnUrlOnLoginPath()
