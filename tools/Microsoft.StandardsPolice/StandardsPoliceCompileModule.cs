@@ -66,6 +66,10 @@ namespace Microsoft.StandardsPolice
                 {
                     acceptableOrder = true;
                 }
+                if (!acceptableOrder && priorUsingDirective.Name.ToString() == "System")
+                {
+                    acceptableOrder = true;
+                }
                 if (!acceptableOrder &&
                     priorUsingDirective.Name.ToString().StartsWith("System.") &&
                     !usingDirective.Name.ToString().StartsWith("System."))
