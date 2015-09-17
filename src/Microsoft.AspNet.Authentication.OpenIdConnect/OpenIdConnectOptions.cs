@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
+using System.Security.Claims;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.Framework.WebEncoders;
@@ -225,6 +226,13 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         /// This is enabled by default.
         /// </summary>
         public bool UseTokenLifetime { get; set; } = true;
+
+        /// <summary>
+        /// Defines whether access and refresh tokens should be stored in the
+        /// <see cref="ClaimsPrincipal"/> after a successful authentication.
+        /// You can set this property to <c>false</c> to reduce the size of the final authentication cookie.
+        /// </summary>
+        public bool SaveTokensAsClaims { get; set; } = true;
 
         /// <summary>
         /// Gets or sets the <see cref="IHtmlEncoder"/> used to sanitize HTML outputs.

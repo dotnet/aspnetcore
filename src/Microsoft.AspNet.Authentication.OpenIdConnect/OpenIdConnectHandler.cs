@@ -89,6 +89,13 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                     message.PostLogoutRedirectUri = Options.PostLogoutRedirectUri;
                 }
 
+                if (!string.IsNullOrEmpty(Options.SignInScheme))
+                {
+                    var principal = await Context.Authentication.AuthenticateAsync(Options.SignInScheme);
+
+                    message.IdTokenHint = principal?.FindFirst(OpenIdConnectParameterNames.IdToken)?.Value;
+                }
+
                 var redirectContext = new RedirectContext(Context, Options)
                 {
                     ProtocolMessage = message
@@ -504,6 +511,12 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             }
             ticket = authenticationValidatedContext.AuthenticationTicket;
 
+            if (Options.SaveTokensAsClaims)
+            {
+                // Persist the tokens extracted from the token response.
+                SaveTokens(ticket.Principal, tokenEndpointResponse.ProtocolMessage, saveRefreshToken: true);
+            }
+
             if (Options.GetClaimsFromUserInfoEndpoint)
             {
                 Logger.LogDebug(Resources.OIDCH_0040_Sending_Request_UIEndpoint);
@@ -548,7 +561,27 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 {
                     return null;
                 }
+                message = authorizationCodeReceivedContext.ProtocolMessage;
                 ticket = authorizationCodeReceivedContext.AuthenticationTicket;
+
+                if (Options.SaveTokensAsClaims)
+                {
+                    // TODO: call SaveTokens with the token response and set
+                    // saveRefreshToken to true when the hybrid flow is fully implemented.
+                    SaveTokens(ticket.Principal, message, saveRefreshToken: false);
+                }
+            }
+            // Implicit Flow
+            else
+            {
+                if (Options.SaveTokensAsClaims)
+                {
+                    // Note: don't save the refresh token when it is extracted from the authorization
+                    // response, since it's not a valid parameter when using the implicit flow.
+                    // See http://openid.net/specs/openid-connect-core-1_0.html#Authentication
+                    // and https://tools.ietf.org/html/rfc6749#section-4.2.2.
+                    SaveTokens(ticket.Principal, message, saveRefreshToken: false);
+                }
             }
 
             return ticket;
@@ -659,6 +692,47 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             }
 
             return new AuthenticationTicket(new ClaimsPrincipal(identity), ticket.Properties, ticket.AuthenticationScheme);
+        }
+
+        /// <summary>
+        /// Save the tokens contained in the <see cref="OpenIdConnectMessage"/> in the <see cref="ClaimsPrincipal"/>.
+        /// </summary>
+        /// <param name="principal">The principal in which tokens are saved.</param>
+        /// <param name="message">The OpenID Connect response.</param>
+        /// <param name="saveRefreshToken">A <see cref="bool"/> indicating whether the refresh token should be stored.</param>
+        private void SaveTokens(ClaimsPrincipal principal, OpenIdConnectMessage message, bool saveRefreshToken)
+        {
+            var identity = (ClaimsIdentity) principal.Identity;
+
+            if (!string.IsNullOrEmpty(message.AccessToken))
+            {
+                identity.AddClaim(new Claim(OpenIdConnectParameterNames.AccessToken, message.AccessToken,
+                                            ClaimValueTypes.String, Options.ClaimsIssuer));
+            }
+
+            if (!string.IsNullOrEmpty(message.IdToken))
+            {
+                identity.AddClaim(new Claim(OpenIdConnectParameterNames.IdToken, message.IdToken,
+                                            ClaimValueTypes.String, Options.ClaimsIssuer));
+            }
+
+            if (saveRefreshToken && !string.IsNullOrEmpty(message.RefreshToken))
+            {
+                identity.AddClaim(new Claim(OpenIdConnectParameterNames.RefreshToken, message.RefreshToken,
+                                            ClaimValueTypes.String, Options.ClaimsIssuer));
+            }
+
+            if (!string.IsNullOrEmpty(message.TokenType))
+            {
+                identity.AddClaim(new Claim(OpenIdConnectParameterNames.TokenType, message.TokenType,
+                                            ClaimValueTypes.String, Options.ClaimsIssuer));
+            }
+
+            if (!string.IsNullOrEmpty(message.ExpiresIn))
+            {
+                identity.AddClaim(new Claim(OpenIdConnectParameterNames.ExpiresIn, message.ExpiresIn,
+                                            ClaimValueTypes.String, Options.ClaimsIssuer));
+            }
         }
 
         /// <summary>
