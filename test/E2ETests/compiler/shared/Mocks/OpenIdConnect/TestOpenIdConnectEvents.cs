@@ -20,19 +20,19 @@ namespace MusicStore.Mocks.OpenIdConnect
             return Task.FromResult(0);
         }
 
-        internal static Task SecurityTokenReceived(SecurityTokenReceivedContext context)
+        internal static Task AuthenticationValidated(AuthenticationValidatedContext context)
         {
-            eventsFired.Add(nameof(SecurityTokenReceived));
+            eventsFired.Add(nameof(AuthenticationValidated));
             return Task.FromResult(0);
         }
 
-        internal static Task SecurityTokenValidated(SecurityTokenValidatedContext context)
+        internal static Task AuthorizationResponseRecieved(AuthorizationResponseReceivedContext context)
         {
             Helpers.ThrowIfConditionFailed(() => context.AuthenticationTicket != null, "context.AuthenticationTicket is null.");
             Helpers.ThrowIfConditionFailed(() => context.AuthenticationTicket.Principal != null, "context.AuthenticationTicket.Principal is null.");
             Helpers.ThrowIfConditionFailed(() => context.AuthenticationTicket.Principal.Identity != null, "context.AuthenticationTicket.Principal.Identity is null.");
             Helpers.ThrowIfConditionFailed(() => !string.IsNullOrWhiteSpace(context.AuthenticationTicket.Principal.Identity.Name), "context.AuthenticationTicket.Principal.Identity.Name is null.");
-            eventsFired.Add(nameof(SecurityTokenValidated));
+            eventsFired.Add(nameof(AuthorizationResponseRecieved));
             return Task.FromResult(0);
         }
 
@@ -43,10 +43,10 @@ namespace MusicStore.Mocks.OpenIdConnect
             eventsFired.Add(nameof(AuthorizationCodeReceived));
 
             // Verify all events are fired.
-            if (eventsFired.Contains(nameof(RedirectToIdentityProvider)) &&
+            if (eventsFired.Contains(nameof(RedirectToAuthenticationEndpoint)) &&
                 eventsFired.Contains(nameof(MessageReceived)) &&
-                eventsFired.Contains(nameof(SecurityTokenReceived)) &&
-                eventsFired.Contains(nameof(SecurityTokenValidated)) &&
+                eventsFired.Contains(nameof(AuthenticationValidated)) &&
+                eventsFired.Contains(nameof(AuthorizationResponseRecieved)) &&
                 eventsFired.Contains(nameof(AuthorizationCodeReceived)))
             {
                 ((ClaimsIdentity)context.AuthenticationTicket.Principal.Identity).AddClaim(new Claim("ManageStore", "Allowed"));
@@ -55,10 +55,9 @@ namespace MusicStore.Mocks.OpenIdConnect
             return Task.FromResult(0);
         }
 
-        internal static Task RedirectToIdentityProvider
-            (RedirectToIdentityProviderContext context)
+        internal static Task RedirectToAuthenticationEndpoint(RedirectContext context)
         {
-            eventsFired.Add(nameof(RedirectToIdentityProvider));
+            eventsFired.Add(nameof(RedirectToAuthenticationEndpoint));
 
             if (context.ProtocolMessage.RequestType == OpenIdConnectRequestType.LogoutRequest)
             {

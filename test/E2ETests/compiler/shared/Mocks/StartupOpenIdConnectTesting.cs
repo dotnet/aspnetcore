@@ -81,9 +81,9 @@ namespace MusicStore
                 {
                     OnMessageReceived = TestOpenIdConnectEvents.MessageReceived,
                     OnAuthorizationCodeReceived = TestOpenIdConnectEvents.AuthorizationCodeReceived,
-                    OnRedirectToIdentityProvider = TestOpenIdConnectEvents.RedirectToIdentityProvider,
-                    OnSecurityTokenReceived = TestOpenIdConnectEvents.SecurityTokenReceived,
-                    OnSecurityTokenValidated = TestOpenIdConnectEvents.SecurityTokenValidated
+                    OnRedirectToAuthenticationEndpoint = TestOpenIdConnectEvents.RedirectToAuthenticationEndpoint,
+                    OnAuthenticationValidated = TestOpenIdConnectEvents.AuthenticationValidated,
+                    OnAuthorizationResponseReceived = TestOpenIdConnectEvents.AuthorizationResponseRecieved
                 };
             });
 
