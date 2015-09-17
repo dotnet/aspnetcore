@@ -859,7 +859,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         [Theory]
-        [InlineData(null, string.Empty)]
+        [InlineData(null, "")]
         [InlineData(false, "False")]
         public void AddHtmlAttributeValues_OnlyAddsToAllAttributesWhenAttributeRemoved(
             object attributeValue,
