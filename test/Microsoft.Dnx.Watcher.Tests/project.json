@@ -1,0 +1,15 @@
+﻿{
+    "dependencies": {
+        "Microsoft.Dnx.Runtime.Abstractions": "1.0.0-*",
+        "Microsoft.Dnx.Watcher": "1.0.0-*",
+        "xunit.runner.aspnet": "2.0.0-aspnet-*"
+    },
+    "frameworks": {
+        "dnx451": { },
+        "dnxcore50": { }
+    },
+    "commands": {
+        "test": "xunit.runner.aspnet"
+    }
+}
+

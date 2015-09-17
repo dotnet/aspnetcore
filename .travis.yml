@@ -1,0 +1,9 @@
+language: csharp
+sudo: false
+env:
+  - MONO_THREADS_PER_CPU=2000
+os:
+  - linux
+  - osx
+script:
+  - ./build.sh --quiet verify

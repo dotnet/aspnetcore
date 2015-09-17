@@ -1,0 +1,36 @@
+{
+  "version": "1.0.0-*",
+  "compilationOptions": { "warningsAsErrors": true },
+  "dependencies": {
+    "Microsoft.AspNet.FileProviders.Abstractions": "1.0.0-*",
+    "Microsoft.AspNet.FileProviders.Physical": "1.0.0-*",
+    "Microsoft.Dnx.Runtime.Abstractions": "1.0.0-*",
+    "Microsoft.Dnx.Runtime.Json.Sources": {
+      "type": "build",
+      "version": "1.0.0-*"
+    },
+    "Microsoft.Framework.Logging.Abstractions": "1.0.0-*",
+    "Microsoft.Framework.FileSystemGlobbing": "1.0.0-*"
+  },
+  "frameworks": {
+    "dnx451": {
+      "frameworkAssemblies": {
+        "System.Collections": "",
+        "System.Runtime": ""
+      }
+    },
+    "dnxcore50": {
+      "dependencies": {
+        "System.Diagnostics.Process": "4.1.0-beta-*",
+        "System.Linq": "4.0.1-beta-*",
+        "System.Runtime.Extensions": "4.0.11-beta-*",
+        "System.Threading.Thread": "4.0.0-beta-*"
+      }
+    }
+  },
+
+  "scripts": {
+    "postbuild": [
+    ]
+  }
+}
