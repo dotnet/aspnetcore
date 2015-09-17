@@ -146,8 +146,12 @@ namespace Microsoft.AspNet.Server.KestrelTests
                         "",
                         "");
 
-                    // Nothing (not even headers) are written, but the connection is closed.
-                    await connection.ReceiveEnd();
+                    // Headers are sent before connection is closed, but chunked body terminator isn't sent
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 200 OK",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "");
                 }
             }
         }

@@ -119,9 +119,10 @@ namespace Microsoft.AspNet.Server.KestrelTests
         public async Task ReceiveEnd(params string[] lines)
         {
             await Receive(lines);
-            var ch = new char[1];
-            var count = await _reader.ReadAsync(ch, 0, 1);
-            Assert.Equal(0, count);
+            var ch = new char[128];
+            var count = await _reader.ReadAsync(ch, 0, 128);
+            var text = new string(ch, 0, count);
+            Assert.Equal("", text);
         }
     }
 }
