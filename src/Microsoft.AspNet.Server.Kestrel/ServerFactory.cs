@@ -53,14 +53,14 @@ namespace Microsoft.AspNet.Server.Kestrel
             try
             {
                 var information = (KestrelServerInformation)serverFeatures.Get<IKestrelServerInformation>();
-                var engine = new KestrelEngine(_libraryManager, _appShutdownService, _logger);
+                var engine = new KestrelEngine(_libraryManager, new ServiceContext { AppShutdown = _appShutdownService, Log = new KestrelTrace(_logger) });
 
                 disposables.Push(engine);
 
                 if (information.ThreadCount < 0)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(information.ThreadCount), 
-                        information.ThreadCount, 
+                    throw new ArgumentOutOfRangeException(nameof(information.ThreadCount),
+                        information.ThreadCount,
                         "ThreadCount cannot be negative");
                 }
 

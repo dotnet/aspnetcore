@@ -27,25 +27,29 @@ namespace Microsoft.AspNet.Server.KestrelTests
         {
             get
             {
-                try{
+                try
+                {
                     var locator = CallContextServiceLocator.Locator;
-                    if (locator == null) 
+                    if (locator == null)
                     {
                         return null;
                     }
                     var services = locator.ServiceProvider;
-                    if (services == null) 
+                    if (services == null)
                     {
                         return null;
                     }
                     return (ILibraryManager)services.GetService(typeof(ILibraryManager));
-                } catch (NullReferenceException) { return null; }
+                }
+                catch (NullReferenceException) { return null; }
             }
         }
 
         public void Create(Func<Frame, Task> app)
         {
-            _engine = new KestrelEngine(LibraryManager, new ShutdownNotImplemented(), new TestLogger());
+            _engine = new KestrelEngine(
+                LibraryManager, 
+                new TestServiceContext());
             _engine.Start(1);
             _server = _engine.CreateServer(
                 "http",

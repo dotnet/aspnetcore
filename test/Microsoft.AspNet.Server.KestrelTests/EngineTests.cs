@@ -61,19 +61,20 @@ namespace Microsoft.AspNet.Server.KestrelTests
 
         private async Task AppChunked(Frame frame)
         {
+            Console.WriteLine($"----");
+            Console.WriteLine($"{frame.Method} {frame.RequestUri} {frame.HttpVersion}");
             foreach (var h in frame.RequestHeaders)
             {
                 Console.WriteLine($"{h.Key}: {h.Value}");
             }
             Console.WriteLine($"");
 
-            frame.ResponseHeaders.Clear();
             var data = new MemoryStream();
-            while(true)
-            {
-                await frame.RequestBody.CopyToAsync(data);
-            }
+            await frame.RequestBody.CopyToAsync(data);
             var bytes = data.ToArray();
+            Console.WriteLine($"{Encoding.ASCII.GetString(bytes)}");
+
+            frame.ResponseHeaders.Clear();
             frame.ResponseHeaders["Content-Length"] = new[] { bytes.Length.ToString() };
             await frame.ResponseBody.WriteAsync(bytes, 0, bytes.Length);
         }
@@ -87,7 +88,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [Fact]
         public void EngineCanStartAndStop()
         {
-            var engine = new KestrelEngine(LibraryManager, new ShutdownNotImplemented(), new TestLogger());
+            var engine = new KestrelEngine(LibraryManager, new TestServiceContext());
             engine.Start(1);
             engine.Dispose();
         }
@@ -95,7 +96,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [Fact]
         public void ListenerCanCreateAndDispose()
         {
-            var engine = new KestrelEngine(LibraryManager, new ShutdownNotImplemented(), new TestLogger());
+            var engine = new KestrelEngine(LibraryManager, new TestServiceContext());
             engine.Start(1);
             var started = engine.CreateServer("http", "localhost", 54321, App);
             started.Dispose();
@@ -106,7 +107,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [Fact]
         public void ConnectionCanReadAndWrite()
         {
-            var engine = new KestrelEngine(LibraryManager, new ShutdownNotImplemented(), new TestLogger());
+            var engine = new KestrelEngine(LibraryManager, new TestServiceContext());
             engine.Start(1);
             var started = engine.CreateServer("http", "localhost", 54321, App);
 

@@ -614,9 +614,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         chFirst = scan.Take(); // expecting: /r
                         chSecond = scan.Take(); // expecting: /n
 
-                        if (chSecond == '\r')
+                        if (chSecond != '\n')
                         {
-                            // special case, "\r\r". move to the 2nd "\r" and try again
+                            // "\r" was all by itself, move just after it and try again 
                             scan = endValue;
                             scan.Take();
                             continue;
@@ -633,6 +633,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         }
 
                         var name = beginName.GetArraySegment(endName);
+#if DEBUG
+                        var nameString = beginName.GetString(endName);
+#endif
                         var value = beginValue.GetString(endValue);
                         if (wrapping)
                         {

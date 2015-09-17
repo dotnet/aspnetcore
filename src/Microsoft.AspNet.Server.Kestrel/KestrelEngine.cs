@@ -13,12 +13,10 @@ using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Server.Kestrel
 {
-    public class KestrelEngine : IDisposable
+    public class KestrelEngine : ServiceContext, IDisposable
     {
-        private readonly ServiceContext _serviceContext;
-
-        public KestrelEngine(ILibraryManager libraryManager, IApplicationShutdown appShutdownService, ILogger logger)
-            : this(appShutdownService, logger)
+        public KestrelEngine(ILibraryManager libraryManager, ServiceContext context)
+            : this(context)
         {
             Libuv = new Libuv();
 
@@ -63,21 +61,15 @@ namespace Microsoft.AspNet.Server.Kestrel
         }
 
         // For testing
-        internal KestrelEngine(Libuv uv, IApplicationShutdown appShutdownService, ILogger logger)
-           : this(appShutdownService, logger)
+        internal KestrelEngine(Libuv uv, ServiceContext context)
+           : this(context)
         {
             Libuv = uv;
         }
 
-        private KestrelEngine(IApplicationShutdown appShutdownService, ILogger logger)
+        private KestrelEngine(ServiceContext context)
+            : base(context)
         {
-            _serviceContext = new ServiceContext
-            {
-                AppShutdown = appShutdownService,
-                Memory = new MemoryPool(),
-                Log = new KestrelTrace(logger)
-            };
-
             Threads = new List<KestrelThread>();
         }
 
@@ -88,7 +80,7 @@ namespace Microsoft.AspNet.Server.Kestrel
         {
             for (var index = 0; index != count; ++index)
             {
-                Threads.Add(new KestrelThread(this, _serviceContext));
+                Threads.Add(new KestrelThread(this));
             }
 
             foreach (var thread in Threads)
@@ -128,16 +120,16 @@ namespace Microsoft.AspNet.Server.Kestrel
                     if (single)
                     {
                         var listener = usingPipes ? 
-                            (Listener) new PipeListener(_serviceContext) : 
-                            new TcpListener(_serviceContext);
+                            (Listener) new PipeListener(this) : 
+                            new TcpListener(this);
                         listeners.Add(listener);
                         listener.StartAsync(scheme, host, port, thread, application).Wait();
                     }
                     else if (first)
                     {
                         var listener = usingPipes
-                            ? (ListenerPrimary) new PipeListenerPrimary(_serviceContext)
-                            : new TcpListenerPrimary(_serviceContext);
+                            ? (ListenerPrimary) new PipeListenerPrimary(this)
+                            : new TcpListenerPrimary(this);
 
                         listeners.Add(listener);
                         listener.StartAsync(pipeName, scheme, host, port, thread, application).Wait();
@@ -145,8 +137,8 @@ namespace Microsoft.AspNet.Server.Kestrel
                     else
                     {
                         var listener = usingPipes
-                            ? (ListenerSecondary) new PipeListenerSecondary(_serviceContext)
-                            : new TcpListenerSecondary(_serviceContext);
+                            ? (ListenerSecondary) new PipeListenerSecondary(this)
+                            : new TcpListenerSecondary(this);
                         listeners.Add(listener);
                         listener.StartAsync(pipeName, thread, application).Wait();
                     }

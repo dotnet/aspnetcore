@@ -9,6 +9,18 @@ namespace Microsoft.AspNet.Server.Kestrel
 {
     public class ServiceContext
     {
+        public ServiceContext()
+        {
+            Memory = new MemoryPool();
+        }
+
+        public ServiceContext(ServiceContext context)
+        {
+            AppShutdown = context.AppShutdown;
+            Memory = context.Memory;
+            Log = context.Log;
+        }
+
         public IApplicationShutdown AppShutdown { get; set; }
 
         public IMemoryPool Memory { get; set; }

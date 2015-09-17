@@ -33,11 +33,11 @@ namespace Microsoft.AspNet.Server.Kestrel
         private ExceptionDispatchInfo _closeError;
         private IKestrelTrace _log;
 
-        public KestrelThread(KestrelEngine engine, ServiceContext serviceContext)
+        public KestrelThread(KestrelEngine engine)
         {
             _engine = engine;
-            _appShutdown = serviceContext.AppShutdown;
-            _log = serviceContext.Log;
+            _appShutdown = engine.AppShutdown;
+            _log = engine.Log;
             _loop = new UvLoopHandle(_log);
             _post = new UvAsyncHandle(_log);
             _thread = new Thread(ThreadStart);
