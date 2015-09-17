@@ -6,7 +6,6 @@ using IdentitySamples;
 using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Mvc.ActionResults;
 using Microsoft.AspNet.Mvc.Rendering;
 
 namespace IdentitySample.Controllers
