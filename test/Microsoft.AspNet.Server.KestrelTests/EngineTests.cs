@@ -12,6 +12,7 @@ using Microsoft.AspNet.Server.Kestrel.Http;
 using Microsoft.Dnx.Runtime;
 using Microsoft.Dnx.Runtime.Infrastructure;
 using Xunit;
+using System.Linq;
 
 namespace Microsoft.AspNet.Server.KestrelTests
 {
@@ -23,7 +24,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
         private async Task App(Frame frame)
         {
             frame.ResponseHeaders.Clear();
-            for (; ;)
+            while (true)
             {
                 var buffer = new byte[8192];
                 var count = await frame.RequestBody.ReadAsync(buffer, 0, buffer.Length);
@@ -60,17 +61,17 @@ namespace Microsoft.AspNet.Server.KestrelTests
 
         private async Task AppChunked(Frame frame)
         {
+            foreach (var h in frame.RequestHeaders)
+            {
+                Console.WriteLine($"{h.Key}: {h.Value}");
+            }
+            Console.WriteLine($"");
+
             frame.ResponseHeaders.Clear();
             var data = new MemoryStream();
-            for (; ;)
+            while(true)
             {
-                var buffer = new byte[8192];
-                var count = await frame.RequestBody.ReadAsync(buffer, 0, buffer.Length);
-                if (count == 0)
-                {
-                    break;
-                }
-                data.Write(buffer, 0, count);
+                await frame.RequestBody.CopyToAsync(data);
             }
             var bytes = data.ToArray();
             frame.ResponseHeaders["Content-Length"] = new[] { bytes.Length.ToString() };
@@ -115,7 +116,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
             socket.Send(Encoding.ASCII.GetBytes("POST / HTTP/1.0\r\n\r\nHello World"));
             socket.Shutdown(SocketShutdown.Send);
             var buffer = new byte[8192];
-            for (; ;)
+            for (;;)
             {
                 var length = socket.Receive(buffer);
                 if (length == 0) { break; }

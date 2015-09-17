@@ -135,246 +135,284 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
             public bool IsDefault => _block == null;
 
+            public bool IsEnd
+            {
+                get
+                {
+                    if (_block == null)
+                    {
+                        return true;
+                    }
+                    else if (_index < _block.End)
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                        for (var block = _block.Next; block != null; block = block.Next)
+                        {
+                            if (block.Start < block.End)
+                            {
+                                return true;
+                            }
+                        }
+                        return true;
+                    }
+                }
+            }
+
             public MemoryPoolBlock2 Block => _block;
 
             public int Index => _index;
 
-            public bool HasAtLeast(int count)
+            public int Take()
             {
-                var scan = _block;
-                var index = _index;
-                while (scan != null)
+                if (_block == null)
                 {
-                    if (count <= scan.End - index)
-                    {
-                        return true;
-                    }
-                    count -= scan.End - index;
-                    scan = scan.Next;
-                    index = scan?.Start ?? 0;
+                    return -1;
                 }
-                return false;
-            }
+                else if (_index < _block.End)
+                {
+                    return _block.Array[_index++];
+                }
 
-            public Iterator Add(int count)
-            {
                 var block = _block;
                 var index = _index;
-                while (block != null)
+                while (true)
                 {
-                    var tailCount = block.End - index;
-                    if (count < tailCount)
+                    if (index < block.End)
                     {
-                        return new Iterator(block, index + count);
+                        _block = block;
+                        _index = index + 1;
+                        return block.Array[index];
                     }
-                    count -= tailCount;
-                    block = block.Next;
-                    index = block?.Start ?? 0;
-                }
-                return new Iterator(block, index + count);
-            }
-
-            public Iterator CopyTo(byte[] array, int offset, int count, out int actual)
-            {
-                var block = _block;
-                var index = _index;
-                var remaining = count;
-                while (block != null && remaining != 0)
-                {
-                    var copyLength = Math.Min(remaining, block.End - index);
-                    Buffer.BlockCopy(block.Array, index, array, offset, copyLength);
-                    index += copyLength;
-                    offset += copyLength;
-                    remaining -= copyLength;
-                    if (index == block.End)
+                    else if (block.Next == null)
+                    {
+                        return -1;
+                    }
+                    else
                     {
                         block = block.Next;
-                        index = block?.Start ?? 0;
+                        index = block.Start;
                     }
                 }
-                actual = count - remaining;
-                return new Iterator(block, index);
-            }
-
-            public char MoveNext()
-            {
-                var block = _block;
-                var index = _index;
-                while (block != null && index == block.End)
-                {
-                    block = block.Next;
-                    index = block?.Start ?? 0;
-                }
-                if (block != null)
-                {
-                    ++index;
-                }
-                while (block != null && index == block.End)
-                {
-                    block = block.Next;
-                    index = block?.Start ?? 0;
-                }
-                _block = block;
-                _index = index;
-                return block != null ? (char)block.Array[index] : char.MinValue;
             }
 
             public int Peek()
             {
-                while (_block != null)
+                if (_block == null)
                 {
-                    if (_index < _block.End)
-                    {
-                        return _block.Data.Array[_index];
-                    }
-                    _block = _block.Next;
-                    _index = _block.Start;
+                    return -1;
                 }
-                return -1;
+                else if (_index < _block.End)
+                {
+                    return _block.Array[_index];
+                }
+                else if (_block.Next == null)
+                {
+                    return -1;
+                }
+
+                var block = _block.Next;
+                var index = block.Start;
+                while (true)
+                {
+                    if (index < block.End)
+                    {
+                        return block.Array[index];
+                    }
+                    else if (block.Next == null)
+                    {
+                        return -1;
+                    }
+                    else
+                    {
+                        block = block.Next;
+                        index = block.Start;
+                    }
+                }
             }
 
-            public Iterator IndexOf(char char0)
+            public int Seek(int char0)
             {
+                if (IsDefault)
+                {
+                    return -1;
+                }
+
                 var byte0 = (byte)char0;
                 var vectorStride = Vector<byte>.Count;
                 var ch0Vector = new Vector<byte>(byte0);
 
-                var scanBlock = _block;
-                var scanArray = scanBlock?.Array;
-                var scanIndex = _index;
-                while (scanBlock != null)
+                var block = _block;
+                var index = _index;
+                var array = block.Array;
+                while (true)
                 {
-                    var tailCount = scanBlock.End - scanIndex;
-                    if (tailCount == 0)
+                    while (block.End == index)
                     {
-                        scanBlock = scanBlock.Next;
-                        scanArray = scanBlock?.Array;
-                        scanIndex = scanBlock?.Start ?? 0;
-                        continue;
+                        if (block.Next == null)
+                        {
+                            _block = block;
+                            _index = index;
+                            return -1;
+                        }
+                        block = block.Next;
+                        index = block.Start;
+                        array = block.Array;
                     }
-                    if (tailCount >= vectorStride)
+                    while (block.End != index)
                     {
-                        var data = new Vector<byte>(scanBlock.Array, scanIndex);
-                        var ch0Equals = Vector.Equals(data, ch0Vector);
-                        var ch0Count = Vector.Dot(ch0Equals, _dotCount);
+                        var following = block.End - index;
+                        if (following >= vectorStride)
+                        {
+                            var data = new Vector<byte>(array, index);
+                            var ch0Equals = Vector.Equals(data, ch0Vector);
+                            var ch0Count = Vector.Dot(ch0Equals, _dotCount);
 
-                        if (ch0Count == 0)
-                        {
-                            scanIndex += vectorStride;
-                            continue;
+                            if (ch0Count == 0)
+                            {
+                                index += vectorStride;
+                                continue;
+                            }
+                            else if (ch0Count == 1)
+                            {
+                                _block = block;
+                                _index = index + Vector.Dot(ch0Equals, _dotIndex);
+                                return char0;
+                            }
+                            else
+                            {
+                                following = vectorStride;
+                            }
                         }
-                        else if (ch0Count == 1)
+                        for (; following != 0; following--, index++)
                         {
-                            return new Iterator(scanBlock, scanIndex + Vector.Dot(ch0Equals, _dotIndex));
-                        }
-                        else
-                        {
-                            tailCount = vectorStride;
-                        }
-                    }
-                    for (; tailCount != 0; tailCount--, scanIndex++)
-                    {
-                        var ch = scanBlock.Array[scanIndex];
-                        if (ch == byte0)
-                        {
-                            return new Iterator(scanBlock, scanIndex);
+                            if (block.Array[index] == byte0)
+                            {
+                                _block = block;
+                                _index = index;
+                                return char0;
+                            }
                         }
                     }
                 }
-                return new Iterator(null, 0);
             }
 
-            public Iterator IndexOfAny(char char0, char char1, out char chFound)
+            public int Seek(int char0, int char1)
             {
+                if (IsDefault)
+                {
+                    return -1;
+                }
+
                 var byte0 = (byte)char0;
                 var byte1 = (byte)char1;
                 var vectorStride = Vector<byte>.Count;
                 var ch0Vector = new Vector<byte>(byte0);
                 var ch1Vector = new Vector<byte>(byte1);
 
-                var scanBlock = _block;
-                var scanArray = scanBlock?.Array;
-                var scanIndex = _index;
-                while (scanBlock != null)
+                var block = _block;
+                var index = _index;
+                var array = block.Array;
+                while (true)
                 {
-                    var tailCount = scanBlock.End - scanIndex;
-                    if (tailCount == 0)
+                    while (block.End == index)
                     {
-                        scanBlock = scanBlock.Next;
-                        scanArray = scanBlock?.Array;
-                        scanIndex = scanBlock?.Start ?? 0;
-                        continue;
-                    }
-                    if (tailCount >= vectorStride)
-                    {
-                        var data = new Vector<byte>(scanBlock.Array, scanIndex);
-                        var ch0Equals = Vector.Equals(data, ch0Vector);
-                        var ch0Count = Vector.Dot(ch0Equals, _dotCount);
-                        var ch1Equals = Vector.Equals(data, ch1Vector);
-                        var ch1Count = Vector.Dot(ch1Equals, _dotCount);
-
-                        if (ch0Count == 0 && ch1Count == 0)
+                        if (block.Next == null)
                         {
-                            scanIndex += vectorStride;
-                            continue;
+                            _block = block;
+                            _index = index;
+                            return -1;
                         }
-                        else if (ch0Count < 2 && ch1Count < 2)
+                        block = block.Next;
+                        index = block.Start;
+                        array = block.Array;
+                    }
+                    while (block.End != index)
+                    {
+                        var following = block.End - index;
+                        if (following >= vectorStride)
                         {
-                            var ch0Index = ch0Count == 1 ? Vector.Dot(ch0Equals, _dotIndex) : byte.MaxValue;
-                            var ch1Index = ch1Count == 1 ? Vector.Dot(ch1Equals, _dotIndex) : byte.MaxValue;
-                            if (ch0Index < ch1Index)
+                            var data = new Vector<byte>(array, index);
+                            var ch0Equals = Vector.Equals(data, ch0Vector);
+                            var ch0Count = Vector.Dot(ch0Equals, _dotCount);
+                            var ch1Equals = Vector.Equals(data, ch1Vector);
+                            var ch1Count = Vector.Dot(ch1Equals, _dotCount);
+
+                            if (ch0Count == 0 && ch1Count == 0)
                             {
-                                chFound = char0;
-                                return new Iterator(scanBlock, scanIndex + ch0Index);
+                                index += vectorStride;
+                                continue;
+                            }
+                            else if (ch0Count < 2 && ch1Count < 2)
+                            {
+                                var ch0Index = ch0Count == 1 ? Vector.Dot(ch0Equals, _dotIndex) : byte.MaxValue;
+                                var ch1Index = ch1Count == 1 ? Vector.Dot(ch1Equals, _dotIndex) : byte.MaxValue;
+                                if (ch0Index < ch1Index)
+                                {
+                                    _block = block;
+                                    _index = index + ch0Index;
+                                    return char0;
+                                }
+                                else
+                                {
+                                    _block = block;
+                                    _index = index + ch1Index;
+                                    return char1;
+                                }
                             }
                             else
                             {
-                                chFound = char1;
-                                return new Iterator(scanBlock, scanIndex + ch1Index);
+                                following = vectorStride;
                             }
                         }
-                        else
+                        for (; following != 0; following--, index++)
                         {
-                            tailCount = vectorStride;
-                        }
-                    }
-                    for (; tailCount != 0; tailCount--, scanIndex++)
-                    {
-                        var chIndex = scanBlock.Array[scanIndex];
-                        if (chIndex == byte0)
-                        {
-                            chFound = char0;
-                            return new Iterator(scanBlock, scanIndex);
-                        }
-                        else if (chIndex == byte1)
-                        {
-                            chFound = char1;
-                            return new Iterator(scanBlock, scanIndex);
+                            var byteIndex = block.Array[index];
+                            if (byteIndex == byte0)
+                            {
+                                _block = block;
+                                _index = index;
+                                return char0;
+                            }
+                            else if (byteIndex == byte1)
+                            {
+                                _block = block;
+                                _index = index;
+                                return char1;
+                            }
                         }
                     }
                 }
-                chFound = char.MinValue;
-                return new Iterator(null, 0);
             }
 
             public int GetLength(Iterator end)
             {
-                var length = 0;
+                if (IsDefault || end.IsDefault)
+                {
+                    return -1;
+                }
+
                 var block = _block;
                 var index = _index;
-                for (;;)
+                var length = 0;
+                while (true)
                 {
                     if (block == end._block)
                     {
                         return length + end._index - index;
                     }
-                    if (block == null)
+                    else if (block.Next == null)
                     {
-                        throw new Exception("end was not after iterator");
+                        throw new Exception("end did not follow iterator");
                     }
-                    length += block.End - index;
-                    block = block.Next;
-                    index = block?.Start ?? 0;
+                    else
+                    {
+                        length += block.End - index;
+                        block = block.Next;
+                        index = block.Start;
+                    }
                 }
             }
 
@@ -386,53 +424,74 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 }
                 if (end._block == _block)
                 {
-                    return Encoding.ASCII.GetString(_block.Array, _index, end._index - _index);
-                }
-                if (end._block == _block.Next && end._index == end._block.Start)
-                {
-                    return Encoding.ASCII.GetString(_block.Array, _index, _block.End - _index);
+                    return Encoding.UTF8.GetString(_block.Array, _index, end._index - _index);
                 }
 
-                var length = GetLength(end);
-                var result = new char[length];
-                var offset = 0;
                 var decoder = Encoding.ASCII.GetDecoder();
+
+                var length = GetLength(end);
+                var charLength = length * 2;
+                var chars = new char[charLength];
+                var charIndex = 0;
 
                 var block = _block;
                 var index = _index;
-                while (length != 0)
+                var remaining = length;
+                while (true)
                 {
-                    if (block == null)
-                    {
-                        throw new Exception("Unexpected end of data");
-                    }
-
-                    var count = Math.Min(block.End - index, length);
-
                     int bytesUsed;
-                    int textAdded;
+                    int charsUsed;
                     bool completed;
-                    decoder.Convert(
-                        block.Array,
-                        index,
-                        count,
-                        result,
-                        offset,
-                        length,
-                        count == length,
-                        out bytesUsed,
-                        out textAdded,
-                        out completed);
-
-                    Debug.Assert(bytesUsed == count);
-                    Debug.Assert(textAdded == count);
-                    offset += count;
-                    length -= count;
-
-                    block = block.Next;
-                    index = block?.Start ?? 0;
+                    var following = block.End - index;
+                    if (remaining <= following)
+                    {
+                        decoder.Convert(
+                            block.Array,
+                            index,
+                            remaining,
+                            chars,
+                            charIndex,
+                            charLength - charIndex,
+                            true,
+                            out bytesUsed,
+                            out charsUsed,
+                            out completed);
+                        return new string(chars, 0, charIndex + charsUsed);
+                    }
+                    else if (block.Next == null)
+                    {
+                        decoder.Convert(
+                            block.Array,
+                            index,
+                            following,
+                            chars,
+                            charIndex,
+                            charLength - charIndex,
+                            true,
+                            out bytesUsed,
+                            out charsUsed,
+                            out completed);
+                        return new string(chars, 0, charIndex + charsUsed);
+                    }
+                    else
+                    {
+                        decoder.Convert(
+                            block.Array,
+                            index,
+                            following,
+                            chars,
+                            charIndex,
+                            charLength - charIndex,
+                            false,
+                            out bytesUsed,
+                            out charsUsed,
+                            out completed);
+                        charIndex += charsUsed;
+                        remaining -= following;
+                        block = block.Next;
+                        index = block.Start;
+                    }
                 }
-                return new string(result);
             }
 
             public ArraySegment<byte> GetArraySegment(Iterator end)
@@ -445,34 +504,47 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 {
                     return new ArraySegment<byte>(_block.Array, _index, end._index - _index);
                 }
-                if (end._block == _block.Next && end._index == end._block.Start)
-                {
-                    return new ArraySegment<byte>(_block.Array, _index, _block.End - _index);
-                }
 
                 var length = GetLength(end);
-                var result = new ArraySegment<byte>(new byte[length]);
-                var offset = result.Offset;
+                var array = new byte[length];
+                CopyTo(array, 0, length, out length);
+                return new ArraySegment<byte>(array, 0, length);
+            }
+
+            public Iterator CopyTo(byte[] array, int offset, int count, out int actual)
+            {
+                if (IsDefault)
+                {
+                    actual = 0;
+                    return this;
+                }
 
                 var block = _block;
                 var index = _index;
-                while (length != 0)
+                var remaining = count;
+                while (true)
                 {
-                    if (block == null)
+                    var following = block.End - index;
+                    if (remaining <= following)
                     {
-                        throw new Exception("Unexpected end of data");
+                        actual = count;
+                        Buffer.BlockCopy(block.Array, index, array, offset, remaining);
+                        return new Iterator(block, index + remaining);
                     }
-
-                    var count = Math.Min(block.End - index, length);
-                    Buffer.BlockCopy(block.Array, index, result.Array, offset, count);
-                    offset += count;
-                    length -= count;
-
-                    block = block.Next;
-                    index = block?.Start ?? 0;
+                    else if (block.Next == null)
+                    {
+                        actual = count - remaining + following;
+                        Buffer.BlockCopy(block.Array, index, array, offset, following);
+                        return new Iterator(block, index + following);
+                    }
+                    else
+                    {
+                        Buffer.BlockCopy(block.Array, index, array, offset, following);
+                        remaining -= following;
+                        block = block.Next;
+                        index = block.Start;
+                    }
                 }
-
-                return result;
             }
         }
     }

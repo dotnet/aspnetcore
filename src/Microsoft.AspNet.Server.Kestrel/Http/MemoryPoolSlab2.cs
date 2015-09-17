@@ -11,6 +11,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         public byte[] Array;
         public IntPtr ArrayPtr;
         public bool IsActive;
+        private bool disposedValue = false; // To detect redundant calls
 
         public static MemoryPoolSlab2 Create(int length)
         {
@@ -26,7 +27,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         }
 
         #region IDisposable Support
-        private bool disposedValue = false; // To detect redundant calls
 
         protected virtual void Dispose(bool disposing)
         {

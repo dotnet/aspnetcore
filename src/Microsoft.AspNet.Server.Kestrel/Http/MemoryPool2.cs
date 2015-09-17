@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNet.Server.Kestrel.Http
 {
@@ -15,6 +13,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         private ConcurrentStack<MemoryPoolBlock2> _blocks = new ConcurrentStack<MemoryPoolBlock2>();
         private ConcurrentStack<MemoryPoolSlab2> _slabs = new ConcurrentStack<MemoryPoolSlab2>();
+        private bool disposedValue = false; // To detect redundant calls
 
         public MemoryPoolBlock2 Lease(int minimumSize)
         {
@@ -27,7 +26,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     slab: null);
             }
 
-            for (;;)
+            while (true)
             {
                 MemoryPoolBlock2 block;
                 if (_blocks.TryPop(out block))
@@ -66,7 +65,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         }
 
         #region IDisposable Support
-        private bool disposedValue = false; // To detect redundant calls
 
         protected virtual void Dispose(bool disposing)
         {

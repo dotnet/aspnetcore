@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
     public class MemoryPoolBlock2Tests
     {
         [Fact]
-        public void IndexOfAnyWorks()
+        public void SeekWorks()
         {
             using (var pool = new MemoryPool2())
             {
@@ -22,7 +22,16 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 var iterator = block.GetIterator();
                 foreach (var ch in Enumerable.Range(0, 256).Select(x => (char)x))
                 {
-                    var hit = iterator.IndexOf(ch);
+                    var hit = iterator;
+                    hit.Seek(ch);
+                    Assert.Equal(ch, iterator.GetLength(hit));
+
+                    hit = iterator;
+                    hit.Seek(ch, byte.MaxValue);
+                    Assert.Equal(ch, iterator.GetLength(hit));
+
+                    hit = iterator;
+                    hit.Seek(byte.MaxValue, ch);
                     Assert.Equal(ch, iterator.GetLength(hit));
                 }
             }
@@ -71,6 +80,50 @@ namespace Microsoft.AspNet.Server.KestrelTests
                     Assert.Equal(lastIndex - firstIndex, first.GetLength(last));
                 }
             }
+        }
+
+        [Fact]
+        public void AddDoesNotAdvanceAtEndOfCurrentBlock()
+        {
+            using (var pool = new MemoryPool2())
+            {
+                var block1 = pool.Lease(256);
+                var block2 = block1.Next = pool.Lease(256);
+
+                block1.End += 100;
+                block2.End += 200;
+
+                var iter0 = block1.GetIterator();
+                var iter100 = iter0.Add(100);
+
+                var iter200a = iter0.Add(200);
+                var iter200b = iter100.Add(100);
+
+                var iter300a = iter0.Add(300);
+                var iter300b = iter100.Add(200);
+                var iter300c = iter200a.Add(100);
+
+                var iter300a2 = iter300a.Add(1);
+                var iter300b2 = iter300b.Add(1);
+                var iter300c2 = iter300c.Add(1);
+
+                AssertIterator(iter0, block1, block1.Start);
+                AssertIterator(iter100, block1, block1.End);
+                AssertIterator(iter200a, block2, block2.Start+100);
+                AssertIterator(iter200b, block2, block2.Start + 100);
+                AssertIterator(iter300a, block2, block2.End);
+                AssertIterator(iter300b, block2, block2.End);
+                AssertIterator(iter300c, block2, block2.End);
+                AssertIterator(iter300a2, block2, block2.End);
+                AssertIterator(iter300b2, block2, block2.End);
+                AssertIterator(iter300c2, block2, block2.End);
+            }
+        }
+
+        private void AssertIterator(MemoryPoolBlock2.Iterator iter, MemoryPoolBlock2 block, int index)
+        {
+            Assert.Same(block, iter.Block);
+            Assert.Equal(index, iter.Index);
         }
     }
 }

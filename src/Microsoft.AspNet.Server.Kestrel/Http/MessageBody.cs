@@ -86,14 +86,24 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             public override async Task<int> ReadAsyncImplementation(ArraySegment<byte> buffer, CancellationToken cancellationToken)
             {
                 var input = _context.SocketInput;
+                while (true)
+                {
+                    await input;
 
-                await input;
+                    var begin = input.GetIterator();
+                    int actual;
+                    var end = begin.CopyTo(buffer.Array, buffer.Offset, buffer.Count, out actual);
+                    input.JumpTo(end);
 
-                var begin = input.GetIterator();
-                int actual;
-                var end = begin.CopyTo(buffer.Array, buffer.Offset, buffer.Count, out actual);
-                input.JumpTo(end);
-                return actual;
+                    if (actual != 0)
+                    {
+                        return actual;
+                    }
+                    if (input.RemoteIntakeFin)
+                    {
+                        return 0;
+                    }
+                }
             }
         }
 
@@ -109,23 +119,35 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 _contentLength = contentLength;
                 _inputLength = _contentLength;
             }
-            
+
             public override async Task<int> ReadAsyncImplementation(ArraySegment<byte> buffer, CancellationToken cancellationToken)
             {
                 var input = _context.SocketInput;
 
-                var limit = Math.Min(buffer.Count, _inputLength);
-                if (limit != 0)
+                while (true)
                 {
-                    await input;
-                }
+                    var limit = Math.Min(buffer.Count, _inputLength);
+                    if (limit == 0)
+                    {
+                        return 0;
+                    }
 
-                var begin = input.GetIterator();
-                int actual;
-                var end = begin.CopyTo(buffer.Array, buffer.Offset, limit, out actual);
-                _inputLength -= actual;
-                input.JumpTo(end);
-                return actual;
+                    await input;
+
+                    var begin = input.GetIterator();
+                    int actual;
+                    var end = begin.CopyTo(buffer.Array, buffer.Offset, limit, out actual);
+                    _inputLength -= actual;
+                    input.JumpTo(end);
+                    if (actual != 0)
+                    {
+                        return actual;
+                    }
+                    if (input.RemoteIntakeFin)
+                    {
+                        throw new Exception("Unexpected end of request content");
+                    }
+                }
             }
         }
 
@@ -186,21 +208,23 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         {
                             _mode = Mode.ChunkSuffix;
                         }
-
-                        return actual;
+                        if (actual != 0)
+                        {
+                            return actual;
+                        }
                     }
                     while (_mode == Mode.ChunkSuffix)
                     {
-                        var begin = input.GetIterator();
-                        var ch1 = begin.Peek();
-                        var ch2 = begin.MoveNext();
-                        if (ch1 == char.MinValue || ch2 == char.MinValue)
+                        var scan = input.GetIterator();
+                        var ch1 = scan.Take();
+                        var ch2 = scan.Take();
+                        if (ch1 == -1 || ch2 == -1)
                         {
                             await input;
                         }
                         else if (ch1 == '\r' && ch2 == '\n')
                         {
-                            input.JumpTo(begin.Add(1));
+                            input.JumpTo(scan);
                             _mode = Mode.ChunkPrefix;
                         }
                         else
@@ -215,13 +239,17 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
             private static bool TakeChunkedLine(SocketInput baton, ref int chunkSizeOut)
             {
-                var remaining = baton.GetIterator();
-                var ch0 = remaining.Peek();
+                var scan = baton.GetIterator();
+                var ch0 = scan.Take();
                 var chunkSize = 0;
                 var mode = 0;
-                while(ch0 != -1)
+                while (ch0 != -1)
                 {
-                    var ch1 = remaining.MoveNext();
+                    var ch1 = scan.Take();
+                    if (ch1 == -1)
+                    {
+                        return false;
+                    }
 
                     if (mode == 0)
                     {
@@ -263,7 +291,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         }
                         else if (ch0 == '\r' && ch1 == '\n')
                         {
-                            baton.JumpTo(remaining.Add(1));
+                            baton.JumpTo(scan);
                             chunkSizeOut = chunkSize;
                             return true;
                         }
@@ -276,7 +304,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     {
                         if (ch0 == '\r' && ch1 == '\n')
                         {
-                            baton.JumpTo(remaining.Add(1));
+                            baton.JumpTo(scan);
                             chunkSizeOut = chunkSize;
                             return true;
                         }

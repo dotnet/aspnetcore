@@ -206,18 +206,15 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             lock (_syncHeadAndTail)
             {
                 // TODO: leave _pinned intact
+                // TODO: return when empty
 
                 returnStart = _head;
                 returnEnd = iterator.Block;
                 _head = iterator.Block;
-                if (_head == null)
+                _head.Start = iterator.Index;
+                if (iterator.IsEnd)
                 {
-                    _tail = null;
                     SetNotCompleted();
-                }
-                else
-                {
-                    _head.Start = iterator.Index;
                 }
             }
             while (returnStart != returnEnd)

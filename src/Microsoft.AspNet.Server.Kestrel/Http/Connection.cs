@@ -82,15 +82,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {
                 SocketInput.RemoteIntakeFin = true;
                 _socket.ReadStop();
-
-                if (errorDone && error != null)
-                {
-                    Log.LogError("Connection.OnRead", error);
-                }
-                else
-                {
-                    Log.ConnectionReadFin(_connectionId);
-                }
+                Log.ConnectionReadFin(_connectionId);
             }
 
             SocketInput.SetCompleted(errorDone ? error : null);
@@ -122,19 +114,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         _connectionState = ConnectionState.Shutdown;
 
                         Log.ConnectionWriteFin(_connectionId);
-                        Thread.Post(
-                            _this =>
-                            {
-                                var shutdown = new UvShutdownReq(_this.Log);
-                                shutdown.Init(_this.Thread.Loop);
-                                shutdown.Shutdown(_this._socket, (req, status, state2) =>
-                                {
-                                    var __this = (Connection)state2;
-                                    __this.Log.ConnectionWroteFin(__this._connectionId, status);
-                                    req.Dispose();
-                                }, _this);
-                            },
-                            this);
+                        SocketOutput.End(endType);
                         break;
                     case ProduceEndType.ConnectionKeepAlive:
                         if (_connectionState != ConnectionState.Open)
@@ -152,13 +132,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         _connectionState = ConnectionState.Disconnected;
 
                         Log.ConnectionDisconnect(_connectionId);
-                        Thread.Post(
-                            _this =>
-                            {
-                                Log.ConnectionStop(_this._connectionId);
-                                _this._socket.Dispose();
-                            },
-                            this);
+                        SocketOutput.End(endType);
                         break;
                 }
             }

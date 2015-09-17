@@ -113,22 +113,14 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     {
                         await SocketInput;
                     }
-                    else
-                    {
-                        var x = 5;
-                    }
                 }
 
-                while (!terminated && !TakeMessageHeader2(SocketInput))
+                while (!terminated && !TakeMessageHeaders(SocketInput))
                 {
                     terminated = SocketInput.RemoteIntakeFin;
                     if (!terminated)
                     {
                         await SocketInput;
-                    }
-                    else
-                    {
-                        var x = 5;
                     }
                 }
 
@@ -171,6 +163,10 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
             // Connection Terminated!
             ConnectionControl.End(ProduceEndType.SocketShutdownSend);
+
+            // Wait for client to disconnect, or to receive unexpected data
+            await SocketInput;
+
             ConnectionControl.End(ProduceEndType.SocketDisconnect);
         }
 
@@ -407,13 +403,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 WriteChunkedResponseSuffix();
             }
 
-            if (!_keepAlive)
-            {
-                ConnectionControl.End(ProduceEndType.SocketShutdownSend);
-            }
-
-            //NOTE: must finish reading request body
-            ConnectionControl.End(_keepAlive ? ProduceEndType.ConnectionKeepAlive : ProduceEndType.SocketDisconnect);
+            ConnectionControl.End(_keepAlive ? ProduceEndType.ConnectionKeepAlive : ProduceEndType.SocketShutdownSend);
         }
 
         private Tuple<ArraySegment<byte>, IDisposable> CreateResponseHeader(
@@ -515,36 +505,51 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         private bool TakeStartLine(SocketInput input)
         {
-            var begin = input.GetIterator();
-            if (begin.IsDefault) return false;
+            var scan = input.GetIterator();
 
-            var end = begin.IndexOf(' ');
-            var method = begin.GetString(end);
-
-            char chFound;
-            begin = end.Add(1);
-            end = begin.IndexOfAny(' ', '?', out chFound);
-            var requestUri = begin.GetString(end);
-
-            begin = end;
-            end = chFound == '?' ? begin.IndexOf(' ') : begin;
-            var queryString = begin.GetString(end);
-
-            begin = end.Add(1);
-            end = begin.IndexOf('\r');
-            var httpVersion = begin.GetString(end);
-
-            end = end.Add(1);
-            if (end.Peek() != '\n')
+            var begin = scan;
+            if (scan.Seek(' ') == -1)
             {
                 return false;
             }
+            var method = begin.GetString(scan);
+
+            scan.Take();
+            begin = scan;
+            var chFound = scan.Seek(' ', '?');
+            if (chFound == -1)
+            {
+                return false;
+            }
+            var requestUri = begin.GetString(scan);
+
+            var queryString = "";
+            if (chFound == '?')
+            {
+                begin = scan;
+                if (scan.Seek(' ') != ' ')
+                {
+                    return false;
+                }
+                queryString = begin.GetString(scan);
+            }
+
+            scan.Take();
+            begin = scan;
+            if (scan.Seek('\r') == -1)
+            {
+                return false;
+            }
+            var httpVersion = begin.GetString(scan);
+
+            scan.Take();
+            if (scan.Take() != '\n') return false;
 
             Method = method;
             RequestUri = requestUri;
             QueryString = queryString;
             HttpVersion = httpVersion;
-            input.JumpTo(end.Add(1));
+            input.JumpTo(scan);
             return true;
         }
 
@@ -553,150 +558,98 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             return Encoding.UTF8.GetString(range.Array, range.Offset + startIndex, endIndex - startIndex);
         }
 
-        private bool TakeMessageHeader2(SocketInput baton)
+        private bool TakeMessageHeaders(SocketInput input)
         {
-            char chFirst;
-            char chSecond;
-            var scan = baton.GetIterator();
-            while (!scan.IsDefault)
+            int chFirst;
+            int chSecond;
+            var scan = input.GetIterator();
+            var consumed = scan;
+            try
             {
-                var beginName = scan;
-                scan = scan.IndexOfAny(':', '\r', out chFirst);
-
-                var endName = scan;
-                chSecond = scan.MoveNext();
-
-                if (chFirst == '\r' && chSecond == '\n')
+                while (!scan.IsEnd)
                 {
-                    baton.JumpTo(scan.Add(1));
-                    return true;
-                }
-                if (chFirst == char.MinValue)
-                {
-                    return false;
-                }
+                    var beginName = scan;
+                    scan.Seek(':', '\r');
+                    var endName = scan;
 
-                while (
-                    chSecond == ' ' ||
-                    chSecond == '\t' ||
-                    chSecond == '\r' ||
-                    chSecond == '\n')
-                {
-                    chSecond = scan.MoveNext();
-                }
+                    chFirst = scan.Take();
+                    var beginValue = scan;
+                    chSecond = scan.Take();
 
-                var beginValue = scan;
-                var wrapping = false;
-                while (!scan.IsDefault)
-                {
-                    var endValue = scan = scan.IndexOf('\r');
-                    chFirst = scan.MoveNext();
-                    if (chFirst != '\n')
+                    if (chFirst == -1 || chSecond == -1)
                     {
-                        continue;
+                        return false;
                     }
-                    chSecond = scan.MoveNext();
-                    if (chSecond == ' ' || chSecond == '\t')
+                    if (chFirst == '\r')
                     {
-                        wrapping = true;
-                        continue;
-                    }
-                    var name = beginName.GetArraySegment(endName);
-                    var value = beginValue.GetString(endValue);
-                    if (wrapping)
-                    {
-                        value = value.Replace("\r\n", " ");
+                        if (chSecond == '\n')
+                        {
+                            consumed = scan;
+                            return true;
+                        }
+                        throw new Exception("Malformed request");
                     }
 
-                    _requestHeaders.Append(name.Array, name.Offset, name.Count, value);
-                    break;
+                    while (
+                        chSecond == ' ' ||
+                        chSecond == '\t' ||
+                        chSecond == '\r' ||
+                        chSecond == '\n')
+                    {
+                        beginValue = scan;
+                        chSecond = scan.Take();
+                    }
+                    scan = beginValue;
+
+                    var wrapping = false;
+                    while (!scan.IsEnd)
+                    {
+                        if (scan.Seek('\r') == -1)
+                        {
+                            // no "\r" in sight, burn used bytes and go back to await more data
+                            return false;
+                        }
+
+                        var endValue = scan;
+                        chFirst = scan.Take(); // expecting: /r
+                        chSecond = scan.Take(); // expecting: /n
+
+                        if (chSecond == '\r')
+                        {
+                            // special case, "\r\r". move to the 2nd "\r" and try again
+                            scan = endValue;
+                            scan.Take();
+                            continue;
+                        }
+
+                        var chThird = scan.Peek();
+                        if (chThird == ' ' || chThird == '\t')
+                        {
+                            // special case, "\r\n " or "\r\n\t". 
+                            // this is considered wrapping"linear whitespace" and is actually part of the header value
+                            // continue past this for the next
+                            wrapping = true;
+                            continue;
+                        }
+
+                        var name = beginName.GetArraySegment(endName);
+                        var value = beginValue.GetString(endValue);
+                        if (wrapping)
+                        {
+                            value = value.Replace("\r\n", " ");
+                        }
+
+                        _requestHeaders.Append(name.Array, name.Offset, name.Count, value);
+                        consumed = scan;
+                        break;
+                    }
                 }
-            }
-
-            return false;
-        }
-
-        private bool TakeMessageHeader(SocketInput baton, out bool endOfHeaders)
-        {
-            var remaining = baton.Buffer;
-            endOfHeaders = false;
-            if (remaining.Count < 2)
-            {
                 return false;
             }
-            var ch0 = remaining.Array[remaining.Offset];
-            var ch1 = remaining.Array[remaining.Offset + 1];
-            if (ch0 == '\r' && ch1 == '\n')
+            finally
             {
-                endOfHeaders = true;
-                baton.Skip(2);
-                return true;
+                input.JumpTo(consumed);
             }
-
-            if (remaining.Count < 3)
-            {
-                return false;
-            }
-            var wrappedHeaders = false;
-            var colonIndex = -1;
-            var valueStartIndex = -1;
-            var valueEndIndex = -1;
-            for (var index = 0; index != remaining.Count - 2; ++index)
-            {
-                var ch2 = remaining.Array[remaining.Offset + index + 2];
-                if (ch0 == '\r' &&
-                    ch1 == '\n' &&
-                        ch2 != ' ' &&
-                            ch2 != '\t')
-                {
-                    var value = "";
-                    if (valueEndIndex != -1)
-                    {
-                        value = _ascii.GetString(
-                            remaining.Array, remaining.Offset + valueStartIndex, valueEndIndex - valueStartIndex);
-                    }
-                    if (wrappedHeaders)
-                    {
-                        value = value.Replace("\r\n", " ");
-                    }
-                    AddRequestHeader(remaining.Array, remaining.Offset, colonIndex, value);
-                    baton.Skip(index + 2);
-                    return true;
-                }
-                if (colonIndex == -1 && ch0 == ':')
-                {
-                    colonIndex = index;
-                }
-                else if (colonIndex != -1 &&
-                    ch0 != ' ' &&
-                        ch0 != '\t' &&
-                            ch0 != '\r' &&
-                                ch0 != '\n')
-                {
-                    if (valueStartIndex == -1)
-                    {
-                        valueStartIndex = index;
-                    }
-                    valueEndIndex = index + 1;
-                }
-                else if (!wrappedHeaders &&
-                    ch0 == '\r' &&
-                        ch1 == '\n' &&
-                            (ch2 == ' ' ||
-                                ch2 == '\t'))
-                {
-                    wrappedHeaders = true;
-                }
-
-                ch0 = ch1;
-                ch1 = ch2;
-            }
-            return false;
-        }
-
-        private void AddRequestHeader(byte[] keyBytes, int keyOffset, int keyLength, string value)
-        {
-            _requestHeaders.Append(keyBytes, keyOffset, keyLength, value);
         }
 
         public bool StatusCanHaveBody(int statusCode)
