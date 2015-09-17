@@ -5,7 +5,6 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Authorization;
-using Microsoft.AspNet.Mvc.ActionResults;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
 

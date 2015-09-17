@@ -5,7 +5,6 @@ using System;
 using System.Text;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Mvc.ActionResults;
 
 namespace ActionResultsWebSite
 {

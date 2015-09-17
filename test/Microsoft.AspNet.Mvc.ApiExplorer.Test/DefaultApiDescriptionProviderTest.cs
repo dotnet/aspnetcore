@@ -8,7 +8,6 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ActionConstraints;
-using Microsoft.AspNet.Mvc.ActionResults;
 using Microsoft.AspNet.Mvc.Actions;
 using Microsoft.AspNet.Mvc.ApiExplorer;
 using Microsoft.AspNet.Mvc.Filters;

@@ -3,7 +3,6 @@
 
 using System.Collections.Generic;
 using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Mvc.ActionResults;
 
 namespace ActionResultsWebSite
 {

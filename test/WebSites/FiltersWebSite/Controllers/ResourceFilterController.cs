@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Mvc.ActionResults;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.Formatters;
 

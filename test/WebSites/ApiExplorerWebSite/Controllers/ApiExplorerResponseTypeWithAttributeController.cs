@@ -3,7 +3,6 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Mvc.ActionResults;
 
 namespace ApiExplorerWebSite
 {

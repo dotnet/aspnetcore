@@ -7,7 +7,6 @@ using System.IO;
 using System.Text;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
-using Microsoft.AspNet.Mvc.ActionResults;
 using Microsoft.AspNet.Mvc.Actions;
 using Microsoft.AspNet.Routing;
 using Moq;

@@ -12,7 +12,6 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Mvc.ActionResults;
 
 namespace WebApiCompatShimWebSite
 {

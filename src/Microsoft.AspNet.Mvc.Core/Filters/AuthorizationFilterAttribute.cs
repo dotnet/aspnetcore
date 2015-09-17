@@ -4,7 +4,6 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.ActionResults;
 using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.Framework.Internal;
 

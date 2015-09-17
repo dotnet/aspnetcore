@@ -7,7 +7,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Internal;
-using Microsoft.AspNet.Mvc.ActionResults;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 

@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.ActionResults;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.Formatters;

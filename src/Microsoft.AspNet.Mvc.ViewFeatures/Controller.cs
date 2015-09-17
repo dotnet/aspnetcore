@@ -8,7 +8,6 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Mvc.ActionResults;
 using Microsoft.AspNet.Mvc.Actions;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.ModelBinding;

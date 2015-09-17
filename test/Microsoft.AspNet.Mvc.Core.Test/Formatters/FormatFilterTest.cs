@@ -1,22 +1,18 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.Mvc.Actions;
+using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Routing;
-using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.OptionsModel;
 using Microsoft.Net.Http.Headers;
-using Xunit;
-using Microsoft.AspNet.Mvc.Filters;
-using Microsoft.AspNet.Mvc.Actions;
-using Microsoft.AspNet.Mvc.ActionResults;
-
 #if DNX451
 using Moq;
-using System.Net;
 #endif
+using Xunit;
+
+
 
 namespace Microsoft.AspNet.Mvc.Formatters
 {

@@ -8,8 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
-using Microsoft.AspNet.Mvc.ActionResults;
-using Microsoft.AspNet.Mvc.Actions;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
 using Moq;

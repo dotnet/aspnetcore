@@ -3,7 +3,6 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Mvc.ActionResults;
 using Microsoft.AspNet.Mvc.Actions;
 
 namespace FiltersWebSite
