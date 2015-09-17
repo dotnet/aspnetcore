@@ -2,6 +2,7 @@
 using Microsoft.AspNet.Routing;
 using Newtonsoft.Json;
 using Microsoft.AspNet.Html.Abstractions;
+using Microsoft.AspNet.Mvc.ViewFeatures;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {

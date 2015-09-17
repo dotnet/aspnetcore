@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Linq.Expressions;
-using Microsoft.AspNet.Mvc.Rendering.Expressions;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Html.Abstractions;
+using Microsoft.AspNet.Mvc.ViewFeatures;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {

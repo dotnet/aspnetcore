@@ -10,7 +10,6 @@ using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Mvc.ActionResults;
 using Microsoft.Data.Entity;
 using Microsoft.Framework.DependencyInjection;
 using MusicStore.Models;
