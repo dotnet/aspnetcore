@@ -134,18 +134,6 @@ namespace Microsoft.Framework.DependencyInjection
         {
             services.AddOptions();
             services.AddRouting();
-
-            // Registered as a Source for us, and as a Listener for consumers.
-            if (!services.Any(s => s.ServiceType == typeof(TelemetrySource)))
-            {
-                var source = new TelemetryListener("Microsoft.AspNet");
-                services.AddInstance<TelemetrySource>(source);
-
-                if (!services.Any(s => s.ServiceType == typeof(TelemetryListener)))
-                {
-                    services.AddInstance<TelemetryListener>(source);
-                }
-            }
         }
     }
 }
