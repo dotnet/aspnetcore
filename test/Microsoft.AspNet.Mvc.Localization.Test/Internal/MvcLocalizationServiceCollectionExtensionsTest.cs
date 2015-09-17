@@ -30,34 +30,52 @@ namespace Microsoft.AspNet.Mvc.Localization.Internal
                 LanguageViewLocationExpanderFormat.Suffix);
 
             // Assert
-            var services = collection.ToList();
-            Assert.Equal(7, services.Count);
-
-            Assert.Equal(typeof(IConfigureOptions<RazorViewEngineOptions>), services[0].ServiceType);
-            Assert.Equal(ServiceLifetime.Singleton, services[0].Lifetime);
-
-            Assert.Equal(typeof(IHtmlLocalizerFactory), services[1].ServiceType);
-            Assert.Equal(typeof(HtmlLocalizerFactory), services[1].ImplementationType);
-            Assert.Equal(ServiceLifetime.Singleton, services[1].Lifetime);
-
-            Assert.Equal(typeof(IHtmlLocalizer<>), services[2].ServiceType);
-            Assert.Equal(typeof(HtmlLocalizer<>), services[2].ImplementationType);
-            Assert.Equal(ServiceLifetime.Transient, services[2].Lifetime);
-
-            Assert.Equal(typeof(IViewLocalizer), services[3].ServiceType);
-            Assert.Equal(typeof(ViewLocalizer), services[3].ImplementationType);
-            Assert.Equal(ServiceLifetime.Transient, services[3].Lifetime);
-
-            Assert.Equal(typeof(IHtmlEncoder), services[4].ServiceType);
-            Assert.Equal(ServiceLifetime.Singleton, services[4].Lifetime);
-
-            Assert.Equal(typeof(IStringLocalizerFactory), services[5].ServiceType);
-            Assert.Equal(typeof(ResourceManagerStringLocalizerFactory), services[5].ImplementationType);
-            Assert.Equal(ServiceLifetime.Singleton, services[5].Lifetime);
-
-            Assert.Equal(typeof(IStringLocalizer<>), services[6].ServiceType);
-            Assert.Equal(typeof(StringLocalizer<>), services[6].ImplementationType);
-            Assert.Equal(ServiceLifetime.Transient, services[6].Lifetime);
+            Assert.Collection(collection,
+                service =>
+                {
+                    Assert.Equal(typeof(IConfigureOptions<RazorViewEngineOptions>), service.ServiceType);
+                    Assert.Equal(ServiceLifetime.Singleton, service.Lifetime);
+                },
+                service =>
+                {
+                    Assert.Equal(typeof(IHtmlLocalizerFactory), service.ServiceType);
+                    Assert.Equal(typeof(HtmlLocalizerFactory), service.ImplementationType);
+                    Assert.Equal(ServiceLifetime.Singleton, service.Lifetime);
+                },
+                service =>
+                {
+                    Assert.Equal(typeof(IHtmlLocalizer<>), service.ServiceType);
+                    Assert.Equal(typeof(HtmlLocalizer<>), service.ImplementationType);
+                    Assert.Equal(ServiceLifetime.Transient, service.Lifetime);
+                },
+                service =>
+                {
+                    Assert.Equal(typeof(IViewLocalizer), service.ServiceType);
+                    Assert.Equal(typeof(ViewLocalizer), service.ImplementationType);
+                    Assert.Equal(ServiceLifetime.Transient, service.Lifetime);
+                },
+                service =>
+                {
+                    Assert.Equal(typeof(IHtmlEncoder), service.ServiceType);
+                    Assert.Equal(ServiceLifetime.Singleton, service.Lifetime);
+                },
+                service =>
+                {
+                    Assert.Equal(typeof(IStringLocalizerFactory), service.ServiceType);
+                    Assert.Equal(typeof(ResourceManagerStringLocalizerFactory), service.ImplementationType);
+                    Assert.Equal(ServiceLifetime.Singleton, service.Lifetime);
+                },
+                service =>
+                {
+                    Assert.Equal(typeof(IStringLocalizer<>), service.ServiceType);
+                    Assert.Equal(typeof(StringLocalizer<>), service.ImplementationType);
+                    Assert.Equal(ServiceLifetime.Transient, service.Lifetime);
+                },
+                service =>
+                {
+                    Assert.Equal(typeof(IOptions<>), service.ServiceType);
+                    Assert.Equal(ServiceLifetime.Singleton, service.Lifetime);
+                });
         }
 
         [Fact]
@@ -65,36 +83,65 @@ namespace Microsoft.AspNet.Mvc.Localization.Internal
         {
             // Arrange
             var collection = new ServiceCollection();
+            var testEncoder = new CommonTestEncoder();
 
             // Act
             collection.Add(ServiceDescriptor.Singleton(typeof(IHtmlLocalizerFactory), typeof(TestHtmlLocalizerFactory)));
             collection.Add(ServiceDescriptor.Transient(typeof(IHtmlLocalizer<>), typeof(TestHtmlLocalizer<>)));
             collection.Add(ServiceDescriptor.Transient(typeof(IViewLocalizer), typeof(TestViewLocalizer)));
-            collection.Add(ServiceDescriptor.Instance(typeof(IHtmlEncoder), typeof(CommonTestEncoder)));
+            collection.Add(ServiceDescriptor.Instance(typeof(IHtmlEncoder), testEncoder));
 
             MvcLocalizationServices.AddLocalizationServices(
                 collection,
                 LanguageViewLocationExpanderFormat.Suffix);
 
             // Assert
-            var services = collection.ToList();
-            Assert.Equal(7, services.Count);
-
-            Assert.Equal(typeof(IHtmlLocalizerFactory), services[0].ServiceType);
-            Assert.Equal(typeof(TestHtmlLocalizerFactory), services[0].ImplementationType);
-            Assert.Equal(ServiceLifetime.Singleton, services[0].Lifetime);
-
-            Assert.Equal(typeof(IHtmlLocalizer<>), services[1].ServiceType);
-            Assert.Equal(typeof(TestHtmlLocalizer<>), services[1].ImplementationType);
-            Assert.Equal(ServiceLifetime.Transient, services[1].Lifetime);
-
-            Assert.Equal(typeof(IViewLocalizer), services[2].ServiceType);
-            Assert.Equal(typeof(TestViewLocalizer), services[2].ImplementationType);
-            Assert.Equal(ServiceLifetime.Transient, services[2].Lifetime);
-
-            Assert.Equal(typeof(IHtmlEncoder), services[3].ServiceType);
-            Assert.Equal(typeof(CommonTestEncoder), services[3].ImplementationInstance);
-            Assert.Equal(ServiceLifetime.Singleton, services[3].Lifetime);
+            Assert.Collection(collection,
+                service =>
+                {
+                    Assert.Equal(typeof(IHtmlLocalizerFactory), service.ServiceType);
+                    Assert.Equal(typeof(TestHtmlLocalizerFactory), service.ImplementationType);
+                    Assert.Equal(ServiceLifetime.Singleton, service.Lifetime);
+                },
+                service =>
+                {
+                    Assert.Equal(typeof(IHtmlLocalizer<>), service.ServiceType);
+                    Assert.Equal(typeof(TestHtmlLocalizer<>), service.ImplementationType);
+                    Assert.Equal(ServiceLifetime.Transient, service.Lifetime);
+                },
+                service =>
+                {
+                    Assert.Equal(typeof(IViewLocalizer), service.ServiceType);
+                    Assert.Equal(typeof(TestViewLocalizer), service.ImplementationType);
+                    Assert.Equal(ServiceLifetime.Transient, service.Lifetime);
+                },
+                service =>
+                {
+                    Assert.Equal(typeof(IHtmlEncoder), service.ServiceType);
+                    Assert.Same(testEncoder, service.ImplementationInstance);
+                },
+                service =>
+                {
+                    Assert.Equal(typeof(IConfigureOptions<RazorViewEngineOptions>), service.ServiceType);
+                    Assert.Equal(ServiceLifetime.Singleton, service.Lifetime);
+                },
+                service =>
+                {
+                    Assert.Equal(typeof(IStringLocalizerFactory), service.ServiceType);
+                    Assert.Equal(typeof(ResourceManagerStringLocalizerFactory), service.ImplementationType);
+                    Assert.Equal(ServiceLifetime.Singleton, service.Lifetime);
+                },
+                service =>
+                {
+                    Assert.Equal(typeof(IStringLocalizer<>), service.ServiceType);
+                    Assert.Equal(typeof(StringLocalizer<>), service.ImplementationType);
+                    Assert.Equal(ServiceLifetime.Transient, service.Lifetime);
+                },
+                service =>
+                {
+                    Assert.Equal(typeof(IOptions<>), service.ServiceType);
+                    Assert.Equal(ServiceLifetime.Singleton, service.Lifetime);
+                });
         }
 
         [Fact]
@@ -118,53 +165,75 @@ namespace Microsoft.AspNet.Mvc.Localization.Internal
             collection.Add(ServiceDescriptor.Instance(typeof(IHtmlEncoder), typeof(CommonTestEncoder)));
 
             // Assert
-            var services = collection.ToList();
-            Assert.Equal(11, services.Count);
-
-            Assert.Equal(typeof(IConfigureOptions<RazorViewEngineOptions>), services[0].ServiceType);
-            Assert.Equal(ServiceLifetime.Singleton, services[0].Lifetime);
-            // REVIEW: What should this be replaced with?
-            //Assert.Equal(0, ((IConfigureOptions<RazorViewEngineOptions>)services[0].ImplementationInstance).Order);
-
-            Assert.Equal(typeof(IConfigureOptions<RazorViewEngineOptions>), services[1].ServiceType);
-            Assert.Equal(ServiceLifetime.Singleton, services[1].Lifetime);
-            // REVIEW: What should this be replaced with?
-            //Assert.Equal(-1000, ((IConfigureOptions<RazorViewEngineOptions>)services[1].ImplementationInstance).Order);
-
-            Assert.Equal(typeof(IHtmlLocalizerFactory), services[2].ServiceType);
-            Assert.Equal(typeof(HtmlLocalizerFactory), services[2].ImplementationType);
-            Assert.Equal(ServiceLifetime.Singleton, services[2].Lifetime);
-
-            Assert.Equal(typeof(IHtmlLocalizer<>), services[3].ServiceType);
-            Assert.Equal(typeof(HtmlLocalizer<>), services[3].ImplementationType);
-            Assert.Equal(ServiceLifetime.Transient, services[3].Lifetime);
-
-            Assert.Equal(typeof(IViewLocalizer), services[4].ServiceType);
-            Assert.Equal(typeof(ViewLocalizer), services[4].ImplementationType);
-            Assert.Equal(ServiceLifetime.Transient, services[4].Lifetime);
-
-            Assert.Equal(typeof(IHtmlEncoder), services[5].ServiceType);
-            Assert.Equal(ServiceLifetime.Singleton, services[5].Lifetime);
-
-            Assert.Equal(typeof(IStringLocalizerFactory), services[6].ServiceType);
-            Assert.Equal(typeof(ResourceManagerStringLocalizerFactory), services[6].ImplementationType);
-            Assert.Equal(ServiceLifetime.Singleton, services[6].Lifetime);
-
-            Assert.Equal(typeof(IStringLocalizer<>), services[7].ServiceType);
-            Assert.Equal(typeof(StringLocalizer<>), services[7].ImplementationType);
-            Assert.Equal(ServiceLifetime.Transient, services[7].Lifetime);
-
-            Assert.Equal(typeof(IHtmlLocalizer<>), services[8].ServiceType);
-            Assert.Equal(typeof(TestHtmlLocalizer<>), services[8].ImplementationType);
-            Assert.Equal(ServiceLifetime.Transient, services[8].Lifetime);
-
-            Assert.Equal(typeof(IHtmlLocalizer), services[9].ServiceType);
-            Assert.Equal(typeof(TestViewLocalizer), services[9].ImplementationType);
-            Assert.Equal(ServiceLifetime.Transient, services[9].Lifetime);
-
-            Assert.Equal(typeof(IHtmlEncoder), services[10].ServiceType);
-            Assert.Equal(typeof(CommonTestEncoder), services[10].ImplementationInstance);
-            Assert.Equal(ServiceLifetime.Singleton, services[10].Lifetime);
+            Assert.Collection(collection,
+                service =>
+                {
+                    Assert.Equal(typeof(IConfigureOptions<RazorViewEngineOptions>), service.ServiceType);
+                    Assert.Equal(ServiceLifetime.Singleton, service.Lifetime);
+                },
+                service =>
+                {
+                    Assert.Equal(typeof(IConfigureOptions<RazorViewEngineOptions>), service.ServiceType);
+                    Assert.Equal(ServiceLifetime.Singleton, service.Lifetime);
+                },
+                service =>
+                {
+                    Assert.Equal(typeof(IHtmlLocalizerFactory), service.ServiceType);
+                    Assert.Equal(typeof(HtmlLocalizerFactory), service.ImplementationType);
+                    Assert.Equal(ServiceLifetime.Singleton, service.Lifetime);
+                },
+                service =>
+                {
+                    Assert.Equal(typeof(IHtmlLocalizer<>), service.ServiceType);
+                    Assert.Equal(typeof(HtmlLocalizer<>), service.ImplementationType);
+                    Assert.Equal(ServiceLifetime.Transient, service.Lifetime);
+                },
+                service =>
+                {
+                    Assert.Equal(typeof(IViewLocalizer), service.ServiceType);
+                    Assert.Equal(typeof(ViewLocalizer), service.ImplementationType);
+                    Assert.Equal(ServiceLifetime.Transient, service.Lifetime);
+                },
+                service =>
+                {
+                    Assert.Equal(typeof(IHtmlEncoder), service.ServiceType);
+                    Assert.Equal(ServiceLifetime.Singleton, service.Lifetime);
+                },
+                service =>
+                {
+                    Assert.Equal(typeof(IStringLocalizerFactory), service.ServiceType);
+                    Assert.Equal(typeof(ResourceManagerStringLocalizerFactory), service.ImplementationType);
+                    Assert.Equal(ServiceLifetime.Singleton, service.Lifetime);
+                },
+                service =>
+                {
+                    Assert.Equal(typeof(IStringLocalizer<>), service.ServiceType);
+                    Assert.Equal(typeof(StringLocalizer<>), service.ImplementationType);
+                    Assert.Equal(ServiceLifetime.Transient, service.Lifetime);
+                },
+                service =>
+                {
+                    Assert.Equal(typeof(IOptions<>), service.ServiceType);
+                    Assert.Equal(ServiceLifetime.Singleton, service.Lifetime);
+                },
+                service =>
+                {
+                    Assert.Equal(typeof(IHtmlLocalizer<>), service.ServiceType);
+                    Assert.Equal(typeof(TestHtmlLocalizer<>), service.ImplementationType);
+                    Assert.Equal(ServiceLifetime.Transient, service.Lifetime);
+                },
+                service =>
+                {
+                    Assert.Equal(typeof(IHtmlLocalizer), service.ServiceType);
+                    Assert.Equal(typeof(TestViewLocalizer), service.ImplementationType);
+                    Assert.Equal(ServiceLifetime.Transient, service.Lifetime);
+                },
+                service =>
+                {
+                    Assert.Equal(typeof(IHtmlEncoder), service.ServiceType);
+                    Assert.Equal(typeof(CommonTestEncoder), service.ImplementationInstance);
+                    Assert.Equal(ServiceLifetime.Singleton, service.Lifetime);
+                });
         }
     }
 
