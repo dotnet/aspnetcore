@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Mvc.ViewEngines;
 using Microsoft.AspNet.PageExecutionInstrumentation;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.WebEncoders;

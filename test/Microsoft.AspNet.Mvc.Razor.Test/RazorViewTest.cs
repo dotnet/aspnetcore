@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.PageExecutionInstrumentation;
 using Microsoft.Framework.WebEncoders.Testing;
 using Moq;
@@ -1462,7 +1464,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 new ViewDataDictionary(new EmptyModelMetadataProvider()),
                 Mock.Of<ITempDataDictionary>(),
                 new StringWriter(),
-                new Rendering.HtmlHelperOptions());
+                new HtmlHelperOptions());
         }
 
         private static IViewStartProvider CreateViewStartProvider(params IRazorPage[] viewStartPages)

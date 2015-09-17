@@ -8,6 +8,7 @@ using Microsoft.Dnx.Runtime;
 using Microsoft.Framework.WebEncoders.Testing;
 using Moq;
 using Xunit;
+using Microsoft.AspNet.Mvc.ViewEngines;
 
 namespace Microsoft.AspNet.Mvc.Localization.Test
 {

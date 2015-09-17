@@ -4,6 +4,8 @@
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Mvc.ViewFeatures;
+using Microsoft.AspNet.Mvc.ViewFeatures.Internal;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 
 namespace ActivatorWebSite.TagHelpers

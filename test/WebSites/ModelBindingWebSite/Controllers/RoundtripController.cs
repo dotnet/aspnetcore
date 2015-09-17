@@ -6,6 +6,9 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Mvc.ViewEngines;
+using Microsoft.AspNet.Mvc.ViewFeatures;
+using Microsoft.AspNet.Mvc.ViewFeatures.Internal;
 using ModelBindingWebSite.Models;
 
 namespace ModelBindingWebSite.Controllers

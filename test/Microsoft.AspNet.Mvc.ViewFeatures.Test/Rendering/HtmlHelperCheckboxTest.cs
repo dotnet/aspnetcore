@@ -7,6 +7,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.TestCommon;
+using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Routing;
 using Xunit;
 

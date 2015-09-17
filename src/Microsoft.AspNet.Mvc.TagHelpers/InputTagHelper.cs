@@ -7,7 +7,8 @@ using System.Linq;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.AspNet.Mvc.Rendering.Internal;
+using Microsoft.AspNet.Mvc.ViewFeatures;
+using Microsoft.AspNet.Mvc.ViewFeatures.Internal;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers

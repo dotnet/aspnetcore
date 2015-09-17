@@ -4,10 +4,9 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Mvc.Rendering;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Core
+namespace Microsoft.AspNet.Mvc.Rendering
 {
     /// <summary>
     /// Test the <see cref="HtmlHelperDisplayNameExtensions" /> class.

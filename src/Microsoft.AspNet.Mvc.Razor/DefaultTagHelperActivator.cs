@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;

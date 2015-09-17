@@ -3,6 +3,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Mvc.ViewEngines;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ViewFeatures.Internal

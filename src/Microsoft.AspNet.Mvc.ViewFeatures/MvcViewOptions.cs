@@ -4,6 +4,8 @@
 using System.Collections.Generic;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Mvc.ViewEngines;
+using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc

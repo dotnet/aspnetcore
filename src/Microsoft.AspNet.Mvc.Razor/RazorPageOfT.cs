@@ -6,7 +6,7 @@ using System.Linq.Expressions;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Razor.Internal;
 using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.AspNet.Mvc.Rendering.Expressions;
+using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
 

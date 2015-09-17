@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Mvc.ViewFeatures.Internal;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.Localization;
 using Microsoft.Dnx.Runtime;

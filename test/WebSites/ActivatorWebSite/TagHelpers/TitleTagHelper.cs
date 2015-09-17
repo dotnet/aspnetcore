@@ -2,8 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNet.Html.Abstractions;
-using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Mvc.ViewFeatures;
+using Microsoft.AspNet.Mvc.ViewFeatures.Internal;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 
 namespace ActivatorWebSite.TagHelpers

@@ -6,7 +6,9 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewComponents;
+using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 
 namespace MvcSample.Web.Components

@@ -7,6 +7,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Mvc.Routing;
+using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.Framework.WebEncoders.Testing;
 using Moq;

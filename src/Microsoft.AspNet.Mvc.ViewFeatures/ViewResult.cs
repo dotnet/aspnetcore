@@ -2,14 +2,16 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.Tracing;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Mvc.ViewEngines;
+using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
-using Microsoft.Net.Http.Headers;
 using Microsoft.Framework.OptionsModel;
-using System.Diagnostics.Tracing;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc
 {

@@ -3,6 +3,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNet.Html.Abstractions;
+using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Rendering

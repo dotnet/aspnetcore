@@ -3,6 +3,8 @@
 
 using System;
 using Microsoft.AspNet.Mvc.Core;
+using Microsoft.AspNet.Mvc.Routing;
+using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
 

@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Linq.Expressions;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.TestCommon;
+using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Testing;
 using Xunit;
 

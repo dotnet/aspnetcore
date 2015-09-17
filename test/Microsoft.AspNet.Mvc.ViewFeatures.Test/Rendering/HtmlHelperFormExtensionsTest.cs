@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 using System.IO;
-using Microsoft.Framework.WebEncoders.Testing;
+using Microsoft.AspNet.Mvc.ViewFeatures;
 using Moq;
 using Xunit;
 

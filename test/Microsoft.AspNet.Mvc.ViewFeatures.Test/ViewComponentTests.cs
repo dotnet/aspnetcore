@@ -3,6 +3,7 @@
 
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewComponents;
+using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.Framework.WebEncoders;
 using Xunit;
 

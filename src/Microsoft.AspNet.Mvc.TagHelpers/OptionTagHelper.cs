@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers

@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Mvc.TestCommon;
 using Microsoft.Framework.Internal;
 using Moq;

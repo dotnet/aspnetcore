@@ -8,6 +8,8 @@ using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.AspNet.Mvc.Razor.Compilation;
 using Microsoft.AspNet.Mvc.Razor.Directives;
+using Microsoft.AspNet.Mvc.Razor.Internal;
+using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.Framework.Caching.Memory;
 using Microsoft.Framework.DependencyInjection.Extensions;

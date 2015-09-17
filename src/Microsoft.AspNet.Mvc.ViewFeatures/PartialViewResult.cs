@@ -3,13 +3,13 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 using Microsoft.Net.Http.Headers;
 using Microsoft.Framework.OptionsModel;
-using Microsoft.AspNet.Mvc.Actions;
+using Microsoft.AspNet.Mvc.ViewEngines;
+using Microsoft.AspNet.Mvc.ViewFeatures;
 
 namespace Microsoft.AspNet.Mvc
 {

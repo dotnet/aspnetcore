@@ -6,7 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using Microsoft.AspNet.Mvc.Rendering.Expressions;
+using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Rendering

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
+using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.WebEncoders;
 

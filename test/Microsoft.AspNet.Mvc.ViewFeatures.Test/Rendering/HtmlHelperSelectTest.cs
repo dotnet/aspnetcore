@@ -7,6 +7,8 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.TestCommon;
+using Microsoft.AspNet.Mvc.ViewEngines;
+using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Testing;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.WebEncoders;

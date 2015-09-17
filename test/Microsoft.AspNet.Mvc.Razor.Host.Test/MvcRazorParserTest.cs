@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Razor;
 using Microsoft.AspNet.Razor.Chunks;
 using Microsoft.AspNet.Razor.Parser;

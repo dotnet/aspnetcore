@@ -3,7 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Mvc.ViewEngines;
 
 namespace CompositeViewEngineWebSite
 {

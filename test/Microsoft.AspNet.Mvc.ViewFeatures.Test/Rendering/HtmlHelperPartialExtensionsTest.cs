@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.TestCommon;
+using Microsoft.AspNet.Mvc.ViewFeatures;
 using Moq;
 using Xunit;
 

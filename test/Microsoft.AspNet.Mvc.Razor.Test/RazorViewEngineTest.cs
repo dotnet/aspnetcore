@@ -7,6 +7,7 @@ using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Actions;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.Routing;
+using Microsoft.AspNet.Mvc.ViewEngines;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing;
 using Microsoft.Framework.OptionsModel;

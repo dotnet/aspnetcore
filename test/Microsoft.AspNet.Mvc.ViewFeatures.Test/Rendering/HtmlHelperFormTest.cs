@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Mvc.Routing;
+using Microsoft.AspNet.Mvc.ViewFeatures;
 using Moq;
 using Xunit;
 

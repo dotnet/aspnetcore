@@ -2,13 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Globalization;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Testing;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Core
+namespace Microsoft.AspNet.Mvc.ViewFeatures
 {
     /// <summary>
     /// Test the <see cref="IHtmlHelper.Value" /> and <see cref="IHtmlHelper{TModel}.ValueFor"/> methods.

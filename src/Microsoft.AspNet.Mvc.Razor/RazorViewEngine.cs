@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Linq;
 using Microsoft.AspNet.Mvc.Actions;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Mvc.ViewEngines;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 

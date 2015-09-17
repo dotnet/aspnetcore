@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.PageExecutionInstrumentation;
 
 namespace Microsoft.AspNet.Mvc.Razor

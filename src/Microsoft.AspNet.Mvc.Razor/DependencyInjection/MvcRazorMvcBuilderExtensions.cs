@@ -7,6 +7,7 @@ using System.Reflection;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.AspNet.Mvc.Razor.Compilation;
+using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.Framework.DependencyInjection.Extensions;
 using Microsoft.Framework.Internal;
@@ -55,17 +56,17 @@ namespace Microsoft.Framework.DependencyInjection
             return builder;
         }
 
-        public static IMvcBuilder AddPrecompiledRazorViews(		
-            [NotNull] this IMvcBuilder builder,		
-            [NotNull] params Assembly[] assemblies)		
-        {		
-            builder.Services.Replace(		
-                ServiceDescriptor.Singleton<ICompilerCacheProvider>(serviceProvider =>		
-                    ActivatorUtilities.CreateInstance<PrecompiledViewsCompilerCacheProvider>(		
-                        serviceProvider,		
-                        assemblies.AsEnumerable())));		
-		
-            return builder;		
-        }		
+        public static IMvcBuilder AddPrecompiledRazorViews(
+            [NotNull] this IMvcBuilder builder,
+            [NotNull] params Assembly[] assemblies)
+        {
+            builder.Services.Replace(
+                ServiceDescriptor.Singleton<ICompilerCacheProvider>(serviceProvider =>
+                    ActivatorUtilities.CreateInstance<PrecompiledViewsCompilerCacheProvider>(
+                        serviceProvider,
+                        assemblies.AsEnumerable())));
+
+            return builder;
+        }
     }
 }

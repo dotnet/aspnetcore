@@ -4,8 +4,9 @@
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.Actions;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Mvc.ViewEngines;
+using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
 
