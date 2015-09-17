@@ -186,13 +186,21 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
 
                     builder.Accept(symbol);
                 }
-                else if (name == null && symbol.Type == HtmlSymbolType.Text)
+                else if (name == null && HtmlMarkupParser.IsValidAttributeNameSymbol(symbol))
                 {
                     // We've captured all leading whitespace prior to the attribute name.
                     // We're now at: " |asp-for='...'" or " |asp-for=..."
                     // The goal here is to capture the attribute name.
 
-                    name = symbol.Content;
+                    var symbolContents = htmlSymbols
+                        .Skip(i) // Skip prefix
+                        .TakeWhile(nameSymbol => HtmlMarkupParser.IsValidAttributeNameSymbol(nameSymbol))
+                        .Select(nameSymbol => nameSymbol.Content);
+
+                    // Move the indexer past the attribute name symbols.
+                    i += symbolContents.Count() - 1;
+
+                    name = string.Concat(symbolContents);
                     attributeValueStartLocation = SourceLocation.Advance(attributeValueStartLocation, name);
                 }
                 else if (symbol.Type == HtmlSymbolType.Equals)
@@ -322,10 +330,15 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                 return TryParseSpan(childSpan, descriptors, errorSink);
             }
 
-            var textSymbol = childSpan.Symbols.FirstHtmlSymbolAs(HtmlSymbolType.Text);
-            var name = textSymbol != null ? textSymbol.Content : null;
+            var nameSymbols = childSpan
+                .Symbols
+                .OfType<HtmlSymbol>()
+                .SkipWhile(symbol => !HtmlMarkupParser.IsValidAttributeNameSymbol(symbol)) // Skip prefix
+                .TakeWhile(nameSymbol => HtmlMarkupParser.IsValidAttributeNameSymbol(nameSymbol))
+                .Select(nameSymbol => nameSymbol.Content);
 
-            if (name == null)
+            var name = string.Concat(nameSymbols);
+            if (string.IsNullOrEmpty(name))
             {
                 errorSink.OnError(
                     childSpan.Start,

@@ -14,6 +14,174 @@ namespace Microsoft.AspNet.Razor.Test.Parser.Html
 {
     public class HtmlAttributeTest : CsHtmlMarkupParserTestBase
     {
+        public static TheoryData SymbolBoundAttributeNames
+        {
+            get
+            {
+                return new TheoryData<string>
+                {
+                    "[item]",
+                    "[(item,",
+                    "(click)",
+                    "(^click)",
+                    "*something",
+                    "#local",
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(SymbolBoundAttributeNames))]
+        public void SymbolBoundAttributes_BeforeEqualWhitespace(string attributeName)
+        {
+            // Arrange
+            var attributeNameLength = attributeName.Length;
+            var newlineLength = Environment.NewLine.Length;
+            var prefixLocation1 = new SourceLocation(
+                absoluteIndex: 2,
+                lineIndex: 0,
+                characterIndex: 2);
+            var suffixLocation1 = new SourceLocation(
+                absoluteIndex: 8 + newlineLength + attributeNameLength,
+                lineIndex: 1,
+                characterIndex: 5 + attributeNameLength);
+            var valueLocation1 = new SourceLocation(
+                absoluteIndex: 5 + attributeNameLength + newlineLength,
+                lineIndex: 1,
+                characterIndex: 2 + attributeNameLength);
+            var prefixLocation2 = SourceLocation.Advance(suffixLocation1, "'");
+            var suffixLocation2 = new SourceLocation(
+                absoluteIndex: 15 + attributeNameLength * 2 + newlineLength * 2,
+                lineIndex: 2,
+                characterIndex: 4);
+            var valueLocation2 = new SourceLocation(
+                absoluteIndex: 12 + attributeNameLength * 2 + newlineLength * 2,
+                lineIndex: 2,
+                characterIndex: 1);
+
+            // Act & Assert
+            ParseBlockTest(
+                $"<a {attributeName}{Environment.NewLine}='Foo'\t{attributeName}={Environment.NewLine}'Bar' />",
+                new MarkupBlock(
+                    new MarkupTagBlock(
+                        Factory.Markup("<a"),
+                        new MarkupBlock(
+                            new AttributeBlockChunkGenerator(
+                                attributeName,
+                                prefix: new LocationTagged<string>(
+                                    $" {attributeName}{Environment.NewLine}='", prefixLocation1),
+                                suffix: new LocationTagged<string>("'", suffixLocation1)),
+                            Factory.Markup($" {attributeName}{Environment.NewLine}='").With(SpanChunkGenerator.Null),
+                            Factory.Markup("Foo").With(
+                                new LiteralAttributeChunkGenerator(
+                                    prefix: new LocationTagged<string>(string.Empty, valueLocation1),
+                                    value: new LocationTagged<string>("Foo", valueLocation1))),
+                            Factory.Markup("'").With(SpanChunkGenerator.Null)),
+                        new MarkupBlock(
+                            new AttributeBlockChunkGenerator(
+                                attributeName,
+                                prefix: new LocationTagged<string>(
+                                    $"\t{attributeName}={Environment.NewLine}'", prefixLocation2),
+                                suffix: new LocationTagged<string>("'", suffixLocation2)),
+                            Factory.Markup($"\t{attributeName}={Environment.NewLine}'").With(SpanChunkGenerator.Null),
+                            Factory.Markup("Bar").With(
+                                new LiteralAttributeChunkGenerator(
+                                    prefix: new LocationTagged<string>(string.Empty, valueLocation2),
+                                    value: new LocationTagged<string>("Bar", valueLocation2))),
+                            Factory.Markup("'").With(SpanChunkGenerator.Null)),
+                        Factory.Markup(" />").Accepts(AcceptedCharacters.None))));
+        }
+
+        [Theory]
+        [MemberData(nameof(SymbolBoundAttributeNames))]
+        public void SymbolBoundAttributes_Whitespace(string attributeName)
+        {
+            // Arrange
+            var attributeNameLength = attributeName.Length;
+            var newlineLength = Environment.NewLine.Length;
+            var prefixLocation1 = new SourceLocation(
+                absoluteIndex: 2,
+                lineIndex: 0,
+                characterIndex: 2);
+            var suffixLocation1 = new SourceLocation(
+                absoluteIndex: 10 + newlineLength + attributeNameLength,
+                lineIndex: 1,
+                characterIndex: 5 + attributeNameLength + newlineLength);
+            var valueLocation1 = new SourceLocation(
+                absoluteIndex: 7 + attributeNameLength + newlineLength,
+                lineIndex: 1,
+                characterIndex: 4 + attributeNameLength);
+            var prefixLocation2 = SourceLocation.Advance(suffixLocation1, "'");
+            var suffixLocation2 = new SourceLocation(
+                absoluteIndex: 17 + attributeNameLength * 2 + newlineLength * 2,
+                lineIndex: 2,
+                characterIndex: 5 + attributeNameLength);
+            var valueLocation2 = new SourceLocation(
+                absoluteIndex: 14 + attributeNameLength * 2 + newlineLength * 2,
+                lineIndex: 2,
+                characterIndex: 2 + attributeNameLength);
+
+            // Act & Assert
+            ParseBlockTest(
+                $"<a {Environment.NewLine}  {attributeName}='Foo'\t{Environment.NewLine}{attributeName}='Bar' />",
+                new MarkupBlock(
+                    new MarkupTagBlock(
+                        Factory.Markup("<a"),
+                        new MarkupBlock(
+                            new AttributeBlockChunkGenerator(
+                                attributeName,
+                                prefix: new LocationTagged<string>(
+                                    $" {Environment.NewLine}  {attributeName}='", prefixLocation1),
+                                suffix: new LocationTagged<string>("'", suffixLocation1)),
+                            Factory.Markup($" {Environment.NewLine}  {attributeName}='").With(SpanChunkGenerator.Null),
+                            Factory.Markup("Foo").With(
+                                new LiteralAttributeChunkGenerator(
+                                    prefix: new LocationTagged<string>(string.Empty, valueLocation1),
+                                    value: new LocationTagged<string>("Foo", valueLocation1))),
+                            Factory.Markup("'").With(SpanChunkGenerator.Null)),
+                        new MarkupBlock(
+                            new AttributeBlockChunkGenerator(
+                                attributeName,
+                                prefix: new LocationTagged<string>(
+                                    $"\t{Environment.NewLine}{attributeName}='", prefixLocation2),
+                                suffix: new LocationTagged<string>("'", suffixLocation2)),
+                            Factory.Markup($"\t{Environment.NewLine}{attributeName}='").With(SpanChunkGenerator.Null),
+                            Factory.Markup("Bar").With(
+                                new LiteralAttributeChunkGenerator(
+                                    prefix: new LocationTagged<string>(string.Empty, valueLocation2),
+                                    value: new LocationTagged<string>("Bar", valueLocation2))),
+                            Factory.Markup("'").With(SpanChunkGenerator.Null)),
+                        Factory.Markup(" />").Accepts(AcceptedCharacters.None))));
+        }
+
+        [Theory]
+        [MemberData(nameof(SymbolBoundAttributeNames))]
+        public void SymbolBoundAttributes(string attributeName)
+        {
+            // Arrange
+            var attributeNameLength = attributeName.Length;
+            var suffixLocation = 8 + attributeNameLength;
+            var valueLocation = 5 + attributeNameLength;
+
+            // Act & Assert
+            ParseBlockTest($"<a {attributeName}='Foo' />",
+                new MarkupBlock(
+                    new MarkupTagBlock(
+                        Factory.Markup("<a"),
+                        new MarkupBlock(
+                            new AttributeBlockChunkGenerator(
+                                attributeName,
+                                prefix: new LocationTagged<string>($" {attributeName}='", 2, 0, 2),
+                                suffix: new LocationTagged<string>("'", suffixLocation, 0, suffixLocation)),
+                            Factory.Markup($" {attributeName}='").With(SpanChunkGenerator.Null),
+                            Factory.Markup("Foo").With(
+                                new LiteralAttributeChunkGenerator(
+                                    prefix: new LocationTagged<string>(string.Empty, valueLocation, 0, valueLocation),
+                                    value: new LocationTagged<string>("Foo", valueLocation, 0, valueLocation))),
+                            Factory.Markup("'").With(SpanChunkGenerator.Null)),
+                        Factory.Markup(" />").Accepts(AcceptedCharacters.None))));
+        }
+
         [Fact]
         public void SimpleLiteralAttribute()
         {

@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 #if DNXCORE50
@@ -19,6 +20,62 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             = BuildPAndInputTagHelperDescriptors(prefix: string.Empty);
         private static IEnumerable<TagHelperDescriptor> PrefixedPAndInputTagHelperDescriptors { get; }
             = BuildPAndInputTagHelperDescriptors(prefix: "THS");
+
+        private static IEnumerable<TagHelperDescriptor> SymbolBoundTagHelperDescriptors
+        {
+            get
+            {
+                return new[]
+                {
+                    new TagHelperDescriptor
+                    {
+                        TagName = "*",
+                        TypeName = "CatchAllTagHelper",
+                        AssemblyName = "SomeAssembly",
+                        Attributes = new[]
+                        {
+                            new TagHelperAttributeDescriptor
+                            {
+                                Name = "[item]",
+                                PropertyName = "ListItems",
+                                TypeName = typeof(List<string>).FullName
+                            },
+                            new TagHelperAttributeDescriptor
+                            {
+                                Name = "[(item)]",
+                                PropertyName = "ArrayItems",
+                                TypeName = typeof(string[]).FullName
+                            },
+                            new TagHelperAttributeDescriptor
+                            {
+                                Name = "(click)",
+                                PropertyName = "Event1",
+                                TypeName = typeof(Action).FullName
+                            },
+                            new TagHelperAttributeDescriptor
+                            {
+                                Name = "(^click)",
+                                PropertyName = "Event2",
+                                TypeName = typeof(Action).FullName
+                            },
+                            new TagHelperAttributeDescriptor
+                            {
+                                Name = "*something",
+                                PropertyName = "StringProperty1",
+                                TypeName = typeof(string).FullName
+                            },
+                            new TagHelperAttributeDescriptor
+                            {
+                                Name = "#local",
+                                PropertyName = "StringProperty2",
+                                TypeName = typeof(string).FullName
+                            },
+                        },
+                        RequiredAttributes = new[] { "bound" },
+                    },
+                };
+            }
+        }
 
         private static IEnumerable<TagHelperDescriptor> MinimizedTagHelpers_Descriptors
         {
@@ -1518,6 +1575,53 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                                 contentLength: 15),
                         }
                     },
+                    {
+                        "SymbolBoundAttributes",
+                        "SymbolBoundAttributes.DesignTime",
+                        SymbolBoundTagHelperDescriptors,
+                        new[]
+                        {
+                            BuildLineMapping(
+                                documentAbsoluteIndex: 14,
+                                documentLineIndex: 0,
+                                generatedAbsoluteIndex: 487,
+                                generatedLineIndex: 15,
+                                characterOffsetIndex: 14,
+                                contentLength: 9),
+                            BuildLineMapping(
+                                documentAbsoluteIndex: 296,
+                                documentLineIndex: 11,
+                                documentCharacterOffsetIndex: 18,
+                                generatedAbsoluteIndex: 1013,
+                                generatedLineIndex: 34,
+                                generatedCharacterOffsetIndex: 32,
+                                contentLength: 5),
+                            BuildLineMapping(
+                                documentAbsoluteIndex: 345,
+                                documentLineIndex: 12,
+                                documentCharacterOffsetIndex: 20,
+                                generatedAbsoluteIndex: 1199,
+                                generatedLineIndex: 40,
+                                generatedCharacterOffsetIndex: 33,
+                                contentLength: 5),
+                            BuildLineMapping(
+                                documentAbsoluteIndex: 399,
+                                documentLineIndex: 13,
+                                documentCharacterOffsetIndex: 23,
+                                generatedAbsoluteIndex: 1381,
+                                generatedLineIndex: 46,
+                                generatedCharacterOffsetIndex: 29,
+                                contentLength: 13),
+                            BuildLineMapping(
+                                documentAbsoluteIndex: 481,
+                                documentLineIndex: 14,
+                                documentCharacterOffsetIndex: 24,
+                                generatedAbsoluteIndex: 1571,
+                                generatedLineIndex: 52,
+                                generatedCharacterOffsetIndex: 29,
+                                contentLength: 13),
+                        }
+                    }
                 };
             }
         }
@@ -1567,6 +1671,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                     { "DynamicAttributeTagHelpers", null, DynamicAttributeTagHelpers_Descriptors },
                     { "TransitionsInTagHelperAttributes", null, DefaultPAndInputTagHelperDescriptors },
                     { "NestedScriptTagTagHelpers", null, DefaultPAndInputTagHelperDescriptors },
+                    { "SymbolBoundAttributes", null, SymbolBoundTagHelperDescriptors },
                 };
             }
         }

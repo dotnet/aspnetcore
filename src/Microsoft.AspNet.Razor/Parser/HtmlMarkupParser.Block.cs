@@ -464,7 +464,7 @@ namespace Microsoft.AspNet.Razor.Parser
             // Read the 'name' (i.e. read until the '=' or whitespace/newline)
             var name = Enumerable.Empty<HtmlSymbol>();
             var whitespaceAfterAttributeName = Enumerable.Empty<HtmlSymbol>();
-            if (At(HtmlSymbolType.Text))
+            if (IsValidAttributeNameSymbol(CurrentSymbol))
             {
                 name = ReadWhile(sym =>
                                  sym.Type != HtmlSymbolType.WhiteSpace &&
@@ -1135,6 +1135,29 @@ namespace Microsoft.AspNet.Razor.Parser
                 AddMarkerSymbolIfNecessary();
             }
             Output(SpanKind.Markup);
+        }
+
+        internal static bool IsValidAttributeNameSymbol(HtmlSymbol symbol)
+        {
+            if (symbol == null)
+            {
+                return false;
+            }
+
+            // These restrictions cover most of the spec defined: http://www.w3.org/TR/html5/syntax.html#attributes-0
+            // However, it's not all of it. For instance we don't special case control characters or allow OpenAngle.
+            // It also doesn't try to exclude Razor specific features such as the @ transition. This is based on the
+            // expectation that the parser handles such scenarios prior to falling through to name resolution.
+            var symbolType = symbol.Type;
+            return symbolType != HtmlSymbolType.WhiteSpace &&
+                symbolType != HtmlSymbolType.NewLine &&
+                symbolType != HtmlSymbolType.CloseAngle &&
+                symbolType != HtmlSymbolType.OpenAngle &&
+                symbolType != HtmlSymbolType.ForwardSlash &&
+                symbolType != HtmlSymbolType.DoubleQuote &&
+                symbolType != HtmlSymbolType.SingleQuote &&
+                symbolType != HtmlSymbolType.Equals &&
+                symbolType != HtmlSymbolType.Unknown;
         }
     }
 }

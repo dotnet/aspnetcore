@@ -18,6 +18,154 @@ namespace Microsoft.AspNet.Razor.TagHelpers
 {
     public class TagHelperBlockRewriterTest : TagHelperRewritingTestBase
     {
+        public static TheoryData SymbolBoundAttributeData
+        {
+            get
+            {
+                var factory = CreateDefaultSpanFactory();
+
+                return new TheoryData<string, MarkupBlock>
+                {
+                    {
+                        "<ul bound [item]='items'></ul>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("ul",
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
+                                {
+                                    new KeyValuePair<string, SyntaxTreeNode>("bound", null),
+                                    new KeyValuePair<string, SyntaxTreeNode>("[item]", factory.CodeMarkup("items"))
+                                }))
+                    },
+                    {
+                        "<ul bound [(item)]='items'></ul>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("ul",
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
+                                {
+                                    new KeyValuePair<string, SyntaxTreeNode>("bound", null),
+                                    new KeyValuePair<string, SyntaxTreeNode>("[(item)]", factory.CodeMarkup("items"))
+                                }))
+                    },
+                    {
+                        "<button bound (click)='doSomething()'>Click Me</button>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("button",
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
+                                {
+                                    new KeyValuePair<string, SyntaxTreeNode>("bound", null),
+                                    new KeyValuePair<string, SyntaxTreeNode>(
+                                        "(click)",
+                                        factory.CodeMarkup("doSomething()"))
+                                },
+                                children: factory.Markup("Click Me")))
+                    },
+                    {
+                        "<button bound (^click)='doSomething()'>Click Me</button>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("button",
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
+                                {
+                                    new KeyValuePair<string, SyntaxTreeNode>("bound", null),
+                                    new KeyValuePair<string, SyntaxTreeNode>(
+                                        "(^click)",
+                                        factory.CodeMarkup("doSomething()"))
+                                },
+                                children: factory.Markup("Click Me")))
+                    },
+                    {
+                        "<template bound *something='value'></template>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("template",
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
+                                {
+                                    new KeyValuePair<string, SyntaxTreeNode>("bound", null),
+                                    new KeyValuePair<string, SyntaxTreeNode>("*something", factory.Markup("value"))
+                                }))
+                    },
+                    {
+                        "<div bound #localminimized></div>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("div",
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
+                                {
+                                    new KeyValuePair<string, SyntaxTreeNode>("bound", null),
+                                    new KeyValuePair<string, SyntaxTreeNode>("#localminimized", null)
+                                }))
+                    },
+                    {
+                        "<div bound #local='value'></div>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("div",
+                                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>
+                                {
+                                    new KeyValuePair<string, SyntaxTreeNode>("bound", null),
+                                    new KeyValuePair<string, SyntaxTreeNode>("#local", factory.Markup("value"))
+                                }))
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(SymbolBoundAttributeData))]
+        public void Rewrite_CanHandleSymbolBoundAttributes(string documentContent, MarkupBlock expectedOutput)
+        {
+            // Arrange
+            var descriptors = new[]
+            {
+                new TagHelperDescriptor
+                {
+                    TagName = "*",
+                    TypeName = "CatchAllTagHelper",
+                    AssemblyName = "SomeAssembly",
+                    Attributes = new[]
+                    {
+                        new TagHelperAttributeDescriptor
+                        {
+                            Name = "[item]",
+                            PropertyName = "ListItems",
+                            TypeName = typeof(List<string>).FullName
+                        },
+                        new TagHelperAttributeDescriptor
+                        {
+                            Name = "[(item)]",
+                            PropertyName = "ArrayItems",
+                            TypeName = typeof(string[]).FullName
+                        },
+                        new TagHelperAttributeDescriptor
+                        {
+                            Name = "(click)",
+                            PropertyName = "Event1",
+                            TypeName = typeof(Action).FullName
+                        },
+                        new TagHelperAttributeDescriptor
+                        {
+                            Name = "(^click)",
+                            PropertyName = "Event2",
+                            TypeName = typeof(Action).FullName
+                        },
+                        new TagHelperAttributeDescriptor
+                        {
+                            Name = "*something",
+                            PropertyName = "StringProperty1",
+                            TypeName = typeof(string).FullName
+                        },
+                        new TagHelperAttributeDescriptor
+                        {
+                            Name = "#local",
+                            PropertyName = "StringProperty2",
+                            TypeName = typeof(string).FullName
+                        },
+                    },
+                    RequiredAttributes = new[] { "bound" },
+                },
+            };
+            var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
+
+            // Act & Assert
+            EvaluateData(descriptorProvider, documentContent, expectedOutput, expectedErrors: new RazorError[0]);
+        }
+
         public static TheoryData WithoutEndTagElementData
         {
             get
