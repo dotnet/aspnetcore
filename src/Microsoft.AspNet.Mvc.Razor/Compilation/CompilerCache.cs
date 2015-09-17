@@ -8,7 +8,6 @@ using System.Diagnostics;
 using System.Text;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.Framework.Caching.Memory;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Razor.Compilation
 {
@@ -27,8 +26,13 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         /// Initializes a new instance of <see cref="CompilerCache"/>.
         /// </summary>
         /// <param name="fileProvider"><see cref="IFileProvider"/> used to locate Razor views.</param>
-        public CompilerCache([NotNull] IFileProvider fileProvider)
+        public CompilerCache(IFileProvider fileProvider)
         {
+            if (fileProvider == null)
+            {
+                throw new ArgumentNullException(nameof(fileProvider));
+            }
+
             _fileProvider = fileProvider;
             _cache = new MemoryCache(new MemoryCacheOptions { CompactOnMemoryPressure = false });
         }
@@ -41,10 +45,20 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         /// <param name="precompiledViews">A mapping of application relative paths of view to the precompiled view
         /// <see cref="Type"/>s.</param>
         public CompilerCache(
-            [NotNull] IFileProvider fileProvider,
-            [NotNull] IDictionary<string, Type> precompiledViews)
+            IFileProvider fileProvider,
+            IDictionary<string, Type> precompiledViews)
             : this(fileProvider)
         {
+            if (fileProvider == null)
+            {
+                throw new ArgumentNullException(nameof(fileProvider));
+            }
+
+            if (precompiledViews == null)
+            {
+                throw new ArgumentNullException(nameof(precompiledViews));
+            }
+
             foreach (var item in precompiledViews)
             {
                 var cacheEntry = new CompilerCacheResult(CompilationResult.Successful(item.Value));
@@ -54,9 +68,19 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
 
         /// <inheritdoc />
         public CompilerCacheResult GetOrAdd(
-            [NotNull] string relativePath,
-            [NotNull] Func<RelativeFileInfo, CompilationResult> compile)
+            string relativePath,
+            Func<RelativeFileInfo, CompilationResult> compile)
         {
+            if (relativePath == null)
+            {
+                throw new ArgumentNullException(nameof(relativePath));
+            }
+
+            if (compile == null)
+            {
+                throw new ArgumentNullException(nameof(compile));
+            }
+
             CompilerCacheResult cacheResult;
             // Attempt to lookup the cache entry using the passed in path. This will succeed if the path is already
             // normalized and a cache entry exists.

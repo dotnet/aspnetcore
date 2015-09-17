@@ -1,11 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Globalization;
 using Microsoft.AspNet.Mvc.Razor.Directives;
 using Microsoft.AspNet.Razor.CodeGenerators;
 using Microsoft.AspNet.Razor.CodeGenerators.Visitors;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -16,12 +16,32 @@ namespace Microsoft.AspNet.Mvc.Razor
         private readonly string _injectAttribute;
 
         public MvcCSharpCodeGenerator(
-            [NotNull] CodeGeneratorContext context,
-            [NotNull] string defaultModel,
-            [NotNull] string injectAttribute,
-            [NotNull] GeneratedTagHelperAttributeContext tagHelperAttributeContext)
+            CodeGeneratorContext context,
+            string defaultModel,
+            string injectAttribute,
+            GeneratedTagHelperAttributeContext tagHelperAttributeContext)
             : base(context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (defaultModel == null)
+            {
+                throw new ArgumentNullException(nameof(defaultModel));
+            }
+
+            if (injectAttribute == null)
+            {
+                throw new ArgumentNullException(nameof(injectAttribute));
+            }
+
+            if (tagHelperAttributeContext == null)
+            {
+                throw new ArgumentNullException(nameof(tagHelperAttributeContext));
+            }
+
             _tagHelperAttributeContext = tagHelperAttributeContext;
             _defaultModel = defaultModel;
             _injectAttribute = injectAttribute;
@@ -30,9 +50,19 @@ namespace Microsoft.AspNet.Mvc.Razor
         private string Model { get; set; }
 
         protected override CSharpCodeVisitor CreateCSharpCodeVisitor(
-            [NotNull] CSharpCodeWriter writer,
-            [NotNull] CodeGeneratorContext context)
+            CSharpCodeWriter writer,
+            CodeGeneratorContext context)
         {
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var csharpCodeVisitor = base.CreateCSharpCodeVisitor(writer, context);
 
             csharpCodeVisitor.TagHelperRenderer.AttributeValueCodeRenderer =
@@ -67,8 +97,13 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
         }
 
-        protected override void BuildConstructor([NotNull] CSharpCodeWriter writer)
+        protected override void BuildConstructor(CSharpCodeWriter writer)
         {
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
             base.BuildConstructor(writer);
 
             writer.WriteLineHiddenDirective();

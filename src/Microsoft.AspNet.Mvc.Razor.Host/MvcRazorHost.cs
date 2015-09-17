@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -15,7 +16,6 @@ using Microsoft.AspNet.Razor.CodeGenerators;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Razor.TagHelpers;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -151,9 +151,13 @@ namespace Microsoft.AspNet.Mvc.Razor
 
                 return _tagHelperDescriptorResolver;
             }
-            [param: NotNull]
             set
             {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
                 _tagHelperDescriptorResolver = value;
             }
         }
@@ -231,8 +235,13 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// </summary>
         /// <param name="sourceFileName">The path to a Razor file to locate _ViewImports.cshtml for.</param>
         /// <returns>Inherited <see cref="ChunkTreeResult"/>s.</returns>
-        public IReadOnlyList<ChunkTreeResult> GetInheritedChunkTreeResults([NotNull] string sourceFileName)
+        public IReadOnlyList<ChunkTreeResult> GetInheritedChunkTreeResults(string sourceFileName)
         {
+            if (sourceFileName == null)
+            {
+                throw new ArgumentNullException(nameof(sourceFileName));
+            }
+
             // Need the normalized path to resolve inherited chunks only. Full paths are needed for generated Razor
             // files checksum and line pragmas to enable DesignTime debugging.
             var normalizedPath = _pathNormalizer.NormalizePath(sourceFileName);
@@ -250,24 +259,44 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <inheritdoc />
-        public override RazorParser DecorateRazorParser([NotNull] RazorParser razorParser, string sourceFileName)
+        public override RazorParser DecorateRazorParser(RazorParser razorParser, string sourceFileName)
         {
+            if (razorParser == null)
+            {
+                throw new ArgumentNullException(nameof(razorParser));
+            }
+
             var inheritedChunkTrees = GetInheritedChunkTrees(sourceFileName);
 
             return new MvcRazorParser(razorParser, inheritedChunkTrees, DefaultInheritedChunks, ModelExpressionType);
         }
 
         /// <inheritdoc />
-        public override ParserBase DecorateCodeParser([NotNull] ParserBase incomingCodeParser)
+        public override ParserBase DecorateCodeParser(ParserBase incomingCodeParser)
         {
+            if (incomingCodeParser == null)
+            {
+                throw new ArgumentNullException(nameof(incomingCodeParser));
+            }
+
             return new MvcRazorCodeParser(_baseType);
         }
 
         /// <inheritdoc />
         public override CodeGenerator DecorateCodeGenerator(
-            [NotNull] CodeGenerator incomingGenerator,
-            [NotNull] CodeGeneratorContext context)
+            CodeGenerator incomingGenerator,
+            CodeGeneratorContext context)
         {
+            if (incomingGenerator == null)
+            {
+                throw new ArgumentNullException(nameof(incomingGenerator));
+            }
+
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var inheritedChunkTrees = GetInheritedChunkTrees(context.SourceFile);
 
             ChunkInheritanceUtility.MergeInheritedChunkTrees(

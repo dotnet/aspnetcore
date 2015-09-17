@@ -1,9 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc.Razor.Internal
@@ -28,9 +27,19 @@ namespace Microsoft.AspNet.Mvc.Razor.Internal
         /// <param name="serviceProvider">The application's <see cref="IServiceProvider"/>.</param>
         /// <param name="options">The <see cref="MvcViewOptions"/> to configure.</param>
         public static void ConfigureMvc(
-            [NotNull] IServiceProvider serviceProvider,
-            [NotNull] MvcViewOptions options)
+            IServiceProvider serviceProvider,
+            MvcViewOptions options)
         {
+            if (serviceProvider == null)
+            {
+                throw new ArgumentNullException(nameof(serviceProvider));
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
             var razorViewEngine = serviceProvider.GetRequiredService<IRazorViewEngine>();
             options.ViewEngines.Add(razorViewEngine);
         }

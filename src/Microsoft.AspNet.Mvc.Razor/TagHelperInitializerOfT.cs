@@ -4,7 +4,6 @@
 using System;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -18,14 +17,29 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// Creates a <see cref="TagHelperInitializer{TTagHelper}"/>.
         /// </summary>
         /// <param name="action">The initialization delegate.</param>
-        public TagHelperInitializer([NotNull] Action<TTagHelper, ViewContext> action)
+        public TagHelperInitializer(Action<TTagHelper, ViewContext> action)
         {
+            if (action == null)
+            {
+                throw new ArgumentNullException(nameof(action));
+            }
+
             _initializeDelegate = action;
         }
 
         /// <inheritdoc />
-        public void Initialize([NotNull] TTagHelper helper, [NotNull] ViewContext context)
+        public void Initialize(TTagHelper helper, ViewContext context)
         {
+            if (helper == null)
+            {
+                throw new ArgumentNullException(nameof(helper));
+            }
+
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             _initializeDelegate(helper, context);
         }
     }

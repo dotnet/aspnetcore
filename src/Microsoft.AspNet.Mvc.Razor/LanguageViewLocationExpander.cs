@@ -4,9 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Threading;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -45,8 +43,13 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <inheritdoc />
-        public void PopulateValues([NotNull] ViewLocationExpanderContext context)
+        public void PopulateValues(ViewLocationExpanderContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             // Using CurrentUICulture so it loads the locale specific resources for the views.
 #if DNX451
             context.Values[ValueKey] = Thread.CurrentThread.CurrentUICulture.Name;
@@ -57,9 +60,19 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         /// <inheritdoc />
         public virtual IEnumerable<string> ExpandViewLocations(
-            [NotNull] ViewLocationExpanderContext context,
-            [NotNull] IEnumerable<string> viewLocations)
+            ViewLocationExpanderContext context,
+            IEnumerable<string> viewLocations)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (viewLocations == null)
+            {
+                throw new ArgumentNullException(nameof(viewLocations));
+            }
+
             string value;
             context.Values.TryGetValue(ValueKey, out value);
 

@@ -10,7 +10,6 @@ using Microsoft.AspNet.Razor;
 using Microsoft.AspNet.Razor.CodeGenerators;
 using Microsoft.Dnx.Compilation;
 using Microsoft.Dnx.Runtime;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc.Razor.Compilation
@@ -43,8 +42,13 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         }
 
         /// <inheritdoc />
-        public CompilationResult Compile([NotNull] RelativeFileInfo file)
+        public CompilationResult Compile(RelativeFileInfo file)
         {
+            if (file == null)
+            {
+                throw new ArgumentNullException(nameof(file));
+            }
+
             GeneratorResults results;
             using (var inputStream = file.FileInfo.CreateReadStream())
             {

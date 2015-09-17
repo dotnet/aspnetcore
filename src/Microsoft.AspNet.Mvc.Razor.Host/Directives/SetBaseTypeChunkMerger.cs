@@ -1,8 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNet.Razor.Chunks;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Razor.Directives
 {
@@ -24,16 +24,31 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
         }
 
         /// <inheritdoc />
-        public void VisitChunk([NotNull] Chunk chunk)
+        public void VisitChunk(Chunk chunk)
         {
+            if (chunk == null)
+            {
+                throw new ArgumentNullException(nameof(chunk));
+            }
+
             var setBaseTypeChunk = ChunkHelper.EnsureChunk<SetBaseTypeChunk>(chunk);
             setBaseTypeChunk.TypeName = ChunkHelper.ReplaceTModel(setBaseTypeChunk.TypeName, _modelType);
             _isBaseTypeSet = true;
         }
 
         /// <inheritdoc />
-        public void Merge([NotNull] ChunkTree chunkTree, [NotNull] Chunk chunk)
+        public void Merge(ChunkTree chunkTree, Chunk chunk)
         {
+            if (chunkTree == null)
+            {
+                throw new ArgumentNullException(nameof(chunkTree));
+            }
+
+            if (chunk == null)
+            {
+                throw new ArgumentNullException(nameof(chunk));
+            }
+
             if (!_isBaseTypeSet)
             {
                 var baseTypeChunk = ChunkHelper.EnsureChunk<SetBaseTypeChunk>(chunk);

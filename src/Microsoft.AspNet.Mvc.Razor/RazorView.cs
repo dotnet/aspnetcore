@@ -10,7 +10,6 @@ using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewEngines;
 using Microsoft.AspNet.PageExecutionInstrumentation;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.Mvc.Razor
@@ -75,8 +74,18 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <inheritdoc />
-        public virtual async Task RenderAsync([NotNull] ViewContext context)
+        public virtual async Task RenderAsync(ViewContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             _pageExecutionFeature = context.HttpContext.Features.Get<IPageExecutionListenerFeature>();
 
             // Partials don't execute _ViewStart pages, but may execute Layout pages if the Layout property

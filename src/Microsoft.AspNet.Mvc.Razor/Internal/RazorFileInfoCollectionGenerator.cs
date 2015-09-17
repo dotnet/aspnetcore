@@ -1,11 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.AspNet.Mvc.Razor.Precompilation;
 using Microsoft.Dnx.Runtime;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Razor.Internal
 {
@@ -19,8 +19,13 @@ namespace Microsoft.AspNet.Mvc.Razor.Internal
         /// </summary>
         /// <param name="fileInfoCollection">The <see cref="RazorFileInfoCollection"/>.</param>
         /// <returns></returns>
-        public static string GenerateCode([NotNull] RazorFileInfoCollection fileInfoCollection)
+        public static string GenerateCode(RazorFileInfoCollection fileInfoCollection)
         {
+            if (fileInfoCollection == null)
+            {
+                throw new ArgumentNullException(nameof(fileInfoCollection));
+            }
+
             var builder = new StringBuilder();
 
             builder.Append(

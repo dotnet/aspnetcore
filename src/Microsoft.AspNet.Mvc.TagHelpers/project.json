@@ -13,8 +13,7 @@
     "Microsoft.Framework.Caching.Memory": "1.0.0-*",
     "Microsoft.Framework.FileSystemGlobbing": "1.0.0-*",
     "Microsoft.Framework.Logging.Abstractions": { "version": "1.0.0-*", "type": "build" },
-    "Microsoft.Framework.PropertyHelper.Sources": { "version": "1.0.0-*", "type": "build" },
-    "Microsoft.Framework.NotNullAttribute.Sources": { "version": "1.0.0-*", "type": "build" }
+    "Microsoft.Framework.PropertyHelper.Sources": { "version": "1.0.0-*", "type": "build" }
   },
   "frameworks": {
     "dnx451": { },

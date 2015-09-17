@@ -279,10 +279,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var generator = new TestableHtmlGenerator(new EmptyModelMetadataProvider());
 
             var validationSummaryTagHelper = new ValidationSummaryTagHelper(generator);
-            var expectedMessage = string.Format(
-                @"The value of argument 'value' ({0}) is invalid for Enum type 'Microsoft.AspNet.Mvc.ValidationSummary'.
-Parameter name: value",
-                validationSummary);
+            var validationTypeName = typeof(ValidationSummary).FullName;
+            var expectedMessage =
+                $@"The value of argument 'value' ({validationSummary}) is invalid for Enum type '{validationTypeName}'.
+Parameter name: value";
 
             // Act & Assert
             var ex = Assert.Throws<ArgumentException>(

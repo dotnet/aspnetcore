@@ -5,7 +5,6 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Html.Abstractions;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.Mvc.Razor
@@ -24,8 +23,13 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <see cref="WriteTo(TextWriter, IHtmlEncoder)"/> is called.</param>
         /// <remarks>Calls to <see cref="WriteTo(TextWriter, IHtmlEncoder)"/> result in a blocking invocation of
         /// <paramref name="asyncAction"/>.</remarks>
-        public HelperResult([NotNull] Func<TextWriter, Task> asyncAction)
+        public HelperResult(Func<TextWriter, Task> asyncAction)
         {
+            if (asyncAction == null)
+            {
+                throw new ArgumentNullException(nameof(asyncAction));
+            }
+
             _asyncAction = asyncAction;
         }
 
@@ -42,8 +46,18 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// </summary>
         /// <param name="writer">The <see cref="TextWriter"/> instance to write to.</param>
         /// <param name="encoder">The <see cref="IHtmlEncoder"/> to encode the content.</param>
-        public virtual void WriteTo([NotNull] TextWriter writer, [NotNull] IHtmlEncoder encoder)
+        public virtual void WriteTo(TextWriter writer, IHtmlEncoder encoder)
         {
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            if (encoder == null)
+            {
+                throw new ArgumentNullException(nameof(encoder));
+            }
+
             _asyncAction(writer).GetAwaiter().GetResult();
         }
     }

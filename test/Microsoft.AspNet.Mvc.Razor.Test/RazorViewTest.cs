@@ -1484,6 +1484,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             public TestableRazorPage(Action<TestableRazorPage> executeAction)
             {
                 _executeAction = executeAction;
+                HtmlEncoder = new CommonTestEncoder();
             }
 
             public void RenderBodyPublic()

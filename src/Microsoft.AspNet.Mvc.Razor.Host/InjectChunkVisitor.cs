@@ -1,10 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Razor.CodeGenerators;
 using Microsoft.AspNet.Razor.CodeGenerators.Visitors;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -12,18 +12,38 @@ namespace Microsoft.AspNet.Mvc.Razor
     {
         private readonly string _injectAttribute;
 
-        public InjectChunkVisitor([NotNull] CSharpCodeWriter writer,
-                                  [NotNull] CodeGeneratorContext context,
-                                  [NotNull] string injectAttributeName)
+        public InjectChunkVisitor(CSharpCodeWriter writer,
+                                  CodeGeneratorContext context,
+                                  string injectAttributeName)
             : base(writer, context)
         {
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (injectAttributeName == null)
+            {
+                throw new ArgumentNullException(nameof(injectAttributeName));
+            }
+
             _injectAttribute = "[" + injectAttributeName + "]";
         }
 
         public IList<InjectChunk> InjectChunks { get; } = new List<InjectChunk>();
 
-        protected override void Visit([NotNull] InjectChunk chunk)
+        protected override void Visit(InjectChunk chunk)
         {
+            if (chunk == null)
+            {
+                throw new ArgumentNullException(nameof(chunk));
+            }
+
             Writer.WriteLine(_injectAttribute);
 
             // Some of the chunks that we visit are either InjectDescriptors that are added by default or

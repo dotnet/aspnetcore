@@ -55,14 +55,15 @@ namespace Microsoft.AspNet.Mvc.Razor
             // Arrange
             var rootedAppPath = $"{rootPrefix}SomeComputer/Location/Project/";
             var rootedFilePath = $"{rootPrefix}SomeComputer/Location/Project/src/file.cshtml";
+            var chunkTreeCache = new DefaultChunkTreeCache(new TestFileProvider());
             var host = new MvcRazorHost(
-                chunkTreeCache: null,
+                chunkTreeCache,
                 pathNormalizer: new DesignTimeRazorPathNormalizer(rootedAppPath));
             var parser = new RazorParser(
                 host.CodeLanguage.CreateCodeParser(),
                 host.CreateMarkupParser(),
                 tagHelperDescriptorResolver: null);
-            var chunkInheritanceUtility = new PathValidatingChunkInheritanceUtility(host);
+            var chunkInheritanceUtility = new PathValidatingChunkInheritanceUtility(host, chunkTreeCache);
             host.ChunkInheritanceUtility = chunkInheritanceUtility;
 
             // Act
@@ -80,10 +81,11 @@ namespace Microsoft.AspNet.Mvc.Razor
             // Arrange
             var rootedAppPath = $"{rootPrefix}SomeComputer/Location/Project/";
             var rootedFilePath = $"{rootPrefix}SomeComputer/Location/Project/src/file.cshtml";
+            var chunkTreeCache = new DefaultChunkTreeCache(new TestFileProvider());
             var host = new MvcRazorHost(
-                chunkTreeCache: null,
+                chunkTreeCache,
                 pathNormalizer: new DesignTimeRazorPathNormalizer(rootedAppPath));
-            var chunkInheritanceUtility = new PathValidatingChunkInheritanceUtility(host);
+            var chunkInheritanceUtility = new PathValidatingChunkInheritanceUtility(host, chunkTreeCache);
             var codeGeneratorContext = new CodeGeneratorContext(
                 new ChunkGeneratorContext(
                     host,
@@ -371,8 +373,9 @@ namespace Microsoft.AspNet.Mvc.Razor
             RunDesignTimeTest(host, "Model", expectedLineMappings);
         }
 
-        private static void RunRuntimeTest(MvcRazorHost host,
-                                           string testName)
+        private static void RunRuntimeTest(
+            MvcRazorHost host,
+            string testName)
         {
             var inputFile = "TestFiles/Input/" + testName + ".cshtml";
             var outputFile = "TestFiles/Output/Runtime/" + testName + ".cs";
@@ -396,9 +399,10 @@ namespace Microsoft.AspNet.Mvc.Razor
 #endif
         }
 
-        private static void RunDesignTimeTest(MvcRazorHost host,
-                                              string testName,
-                                              IEnumerable<LineMapping> expectedLineMappings)
+        private static void RunDesignTimeTest(
+            MvcRazorHost host,
+            string testName,
+            IEnumerable<LineMapping> expectedLineMappings)
         {
             var inputFile = "TestFiles/Input/" + testName + ".cshtml";
             var outputFile = "TestFiles/Output/DesignTime/" + testName + ".cs";
@@ -457,13 +461,14 @@ namespace Microsoft.AspNet.Mvc.Razor
 #endif
         }
 
-        private static LineMapping BuildLineMapping(int documentAbsoluteIndex,
-                                                    int documentLineIndex,
-                                                    int documentCharacterIndex,
-                                                    int generatedAbsoluteIndex,
-                                                    int generatedLineIndex,
-                                                    int generatedCharacterIndex,
-                                                    int contentLength)
+        private static LineMapping BuildLineMapping(
+            int documentAbsoluteIndex,
+            int documentLineIndex,
+            int documentCharacterIndex,
+            int generatedAbsoluteIndex,
+            int generatedLineIndex,
+            int generatedCharacterIndex,
+            int contentLength)
         {
             var documentLocation = new SourceLocation(documentAbsoluteIndex,
                                                       documentLineIndex,
@@ -479,14 +484,14 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private class PathValidatingChunkInheritanceUtility : ChunkInheritanceUtility
         {
-            public PathValidatingChunkInheritanceUtility(MvcRazorHost razorHost)
-                : base(razorHost, chunkTreeCache: null, defaultInheritedChunks: new Chunk[0])
+            public PathValidatingChunkInheritanceUtility(MvcRazorHost razorHost, IChunkTreeCache chunkTreeCache)
+                : base(razorHost, chunkTreeCache, defaultInheritedChunks: new Chunk[0])
             {
             }
 
             public string InheritedChunkTreePagePath { get; private set; }
 
-            public override IReadOnlyList<ChunkTreeResult> GetInheritedChunkTreeResults([NotNull] string pagePath)
+            public override IReadOnlyList<ChunkTreeResult> GetInheritedChunkTreeResults(string pagePath)
             {
                 InheritedChunkTreePagePath = pagePath;
 
@@ -522,10 +527,11 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
                 private readonly GeneratedTagHelperAttributeContext _tagHelperAttributeContext;
 
-                public TestCSharpCodeGenerator(CodeGeneratorContext context,
-                                             string defaultModel,
-                                             string activateAttribute,
-                                             GeneratedTagHelperAttributeContext tagHelperAttributeContext)
+                public TestCSharpCodeGenerator(
+                    CodeGeneratorContext context,
+                    string defaultModel,
+                    string activateAttribute,
+                    GeneratedTagHelperAttributeContext tagHelperAttributeContext)
                     : base(context, defaultModel, activateAttribute, tagHelperAttributeContext)
                 {
                     _tagHelperAttributeContext = tagHelperAttributeContext;

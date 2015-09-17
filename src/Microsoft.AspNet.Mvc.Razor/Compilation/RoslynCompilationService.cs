@@ -17,7 +17,6 @@ using Microsoft.CodeAnalysis.Emit;
 using Microsoft.Dnx.Compilation;
 using Microsoft.Dnx.Compilation.CSharp;
 using Microsoft.Dnx.Runtime;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc.Razor.Compilation
@@ -69,8 +68,18 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         }
 
         /// <inheritdoc />
-        public CompilationResult Compile([NotNull] RelativeFileInfo fileInfo, [NotNull] string compilationContent)
+        public CompilationResult Compile(RelativeFileInfo fileInfo, string compilationContent)
         {
+            if (fileInfo == null)
+            {
+                throw new ArgumentNullException(nameof(fileInfo));
+            }
+
+            if (compilationContent == null)
+            {
+                throw new ArgumentNullException(nameof(compilationContent));
+            }
+
             var assemblyName = Path.GetRandomFileName();
             var compilationSettings = _compilerOptionsProvider.GetCompilationSettings(_environment);
             var syntaxTree = SyntaxTreeGenerator.Generate(compilationContent,

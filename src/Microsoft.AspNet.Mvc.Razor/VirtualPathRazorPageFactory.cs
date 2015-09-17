@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNet.Mvc.Razor.Compilation;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -47,8 +46,13 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <inheritdoc />
-        public IRazorPage CreateInstance([NotNull] string relativePath)
+        public IRazorPage CreateInstance(string relativePath)
         {
+            if (relativePath == null)
+            {
+                throw new ArgumentNullException(nameof(relativePath));
+            }
+
             if (relativePath.StartsWith("~/", StringComparison.Ordinal))
             {
                 // For tilde slash paths, drop the leading ~ to make it work with the underlying IFileProvider.

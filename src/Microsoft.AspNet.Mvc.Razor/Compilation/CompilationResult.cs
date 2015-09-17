@@ -3,9 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
-using Microsoft.Framework.Internal;
-using Microsoft.Dnx.Runtime;
 using Microsoft.Dnx.Compilation;
 
 namespace Microsoft.AspNet.Mvc.Razor.Compilation
@@ -61,8 +58,13 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         /// <param name="compilationFailures"><see cref="CompilationFailure"/>s produced from parsing or
         /// compiling the Razor file.</param>
         /// <returns>A <see cref="CompilationResult"/> instance for a failed compilation.</returns>
-        public static CompilationResult Failed([NotNull] IEnumerable<CompilationFailure> compilationFailures)
+        public static CompilationResult Failed(IEnumerable<CompilationFailure> compilationFailures)
         {
+            if (compilationFailures == null)
+            {
+                throw new ArgumentNullException(nameof(compilationFailures));
+            }
+
             return new CompilationResult
             {
                 CompilationFailures = compilationFailures
@@ -74,8 +76,13 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         /// </summary>
         /// <param name="type">The compiled type.</param>
         /// <returns>A <see cref="CompilationResult"/> instance for a successful compilation.</returns>
-        public static CompilationResult Successful([NotNull] Type type)
+        public static CompilationResult Successful(Type type)
         {
+            if (type == null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
             return new CompilationResult
             {
                 CompiledType = type

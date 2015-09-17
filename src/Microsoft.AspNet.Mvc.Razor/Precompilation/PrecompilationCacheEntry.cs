@@ -1,9 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Razor.Precompilation
 {
@@ -17,9 +17,20 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
         /// </summary>
         /// <param name="fileInfo">The <see cref="RazorFileInfo"/> of the file being cached.</param>
         /// <param name="syntaxTree">The <see cref="CodeAnalysis.SyntaxTree"/> to cache.</param>
-        public PrecompilationCacheEntry([NotNull] RazorFileInfo fileInfo,
-                                        [NotNull] SyntaxTree syntaxTree)
+        public PrecompilationCacheEntry(
+            RazorFileInfo fileInfo,
+            SyntaxTree syntaxTree)
         {
+            if (fileInfo == null)
+            {
+                throw new ArgumentNullException(nameof(fileInfo));
+            }
+
+            if (syntaxTree == null)
+            {
+                throw new ArgumentNullException(nameof(syntaxTree));
+            }
+
             FileInfo = fileInfo;
             SyntaxTree = syntaxTree;
         }
@@ -30,8 +41,13 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
         /// <param name="diagnostics">The <see cref="IReadOnlyList{Diagnostic}"/> produced from parsing the Razor
         /// file. This does not contain <see cref="Diagnostic"/>s produced from compiling the parsed
         /// <see cref="CodeAnalysis.SyntaxTree"/>.</param>
-        public PrecompilationCacheEntry([NotNull] IReadOnlyList<Diagnostic> diagnostics)
+        public PrecompilationCacheEntry(IReadOnlyList<Diagnostic> diagnostics)
         {
+            if (diagnostics == null)
+            {
+                throw new ArgumentNullException(nameof(diagnostics));
+            }
+
             Diagnostics = diagnostics;
         }
 

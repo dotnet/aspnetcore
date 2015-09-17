@@ -23,9 +23,8 @@ namespace Microsoft.AspNet.Mvc.Razor
 {
     public class RazorPageTest
     {
-#pragma warning disable 1998
-        private readonly RenderAsyncDelegate _nullRenderAsyncDelegate = async writer => { };
-#pragma warning restore 1998
+        private readonly RenderAsyncDelegate _nullRenderAsyncDelegate = writer => Task.FromResult(0);
+        private readonly Func<TextWriter, Task> NullAsyncWrite = CreateAsyncWriteDelegate(string.Empty);
 
         [Fact]
         public async Task WritingScopesRedirectContentWrittenToViewContextWriter()
@@ -304,7 +303,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
                 { "baz", _nullRenderAsyncDelegate }
             };
-            page.RenderBodyDelegateAsync = CreateBodyAction("body-content");
+            page.RenderBodyDelegateAsync = CreateAsyncWriteDelegate("body-content");
 
             // Act
             await page.ExecuteAsync();
@@ -328,7 +327,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
                 { "baz", _nullRenderAsyncDelegate }
             };
-            page.RenderBodyDelegateAsync = CreateBodyAction("body-content");
+            page.RenderBodyDelegateAsync = CreateAsyncWriteDelegate("body-content");
 
             // Act
             await page.ExecuteAsync();
@@ -341,7 +340,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         public async Task RenderSection_ThrowsIfSectionIsRenderedMoreThanOnce()
         {
             // Arrange
-            var expected = new HelperResult(asyncAction: null);
+            var expected = new HelperResult(NullAsyncWrite);
             var page = CreatePage(v =>
             {
                 v.Path = "/Views/TestPath/Test.cshtml";
@@ -365,7 +364,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         public async Task RenderSectionAsync_ThrowsIfSectionIsRenderedMoreThanOnce()
         {
             // Arrange
-            var expected = new HelperResult(asyncAction: null);
+            var expected = new HelperResult(NullAsyncWrite);
             var page = CreatePage(async v =>
             {
                 v.Path = "/Views/TestPath/Test.cshtml";
@@ -389,7 +388,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         public async Task RenderSectionAsync_ThrowsIfSectionIsRenderedMoreThanOnce_WithSyncMethod()
         {
             // Arrange
-            var expected = new HelperResult(asyncAction: null);
+            var expected = new HelperResult(NullAsyncWrite);
             var page = CreatePage(async v =>
             {
                 v.Path = "/Views/TestPath/Test.cshtml";
@@ -413,7 +412,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         public async Task RenderSectionAsync_ThrowsIfNotInvokedFromLayoutPage()
         {
             // Arrange
-            var expected = new HelperResult(asyncAction: null);
+            var expected = new HelperResult(NullAsyncWrite);
             var page = CreatePage(async v =>
             {
                 v.Path = "/Views/TestPath/Test.cshtml";
@@ -437,7 +436,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
             });
             page.Path = path;
-            page.RenderBodyDelegateAsync = CreateBodyAction("some content");
+            page.RenderBodyDelegateAsync = CreateAsyncWriteDelegate("some content");
 
             // Act
             await page.ExecuteAsync();
@@ -457,7 +456,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
             });
             page.Path = path;
-            page.RenderBodyDelegateAsync = CreateBodyAction("some content");
+            page.RenderBodyDelegateAsync = CreateAsyncWriteDelegate("some content");
             page.PreviousSectionWriters = new Dictionary<string, RenderAsyncDelegate>
             {
                 { sectionName, _nullRenderAsyncDelegate }
@@ -483,7 +482,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 v.RenderSection(sectionA);
                 v.RenderSection(sectionB);
             });
-            page.RenderBodyDelegateAsync = CreateBodyAction("some content");
+            page.RenderBodyDelegateAsync = CreateAsyncWriteDelegate("some content");
             page.PreviousSectionWriters = new Dictionary<string, RenderAsyncDelegate>
             {
                 { sectionA, _nullRenderAsyncDelegate },
@@ -517,7 +516,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 v.Write(v.RenderSection("footer"));
                 v.WriteLiteral("Layout end");
             });
-            page.RenderBodyDelegateAsync = CreateBodyAction("body content" + Environment.NewLine);
+            page.RenderBodyDelegateAsync = CreateAsyncWriteDelegate("body content" + Environment.NewLine);
             page.PreviousSectionWriters = new Dictionary<string, RenderAsyncDelegate>
             {
                 {
@@ -837,7 +836,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var executionContext = new TagHelperExecutionContext(
                 "p",
                 tagMode: TagMode.StartTagAndEndTag,
-                items: null,
+                items: new Dictionary<object, object>(),
                 uniqueId: string.Empty,
                 executeChildContentAsync: () => Task.FromResult(result: true),
                 startTagHelperWritingScope: () => { },
@@ -872,7 +871,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var executionContext = new TagHelperExecutionContext(
                 "p",
                 tagMode: TagMode.StartTagAndEndTag,
-                items: null,
+                items: new Dictionary<object, object>(),
                 uniqueId: string.Empty,
                 executeChildContentAsync: () => Task.FromResult(result: true),
                 startTagHelperWritingScope: () => { },
@@ -904,7 +903,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var executionContext = new TagHelperExecutionContext(
                 "p",
                 tagMode: TagMode.StartTagAndEndTag,
-                items: null,
+                items: new Dictionary<object, object>(),
                 uniqueId: string.Empty,
                 executeChildContentAsync: () => Task.FromResult(result: true),
                 startTagHelperWritingScope: () => { },
@@ -1060,7 +1059,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     },
                     {
                         GetTagHelperOutput(
-                            tagName:     null,
+                            tagName:     "",
                             attributes:  new TagHelperAttributeList(),
                             tagMode: TagMode.StartTagAndEndTag,
                             preElement:  null,
@@ -1359,7 +1358,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     },
                     {
                         GetTagHelperOutput(
-                            tagName:     null,
+                            tagName:     "",
                             attributes:  new TagHelperAttributeList(),
                             tagMode: TagMode.StartTagAndEndTag,
                             preElement:  "Before",
@@ -1371,7 +1370,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     },
                     {
                         GetTagHelperOutput(
-                            tagName:     null,
+                            tagName:     "",
                             attributes:  new TagHelperAttributeList { { "test", "testVal" } },
                             tagMode: TagMode.SelfClosing,
                             preElement:  "Before",
@@ -1407,7 +1406,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     },
                     {
                         GetTagHelperOutput(
-                            tagName:     null,
+                            tagName:     "",
                             attributes:  new TagHelperAttributeList { { "test", "testVal" } },
                             tagMode: TagMode.StartTagOnly,
                             preElement:  "Before",
@@ -1455,7 +1454,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     },
                     {
                         GetTagHelperOutput(
-                            tagName:     null,
+                            tagName:     "",
                             attributes:  new TagHelperAttributeList(),
                             tagMode: TagMode.StartTagAndEndTag,
                             preElement:  null,
@@ -1467,7 +1466,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     },
                     {
                         GetTagHelperOutput(
-                            tagName:     null,
+                            tagName:     "",
                             attributes:  new TagHelperAttributeList { { "test", "testVal" } },
                             tagMode: TagMode.SelfClosing,
                             preElement:  null,
@@ -1503,7 +1502,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     },
                     {
                         GetTagHelperOutput(
-                            tagName:     null,
+                            tagName:     "",
                             attributes:  new TagHelperAttributeList { { "test", "testVal" } },
                             tagMode: TagMode.StartTagOnly,
                             preElement:  null,
@@ -1575,7 +1574,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     },
                     {
                         GetTagHelperOutput(
-                            tagName:     null,
+                            tagName:     "",
                             attributes:  new TagHelperAttributeList(),
                             tagMode: TagMode.SelfClosing,
                             preElement:  "Before",
@@ -1599,7 +1598,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     },
                     {
                         GetTagHelperOutput(
-                            tagName:     null,
+                            tagName:     "",
                             attributes:  new TagHelperAttributeList(),
                             tagMode: TagMode.StartTagOnly,
                             preElement:  "Before",
@@ -1611,7 +1610,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     },
                     {
                         GetTagHelperOutput(
-                            tagName:     null,
+                            tagName:     "",
                             attributes:  new TagHelperAttributeList(),
                             tagMode: TagMode.StartTagAndEndTag,
                             preElement:  "Before",
@@ -1623,7 +1622,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     },
                     {
                         GetTagHelperOutput(
-                            tagName:     null,
+                            tagName:     "",
                             attributes:  new TagHelperAttributeList { { "test", "testVal" } },
                             tagMode: TagMode.StartTagAndEndTag,
                             preElement:  "Before",
@@ -1790,8 +1789,9 @@ namespace Microsoft.AspNet.Mvc.Razor
             return output;
         }
 
-        private static TestableRazorPage CreatePage(Action<TestableRazorPage> executeAction,
-                                                    ViewContext context = null)
+        private static TestableRazorPage CreatePage(
+            Action<TestableRazorPage> executeAction,
+            ViewContext context = null)
         {
             return CreatePage(page =>
             {
@@ -1801,8 +1801,9 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
 
-        private static TestableRazorPage CreatePage(Func<TestableRazorPage, Task> executeAction,
-                                                    ViewContext context = null)
+        private static TestableRazorPage CreatePage(
+            Func<TestableRazorPage, Task> executeAction,
+            ViewContext context = null)
         {
             context = context ?? CreateViewContext();
             var view = new Mock<TestableRazorPage> { CallBase = true };
@@ -1832,13 +1833,18 @@ namespace Microsoft.AspNet.Mvc.Razor
                 new HtmlHelperOptions());
         }
 
-        private static Func<TextWriter, Task> CreateBodyAction(string value)
+        private static Func<TextWriter, Task> CreateAsyncWriteDelegate(string value)
         {
             return async (writer) => await writer.WriteAsync(value);
         }
 
         public abstract class TestableRazorPage : RazorPage
         {
+            public TestableRazorPage()
+            {
+                HtmlEncoder = new CommonTestEncoder();
+            }
+
             public string RenderedContent
             {
                 get

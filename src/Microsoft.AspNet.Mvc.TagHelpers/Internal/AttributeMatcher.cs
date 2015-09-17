@@ -4,9 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
 {
@@ -24,9 +22,19 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
         /// <param name="modeInfos">The modes and their required attributes.</param>
         /// <returns>The <see cref="ModeMatchResult{TMode}"/>.</returns>
         public static ModeMatchResult<TMode> DetermineMode<TMode>(
-            [NotNull] TagHelperContext context,
-            [NotNull] IEnumerable<ModeAttributes<TMode>> modeInfos)
+            TagHelperContext context,
+            IEnumerable<ModeAttributes<TMode>> modeInfos)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (modeInfos == null)
+            {
+                throw new ArgumentNullException(nameof(modeInfos));
+            }
+
             // true == full match, false == partial match
             var matchedAttributes = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
             var result = new ModeMatchResult<TMode>();

@@ -19,7 +19,6 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Dnx.Compilation;
 using Microsoft.Dnx.Compilation.CSharp;
 using Microsoft.Framework.Caching.Memory;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Razor.Precompilation
 {
@@ -28,10 +27,25 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
         private const string CacheKeyDirectorySeparator = "/";
 
         public RazorPreCompiler(
-            [NotNull] BeforeCompileContext compileContext,
-            [NotNull] IFileProvider fileProvider,
-            [NotNull] IMemoryCache precompilationCache)
+            BeforeCompileContext compileContext,
+            IFileProvider fileProvider,
+            IMemoryCache precompilationCache)
         {
+            if (compileContext == null)
+            {
+                throw new ArgumentNullException(nameof(compileContext));
+            }
+
+            if (fileProvider == null)
+            {
+                throw new ArgumentNullException(nameof(fileProvider));
+            }
+
+            if (precompilationCache == null)
+            {
+                throw new ArgumentNullException(nameof(precompilationCache));
+            }
+
             CompileContext = compileContext;
             FileProvider = fileProvider;
             // There should always be a syntax tree even if there are no files (we generate one)
@@ -137,9 +151,19 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
         }
 
         protected virtual RazorFileInfoCollection GeneratePrecompiledAssembly(
-            [NotNull] IEnumerable<SyntaxTree> syntaxTrees,
-            [NotNull] IEnumerable<RazorFileInfo> razorFileInfos)
+            IEnumerable<SyntaxTree> syntaxTrees,
+            IEnumerable<RazorFileInfo> razorFileInfos)
         {
+            if (syntaxTrees == null)
+            {
+                throw new ArgumentNullException(nameof(syntaxTrees));
+            }
+
+            if (razorFileInfos == null)
+            {
+                throw new ArgumentNullException(nameof(razorFileInfos));
+            }
+
             var resourcePrefix = string.Join(".", CompileContext.Compilation.AssemblyName,
                                                   nameof(RazorPreCompiler),
                                                   Path.GetRandomFileName());
@@ -241,8 +265,13 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
             }
         }
 
-        protected virtual PrecompilationCacheEntry GetCacheEntry([NotNull] RelativeFileInfo fileInfo)
+        protected virtual PrecompilationCacheEntry GetCacheEntry(RelativeFileInfo fileInfo)
         {
+            if (fileInfo == null)
+            {
+                throw new ArgumentNullException(nameof(fileInfo));
+            }
+
             using (var stream = fileInfo.FileInfo.CreateReadStream())
             {
                 var host = GetRazorHost();

@@ -4,7 +4,6 @@
 using System;
 using Microsoft.AspNet.Razor.CodeGenerators;
 using Microsoft.AspNet.Razor.TagHelpers;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -19,8 +18,13 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// Instantiates a new instance of <see cref="MvcTagHelperAttributeValueCodeRenderer"/>.
         /// </summary>
         /// <param name="context">Contains code generation information for rendering attribute values.</param>
-        public MvcTagHelperAttributeValueCodeRenderer([NotNull] GeneratedTagHelperAttributeContext context)
+        public MvcTagHelperAttributeValueCodeRenderer(GeneratedTagHelperAttributeContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             _context = context;
         }
 
@@ -30,12 +34,32 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// created by calling into <see cref="GeneratedTagHelperAttributeContext.CreateModelExpressionMethodName"/>.
         /// </remarks>
         public override void RenderAttributeValue(
-            [NotNull] TagHelperAttributeDescriptor attributeDescriptor,
-            [NotNull] CSharpCodeWriter writer,
-            [NotNull] CodeGeneratorContext codeGeneratorContext,
-            [NotNull] Action<CSharpCodeWriter> renderAttributeValue,
+            TagHelperAttributeDescriptor attributeDescriptor,
+            CSharpCodeWriter writer,
+            CodeGeneratorContext codeGeneratorContext,
+            Action<CSharpCodeWriter> renderAttributeValue,
             bool complexValue)
         {
+            if (attributeDescriptor == null)
+            {
+                throw new ArgumentNullException(nameof(attributeDescriptor));
+            }
+
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            if (codeGeneratorContext == null)
+            {
+                throw new ArgumentNullException(nameof(codeGeneratorContext));
+            }
+
+            if (renderAttributeValue == null)
+            {
+                throw new ArgumentNullException(nameof(renderAttributeValue));
+            }
+
             if (attributeDescriptor.TypeName.Equals(_context.ModelExpressionTypeName, StringComparison.Ordinal))
             {
                 writer

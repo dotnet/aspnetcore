@@ -6,16 +6,31 @@ using System.Linq;
 using Microsoft.AspNet.Razor.CodeGenerators;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Razor.Precompilation
 {
     public static class GeneratorResultExtensions
     {
-        public static string GetMainClassName([NotNull] this GeneratorResults results,
-                                              [NotNull] IMvcRazorHost host,
-                                              [NotNull] SyntaxTree syntaxTree)
+        public static string GetMainClassName(
+            this GeneratorResults results,
+            IMvcRazorHost host,
+            SyntaxTree syntaxTree)
         {
+            if (results == null)
+            {
+                throw new ArgumentNullException(nameof(results));
+            }
+
+            if (host == null)
+            {
+                throw new ArgumentNullException(nameof(host));
+            }
+
+            if (syntaxTree == null)
+            {
+                throw new ArgumentNullException(nameof(syntaxTree));
+            }
+
             // The mainClass name should return directly from the generator results.
             var classes = syntaxTree.GetRoot().DescendantNodes().OfType<ClassDeclarationSyntax>();
             var mainClass = classes.FirstOrDefault(c =>

@@ -4,13 +4,11 @@
 using System;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.AspNet.Mvc.Razor.Compilation;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.Framework.DependencyInjection.Extensions;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.DependencyInjection
 {
@@ -26,9 +24,19 @@ namespace Microsoft.Framework.DependencyInjection
         /// <param name="setupAction">An action to configure the <see cref="RazorViewEngineOptions"/>.</param>
         /// <returns>The <see cref="IMvcBuilder"/>.</returns>
         public static IMvcBuilder AddRazorOptions(
-            [NotNull] this IMvcBuilder builder,
-            [NotNull] Action<RazorViewEngineOptions> setupAction)
+            this IMvcBuilder builder,
+            Action<RazorViewEngineOptions> setupAction)
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (setupAction == null)
+            {
+                throw new ArgumentNullException(nameof(setupAction));
+            }
+
             builder.Services.Configure(setupAction);
             return builder;
         }
@@ -45,10 +53,20 @@ namespace Microsoft.Framework.DependencyInjection
         /// <param name="initialize">An action to initialize the <typeparamref name="TTagHelper"/>.</param>
         /// <returns>The <see cref="IMvcBuilder"/> instance this method extends.</returns>
         public static IMvcBuilder InitializeTagHelper<TTagHelper>(
-            [NotNull] this IMvcBuilder builder,
-            [NotNull] Action<TTagHelper, ViewContext> initialize)
+            this IMvcBuilder builder,
+            Action<TTagHelper, ViewContext> initialize)
             where TTagHelper : ITagHelper
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (initialize == null)
+            {
+                throw new ArgumentNullException(nameof(initialize));
+            }
+
             var initializer = new TagHelperInitializer<TTagHelper>(initialize);
 
             builder.Services.AddInstance(typeof(ITagHelperInitializer<TTagHelper>), initializer);
@@ -57,9 +75,19 @@ namespace Microsoft.Framework.DependencyInjection
         }
 
         public static IMvcBuilder AddPrecompiledRazorViews(
-            [NotNull] this IMvcBuilder builder,
-            [NotNull] params Assembly[] assemblies)
+            this IMvcBuilder builder,
+            params Assembly[] assemblies)
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (assemblies == null)
+            {
+                throw new ArgumentNullException(nameof(assemblies));
+            }
+
             builder.Services.Replace(
                 ServiceDescriptor.Singleton<ICompilerCacheProvider>(serviceProvider =>
                     ActivatorUtilities.CreateInstance<PrecompiledViewsCompilerCacheProvider>(

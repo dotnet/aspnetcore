@@ -1,9 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Mvc.Actions;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -18,10 +17,20 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <param name="actionContext">The <see cref="Mvc.ActionContext"/> for the current executing action.</param>
         /// <param name="viewName">The view name.</param>
         /// <param name="isPartial">Determines if the view being discovered is a partial.</param>
-        public ViewLocationExpanderContext([NotNull] ActionContext actionContext,
-                                           [NotNull] string viewName,
+        public ViewLocationExpanderContext(ActionContext actionContext,
+                                           string viewName,
                                            bool isPartial)
         {
+            if (actionContext == null)
+            {
+                throw new ArgumentNullException(nameof(actionContext));
+            }
+
+            if (viewName == null)
+            {
+                throw new ArgumentNullException(nameof(viewName));
+            }
+
             ActionContext = actionContext;
             ViewName = viewName;
             IsPartial = isPartial;

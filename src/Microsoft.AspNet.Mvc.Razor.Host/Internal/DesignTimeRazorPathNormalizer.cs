@@ -3,7 +3,6 @@
 
 using System;
 using System.IO;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Razor.Internal
 {
@@ -11,13 +10,23 @@ namespace Microsoft.AspNet.Mvc.Razor.Internal
     {
         private readonly string _applicationRoot;
 
-        public DesignTimeRazorPathNormalizer([NotNull] string applicationRoot)
+        public DesignTimeRazorPathNormalizer(string applicationRoot)
         {
+            if (applicationRoot == null)
+            {
+                throw new ArgumentNullException(nameof(applicationRoot));
+            }
+
             _applicationRoot = applicationRoot;
         }
 
-        public override string NormalizePath([NotNull] string path)
+        public override string NormalizePath(string path)
         {
+            if (path == null)
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
             // Need to convert path to application relative (rooted paths are passed in during design time).
             if (Path.IsPathRooted(path) && path.StartsWith(_applicationRoot, StringComparison.Ordinal))
             {

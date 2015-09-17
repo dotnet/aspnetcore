@@ -254,7 +254,7 @@ namespace Microsoft.AspNet.Mvc
         public async Task ExecuteAsync_Throws_IfNoViewEngineCanBeResolved()
         {
             // Arrange
-            var expected = "No service for type 'Microsoft.AspNet.Mvc.Rendering.ICompositeViewEngine'" +
+            var expected = $"No service for type '{typeof(ICompositeViewEngine).FullName}'" +
                 " has been registered.";
 
             var view = Mock.Of<IView>();

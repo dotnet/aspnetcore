@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNet.FileProviders;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Razor.Compilation
 {
@@ -18,8 +17,13 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         /// </summary>
         /// <param name="fileInfo"><see cref="IFileInfo"/> for the file.</param>
         /// <param name="relativePath">Path of the file relative to the application base.</param>
-        public RelativeFileInfo([NotNull] IFileInfo fileInfo, string relativePath)
+        public RelativeFileInfo(IFileInfo fileInfo, string relativePath)
         {
+            if (fileInfo == null)
+            {
+                throw new ArgumentNullException(nameof(fileInfo));
+            }
+
             if (string.IsNullOrEmpty(relativePath))
             {
                 throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(relativePath));

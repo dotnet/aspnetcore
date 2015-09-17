@@ -1,8 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -16,8 +16,18 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// </summary>
         /// <param name="name">The name of the page that was located.</param>
         /// <param name="page">The located <see cref="IRazorPage"/>.</param>
-        public RazorPageResult([NotNull] string name, [NotNull] IRazorPage page)
+        public RazorPageResult(string name, IRazorPage page)
         {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            if (page == null)
+            {
+                throw new ArgumentNullException(nameof(page));
+            }
+
             Name = name;
             Page = page;
         }
@@ -27,8 +37,18 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// </summary>
         /// <param name="name">The name of the page that was located.</param>
         /// <param name="searchedLocations">The locations that were searched.</param>
-        public RazorPageResult([NotNull] string name, [NotNull] IEnumerable<string> searchedLocations)
+        public RazorPageResult(string name, IEnumerable<string> searchedLocations)
         {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            if (searchedLocations == null)
+            {
+                throw new ArgumentNullException(nameof(searchedLocations));
+            }
+
             Name = name;
             SearchedLocations = searchedLocations;
         }

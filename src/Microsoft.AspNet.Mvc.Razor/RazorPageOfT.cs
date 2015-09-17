@@ -8,7 +8,6 @@ using Microsoft.AspNet.Mvc.Razor.Internal;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -41,8 +40,13 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <remarks>
         /// Compiler normally infers <typeparamref name="TValue"/> from the given <paramref name="expression"/>.
         /// </remarks>
-        public ModelExpression CreateModelExpression<TValue>([NotNull] Expression<Func<TModel, TValue>> expression)
+        public ModelExpression CreateModelExpression<TValue>(Expression<Func<TModel, TValue>> expression)
         {
+            if (expression == null)
+            {
+                throw new ArgumentNullException(nameof(expression));
+            }
+
             if (_provider == null)
             {
                 _provider = Context.RequestServices.GetRequiredService<IModelMetadataProvider>();

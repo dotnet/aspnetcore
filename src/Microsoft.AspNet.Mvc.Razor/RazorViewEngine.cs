@@ -7,9 +7,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using Microsoft.AspNet.Mvc.Actions;
-using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewEngines;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc.Razor
@@ -101,9 +99,14 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         /// <inheritdoc />
         public ViewEngineResult FindView(
-            [NotNull] ActionContext context,
+            ActionContext context,
             string viewName)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             if (string.IsNullOrEmpty(viewName))
             {
                 throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(viewName));
@@ -115,9 +118,14 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         /// <inheritdoc />
         public ViewEngineResult FindPartialView(
-            [NotNull] ActionContext context,
+            ActionContext context,
             string partialViewName)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             if (string.IsNullOrEmpty(partialViewName))
             {
                 throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(partialViewName));
@@ -129,9 +137,14 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         /// <inheritdoc />
         public RazorPageResult FindPage(
-            [NotNull] ActionContext context,
+            ActionContext context,
             string pageName)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             if (string.IsNullOrEmpty(pageName))
             {
                 throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(pageName));
@@ -154,9 +167,19 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// consistently cased results.
         /// </remarks>
         public static string GetNormalizedRouteValue(
-            [NotNull] ActionContext context,
-            [NotNull] string key)
+            ActionContext context,
+            string key)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             object routeValue;
             if (!context.RouteData.Values.TryGetValue(key, out routeValue))
             {

@@ -32,8 +32,18 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <inheritdoc />
-        public void Activate([NotNull] IRazorPage page, [NotNull] ViewContext context)
+        public void Activate(IRazorPage page, ViewContext context)
         {
+            if (page == null)
+            {
+                throw new ArgumentNullException(nameof(page));
+            }
+
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var activationInfo = _activationInfo.GetOrAdd(page.GetType(),
                                                           CreateViewActivationInfo);
 

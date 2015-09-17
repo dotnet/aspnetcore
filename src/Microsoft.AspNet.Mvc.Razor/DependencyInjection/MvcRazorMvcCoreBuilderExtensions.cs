@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -13,24 +13,38 @@ using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.Framework.Caching.Memory;
 using Microsoft.Framework.DependencyInjection.Extensions;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.Framework.DependencyInjection
 {
     public static class MvcRazorMvcCoreBuilderExtensions
     {
-        public static IMvcCoreBuilder AddRazorViewEngine([NotNull] this IMvcCoreBuilder builder)
+        public static IMvcCoreBuilder AddRazorViewEngine(this IMvcCoreBuilder builder)
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
             builder.AddViews();
             AddRazorViewEngineServices(builder.Services);
             return builder;
         }
 
         public static IMvcCoreBuilder AddRazorViewEngine(
-            [NotNull] this IMvcCoreBuilder builder,
-            [NotNull] Action<RazorViewEngineOptions> setupAction)
+            this IMvcCoreBuilder builder,
+            Action<RazorViewEngineOptions> setupAction)
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (setupAction == null)
+            {
+                throw new ArgumentNullException(nameof(setupAction));
+            }
+
             builder.AddViews();
             AddRazorViewEngineServices(builder.Services);
 
@@ -43,9 +57,19 @@ namespace Microsoft.Framework.DependencyInjection
         }
 
         public static IMvcCoreBuilder AddPrecompiledRazorViews(
-            [NotNull] this IMvcCoreBuilder builder,
-            [NotNull] params Assembly[] assemblies)
+            this IMvcCoreBuilder builder,
+            params Assembly[] assemblies)
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (assemblies == null)
+            {
+                throw new ArgumentNullException(nameof(assemblies));
+            }
+
             AddRazorViewEngine(builder);
 
             builder.Services.Replace(
@@ -69,10 +93,20 @@ namespace Microsoft.Framework.DependencyInjection
         /// <param name="initialize">An action to initialize the <typeparamref name="TTagHelper"/>.</param>
         /// <returns>The <see cref="IMvcCoreBuilder"/> instance this method extends.</returns>
         public static IMvcCoreBuilder InitializeTagHelper<TTagHelper>(
-            [NotNull] this IMvcCoreBuilder builder,
-            [NotNull] Action<TTagHelper, ViewContext> initialize)
+            this IMvcCoreBuilder builder,
+            Action<TTagHelper, ViewContext> initialize)
             where TTagHelper : ITagHelper
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (initialize == null)
+            {
+                throw new ArgumentNullException(nameof(initialize));
+            }
+
             var initializer = new TagHelperInitializer<TTagHelper>(initialize);
 
             builder.Services.AddInstance(typeof(ITagHelperInitializer<TTagHelper>), initializer);

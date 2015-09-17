@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Razor.Chunks;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Razor.Directives
 {
@@ -20,22 +19,42 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
         /// Initializes a new instance of <see cref="InjectChunkMerger"/>.
         /// </summary>
         /// <param name="modelType">The model type to be used to replace &lt;TModel&gt; tokens.</param>
-        public InjectChunkMerger([NotNull] string modelType)
+        public InjectChunkMerger(string modelType)
         {
+            if (modelType == null)
+            {
+                throw new ArgumentNullException(nameof(modelType));
+            }
+
             _modelType = "<" + modelType + ">";
         }
 
         /// <inheritdoc />
-        public void VisitChunk([NotNull] Chunk chunk)
+        public void VisitChunk(Chunk chunk)
         {
+            if (chunk == null)
+            {
+                throw new ArgumentNullException(nameof(chunk));
+            }
+
             var injectChunk = ChunkHelper.EnsureChunk<InjectChunk>(chunk);
             injectChunk.TypeName = ChunkHelper.ReplaceTModel(injectChunk.TypeName, _modelType);
             _addedMemberNames.Add(injectChunk.MemberName);
         }
 
         /// <inheritdoc />
-        public void Merge([NotNull] ChunkTree chunkTree, [NotNull] Chunk chunk)
+        public void Merge(ChunkTree chunkTree, Chunk chunk)
         {
+            if (chunkTree == null)
+            {
+                throw new ArgumentNullException(nameof(chunkTree));
+            }
+
+            if (chunk == null)
+            {
+                throw new ArgumentNullException(nameof(chunk));
+            }
+
             var injectChunk = ChunkHelper.EnsureChunk<InjectChunk>(chunk);
             if (!_addedMemberNames.Contains(injectChunk.MemberName))
             {

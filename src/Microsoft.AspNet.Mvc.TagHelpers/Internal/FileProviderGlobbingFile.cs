@@ -1,9 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.Framework.FileSystemGlobbing.Abstractions;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
 {
@@ -11,8 +11,18 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
     {
         private const char DirectorySeparatorChar = '/';
 
-        public FileProviderGlobbingFile([NotNull] IFileInfo fileInfo, [NotNull] DirectoryInfoBase parent)
+        public FileProviderGlobbingFile(IFileInfo fileInfo, DirectoryInfoBase parent)
         {
+            if (fileInfo == null)
+            {
+                throw new ArgumentNullException(nameof(fileInfo));
+            }
+
+            if (parent == null)
+            {
+                throw new ArgumentNullException(nameof(parent));
+            }
+
             Name = fileInfo.Name;
             ParentDirectory = parent;
             FullName = ParentDirectory.FullName + DirectorySeparatorChar + Name;

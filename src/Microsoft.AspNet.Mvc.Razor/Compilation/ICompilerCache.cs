@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Razor.Compilation
 {
@@ -18,7 +17,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         /// <param name="relativePath">Application relative path to the file.</param>
         /// <param name="compile">An delegate that will generate a compilation result.</param>
         /// <returns>A cached <see cref="CompilationResult"/>.</returns>
-        CompilerCacheResult GetOrAdd([NotNull] string relativePath,
-                                     [NotNull] Func<RelativeFileInfo, CompilationResult> compile);
+        CompilerCacheResult GetOrAdd(
+            string relativePath,
+            Func<RelativeFileInfo, CompilationResult> compile);
     }
 }

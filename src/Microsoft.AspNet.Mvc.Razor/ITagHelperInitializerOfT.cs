@@ -3,7 +3,6 @@
 
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -19,6 +18,6 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// </summary>
         /// <param name="helper">The <typeparamref name="TTagHelper"/> to initialize.</param>
         /// <param name="context">The <see cref="ViewContext"/> for the executing view.</param>
-        void Initialize([NotNull] TTagHelper helper, [NotNull] ViewContext context);
+        void Initialize(TTagHelper helper, ViewContext context);
     }
 }

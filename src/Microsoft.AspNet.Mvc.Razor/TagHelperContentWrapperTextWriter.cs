@@ -1,10 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Text;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// Initializes a new instance of the <see cref="TagHelperContentWrapperTextWriter"/> class.
         /// </summary>
         /// <param name="encoding">The <see cref="Encoding"/> in which output is written.</param>
-        public TagHelperContentWrapperTextWriter([NotNull] Encoding encoding)
+        public TagHelperContentWrapperTextWriter(Encoding encoding)
             : this(encoding, new DefaultTagHelperContent())
         {
         }
@@ -27,8 +27,18 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// </summary>
         /// <param name="encoding">The <see cref="Encoding"/> in which output is written.</param>
         /// <param name="content">The <see cref="TagHelperContent"/> to write to.</param>
-        public TagHelperContentWrapperTextWriter([NotNull] Encoding encoding, [NotNull] TagHelperContent content)
+        public TagHelperContentWrapperTextWriter(Encoding encoding, TagHelperContent content)
         {
+            if (encoding == null)
+            {
+                throw new ArgumentNullException(nameof(encoding));
+            }
+
+            if (content == null)
+            {
+                throw new ArgumentNullException(nameof(content));
+            }
+
             Content = content;
             Encoding = encoding;
         }

@@ -1,8 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNet.Mvc.ViewEngines;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.Mvc.Razor
@@ -23,9 +23,10 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <param name="pageActivator">The <see cref="IRazorPageActivator"/> used to activate pages.</param>
         /// <param name="viewStartProvider">The <see cref="IViewStartProvider"/> used for discovery of _ViewStart
         /// pages</param>
-        public RazorViewFactory(IRazorPageActivator pageActivator,
-                                IViewStartProvider viewStartProvider,
-                                IHtmlEncoder htmlEncoder)
+        public RazorViewFactory(
+            IRazorPageActivator pageActivator,
+            IViewStartProvider viewStartProvider,
+            IHtmlEncoder htmlEncoder)
         {
             _pageActivator = pageActivator;
             _viewStartProvider = viewStartProvider;
@@ -33,10 +34,21 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <inheritdoc />
-        public IView GetView([NotNull] IRazorViewEngine viewEngine,
-                             [NotNull] IRazorPage page,
-                             bool isPartial)
+        public IView GetView(
+            IRazorViewEngine viewEngine,
+            IRazorPage page,
+            bool isPartial)
         {
+            if (viewEngine == null)
+            {
+                throw new ArgumentNullException(nameof(viewEngine));
+            }
+
+            if (page == null)
+            {
+                throw new ArgumentNullException(nameof(page));
+            }
+
             var razorView = new RazorView(
                 viewEngine,
                 _pageActivator,
