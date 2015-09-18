@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -16,6 +17,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private static readonly Action _awaitableIsNotCompleted = () => { };
 
         private readonly MemoryPool2 _memory;
+        private readonly ManualResetEventSlim _manualResetEvent = new ManualResetEventSlim(false);
 
         private Action _awaitableState;
         private Exception _awaitableError;
@@ -23,7 +25,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private MemoryPoolBlock2 _head;
         private MemoryPoolBlock2 _tail;
         private MemoryPoolBlock2 _pinned;
-        private readonly object _syncHeadAndTail = new Object();
+        private readonly object _sync = new Object();
 
         public SocketInput(MemoryPool2 memory)
         {
@@ -55,16 +57,16 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             return taken;
         }
 
-        public PinResult Pin(int minimumSize)
+        public IncomingBuffer IncomingStart(int minimumSize)
         {
-            lock (_syncHeadAndTail)
+            lock (_sync)
             {
                 if (_tail != null && minimumSize <= _tail.Data.Offset + _tail.Data.Count - _tail.End)
                 {
                     _pinned = _tail;
                     var data = new ArraySegment<byte>(_pinned.Data.Array, _pinned.End, _pinned.Data.Offset + _pinned.Data.Count - _pinned.End);
                     var dataPtr = _pinned.Pin();
-                    return new PinResult
+                    return new IncomingBuffer
                     {
                         Data = data,
                         DataPtr = dataPtr,
@@ -73,19 +75,21 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
 
             _pinned = _memory.Lease(minimumSize);
-            return new PinResult
+            return new IncomingBuffer
             {
                 Data = _pinned.Data,
                 DataPtr = _pinned.Pin()
             };
         }
 
-        public void Unpin(int count)
+        public void IncomingComplete(int count, Exception error)
         {
-            // Unpin may called without an earlier Pin 
-            if (_pinned != null)
+            Action awaitableState;
+
+            lock (_sync)
             {
-                lock (_syncHeadAndTail)
+                // Unpin may called without an earlier Pin 
+                if (_pinned != null)
                 {
                     _pinned.End += count;
                     if (_head == null)
@@ -103,6 +107,71 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     }
                 }
                 _pinned = null;
+
+                if (count == 0)
+                {
+                    RemoteIntakeFin = true;
+                }
+                if (error != null)
+                {
+                    _awaitableError = error;
+                }
+
+                awaitableState = Interlocked.Exchange(
+                    ref _awaitableState,
+                    _awaitableIsCompleted);
+
+                _manualResetEvent.Set();
+            }
+
+            if (awaitableState != _awaitableIsCompleted &&
+                awaitableState != _awaitableIsNotCompleted)
+            {
+                Task.Run(awaitableState);
+            }
+        }
+
+        public MemoryPoolBlock2.Iterator ConsumingStart()
+        {
+            lock (_sync)
+            {
+                return new MemoryPoolBlock2.Iterator(_head);
+            }
+        }
+
+        public void ConsumingComplete(
+            MemoryPoolBlock2.Iterator consumed,
+            MemoryPoolBlock2.Iterator examined)
+        {
+            MemoryPoolBlock2 returnStart = null;
+            MemoryPoolBlock2 returnEnd = null;
+            lock (_sync)
+            {
+                if (!consumed.IsDefault)
+                {
+                    returnStart = _head;
+                    returnEnd = consumed.Block;
+                    _head = consumed.Block;
+                    _head.Start = consumed.Index;
+                }
+                if (!examined.IsDefault &&
+                    examined.IsEnd &&
+                    RemoteIntakeFin == false &&
+                    _awaitableError == null)
+                {
+                    _manualResetEvent.Reset();
+
+                    var awaitableState = Interlocked.CompareExchange(
+                        ref _awaitableState,
+                        _awaitableIsNotCompleted,
+                        _awaitableIsCompleted);
+                }
+            }
+            while (returnStart != returnEnd)
+            {
+                var returnBlock = returnStart;
+                returnStart = returnStart.Next;
+                returnBlock.Pool.Return(returnBlock);
             }
         }
 
@@ -110,7 +179,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             return this;
         }
-
 
         public void OnCompleted(Action continuation)
         {
@@ -138,94 +206,20 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             OnCompleted(continuation);
         }
 
-        public void SetCompleted(Exception error)
-        {
-            if (error != null)
-            {
-                _awaitableError = error;
-            }
-
-            var awaitableState = Interlocked.Exchange(
-                ref _awaitableState,
-                _awaitableIsCompleted);
-
-            if (awaitableState != _awaitableIsCompleted &&
-                awaitableState != _awaitableIsNotCompleted)
-            {
-                Task.Run(awaitableState);
-            }
-        }
-
-        public void SetNotCompleted()
-        {
-            if (RemoteIntakeFin || _awaitableError != null)
-            {
-                // TODO: Race condition - setting either of these can leave awaitable not completed
-                return;
-            }
-            var awaitableState = Interlocked.CompareExchange(
-                ref _awaitableState,
-                _awaitableIsNotCompleted,
-                _awaitableIsCompleted);
-
-            if (awaitableState == _awaitableIsNotCompleted)
-            {
-                return;
-            }
-            else if (awaitableState == _awaitableIsCompleted)
-            {
-                return;
-            }
-            else
-            {
-                // THIS IS AN ERROR STATE - ONLY ONE WAITER MAY EXIST
-            }
-        }
-
         public void GetResult()
         {
+            if (!IsCompleted)
+            {
+                _manualResetEvent.Wait();
+            }
             var error = _awaitableError;
             if (error != null)
             {
-                throw new AggregateException(error);
+                throw new IOException(error.Message, error);
             }
         }
 
-        public MemoryPoolBlock2.Iterator GetIterator()
-        {
-            lock (_syncHeadAndTail)
-            {
-                return new MemoryPoolBlock2.Iterator(_head);
-            }
-        }
-
-        public void JumpTo(MemoryPoolBlock2.Iterator iterator)
-        {
-            MemoryPoolBlock2 returnStart;
-            MemoryPoolBlock2 returnEnd;
-            lock (_syncHeadAndTail)
-            {
-                // TODO: leave _pinned intact
-                // TODO: return when empty
-
-                returnStart = _head;
-                returnEnd = iterator.Block;
-                _head = iterator.Block;
-                _head.Start = iterator.Index;
-                if (iterator.IsEnd)
-                {
-                    SetNotCompleted();
-                }
-            }
-            while (returnStart != returnEnd)
-            {
-                var returnBlock = returnStart;
-                returnStart = returnStart.Next;
-                returnBlock.Pool.Return(returnBlock);
-            }
-        }
-
-        public struct PinResult
+        public struct IncomingBuffer
         {
             public ArraySegment<byte> Data;
             public IntPtr DataPtr;

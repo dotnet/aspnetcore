@@ -505,52 +505,62 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         private bool TakeStartLine(SocketInput input)
         {
-            var scan = input.GetIterator();
-
-            var begin = scan;
-            if (scan.Seek(' ') == -1)
+            var scan = input.ConsumingStart();
+            var consumed = scan;
+            try
             {
-                return false;
-            }
-            var method = begin.GetString(scan);
-
-            scan.Take();
-            begin = scan;
-            var chFound = scan.Seek(' ', '?');
-            if (chFound == -1)
-            {
-                return false;
-            }
-            var requestUri = begin.GetString(scan);
-
-            var queryString = "";
-            if (chFound == '?')
-            {
-                begin = scan;
-                if (scan.Seek(' ') != ' ')
+                var begin = scan;
+                if (scan.Seek(' ') == -1)
                 {
                     return false;
                 }
-                queryString = begin.GetString(scan);
-            }
+                var method = begin.GetString(scan);
 
-            scan.Take();
-            begin = scan;
-            if (scan.Seek('\r') == -1)
+                scan.Take();
+                begin = scan;
+                var chFound = scan.Seek(' ', '?');
+                if (chFound == -1)
+                {
+                    return false;
+                }
+                var requestUri = begin.GetString(scan);
+
+                var queryString = "";
+                if (chFound == '?')
+                {
+                    begin = scan;
+                    if (scan.Seek(' ') != ' ')
+                    {
+                        return false;
+                    }
+                    queryString = begin.GetString(scan);
+                }
+
+                scan.Take();
+                begin = scan;
+                if (scan.Seek('\r') == -1)
+                {
+                    return false;
+                }
+                var httpVersion = begin.GetString(scan);
+
+                scan.Take();
+                if (scan.Take() != '\n')
+                {
+                    return false;
+                }
+
+                consumed = scan;
+                Method = method;
+                RequestUri = requestUri;
+                QueryString = queryString;
+                HttpVersion = httpVersion;
+                return true;
+            }
+            finally
             {
-                return false;
+                input.ConsumingComplete(consumed, scan);
             }
-            var httpVersion = begin.GetString(scan);
-
-            scan.Take();
-            if (scan.Take() != '\n') return false;
-
-            Method = method;
-            RequestUri = requestUri;
-            QueryString = queryString;
-            HttpVersion = httpVersion;
-            input.JumpTo(scan);
-            return true;
         }
 
         static string GetString(ArraySegment<byte> range, int startIndex, int endIndex)
@@ -560,12 +570,12 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         private bool TakeMessageHeaders(SocketInput input)
         {
-            int chFirst;
-            int chSecond;
-            var scan = input.GetIterator();
+            var scan = input.ConsumingStart();
             var consumed = scan;
             try
             {
+                int chFirst;
+                int chSecond;
                 while (!scan.IsEnd)
                 {
                     var beginName = scan;
@@ -642,8 +652,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             value = value.Replace("\r\n", " ");
                         }
 
-                        _requestHeaders.Append(name.Array, name.Offset, name.Count, value);
                         consumed = scan;
+                        _requestHeaders.Append(name.Array, name.Offset, name.Count, value);
                         break;
                     }
                 }
@@ -651,7 +661,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
             finally
             {
-                input.JumpTo(consumed);
+                input.ConsumingComplete(consumed, scan);
             }
         }
 

@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 var task = _reader.ReadAsync(actual, offset, actual.Length - offset);
                 if (!Debugger.IsAttached)
                 {
-                    Assert.True(task.Wait(1000), "timeout");
+                    Assert.True(task.Wait(4000), "timeout");
                 }
                 var count = await task;
                 if (count == 0)
@@ -95,7 +95,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 var task = _reader.ReadAsync(actual, offset, 1);
                 if (!Debugger.IsAttached)
                 {
-                    Assert.True(task.Wait(1000), "timeout");
+                    Assert.True(task.Wait(4000), "timeout");
                 }
                 var count = await task;
                 if (count == 0)

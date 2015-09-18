@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         private Libuv.uv_buf_t OnAlloc(UvStreamHandle handle, int suggestedSize)
         {
-            var result = SocketInput.Pin(2048);
+            var result = SocketInput.IncomingStart(2048);
 
             return handle.Libuv.buf_init(
                 result.DataPtr,
@@ -68,8 +68,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         private void OnRead(UvStreamHandle handle, int readCount, int errorCode, Exception error)
         {
-            SocketInput.Unpin(readCount);
-
             var normalRead = readCount != 0 && errorCode == 0;
             var normalDone = readCount == 0 && (errorCode == 0 || errorCode == Constants.ECONNRESET || errorCode == Constants.EOF);
             var errorDone = !(normalDone || normalRead);
@@ -80,12 +78,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
             else if (normalDone || errorDone)
             {
-                SocketInput.RemoteIntakeFin = true;
                 _socket.ReadStop();
                 Log.ConnectionReadFin(_connectionId);
             }
 
-            SocketInput.SetCompleted(errorDone ? error : null);
+            SocketInput.IncomingComplete(readCount, errorDone ? error : null);
         }
 
         void IConnectionControl.Pause()

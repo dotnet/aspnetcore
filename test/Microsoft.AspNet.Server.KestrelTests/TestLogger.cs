@@ -13,17 +13,17 @@ namespace Microsoft.AspNet.Server.KestrelTests
 
         public override void ConnectionRead(long connectionId, int count)
         {
-            _logger.LogDebug(1, @"Connection id ""{ConnectionId}"" recv {count} bytes.", connectionId, count);
+            //_logger.LogDebug(1, @"Connection id ""{ConnectionId}"" recv {count} bytes.", connectionId, count);
         }
 
         public override void ConnectionWrite(long connectionId, int count)
         {
-            _logger.LogDebug(1, @"Connection id ""{ConnectionId}"" send {count} bytes.", connectionId, count);
+            //_logger.LogDebug(1, @"Connection id ""{ConnectionId}"" send {count} bytes.", connectionId, count);
         }
 
         public override void ConnectionWriteCallback(long connectionId, int status)
         {
-            _logger.LogDebug(1, @"Connection id ""{ConnectionId}"" send finished with status {status}.", connectionId, status);
+            //_logger.LogDebug(1, @"Connection id ""{ConnectionId}"" send finished with status {status}.", connectionId, status);
         }
 
         public class TestLogger : ILogger
