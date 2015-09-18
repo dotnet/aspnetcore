@@ -19,11 +19,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
     public class TagHelperParseTreeRewriterTest : TagHelperRewritingTestBase
     {
         [Fact]
-        public void Rewrite_UnderstandsTagHelperPrefixAndRestrictedChildren()
+        public void Rewrite_UnderstandsTagHelperPrefixAndAllowedChildren()
         {
             // Arrange
-            var factory = CreateDefaultSpanFactory();
-            var blockFactory = new BlockFactory(factory);
             var documentContent = "<th:p><th:strong></th:strong></th:p>";
             var expectedOutput = new MarkupBlock(
                 new MarkupTagHelperBlock("th:p",
@@ -682,6 +680,28 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             nestedTagError("custom", "p", "custom", 43, 6),
                             nestedTagError("br", "p", "custom", 51, 2),
                             nestedContentError("p", "custom", 56, 9)
+                        }
+                    },
+                    {
+                        "<p></</p>",
+                        new[] { "custom" },
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p",
+                                blockFactory.MarkupTagBlock("</"))),
+                        new[]
+                        {
+                            nestedContentError("p", "custom", 3, 2),
+                        }
+                    },
+                    {
+                        "<p><</p>",
+                        new[] { "custom" },
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p",
+                                blockFactory.MarkupTagBlock("<"))),
+                        new[]
+                        {
+                            nestedContentError("p", "custom", 3, 1),
                         }
                     }
                 };

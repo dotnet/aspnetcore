@@ -308,7 +308,18 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
         {
             if (_currentTagHelperTracker?.AllowedChildren != null)
             {
-                OnAllowedChildrenTagError(_currentTagHelperTracker, tagBlock, errorSink);
+                var tagName = GetTagName(tagBlock);
+
+                // Treat partial tags such as '</' which have no tag names as content based errors.
+                if (string.IsNullOrEmpty(tagName))
+                {
+                    Debug.Assert(tagBlock.Children.First() is Span);
+
+                    ValidateParentTagHelperAllowsContent(tagBlock.Children.First() as Span, errorSink);
+                    return;
+                }
+
+                OnAllowedChildrenTagError(_currentTagHelperTracker, tagName, tagBlock, errorSink);
             }
         }
 
@@ -319,16 +330,16 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
             if (currentlyAllowedChildren != null &&
                 !currentlyAllowedChildren.Contains(tagName, StringComparer.OrdinalIgnoreCase))
             {
-                OnAllowedChildrenTagError(_currentTagHelperTracker, tagBlock, errorSink);
+                OnAllowedChildrenTagError(_currentTagHelperTracker, tagName, tagBlock, errorSink);
             }
         }
 
         private static void OnAllowedChildrenTagError(
             TagHelperBlockTracker tracker,
+            string tagName,
             Block tagBlock,
             ErrorSink errorSink)
         {
-            var tagName = GetTagName(tagBlock);
             var allowedChildrenString = string.Join(", ", tracker.AllowedChildren);
             var errorMessage = RazorResources.FormatTagHelperParseTreeRewriter_InvalidNestedTag(
                 tagName,
