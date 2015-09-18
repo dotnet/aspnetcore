@@ -36,7 +36,7 @@ default NUGET_FEED = 'https://api.nuget.org/v3/index.json'
     Configuration = "Debug";
     E("Configuration", Configuration);
   }
-  
+
   Log.Info("Build v2: " + IsBuildV2);
 }
 
@@ -105,7 +105,7 @@ default NUGET_FEED = 'https://api.nuget.org/v3/index.json'
     {
         projectFiles.ForEach(projectFile => DnuPack(projectFile, BUILD_DIR, Configuration));
     }
-    
+
     foreach (var nupkg in Files.Include(Path.Combine(BUILD_DIR, "*/*.nupkg")))
     {
         File.Copy(nupkg, Path.Combine(BUILD_DIR, Path.GetFileName(nupkg)), true);
@@ -115,31 +115,38 @@ default NUGET_FEED = 'https://api.nuget.org/v3/index.json'
 #build-compile target='compile' if='IsBuildV2'
   @{
       // If the src folder, build and create the packages
-      if (Directory.Exists("src")) 
+      if (Directory.Exists("src"))
       {
-          DnuPack("src/**", BUILD_DIR, Configuration);
-          
+          // Handle projects 1 to 3 levels down from src/, avoiding path too long errors.
+          DnuPack("src/*;src/*/*;src/*/*/*", BUILD_DIR, Configuration);
+
           foreach (var nupkg in Files.Include(Path.Combine(BUILD_DIR, "*/*.nupkg")))
           {
               File.Copy(nupkg, Path.Combine(BUILD_DIR, Path.GetFileName(nupkg)), true);
           }
       }
-      
+
       // For test and samples only check if they compile
       var projectsToBuild = new List<string>();
-      if (Directory.Exists("test")) 
+      if (Directory.Exists("test"))
       {
-          projectsToBuild.Add("test/**");
+          // Handle projects 1 to 3 levels down from test/, avoiding path too long errors.
+          projectsToBuild.Add("test/*");
+          projectsToBuild.Add("test/*/*");
+          projectsToBuild.Add("test/*/*/*");
       }
-      if (Directory.Exists("samples")) 
+      if (Directory.Exists("samples"))
       {
-          projectsToBuild.Add("samples/**");  
+          // Handle projects 1 to 3 levels down from samples/, avoiding path too long errors.
+          projectsToBuild.Add("samples/*");
+          projectsToBuild.Add("samples/*/*");
+          projectsToBuild.Add("samples/*/*/*");
       }
-      
-      if (projectsToBuild.Any()) 
+
+      if (projectsToBuild.Any())
       {
           DnuBuild(
-            string.Join(";", projectsToBuild), 
+            string.Join(";", projectsToBuild),
             Configuration);
       }
   }
@@ -352,7 +359,7 @@ macro name="DnuBuild" projectFile='string' configuration='string'
 
 macro name="DnuPack" projectFile='string' kpmPackOutputDir='string' configuration='string'
     kpm-pack
-    
+
 macro name="DeleteFolder" delete='string'
     directory
 
