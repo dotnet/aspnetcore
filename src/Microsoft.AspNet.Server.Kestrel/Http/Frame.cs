@@ -552,6 +552,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 RequestUri = requestUri;
                 QueryString = queryString;
                 HttpVersion = httpVersion;
+                Path = RequestUri;
                 return true;
             }
             finally
