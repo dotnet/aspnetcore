@@ -155,7 +155,7 @@ namespace Microsoft.AspNet.Razor.Runtime
         }
 
         /// <summary>
-        /// Invalid tag helper directive '{0}' value. '{1} is not allowed in prefix '{2}'.
+        /// Invalid tag helper directive '{0}' value. '{1}' is not allowed in prefix '{2}'.
         /// </summary>
         internal static string TagHelperDescriptorResolver_InvalidTagHelperPrefixValue
         {
@@ -163,7 +163,7 @@ namespace Microsoft.AspNet.Razor.Runtime
         }
 
         /// <summary>
-        /// Invalid tag helper directive '{0}' value. '{1} is not allowed in prefix '{2}'.
+        /// Invalid tag helper directive '{0}' value. '{1}' is not allowed in prefix '{2}'.
         /// </summary>
         internal static string FormatTagHelperDescriptorResolver_InvalidTagHelperPrefixValue(object p0, object p1, object p2)
         {

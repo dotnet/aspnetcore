@@ -1499,7 +1499,7 @@ namespace Microsoft.AspNet.Razor
         }
 
         /// <summary>
-        /// Found an end tag (&amp;lt;/{0}&amp;gt;) for tag helper '{1}' with tag structure that disallows an end tag ('{2}').
+        /// Found an end tag (&lt;/{0}&gt;) for tag helper '{1}' with tag structure that disallows an end tag ('{2}').
         /// </summary>
         internal static string TagHelperParseTreeRewriter_EndTagTagHelperMustNotHaveAnEndTag
         {
@@ -1507,7 +1507,7 @@ namespace Microsoft.AspNet.Razor
         }
 
         /// <summary>
-        /// Found an end tag (&amp;lt;/{0}&amp;gt;) for tag helper '{1}' with tag structure that disallows an end tag ('{2}').
+        /// Found an end tag (&lt;/{0}&gt;) for tag helper '{1}' with tag structure that disallows an end tag ('{2}').
         /// </summary>
         internal static string FormatTagHelperParseTreeRewriter_EndTagTagHelperMustNotHaveAnEndTag(object p0, object p1, object p2)
         {
@@ -1515,7 +1515,7 @@ namespace Microsoft.AspNet.Razor
         }
 
         /// <summary>
-        /// The parent &amp;lt;{0}&amp;gt; tag helper does not allow non-tag content. Only child tag helper(s) targeting tag name(s) '{1}' are allowed.
+        /// The parent &lt;{0}&gt; tag helper does not allow non-tag content. Only child tag helper(s) targeting tag name(s) '{1}' are allowed.
         /// </summary>
         internal static string TagHelperParseTreeRewriter_CannotHaveNonTagContent
         {
@@ -1523,7 +1523,7 @@ namespace Microsoft.AspNet.Razor
         }
 
         /// <summary>
-        /// The parent &amp;lt;{0}&amp;gt; tag helper does not allow non-tag content. Only child tag helper(s) targeting tag name(s) '{1}' are allowed.
+        /// The parent &lt;{0}&gt; tag helper does not allow non-tag content. Only child tag helper(s) targeting tag name(s) '{1}' are allowed.
         /// </summary>
         internal static string FormatTagHelperParseTreeRewriter_CannotHaveNonTagContent(object p0, object p1)
         {
@@ -1531,7 +1531,7 @@ namespace Microsoft.AspNet.Razor
         }
 
         /// <summary>
-        /// The &amp;lt;{0}&amp;gt; tag is not allowed by parent &amp;lt;{1}&amp;gt; tag helper. Only child tag helper(s) targeting tag name(s) '{2}' are allowed.
+        /// The &lt;{0}&gt; tag is not allowed by parent &lt;{1}&gt; tag helper. Only child tag helper(s) targeting tag name(s) '{2}' are allowed.
         /// </summary>
         internal static string TagHelperParseTreeRewriter_InvalidNestedTag
         {
@@ -1539,7 +1539,7 @@ namespace Microsoft.AspNet.Razor
         }
 
         /// <summary>
-        /// The &amp;lt;{0}&amp;gt; tag is not allowed by parent &amp;lt;{1}&amp;gt; tag helper. Only child tag helper(s) targeting tag name(s) '{2}' are allowed.
+        /// The &lt;{0}&gt; tag is not allowed by parent &lt;{1}&gt; tag helper. Only child tag helper(s) targeting tag name(s) '{2}' are allowed.
         /// </summary>
         internal static string FormatTagHelperParseTreeRewriter_InvalidNestedTag(object p0, object p1, object p2)
         {

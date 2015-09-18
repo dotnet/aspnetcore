@@ -417,12 +417,12 @@ Instead, wrap the contents of the block in "{{}}":
     <value>Tag helpers '{0}' and '{1}' targeting element '{2}' must not expect different {3} values.</value>
   </data>
   <data name="TagHelperParseTreeRewriter_EndTagTagHelperMustNotHaveAnEndTag" xml:space="preserve">
-    <value>Found an end tag (&amp;lt;/{0}&amp;gt;) for tag helper '{1}' with tag structure that disallows an end tag ('{2}').</value>
+    <value>Found an end tag (&lt;/{0}&gt;) for tag helper '{1}' with tag structure that disallows an end tag ('{2}').</value>
   </data>
   <data name="TagHelperParseTreeRewriter_CannotHaveNonTagContent" xml:space="preserve">
-    <value>The parent &amp;lt;{0}&amp;gt; tag helper does not allow non-tag content. Only child tag helper(s) targeting tag name(s) '{1}' are allowed.</value>
+    <value>The parent &lt;{0}&gt; tag helper does not allow non-tag content. Only child tag helper(s) targeting tag name(s) '{1}' are allowed.</value>
   </data>
   <data name="TagHelperParseTreeRewriter_InvalidNestedTag" xml:space="preserve">
-    <value>The &amp;lt;{0}&amp;gt; tag is not allowed by parent &amp;lt;{1}&amp;gt; tag helper. Only child tag helper(s) targeting tag name(s) '{2}' are allowed.</value>
+    <value>The &lt;{0}&gt; tag is not allowed by parent &lt;{1}&gt; tag helper. Only child tag helper(s) targeting tag name(s) '{2}' are allowed.</value>
   </data>
 </root>
