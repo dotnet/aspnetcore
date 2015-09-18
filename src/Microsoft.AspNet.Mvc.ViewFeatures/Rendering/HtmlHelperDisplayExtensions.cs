@@ -54,8 +54,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </param>
         /// <param name="additionalViewData">
         /// An anonymous <see cref="object"/> or <see cref="System.Collections.Generic.IDictionary{string, object}"/>
-        /// that can contain additional view data that will be merged into the <see cref="ViewDataDictionary{TModel}"/>
-        /// instance created for the template.
+        /// that can contain additional view data that will be merged into the
+        /// <see cref="ViewFeatures.ViewDataDictionary{TModel}"/> instance created for the template.
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the created HTML.</returns>
         /// <remarks>
@@ -131,8 +131,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="templateName">The name of the template used to create the HTML markup.</param>
         /// <param name="additionalViewData">
         /// An anonymous <see cref="object"/> or <see cref="System.Collections.Generic.IDictionary{string, object}"/>
-        /// that can contain additional view data that will be merged into the <see cref="ViewDataDictionary{TModel}"/>
-        /// instance created for the template.
+        /// that can contain additional view data that will be merged into the
+        /// <see cref="ViewFeatures.ViewDataDictionary{TModel}"/> instance created for the template.
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the created HTML.</returns>
         /// <remarks>
@@ -240,8 +240,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="expression">An expression to be evaluated against the current model.</param>
         /// <param name="additionalViewData">
         /// An anonymous <see cref="object"/> or <see cref="System.Collections.Generic.IDictionary{string, object}"/>
-        /// that can contain additional view data that will be merged into the <see cref="ViewDataDictionary{TModel}"/>
-        /// instance created for the template.
+        /// that can contain additional view data that will be merged into the
+        /// <see cref="ViewFeatures.ViewDataDictionary{TModel}"/> instance created for the template.
         /// </param>
         /// <typeparam name="TModel">The type of the model.</typeparam>
         /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
@@ -311,8 +311,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="templateName">The name of the template used to create the HTML markup.</param>
         /// <param name="additionalViewData">
         /// An anonymous <see cref="object"/> or <see cref="System.Collections.Generic.IDictionary{string, object}"/>
-        /// that can contain additional view data that will be merged into the <see cref="ViewDataDictionary{TModel}"/>
-        /// instance created for the template.
+        /// that can contain additional view data that will be merged into the
+        /// <see cref="ViewFeatures.ViewDataDictionary{TModel}"/> instance created for the template.
         /// </param>
         /// <typeparam name="TModel">The type of the model.</typeparam>
         /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
@@ -410,8 +410,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="additionalViewData">
         /// An anonymous <see cref="object"/> or <see cref="System.Collections.Generic.IDictionary{string, object}"/>
-        /// that can contain additional view data that will be merged into the <see cref="ViewDataDictionary{TModel}"/>
-        /// instance created for the template.
+        /// that can contain additional view data that will be merged into the
+        /// <see cref="ViewFeatures.ViewDataDictionary{TModel}"/> instance created for the template.
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the created HTML.</returns>
         /// <remarks>
@@ -468,8 +468,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="templateName">The name of the template used to create the HTML markup.</param>
         /// <param name="additionalViewData">
         /// An anonymous <see cref="object"/> or <see cref="System.Collections.Generic.IDictionary{string, object}"/>
-        /// that can contain additional view data that will be merged into the <see cref="ViewDataDictionary{TModel}"/>
-        /// instance created for the template.
+        /// that can contain additional view data that will be merged into the
+        /// <see cref="ViewFeatures.ViewDataDictionary{TModel}"/> instance created for the template.
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the created HTML.</returns>
         /// <remarks>
@@ -541,8 +541,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </param>
         /// <param name="additionalViewData">
         /// An anonymous <see cref="object"/> or <see cref="System.Collections.Generic.IDictionary{string, object}"/>
-        /// that can contain additional view data that will be merged into the <see cref="ViewDataDictionary{TModel}"/>
-        /// instance created for the template.
+        /// that can contain additional view data that will be merged into the
+        /// <see cref="ViewFeatures.ViewDataDictionary{TModel}"/> instance created for the template.
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the created HTML.</returns>
         /// <remarks>

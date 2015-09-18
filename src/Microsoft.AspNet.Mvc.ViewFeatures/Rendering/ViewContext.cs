@@ -87,7 +87,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <summary>
-        /// Gets or sets the <see cref="Rendering.FormContext"/> for the form element being rendered.
+        /// Gets or sets the <see cref="FormContext"/> for the form element being rendered.
         /// A default context is returned if no form is currently being rendered.
         /// </summary>
         public virtual FormContext FormContext

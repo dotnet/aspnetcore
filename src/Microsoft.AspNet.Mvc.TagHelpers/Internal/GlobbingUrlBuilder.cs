@@ -12,7 +12,8 @@ using Microsoft.Framework.FileSystemGlobbing;
 namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
 {
     /// <summary>
-    /// Utility methods for <see cref="ITagHelper"/>'s that support attributes containing file globbing patterns.
+    /// Utility methods for <see cref="AspNet.Razor.Runtime.TagHelpers.ITagHelper"/>'s that support
+    /// attributes containing file globbing patterns.
     /// </summary>
     public class GlobbingUrlBuilder
     {
