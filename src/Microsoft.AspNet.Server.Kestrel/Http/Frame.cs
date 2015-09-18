@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Server.Kestrel.Infrastructure;
+using Microsoft.Framework.Logging;
 using Microsoft.Framework.Primitives;
 
 // ReSharper disable AccessToModifiedClosure
@@ -98,73 +99,90 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             _responseHeaders.HeaderDate = DateTime.UtcNow.ToString("r");
         }
 
-        public async Task ProcessFraming()
+        public async void ProcessFraming()
         {
-            var terminated = false;
-            while (!terminated)
+            try
             {
-                while (!terminated && !TakeStartLine(SocketInput))
+                var terminated = false;
+                while (!terminated)
                 {
-                    terminated = SocketInput.RemoteIntakeFin;
-                    if (!terminated)
+                    while (!terminated && !TakeStartLine(SocketInput))
                     {
-                        await SocketInput;
-                    }
-                }
-
-                while (!terminated && !TakeMessageHeaders(SocketInput))
-                {
-                    terminated = SocketInput.RemoteIntakeFin;
-                    if (!terminated)
-                    {
-                        await SocketInput;
-                    }
-                }
-
-                if (!terminated)
-                {
-                    MessageBody = MessageBody.For(HttpVersion, _requestHeaders, this);
-                    _keepAlive = MessageBody.RequestKeepAlive;
-                    RequestBody = new FrameRequestStream(MessageBody);
-                    ResponseBody = new FrameResponseStream(this);
-                    DuplexStream = new FrameDuplexStream(RequestBody, ResponseBody);
-
-                    Exception error = null;
-                    try
-                    {
-                        await Application.Invoke(this).ConfigureAwait(false);
-
-                        // Trigger FireOnStarting if ProduceStart hasn't been called yet.
-                        // We call it here, so it can go through our normal error handling
-                        // and respond with a 500 if an OnStarting callback throws.
-                        if (!_responseStarted)
+                        terminated = SocketInput.RemoteIntakeFin;
+                        if (!terminated)
                         {
-                            FireOnStarting();
+                            await SocketInput;
                         }
                     }
-                    catch (Exception ex)
+
+                    while (!terminated && !TakeMessageHeaders(SocketInput))
                     {
-                        error = ex;
-                    }
-                    finally
-                    {
-                        FireOnCompleted();
-                        ProduceEnd(error);
+                        terminated = SocketInput.RemoteIntakeFin;
+                        if (!terminated)
+                        {
+                            await SocketInput;
+                        }
                     }
 
-                    terminated = !_keepAlive;
+                    if (!terminated)
+                    {
+                        MessageBody = MessageBody.For(HttpVersion, _requestHeaders, this);
+                        _keepAlive = MessageBody.RequestKeepAlive;
+                        RequestBody = new FrameRequestStream(MessageBody);
+                        ResponseBody = new FrameResponseStream(this);
+                        DuplexStream = new FrameDuplexStream(RequestBody, ResponseBody);
+
+                        Exception error = null;
+                        try
+                        {
+                            await Application.Invoke(this).ConfigureAwait(false);
+
+                            // Trigger FireOnStarting if ProduceStart hasn't been called yet.
+                            // We call it here, so it can go through our normal error handling
+                            // and respond with a 500 if an OnStarting callback throws.
+                            if (!_responseStarted)
+                            {
+                                FireOnStarting();
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            error = ex;
+                        }
+                        finally
+                        {
+                            FireOnCompleted();
+                            ProduceEnd(error);
+                        }
+
+                        terminated = !_keepAlive;
+                    }
+
+                    Reset();
                 }
-
-                Reset();
             }
+            catch (Exception ex)
+            {
+                Log.LogVerbose("Connection processing ended abnormally", ex);
+            }
+            finally
+            {
+                try
+                {
+                    // Inform client no more data will ever arrive
+                    ConnectionControl.End(ProduceEndType.SocketShutdownSend);
 
-            // Connection Terminated!
-            ConnectionControl.End(ProduceEndType.SocketShutdownSend);
+                    // Wait for client to either disconnect or send unexpected data
+                    await SocketInput;
 
-            // Wait for client to disconnect, or to receive unexpected data
-            await SocketInput;
-
-            ConnectionControl.End(ProduceEndType.SocketDisconnect);
+                    // Dispose socket
+                    ConnectionControl.End(ProduceEndType.SocketDisconnect);
+                }
+                catch(Exception ex)
+                {
+                    Log.LogVerbose("Connection shutdown abnormally", ex);
+                }
+            }
         }
 
         public void OnStarting(Func<object, Task> callback, object state)

@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             SocketInput = new SocketInput(Memory2);
             SocketOutput = new SocketOutput(Thread, _socket, _connectionId, Log);
             _frame = new Frame(this);
-            _frameTask = Task.Run(_frame.ProcessFraming);
+            Task.Run(_frame.ProcessFraming);
             _socket.ReadStart(_allocCallback, _readCallback, this);
         }
 
