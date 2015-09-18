@@ -5,18 +5,51 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNet.Server.Kestrel.Http
 {
+    /// <summary>
+    /// Slab tracking object used by the byte buffer memory pool. A slab is a large allocation which is divided into smaller blocks. The
+    /// individual blocks are then treated as independant array segments.
+    /// </summary>
     public class MemoryPoolSlab2 : IDisposable
     {
+        /// <summary>
+        /// This handle pins the managed array in memory until the slab is disposed. This prevents it from being
+        /// relocated and enables any subsections of the array to be used as native memory pointers to P/Invoked API calls.
+        /// </summary>
         private GCHandle _gcHandle;
+
+        /// <summary>
+        /// The managed memory allocated in the large object heap.
+        /// </summary>
         public byte[] Array;
+
+        /// <summary>
+        /// The native memory pointer of the pinned Array. All block native addresses are pointers into the memory 
+        /// ranging from ArrayPtr to ArrayPtr + Array.Length
+        /// </summary>
         public IntPtr ArrayPtr;
+
+        /// <summary>
+        /// True as long as the blocks from this slab are to be considered returnable to the pool. In order to shrink the 
+        /// memory pool size an entire slab must be removed. That is done by (1) setting IsActive to false and removing the
+        /// slab from the pool's _slabs collection, (2) as each block currently in use is Return()ed to the pool it will
+        /// be allowed to be garbage collected rather than re-pooled, and (3) when all block tracking objects are garbage
+        /// collected and the slab is no longer references the slab will be garbage collected and the memory unpinned will
+        /// be unpinned by the slab's Dispose.
+        /// </summary>
         public bool IsActive;
+
+        /// <summary>
+        /// Part of the IDisposable implementation
+        /// </summary>
         private bool disposedValue = false; // To detect redundant calls
 
         public static MemoryPoolSlab2 Create(int length)
         {
+            // allocate and pin requested memory length
             var array = new byte[length];
             var gcHandle = GCHandle.Alloc(array, GCHandleType.Pinned);
+
+            // allocate and return slab tracking object
             return new MemoryPoolSlab2
             {
                 Array = array,
