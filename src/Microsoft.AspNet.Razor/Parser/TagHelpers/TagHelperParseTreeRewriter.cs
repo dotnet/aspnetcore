@@ -567,9 +567,14 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
 
                 if (Builder.Descriptors.Any(descriptor => descriptor.AllowedChildren != null))
                 {
+                    Debug.Assert(Builder.Descriptors.Count() >= 1);
+
+                    var tagHelperPrefix = Builder.Descriptors.First().Prefix;
+
                     AllowedChildren = Builder.Descriptors
                         .SelectMany(descriptor => descriptor.AllowedChildren)
-                        .Distinct(StringComparer.OrdinalIgnoreCase);
+                        .Distinct(StringComparer.OrdinalIgnoreCase)
+                        .Select(allowedChild => tagHelperPrefix + allowedChild);
                 }
             }
 

@@ -18,6 +18,44 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
 {
     public class TagHelperParseTreeRewriterTest : TagHelperRewritingTestBase
     {
+        [Fact]
+        public void Rewrite_UnderstandsTagHelperPrefixAndRestrictedChildren()
+        {
+            // Arrange
+            var factory = CreateDefaultSpanFactory();
+            var blockFactory = new BlockFactory(factory);
+            var documentContent = "<th:p><th:strong></th:strong></th:p>";
+            var expectedOutput = new MarkupBlock(
+                new MarkupTagHelperBlock("th:p",
+                    new MarkupTagHelperBlock("th:strong")));
+            var descriptors = new TagHelperDescriptor[]
+                {
+                    new TagHelperDescriptor
+                    {
+                        TagName = "p",
+                        TypeName = "PTagHelper",
+                        AssemblyName = "SomeAssembly",
+                        AllowedChildren = new[] { "strong" },
+                        Prefix = "th:"
+                    },
+                    new TagHelperDescriptor
+                    {
+                        TagName = "strong",
+                        TypeName = "StrongTagHelper",
+                        AssemblyName = "SomeAssembly",
+                        Prefix = "th:"
+                    }
+                };
+            var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
+
+            // Act & Assert
+            EvaluateData(
+                descriptorProvider,
+                documentContent,
+                expectedOutput,
+                expectedErrors: Enumerable.Empty<RazorError>());
+        }
+
         public static TheoryData InvalidHtmlScriptBlockData
         {
             get
