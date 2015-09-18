@@ -484,7 +484,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     }
                     else if (block.Next == null)
                     {
-                        throw new Exception("end did not follow iterator");
+                        throw new InvalidOperationException("end did not follow iterator");
                     }
                     else
                     {

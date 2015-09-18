@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Framework.Primitives;
+using System.IO;
 
 namespace Microsoft.AspNet.Server.Kestrel.Http
 {
@@ -167,7 +168,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     }
                     if (input.RemoteIntakeFin)
                     {
-                        throw new Exception("Unexpected end of request content");
+                        throw new InvalidDataException("Unexpected end of request content");
                     }
                 }
             }

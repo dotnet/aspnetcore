@@ -613,7 +613,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             consumed = scan;
                             return true;
                         }
-                        throw new Exception("Malformed request");
+                        throw new InvalidDataException("Malformed request");
                     }
 
                     while (
