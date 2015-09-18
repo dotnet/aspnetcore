@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting.Fakes;
@@ -14,6 +15,7 @@ using Microsoft.AspNet.Hosting.Startup;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Features.Internal;
+using Microsoft.AspNet.Server.Features;
 using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Dnx.Runtime.Infrastructure;
 using Microsoft.Framework.Configuration;
@@ -73,6 +75,24 @@ namespace Microsoft.AspNet.Hosting
             var host = CreateBuilder(config).Build();
             host.Start();
             Assert.NotNull(host.ApplicationServices.GetRequiredService<IHostingEnvironment>());
+        }
+
+        [Fact]
+        public void CanSpecifyPortConfig()
+        {
+            var vals = new Dictionary<string, string>
+            {
+                { "Hosting:Server", "Microsoft.AspNet.Hosting.Tests" },
+                { "HTTP_PLATFORM_PORT", "abc123" }
+            };
+
+            var builder = new ConfigurationBuilder()
+                .AddInMemoryCollection(vals);
+            var config = builder.Build();
+            var host = CreateBuilder(config).Build();
+            var app = host.Start();
+            Assert.NotNull(host.ApplicationServices.GetRequiredService<IHostingEnvironment>());
+            Assert.Equal("abc123", app.ServerFeatures.Get<IServerAddressesFeature>().Addresses.First());
         }
 
         [Fact]
@@ -397,7 +417,9 @@ namespace Microsoft.AspNet.Hosting
 
         public IFeatureCollection Initialize(IConfiguration configuration)
         {
-            return null;
+            var features = new FeatureCollection();
+            features.Set<IServerAddressesFeature>(new ServerAddressesFeature());
+            return features;
         }
 
         public IDisposable Start(IFeatureCollection serverFeatures, Func<IFeatureCollection, Task> application)
@@ -469,6 +491,11 @@ namespace Microsoft.AspNet.Hosting
             {
                 yield break;
             }
+        }
+
+        private class ServerAddressesFeature : IServerAddressesFeature
+        {
+            public ICollection<string> Addresses { get; } = new List<string>();
         }
     }
 }

@@ -22,6 +22,9 @@ namespace Microsoft.AspNet.Hosting.Internal
 {
     public class HostingEngine : IHostingEngine
     {
+        // This is defined by IIS's HttpPlatformHandler.
+        private static readonly string ServerPort = "HTTP_PLATFORM_PORT";
+
         private readonly IServiceCollection _applicationServiceCollection;
         private readonly IStartupLoader _startupLoader;
         private readonly ApplicationLifetime _applicationLifetime;
@@ -187,6 +190,16 @@ namespace Microsoft.AspNet.Hosting.Internal
             var builderFactory = _applicationServices.GetRequiredService<IApplicationBuilderFactory>();
             var builder = builderFactory.CreateBuilder(_serverInstance);
             builder.ApplicationServices = _applicationServices;
+
+            var port = _config[ServerPort];
+            if (!string.IsNullOrEmpty(port))
+            {
+                var addresses = builder.ServerFeatures.Get<IServerAddressesFeature>()?.Addresses;
+                if (addresses != null && !addresses.IsReadOnly)
+                {
+                    addresses.Add(port);
+                }
+            }
 
             var startupFilters = _applicationServices.GetService<IEnumerable<IStartupFilter>>();
             var configure = Startup.ConfigureDelegate;
