@@ -15,7 +15,7 @@ default TEST_DIR='${Path.Combine(TARGET_DIR, "test")}'
 default Configuration='${E("Configuration")}'
 default Quiet='${ false }'
 default PACKAGELIST_JSON_FILENAME = 'NuGetPackageVerifier.json'
-default DNX_TOOLS_FEED = 'https://www.myget.org/F/dnxtools/api/v2'
+default DNX_TOOLS_FEED = 'https://www.myget.org/F/dnxtools/api/v3/index.json'
 default NUGET_FEED = 'https://api.nuget.org/v3/index.json'
 
 @{
@@ -184,6 +184,16 @@ default NUGET_FEED = 'https://api.nuget.org/v3/index.json'
 
   copy sourceDir='${Path.GetDirectoryName(project)}' include='bin/**/' outputDir='${Path.Combine(BUILD_DIR, Path.GetFileNameWithoutExtension(project))}' overwrite='${true}' each='var project in nativeProjects'
 
+#nuget-verify target='package' if='File.Exists(PACKAGELIST_JSON_FILENAME) && ShouldVerifyNupkgs' description='Verify if all the packages are generated properly'
+  var commandsDirectory = '${Path.Combine(BASE_DIR, "commands")}'
+  exec program='cmd' commandline='/C dnu commands install --source ${DNX_TOOLS_FEED} --source ${NUGET_FEED} NuGetPackageVerifier --packages "${commandsDirectory}"'
+  exec program='cmd' commandline='/C ${Path.Combine(commandsDirectory, "nugetverify")} "${BUILD_DIR}" "${Path.Combine(BASE_DIR, PACKAGELIST_JSON_FILENAME)}"'
+  @{
+    if (Directory.Exists(commandsDirectory))
+    {
+      Directory.Delete(commandsDirectory, recursive: true);
+    }
+  }
 
 #nuget-install target='install' description='Install NuGet packages to local repo'
   kpm-publish sourcePackagesDir='${BUILD_DIR}' targetPackagesDir='${E("PACKAGES_PUBLISH_DIR")}'
@@ -212,17 +222,6 @@ default NUGET_FEED = 'https://api.nuget.org/v3/index.json'
     else
     {
         projectFiles.ForEach(projectFile => DnuBuild(projectFile, Configuration));
-    }
-  }
-
-#nuget-verify target='test' if='File.Exists(PACKAGELIST_JSON_FILENAME) && ShouldVerifyNupkgs' description='Verify if all the packages are generated properly'
-  var commandsDirectory = '${Path.Combine(BASE_DIR, "commands")}'
-  exec program='cmd' commandline='/C dnu commands install --source ${DNX_TOOLS_FEED} --source ${NUGET_FEED} NuGetPackageVerifier --packages "${commandsDirectory}"'
-  exec program='cmd' commandline='/C ${Path.Combine(commandsDirectory, "nugetverify")} "${BUILD_DIR}" "${Path.Combine(BASE_DIR, PACKAGELIST_JSON_FILENAME)}"'
-  @{
-    if (Directory.Exists(commandsDirectory))
-    {
-      Directory.Delete(commandsDirectory, recursive: true);
     }
   }
 
