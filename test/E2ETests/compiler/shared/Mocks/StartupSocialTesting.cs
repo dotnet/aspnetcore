@@ -75,69 +75,6 @@ namespace MusicStore
                     .AddEntityFrameworkStores<MusicStoreContext>()
                     .AddDefaultTokenProviders();
 
-            services.AddFacebookAuthentication(options =>
-            {
-                options.AppId = "[AppId]";
-                options.AppSecret = "[AppSecret]";
-                options.Events = new OAuthEvents()
-                {
-                    OnAuthenticated = TestFacebookEvents.OnAuthenticated,
-                    OnReturnEndpoint = TestFacebookEvents.OnReturnEndpoint,
-                    OnApplyRedirect = TestFacebookEvents.OnApplyRedirect
-                };
-                options.BackchannelHttpHandler = new FacebookMockBackChannelHttpHandler();
-                options.StateDataFormat = new CustomStateDataFormat();
-                options.Scope.Add("email");
-                options.Scope.Add("read_friendlists");
-                options.Scope.Add("user_checkins");
-            });
-
-            services.AddGoogleAuthentication(options =>
-            {
-                options.ClientId = "[ClientId]";
-                options.ClientSecret = "[ClientSecret]";
-                options.AccessType = "offline";
-                options.Events = new OAuthEvents()
-                {
-                    OnAuthenticated = TestGoogleEvents.OnAuthenticated,
-                    OnReturnEndpoint = TestGoogleEvents.OnReturnEndpoint,
-                    OnApplyRedirect = TestGoogleEvents.OnApplyRedirect
-                };
-                options.StateDataFormat = new CustomStateDataFormat();
-                options.BackchannelHttpHandler = new GoogleMockBackChannelHttpHandler();
-            });
-
-            services.AddTwitterAuthentication(options =>
-            {
-                options.ConsumerKey = "[ConsumerKey]";
-                options.ConsumerSecret = "[ConsumerSecret]";
-                options.Events = new TwitterEvents()
-                {
-                    OnAuthenticated = TestTwitterEvents.OnAuthenticated,
-                    OnReturnEndpoint = TestTwitterEvents.OnReturnEndpoint,
-                    OnApplyRedirect = TestTwitterEvents.OnApplyRedirect
-                };
-                options.StateDataFormat = new CustomTwitterStateDataFormat();
-                options.BackchannelHttpHandler = new TwitterMockBackChannelHttpHandler();
-            });
-
-            services.AddMicrosoftAccountAuthentication(options =>
-            {
-                options.Caption = "MicrosoftAccount - Requires project changes";
-                options.ClientId = "[ClientId]";
-                options.ClientSecret = "[ClientSecret]";
-                options.Events = new OAuthEvents()
-                {
-                    OnAuthenticated = TestMicrosoftAccountEvents.OnAuthenticated,
-                    OnReturnEndpoint = TestMicrosoftAccountEvents.OnReturnEndpoint,
-                    OnApplyRedirect = TestMicrosoftAccountEvents.OnApplyRedirect
-                };
-                options.BackchannelHttpHandler = new MicrosoftAccountMockBackChannelHandler();
-                options.StateDataFormat = new CustomStateDataFormat();
-                options.Scope.Add("wl.basic");
-                options.Scope.Add("wl.signin");
-            });
-
             services.AddCors(options =>
             {
                 options.AddPolicy("CorsPolicy", builder =>
@@ -160,7 +97,7 @@ namespace MusicStore
             services.AddSingleton<ISystemClock, SystemClock>();
 
             // Configure Auth
-            services.Configure<AuthorizationOptions>(options =>
+            services.AddAuthorization(options =>
             {
                 options.AddPolicy("ManageStore", new AuthorizationPolicyBuilder().RequireClaim("ManageStore", "Allowed").Build());
             });
@@ -192,13 +129,68 @@ namespace MusicStore
             // Add cookie-based authentication to the request pipeline
             app.UseIdentity();
 
-            app.UseFacebookAuthentication();
+            app.UseFacebookAuthentication(options =>
+            {
+                options.AppId = "[AppId]";
+                options.AppSecret = "[AppSecret]";
+                options.Events = new OAuthEvents()
+                {
+                    OnAuthenticated = TestFacebookEvents.OnAuthenticated,
+                    OnReturnEndpoint = TestFacebookEvents.OnReturnEndpoint,
+                    OnApplyRedirect = TestFacebookEvents.OnApplyRedirect
+                };
+                options.BackchannelHttpHandler = new FacebookMockBackChannelHttpHandler();
+                options.StateDataFormat = new CustomStateDataFormat();
+                options.Scope.Add("email");
+                options.Scope.Add("read_friendlists");
+                options.Scope.Add("user_checkins");
+            });
 
-            app.UseGoogleAuthentication();
+            app.UseGoogleAuthentication(options =>
+            {
+                options.ClientId = "[ClientId]";
+                options.ClientSecret = "[ClientSecret]";
+                options.AccessType = "offline";
+                options.Events = new OAuthEvents()
+                {
+                    OnAuthenticated = TestGoogleEvents.OnAuthenticated,
+                    OnReturnEndpoint = TestGoogleEvents.OnReturnEndpoint,
+                    OnApplyRedirect = TestGoogleEvents.OnApplyRedirect
+                };
+                options.StateDataFormat = new CustomStateDataFormat();
+                options.BackchannelHttpHandler = new GoogleMockBackChannelHttpHandler();
+            });
 
-            app.UseTwitterAuthentication();
+            app.UseTwitterAuthentication(options =>
+            {
+                options.ConsumerKey = "[ConsumerKey]";
+                options.ConsumerSecret = "[ConsumerSecret]";
+                options.Events = new TwitterEvents()
+                {
+                    OnAuthenticated = TestTwitterEvents.OnAuthenticated,
+                    OnReturnEndpoint = TestTwitterEvents.OnReturnEndpoint,
+                    OnApplyRedirect = TestTwitterEvents.OnApplyRedirect
+                };
+                options.StateDataFormat = new CustomTwitterStateDataFormat();
+                options.BackchannelHttpHandler = new TwitterMockBackChannelHttpHandler();
+            });
 
-            app.UseMicrosoftAccountAuthentication();
+            app.UseMicrosoftAccountAuthentication(options =>
+            {
+                options.Caption = "MicrosoftAccount - Requires project changes";
+                options.ClientId = "[ClientId]";
+                options.ClientSecret = "[ClientSecret]";
+                options.Events = new OAuthEvents()
+                {
+                    OnAuthenticated = TestMicrosoftAccountEvents.OnAuthenticated,
+                    OnReturnEndpoint = TestMicrosoftAccountEvents.OnReturnEndpoint,
+                    OnApplyRedirect = TestMicrosoftAccountEvents.OnApplyRedirect
+                };
+                options.BackchannelHttpHandler = new MicrosoftAccountMockBackChannelHandler();
+                options.StateDataFormat = new CustomStateDataFormat();
+                options.Scope.Add("wl.basic");
+                options.Scope.Add("wl.signin");
+            });
 
             // Add MVC to the request pipeline
             app.UseMvc(routes =>

@@ -64,31 +64,6 @@ namespace MusicStore
                     .AddEntityFrameworkStores<MusicStoreContext>()
                     .AddDefaultTokenProviders();
 
-            services.AddFacebookAuthentication(options =>
-            {
-                options.AppId = "550624398330273";
-                options.AppSecret = "10e56a291d6b618da61b1e0dae3a8954";
-            });
-
-            services.AddGoogleAuthentication(options =>
-            {
-                options.ClientId = "977382855444.apps.googleusercontent.com";
-                options.ClientSecret = "NafT482F70Vjj_9q1PU4B0pN";
-            });
-
-            services.AddTwitterAuthentication(options =>
-            {
-                options.ConsumerKey = "9J3j3pSwgbWkgPFH7nAf0Spam";
-                options.ConsumerSecret = "jUBYkQuBFyqp7G3CUB9SW3AfflFr9z3oQBiNvumYy87Al0W4h8";
-            });
-
-            services.AddMicrosoftAccountAuthentication(options =>
-            {
-                options.Caption = "MicrosoftAccount - Requires project changes";
-                options.ClientId = "000000004012C08A";
-                options.ClientSecret = "GaMQ2hCnqAC6EcDLnXsAeBVIJOLmeutL";
-            });
-
             services.AddCors(options =>
             {
                 options.AddPolicy("CorsPolicy", builder =>
@@ -111,7 +86,7 @@ namespace MusicStore
             services.AddSingleton<ISystemClock, SystemClock>();
 
             // Configure Auth
-            services.Configure<AuthorizationOptions>(options =>
+            services.AddAuthorization(options =>
             {
                 options.AddPolicy("ManageStore", new AuthorizationPolicyBuilder().RequireClaim("ManageStore", "Allowed").Build());
             });
@@ -179,11 +154,23 @@ namespace MusicStore
             // Add cookie-based authentication to the request pipeline
             app.UseIdentity();
 
-            app.UseFacebookAuthentication();
+            app.UseFacebookAuthentication(options =>
+            {
+                options.AppId = "550624398330273";
+                options.AppSecret = "10e56a291d6b618da61b1e0dae3a8954";
+            });
 
-            app.UseGoogleAuthentication();
+            app.UseGoogleAuthentication(options =>
+            {
+                options.ClientId = "977382855444.apps.googleusercontent.com";
+                options.ClientSecret = "NafT482F70Vjj_9q1PU4B0pN";
+            });
 
-            app.UseTwitterAuthentication();
+            app.UseTwitterAuthentication(options =>
+            {
+                options.ConsumerKey = "9J3j3pSwgbWkgPFH7nAf0Spam";
+                options.ConsumerSecret = "jUBYkQuBFyqp7G3CUB9SW3AfflFr9z3oQBiNvumYy87Al0W4h8";
+            });
 
             // The MicrosoftAccount service has restrictions that prevent the use of http://localhost:5001/ for test applications.
             // As such, here is how to change this sample to uses http://ktesting.com:5001/ instead.
@@ -200,7 +187,12 @@ namespace MusicStore
 
             // The sample app can then be run via:
             // dnx . web
-            app.UseMicrosoftAccountAuthentication();
+            app.UseMicrosoftAccountAuthentication(options =>
+            {
+                options.Caption = "MicrosoftAccount - Requires project changes";
+                options.ClientId = "000000004012C08A";
+                options.ClientSecret = "GaMQ2hCnqAC6EcDLnXsAeBVIJOLmeutL";
+            });
 
             // Add MVC to the request pipeline
             app.UseMvc(routes =>

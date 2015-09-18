@@ -73,12 +73,6 @@ namespace MusicStore
                     .AddEntityFrameworkStores<MusicStoreContext>()
                     .AddDefaultTokenProviders();
 
-            services.AddOpenIdConnectAuthentication(options =>
-            {
-                options.Authority = "https://login.windows.net/[tenantName].onmicrosoft.com";
-                options.ClientId = "[ClientId]";
-            });
-
             services.AddCors(options =>
             {
                 options.AddPolicy("CorsPolicy", builder =>
@@ -134,7 +128,11 @@ namespace MusicStore
             app.UseIdentity();
 
             // Create an Azure Active directory application and copy paste the following
-            app.UseOpenIdConnectAuthentication();
+            app.UseOpenIdConnectAuthentication(options =>
+            {
+                options.Authority = "https://login.windows.net/[tenantName].onmicrosoft.com";
+                options.ClientId = "[ClientId]";
+            });
 
             // Add MVC to the request pipeline
             app.UseMvc(routes =>

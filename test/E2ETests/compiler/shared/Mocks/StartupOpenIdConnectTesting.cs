@@ -65,28 +65,6 @@ namespace MusicStore
                     .AddEntityFrameworkStores<MusicStoreContext>()
                     .AddDefaultTokenProviders();
 
-            services.AddOpenIdConnectAuthentication(options =>
-            {
-                options.Authority = "https://login.windows.net/[tenantName].onmicrosoft.com";
-                options.ClientId = "c99497aa-3ee2-4707-b8a8-c33f51323fef";
-                options.BackchannelHttpHandler = new OpenIdConnectBackChannelHttpHandler();
-                options.StringDataFormat = new CustomStringDataFormat();
-                options.StateDataFormat = new CustomStateDataFormat();
-                options.TokenValidationParameters.ValidateLifetime = false;
-                options.ProtocolValidator.RequireNonce = true;
-                options.ProtocolValidator.NonceLifetime = TimeSpan.FromDays(36500);
-                options.UseTokenLifetime = false;
-
-                options.Events = new OpenIdConnectEvents
-                {
-                    OnMessageReceived = TestOpenIdConnectEvents.MessageReceived,
-                    OnAuthorizationCodeReceived = TestOpenIdConnectEvents.AuthorizationCodeReceived,
-                    OnRedirectToAuthenticationEndpoint = TestOpenIdConnectEvents.RedirectToAuthenticationEndpoint,
-                    OnAuthenticationValidated = TestOpenIdConnectEvents.AuthenticationValidated,
-                    OnAuthorizationResponseReceived = TestOpenIdConnectEvents.AuthorizationResponseRecieved
-                };
-            });
-
             services.AddCors(options =>
             {
                 options.AddPolicy("CorsPolicy", builder =>
@@ -142,7 +120,27 @@ namespace MusicStore
             app.UseIdentity();
 
             // Create an Azure Active directory application and copy paste the following
-            app.UseOpenIdConnectAuthentication();
+            app.UseOpenIdConnectAuthentication(options =>
+            {
+                options.Authority = "https://login.windows.net/[tenantName].onmicrosoft.com";
+                options.ClientId = "c99497aa-3ee2-4707-b8a8-c33f51323fef";
+                options.BackchannelHttpHandler = new OpenIdConnectBackChannelHttpHandler();
+                options.StringDataFormat = new CustomStringDataFormat();
+                options.StateDataFormat = new CustomStateDataFormat();
+                options.TokenValidationParameters.ValidateLifetime = false;
+                options.ProtocolValidator.RequireNonce = true;
+                options.ProtocolValidator.NonceLifetime = TimeSpan.FromDays(36500);
+                options.UseTokenLifetime = false;
+
+                options.Events = new OpenIdConnectEvents
+                {
+                    OnMessageReceived = TestOpenIdConnectEvents.MessageReceived,
+                    OnAuthorizationCodeReceived = TestOpenIdConnectEvents.AuthorizationCodeReceived,
+                    OnRedirectToAuthenticationEndpoint = TestOpenIdConnectEvents.RedirectToAuthenticationEndpoint,
+                    OnAuthenticationValidated = TestOpenIdConnectEvents.AuthenticationValidated,
+                    OnAuthorizationResponseReceived = TestOpenIdConnectEvents.AuthorizationResponseRecieved
+                };
+            });
 
             // Add MVC to the request pipeline
             app.UseMvc(routes =>
