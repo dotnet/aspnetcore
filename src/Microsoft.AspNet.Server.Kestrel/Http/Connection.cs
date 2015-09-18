@@ -18,9 +18,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private static long _lastConnectionId;
 
         private readonly UvStreamHandle _socket;
-        private Frame _frame;
-        private Task _frameTask;
-        private long _connectionId = 0;
+        private readonly Frame _frame;
+        private readonly long _connectionId;
 
         private readonly object _stateLock = new object();
         private ConnectionState _connectionState;
@@ -31,16 +30,17 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             ConnectionControl = this;
 
             _connectionId = Interlocked.Increment(ref _lastConnectionId);
+
+            SocketInput = new SocketInput(Memory2);
+            SocketOutput = new SocketOutput(Thread, _socket, _connectionId, Log);
+            _frame = new Frame(this);
         }
 
         public void Start()
         {
             Log.ConnectionStart(_connectionId);
 
-            SocketInput = new SocketInput(Memory2);
-            SocketOutput = new SocketOutput(Thread, _socket, _connectionId, Log);
-            _frame = new Frame(this);
-            Task.Run(_frame.ProcessFraming);
+            Task.Run((Action)_frame.ProcessFraming);
             _socket.ReadStart(_allocCallback, _readCallback, this);
         }
 
