@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using Microsoft.AspNet.Razor.Chunks;
 
 namespace Microsoft.AspNet.Mvc.Razor.Directives
@@ -20,7 +21,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
         /// Merges an inherited <see cref="Chunk"/> into the <see cref="ChunkTree"/>.
         /// </summary>
         /// <param name="ChunkTree">The <see cref="ChunkTree"/> to merge into.</param>
-        /// <param name="chunk">The <see cref="Chunk"/> to merge.</param>
-        void Merge(ChunkTree chunkTree, Chunk chunk);
+        /// <param name="inheritedChunks">The <see cref="IReadOnlyList{Chunk}"/>s to merge.</param>
+        void MergeInheritedChunks(ChunkTree chunkTree, IReadOnlyList<Chunk> inheritedChunks);
     }
 }

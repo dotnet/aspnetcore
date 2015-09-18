@@ -63,6 +63,12 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
         /// <param name="pagePath">The path of the page to locate inherited chunks for.</param>
         /// <returns>A <see cref="IReadOnlyList{ChunkTreeResult}"/> of parsed <c>_ViewImports</c>
         /// <see cref="ChunkTree"/>s and their file paths.</returns>
+        /// <remarks>
+        /// The resulting <see cref="IReadOnlyList{ChunkTreeResult}"/> is ordered so that the result
+        /// for a _ViewImport closest to the application root appears first and the _ViewImport
+        /// closest to the page appears last i.e.
+        /// [ /_ViewImport, /Views/_ViewImport, /Views/Home/_ViewImport ]
+        /// </remarks>
         public virtual IReadOnlyList<ChunkTreeResult> GetInheritedChunkTreeResults(string pagePath)
         {
             if (pagePath == null)
@@ -88,7 +94,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
                 if (chunkTree != null)
                 {
                     var result = new ChunkTreeResult(chunkTree, viewImportsPath);
-                    inheritedChunkTreeResults.Add(result);
+                    inheritedChunkTreeResults.Insert(0, result);
                 }
             }
 
@@ -102,7 +108,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
         /// <param name="chunkTree">The <see cref="ChunkTree"/> to merge in to.</param>
         /// <param name="inheritedChunkTrees"><see cref="IReadOnlyList{ChunkTree}"/> inherited from <c>_ViewImports</c>
         /// files.</param>
-        /// <param name="defaultModel">The list of chunks to merge.</param>
+        /// <param name="defaultModel">The default model <see cref="Type"/> name.</param>
         public void MergeInheritedChunkTrees(
             ChunkTree chunkTree,
             IReadOnlyList<ChunkTree> inheritedChunkTrees,
@@ -118,44 +124,34 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
                 throw new ArgumentNullException(nameof(inheritedChunkTrees));
             }
 
-            var mergerMappings = GetMergerMappings(chunkTree, defaultModel);
-            IChunkMerger merger;
-
+            var chunkMergers = GetChunkMergers(chunkTree, defaultModel);
             // We merge chunks into the ChunkTree in two passes. In the first pass, we traverse the ChunkTree visiting
             // a mapped IChunkMerger for types that are registered.
             foreach (var chunk in chunkTree.Chunks)
             {
-                if (mergerMappings.TryGetValue(chunk.GetType(), out merger))
+                foreach (var merger in chunkMergers)
                 {
                     merger.VisitChunk(chunk);
                 }
             }
 
-            // In the second phase we invoke IChunkMerger.Merge for each chunk that has a mapped merger.
-            // During this phase, the merger can either add to the ChunkTree or ignore the chunk based on the merging
-            // rules.
-            // Read the chunks outside in - that is chunks from the _ViewImports closest to the page get merged in first
-            // and the furthest one last. This allows the merger to ignore a directive like @model that was previously
-            // seen.
-            var chunksToMerge = inheritedChunkTrees.SelectMany(tree => tree.Chunks)
-                                                  .Concat(_defaultInheritedChunks);
-            foreach (var chunk in chunksToMerge)
+            var inheritedChunks = _defaultInheritedChunks.Concat(
+                inheritedChunkTrees.SelectMany(tree => tree.Chunks)).ToArray();
+
+            foreach (var merger in chunkMergers)
             {
-                if (mergerMappings.TryGetValue(chunk.GetType(), out merger))
-                {
-                    merger.Merge(chunkTree, chunk);
-                }
+                merger.MergeInheritedChunks(chunkTree, inheritedChunks);
             }
         }
 
-        private static Dictionary<Type, IChunkMerger> GetMergerMappings(ChunkTree chunkTree, string defaultModel)
+        private static IChunkMerger[] GetChunkMergers(ChunkTree chunkTree, string defaultModel)
         {
             var modelType = ChunkHelper.GetModelTypeName(chunkTree, defaultModel);
-            return new Dictionary<Type, IChunkMerger>
+            return new IChunkMerger[]
             {
-                { typeof(UsingChunk), new UsingChunkMerger() },
-                { typeof(InjectChunk), new InjectChunkMerger(modelType) },
-                { typeof(SetBaseTypeChunk), new SetBaseTypeChunkMerger(modelType) }
+                new UsingChunkMerger(),
+                new InjectChunkMerger(modelType),
+                new SetBaseTypeChunkMerger(modelType)
             };
         }
 

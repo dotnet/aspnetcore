@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNet.Razor.Chunks;
 
 namespace Microsoft.AspNet.Mvc.Razor.Directives
@@ -31,32 +33,38 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
                 throw new ArgumentNullException(nameof(chunk));
             }
 
-            var setBaseTypeChunk = ChunkHelper.EnsureChunk<SetBaseTypeChunk>(chunk);
-            setBaseTypeChunk.TypeName = ChunkHelper.ReplaceTModel(setBaseTypeChunk.TypeName, _modelType);
-            _isBaseTypeSet = true;
+            var setBaseTypeChunk = chunk as SetBaseTypeChunk;
+            if (setBaseTypeChunk != null)
+            {
+                setBaseTypeChunk.TypeName = ChunkHelper.ReplaceTModel(setBaseTypeChunk.TypeName, _modelType);
+                _isBaseTypeSet = true;
+            }
         }
 
         /// <inheritdoc />
-        public void Merge(ChunkTree chunkTree, Chunk chunk)
+        public void MergeInheritedChunks(ChunkTree chunkTree, IReadOnlyList<Chunk> inheritedChunks)
         {
             if (chunkTree == null)
             {
                 throw new ArgumentNullException(nameof(chunkTree));
             }
 
-            if (chunk == null)
+            if (inheritedChunks == null)
             {
-                throw new ArgumentNullException(nameof(chunk));
+                throw new ArgumentNullException(nameof(inheritedChunks));
             }
 
             if (!_isBaseTypeSet)
             {
-                var baseTypeChunk = ChunkHelper.EnsureChunk<SetBaseTypeChunk>(chunk);
-
-                // The base type can set exactly once and the first one we encounter wins.
-                _isBaseTypeSet = true;
-
-                chunkTree.Chunks.Add(TransformChunk(baseTypeChunk));
+                for (var i = inheritedChunks.Count - 1; i >= 0; i--)
+                {
+                    var baseTypeChunk = inheritedChunks[i] as SetBaseTypeChunk;
+                    if (baseTypeChunk != null)
+                    {
+                        chunkTree.Chunks.Add(TransformChunk(baseTypeChunk));
+                        break;
+                    }
+                }
             }
         }
 

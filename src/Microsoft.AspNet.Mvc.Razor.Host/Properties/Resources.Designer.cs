@@ -27,22 +27,6 @@ namespace Microsoft.AspNet.Mvc.Razor.Host
         }
 
         /// <summary>
-        /// Argument must be an instance of '{0}'.
-        /// </summary>
-        internal static string ArgumentMustBeOfType
-        {
-            get { return GetString("ArgumentMustBeOfType"); }
-        }
-
-        /// <summary>
-        /// Argument must be an instance of '{0}'.
-        /// </summary>
-        internal static string FormatArgumentMustBeOfType(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ArgumentMustBeOfType"), p0);
-        }
-
-        /// <summary>
         /// The 'inherits' keyword is not allowed when a '{0}' keyword is used.
         /// </summary>
         internal static string MvcRazorCodeParser_CannotHaveModelAndInheritsKeyword

@@ -153,6 +153,19 @@ page:<root>root-content</root>"
         }
 
         [Fact]
+        public async Task DefaultInheritedTagsCanBeRemoved()
+        {
+            // Arrange
+            var expected =
+@"<a href=""~/VirtualPath"">Virtual path</a>";
+
+            var result = await Client.GetStringAsync("RemoveDefaultInheritedTagHelpers");
+
+            // Assert
+            Assert.Equal(expected, result.Trim(), ignoreLineEndingDifferences: true);
+        }
+
+        [Fact]
         public async Task ViewsWithModelMetadataAttributes_CanRenderForm()
         {
             // Arrange

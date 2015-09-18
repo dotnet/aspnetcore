@@ -3,7 +3,6 @@
 
 using System;
 using System.Linq;
-using Microsoft.AspNet.Mvc.Razor.Host;
 using Microsoft.AspNet.Razor.Chunks;
 
 namespace Microsoft.AspNet.Mvc.Razor.Directives
@@ -14,33 +13,6 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
     public static class ChunkHelper
     {
         private const string TModelToken = "<TModel>";
-
-        /// <summary>
-        /// Attempts to cast the passed in <see cref="Chunk"/> to type <typeparamref name="TChunk"/> and throws if the
-        /// cast fails.
-        /// </summary>
-        /// <typeparam name="TChunk">The type to cast to.</typeparam>
-        /// <param name="chunk">The chunk to cast.</param>
-        /// <returns>The <paramref name="chunk"/> cast to <typeparamref name="TChunk"/>.</returns>
-        /// <exception cref="ArgumentException"><paramref name="chunk"/> is not an instance of
-        /// <typeparamref name="TChunk"/>.</exception>
-        public static TChunk EnsureChunk<TChunk>(Chunk chunk)
-            where TChunk : Chunk
-        {
-            if (chunk == null)
-            {
-                throw new ArgumentNullException(nameof(chunk));
-            }
-
-            var chunkOfT = chunk as TChunk;
-            if (chunkOfT == null)
-            {
-                var message = Resources.FormatArgumentMustBeOfType(typeof(TChunk).FullName);
-                throw new ArgumentException(message, nameof(chunk));
-            }
-
-            return chunkOfT;
-        }
 
         /// <summary>
         /// Returns the <see cref="ModelChunk"/> used to determine the model name for the page generated

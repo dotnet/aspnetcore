@@ -2,25 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNet.Razor.Chunks;
-using Microsoft.AspNet.Testing;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Razor.Directives
 {
     public class SetBaseTypeChunkMergerTest
     {
-        [Fact]
-        public void Visit_ThrowsIfThePassedInChunkIsNotASetBaseTypeChunk()
-        {
-            // Arrange
-            var expected = "Argument must be an instance of " +
-                           "'Microsoft.AspNet.Razor.Chunks.SetBaseTypeChunk'.";
-            var merger = new SetBaseTypeChunkMerger("dynamic");
-
-            // Act and Assert
-            ExceptionAssert.ThrowsArgument(() => merger.VisitChunk(new LiteralChunk()), "chunk", expected);
-        }
-
         [Theory]
         [InlineData("MyApp.BaseType<TModel>", "MyApp.BaseType<Person>")]
         [InlineData("TestBaseType", "TestBaseType")]
@@ -41,27 +28,19 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
         }
 
         [Fact]
-        public void Merge_ThrowsIfThePassedInChunkIsNotASetBaseTypeChunk()
-        {
-            // Arrange
-            var expected = "Argument must be an instance of " +
-                           "'Microsoft.AspNet.Razor.Chunks.SetBaseTypeChunk'.";
-            var merger = new SetBaseTypeChunkMerger("dynamic");
-
-            // Act and Assert
-            ExceptionAssert.ThrowsArgument(() => merger.Merge(new ChunkTree(), new LiteralChunk()), "chunk", expected);
-        }
-
-        [Fact]
         public void Merge_SetsBaseTypeIfItHasNotBeenSetInChunkTree()
         {
             // Arrange
             var expected = "MyApp.Razor.MyBaseType";
             var merger = new SetBaseTypeChunkMerger("dynamic");
             var chunkTree = new ChunkTree();
+            var inheritedChunks = new[]
+            {
+                new SetBaseTypeChunk { TypeName = expected }
+            };
 
             // Act
-            merger.Merge(chunkTree, new SetBaseTypeChunk { TypeName = expected });
+            merger.MergeInheritedChunks(chunkTree, inheritedChunks);
 
             // Assert
             var chunk = Assert.Single(chunkTree.Chunks);
@@ -75,25 +54,34 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             // Arrange
             var merger = new SetBaseTypeChunkMerger("dynamic");
             var chunkTree = new ChunkTree();
+            var inheritedChunks = new[]
+            {
+                 new SetBaseTypeChunk { TypeName = "MyBaseType2" }
+            };
 
             // Act
             merger.VisitChunk(new SetBaseTypeChunk { TypeName = "MyBaseType1" });
-            merger.Merge(chunkTree, new SetBaseTypeChunk { TypeName = "MyBaseType2" });
+            merger.MergeInheritedChunks(chunkTree, inheritedChunks);
 
             // Assert
             Assert.Empty(chunkTree.Chunks);
         }
 
         [Fact]
-        public void Merge_IgnoresSetBaseTypeChunksIfSetBaseTypeWasPreviouslyMerged()
+        public void Merge_PicksLastBaseTypeChunkFromChunkTree()
         {
             // Arrange
             var merger = new SetBaseTypeChunkMerger("dynamic");
             var chunkTree = new ChunkTree();
+            var inheritedChunks = new Chunk[]
+            {
+                 new SetBaseTypeChunk { TypeName = "MyBase2" },
+                 new LiteralChunk(),
+                 new SetBaseTypeChunk { TypeName = "MyBase1" },
+            };
 
             // Act
-            merger.Merge(chunkTree, new SetBaseTypeChunk { TypeName = "MyBase1" });
-            merger.Merge(chunkTree, new SetBaseTypeChunk { TypeName = "MyBase2" });
+            merger.MergeInheritedChunks(chunkTree, inheritedChunks);
 
             // Assert
             var chunk = Assert.Single(chunkTree.Chunks);

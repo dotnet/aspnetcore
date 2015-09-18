@@ -26,11 +26,11 @@ namespace Asp
         [Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute]
         public MyService<MyModel> Html { get; private set; }
         [Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute]
-        public Microsoft.AspNet.Mvc.Rendering.IJsonHelper Json { get; private set; }
+        public Microsoft.AspNet.Mvc.IUrlHelper Url { get; private set; }
         [Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute]
         public Microsoft.AspNet.Mvc.IViewComponentHelper Component { get; private set; }
         [Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute]
-        public Microsoft.AspNet.Mvc.IUrlHelper Url { get; private set; }
+        public Microsoft.AspNet.Mvc.Rendering.IJsonHelper Json { get; private set; }
 
         #line hidden
 

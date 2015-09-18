@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNet.Razor.Chunks;
 
 namespace Microsoft.AspNet.Mvc.Razor.Directives
@@ -37,29 +38,35 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
                 throw new ArgumentNullException(nameof(chunk));
             }
 
-            var injectChunk = ChunkHelper.EnsureChunk<InjectChunk>(chunk);
-            injectChunk.TypeName = ChunkHelper.ReplaceTModel(injectChunk.TypeName, _modelType);
-            _addedMemberNames.Add(injectChunk.MemberName);
+            var injectChunk = chunk as InjectChunk;
+            if (injectChunk != null)
+            {
+                injectChunk.TypeName = ChunkHelper.ReplaceTModel(injectChunk.TypeName, _modelType);
+                _addedMemberNames.Add(injectChunk.MemberName);
+            }
         }
 
         /// <inheritdoc />
-        public void Merge(ChunkTree chunkTree, Chunk chunk)
+        public void MergeInheritedChunks(ChunkTree chunkTree, IReadOnlyList<Chunk> inheritedChunks)
         {
             if (chunkTree == null)
             {
                 throw new ArgumentNullException(nameof(chunkTree));
             }
 
-            if (chunk == null)
+            if (inheritedChunks == null)
             {
-                throw new ArgumentNullException(nameof(chunk));
+                throw new ArgumentNullException(nameof(inheritedChunks));
             }
 
-            var injectChunk = ChunkHelper.EnsureChunk<InjectChunk>(chunk);
-            if (!_addedMemberNames.Contains(injectChunk.MemberName))
+            for (var i = inheritedChunks.Count - 1; i >= 0; i--)
             {
-                _addedMemberNames.Add(injectChunk.MemberName);
-                chunkTree.Chunks.Add(TransformChunk(injectChunk));
+                var injectChunk = inheritedChunks[i] as InjectChunk;
+                if (injectChunk != null &&
+                    _addedMemberNames.Add(injectChunk.MemberName))
+                {
+                    chunkTree.Chunks.Add(TransformChunk(injectChunk));
+                }
             }
         }
 

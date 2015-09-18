@@ -10,38 +10,20 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
     public class UsingChunkMergerTest
     {
         [Fact]
-        public void Visit_ThrowsIfThePassedInChunkIsNotAUsingChunk()
-        {
-            // Arrange
-            var expected = "Argument must be an instance of 'Microsoft.AspNet.Razor.Chunks.UsingChunk'.";
-            var merger = new UsingChunkMerger();
-
-            // Act and Assert
-            ExceptionAssert.ThrowsArgument(() => merger.VisitChunk(new LiteralChunk()), "chunk", expected);
-        }
-
-        [Fact]
-        public void Merge_ThrowsIfThePassedInChunkIsNotAUsingChunk()
-        {
-            // Arrange
-            var expected = "Argument must be an instance of 'Microsoft.AspNet.Razor.Chunks.UsingChunk'.";
-            var merger = new UsingChunkMerger();
-
-            // Act and Assert
-            ExceptionAssert.ThrowsArgument(() => merger.Merge(new ChunkTree(), new LiteralChunk()), "chunk", expected);
-        }
-
-        [Fact]
         public void Merge_AddsNamespacesThatHaveNotBeenVisitedInChunkTree()
         {
             // Arrange
             var expected = "MyApp.Models";
             var merger = new UsingChunkMerger();
             var chunkTree = new ChunkTree();
+            var inheritedChunks = new Chunk[]
+            {
+                new UsingChunk { Namespace = expected },
+            };
 
             // Act
             merger.VisitChunk(new UsingChunk { Namespace = "Microsoft.AspNet.Mvc" });
-            merger.Merge(chunkTree, new UsingChunk { Namespace = expected });
+            merger.MergeInheritedChunks(chunkTree, inheritedChunks);
 
             // Assert
             var chunk = Assert.Single(chunkTree.Chunks);
@@ -55,26 +37,36 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             // Arrange
             var merger = new UsingChunkMerger();
             var chunkTree = new ChunkTree();
+            var inheritedChunks = new Chunk[]
+            {
+                new UsingChunk { Namespace = "Microsoft.AspNet.Mvc" },
+                new InjectChunk("Foo", "Bar")
+            };
 
             // Act
             merger.VisitChunk(new UsingChunk { Namespace = "Microsoft.AspNet.Mvc" });
-            merger.Merge(chunkTree, new UsingChunk { Namespace = "Microsoft.AspNet.Mvc" });
+            merger.MergeInheritedChunks(chunkTree, inheritedChunks);
 
             // Assert
             Assert.Empty(chunkTree.Chunks);
         }
 
         [Fact]
-        public void Merge_IgnoresNamespacesThatHaveBeenVisitedDuringMerge()
+        public void Merge_DoesNotAddMoreThanOneInstanceOfTheSameInheritedNamespace()
         {
             // Arrange
             var merger = new UsingChunkMerger();
             var chunkTree = new ChunkTree();
+            var inheritedChunks = new Chunk[]
+            {
+                new LiteralChunk(),
+                new UsingChunk { Namespace = "Microsoft.AspNet.Mvc" },
+                new UsingChunk { Namespace = "Microsoft.AspNet.Mvc" },
+                new UsingChunk { Namespace = "Microsoft.AspNet.Mvc.Razor" }
+            };
 
             // Act
-            merger.Merge(chunkTree, new UsingChunk { Namespace = "Microsoft.AspNet.Mvc" });
-            merger.Merge(chunkTree, new UsingChunk { Namespace = "Microsoft.AspNet.Mvc" });
-            merger.Merge(chunkTree, new UsingChunk { Namespace = "Microsoft.AspNet.Mvc.Razor" });
+            merger.MergeInheritedChunks(chunkTree, inheritedChunks);
 
             // Assert
             Assert.Equal(2, chunkTree.Chunks.Count);
@@ -85,15 +77,19 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
         }
 
         [Fact]
-        public void Merge_MacthesNamespacesInCaseSensitiveManner()
+        public void Merge_MatchesNamespacesInCaseSensitiveManner()
         {
             // Arrange
             var merger = new UsingChunkMerger();
             var chunkTree = new ChunkTree();
+            var inheritedChunks = new[]
+            {
+                new UsingChunk { Namespace = "Microsoft.AspNet.Mvc" },
+                new UsingChunk { Namespace = "Microsoft.AspNet.mvc" }
+            };
 
             // Act
-            merger.Merge(chunkTree, new UsingChunk { Namespace = "Microsoft.AspNet.Mvc" });
-            merger.Merge(chunkTree, new UsingChunk { Namespace = "Microsoft.AspNet.mvc" });
+            merger.MergeInheritedChunks(chunkTree, inheritedChunks);
 
             // Assert
             Assert.Equal(2, chunkTree.Chunks.Count);

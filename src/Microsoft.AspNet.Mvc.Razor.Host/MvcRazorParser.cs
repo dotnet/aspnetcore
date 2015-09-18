@@ -117,15 +117,8 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             var descriptors = new List<TagHelperDirectiveDescriptor>();
 
-            // For tag helpers, the @removeTagHelper only applies tag helpers that were added prior to it.
-            // Consequently we must visit tag helpers outside-in - furthest _ViewImports first and nearest one last.
-            // This is different from the behavior of chunk merging where we visit the nearest one first and ignore
-            // chunks that were previously visited.
-            var chunksFromViewImports = inheritedChunkTrees
-                .Reverse()
-                .SelectMany(tree => tree.Chunks);
-            var chunksInOrder = defaultInheritedChunks.Concat(chunksFromViewImports);
-            foreach (var chunk in chunksInOrder)
+            var inheritedChunks = defaultInheritedChunks.Concat(inheritedChunkTrees.SelectMany(tree => tree.Chunks));
+            foreach (var chunk in inheritedChunks)
             {
                 // All TagHelperDirectiveDescriptors created here have undefined source locations because the source
                 // that created them is not in the same file.

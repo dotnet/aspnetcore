@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNet.Razor.Chunks;
 
 namespace Microsoft.AspNet.Mvc.Razor.Directives
@@ -22,29 +23,33 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
                 throw new ArgumentNullException(nameof(chunk));
             }
 
-            var namespaceChunk = ChunkHelper.EnsureChunk<UsingChunk>(chunk);
-            _currentUsings.Add(namespaceChunk.Namespace);
+            var namespaceChunk = chunk as UsingChunk;
+            if (namespaceChunk != null)
+            {
+                _currentUsings.Add(namespaceChunk.Namespace);
+            }
         }
 
         /// <inheritdoc />
-        public void Merge(ChunkTree chunkTree, Chunk chunk)
+        public void MergeInheritedChunks(ChunkTree chunkTree, IReadOnlyList<Chunk> inheritedChunks)
         {
             if (chunkTree == null)
             {
                 throw new ArgumentNullException(nameof(chunkTree));
             }
 
-            if (chunk == null)
+            if (inheritedChunks == null)
             {
-                throw new ArgumentNullException(nameof(chunk));
+                throw new ArgumentNullException(nameof(inheritedChunks));
             }
 
-            var namespaceChunk = ChunkHelper.EnsureChunk<UsingChunk>(chunk);
-
-            if (!_currentUsings.Contains(namespaceChunk.Namespace))
+            var namespaceChunks = inheritedChunks.OfType<UsingChunk>();
+            foreach (var namespaceChunk in namespaceChunks)
             {
-                _currentUsings.Add(namespaceChunk.Namespace);
-                chunkTree.Chunks.Add(namespaceChunk);
+                if (_currentUsings.Add(namespaceChunk.Namespace))
+                {
+                    chunkTree.Chunks.Add(namespaceChunk);
+                }
             }
         }
     }

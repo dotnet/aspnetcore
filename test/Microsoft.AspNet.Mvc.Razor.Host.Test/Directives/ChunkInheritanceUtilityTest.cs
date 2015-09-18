@@ -42,28 +42,6 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             Assert.Collection(chunkTreeResults,
                 chunkTreeResult =>
                 {
-                    var viewImportsPath = PlatformNormalizer.NormalizePath(@"Views\home\_ViewImports.cshtml");
-                    Assert.Collection(chunkTreeResult.ChunkTree.Chunks,
-                        chunk =>
-                        {
-                            Assert.IsType<LiteralChunk>(chunk);
-                            Assert.Equal(viewImportsPath, chunk.Start.FilePath);
-                        },
-                        chunk =>
-                        {
-                            var usingChunk = Assert.IsType<UsingChunk>(chunk);
-                            Assert.Equal("MyNamespace", usingChunk.Namespace);
-                            Assert.Equal(viewImportsPath, chunk.Start.FilePath);
-                        },
-                        chunk =>
-                        {
-                            Assert.IsType<LiteralChunk>(chunk);
-                            Assert.Equal(viewImportsPath, chunk.Start.FilePath);
-                        });
-                    Assert.Equal(viewImportsPath, chunkTreeResult.FilePath);
-                },
-                chunkTreeResult =>
-                {
                     var viewImportsPath = PlatformNormalizer.NormalizePath(@"Views\_ViewImports.cshtml");
                     Assert.Collection(chunkTreeResult.ChunkTree.Chunks,
                         chunk =>
@@ -88,7 +66,6 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
                             var setBaseTypeChunk = Assert.IsType<SetBaseTypeChunk>(chunk);
                             Assert.Equal("MyBaseType", setBaseTypeChunk.TypeName);
                             Assert.Equal(viewImportsPath, chunk.Start.FilePath);
-
                         },
                         chunk =>
                         {
@@ -98,6 +75,28 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
                         chunk =>
                         {
                             Assert.IsType<StatementChunk>(chunk);
+                            Assert.Equal(viewImportsPath, chunk.Start.FilePath);
+                        },
+                        chunk =>
+                        {
+                            Assert.IsType<LiteralChunk>(chunk);
+                            Assert.Equal(viewImportsPath, chunk.Start.FilePath);
+                        });
+                    Assert.Equal(viewImportsPath, chunkTreeResult.FilePath);
+                },
+                chunkTreeResult =>
+                {
+                    var viewImportsPath = PlatformNormalizer.NormalizePath(@"Views\home\_ViewImports.cshtml");
+                    Assert.Collection(chunkTreeResult.ChunkTree.Chunks,
+                        chunk =>
+                        {
+                            Assert.IsType<LiteralChunk>(chunk);
+                            Assert.Equal(viewImportsPath, chunk.Start.FilePath);
+                        },
+                        chunk =>
+                        {
+                            var usingChunk = Assert.IsType<UsingChunk>(chunk);
+                            Assert.Equal("MyNamespace", usingChunk.Namespace);
                             Assert.Equal(viewImportsPath, chunk.Start.FilePath);
                         },
                         chunk =>
@@ -173,10 +172,10 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             utility.MergeInheritedChunkTrees(chunkTree, inheritedChunkTrees, "dynamic");
 
             // Assert
-            Assert.Equal(3, chunkTree.Chunks.Count);
-            Assert.Same(inheritedChunkTrees[0].Chunks[0], chunkTree.Chunks[0]);
-            Assert.Same(inheritedChunkTrees[1].Chunks[0], chunkTree.Chunks[1]);
-            Assert.Same(defaultChunks[0], chunkTree.Chunks[2]);
+            Assert.Collection(chunkTree.Chunks,
+                chunk => Assert.Same(defaultChunks[1], chunk),
+                chunk => Assert.Same(inheritedChunkTrees[0].Chunks[0], chunk),
+                chunk => Assert.Same(defaultChunks[0], chunk));
         }
     }
 }
