@@ -224,6 +224,14 @@ namespace Microsoft.AspNet.Razor.Parser
                             }
                             else
                             {
+                                if (CurrentSymbol.Content.Equals(SyntaxConstants.CSharp.HelperKeyword))
+                                {
+                                    Context.OnError(
+                                        CurrentLocation,
+                                        RazorResources.FormatParseError_HelperDirectiveNotAvailable(SyntaxConstants.CSharp.HelperKeyword),
+                                        CurrentSymbol.Content.Length);
+                                }
+
                                 Context.CurrentBlock.Type = BlockType.Expression;
                                 Context.CurrentBlock.ChunkGenerator = new ExpressionChunkGenerator();
                                 ImplicitExpression();

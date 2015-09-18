@@ -425,4 +425,7 @@ Instead, wrap the contents of the block in "{{}}":
   <data name="TagHelperParseTreeRewriter_InvalidNestedTag" xml:space="preserve">
     <value>The &lt;{0}&gt; tag is not allowed by parent &lt;{1}&gt; tag helper. Only child tag helper(s) targeting tag name(s) '{2}' are allowed.</value>
   </data>
+  <data name="ParseError_HelperDirectiveNotAvailable" xml:space="preserve">
+    <value>The {0} directive is not supported.</value>
+  </data>
 </root>

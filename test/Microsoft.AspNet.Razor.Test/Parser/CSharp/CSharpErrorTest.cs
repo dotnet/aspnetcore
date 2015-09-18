@@ -28,6 +28,21 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
         }
 
         [Fact]
+        public void ParseBlockWithHelperDirectiveProducesError()
+        {
+            ParseBlockTest("@helper fooHelper { }",
+                new ExpressionBlock(
+                    Factory.CodeTransition(),
+                    Factory.Code("helper")
+                        .AsImplicitExpression(KeywordSet)
+                        .Accepts(AcceptedCharacters.NonWhiteSpace)),
+                new RazorError(
+                    RazorResources.FormatParseError_HelperDirectiveNotAvailable(SyntaxConstants.CSharp.HelperKeyword),
+                    new SourceLocation(1, 0, 1),
+                    length: 6));
+        }
+
+        [Fact]
         public void ParseBlockCapturesWhitespaceToEndOfLineInInvalidUsingStatementAndTreatsAsFileCode()
         {
             ParseBlockTest("using          " + Environment.NewLine

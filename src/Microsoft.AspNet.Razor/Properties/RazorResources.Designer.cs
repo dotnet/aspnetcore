@@ -1546,6 +1546,22 @@ namespace Microsoft.AspNet.Razor
             return string.Format(CultureInfo.CurrentCulture, GetString("TagHelperParseTreeRewriter_InvalidNestedTag"), p0, p1, p2);
         }
 
+        /// <summary>
+        /// The {0} directive is not supported.
+        /// </summary>
+        internal static string ParseError_HelperDirectiveNotAvailable
+        {
+            get { return GetString("ParseError_HelperDirectiveNotAvailable"); }
+        }
+
+        /// <summary>
+        /// The {0} directive is not supported.
+        /// </summary>
+        internal static string FormatParseError_HelperDirectiveNotAvailable(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ParseError_HelperDirectiveNotAvailable"), p0);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
