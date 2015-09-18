@@ -13,8 +13,10 @@ namespace Microsoft.AspNet.Authentication
     {
         private const int FormatVersion = 1;
 
+        public static PropertiesSerializer Default { get; } = new PropertiesSerializer();
+
         [SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times", Justification = "Dispose is idempotent")]
-        public byte[] Serialize(AuthenticationProperties model)
+        public virtual byte[] Serialize(AuthenticationProperties model)
         {
             using (var memory = new MemoryStream())
             {
@@ -28,7 +30,7 @@ namespace Microsoft.AspNet.Authentication
         }
 
         [SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times", Justification = "Dispose is idempotent")]
-        public AuthenticationProperties Deserialize(byte[] data)
+        public virtual AuthenticationProperties Deserialize(byte[] data)
         {
             using (var memory = new MemoryStream(data))
             {
@@ -39,26 +41,29 @@ namespace Microsoft.AspNet.Authentication
             }
         }
 
-        public static void Write([NotNull] BinaryWriter writer, [NotNull] AuthenticationProperties properties)
+        public virtual void Write([NotNull] BinaryWriter writer, [NotNull] AuthenticationProperties properties)
         {
             writer.Write(FormatVersion);
             writer.Write(properties.Items.Count);
-            foreach (var kv in properties.Items)
+
+            foreach (var item in properties.Items)
             {
-                writer.Write(kv.Key);
-                writer.Write(kv.Value);
+                writer.Write(item.Key ?? string.Empty);
+                writer.Write(item.Value ?? string.Empty);
             }
         }
 
-        public static AuthenticationProperties Read([NotNull] BinaryReader reader)
+        public virtual AuthenticationProperties Read([NotNull] BinaryReader reader)
         {
             if (reader.ReadInt32() != FormatVersion)
             {
                 return null;
             }
-            int count = reader.ReadInt32();
+
+            var count = reader.ReadInt32();
             var extra = new Dictionary<string, string>(count);
-            for (int index = 0; index != count; ++index)
+
+            for (var index = 0; index != count; ++index)
             {
                 string key = reader.ReadString();
                 string value = reader.ReadString();

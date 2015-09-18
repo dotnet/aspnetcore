@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
             writer.Write(token.Token);
             writer.Write(token.TokenSecret);
             writer.Write(token.CallbackConfirmed);
-            PropertiesSerializer.Write(writer, token.Properties);
+            PropertiesSerializer.Default.Write(writer, token.Properties);
         }
 
         /// <summary>
@@ -80,7 +80,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
             string token = reader.ReadString();
             string tokenSecret = reader.ReadString();
             bool callbackConfirmed = reader.ReadBoolean();
-            AuthenticationProperties properties = PropertiesSerializer.Read(reader);
+            AuthenticationProperties properties = PropertiesSerializer.Default.Read(reader);
             if (properties == null)
             {
                 return null;
