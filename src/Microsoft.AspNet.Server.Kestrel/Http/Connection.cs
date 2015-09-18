@@ -12,9 +12,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 {
     public class Connection : ConnectionContext, IConnectionControl
     {
-        private const int EOF = -4095;
-        private const int ECONNRESET = -4077;
-
         private static readonly Action<UvStreamHandle, int, int, Exception, object> _readCallback = ReadCallback;
         private static readonly Func<UvStreamHandle, int, object, Libuv.uv_buf_t> _allocCallback = AllocCallback;
 

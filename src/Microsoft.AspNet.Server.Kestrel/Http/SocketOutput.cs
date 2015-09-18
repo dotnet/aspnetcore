@@ -211,7 +211,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         void ISocketOutput.Write(ArraySegment<byte> buffer, bool immediate)
         {
-            ((ISocketOutput)this).WriteAsync(buffer, immediate).Wait();
+            ((ISocketOutput)this).WriteAsync(buffer, immediate).GetAwaiter().GetResult();
         }
 
         Task ISocketOutput.WriteAsync(ArraySegment<byte> buffer, bool immediate, CancellationToken cancellationToken)

@@ -13,6 +13,7 @@
         }
     },
     "commands": {
+        "web": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.Kestrel",
         "run": "Microsoft.AspNet.Server.Kestrel",
         "run-socket": "Microsoft.AspNet.Server.Kestrel --server.urls http://unix:/tmp/kestrel-test.sock",
         "kestrel": "Microsoft.AspNet.Server.Kestrel"

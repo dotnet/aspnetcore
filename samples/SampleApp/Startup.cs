@@ -24,8 +24,6 @@ namespace SampleApp
                     context.Request.Path,
                     context.Request.QueryString);
 
-                await context.Request.Body.CopyToAsync(Console.OpenStandardOutput());
-
                 context.Response.ContentLength = 11;
                 context.Response.ContentType = "text/plain";
                 await context.Response.WriteAsync("Hello world");
