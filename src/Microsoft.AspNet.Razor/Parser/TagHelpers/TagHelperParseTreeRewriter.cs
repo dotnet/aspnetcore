@@ -325,7 +325,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
 
         private void ValidateParentTagHelperAllowsTagHelper(string tagName, Block tagBlock, ErrorSink errorSink)
         {
-            var currentlyAllowedChildren = _currentTagHelperTracker?.AllowedChildren;
+            var currentlyAllowedChildren = _currentTagHelperTracker?.PrefixedAllowedChildren;
 
             if (currentlyAllowedChildren != null &&
                 !currentlyAllowedChildren.Contains(tagName, StringComparer.OrdinalIgnoreCase))
@@ -583,9 +583,11 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                     var tagHelperPrefix = Builder.Descriptors.First().Prefix;
 
                     AllowedChildren = Builder.Descriptors
+                        .Where(descriptor => descriptor.AllowedChildren != null)
                         .SelectMany(descriptor => descriptor.AllowedChildren)
-                        .Distinct(StringComparer.OrdinalIgnoreCase)
-                        .Select(allowedChild => tagHelperPrefix + allowedChild);
+                        .Distinct(StringComparer.OrdinalIgnoreCase);
+
+                    PrefixedAllowedChildren = AllowedChildren.Select(allowedChild => tagHelperPrefix + allowedChild);
                 }
             }
 
@@ -594,6 +596,8 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
             public uint OpenMatchingTags { get; set; }
 
             public IEnumerable<string> AllowedChildren { get; }
+
+            public IEnumerable<string> PrefixedAllowedChildren { get; }
         }
     }
 }

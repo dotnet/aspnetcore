@@ -748,6 +748,86 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
         }
 
         [Fact]
+        public void Rewrite_UnderstandsNullTagNameWithAllowedChildrenForCatchAll()
+        {
+            // Arrange
+            var documentContent = "<p></</p>";
+            var descriptors = new TagHelperDescriptor[]
+                {
+                    new TagHelperDescriptor
+                    {
+                        TagName = "p",
+                        TypeName = "PTagHelper",
+                        AssemblyName = "SomeAssembly",
+                        AllowedChildren = new[] { "custom" },
+                    },
+                    new TagHelperDescriptor
+                    {
+                        TagName = "*",
+                        TypeName = "CatchAllTagHelper",
+                        AssemblyName = "SomeAssembly",
+                    }
+                };
+            var expectedOutput = new MarkupBlock(
+                new MarkupTagHelperBlock("p",
+                    BlockFactory.MarkupTagBlock("</")));
+            var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
+            var expectedErrors = new[]
+            {
+                new RazorError(
+                    RazorResources.FormatTagHelperParseTreeRewriter_CannotHaveNonTagContent("p", "custom"),
+                    absoluteIndex: 3,
+                    lineIndex: 0,
+                    columnIndex: 3,
+                    length: 2)
+            };
+
+            // Act & Assert
+            EvaluateData(descriptorProvider, documentContent, expectedOutput, expectedErrors);
+        }
+
+        [Fact]
+        public void Rewrite_UnderstandsNullTagNameWithAllowedChildrenForCatchAllWithPrefix()
+        {
+            // Arrange
+            var documentContent = "<th:p></</th:p>";
+            var descriptors = new TagHelperDescriptor[]
+                {
+                    new TagHelperDescriptor
+                    {
+                        TagName = "p",
+                        TypeName = "PTagHelper",
+                        AssemblyName = "SomeAssembly",
+                        AllowedChildren = new[] { "custom" },
+                        Prefix = "th:",
+                    },
+                    new TagHelperDescriptor
+                    {
+                        TagName = "*",
+                        TypeName = "CatchAllTagHelper",
+                        AssemblyName = "SomeAssembly",
+                        Prefix = "th:",
+                    }
+                };
+            var expectedOutput = new MarkupBlock(
+                new MarkupTagHelperBlock("th:p",
+                    BlockFactory.MarkupTagBlock("</")));
+            var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
+            var expectedErrors = new[]
+            {
+                new RazorError(
+                    RazorResources.FormatTagHelperParseTreeRewriter_CannotHaveNonTagContent("th:p", "custom"),
+                    absoluteIndex: 6,
+                    lineIndex: 0,
+                    columnIndex: 6,
+                    length: 2)
+            };
+
+            // Act & Assert
+            EvaluateData(descriptorProvider, documentContent, expectedOutput, expectedErrors);
+        }
+
+        [Fact]
         public void Rewrite_CanHandleStartTagOnlyTagTagMode()
         {
             // Arrange
