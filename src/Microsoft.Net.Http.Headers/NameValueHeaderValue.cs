@@ -172,7 +172,10 @@ namespace Microsoft.Net.Http.Headers
             return _name;
         }
 
-        internal static void ToString(ICollection<NameValueHeaderValue> values, char separator, bool leadingSeparator,
+        internal static void ToString(
+            ICollection<NameValueHeaderValue> values,
+            char separator,
+            bool leadingSeparator,
             StringBuilder destination)
         {
             Contract.Assert(destination != null);
@@ -275,7 +278,10 @@ namespace Microsoft.Net.Http.Headers
 
         // Returns the length of a name/value list, separated by 'delimiter'. E.g. "a=b, c=d, e=f" adds 3
         // name/value pairs to 'nameValueCollection' if 'delimiter' equals ','.
-        internal static int GetNameValueListLength(string input, int startIndex, char delimiter,
+        internal static int GetNameValueListLength(
+            string input,
+            int startIndex,
+            char delimiter,
             ICollection<NameValueHeaderValue> nameValueCollection)
         {
             Contract.Requires(nameValueCollection != null);

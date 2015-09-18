@@ -40,9 +40,10 @@ namespace Microsoft.AspNet.Http
         /// </summary>
         /// <param name="formFile">The <see cref="IFormFile"/>.</param>
         /// <param name="filename">The name of the file to create.</param>
-        public async static Task SaveAsAsync(this IFormFile formFile,
-                                             string filename,
-                                             CancellationToken cancellationToken = default(CancellationToken))
+        public async static Task SaveAsAsync(
+            this IFormFile formFile,
+            string filename,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             if (formFile == null)
             {

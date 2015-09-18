@@ -38,8 +38,9 @@ namespace Microsoft.Net.Http.Headers
         /// <param name="stringWithQuality1">The first value to compare.</param>
         /// <param name="stringWithQuality2">The second value to compare</param>
         /// <returns>The result of the comparison.</returns>
-        public int Compare(StringWithQualityHeaderValue stringWithQuality1,
-                           StringWithQualityHeaderValue stringWithQuality2)
+        public int Compare(
+            StringWithQualityHeaderValue stringWithQuality1,
+            StringWithQualityHeaderValue stringWithQuality2)
         {
             if (stringWithQuality1 == null)
             {

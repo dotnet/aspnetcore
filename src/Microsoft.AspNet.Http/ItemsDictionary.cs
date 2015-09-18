@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Http.Internal
             Items = items;
         }
 
-        public IDictionary<object, object> Items { get; private set; }
+        public IDictionary<object, object> Items { get; }
 
         // Replace the indexer with one that returns null for missing values
         object IDictionary<object, object>.this[object key]

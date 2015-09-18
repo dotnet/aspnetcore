@@ -340,8 +340,16 @@ namespace Microsoft.Net.Http.Headers
             return true;
         }
 
-        private static bool TryCreateContentRange(string input, string unit, int fromStartIndex, int fromLength,
-            int toStartIndex, int toLength, int lengthStartIndex, int lengthLength, out ContentRangeHeaderValue parsedValue)
+        private static bool TryCreateContentRange(
+            string input,
+            string unit,
+            int fromStartIndex,
+            int fromLength,
+            int toStartIndex,
+            int toLength,
+            int lengthStartIndex,
+            int lengthLength,
+            out ContentRangeHeaderValue parsedValue)
         {
             parsedValue = null;
 

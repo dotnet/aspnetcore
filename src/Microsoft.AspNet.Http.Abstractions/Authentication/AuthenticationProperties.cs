@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Http.Authentication
         /// <summary>
         /// State values about the authentication session.
         /// </summary>
-        public IDictionary<string, string> Items { get; private set; }
+        public IDictionary<string, string> Items { get; }
 
         /// <summary>
         /// Gets or sets whether the authentication session is persisted across multiple requests.

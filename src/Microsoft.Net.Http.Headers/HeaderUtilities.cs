@@ -163,7 +163,10 @@ namespace Microsoft.Net.Http.Headers
             return true;
         }
 
-        internal static int GetNextNonEmptyOrWhitespaceIndex(string input, int startIndex, bool skipEmptyValues,
+        internal static int GetNextNonEmptyOrWhitespaceIndex(
+            string input,
+            int startIndex,
+            bool skipEmptyValues,
             out bool separatorFound)
         {
             Contract.Requires(input != null);

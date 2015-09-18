@@ -86,12 +86,14 @@ namespace Microsoft.Net.Http.Headers
 
         // Returns the length of a range list. E.g. "1-2, 3-4, 5-6" adds 3 ranges to 'rangeCollection'. Note that empty
         // list segments are allowed, e.g. ",1-2, , 3-4,,".
-        internal static int GetRangeItemListLength(string input, int startIndex,
+        internal static int GetRangeItemListLength(
+            string input,
+            int startIndex,
             ICollection<RangeItemHeaderValue> rangeCollection)
         {
             Contract.Requires(rangeCollection != null);
             Contract.Requires(startIndex >= 0);
-            Contract.Ensures((Contract.Result<int>() == 0) || (rangeCollection.Count > 0), 
+            Contract.Ensures((Contract.Result<int>() == 0) || (rangeCollection.Count > 0),
                 "If we can parse the string, then we expect to have at least one range item.");
 
             if ((string.IsNullOrEmpty(input)) || (startIndex >= input.Length))

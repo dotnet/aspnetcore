@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Http.Headers
             Headers = headers;
         }
 
-        public IHeaderDictionary Headers { get; private set; }
+        public IHeaderDictionary Headers { get; }
 
         public CacheControlHeaderValue CacheControl
         {

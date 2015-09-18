@@ -35,8 +35,8 @@ namespace Microsoft.Net.Http.Headers
 
         internal const char CR = '\r';
         internal const char LF = '\n';
-		internal const char SP = ' ';
-		internal const char Tab = '\t';
+        internal const char SP = ' ';
+        internal const char Tab = '\t';
         internal const int MaxInt64Digits = 19;
         internal const int MaxInt32Digits = 10;
 
@@ -263,8 +263,14 @@ namespace Microsoft.Net.Http.Headers
         // "(((((comment)))))". If we wouldn't define a limit an attacker could send a comment with hundreds of nested
         // comments, resulting in a stack overflow exception. In addition having more than 1 nested comment (if any)
         // is unusual.
-        private static HttpParseResult GetExpressionLength(string input, int startIndex, char openChar,
-            char closeChar, bool supportsNesting, ref int nestedCount, out int length)
+        private static HttpParseResult GetExpressionLength(
+            string input,
+            int startIndex,
+            char openChar,
+            char closeChar,
+            bool supportsNesting,
+            ref int nestedCount,
+            out int length)
         {
             Contract.Requires(input != null);
             Contract.Requires((startIndex >= 0) && (startIndex < input.Length));

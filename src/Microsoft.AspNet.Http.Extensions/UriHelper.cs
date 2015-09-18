@@ -18,7 +18,8 @@ namespace Microsoft.AspNet.Http.Extensions
         /// <param name="query"></param>
         /// <param name="fragment"></param>
         /// <returns></returns>
-        public static string Encode(PathString pathBase = new PathString(),
+        public static string Encode(
+            PathString pathBase = new PathString(),
             PathString path = new PathString(),
             QueryString query = new QueryString(),
             FragmentString fragment = new FragmentString())
@@ -38,7 +39,8 @@ namespace Microsoft.AspNet.Http.Extensions
         /// <param name="query"></param>
         /// <param name="fragment"></param>
         /// <returns></returns>
-        public static string Encode(string scheme,
+        public static string Encode(
+            string scheme,
             HostString host,
             PathString pathBase = new PathString(),
             PathString path = new PathString(),

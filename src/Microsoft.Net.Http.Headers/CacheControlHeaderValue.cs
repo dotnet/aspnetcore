@@ -390,7 +390,8 @@ namespace Microsoft.Net.Http.Headers
             return input.Length - startIndex;
         }
 
-        private static bool TrySetCacheControlValues(CacheControlHeaderValue cc,
+        private static bool TrySetCacheControlValues(
+            CacheControlHeaderValue cc,
             List<NameValueHeaderValue> nameValueList)
         {
             foreach (NameValueHeaderValue nameValue in nameValueList)
@@ -477,7 +478,9 @@ namespace Microsoft.Net.Http.Headers
             return true;
         }
 
-        private static bool TrySetOptionalTokenList(NameValueHeaderValue nameValue, ref bool boolField,
+        private static bool TrySetOptionalTokenList(
+            NameValueHeaderValue nameValue,
+            ref bool boolField,
             ref ICollection<string> destination)
         {
             Contract.Requires(nameValue != null);

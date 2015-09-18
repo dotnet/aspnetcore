@@ -569,11 +569,11 @@ namespace Microsoft.Net.Http.Headers
                 Valid = valid;
             }
 
-            public string Value { get; private set; }
+            public string Value { get; }
 
-            public string Description { get; private set; }
+            public string Description { get; }
 
-            public bool Valid { get; private set; }
+            public bool Valid { get; }
         }
 
         private void CheckValidParse(string input, ContentDispositionHeaderValue expectedResult)

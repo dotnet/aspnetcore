@@ -79,8 +79,9 @@ namespace Microsoft.Net.Http.Headers
             return returnValue;
         }
 
-        private static int CompareBasedOnQualityFactor(MediaTypeHeaderValue mediaType1,
-                                                       MediaTypeHeaderValue mediaType2)
+        private static int CompareBasedOnQualityFactor(
+            MediaTypeHeaderValue mediaType1,
+            MediaTypeHeaderValue mediaType2)
         {
             var mediaType1Quality = mediaType1.Quality ?? HeaderQuality.Match;
             var mediaType2Quality = mediaType2.Quality ?? HeaderQuality.Match;

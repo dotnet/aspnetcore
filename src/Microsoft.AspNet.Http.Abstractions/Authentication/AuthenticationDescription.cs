@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Http.Authentication
         /// <summary>
         /// Contains metadata about the authentication provider.
         /// </summary>
-        public IDictionary<string, object> Items { get; private set; }
+        public IDictionary<string, object> Items { get; }
 
         /// <summary>
         /// Gets or sets the name used to reference the authentication middleware instance.
