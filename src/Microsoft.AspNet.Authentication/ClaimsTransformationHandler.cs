@@ -80,6 +80,5 @@ namespace Microsoft.AspNet.Authentication
         {
             auth.Handler = PriorHandler;
         }
-
     }
 }

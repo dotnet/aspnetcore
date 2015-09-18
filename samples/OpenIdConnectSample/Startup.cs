@@ -1,10 +1,9 @@
 ﻿using System.Linq;
+using Microsoft.AspNet.Authentication.Cookies;
+using Microsoft.AspNet.Authentication.OpenIdConnect;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
-using Microsoft.AspNet.Authentication;
-using Microsoft.AspNet.Authentication.Cookies;
-using Microsoft.AspNet.Authentication.OpenIdConnect;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
 
@@ -14,11 +13,7 @@ namespace OpenIdConnectSample
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddAuthentication();
-            services.Configure<SharedAuthenticationOptions>(options =>
-            {
-                options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-            });
+            services.AddAuthentication(sharedOptions => sharedOptions.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme);
         }
 
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerfactory)
@@ -51,8 +46,6 @@ namespace OpenIdConnectSample
                 context.Response.ContentType = "text/plain";
                 await context.Response.WriteAsync("Hello Authenticated User");
             });
-
-
         }
     }
 }

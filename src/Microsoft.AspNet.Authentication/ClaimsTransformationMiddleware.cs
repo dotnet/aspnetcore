@@ -4,7 +4,6 @@
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
-using Microsoft.Framework.OptionsModel;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Authentication
@@ -15,14 +14,9 @@ namespace Microsoft.AspNet.Authentication
 
         public ClaimsTransformationMiddleware(
             [NotNull] RequestDelegate next,
-            [NotNull] IOptions<ClaimsTransformationOptions> options,
-            ConfigureOptions<ClaimsTransformationOptions> configureOptions)
+            [NotNull] ClaimsTransformationOptions options)
         {
-            Options = options.Value;
-            if (configureOptions != null)
-            {
-                configureOptions.Configure(Options);
-            }
+            Options = options;
             _next = next;
         }
 

@@ -548,7 +548,13 @@ namespace Microsoft.AspNet.Authentication.Google
                     options.AutomaticAuthentication = true;
                 });
                 app.UseGoogleAuthentication(configureOptions);
-                app.UseClaimsTransformation();
+                app.UseClaimsTransformation(p =>
+                {
+                    var id = new ClaimsIdentity("xform");
+                    id.AddClaim(new Claim("xform", "yup"));
+                    p.AddIdentity(id);
+                    return Task.FromResult(p);
+                });
                 app.Use(async (context, next) =>
                 {
                     var req = context.Request;
@@ -601,13 +607,6 @@ namespace Microsoft.AspNet.Authentication.Google
             services =>
             {
                 services.AddAuthentication(options => options.SignInScheme = TestExtensions.CookieAuthenticationScheme);
-                services.AddClaimsTransformation(p =>
-                {
-                    var id = new ClaimsIdentity("xform");
-                    id.AddClaim(new Claim("xform", "yup"));
-                    p.AddIdentity(id);
-                    return p;
-                });
             });
         }
     }

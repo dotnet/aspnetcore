@@ -38,9 +38,8 @@ namespace Microsoft.AspNet.Authentication.Twitter
             [NotNull] ILoggerFactory loggerFactory,
             [NotNull] IUrlEncoder encoder,
             [NotNull] IOptions<SharedAuthenticationOptions> sharedOptions,
-            [NotNull] IOptions<TwitterOptions> options,
-            ConfigureOptions<TwitterOptions> configureOptions = null)
-            : base(next, options, loggerFactory, encoder, configureOptions)
+            [NotNull] TwitterOptions options)
+            : base(next, options, loggerFactory, encoder)
         {
             if (string.IsNullOrEmpty(Options.ConsumerSecret))
             {

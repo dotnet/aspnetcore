@@ -6,14 +6,13 @@ using System.Collections.Generic;
 using System.Net.Http;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
-using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Authentication.OAuth
 {
     /// <summary>
     /// Configuration options for <see cref="OAuthMiddleware"/>.
     /// </summary>
-    public class OAuthOptions : AuthenticationOptions, IOptions<OAuthOptions>
+    public class OAuthOptions : AuthenticationOptions
     {
         /// <summary>
         /// Gets or sets the provider-assigned client id.
@@ -102,13 +101,5 @@ namespace Microsoft.AspNet.Authentication.OAuth
         /// authentication cookie. Note that social providers set this property to <c>false</c> by default.
         /// </summary>
         public bool SaveTokensAsClaims { get; set; } = true;
-
-        OAuthOptions IOptions<OAuthOptions>.Value
-        {
-            get
-            {
-                return this;
-            }
-        }
     }
 }

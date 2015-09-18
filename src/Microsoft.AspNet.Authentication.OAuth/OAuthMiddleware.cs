@@ -33,9 +33,8 @@ namespace Microsoft.AspNet.Authentication.OAuth
             [NotNull] ILoggerFactory loggerFactory,
             [NotNull] IUrlEncoder encoder,
             [NotNull] IOptions<SharedAuthenticationOptions> sharedOptions,
-            [NotNull] IOptions<TOptions> options,
-            ConfigureOptions<TOptions> configureOptions = null)
-            : base(next, options, loggerFactory, encoder, configureOptions)
+            [NotNull] TOptions options)
+            : base(next, options, loggerFactory, encoder)
         {
             // todo: review error handling
             if (string.IsNullOrEmpty(Options.AuthenticationScheme))

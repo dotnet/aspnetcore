@@ -8,7 +8,7 @@ using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.DependencyInjection
 {
-    public static class ServiceCollectionExtensions
+    public static class AuthorizationServiceCollectionExtensions
     {
         public static IServiceCollection AddAuthorization([NotNull] this IServiceCollection services)
         {

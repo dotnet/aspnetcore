@@ -24,10 +24,30 @@ namespace Microsoft.AspNet.Builder
         /// <param name="app">The application builder</param>
         /// <param name="options">Options which control the processing of the bearer header.</param>
         /// <returns>The application builder</returns>
-        public static IApplicationBuilder UseJwtBearerAuthentication([NotNull] this IApplicationBuilder app, Action<JwtBearerOptions> configureOptions = null, string optionsName = "")
+        public static IApplicationBuilder UseJwtBearerAuthentication([NotNull] this IApplicationBuilder app, [NotNull] JwtBearerOptions options)
         {
-            return app.UseMiddleware<JwtBearerMiddleware>(
-                new ConfigureOptions<JwtBearerOptions>(configureOptions ?? (o => { })));
+            return app.UseMiddleware<JwtBearerMiddleware>(options);
+        }
+
+        /// <summary>
+        /// Adds Bearer token processing to an HTTP application pipeline. This middleware understands appropriately
+        /// formatted and secured tokens which appear in the request header. If the Options.AuthenticationMode is Active, the
+        /// claims within the bearer token are added to the current request's IPrincipal User. If the Options.AuthenticationMode 
+        /// is Passive, then the current request is not modified, but IAuthenticationManager AuthenticateAsync may be used at
+        /// any time to obtain the claims from the request's bearer token.
+        /// See also http://tools.ietf.org/html/rfc6749
+        /// </summary>
+        /// <param name="app">The application builder</param>
+        /// <param name="configureOptions">Used to configure Middleware options.</param>
+        /// <returns>The application builder</returns>
+        public static IApplicationBuilder UseJwtBearerAuthentication([NotNull] this IApplicationBuilder app, Action<JwtBearerOptions> configureOptions)
+        {
+            var options = new JwtBearerOptions();
+            if (configureOptions != null)
+            {
+                configureOptions(options);
+            }
+            return app.UseJwtBearerAuthentication(options);
         }
     }
 }

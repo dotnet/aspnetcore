@@ -29,16 +29,7 @@ namespace Microsoft.AspNet.Authentication.Facebook
             var server = CreateServer(
                 app =>
                 {
-                    app.UseFacebookAuthentication();
-                    app.UseCookieAuthentication();
-                },
-                services =>
-                {
-                    services.AddAuthentication(options =>
-                    {
-                        options.SignInScheme = "External";
-                    });
-                    services.AddFacebookAuthentication(options =>
+                    app.UseFacebookAuthentication(options =>
                     {
                         options.AppId = "Test App Id";
                         options.AppSecret = "Test App Secret";
@@ -51,10 +42,17 @@ namespace Microsoft.AspNet.Authentication.Facebook
                             }
                         };
                     });
-                    services.AddCookieAuthentication(options =>
+                    app.UseCookieAuthentication(options =>
                     {
                         options.AuthenticationScheme = "External";
                         options.AutomaticAuthentication = true;
+                    });
+                },
+                services =>
+                {
+                    services.AddAuthentication(options =>
+                    {
+                        options.SignInScheme = "External";
                     });
                 },
                 context =>
@@ -74,19 +72,15 @@ namespace Microsoft.AspNet.Authentication.Facebook
         {
             var server = CreateServer(app =>
                 app.Map("/base", map => {
-                    map.UseFacebookAuthentication();
-                    map.Map("/login", signoutApp => signoutApp.Run(context => context.Authentication.ChallengeAsync("Facebook", new AuthenticationProperties() { RedirectUri = "/" })));
-                }),
-                services =>
-                {
-                    services.AddAuthentication();
-                    services.AddFacebookAuthentication(options =>
+                    map.UseFacebookAuthentication(options =>
                     {
                         options.AppId = "Test App Id";
                         options.AppSecret = "Test App Secret";
                         options.SignInScheme = "External";
                     });
-                },
+                    map.Map("/login", signoutApp => signoutApp.Run(context => context.Authentication.ChallengeAsync("Facebook", new AuthenticationProperties() { RedirectUri = "/" })));
+                }),
+                services => services.AddAuthentication(),
                 handler: null);
             var transaction = await server.SendAsync("http://example.com/base/login");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
@@ -105,19 +99,15 @@ namespace Microsoft.AspNet.Authentication.Facebook
             var server = CreateServer(
                 app =>
                 {
-                    app.UseFacebookAuthentication();
-                    app.Map("/login", signoutApp => signoutApp.Run(context => context.Authentication.ChallengeAsync("Facebook", new AuthenticationProperties() { RedirectUri = "/" })));
-                },
-                services =>
-                {
-                    services.AddAuthentication();
-                    services.AddFacebookAuthentication(options =>
+                    app.UseFacebookAuthentication(options =>
                     {
                         options.AppId = "Test App Id";
                         options.AppSecret = "Test App Secret";
                         options.SignInScheme = "External";
                     });
+                    app.Map("/login", signoutApp => signoutApp.Run(context => context.Authentication.ChallengeAsync("Facebook", new AuthenticationProperties() { RedirectUri = "/" })));
                 },
+                services => services.AddAuthentication(),
                 handler: null);
             var transaction = await server.SendAsync("http://example.com/login");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
@@ -136,24 +126,16 @@ namespace Microsoft.AspNet.Authentication.Facebook
             var server = CreateServer(
                 app =>
                 {
-                    app.UseFacebookAuthentication();
-                    app.UseCookieAuthentication();
-                },
-                services =>
-                {
-                    services.AddAuthentication(options =>
-                    {
-                        options.SignInScheme = "External";
-                    });
-                    services.AddFacebookAuthentication(options =>
+                    app.UseFacebookAuthentication(options =>
                     {
                         options.AppId = "Test App Id";
                         options.AppSecret = "Test App Secret";
                     });
-                    services.AddCookieAuthentication(options =>
-                    {
-                        options.AuthenticationScheme = "External";
-                    });
+                    app.UseCookieAuthentication(options => options.AuthenticationScheme = "External");
+                },
+                services =>
+                {
+                    services.AddAuthentication(options => options.SignInScheme = "External");
                 },
                 context =>
                 {
@@ -181,13 +163,7 @@ namespace Microsoft.AspNet.Authentication.Facebook
             var server = CreateServer(
                 app =>
                 {
-                    app.UseFacebookAuthentication();
-                    app.UseCookieAuthentication();
-                },
-                services =>
-                {
-                    services.AddAuthentication();
-                    services.AddFacebookAuthentication(options =>
+                    app.UseFacebookAuthentication(options =>
                     {
                         options.AppId = "Test App Id";
                         options.AppSecret = "Test App Secret";
@@ -224,6 +200,11 @@ namespace Microsoft.AspNet.Authentication.Facebook
                             }
                         };
                     });
+                    app.UseCookieAuthentication();
+                },
+                services =>
+                {
+                    services.AddAuthentication();
                 }, handler: null);
 
             var properties = new AuthenticationProperties();

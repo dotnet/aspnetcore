@@ -4,7 +4,6 @@
 using System;
 using Microsoft.AspNet.Authentication.Twitter;
 using Microsoft.Framework.Internal;
-using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Builder
 {
@@ -15,8 +14,18 @@ namespace Microsoft.AspNet.Builder
     {
         public static IApplicationBuilder UseTwitterAuthentication([NotNull] this IApplicationBuilder app, Action<TwitterOptions> configureOptions = null)
         {
-            return app.UseMiddleware<TwitterMiddleware>(
-                 new ConfigureOptions<TwitterOptions>(configureOptions ?? (o => { })));
+            var options = new TwitterOptions();
+            if (configureOptions != null)
+            {
+                configureOptions(options);
+            }
+            return app.UseTwitterAuthentication(options);
         }
+
+        public static IApplicationBuilder UseTwitterAuthentication([NotNull] this IApplicationBuilder app, [NotNull] TwitterOptions options)
+        {
+            return app.UseMiddleware<TwitterMiddleware>(options);
+        }
+
     }
 }

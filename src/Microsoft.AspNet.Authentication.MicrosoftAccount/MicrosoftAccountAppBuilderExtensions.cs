@@ -4,7 +4,6 @@
 using System;
 using Microsoft.AspNet.Authentication.MicrosoftAccount;
 using Microsoft.Framework.Internal;
-using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Builder
 {
@@ -13,10 +12,19 @@ namespace Microsoft.AspNet.Builder
     /// </summary>
     public static class MicrosoftAccountAuthenticationExtensions
     {
-        public static IApplicationBuilder UseMicrosoftAccountAuthentication([NotNull] this IApplicationBuilder app, Action<MicrosoftAccountOptions> configureOptions = null)
+        public static IApplicationBuilder UseMicrosoftAccountAuthentication([NotNull] this IApplicationBuilder app, [NotNull] MicrosoftAccountOptions options)
         {
-            return app.UseMiddleware<MicrosoftAccountMiddleware>(
-                 new ConfigureOptions<MicrosoftAccountOptions>(configureOptions ?? (o => { })));
+            return app.UseMiddleware<MicrosoftAccountMiddleware>(options);
+        }
+
+        public static IApplicationBuilder UseMicrosoftAccountAuthentication([NotNull] this IApplicationBuilder app, Action<MicrosoftAccountOptions> configureOptions)
+        {
+            var options = new MicrosoftAccountOptions();
+            if (configureOptions != null)
+            {
+                configureOptions(options);
+            }
+            return app.UseMicrosoftAccountAuthentication(options);
         }
     }
 }

@@ -232,17 +232,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
             baseAddress: null, 
             claimsTransform: o => o.Transformer = new ClaimsTransformer
             {
-                TransformSyncDelegate = p =>
-                {
-                    if (!p.Identities.Any(i => i.AuthenticationType == "xform"))
-                    {
-                        var id = new ClaimsIdentity("xform");
-                        id.AddClaim(new Claim("sync", "no"));
-                        p.AddIdentity(id);
-                    }
-                    return p;
-                },
-                TransformAsyncDelegate = p =>
+                OnTransform = p =>
                 {
                     if (!p.Identities.Any(i => i.AuthenticationType == "xform"))
                     {
@@ -743,22 +733,6 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
             Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
             Assert.True(transaction.SetCookie[0].StartsWith(".AspNet.Cookies="));
-        }
-
-        [Fact]
-        public async Task UseCookieWithOutInstanceDoesUseSharedOptions()
-        {
-            var server = TestServer.Create(app =>
-            {
-                app.UseCookieAuthentication(options => options.CookieName = "One");
-                app.UseCookieAuthentication(options => options.AuthenticationScheme = "Two");
-                app.Run(context => context.Authentication.SignInAsync("Two", new ClaimsPrincipal(new ClaimsIdentity())));
-            }, services => services.AddAuthentication());
-
-            var transaction = await server.SendAsync("http://example.com");
-
-            Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
-            Assert.True(transaction.SetCookie[0].StartsWith("One="));
         }
 
         [Fact]

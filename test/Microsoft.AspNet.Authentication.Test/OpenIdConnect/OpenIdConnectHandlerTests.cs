@@ -15,7 +15,6 @@ using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.TestHost;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
-using Microsoft.Framework.OptionsModel;
 using Microsoft.Framework.WebEncoders;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Xunit;
@@ -58,7 +57,7 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
         public async Task AuthenticateCoreState(Action<OpenIdConnectOptions> action, OpenIdConnectMessage message)
         {
             var handler = new OpenIdConnectHandlerForTestingAuthenticate();
-            var server = CreateServer(new ConfigureOptions<OpenIdConnectOptions>(action), UrlEncoder.Default, handler);
+            var server = CreateServer(action, UrlEncoder.Default, handler);
             await server.CreateClient().PostAsync("http://localhost", new FormUrlEncodedContent(message.Parameters.Where(pair => pair.Value != null)));
         }
 
@@ -116,11 +115,13 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             };
         }
 
-        private static TestServer CreateServer(ConfigureOptions<OpenIdConnectOptions> options, IUrlEncoder encoder, OpenIdConnectHandler handler = null)
+        private static TestServer CreateServer(Action<OpenIdConnectOptions> configureOptions, IUrlEncoder encoder, OpenIdConnectHandler handler = null)
         {
             return TestServer.Create(
                 app =>
                 {
+                    var options = new OpenIdConnectOptions();
+                    configureOptions(options);
                     app.UseMiddleware<OpenIdConnectMiddlewareForTestingAuthenticate>(options, encoder, handler);
                     app.Use(async (context, next) =>
                     {

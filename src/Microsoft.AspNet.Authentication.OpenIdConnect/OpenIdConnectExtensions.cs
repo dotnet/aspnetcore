@@ -3,7 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Authentication.OpenIdConnect;
-using Microsoft.Framework.OptionsModel;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Builder
 {
@@ -18,10 +18,15 @@ namespace Microsoft.AspNet.Builder
         /// <param name="app">The application builder</param>
         /// <param name="options">Options which control the processing of the OpenIdConnect protocol and token validation.</param>
         /// <returns>The application builder</returns>
-        public static IApplicationBuilder UseOpenIdConnectAuthentication(this IApplicationBuilder app, Action<OpenIdConnectOptions> configureOptions = null)
+        public static IApplicationBuilder UseOpenIdConnectAuthentication([NotNull] this IApplicationBuilder app, Action<OpenIdConnectOptions> configureOptions)
         {
-            return app.UseMiddleware<OpenIdConnectMiddleware>(
-                 new ConfigureOptions<OpenIdConnectOptions>(configureOptions ?? (o => { })));
+
+            var options = new OpenIdConnectOptions();
+            if (configureOptions != null)
+            {
+                configureOptions(options);
+            }
+            return app.UseOpenIdConnectAuthentication(options);
         }
 
         /// <summary>
@@ -30,7 +35,7 @@ namespace Microsoft.AspNet.Builder
         /// <param name="app">The application builder</param>
         /// <param name="options">Options which control the processing of the OpenIdConnect protocol and token validation.</param>
         /// <returns>The application builder</returns>
-        public static IApplicationBuilder UseOpenIdConnectAuthentication(this IApplicationBuilder app, IOptions<OpenIdConnectOptions> options)
+        public static IApplicationBuilder UseOpenIdConnectAuthentication([NotNull] this IApplicationBuilder app, [NotNull] OpenIdConnectOptions options)
         {
             return app.UseMiddleware<OpenIdConnectMiddleware>(options);
         }

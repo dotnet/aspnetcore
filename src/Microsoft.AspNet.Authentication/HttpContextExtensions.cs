@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Authentication
             if (auth == null)
             {
                 auth = new HttpAuthenticationFeature();
-                context.Features.Set<IHttpAuthenticationFeature>(auth);
+                context.Features.Set(auth);
             }
             return auth;
         }

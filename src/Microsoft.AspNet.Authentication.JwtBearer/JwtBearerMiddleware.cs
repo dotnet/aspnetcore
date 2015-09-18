@@ -29,9 +29,8 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
             [NotNull] RequestDelegate next,
             [NotNull] ILoggerFactory loggerFactory,
             [NotNull] IUrlEncoder encoder,
-            [NotNull] IOptions<JwtBearerOptions> options,
-            ConfigureOptions<JwtBearerOptions> configureOptions)
-            : base(next, options, loggerFactory, encoder, configureOptions)
+            [NotNull] JwtBearerOptions options)
+            : base(next, options, loggerFactory, encoder)
         {
             if (Options.Events == null)
             {

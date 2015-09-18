@@ -31,10 +31,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         /// <param name="encoder"></param>
         /// <param name="services"></param>
         /// <param name="sharedOptions"></param>
-        /// <param name="options">a <see cref="IOptions{OpenIdConnectOptions}"/> instance that will supply <see cref="OpenIdConnectOptions"/> 
-        /// if configureOptions is null.</param>
-        /// <param name="configureOptions">a <see cref="ConfigureOptions{OpenIdConnectOptions}"/> instance that will be passed to an instance of <see cref="OpenIdConnectOptions"/>
-        /// that is retrieved by calling <see cref="IOptions{OpenIdConnectOptions}.GetNamedOptions(string)"/> where string == <see cref="ConfigureOptions{OpenIdConnectOptions}.Name"/> provides runtime configuration.</param>
+        /// <param name="options"></param>
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Managed by caller")]
         public OpenIdConnectMiddleware(
             [NotNull] RequestDelegate next,
@@ -43,9 +40,8 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             [NotNull] IUrlEncoder encoder,
             [NotNull] IServiceProvider services,
             [NotNull] IOptions<SharedAuthenticationOptions> sharedOptions,
-            [NotNull] IOptions<OpenIdConnectOptions> options,
-            ConfigureOptions<OpenIdConnectOptions> configureOptions = null)
-            : base(next, options, loggerFactory, encoder, configureOptions)
+            [NotNull] OpenIdConnectOptions options)
+            : base(next, options, loggerFactory, encoder)
         {
             if (string.IsNullOrEmpty(Options.SignInScheme) && !string.IsNullOrEmpty(sharedOptions.Value.SignInScheme))
             {

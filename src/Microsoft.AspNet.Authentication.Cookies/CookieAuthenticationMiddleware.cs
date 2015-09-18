@@ -6,7 +6,6 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.DataProtection;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
-using Microsoft.Framework.OptionsModel;
 using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.Authentication.Cookies
@@ -18,9 +17,8 @@ namespace Microsoft.AspNet.Authentication.Cookies
             [NotNull] IDataProtectionProvider dataProtectionProvider,
             [NotNull] ILoggerFactory loggerFactory,
             [NotNull] IUrlEncoder urlEncoder,
-            [NotNull] IOptions<CookieAuthenticationOptions> options,
-            ConfigureOptions<CookieAuthenticationOptions> configureOptions)
-            : base(next, options, loggerFactory, urlEncoder, configureOptions)
+            [NotNull] CookieAuthenticationOptions options)
+            : base(next, options, loggerFactory, urlEncoder)
         {
             if (Options.Events == null)
             {

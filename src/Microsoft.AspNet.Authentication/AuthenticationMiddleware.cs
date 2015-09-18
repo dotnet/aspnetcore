@@ -7,7 +7,6 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
-using Microsoft.Framework.OptionsModel;
 using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.Authentication
@@ -18,16 +17,11 @@ namespace Microsoft.AspNet.Authentication
 
         protected AuthenticationMiddleware(
             [NotNull] RequestDelegate next, 
-            [NotNull] IOptions<TOptions> options, 
+            [NotNull] TOptions options, 
             [NotNull] ILoggerFactory loggerFactory,
-            [NotNull] IUrlEncoder encoder,
-            ConfigureOptions<TOptions> configureOptions)
+            [NotNull] IUrlEncoder encoder)
         {
-            Options = options.Value;
-            if (configureOptions != null)
-            {
-                configureOptions.Configure(Options);
-            }
+            Options = options;
             Logger = loggerFactory.CreateLogger(this.GetType().FullName);
             UrlEncoder = encoder;
 
