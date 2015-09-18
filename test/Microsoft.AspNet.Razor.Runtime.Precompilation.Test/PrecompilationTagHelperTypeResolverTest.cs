@@ -141,7 +141,8 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
                 {
                     Assert.Equal(expectedAttribute.Tag, actualAttribute.Tag);
                     Assert.Equal(expectedAttribute.Attributes, actualAttribute.Attributes);
-                });
+                },
+                discoveredAttributes => discoveredAttributes.OrderBy(attribute => attribute.Tag));
 
             // Verify if enum in attribute constructors works.
             AssertAttributes<EditorBrowsableAttribute>(
@@ -391,7 +392,8 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
                     Assert.Equal(expectedAttribute.FirstArgument, actualAttribute.FirstArgument);
                     Assert.Equal(expectedAttribute.SecondArgument, actualAttribute.SecondArgument);
                     Assert.Equal(expectedAttribute.ThirdArgument, actualAttribute.ThirdArgument);
-                });
+                },
+                discoveredAttributes => discoveredAttributes.OrderBy(attribute => attribute.FirstArgument));
         }
 
         [Fact]
@@ -479,10 +481,20 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
             Action<TAttribute, TAttribute> assertItem)
             where TAttribute : Attribute
         {
-            Assert.Equal(
-                expected.GetCustomAttributes<TAttribute>(),
-                actual.GetCustomAttributes<TAttribute>(),
-                new DelegateAssertion<TAttribute>(assertItem));
+            AssertAttributes<TAttribute>(expected, actual, assertItem, attributes => attributes);
+        }
+
+        private static void AssertAttributes<TAttribute>(
+            MemberInfo expected,
+            IMemberInfo actual,
+            Action<TAttribute, TAttribute> assertItem,
+            Func<IEnumerable<TAttribute>, IEnumerable<TAttribute>> reorderDiscoveredAttributes)
+            where TAttribute : Attribute
+        {
+            var expectedAttributes = reorderDiscoveredAttributes(expected.GetCustomAttributes<TAttribute>());
+            var actualAttributes = reorderDiscoveredAttributes(actual.GetCustomAttributes<TAttribute>());
+
+            Assert.Equal(expectedAttributes, actualAttributes, new DelegateAssertion<TAttribute>(assertItem));
         }
 
         private static void AssertEqual(Type expected, ITypeInfo actual)
