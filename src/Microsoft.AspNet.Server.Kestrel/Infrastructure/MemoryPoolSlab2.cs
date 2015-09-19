@@ -57,8 +57,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
             };
         }
 
-        #region IDisposable Support
-
         protected virtual void Dispose(bool disposing)
         {
             if (!disposedValue)
@@ -94,6 +92,5 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
             // uncomment the following line if the finalizer is overridden above.
             GC.SuppressFinalize(this);
         }
-        #endregion
     }
 }

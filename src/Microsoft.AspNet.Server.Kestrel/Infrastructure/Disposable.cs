@@ -18,8 +18,6 @@ namespace Microsoft.AspNet.Server.Kestrel
             _dispose = dispose;
         }
 
-        #region IDisposable Support
-
         protected virtual void Dispose(bool disposing)
         {
             if (!disposedValue)
@@ -41,6 +39,5 @@ namespace Microsoft.AspNet.Server.Kestrel
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-        #endregion
     }
 }
