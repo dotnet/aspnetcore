@@ -99,7 +99,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             _responseHeaders.HeaderDate = DateTime.UtcNow.ToString("r");
         }
 
-        public async void ProcessFraming()
+        public async Task ProcessFraming()
         {
             try
             {
