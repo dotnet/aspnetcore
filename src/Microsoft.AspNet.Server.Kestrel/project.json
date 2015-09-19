@@ -1,48 +1,53 @@
 {
-    "version": "1.0.0-*",
-    "description": "ASP.NET 5 cross platform development web server.",
-    "repository": {
-        "type": "git",
-        "url": "git://github.com/aspnet/kestrelhttpserver"
-    },
-    "dependencies": {
-        "Microsoft.AspNet.Hosting": "1.0.0-*",
-        "Microsoft.Dnx.Runtime.Abstractions": "1.0.0-*",
-        "Microsoft.Framework.Logging.Abstractions": "1.0.0-*",
-        "Microsoft.StandardsPolice": {
-            "version": "1.0.0-*",
-            "type": "build"
-        }
-    },
-    "frameworks": {
-        "dnx451": { },
-        "dnxcore50": {
-            "dependencies": {
-                "System.Collections": "4.0.11-beta-*",
-                "System.Diagnostics.Debug": "4.0.11-beta-*",
-                "System.Diagnostics.TraceSource": "4.0.0-beta-*",
-                "System.Diagnostics.Tracing": "4.0.21-beta-*",
-                "System.Globalization": "4.0.11-beta-*",
-                "System.IO": "4.0.11-beta-*",
-                "System.Linq": "4.0.1-beta-*",
-                "System.Net.Primitives": "4.0.11-beta-*",
-                "System.Runtime.Extensions": "4.0.11-beta-*",
-                "System.Runtime.InteropServices": "4.0.21-beta-*",
-                "System.Text.Encoding": "4.0.11-beta-*",
-                "System.Threading": "4.0.11-beta-*",
-                "System.Threading.Tasks": "4.0.11-beta-*",
-                "System.Threading.Thread": "4.0.0-beta-*",
-                "System.Threading.ThreadPool": "4.0.10-beta-*"
-            }
-        }
-    },
-    "compilationOptions": {
-        "allowUnsafe": true
-    },
-    "scripts": {
-        "prepare": [
-            "dnu restore ../../tools/Microsoft.AspNet.Server.Kestrel.GeneratedCode",
-            "dnx --appbase ../../tools/Microsoft.AspNet.Server.Kestrel.GeneratedCode Microsoft.Dnx.ApplicationHost run Http/FrameHeaders.Generated.cs"
-        ]
+  "version": "1.0.0-*",
+  "description": "ASP.NET 5 cross platform development web server.",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/aspnet/kestrelhttpserver"
+  },
+  "dependencies": {
+    "Microsoft.AspNet.Hosting": "1.0.0-*",
+    "Microsoft.Dnx.Runtime.Abstractions": "1.0.0-*",
+    "Microsoft.Framework.Logging.Abstractions": "1.0.0-*",
+    "Microsoft.StandardsPolice": {
+      "version": "1.0.0-*",
+      "type": "build"
     }
+  },
+  "frameworks": {
+    "dnx451": { },
+    "dnxcore50": {
+      "dependencies": {
+        "System.Collections": "4.0.11-beta-*",
+        "System.Diagnostics.Debug": "4.0.11-beta-*",
+        "System.Diagnostics.TraceSource": "4.0.0-beta-*",
+        "System.Diagnostics.Tracing": "4.0.21-beta-*",
+        "System.Globalization": "4.0.11-beta-*",
+        "System.IO": "4.0.11-beta-*",
+        "System.Linq": "4.0.1-beta-*",
+        "System.Net.Primitives": "4.0.11-beta-*",
+        "System.Runtime.Extensions": "4.0.11-beta-*",
+        "System.Runtime.InteropServices": "4.0.21-beta-*",
+        "System.Text.Encoding": "4.0.11-beta-*",
+        "System.Threading": "4.0.11-beta-*",
+        "System.Threading.Tasks": "4.0.11-beta-*",
+        "System.Threading.Thread": "4.0.0-beta-*",
+        "System.Threading.ThreadPool": "4.0.10-beta-*"
+      }
+    }
+  },
+  "compilationOptions": {
+    "allowUnsafe": true
+  },
+  "scripts": {
+    "prepare": [
+      "dnu restore ../../tools/Microsoft.AspNet.Server.Kestrel.GeneratedCode",
+      "dnx --appbase ../../tools/Microsoft.AspNet.Server.Kestrel.GeneratedCode Microsoft.Dnx.ApplicationHost run Http/FrameHeaders.Generated.cs"
+    ]
+  },
+  "packInclude": {
+    "native/darwin/universal/": "native/darwin/universal/*",
+    "native/windows/amd64/": "native/windows/amd64/*",
+    "native/windows/x86/": "native/windows/x86/*"
+  }
 }
