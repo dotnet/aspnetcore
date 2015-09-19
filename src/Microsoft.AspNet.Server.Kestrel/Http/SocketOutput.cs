@@ -139,7 +139,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
             try
             {
-                writingContext.Execute();
+                writingContext.DoWriteIfNeeded();
             }
             catch
             {
@@ -284,11 +284,23 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 Buffers = new Queue<ArraySegment<byte>>();
             }
 
+            /// <summary>
+            /// Perform any actions needed by this work item. The individual tasks are non-blocking and
+            /// will continue through to each other in order.
+            /// </summary>
             public void Execute()
+            {
+                DoWriteIfNeeded();
+            }
+
+            /// <summary>
+            /// First step: initiate async write if needed, otherwise go to next step
+            /// </summary>
+            public void DoWriteIfNeeded()
             {
                 if (Buffers.Count == 0 || Self._socket.IsClosed)
                 {
-                    StageTwo();
+                    DoShutdownIfNeeded();
                     return;
                 }
 
@@ -304,19 +316,26 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 writeReq.Init(Self._thread.Loop);
                 writeReq.Write(Self._socket, new ArraySegment<ArraySegment<byte>>(buffers), (_writeReq, status, error, state) =>
                 {
+                    if (error != null)
+                    {
+                        var x = 5;
+                    }
                     _writeReq.Dispose();
                     var _this = (WriteContext)state;
                     _this.WriteStatus = status;
                     _this.WriteError = error;
-                    StageTwo();
+                    DoShutdownIfNeeded();
                 }, this);
             }
 
-            public void StageTwo()
+            /// <summary>
+            /// Second step: initiate async shutdown if needed, otherwise go to next step
+            /// </summary>
+            public void DoShutdownIfNeeded()
             {
                 if (SocketShutdownSend == false || Self._socket.IsClosed)
                 {
-                    StageThree();
+                    DoDisconnectIfNeeded();
                     return;
                 }
 
@@ -330,11 +349,14 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
                     Self._log.ConnectionWroteFin(Self._connectionId, status);
 
-                    StageThree();
+                    DoDisconnectIfNeeded();
                 }, this);
             }
 
-            public void StageThree()
+            /// <summary>
+            /// Third step: disconnect socket if needed, otherwise this work item is complete
+            /// </summary>
+            public void DoDisconnectIfNeeded()
             {
                 if (SocketDisconnect == false || Self._socket.IsClosed)
                 {
