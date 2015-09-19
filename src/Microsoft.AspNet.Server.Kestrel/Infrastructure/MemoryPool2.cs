@@ -66,7 +66,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
                 // The requested minimumSize is actually larger then the usable memory of a single block.
                 // Because this is the degenerate case, a one-time-use byte[] array and tracking object are allocated.
                 // When this block tracking object is returned it is not added to the pool - instead it will be 
-                // allowed to be garbace collected normally.
+                // allowed to be garbage collected normally.
                 return MemoryPoolBlock2.Create(
                     new ArraySegment<byte>(new byte[minimumSize]),
                     dataPtr: IntPtr.Zero,
