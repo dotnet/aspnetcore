@@ -16,7 +16,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         protected Listener(ServiceContext serviceContext) 
             : base(serviceContext)
         {
-            Memory2 = new MemoryPool2();
         }
 
         protected UvStreamHandle ListenSocket { get; private set; }

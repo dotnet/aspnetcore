@@ -18,7 +18,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     {
         protected ListenerSecondary(ServiceContext serviceContext) : base(serviceContext)
         {
-            Memory2 = new MemoryPool2();
         }
 
         UvPipeHandle DispatchPipe { get; set; }

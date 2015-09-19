@@ -11,11 +11,13 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     {
         public ListenerContext()
         {
+            Memory2 = new MemoryPool2();
         }
 
         public ListenerContext(ServiceContext serviceContext) 
             : base(serviceContext)
         {
+            Memory2 = new MemoryPool2();
         }
 
         public ListenerContext(ListenerContext listenerContext)
