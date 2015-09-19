@@ -12,7 +12,6 @@ using Microsoft.AspNet.Server.Kestrel.Http;
 using Microsoft.Dnx.Runtime;
 using Microsoft.Dnx.Runtime.Infrastructure;
 using Xunit;
-using System.Linq;
 
 namespace Microsoft.AspNet.Server.KestrelTests
 {
