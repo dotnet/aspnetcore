@@ -572,22 +572,18 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
 
         private class TagHelperBlockTracker
         {
+            private IEnumerable<string> _prefixedAllowedChildren;
+
             public TagHelperBlockTracker(TagHelperBlockBuilder builder)
             {
                 Builder = builder;
 
                 if (Builder.Descriptors.Any(descriptor => descriptor.AllowedChildren != null))
                 {
-                    Debug.Assert(Builder.Descriptors.Count() >= 1);
-
-                    var tagHelperPrefix = Builder.Descriptors.First().Prefix;
-
                     AllowedChildren = Builder.Descriptors
                         .Where(descriptor => descriptor.AllowedChildren != null)
                         .SelectMany(descriptor => descriptor.AllowedChildren)
                         .Distinct(StringComparer.OrdinalIgnoreCase);
-
-                    PrefixedAllowedChildren = AllowedChildren.Select(allowedChild => tagHelperPrefix + allowedChild);
                 }
             }
 
@@ -597,7 +593,21 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
 
             public IEnumerable<string> AllowedChildren { get; }
 
-            public IEnumerable<string> PrefixedAllowedChildren { get; }
+            public IEnumerable<string> PrefixedAllowedChildren
+            {
+                get
+                {
+                    if (AllowedChildren != null && _prefixedAllowedChildren == null)
+                    {
+                        Debug.Assert(Builder.Descriptors.Count() >= 1);
+
+                        var prefix = Builder.Descriptors.First().Prefix;
+                        _prefixedAllowedChildren = AllowedChildren.Select(allowedChild => prefix + allowedChild);
+                    }
+
+                    return _prefixedAllowedChildren;
+                }
+            }
         }
     }
 }
