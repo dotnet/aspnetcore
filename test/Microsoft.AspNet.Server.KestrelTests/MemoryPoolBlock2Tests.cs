@@ -1,8 +1,5 @@
-﻿using Microsoft.AspNet.Server.Kestrel.Http;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Linq;
+using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 using Xunit;
 
 namespace Microsoft.AspNet.Server.KestrelTests
@@ -120,7 +117,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
             }
         }
 
-        private void AssertIterator(MemoryPoolBlock2.Iterator iter, MemoryPoolBlock2 block, int index)
+        private void AssertIterator(MemoryPoolIterator2 iter, MemoryPoolBlock2 block, int index)
         {
             Assert.Same(block, iter.Block);
             Assert.Equal(index, iter.Index);

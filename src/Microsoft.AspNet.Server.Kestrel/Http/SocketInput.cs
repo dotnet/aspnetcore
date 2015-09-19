@@ -2,12 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 
 namespace Microsoft.AspNet.Server.Kestrel.Http
 {
@@ -131,17 +130,17 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
         }
 
-        public MemoryPoolBlock2.Iterator ConsumingStart()
+        public MemoryPoolIterator2 ConsumingStart()
         {
             lock (_sync)
             {
-                return new MemoryPoolBlock2.Iterator(_head);
+                return new MemoryPoolIterator2(_head);
             }
         }
 
         public void ConsumingComplete(
-            MemoryPoolBlock2.Iterator consumed,
-            MemoryPoolBlock2.Iterator examined)
+            MemoryPoolIterator2 consumed,
+            MemoryPoolIterator2 examined)
         {
             MemoryPoolBlock2 returnStart = null;
             MemoryPoolBlock2 returnEnd = null;

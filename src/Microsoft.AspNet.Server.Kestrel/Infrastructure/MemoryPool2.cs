@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 
-namespace Microsoft.AspNet.Server.Kestrel.Http
+namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
 {
     /// <summary>
     /// Used to allocate and distribute re-usable blocks of memory.
