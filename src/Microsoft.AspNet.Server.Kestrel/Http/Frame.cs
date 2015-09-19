@@ -31,7 +31,12 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private readonly FrameResponseHeaders _responseHeaders = new FrameResponseHeaders();
 
         private List<KeyValuePair<Func<object, Task>, object>> _onStarting;
+
         private List<KeyValuePair<Func<object, Task>, object>> _onCompleted;
+
+        private bool _requestProcessingStarted;
+        private bool _requestProcessingStopping;
+        private Task _requestProcessingTask;
 
         private bool _responseStarted;
         private bool _keepAlive;
@@ -99,14 +104,47 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             _responseHeaders.HeaderDate = DateTime.UtcNow.ToString("r");
         }
 
-        public async Task ProcessFraming()
+        /// <summary>
+        /// Called once by Connection class to begin the RequestProcessingAsync loop.
+        /// </summary>
+        public void Start()
+        {
+            if (!_requestProcessingStarted)
+            {
+                _requestProcessingStarted = true;
+                _requestProcessingTask = Task.Run(RequestProcessingAsync);
+            }
+        }
+
+        /// <summary>
+        /// Should be called when the server wants to initiate a shutdown. The Task returned will
+        /// become complete when the RequestProcessingAsync function has exited. It is expected that
+        /// Stop will be called on all active connections, and Task.WaitAll() will be called on every 
+        /// return value.
+        /// </summary>
+        public Task Stop()
+        {
+            if (!_requestProcessingStopping)
+            {
+                _requestProcessingStopping = true;
+            }
+            return _requestProcessingTask ?? TaskUtilities.CompletedTask;
+        }
+
+        /// <summary>
+        /// Primary loop which consumes socket input, parses it for protocol framing, and invokes the 
+        /// application delegate for as long as the socket is intended to remain open.
+        /// The resulting Task from this loop is preserved in a field which is used when the server needs
+        /// to drain and close all currently active connections.
+        /// </summary>
+        public async Task RequestProcessingAsync()
         {
             try
             {
                 var terminated = false;
-                while (!terminated)
+                while (!terminated && !_requestProcessingStopping)
                 {
-                    while (!terminated && !TakeStartLine(SocketInput))
+                    while (!terminated && !_requestProcessingStopping && !TakeStartLine(SocketInput))
                     {
                         terminated = SocketInput.RemoteIntakeFin;
                         if (!terminated)
@@ -115,7 +153,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         }
                     }
 
-                    while (!terminated && !TakeMessageHeaders(SocketInput))
+                    while (!terminated && !_requestProcessingStopping && !TakeMessageHeaders(SocketInput))
                     {
                         terminated = SocketInput.RemoteIntakeFin;
                         if (!terminated)
@@ -124,7 +162,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         }
                     }
 
-                    if (!terminated)
+                    if (!terminated && !_requestProcessingStopping)
                     {
                         MessageBody = MessageBody.For(HttpVersion, _requestHeaders, this);
                         _keepAlive = MessageBody.RequestKeepAlive;
@@ -163,7 +201,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
             catch (Exception ex)
             {
-                Log.LogVerbose("Connection processing ended abnormally", ex);
+                Log.LogWarning("Connection processing ended abnormally", ex);
             }
             finally
             {
@@ -178,9 +216,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     // Dispose socket
                     ConnectionControl.End(ProduceEndType.SocketDisconnect);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
-                    Log.LogVerbose("Connection shutdown abnormally", ex);
+                    Log.LogWarning("Connection shutdown abnormally", ex);
                 }
             }
         }

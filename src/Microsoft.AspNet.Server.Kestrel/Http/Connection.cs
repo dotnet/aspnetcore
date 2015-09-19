@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         public void Start()
         {
             Log.ConnectionStart(_connectionId);
-            Task.Run(_frame.ProcessFraming);
+            _frame.Start();
             _socket.ReadStart(_allocCallback, _readCallback, this);
         }
 
