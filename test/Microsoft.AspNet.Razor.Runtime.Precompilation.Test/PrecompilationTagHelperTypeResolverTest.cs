@@ -511,14 +511,11 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
                runtimeType.TypeInfo.Assembly.GetName().Name);
 
             Assert.Equal(expected.Name, actual.Name);
-            if (expected.FullName != actualFullName)
-            {
-                Console.WriteLine("!!!");
-                Console.WriteLine(runtimeType.TypeInfo.FullName);
-                Console.WriteLine(actualFullName);
-            }
-
-            Assert.Equal(expected.FullName, actualFullName);
+#if DNXCORE50
+            Assert.Equal(
+                RuntimeTypeInfo.SanitizeFullName(expected.FullName),
+                RuntimeTypeInfo.SanitizeFullName(actualFullName));
+#endif
             Assert.Equal(expected.IsPublic, actual.IsPublic);
             Assert.Equal(expected.IsAbstract, actual.IsAbstract);
             Assert.Equal(expected.IsGenericType, actual.IsGenericType);
@@ -535,6 +532,10 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
                     actual.Properties.OrderBy(p => p.Name),
                     new DelegateAssertion<IPropertyInfo>((x, y) => AssertEqual(x, y)));
             }
+
+            Assert.True(actual.Equals(expected));
+            Assert.True(expected.Equals(actual));
+            Assert.Equal(expected.GetHashCode(), actual.GetHashCode());
         }
 
         private static void AssertEqual(IPropertyInfo expected, IPropertyInfo actual)

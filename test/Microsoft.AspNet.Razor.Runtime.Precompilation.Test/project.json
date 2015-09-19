@@ -23,11 +23,11 @@
     },
     "frameworks": {
         "dnx451": {
+            "frameworkAssemblies": {
+                "System.Text.Encoding": ""
+            },
             "dependencies": {
                 "Moq": "4.2.1312.1622"
-            },
-            "frameworkAssemblies": {
-                "System.Text.Encoding": "4.0.0.0"
             }
         },
         "dnxcore50": {

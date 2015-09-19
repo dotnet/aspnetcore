@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.Framework.Internal;
+using Xunit;
 
 namespace Microsoft.AspNet.Razor.Test.Internal
 {
@@ -24,14 +25,15 @@ namespace Microsoft.AspNet.Razor.Test.Internal
                 return true;
             }
 
-            return descriptorX != null &&
-                descriptorY != null &&
-                descriptorX.IsIndexer == descriptorY.IsIndexer &&
-                string.Equals(descriptorX.Name, descriptorY.Name, StringComparison.Ordinal) &&
-                string.Equals(descriptorX.PropertyName, descriptorY.PropertyName, StringComparison.Ordinal) &&
-                string.Equals(descriptorX.TypeName, descriptorY.TypeName, StringComparison.Ordinal) &&
-                descriptorX.IsStringProperty == descriptorY.IsStringProperty &&
-                TagHelperAttributeDesignTimeDescriptorComparer.Default.Equals(
+            Assert.NotNull(descriptorX);
+            Assert.NotNull(descriptorY);
+            Assert.Equal(descriptorX.IsIndexer, descriptorY.IsIndexer);
+            Assert.Equal(descriptorX.Name, descriptorY.Name, StringComparer.Ordinal);
+            Assert.Equal(descriptorX.PropertyName, descriptorY.PropertyName, StringComparer.Ordinal);
+            Assert.Equal(descriptorX.TypeName, descriptorY.TypeName, StringComparer.Ordinal);
+            Assert.Equal(descriptorX.IsStringProperty, descriptorY.IsStringProperty);
+
+            return TagHelperAttributeDesignTimeDescriptorComparer.Default.Equals(
                     descriptorX.DesignTimeDescriptor,
                     descriptorY.DesignTimeDescriptor);
         }

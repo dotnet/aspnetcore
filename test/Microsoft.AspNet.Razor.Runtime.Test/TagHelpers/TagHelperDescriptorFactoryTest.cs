@@ -963,7 +963,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         {
                             Name = "valid-attribute",
                             PropertyName = nameof(MultiTagTagHelper.ValidAttribute),
-                            TypeName = typeof(string).FullName
+                            TypeName = typeof(string).FullName,
+                            IsStringProperty = true
                         }
                     }),
                 CreateTagHelperDescriptor(
@@ -976,7 +977,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         {
                             Name = "valid-attribute",
                             PropertyName = nameof(MultiTagTagHelper.ValidAttribute),
-                            TypeName = typeof(string).FullName
+                            TypeName = typeof(string).FullName,
+                            IsStringProperty = true
                         }
                     })
             };
@@ -1309,7 +1311,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                             {
                                 Name = "dictionary-property",
                                 PropertyName = nameof(DefaultValidHtmlAttributePrefix.DictionaryProperty),
-                                TypeName = RuntimeTypeInfo.SanitizeFullName(typeof(IDictionary<string, string>).FullName)
+                                TypeName = typeof(IDictionary<string, string>).FullName
                             },
                             new TagHelperAttributeDescriptor
                             {
@@ -1329,7 +1331,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                             {
                                 Name = "valid-name",
                                 PropertyName = nameof(SingleValidHtmlAttributePrefix.DictionaryProperty),
-                                TypeName = RuntimeTypeInfo.SanitizeFullName(typeof(IDictionary<string, string>).FullName)
+                                TypeName = typeof(IDictionary<string, string>).FullName
                             },
                             new TagHelperAttributeDescriptor
                             {
@@ -1349,37 +1351,38 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                             {
                                 Name = "valid-name1",
                                 PropertyName = nameof(MultipleValidHtmlAttributePrefix.DictionaryProperty),
-                                TypeName = RuntimeTypeInfo.SanitizeFullName(typeof(Dictionary<string, object>).FullName)
+                                TypeName = typeof(Dictionary<string, object>).FullName
                             },
                             new TagHelperAttributeDescriptor
                             {
                                 Name = "valid-name2",
                                 PropertyName = nameof(MultipleValidHtmlAttributePrefix.DictionarySubclassProperty),
-                                TypeName = RuntimeTypeInfo.SanitizeFullName(typeof(DictionarySubclass).FullName)
+                                TypeName = typeof(DictionarySubclass).FullName
                             },
                             new TagHelperAttributeDescriptor
                             {
                                 Name = "valid-name3",
                                 PropertyName = nameof(MultipleValidHtmlAttributePrefix.DictionaryWithoutParameterlessConstructorProperty),
-                                TypeName = RuntimeTypeInfo.SanitizeFullName(typeof(DictionaryWithoutParameterlessConstructor).FullName)
+                                TypeName = typeof(DictionaryWithoutParameterlessConstructor).FullName
                             },
                             new TagHelperAttributeDescriptor
                             {
                                 Name = "valid-name4",
                                 PropertyName = nameof(MultipleValidHtmlAttributePrefix.GenericDictionarySubclassProperty),
-                                TypeName = RuntimeTypeInfo.SanitizeFullName(typeof(GenericDictionarySubclass<object>).FullName)
+                                TypeName = typeof(GenericDictionarySubclass<object>).FullName
                             },
                             new TagHelperAttributeDescriptor
                             {
                                 Name = "valid-name5",
                                 PropertyName = nameof(MultipleValidHtmlAttributePrefix.SortedDictionaryProperty),
-                                TypeName = RuntimeTypeInfo.SanitizeFullName(typeof(SortedDictionary<string, int>).FullName)
+                                TypeName = typeof(SortedDictionary<string, int>).FullName
                             },
                             new TagHelperAttributeDescriptor
                             {
                                 Name = "valid-name6",
                                 PropertyName = nameof(MultipleValidHtmlAttributePrefix.StringProperty),
-                                TypeName = typeof(string).FullName
+                                TypeName = typeof(string).FullName,
+                                IsStringProperty = true,
                             },
                             new TagHelperAttributeDescriptor
                             {
@@ -1480,41 +1483,6 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                     },
                 };
             }
-        }
-
-        [Theory]
-        [MemberData(nameof(TagHelperWithPrefixData))]
-        public void CreateDescriptors_WithPrefixes_ReturnsExpectedAttributeDescriptors(
-            Type tagHelperType,
-            IEnumerable<TagHelperAttributeDescriptor> expectedAttributeDescriptors,
-            string[] expectedErrorMessages)
-        {
-            // Arrange
-            var errorSink = new ErrorSink();
-
-            // Act
-            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
-                AssemblyName,
-                GetTypeInfo(tagHelperType),
-                designTime: false,
-                errorSink: errorSink);
-
-            // Assert
-            var errors = errorSink.Errors.ToArray();
-            Assert.Equal(expectedErrorMessages.Length, errors.Length);
-
-            for (var i = 0; i < errors.Length; i++)
-            {
-                Assert.Equal(0, errors[i].Length);
-                Assert.Equal(SourceLocation.Zero, errors[i].Location);
-                Assert.Equal(expectedErrorMessages[i], errors[i].Message, StringComparer.Ordinal);
-            }
-
-            var descriptor = Assert.Single(descriptors);
-            Assert.Equal(
-                expectedAttributeDescriptors,
-                descriptor.Attributes,
-                TagHelperAttributeDescriptorComparer.Default);
         }
 
         public static TheoryData<string> ValidAttributeNameData
@@ -1995,7 +1963,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             {
                 Name = name,
                 PropertyName = propertyInfo.Name,
-                TypeName = propertyInfo.PropertyType.FullName
+                TypeName = propertyInfo.PropertyType.FullName,
+                IsStringProperty = propertyInfo.PropertyType.FullName == typeof(string).FullName
             };
         }
     }

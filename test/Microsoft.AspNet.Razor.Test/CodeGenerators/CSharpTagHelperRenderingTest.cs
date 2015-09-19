@@ -37,7 +37,8 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                             {
                                 Name = "catchall-bound-string",
                                 PropertyName = "BoundRequiredString",
-                                TypeName = typeof(string).FullName
+                                TypeName = typeof(string).FullName,
+                                IsStringProperty = true
                             }
                         },
                         RequiredAttributes = new[] { "catchall-unbound-required" },
@@ -53,13 +54,15 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                             {
                                 Name = "input-bound-required-string",
                                 PropertyName = "BoundRequiredString",
-                                TypeName = typeof(string).FullName
+                                TypeName = typeof(string).FullName,
+                                IsStringProperty = true
                             },
                             new TagHelperAttributeDescriptor
                             {
                                 Name = "input-bound-string",
                                 PropertyName = "BoundString",
-                                TypeName = typeof(string).FullName
+                                TypeName = typeof(string).FullName,
+                                IsStringProperty = true
                             }
                         },
                         RequiredAttributes = new[] { "input-bound-required-string", "input-unbound-required" },
@@ -85,7 +88,8 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                             {
                                 Name = "bound",
                                 PropertyName = "Bound",
-                                TypeName = typeof(string).FullName
+                                TypeName = typeof(string).FullName,
+                                IsStringProperty = true
                             }
                         }
                     }
@@ -237,7 +241,8 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                             {
                                 Name = "string-prefix-grabber",
                                 PropertyName = "StringProperty",
-                                TypeName = typeof(string).FullName
+                                TypeName = typeof(string).FullName,
+                                IsStringProperty = true
                             },
                             new TagHelperAttributeDescriptor
                             {
@@ -251,7 +256,8 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                                 Name = "string-prefix-",
                                 PropertyName = "StringDictionaryProperty",
                                 TypeName = typeof(string).FullName,
-                                IsIndexer = true
+                                IsIndexer = true,
+                                IsStringProperty = true
                             }
                         }
                     },
@@ -286,7 +292,8 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                                 Name = "string-prefix-",
                                 PropertyName = "StringDictionaryProperty",
                                 TypeName = typeof(string).FullName,
-                                IsIndexer = true
+                                IsIndexer = true,
+                                IsStringProperty = true
                             }
                         }
                     }
@@ -1517,10 +1524,11 @@ namespace Microsoft.AspNet.Razor.Test.Generator
 
         [Theory]
         [MemberData(nameof(DesignTimeTagHelperTestData))]
-        public void TagHelpers_GenerateExpectedDesignTimeOutput(string testName,
-                                                                string baseLineName,
-                                                                IEnumerable<TagHelperDescriptor> tagHelperDescriptors,
-                                                                IList<LineMapping> expectedDesignTimePragmas)
+        public void TagHelpers_GenerateExpectedDesignTimeOutput(
+            string testName,
+            string baseLineName,
+            IEnumerable<TagHelperDescriptor> tagHelperDescriptors,
+            IList<LineMapping> expectedDesignTimePragmas)
         {
             // Act & Assert
             RunTagHelperTest(testName,

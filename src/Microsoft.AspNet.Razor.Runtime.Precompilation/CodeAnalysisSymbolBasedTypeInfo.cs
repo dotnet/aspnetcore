@@ -28,6 +28,7 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
         private readonly ITypeSymbol _type;
         private readonly ITypeSymbol _underlyingType;
         private string _fullName;
+        private string _sanitizedFullName;
         private List<IPropertyInfo> _properties;
 
         /// <summary>
@@ -128,6 +129,19 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
             }
         }
 
+        private string SanitizedFullName
+        {
+            get
+            {
+                if (_sanitizedFullName == null)
+                {
+                    _sanitizedFullName = RuntimeTypeInfo.SanitizeFullName(FullName);
+                }
+
+                return _sanitizedFullName;
+            }
+        }
+
         /// <inheritdoc />
         public IEnumerable<TAttribute> GetCustomAttributes<TAttribute>()
             where TAttribute : Attribute
@@ -222,11 +236,14 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
                 return otherSymbolBasedType.TypeSymbol == TypeSymbol;
             }
 
-            return string.Equals(FullName, other.FullName, StringComparison.Ordinal);
+            return string.Equals(
+                SanitizedFullName,
+                RuntimeTypeInfo.SanitizeFullName(other.FullName),
+                StringComparison.Ordinal);
         }
 
         /// <inheritdoc />
-        public override int GetHashCode() => FullName.GetHashCode();
+        public override int GetHashCode() => SanitizedFullName.GetHashCode();
 
         private static List<IPropertyInfo> GetProperties(ITypeSymbol typeSymbol)
         {
@@ -276,7 +293,7 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
             if (typeSymbol.TypeKind == TypeKind.Array)
             {
                 var arrayType = (IArrayTypeSymbol)typeSymbol;
-                GetFullName(nameBuilder, arrayType.ElementType);
+                GetAssemblyQualifiedName(nameBuilder, arrayType.ElementType);
                 nameBuilder.Append("[]");
                 return;
             }
@@ -293,7 +310,7 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
                     foreach (var typeArgument in namedSymbol.TypeArguments)
                     {
                         nameBuilder.Append('[');
-                        GetFullName(nameBuilder, typeArgument);
+                        GetAssemblyQualifiedName(nameBuilder, typeArgument);
                         nameBuilder.Append("],");
                     }
 

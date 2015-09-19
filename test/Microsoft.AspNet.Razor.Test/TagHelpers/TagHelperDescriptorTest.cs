@@ -77,7 +77,8 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                    {
                         Name = "attribute two",
                         PropertyName = "property name",
-                        TypeName = typeof(string).FullName
+                        TypeName = typeof(string).FullName,
+                        IsStringProperty = true
                     },
                 },
                 TagStructure = TagStructure.NormalOrSelfClosing
@@ -138,7 +139,8 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         Name = "attribute two",
                         PropertyName = "property name",
                         TypeName = typeof(string).FullName,
-                        IsIndexer = true
+                        IsIndexer = true,
+                        IsStringProperty = true
                     },
                 },
                 AllowedChildren = new[] { "allowed child one", "allowed child two" }
@@ -273,7 +275,8 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                    {
                         Name = "attribute two",
                         PropertyName = "property name",
-                        TypeName = typeof(string).FullName
+                        TypeName = typeof(string).FullName,
+                        IsStringProperty = true
                     },
                 },
                 AllowedChildren = new[] { "allowed child one", "allowed child two" }
@@ -340,7 +343,8 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         Name = "attribute two",
                         PropertyName = "property name",
                         TypeName = typeof(string).FullName,
-                        IsIndexer = true
+                        IsIndexer = true,
+                        IsStringProperty = true
                     }
                 },
                 TagStructure = TagStructure.NormalOrSelfClosing

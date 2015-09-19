@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.Framework.Internal;
+using Xunit;
 
 namespace Microsoft.AspNet.Razor.Test.Internal
 {
@@ -25,26 +27,29 @@ namespace Microsoft.AspNet.Razor.Test.Internal
                 return true;
             }
 
-            return base.Equals(descriptorX, descriptorY) &&
-                // Normal comparer doesn't care about the case, required attribute order, allowed children order,
-                // attributes or prefixes. In tests we do.
-                string.Equals(descriptorX.TagName, descriptorY.TagName, StringComparison.Ordinal) &&
-                string.Equals(descriptorX.Prefix, descriptorY.Prefix, StringComparison.Ordinal) &&
-                Enumerable.SequenceEqual(
-                    descriptorX.RequiredAttributes,
-                    descriptorY.RequiredAttributes,
-                    StringComparer.Ordinal) &&
-                (descriptorX.AllowedChildren == descriptorY.AllowedChildren ||
-                Enumerable.SequenceEqual(
-                    descriptorX.AllowedChildren,
-                    descriptorY.AllowedChildren,
-                    StringComparer.Ordinal)) &&
-                descriptorX.Attributes.SequenceEqual(
-                    descriptorY.Attributes,
-                    TagHelperAttributeDescriptorComparer.Default) &&
-                TagHelperDesignTimeDescriptorComparer.Default.Equals(
-                    descriptorX.DesignTimeDescriptor,
-                    descriptorY.DesignTimeDescriptor);
+            Assert.True(base.Equals(descriptorX, descriptorY));
+
+            // Normal comparer doesn't care about the case, required attribute order, allowed children order,
+            // attributes or prefixes. In tests we do.
+            Assert.Equal(descriptorX.TagName, descriptorY.TagName, StringComparer.Ordinal);
+            Assert.Equal(descriptorX.Prefix, descriptorY.Prefix, StringComparer.Ordinal);
+            Assert.Equal(descriptorX.RequiredAttributes, descriptorY.RequiredAttributes, StringComparer.Ordinal);
+
+            if (descriptorX.AllowedChildren != descriptorY.AllowedChildren)
+            {
+                Assert.Equal(descriptorX.AllowedChildren, descriptorY.AllowedChildren, StringComparer.Ordinal);
+            }
+
+            Assert.Equal(
+                descriptorX.Attributes,
+                descriptorY.Attributes,
+                TagHelperAttributeDescriptorComparer.Default);
+            Assert.Equal(
+                descriptorX.DesignTimeDescriptor,
+                descriptorY.DesignTimeDescriptor,
+                TagHelperDesignTimeDescriptorComparer.Default);
+
+            return true;
         }
 
         public override int GetHashCode(TagHelperDescriptor descriptor)

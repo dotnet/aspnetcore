@@ -22,6 +22,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
         private static readonly TypeInfo TagHelperTypeInfo = typeof(ITagHelper).GetTypeInfo();
         private IEnumerable<IPropertyInfo> _properties;
+        private string _sanitizedFullName;
 
         /// <summary>
         /// Initializes a new instance of <see cref="RuntimeTypeInfo"/>
@@ -46,7 +47,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         public string Name => TypeInfo.Name;
 
         /// <inheritdoc />
-        public string FullName => SanitizeFullName(TypeInfo.FullName);
+        public string FullName => TypeInfo.FullName;
 
         /// <inheritdoc />
         public bool IsAbstract => TypeInfo.IsAbstract;
@@ -77,6 +78,19 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
         /// <inheritdoc />
         public bool IsTagHelper => TagHelperTypeInfo.IsAssignableFrom(TypeInfo);
+
+        private string SanitizedFullName
+        {
+            get
+            {
+                if (_sanitizedFullName == null)
+                {
+                    _sanitizedFullName = SanitizeFullName(FullName);
+                }
+
+                return _sanitizedFullName;
+            }
+        }
 
         /// <inheritdoc />
         public IEnumerable<TAttribute> GetCustomAttributes<TAttribute>() where TAttribute : Attribute =>
@@ -116,14 +130,27 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 return otherRuntimeType.TypeInfo == TypeInfo;
             }
 
-            return string.Equals(FullName, other.FullName, StringComparison.Ordinal);
+            return string.Equals(
+                SanitizedFullName,
+                SanitizeFullName(other.FullName),
+                StringComparison.Ordinal);
         }
 
         /// <inheritdoc />
-        public override int GetHashCode() => FullName.GetHashCode();
+        public override int GetHashCode() => SanitizedFullName.GetHashCode();
 
-        // Internal for unit testing
-        internal static string SanitizeFullName(string fullName)
+        /// <summary>
+        /// Removes assembly qualification from generic type parameters for the specified <paramref name="fullName"/>.
+        /// </summary>
+        /// <param name="fullName">Full name.</param>
+        /// <returns>Full name without fully qualified generic parameters.</returns>
+        /// <example>
+        /// <c>typeof(<see cref="List{string}"/>).FullName</c> is
+        /// List`1[[System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]
+        /// <c>Sanitize(typeof(<see cref="List{string}"/>.FullName</c> returns
+        /// List`1[[System.String]
+        /// </example>
+        public static string SanitizeFullName(string fullName)
         {
             // In CoreCLR, some types (such as System.String) are type forwarded from System.Runtime
             // to mscorlib at runtime. Type names of generic type parameters includes the assembly qualified name;

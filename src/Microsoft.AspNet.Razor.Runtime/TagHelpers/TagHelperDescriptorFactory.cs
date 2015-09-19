@@ -579,6 +579,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 attributeName,
                 property.PropertyType.FullName,
                 isIndexer: false,
+                isStringProperty: StringTypeInfo.Equals(property.PropertyType),
                 designTime: designTime);
         }
 
@@ -663,6 +664,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 attributeName: prefix,
                 typeName: dictionaryTypeArguments[1].FullName,
                 isIndexer: true,
+                isStringProperty: StringTypeInfo.Equals(dictionaryTypeArguments[1]),
                 designTime: designTime);
         }
 
@@ -671,6 +673,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             string attributeName,
             string typeName,
             bool isIndexer,
+            bool isStringProperty,
             bool designTime)
         {
             TagHelperAttributeDesignTimeDescriptor propertyDesignTimeDescriptor = null;
@@ -692,6 +695,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 Name = attributeName,
                 PropertyName = property.Name,
                 TypeName = typeName,
+                IsStringProperty = isStringProperty,
                 IsIndexer = isIndexer,
                 DesignTimeDescriptor = propertyDesignTimeDescriptor
             };

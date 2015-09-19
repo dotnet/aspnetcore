@@ -1078,7 +1078,8 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         {
                             Name = "name",
                             PropertyName = "Name",
-                            TypeName = typeof(string).FullName
+                            TypeName = typeof(string).FullName,
+                            IsStringProperty = true
                         }
                     }
                 }
@@ -2121,7 +2122,8 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                             {
                                 Name = "name",
                                 PropertyName = "Name",
-                                TypeName = typeof(string).FullName
+                                TypeName = typeof(string).FullName,
+                                IsStringProperty = true
                             }
                         }
                     }
@@ -3761,7 +3763,8 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                             {
                                 Name = "bound-required-string",
                                 PropertyName = "BoundRequiredString",
-                                TypeName = typeof(string).FullName
+                                TypeName = typeof(string).FullName,
+                                IsStringProperty = true
                             }
                         },
                         RequiredAttributes = new[] { "unbound-required" }
@@ -3777,7 +3780,8 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                             {
                                 Name = "bound-required-string",
                                 PropertyName = "BoundRequiredString",
-                                TypeName = typeof(string).FullName
+                                TypeName = typeof(string).FullName,
+                                IsStringProperty = true
                             }
                         },
                         RequiredAttributes = new[] { "bound-required-string" }
@@ -3829,7 +3833,8 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                                 Name = "string-prefix-",
                                 PropertyName = "DictionaryOfStringProperty",
                                 TypeName = typeof(string).FullName,
-                                IsIndexer = true
+                                IsIndexer = true,
+                                IsStringProperty = true
                             }
                         }
                     },
@@ -3844,7 +3849,8 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                             {
                                 Name = "bound-string",
                                 PropertyName = "BoundRequiredString",
-                                TypeName = typeof(string).FullName
+                                TypeName = typeof(string).FullName,
+                                IsStringProperty = true
                             },
                             new TagHelperAttributeDescriptor
                             {

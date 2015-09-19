@@ -1,7 +1,9 @@
 {
   "version": "4.0.0-*",
   "shared": "*.cs",
-  "dependencies": { },
+  "dependencies": {
+    "xunit.assert": "2.1.0-*"
+  },
   "frameworks": {
     "net45": { },
     "dotnet": {

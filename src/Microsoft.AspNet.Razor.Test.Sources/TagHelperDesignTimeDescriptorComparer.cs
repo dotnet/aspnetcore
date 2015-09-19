@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.Framework.Internal;
+using Xunit;
 
 namespace Microsoft.AspNet.Razor.Test.Internal
 {
@@ -24,11 +25,13 @@ namespace Microsoft.AspNet.Razor.Test.Internal
                 return true;
             }
 
-            return descriptorX != null &&
-                descriptorY != null &&
-                string.Equals(descriptorX.Summary, descriptorY.Summary, StringComparison.Ordinal) &&
-                string.Equals(descriptorX.Remarks, descriptorY.Remarks, StringComparison.Ordinal) &&
-                string.Equals(descriptorX.OutputElementHint, descriptorY.OutputElementHint, StringComparison.Ordinal);
+            Assert.NotNull(descriptorX);
+            Assert.NotNull(descriptorY);
+            Assert.Equal(descriptorX.Summary, descriptorY.Summary, StringComparer.Ordinal);
+            Assert.Equal(descriptorX.Remarks, descriptorY.Remarks, StringComparer.Ordinal);
+            Assert.Equal(descriptorX.OutputElementHint, descriptorY.OutputElementHint, StringComparer.Ordinal);
+
+            return true;
         }
 
         public int GetHashCode(TagHelperDesignTimeDescriptor descriptor)

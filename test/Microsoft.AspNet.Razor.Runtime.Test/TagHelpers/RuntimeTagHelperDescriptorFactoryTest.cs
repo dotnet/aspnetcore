@@ -38,6 +38,41 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             Assert.Equal(expectedDescriptor, descriptor, CaseSensitiveTagHelperDescriptorComparer.Default);
         }
 
+        [Theory]
+        [MemberData(nameof(TagHelperWithPrefixData))]
+        public void CreateDescriptors_WithPrefixes_ReturnsExpectedAttributeDescriptors(
+            Type tagHelperType,
+            IEnumerable<TagHelperAttributeDescriptor> expectedAttributeDescriptors,
+            string[] expectedErrorMessages)
+        {
+            // Arrange
+            var errorSink = new ErrorSink();
+
+            // Act
+            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
+                AssemblyName,
+                GetTypeInfo(tagHelperType),
+                designTime: false,
+                errorSink: errorSink);
+
+            // Assert
+            var errors = errorSink.Errors.ToArray();
+            Assert.Equal(expectedErrorMessages.Length, errors.Length);
+
+            for (var i = 0; i < errors.Length; i++)
+            {
+                Assert.Equal(0, errors[i].Length);
+                Assert.Equal(SourceLocation.Zero, errors[i].Location);
+                Assert.Equal(expectedErrorMessages[i], errors[i].Message, StringComparer.Ordinal);
+            }
+
+            var descriptor = Assert.Single(descriptors);
+            Assert.Equal(
+                expectedAttributeDescriptors,
+                descriptor.Attributes,
+                TagHelperAttributeDescriptorComparer.Default);
+        }
+
         // TagHelperDesignTimeDescriptors are not created in CoreCLR.
 #if !DNXCORE50
         public static TheoryData OutputElementHintData

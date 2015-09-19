@@ -13,44 +13,19 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 {
     public class RuntimeTypeInfoTest
     {
-        private static readonly string StringFullName = typeof(string).FullName;
-        private static readonly string CollectionsNamespace = typeof(IDictionary<,>).Namespace;
-
-        public static TheoryData RuntimeTypeInfo_ReturnsMetadataOfAdaptingTypeData =>
-            new TheoryData<Type, string>
-            {
-                { typeof(int), typeof(int).FullName },
-                { typeof(string), typeof(string).FullName },
-                { typeof(Tuple<>), typeof(Tuple<>).FullName },
-                { typeof(Tuple<,>), typeof(Tuple<,>).FullName },
-                {
-                    typeof(IDictionary<string, string>),
-                    $"{typeof(IDictionary<,>).FullName}[[{StringFullName}],[{StringFullName}]]"
-                },
-                {
-                    typeof(IDictionary<string, IDictionary<string, CustomType>>),
-                    $"{typeof(IDictionary<,>).FullName}[[{StringFullName}],[{typeof(IDictionary<,>).FullName}" +
-                    $"[[{StringFullName}],[{typeof(CustomType).FullName}]]]]"
-                },
-                {
-                    typeof(IList<IReadOnlyList<IDictionary<List<string>, Tuple<CustomType, object[]>>>>),
-                    $"{typeof(IList<>).FullName}[[{typeof(IReadOnlyList<>).FullName}[[{typeof(IDictionary<,>).FullName}[[" +
-                    $"{typeof(List<>).FullName}[[{StringFullName}]]],[{typeof(Tuple<,>).FullName}[[{typeof(CustomType).FullName}]," +
-                    $"[{typeof(object).FullName}[]]]]]]]]]"
-                },
-                { typeof(AbstractType), typeof(AbstractType).FullName },
-                { typeof(PrivateType), typeof(PrivateType).FullName },
-                { typeof(KnownKeyDictionary<>), typeof(KnownKeyDictionary<>).FullName },
-                {
-                    typeof(KnownKeyDictionary<string>),
-                    $"{typeof(KnownKeyDictionary<>).Namespace}" +
-                    $".RuntimeTypeInfoTest+KnownKeyDictionary`1[[{StringFullName}]]"
-                }
-            };
-
         [Theory]
-        [MemberData(nameof(RuntimeTypeInfo_ReturnsMetadataOfAdaptingTypeData))]
-        public void RuntimeTypeInfo_ReturnsMetadataOfAdaptingType(Type type, string expectedFullName)
+        [InlineData(typeof(int))]
+        [InlineData(typeof(string))]
+        [InlineData(typeof(Tuple<>))]
+        [InlineData(typeof(Tuple<>))]
+        [InlineData(typeof(IDictionary<string, string>))]
+        [InlineData(typeof(IDictionary<string, IDictionary<string, CustomType>>))]
+        [InlineData(typeof(IList<IReadOnlyList<IDictionary<List<string>, Tuple<CustomType, object[]>>>>))]
+        [InlineData(typeof(AbstractType))]
+        [InlineData(typeof(PrivateType))]
+        [InlineData(typeof(KnownKeyDictionary<>))]
+        [InlineData(typeof(KnownKeyDictionary<string>))]
+        public void RuntimeTypeInfo_ReturnsMetadataOfAdaptingType(Type type)
         {
             // Arrange
             var typeInfo = type.GetTypeInfo();
@@ -59,7 +34,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act and Assert
             Assert.Same(typeInfo, runtimeTypeInfo.TypeInfo);
             Assert.Equal(typeInfo.Name, runtimeTypeInfo.Name);
-            Assert.Equal(expectedFullName, runtimeTypeInfo.FullName);
+            Assert.Equal(type.FullName, runtimeTypeInfo.FullName);
             Assert.Equal(typeInfo.IsAbstract, runtimeTypeInfo.IsAbstract);
             Assert.Equal(typeInfo.IsGenericType, runtimeTypeInfo.IsGenericType);
             Assert.Equal(typeInfo.IsPublic, runtimeTypeInfo.IsPublic);
@@ -282,7 +257,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 { typeof(IDictionary<,>), typeof(IDictionary<,>).FullName },
                 {
                     typeof(IDictionary<string,string>),
-                    RuntimeTypeInfo.SanitizeFullName(typeof(IDictionary<string, string>).FullName)
+                    typeof(IDictionary<string, string>).FullName
                 },
             };
 
@@ -578,6 +553,11 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 {
                     throw new NotImplementedException();
                 }
+            }
+
+            public bool Equals(ITypeInfo other)
+            {
+                throw new NotImplementedException();
             }
 
             public IEnumerable<TAttribute> GetCustomAttributes<TAttribute>() where TAttribute : Attribute

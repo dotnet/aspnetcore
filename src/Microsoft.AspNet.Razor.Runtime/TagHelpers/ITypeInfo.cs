@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
@@ -8,11 +9,18 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
     /// <summary>
     /// Contains type metadata.
     /// </summary>
-    public interface ITypeInfo : IMemberInfo
+    public interface ITypeInfo : IMemberInfo, IEquatable<ITypeInfo>
     {
         /// <summary>
         /// Fully qualified name of the type.
         /// </summary>
+        /// <remarks>
+        /// On CoreCLR, some BCL types get type forwarded to the full desktop framework implementations at
+        /// runtime. For e.g. we compile against System.String in System.Runtime which is type forwarded to
+        /// mscorlib at runtime. Consequently for generic types where the <see cref="FullName"/> includes the assembly
+        /// qualified name of generic parameters, FullNames would not match.
+        /// Use <see cref="IEquatable{ITypeInfo}.Equals(ITypeInfo)"/> to compare <see cref="ITypeInfo"/>s instead.
+        /// </remarks>
         string FullName { get; }
 
         /// <summary>

@@ -46,15 +46,15 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         public bool IsIndexer { get; set; }
 
         /// <summary>
-        /// Gets an indication whether this property is of type <see cref="string"/> or, if <see cref="IsIndexer"/> is
-        /// <c>true</c>, whether the indexer's value is of type <see cref="string"/>.
+        /// Gets or sets an indication whether this property is of type <see cref="string"/> or, if
+        /// <see cref="IsIndexer"/> is <c>true</c>, whether the indexer's value is of type <see cref="string"/>.
         /// </summary>
         /// <value>
         /// If <c>true</c> the <see cref="TypeName"/> is for <see cref="string"/>. This causes the Razor parser
         /// to allow empty values for HTML attributes matching this <see cref="TagHelperAttributeDescriptor"/>. If
         /// <c>false</c> empty values for such matching attributes lead to errors.
         /// </value>
-        public bool IsStringProperty { get; private set; }
+        public bool IsStringProperty { get; set; }
 
         /// <summary>
         /// The HTML attribute name or, if <see cref="IsIndexer"/> is <c>true</c>, the prefix for matching attribute
@@ -116,7 +116,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 }
 
                 _typeName = value;
-                IsStringProperty = string.Equals(_typeName, typeof(string).FullName, StringComparison.Ordinal);
+                IsStringProperty = string.Equals(TypeName, typeof(string).FullName, StringComparison.Ordinal);
             }
         }
 
