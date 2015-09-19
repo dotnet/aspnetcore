@@ -35,8 +35,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private List<KeyValuePair<Func<object, Task>, object>> _onCompleted;
 
         private bool _requestProcessingStarted;
-        private bool _requestProcessingStopping;
         private Task _requestProcessingTask;
+        private volatile bool _requestProcessingStopping; // volatile, see: https://msdn.microsoft.com/en-us/library/x13ttww7.aspx
 
         private bool _responseStarted;
         private bool _keepAlive;
