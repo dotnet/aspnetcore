@@ -82,18 +82,24 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
 
             var assemblyName = Path.GetRandomFileName();
             var compilationSettings = _compilerOptionsProvider.GetCompilationSettings(_environment);
-            var syntaxTree = SyntaxTreeGenerator.Generate(compilationContent,
-                                                          assemblyName,
-                                                          compilationSettings);
+            var syntaxTree = SyntaxTreeGenerator.Generate(
+                compilationContent,
+                assemblyName,
+                compilationSettings);
+
             var references = _applicationReferences.Value;
 
-            var compilationOptions = compilationSettings.CompilationOptions
-                                                        .WithOutputKind(OutputKind.DynamicallyLinkedLibrary);
+            var compilationOptions = compilationSettings
+                .CompilationOptions
+                .WithOutputKind(OutputKind.DynamicallyLinkedLibrary);
 
-            var compilation = CSharpCompilation.Create(assemblyName,
-                        options: compilationOptions,
-                        syntaxTrees: new[] { syntaxTree },
-                        references: references);
+            var compilation = CSharpCompilation.Create(
+                assemblyName,
+                options: compilationOptions,
+                syntaxTrees: new[] { syntaxTree },
+                references: references);
+
+            compilation = Rewrite(compilation);
 
             using (var ms = new MemoryStream())
             {
@@ -138,6 +144,21 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                     return UncachedCompilationResult.Successful(type, compilationContent);
                 }
             }
+        }
+
+        private CSharpCompilation Rewrite(CSharpCompilation compilation)
+        {
+            var rewrittenTrees = new List<SyntaxTree>();
+            foreach (var tree in compilation.SyntaxTrees)
+            {
+                var semanticModel = compilation.GetSemanticModel(tree, ignoreAccessibility: true);
+                var rewriter = new ExpressionRewriter(semanticModel);
+
+                var rewrittenTree = tree.WithRootAndOptions(rewriter.Visit(tree.GetRoot()), tree.Options);
+                rewrittenTrees.Add(rewrittenTree);
+            }
+
+            return compilation.RemoveAllSyntaxTrees().AddSyntaxTrees(rewrittenTrees);
         }
 
         // Internal for unit testing
