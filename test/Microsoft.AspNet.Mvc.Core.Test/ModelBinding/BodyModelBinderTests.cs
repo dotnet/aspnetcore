@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 .Returns(true)
                 .Verifiable();
             mockInputFormatter.Setup(o => o.ReadAsync(It.IsAny<InputFormatterContext>()))
-                              .Returns(Task.FromResult<object>(new Person()))
+                              .Returns(InputFormatterResult.SuccessAsync(new Person()))
                               .Verifiable();
             var inputFormatter = mockInputFormatter.Object;
 
@@ -305,7 +305,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 return true;
             }
 
-            public override Task<object> ReadRequestBodyAsync(InputFormatterContext context)
+            public override Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context)
             {
                 throw new InvalidOperationException("Your input is bad!");
             }
@@ -325,9 +325,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 return _canRead;
             }
 
-            public Task<object> ReadAsync(InputFormatterContext context)
+            public Task<InputFormatterResult> ReadAsync(InputFormatterContext context)
             {
-                return Task.FromResult<object>(this);
+                return InputFormatterResult.SuccessAsync(this);
             }
         }
     }

@@ -25,13 +25,18 @@ namespace Microsoft.AspNet.Mvc.Formatters
 
             var modelState = new ModelStateDictionary();
             var httpContext = GetHttpContext(contentBytes);
-            var context = new InputFormatterContext(httpContext, modelState, typeof(JsonPatchDocument<Customer>));
+            var context = new InputFormatterContext(
+                httpContext,
+                modelName: string.Empty,
+                modelState: modelState,
+                modelType: typeof(JsonPatchDocument<Customer>));
 
             // Act
-            var model = await formatter.ReadAsync(context);
+            var result = await formatter.ReadAsync(context);
 
             // Assert
-            var patchDoc = Assert.IsType<JsonPatchDocument<Customer>>(model);
+            Assert.False(result.HasError);
+            var patchDoc = Assert.IsType<JsonPatchDocument<Customer>>(result.Model);
             Assert.Equal("add", patchDoc.Operations[0].op);
             Assert.Equal("Customer/Name", patchDoc.Operations[0].path);
             Assert.Equal("John", patchDoc.Operations[0].value);
@@ -48,13 +53,18 @@ namespace Microsoft.AspNet.Mvc.Formatters
 
             var modelState = new ModelStateDictionary();
             var httpContext = GetHttpContext(contentBytes);
-            var context = new InputFormatterContext(httpContext, modelState, typeof(JsonPatchDocument<Customer>));
+            var context = new InputFormatterContext(
+                httpContext,
+                modelName: string.Empty,
+                modelState: modelState,
+                modelType: typeof(JsonPatchDocument<Customer>));
 
             // Act
-            var model = await formatter.ReadAsync(context);
+            var result = await formatter.ReadAsync(context);
 
             // Assert
-            var patchDoc = Assert.IsType<JsonPatchDocument<Customer>>(model);
+            Assert.False(result.HasError);
+            var patchDoc = Assert.IsType<JsonPatchDocument<Customer>>(result.Model);
             Assert.Equal("add", patchDoc.Operations[0].op);
             Assert.Equal("Customer/Name", patchDoc.Operations[0].path);
             Assert.Equal("John", patchDoc.Operations[0].value);
@@ -78,8 +88,9 @@ namespace Microsoft.AspNet.Mvc.Formatters
             var httpContext = GetHttpContext(contentBytes, contentType: requestContentType);
             var formatterContext = new InputFormatterContext(
                 httpContext,
-                modelState,
-                typeof(JsonPatchDocument<Customer>));
+                modelName: string.Empty,
+                modelState: modelState,
+                modelType: typeof(JsonPatchDocument<Customer>));
 
             // Act
             var result = formatter.CanRead(formatterContext);
@@ -100,7 +111,11 @@ namespace Microsoft.AspNet.Mvc.Formatters
 
             var modelState = new ModelStateDictionary();
             var httpContext = GetHttpContext(contentBytes, contentType: "application/json-patch+json");
-            var formatterContext = new InputFormatterContext(httpContext, modelState, modelType);
+            var formatterContext = new InputFormatterContext(
+                httpContext,
+                modelName: string.Empty,
+                modelState: modelState,
+                modelType: modelType);
 
             // Act
             var result = formatter.CanRead(formatterContext);
@@ -122,13 +137,17 @@ namespace Microsoft.AspNet.Mvc.Formatters
 
             var modelState = new ModelStateDictionary();
             var httpContext = GetHttpContext(contentBytes, contentType: "application/json-patch+json");
-
-            var context = new InputFormatterContext(httpContext, modelState, typeof(Customer));
+            var context = new InputFormatterContext(
+                httpContext,
+                modelName: string.Empty,
+                modelState: modelState,
+                modelType: typeof(Customer));
 
             // Act
-            var model = await formatter.ReadAsync(context);
+            var result = await formatter.ReadAsync(context);
 
             // Assert
+            Assert.True(result.HasError);
             Assert.Contains(exceptionMessage, modelState[""].Errors[0].Exception.Message);
         }
 

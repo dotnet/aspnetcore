@@ -27,15 +27,19 @@ namespace Microsoft.AspNet.Mvc.Formatters
         }
 
         /// <inheritdoc />
-        public async override Task<object> ReadRequestBodyAsync([NotNull] InputFormatterContext context)
+        public async override Task<InputFormatterResult> ReadRequestBodyAsync([NotNull] InputFormatterContext context)
         {
-            var jsonPatchDocument = (IJsonPatchDocument)(await base.ReadRequestBodyAsync(context));
-            if (jsonPatchDocument != null && SerializerSettings.ContractResolver != null)
+            var result = await base.ReadRequestBodyAsync(context);
+            if (!result.HasError)
             {
-                jsonPatchDocument.ContractResolver = SerializerSettings.ContractResolver;
+                var jsonPatchDocument = (IJsonPatchDocument)result.Model;
+                if (jsonPatchDocument != null && SerializerSettings.ContractResolver != null)
+                {
+                    jsonPatchDocument.ContractResolver = SerializerSettings.ContractResolver;
+                }
             }
 
-            return (object)jsonPatchDocument;
+            return result;
         }
 
         /// <inheritdoc />

@@ -67,48 +67,58 @@ namespace Microsoft.AspNet.Mvc.Formatters
                 return false;
             }
 
-            return SupportedMediaTypes
-                            .Any(supportedMediaType => supportedMediaType.IsSubsetOf(requestContentType));
+            return SupportedMediaTypes.Any(supportedMediaType => supportedMediaType.IsSubsetOf(requestContentType));
         }
 
         /// <summary>
-        /// Returns a value indicating whether or not the given type can be read by this serializer.
+        /// Determines whether this <see cref="InputFormatter"/> can deserialize an object of the given
+        /// <paramref name="type"/>.
         /// </summary>
-        /// <param name="type">The type of object that will be read.</param>
-        /// <returns><c>true</c> if the type can be read, otherwise <c>false</c>.</returns>
+        /// <param name="type">The <see cref="Type"/> of object that will be read.</param>
+        /// <returns><c>true</c> if the <paramref name="type"/> can be read, otherwise <c>false</c>.</returns>
         protected virtual bool CanReadType(Type type)
         {
             return true;
         }
 
         /// <inheritdoc />
-        public virtual Task<object> ReadAsync(InputFormatterContext context)
+        public virtual Task<InputFormatterResult> ReadAsync(InputFormatterContext context)
         {
             var request = context.HttpContext.Request;
             if (request.ContentLength == 0)
             {
-                return Task.FromResult(GetDefaultValueForType(context.ModelType));
+                return InputFormatterResult.SuccessAsync(GetDefaultValueForType(context.ModelType));
             }
 
             return ReadRequestBodyAsync(context);
         }
 
         /// <summary>
-        /// Reads the request body.
+        /// Reads an object from the request body.
         /// </summary>
-        /// <param name="context">The <see cref="InputFormatterContext"/> associated with the call.</param>
-        /// <returns>A task which can read the request body.</returns>
-        public abstract Task<object> ReadRequestBodyAsync(InputFormatterContext context);
+        /// <param name="context">The <see cref="InputFormatterContext"/>.</param>
+        /// <returns>A <see cref="Task"/> that on completion deserializes the request body.</returns>
+        public abstract Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context);
 
         /// <summary>
-        /// Returns encoding based on content type charset parameter.
+        /// Returns an <see cref="Encoding"/> based on <paramref name="context"/>'s
+        /// <see cref="MediaTypeHeaderValue.Charset"/>.
         /// </summary>
-        protected Encoding SelectCharacterEncoding(MediaTypeHeaderValue contentType)
+        /// <param name="context">The <see cref="InputFormatterContext"/>.</param>
+        /// <returns>
+        /// An <see cref="Encoding"/> based on <paramref name="context"/>'s
+        /// <see cref="MediaTypeHeaderValue.Charset"/>. <c>null</c> if no supported encoding was found.
+        /// </returns>
+        protected Encoding SelectCharacterEncoding(InputFormatterContext context)
         {
+            var request = context.HttpContext.Request;
+
+            MediaTypeHeaderValue contentType;
+            MediaTypeHeaderValue.TryParse(request.ContentType, out contentType);
             if (contentType != null)
             {
                 var charset = contentType.Charset;
-                if (!string.IsNullOrWhiteSpace(contentType.Charset))
+                if (!string.IsNullOrWhiteSpace(charset))
                 {
                     foreach (var supportedEncoding in SupportedEncodings)
                     {
@@ -126,7 +136,11 @@ namespace Microsoft.AspNet.Mvc.Formatters
             }
 
             // No supported encoding was found so there is no way for us to start reading.
-            throw new InvalidOperationException(Resources.FormatInputFormatterNoEncoding(GetType().FullName));
+            context.ModelState.TryAddModelError(
+                context.ModelName,
+                Resources.FormatInputFormatterNoEncoding(GetType().FullName));
+
+            return null;
         }
     }
 }

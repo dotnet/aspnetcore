@@ -65,19 +65,16 @@ namespace Microsoft.AspNet.Mvc.Formatters
             get { return _readerQuotas; }
         }
 
-        /// <summary>
-        /// Reads the input XML.
-        /// </summary>
-        /// <param name="context">The input formatter context which contains the body to be read.</param>
-        /// <returns>Task which reads the input.</returns>
-        public override Task<object> ReadRequestBodyAsync(InputFormatterContext context)
+        /// <inheritdoc />
+        public override Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context)
         {
+            var effectiveEncoding = SelectCharacterEncoding(context);
+            if (effectiveEncoding == null)
+            {
+                return InputFormatterResult.FailureAsync();
+            }
+
             var request = context.HttpContext.Request;
-
-            MediaTypeHeaderValue requestContentType;
-            MediaTypeHeaderValue.TryParse(request.ContentType, out requestContentType);
-            var effectiveEncoding = SelectCharacterEncoding(requestContentType);
-
             using (var xmlReader = CreateXmlReader(new NonDisposableStream(request.Body), effectiveEncoding))
             {
                 var type = GetSerializableType(context.ModelType);
@@ -96,7 +93,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
                     }
                 }
 
-                return Task.FromResult(deserializedObject);
+                return InputFormatterResult.SuccessAsync(deserializedObject);
             }
         }
 

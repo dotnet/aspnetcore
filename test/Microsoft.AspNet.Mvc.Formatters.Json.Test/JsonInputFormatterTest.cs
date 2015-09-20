@@ -38,7 +38,11 @@ namespace Microsoft.AspNet.Mvc.Formatters
             var contentBytes = Encoding.UTF8.GetBytes("content");
 
             var httpContext = GetHttpContext(contentBytes, contentType: requestContentType);
-            var formatterContext = new InputFormatterContext(httpContext, new ModelStateDictionary(), typeof(string));
+            var formatterContext = new InputFormatterContext(
+                httpContext,
+                modelName: string.Empty,
+                modelState: new ModelStateDictionary(),
+                modelType: typeof(string));
 
             // Act
             var result = formatter.CanRead(formatterContext);
@@ -80,13 +84,18 @@ namespace Microsoft.AspNet.Mvc.Formatters
             var contentBytes = Encoding.UTF8.GetBytes(content);
 
             var httpContext = GetHttpContext(contentBytes);
-            var context = new InputFormatterContext(httpContext, new ModelStateDictionary(), type);
+            var context = new InputFormatterContext(
+                httpContext,
+                modelName: string.Empty,
+                modelState: new ModelStateDictionary(),
+                modelType: type);
 
             // Act
-            var model = await formatter.ReadAsync(context);
+            var result = await formatter.ReadAsync(context);
 
             // Assert
-            Assert.Equal(expected, model);
+            Assert.False(result.HasError);
+            Assert.Equal(expected, result.Model);
         }
 
         [Fact]
@@ -98,13 +107,18 @@ namespace Microsoft.AspNet.Mvc.Formatters
             var contentBytes = Encoding.UTF8.GetBytes(content);
 
             var httpContext = GetHttpContext(contentBytes);
-            var context = new InputFormatterContext(httpContext, new ModelStateDictionary(), typeof(User));
+            var context = new InputFormatterContext(
+                httpContext,
+                modelName: string.Empty,
+                modelState: new ModelStateDictionary(),
+                modelType: typeof(User));
 
             // Act
-            var model = await formatter.ReadAsync(context);
+            var result = await formatter.ReadAsync(context);
 
             // Assert
-            var userModel = Assert.IsType<User>(model);
+            Assert.False(result.HasError);
+            var userModel = Assert.IsType<User>(result.Model);
             Assert.Equal("Person Name", userModel.Name);
             Assert.Equal(30, userModel.Age);
         }
@@ -119,13 +133,17 @@ namespace Microsoft.AspNet.Mvc.Formatters
 
             var modelState = new ModelStateDictionary();
             var httpContext = GetHttpContext(contentBytes);
-
-            var context = new InputFormatterContext(httpContext, modelState, typeof(User));
+            var context = new InputFormatterContext(
+                httpContext,
+                modelName: string.Empty,
+                modelState: modelState,
+                modelType: typeof(User));
 
             // Act
-            var model = await formatter.ReadAsync(context);
+            var result = await formatter.ReadAsync(context);
 
             // Assert
+            Assert.True(result.HasError);
             Assert.Equal(
                 "Could not convert string to decimal: not-an-age. Path 'Age', line 1, position 39.",
                 modelState["Age"].Errors[0].Exception.Message);
@@ -141,17 +159,21 @@ namespace Microsoft.AspNet.Mvc.Formatters
 
             var modelState = new ModelStateDictionary();
             var httpContext = GetHttpContext(contentBytes);
-
-            var context = new InputFormatterContext(httpContext, modelState, typeof(User));
+            var context = new InputFormatterContext(
+                httpContext,
+                modelName: string.Empty,
+                modelState: modelState,
+                modelType: typeof(User));
 
             modelState.MaxAllowedErrors = 3;
             modelState.AddModelError("key1", "error1");
             modelState.AddModelError("key2", "error2");
 
             // Act
-            var model = await formatter.ReadAsync(context);
+            var result = await formatter.ReadAsync(context);
 
             // Assert
+            Assert.True(result.HasError);
             Assert.False(modelState.ContainsKey("age"));
             var error = Assert.Single(modelState[""].Errors);
             Assert.IsType<TooManyModelErrorsException>(error.Exception);
@@ -193,13 +215,17 @@ namespace Microsoft.AspNet.Mvc.Formatters
 
             var modelState = new ModelStateDictionary();
             var httpContext = GetHttpContext(contentBytes, "application/json;charset=utf-8");
-
-            var inputFormatterContext = new InputFormatterContext(httpContext, modelState, typeof(UserLogin));
+            var inputFormatterContext = new InputFormatterContext(
+                httpContext,
+                modelName: string.Empty,
+                modelState: modelState,
+                modelType: typeof(UserLogin));
 
             // Act
-            var obj = await jsonFormatter.ReadAsync(inputFormatterContext);
+            var result = await jsonFormatter.ReadAsync(inputFormatterContext);
 
             // Assert
+            Assert.True(result.HasError);
             Assert.False(modelState.IsValid);
 
             var modelErrorMessage = modelState.Values.First().Errors[0].Exception.Message;
@@ -222,13 +248,17 @@ namespace Microsoft.AspNet.Mvc.Formatters
 
             var modelState = new ModelStateDictionary();
             var httpContext = GetHttpContext(contentBytes, "application/json;charset=utf-8");
-
-            var inputFormatterContext = new InputFormatterContext(httpContext, modelState, typeof(UserLogin));
+            var inputFormatterContext = new InputFormatterContext(
+                httpContext,
+                modelName: string.Empty,
+                modelState: modelState,
+                modelType: typeof(UserLogin));
 
             // Act
-            var obj = await jsonFormatter.ReadAsync(inputFormatterContext);
+            var result = await jsonFormatter.ReadAsync(inputFormatterContext);
 
             // Assert
+            Assert.True(result.HasError);
             Assert.False(modelState.IsValid);
 
             var modelErrorMessage = modelState.Values.First().Errors[0].Exception.Message;

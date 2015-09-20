@@ -7,7 +7,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Actions;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Testing;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.IntegrationTests
@@ -111,7 +110,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public int Address { get; set; }
         }
 
-        [Fact(Skip = "#2722 validation error from formatter is recorded with the wrong key.")]
+        [Fact]
         public async Task FromBodyAndRequiredOnValueTypeProperty_EmptyBody_JsonFormatterAddsModelStateError()
         {
             // Arrange
@@ -146,12 +145,124 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var entry = Assert.Single(modelState);
             Assert.Equal("CustomParameter.Address", entry.Key);
             Assert.Null(entry.Value.AttemptedValue);
-            Assert.Same(boundPerson, entry.Value.RawValue);
+            Assert.Null(entry.Value.RawValue);
             var error = Assert.Single(entry.Value.Errors);
             Assert.NotNull(error.Exception);
 
             // Json.NET currently throws an exception starting with "No JSON content found and type 'System.Int32' is
             // not nullable." but do not tie test to a particular Json.NET build.
+            Assert.NotEmpty(error.Exception.Message);
+        }
+
+        private class Person5
+        {
+            [FromBody]
+            public Address5 Address { get; set; }
+        }
+
+        private class Address5
+        {
+            public int Number { get; set; }
+
+            // Required attribute does not cause an error in test scenarios. JSON deserializer ok w/ missing data.
+            [Required]
+            public int RequiredNumber { get; set; }
+        }
+
+        [Fact]
+        public async Task FromBodyAndRequiredOnInnerValueTypeProperty_NotBound_JsonFormatterSuccessful()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor
+            {
+                Name = "Parameter1",
+                BindingInfo = new BindingInfo
+                {
+                    BinderModelName = "CustomParameter",
+                },
+                ParameterType = typeof(Person5)
+            };
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+                request =>
+                {
+                    request.Body = new MemoryStream(Encoding.UTF8.GetBytes("{ \"Number\": 5 }"));
+                    request.ContentType = "application/json";
+                });
+
+            var modelState = new ModelStateDictionary();
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+            var boundPerson = Assert.IsType<Person5>(modelBindingResult.Model);
+            Assert.NotNull(boundPerson.Address);
+            Assert.Equal(5, boundPerson.Address.Number);
+            Assert.Equal(0, boundPerson.Address.RequiredNumber);
+
+            Assert.True(modelState.IsValid);
+            var entry = Assert.Single(modelState);
+            Assert.Equal("CustomParameter.Address", entry.Key);
+            Assert.NotNull(entry.Value);
+            Assert.Null(entry.Value.AttemptedValue);
+            Assert.Same(boundPerson.Address, entry.Value.RawValue);
+            Assert.Empty(entry.Value.Errors);
+        }
+
+        [Fact]
+        public async Task FromBodyWithInvalidPropertyData_JsonFormatterAddsModelError()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor
+            {
+                Name = "Parameter1",
+                BindingInfo = new BindingInfo
+                {
+                    BinderModelName = "CustomParameter",
+                },
+                ParameterType = typeof(Person5)
+            };
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+                request =>
+                {
+                    request.Body = new MemoryStream(Encoding.UTF8.GetBytes("{ \"Number\": \"not a number\" }"));
+                    request.ContentType = "application/json";
+                });
+
+            var modelState = new ModelStateDictionary();
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+            var boundPerson = Assert.IsType<Person5>(modelBindingResult.Model);
+            Assert.Null(boundPerson.Address);
+
+            Assert.False(modelState.IsValid);
+            Assert.Equal(2, modelState.Count);
+            Assert.Equal(1, modelState.ErrorCount);
+
+            var state = modelState["CustomParameter.Address"];
+            Assert.NotNull(state);
+            Assert.Null(state.AttemptedValue);
+            Assert.Null(state.RawValue);
+            Assert.Empty(state.Errors);
+
+            state = modelState["CustomParameter.Address.Number"];
+            Assert.NotNull(state);
+            Assert.Null(state.AttemptedValue);
+            Assert.Null(state.RawValue);
+            var error = Assert.Single(state.Errors);
+            Assert.NotNull(error.Exception);
+
+            // Json.NET currently throws an Exception with a Message starting with "Could not convert string to
+            // integer: not a number." but do not tie test to a particular Json.NET build.
             Assert.NotEmpty(error.Exception.Message);
         }
 

@@ -19,6 +19,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
         /// <param name="httpContext">
         /// The <see cref="Http.HttpContext"/> for the current operation.
         /// </param>
+        /// <param name="modelName">The name of the model.</param>
         /// <param name="modelState">
         /// The <see cref="ModelStateDictionary"/> for recording errors.
         /// </param>
@@ -27,10 +28,12 @@ namespace Microsoft.AspNet.Mvc.Formatters
         /// </param>
         public InputFormatterContext(
             [NotNull] HttpContext httpContext,
+            [NotNull] string modelName,
             [NotNull] ModelStateDictionary modelState,
             [NotNull] Type modelType)
         {
             HttpContext = httpContext;
+            ModelName = modelName;
             ModelState = modelState;
             ModelType = modelType;
         }
@@ -38,7 +41,12 @@ namespace Microsoft.AspNet.Mvc.Formatters
         /// <summary>
         /// Gets the <see cref="Http.HttpContext"/> associated with the current operation.
         /// </summary>
-        public HttpContext HttpContext { get; private set; }
+        public HttpContext HttpContext { get; }
+
+        /// <summary>
+        /// Gets the name of the model. Used as the key or key prefix for errors added to <see cref="ModelState"/>.
+        /// </summary>
+        public string ModelName { get; }
 
         /// <summary>
         /// Gets the <see cref="ModelStateDictionary"/> associated with the current operation.
@@ -48,6 +56,6 @@ namespace Microsoft.AspNet.Mvc.Formatters
         /// <summary>
         /// Gets the expected <see cref="Type"/> of the model represented by the request body.
         /// </summary>
-        public Type ModelType { get; private set; }
+        public Type ModelType { get; }
     }
 }

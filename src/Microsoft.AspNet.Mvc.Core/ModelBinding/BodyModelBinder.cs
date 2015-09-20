@@ -53,6 +53,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             var formatterContext = new InputFormatterContext(
                 httpContext,
+                modelBindingKey,
                 bindingContext.ModelState,
                 bindingContext.ModelType);
             var formatters = bindingContext.OperationBindingContext.InputFormatters;
@@ -73,14 +74,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             try
             {
                 var previousCount = bindingContext.ModelState.ErrorCount;
-                var model = await formatter.ReadAsync(formatterContext);
-                
+                var result = await formatter.ReadAsync(formatterContext);
+                var model = result.Model;
+
+                // Ensure a "modelBindingKey" entry exists whether or not formatting was successful.
                 bindingContext.ModelState.SetModelValue(modelBindingKey, rawValue: model, attemptedValue: null);
 
-                if (bindingContext.ModelState.ErrorCount != previousCount)
+                if (result.HasError)
                 {
-                    // Formatter added an error. Do not use the model it returned. As above, tell the model binding
-                    // system to skip other model binders and never to fall back.
+                    // Formatter encountered an error. Do not use the model it returned. As above, tell the model
+                    // binding system to skip other model binders and never to fall back.
                     return ModelBindingResult.Failed(modelBindingKey);
                 }
 
