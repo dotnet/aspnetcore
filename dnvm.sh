@@ -71,9 +71,9 @@ fi
 
 if [ -z "$DNX_HOME" ]; then
     # Set to the user home value
-    eval DNX_HOME="$DNX_USER_HOME;$DNX_GLOBAL_HOME"
+    eval DNX_HOME="$DNX_USER_HOME:$DNX_GLOBAL_HOME"
 elif [[ $DNX_HOME != *"$DNX_GLOBAL_HOME"* ]]; then
-    eval DNX_HOME="$DNX_HOME;$DNX_GLOBAL_HOME"
+    eval DNX_HOME="$DNX_HOME:$DNX_GLOBAL_HOME"
 fi
 
 _DNVM_USER_PACKAGES="$DNX_USER_HOME/runtimes"
@@ -862,7 +862,7 @@ dnvm()
 
             local searchGlob="$_DNVM_RUNTIME_PACKAGE_NAME-*"
             local runtimes=""
-            for location in `echo $DNX_HOME | tr ";" "\n"`; do
+            for location in `echo $DNX_HOME | tr ":" "\n"`; do
                 location+="/runtimes"
 				
 				echo $location
