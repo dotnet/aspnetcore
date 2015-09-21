@@ -8,9 +8,12 @@ using Microsoft.AspNet.Http.Authentication;
 
 namespace Microsoft.AspNet.Authentication
 {
-    public abstract class ReturnEndpointContext : EndpointContext
+    /// <summary>
+    /// Provides context information to middleware providers.
+    /// </summary>
+    public class SigningInContext : BaseContext
     {
-        protected ReturnEndpointContext(
+        public SigningInContext(
             HttpContext context,
             AuthenticationTicket ticket)
             : base(context)
@@ -24,6 +27,13 @@ namespace Microsoft.AspNet.Authentication
 
         public ClaimsPrincipal Principal { get; set; }
         public AuthenticationProperties Properties { get; set; }
+
+        public bool IsRequestCompleted { get; private set; }
+
+        public void RequestCompleted()
+        {
+            IsRequestCompleted = true;
+        }
 
         public string SignInScheme { get; set; }
 

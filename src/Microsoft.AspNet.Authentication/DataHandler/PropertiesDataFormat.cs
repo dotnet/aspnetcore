@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Authentication
     public class PropertiesDataFormat : SecureDataFormat<AuthenticationProperties>
     {
         public PropertiesDataFormat(IDataProtector protector)
-            : base(DataSerializers.Properties, protector, TextEncodings.Base64Url)
+            : base(new PropertiesSerializer(), protector)
         {
         }
     }

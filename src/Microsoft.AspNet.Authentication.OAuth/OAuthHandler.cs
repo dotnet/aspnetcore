@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Authentication.OAuth
             };
             ticket.Properties.RedirectUri = null;
 
-            await Options.Events.ReturnEndpoint(context);
+            await Options.Events.SigningIn(context);
 
             if (context.SignInScheme != null && context.Principal != null)
             {
@@ -183,13 +183,13 @@ namespace Microsoft.AspNet.Authentication.OAuth
 
         protected virtual async Task<AuthenticationTicket> CreateTicketAsync(ClaimsIdentity identity, AuthenticationProperties properties, OAuthTokenResponse tokens)
         {
-            var context = new OAuthAuthenticatedContext(Context, Options, Backchannel, tokens)
+            var context = new OAuthCreatingTicketContext(Context, Options, Backchannel, tokens)
             {
                 Principal = new ClaimsPrincipal(identity),
                 Properties = properties
             };
             
-            await Options.Events.Authenticated(context);
+            await Options.Events.CreatingTicket(context);
 
             if (context.Principal?.Identity == null)
             {
@@ -212,10 +212,10 @@ namespace Microsoft.AspNet.Authentication.OAuth
 
             var authorizationEndpoint = BuildChallengeUrl(properties, BuildRedirectUri(Options.CallbackPath));
 
-            var redirectContext = new OAuthApplyRedirectContext(
+            var redirectContext = new OAuthRedirectToAuthorizationEndpointContext(
                 Context, Options,
                 properties, authorizationEndpoint);
-            await Options.Events.ApplyRedirect(redirectContext);
+            await Options.Events.RedirectToAuthorizationEndpoint(redirectContext);
             return true;
         }
 
@@ -263,7 +263,7 @@ namespace Microsoft.AspNet.Authentication.OAuth
 
             var nonceBytes = new byte[32];
             CryptoRandom.GetBytes(nonceBytes);
-            var correlationId = TextEncodings.Base64Url.Encode(nonceBytes);
+            var correlationId = Base64UrlTextEncoder.Encode(nonceBytes);
 
             var cookieOptions = new CookieOptions
             {

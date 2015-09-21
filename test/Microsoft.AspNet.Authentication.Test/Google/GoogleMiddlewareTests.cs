@@ -199,7 +199,7 @@ namespace Microsoft.AspNet.Authentication.Google
                 options.ClientSecret = "Test Secret";
                 options.Events = new OAuthEvents
                 {
-                    OnApplyRedirect = context =>
+                    OnRedirectToAuthorizationEndpoint = context =>
                     {
                         context.Response.Redirect(context.RedirectUri + "&custom=test");
                         return Task.FromResult(0);
@@ -416,7 +416,7 @@ namespace Microsoft.AspNet.Authentication.Google
                 };
                 options.Events = new OAuthEvents
                 {
-                    OnAuthenticated = context =>
+                    OnCreatingTicket = context =>
                     {
                         var refreshToken = context.RefreshToken;
                         context.Principal.AddIdentity(new ClaimsIdentity(new Claim[] { new Claim("RefreshToken", refreshToken, ClaimValueTypes.String, "Google") }, "Google"));
@@ -457,7 +457,7 @@ namespace Microsoft.AspNet.Authentication.Google
                 options.AccessType = "offline";
                 options.Events = new OAuthEvents()
                 {
-                    OnAuthenticated = context =>
+                    OnCreatingTicket = context =>
                     {
                         Assert.NotNull(context.User);
                         Assert.Equal(context.AccessToken, "Test Access Token");

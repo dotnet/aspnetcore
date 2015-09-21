@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
+using System.IdentityModel.Tokens.OpenIdConnect;
 using System.Linq;
 using System.Net.Http;
 using System.Security.Claims;
@@ -26,8 +26,8 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
     /// </summary>
     public class OpenIdConnectHandlerTests
     {
-        private const string nonceForJwt = "abc";
-        private static SecurityToken specCompliantJwt = new JwtSecurityToken("issuer", "audience", new List<Claim> { new Claim("iat", EpochTime.GetIntDate(DateTime.UtcNow).ToString()), new Claim("nonce", nonceForJwt) }, DateTime.UtcNow, DateTime.UtcNow + TimeSpan.FromDays(1));
+        private const string nonceForOpenIdConnect = "abc";
+        private static SecurityToken specCompliantOpenIdConnect = new OpenIdConnectSecurityToken("issuer", "audience", new List<Claim> { new Claim("iat", EpochTime.GetIntDate(DateTime.UtcNow).ToString()), new Claim("nonce", nonceForOpenIdConnect) }, DateTime.UtcNow, DateTime.UtcNow + TimeSpan.FromDays(1));
         private const string ExpectedStateParameter = "expectedState";
 
         /// <summary>

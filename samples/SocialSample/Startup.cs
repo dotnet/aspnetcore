@@ -130,7 +130,7 @@ namespace CookieSample
                 // Retrieving user information is unique to each provider.
                 Events = new OAuthEvents
                 {
-                    OnAuthenticated = async context =>
+                    OnCreatingTicket = async context =>
                     {
                         // Get the GitHub user
                         var request = new HttpRequestMessage(HttpMethod.Get, context.Options.UserInformationEndpoint);

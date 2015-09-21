@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNet.DataProtection;
 
@@ -10,20 +11,18 @@ namespace Microsoft.AspNet.Authentication
     {
         private readonly IDataSerializer<TData> _serializer;
         private readonly IDataProtector _protector;
-        private readonly ITextEncoder _encoder;
 
-        public SecureDataFormat(IDataSerializer<TData> serializer, IDataProtector protector, ITextEncoder encoder)
+        public SecureDataFormat(IDataSerializer<TData> serializer, IDataProtector protector)
         {
             _serializer = serializer;
             _protector = protector;
-            _encoder = encoder;
         }
 
         public string Protect(TData data)
         {
             byte[] userData = _serializer.Serialize(data);
             byte[] protectedData = _protector.Protect(userData);
-            string protectedText = _encoder.Encode(protectedData);
+            string protectedText = Base64UrlTextEncoder.Encode(protectedData);
             return protectedText;
         }
 
@@ -37,7 +36,7 @@ namespace Microsoft.AspNet.Authentication
                     return default(TData);
                 }
 
-                byte[] protectedData = _encoder.Decode(protectedText);
+                byte[] protectedData = Base64UrlTextEncoder.Decode(protectedText);
                 if (protectedData == null)
                 {
                     return default(TData);

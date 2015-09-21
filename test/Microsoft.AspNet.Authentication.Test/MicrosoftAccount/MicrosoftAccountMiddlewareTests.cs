@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Authentication.Tests.MicrosoftAccount
                     options.ClientSecret = "Test Client Secret";
                     options.Events = new OAuthEvents
                     {
-                        OnApplyRedirect = context =>
+                        OnRedirectToAuthorizationEndpoint = context =>
                         {
                             context.Response.Redirect(context.RedirectUri + "&custom=test");
                             return Task.FromResult(0);
@@ -146,7 +146,7 @@ namespace Microsoft.AspNet.Authentication.Tests.MicrosoftAccount
                     };
                     options.Events = new OAuthEvents
                     {
-                        OnAuthenticated = context =>
+                        OnCreatingTicket = context =>
                         {
                             var refreshToken = context.RefreshToken;
                             context.Principal.AddIdentity(new ClaimsIdentity(new Claim[] { new Claim("RefreshToken", refreshToken, ClaimValueTypes.String, "Microsoft") }, "Microsoft"));

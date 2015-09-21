@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
                     options.ConsumerSecret = "Test Consumer Secret";
                     options.Events = new TwitterEvents
                     {
-                        OnApplyRedirect = context =>
+                        OnRedirectToAuthorizationEndpoint = context =>
                         {
                             context.Response.Redirect(context.RedirectUri + "&custom=test");
                             return Task.FromResult(0);

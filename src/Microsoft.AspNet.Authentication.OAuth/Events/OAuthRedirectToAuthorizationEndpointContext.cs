@@ -7,9 +7,9 @@ using Microsoft.AspNet.Http.Authentication;
 namespace Microsoft.AspNet.Authentication.OAuth
 {
     /// <summary>
-    /// Context passed when a Challenge causes a redirect to authorize endpoint in the Microsoft account middleware.
+    /// Context passed when a Challenge causes a redirect to authorize endpoint in the middleware.
     /// </summary>
-    public class OAuthApplyRedirectContext : BaseContext<OAuthOptions>
+    public class OAuthRedirectToAuthorizationEndpointContext : BaseContext<OAuthOptions>
     {
         /// <summary>
         /// Creates a new context object.
@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Authentication.OAuth
         /// <param name="context">The HTTP request context.</param>
         /// <param name="properties">The authentication properties of the challenge.</param>
         /// <param name="redirectUri">The initial redirect URI.</param>
-        public OAuthApplyRedirectContext(HttpContext context, OAuthOptions options, AuthenticationProperties properties, string redirectUri)
+        public OAuthRedirectToAuthorizationEndpointContext(HttpContext context, OAuthOptions options, AuthenticationProperties properties, string redirectUri)
             : base(context, options)
         {
             RedirectUri = redirectUri;

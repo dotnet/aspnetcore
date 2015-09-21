@@ -225,7 +225,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
             {
                 var cookieOptions = BuildCookieOptions();
 
-                var signInContext = new CookieResponseSignInContext(
+                var signInContext = new CookieSigningInContext(
                     Context,
                     Options,
                     Options.AuthenticationScheme,
@@ -249,7 +249,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
                     signInContext.Properties.ExpiresUtc = issuedUtc.Add(Options.ExpireTimeSpan);
                 }
 
-                await Options.Events.ResponseSignIn(signInContext);
+                await Options.Events.SigningIn(signInContext);
 
                 if (signInContext.Properties.IsPersistent)
                 {
@@ -279,14 +279,14 @@ namespace Microsoft.AspNet.Authentication.Cookies
                     cookieValue,
                     signInContext.CookieOptions);
 
-                var signedInContext = new CookieResponseSignedInContext(
+                var signedInContext = new CookieSignedInContext(
                     Context,
                     Options,
                     Options.AuthenticationScheme,
                     signInContext.Principal,
                     signInContext.Properties);
 
-                await Options.Events.ResponseSignedIn(signedInContext);
+                await Options.Events.SignedIn(signedInContext);
 
                 var shouldLoginRedirect = Options.LoginPath.HasValue && OriginalPath == Options.LoginPath;
                 ApplyHeaders(shouldLoginRedirect);
@@ -314,12 +314,12 @@ namespace Microsoft.AspNet.Authentication.Cookies
                     await Options.SessionStore.RemoveAsync(_sessionKey);
                 }
 
-                var context = new CookieResponseSignOutContext(
+                var context = new CookieSigningOutContext(
                     Context,
                     Options,
                     cookieOptions);
 
-                await Options.Events.ResponseSignOut(context);
+                await Options.Events.SigningOut(context);
 
                 Options.CookieManager.DeleteCookie(
                     Context,

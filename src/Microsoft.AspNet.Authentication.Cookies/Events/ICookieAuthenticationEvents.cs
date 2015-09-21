@@ -23,13 +23,13 @@ namespace Microsoft.AspNet.Authentication.Cookies
         /// implementing this method the claims and extra information that go into the ticket may be altered.
         /// </summary>
         /// <param name="context">Contains information about the login session as well as the user <see cref="System.Security.Claims.ClaimsIdentity"/>.</param>
-        Task ResponseSignIn(CookieResponseSignInContext context);
+        Task SigningIn(CookieSigningInContext context);
 
         /// <summary>
         /// Called when an endpoint has provided sign in information after it is converted into a cookie.
         /// </summary>
         /// <param name="context">Contains information about the login session as well as the user <see cref="System.Security.Claims.ClaimsIdentity"/>.</param>
-        Task ResponseSignedIn(CookieResponseSignedInContext context);
+        Task SignedIn(CookieSignedInContext context);
 
         /// <summary>
         /// Called when a Challenge, SignIn, or SignOut causes a redirect in the cookie middleware
@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
         /// Called during the sign-out flow to augment the cookie cleanup process.
         /// </summary>
         /// <param name="context">Contains information about the login session as well as information about the authentication cookie.</param>
-        Task ResponseSignOut(CookieResponseSignOutContext context);
+        Task SigningOut(CookieSigningOutContext context);
 
         /// <summary>
         /// Called when an exception occurs during request or response processing.

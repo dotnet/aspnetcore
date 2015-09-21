@@ -9,19 +9,19 @@ using System.Net.Http;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
-namespace Microsoft.AspNet.Authentication.JwtBearer
+namespace Microsoft.AspNet.Authentication.OpenIdConnectBearer
 {
     /// <summary>
     /// Options class provides information needed to control Bearer Authentication middleware behavior
     /// </summary>
-    public class JwtBearerOptions : AuthenticationOptions
+    public class OpenIdConnectBearerOptions : AuthenticationOptions
     {
         /// <summary>
         /// Creates an instance of bearer authentication options with default values.
         /// </summary>
-        public JwtBearerOptions() : base()
+        public OpenIdConnectBearerOptions() : base()
         {
-            AuthenticationScheme = JwtBearerDefaults.AuthenticationScheme;
+            AuthenticationScheme = OpenIdConnectBearerDefaults.AuthenticationScheme;
         }
 
         /// <summary>
@@ -35,24 +35,24 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
         public string Authority { get; set; }
 
         /// <summary>
-        /// Gets or sets the audience for any received JWT token.
+        /// Gets or sets the audience for any received OpenIdConnect token.
         /// </summary>
         /// <value>
-        /// The expected audience for any received JWT token.
+        /// The expected audience for any received OpenIdConnect token.
         /// </value>
         public string Audience { get; set; }
 
         /// <summary>
         /// Gets or sets the challenge to put in the "WWW-Authenticate" header.
         /// </summary>
-        public string Challenge { get; set; } = JwtBearerDefaults.AuthenticationScheme;
+        public string Challenge { get; set; } = OpenIdConnectBearerDefaults.AuthenticationScheme;
 
         /// <summary>
         /// The object provided by the application to process events raised by the bearer authentication middleware.
-        /// The application may implement the interface fully, or it may create an instance of JwtBearerAuthenticationEvents
+        /// The application may implement the interface fully, or it may create an instance of OpenIdConnectBearerAuthenticationEvents
         /// and assign delegates only to the events it wants to process.
         /// </summary>
-        public IJwtBearerEvents Events { get; set; } = new JwtBearerEvents();
+        public IOpenIdConnectBearerEvents Events { get; set; } = new OpenIdConnectBearerEvents();
 
         /// <summary>
         /// The HttpMessageHandler used to retrieve metadata.

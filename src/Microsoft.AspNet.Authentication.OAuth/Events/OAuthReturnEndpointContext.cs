@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.Authentication.OAuth
     /// <summary>
     /// Provides context information to middleware providers.
     /// </summary>
-    public class OAuthReturnEndpointContext : ReturnEndpointContext
+    public class OAuthReturnEndpointContext : SigningInContext
     {
         /// <summary>
         /// Initializes a new <see cref="OAuthReturnEndpointContext"/>.

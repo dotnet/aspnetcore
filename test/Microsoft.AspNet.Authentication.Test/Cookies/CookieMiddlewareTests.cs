@@ -484,7 +484,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
                 options.SlidingExpiration = false;
                 options.Events = new CookieAuthenticationEvents()
                 {
-                    OnResponseSignIn = context =>
+                    OnSigningIn = context =>
                     {
                         context.Properties.ExpiresUtc = clock.UtcNow.Add(TimeSpan.FromMinutes(5));
                         return Task.FromResult(0);

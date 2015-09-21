@@ -8,9 +8,9 @@ using Microsoft.AspNet.Http.Authentication;
 namespace Microsoft.AspNet.Authentication.Cookies
 {
     /// <summary>
-    /// Context object passed to the ICookieAuthenticationEvents method ResponseSignedIn.
+    /// Context object passed to the ICookieAuthenticationEvents method ResponseSignIn.
     /// </summary>    
-    public class CookieResponseSignedInContext : BaseContext<CookieAuthenticationOptions>
+    public class CookieSigningInContext : BaseContext<CookieAuthenticationOptions>
     {
         /// <summary>
         /// Creates a new instance of the context object.
@@ -19,18 +19,21 @@ namespace Microsoft.AspNet.Authentication.Cookies
         /// <param name="options">The middleware options</param>
         /// <param name="authenticationScheme">Initializes AuthenticationScheme property</param>
         /// <param name="principal">Initializes Principal property</param>
-        /// <param name="properties">Initializes Properties property</param>
-        public CookieResponseSignedInContext(
+        /// <param name="properties">Initializes Extra property</param>
+        /// <param name="cookieOptions">Initializes options for the authentication cookie.</param>
+        public CookieSigningInContext(
             HttpContext context,
             CookieAuthenticationOptions options,
             string authenticationScheme,
             ClaimsPrincipal principal,
-            AuthenticationProperties properties)
+            AuthenticationProperties properties,
+            CookieOptions cookieOptions)
             : base(context, options)
         {
             AuthenticationScheme = authenticationScheme;
             Principal = principal;
             Properties = properties;
+            CookieOptions = cookieOptions;
         }
 
         /// <summary>
@@ -39,13 +42,21 @@ namespace Microsoft.AspNet.Authentication.Cookies
         public string AuthenticationScheme { get; private set; }
 
         /// <summary>
-        /// Contains the claims that were converted into the outgoing cookie.
+        /// Contains the claims about to be converted into the outgoing cookie.
+        /// May be replaced or altered during the ResponseSignIn call.
         /// </summary>
-        public ClaimsPrincipal Principal { get; private set; }
+        public ClaimsPrincipal Principal { get; set; }
 
         /// <summary>
-        /// Contains the extra data that was contained in the outgoing cookie.
+        /// Contains the extra data about to be contained in the outgoing cookie.
+        /// May be replaced or altered during the ResponseSignIn call.
         /// </summary>
-        public AuthenticationProperties Properties { get; private set; }
+        public AuthenticationProperties Properties { get; set; }
+
+        /// <summary>
+        /// The options for creating the outgoing cookie.
+        /// May be replace or altered during the ResponseSignIn call.
+        /// </summary>
+        public CookieOptions CookieOptions { get; set; }
     }
 }

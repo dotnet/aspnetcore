@@ -4,11 +4,11 @@
 using System;
 using Microsoft.AspNet.Http;
 
-namespace Microsoft.AspNet.Authentication.JwtBearer
+namespace Microsoft.AspNet.Authentication.OpenIdConnectBearer
 {
-    public class AuthenticationFailedContext : BaseControlContext<JwtBearerOptions>
+    public class AuthenticationFailedContext : BaseControlContext<OpenIdConnectBearerOptions>
     {
-        public AuthenticationFailedContext(HttpContext context, JwtBearerOptions options)
+        public AuthenticationFailedContext(HttpContext context, OpenIdConnectBearerOptions options)
             : base(context, options)
         {
         }

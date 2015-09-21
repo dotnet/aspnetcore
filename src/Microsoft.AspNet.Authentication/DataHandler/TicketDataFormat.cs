@@ -7,7 +7,7 @@ namespace Microsoft.AspNet.Authentication
 {
     public class TicketDataFormat : SecureDataFormat<AuthenticationTicket>
     {
-        public TicketDataFormat(IDataProtector protector) : base(DataSerializers.Ticket, protector, TextEncodings.Base64Url)
+        public TicketDataFormat(IDataProtector protector) : base(new TicketSerializer(), protector)
         {
         }
     }

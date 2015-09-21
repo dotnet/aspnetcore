@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Authentication.Google
 
             var payload = JObject.Parse(await response.Content.ReadAsStringAsync());
             
-            var context = new OAuthAuthenticatedContext(Context, Options, Backchannel, tokens, payload)
+            var context = new OAuthCreatingTicketContext(Context, Options, Backchannel, tokens, payload)
             {
                 Properties = properties,
                 Principal = new ClaimsPrincipal(identity)
@@ -74,7 +74,7 @@ namespace Microsoft.AspNet.Authentication.Google
                 identity.AddClaim(new Claim("urn:google:profile", profile, ClaimValueTypes.String, Options.ClaimsIssuer));
             }
 
-            await Options.Events.Authenticated(context);
+            await Options.Events.CreatingTicket(context);
 
             return new AuthenticationTicket(context.Principal, context.Properties, context.Options.AuthenticationScheme);
         }

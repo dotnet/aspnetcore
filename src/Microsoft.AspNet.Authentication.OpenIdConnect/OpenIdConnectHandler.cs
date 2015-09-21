@@ -160,7 +160,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             // order for local RedirectUri
             // 1. challenge.Properties.RedirectUri
             // 2. CurrentUri if Options.DefaultToCurrentUriOnRedirect is true)
-            AuthenticationProperties properties = new AuthenticationProperties(context.Properties);
+            var properties = new AuthenticationProperties(context.Properties);
 
             if (!string.IsNullOrEmpty(properties.RedirectUri))
             {
@@ -491,7 +491,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
 
             ticket = ValidateToken(tokenEndpointResponse.ProtocolMessage.IdToken, message, properties, validationParameters, out jwt);
 
-            await ValidateOpenIdConnectProtocolAsync(null, message);
+            ValidateOpenIdConnectProtocol(null, message);
 
             var authenticationValidatedContext = await RunAuthenticationValidatedEventAsync(message, ticket, tokenEndpointResponse);
             if (authenticationValidatedContext.HandledResponse)
@@ -522,7 +522,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             var validationParameters = Options.TokenValidationParameters.Clone();
             var ticket = ValidateToken(message.IdToken, message, properties, validationParameters, out jwt);
 
-            await ValidateOpenIdConnectProtocolAsync(jwt, message);
+            ValidateOpenIdConnectProtocol(jwt, message);
 
             var authenticationValidatedContext = await RunAuthenticationValidatedEventAsync(message, ticket, tokenEndpointResponse: null);
             if (authenticationValidatedContext.HandledResponse)
@@ -588,7 +588,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         /// <returns>Authentication ticket with identity with additional claims, if any.</returns>
         protected virtual async Task<AuthenticationTicket> GetUserInformationAsync(OpenIdConnectMessage message, AuthenticationTicket ticket)
         {
-            string userInfoEndpoint = _configuration?.UserInfoEndpoint;
+            var userInfoEndpoint = _configuration?.UserInfoEndpoint;
 
             if (string.IsNullOrEmpty(userInfoEndpoint))
             {
@@ -734,7 +734,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
 
             var nonceBytes = new byte[32];
             CryptoRandom.GetBytes(nonceBytes);
-            var correlationId = TextEncodings.Base64Url.Encode(nonceBytes);
+            var correlationId = Base64UrlTextEncoder.Encode(nonceBytes);
 
             var cookieOptions = new CookieOptions
             {
@@ -1023,7 +1023,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             return ticket;
         }
 
-        private async Task ValidateOpenIdConnectProtocolAsync(JwtSecurityToken jwt, OpenIdConnectMessage message)
+        private void ValidateOpenIdConnectProtocol(JwtSecurityToken jwt, OpenIdConnectMessage message)
         {
             string nonce = jwt?.Payload.Nonce;
             if (!string.IsNullOrEmpty(nonce))

@@ -10,9 +10,9 @@ using Microsoft.AspNet.Http.Features.Authentication;
 using Microsoft.Framework.Logging;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
-namespace Microsoft.AspNet.Authentication.JwtBearer
+namespace Microsoft.AspNet.Authentication.OpenIdConnectBearer
 {
-    public class JwtBearerHandler : AuthenticationHandler<JwtBearerOptions>
+    internal class OpenIdConnectBearerHandler : AuthenticationHandler<OpenIdConnectBearerOptions>
     {
         private OpenIdConnectConfiguration _configuration;
 

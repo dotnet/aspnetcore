@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                     Options.AuthenticationScheme,
                     "v1");
 
-                Options.StringDataFormat = new SecureDataFormat<string>(new StringSerializer(), dataProtector, TextEncodings.Base64Url);
+                Options.StringDataFormat = new SecureDataFormat<string>(new StringSerializer(), dataProtector);
             }
             
             // if the user has not set the AuthorizeCallback, set it from the redirect_uri

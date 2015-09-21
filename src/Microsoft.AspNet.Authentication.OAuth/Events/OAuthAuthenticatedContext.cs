@@ -15,16 +15,16 @@ namespace Microsoft.AspNet.Authentication.OAuth
     /// <summary>
     /// Contains information about the login session as well as the user <see cref="System.Security.Claims.ClaimsIdentity"/>.
     /// </summary>
-    public class OAuthAuthenticatedContext : BaseContext<OAuthOptions>
+    public class OAuthCreatingTicketContext : BaseContext<OAuthOptions>
     {
         /// <summary>
-        /// Initializes a new <see cref="OAuthAuthenticatedContext"/>.
+        /// Initializes a new <see cref="OAuthCreatingTicketContext"/>.
         /// </summary>
         /// <param name="context">The HTTP environment.</param>
         /// <param name="options">The options used by the authentication middleware.</param>
         /// <param name="backchannel">The HTTP client used by the authentication middleware</param>
         /// <param name="tokens">The tokens returned from the token endpoint.</param>
-        public OAuthAuthenticatedContext(
+        public OAuthCreatingTicketContext(
             [NotNull] HttpContext context,
             [NotNull] OAuthOptions options,
             [NotNull] HttpClient backchannel,
@@ -34,14 +34,14 @@ namespace Microsoft.AspNet.Authentication.OAuth
         }
 
         /// <summary>
-        /// Initializes a new <see cref="OAuthAuthenticatedContext"/>.
+        /// Initializes a new <see cref="OAuthCreatingTicketContext"/>.
         /// </summary>
         /// <param name="context">The HTTP environment.</param>
         /// <param name="options">The options used by the authentication middleware.</param>
         /// <param name="backchannel">The HTTP client used by the authentication middleware</param>
         /// <param name="tokens">The tokens returned from the token endpoint.</param>
         /// <param name="user">The JSON-serialized user.</param>
-        public OAuthAuthenticatedContext(
+        public OAuthCreatingTicketContext(
             [NotNull] HttpContext context,
             [NotNull] OAuthOptions options,
             [NotNull] HttpClient backchannel,

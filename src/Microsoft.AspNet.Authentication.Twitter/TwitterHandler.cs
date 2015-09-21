@@ -117,13 +117,13 @@ namespace Microsoft.AspNet.Authentication.Twitter
 
         protected virtual async Task<AuthenticationTicket> CreateTicketAsync(ClaimsIdentity identity, AuthenticationProperties properties, AccessToken token)
         {
-            var context = new TwitterAuthenticatedContext(Context, token.UserId, token.ScreenName, token.Token, token.TokenSecret)
+            var context = new TwitterCreatingTicketContext(Context, token.UserId, token.ScreenName, token.Token, token.TokenSecret)
             {
                 Principal = new ClaimsPrincipal(identity),
                 Properties = properties
             };
 
-            await Options.Events.Authenticated(context);
+            await Options.Events.CreatingTicket(context);
             
             if (context.Principal?.Identity == null)
             {
@@ -154,10 +154,10 @@ namespace Microsoft.AspNet.Authentication.Twitter
 
                 Response.Cookies.Append(StateCookie, Options.StateDataFormat.Protect(requestToken), cookieOptions);
 
-                var redirectContext = new TwitterApplyRedirectContext(
+                var redirectContext = new TwitterRedirectToAuthorizationEndpointContext(
                     Context, Options,
                     properties, twitterAuthenticationEndpoint);
-                await Options.Events.ApplyRedirect(redirectContext);
+                await Options.Events.RedirectToAuthorizationEndpoint(redirectContext);
                 return true;
             }
             else
@@ -177,14 +177,14 @@ namespace Microsoft.AspNet.Authentication.Twitter
                 return true;
             }
 
-            var context = new TwitterReturnEndpointContext(Context, model)
+            var context = new SigningInContext(Context, model)
             {
                 SignInScheme = Options.SignInScheme,
                 RedirectUri = model.Properties.RedirectUri
             };
             model.Properties.RedirectUri = null;
 
-            await Options.Events.ReturnEndpoint(context);
+            await Options.Events.SigningIn(context);
 
             if (context.SignInScheme != null && context.Principal != null)
             {

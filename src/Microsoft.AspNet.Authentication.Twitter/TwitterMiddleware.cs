@@ -59,9 +59,8 @@ namespace Microsoft.AspNet.Authentication.Twitter
                 var dataProtector = dataProtectionProvider.CreateProtector(
                     typeof(TwitterMiddleware).FullName, Options.AuthenticationScheme, "v1");
                 Options.StateDataFormat = new SecureDataFormat<RequestToken>(
-                    Serializers.RequestToken,
-                    dataProtector,
-                    TextEncodings.Base64Url);
+                    new RequestTokenSerializer(),
+                    dataProtector);
             }
 
             if (string.IsNullOrEmpty(Options.SignInScheme))

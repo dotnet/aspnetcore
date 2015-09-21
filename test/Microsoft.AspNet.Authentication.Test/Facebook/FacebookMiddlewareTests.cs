@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Authentication.Facebook
                         options.AppSecret = "Test App Secret";
                         options.Events = new OAuthEvents
                         {
-                            OnApplyRedirect = context =>
+                            OnRedirectToAuthorizationEndpoint = context =>
                             {
                                 context.Response.Redirect(context.RedirectUri + "&custom=test");
                                 return Task.FromResult(0);

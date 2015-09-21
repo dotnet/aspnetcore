@@ -3,11 +3,11 @@
 
 using Microsoft.AspNet.Http;
 
-namespace Microsoft.AspNet.Authentication.JwtBearer
+namespace Microsoft.AspNet.Authentication.OpenIdConnectBearer
 {
-    public class AuthenticationChallengeContext : BaseControlContext<JwtBearerOptions>
+    public class AuthenticationChallengeContext : BaseControlContext<OpenIdConnectBearerOptions>
     {
-        public AuthenticationChallengeContext(HttpContext context, JwtBearerOptions options)
+        public AuthenticationChallengeContext(HttpContext context, OpenIdConnectBearerOptions options)
             : base(context, options)
         {
         }

@@ -6,7 +6,7 @@ using Microsoft.Framework.Caching.Memory;
 
 namespace CookieSessionSample
 {
-    public class MemoryCacheSessionStore : IAuthenticationSessionStore
+    public class MemoryCacheSessionStore : ITicketStore
     {
         private const string KeyPrefix = "AuthSessionStore-";
         private IMemoryCache _cache;

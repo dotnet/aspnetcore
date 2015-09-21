@@ -10,17 +10,17 @@ namespace Microsoft.AspNet.Authentication.Twitter
     /// <summary>
     /// Contains information about the login session as well as the user <see cref="System.Security.Claims.ClaimsIdentity"/>.
     /// </summary>
-    public class TwitterAuthenticatedContext : BaseContext
+    public class TwitterCreatingTicketContext : BaseContext
     {
         /// <summary>
-        /// Initializes a <see cref="TwitterAuthenticatedContext"/>
+        /// Initializes a <see cref="TwitterCreatingTicketContext"/>
         /// </summary>
         /// <param name="context">The HTTP environment</param>
         /// <param name="userId">Twitter user ID</param>
         /// <param name="screenName">Twitter screen name</param>
         /// <param name="accessToken">Twitter access token</param>
         /// <param name="accessTokenSecret">Twitter access token secret</param>
-        public TwitterAuthenticatedContext(
+        public TwitterCreatingTicketContext(
             HttpContext context,
             string userId,
             string screenName,

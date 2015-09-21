@@ -21,17 +21,17 @@ namespace Microsoft.AspNet.Authentication.Cookies
         /// <summary>
         /// A delegate assigned to this property will be invoked when the related method is called
         /// </summary>
-        public Func<CookieResponseSignInContext, Task> OnResponseSignIn { get; set; } = context => Task.FromResult(0);
+        public Func<CookieSigningInContext, Task> OnSigningIn { get; set; } = context => Task.FromResult(0);
 
         /// <summary>
         /// A delegate assigned to this property will be invoked when the related method is called
         /// </summary>
-        public Func<CookieResponseSignedInContext, Task> OnResponseSignedIn { get; set; } = context => Task.FromResult(0);
+        public Func<CookieSignedInContext, Task> OnSignedIn { get; set; } = context => Task.FromResult(0);
 
         /// <summary>
         /// A delegate assigned to this property will be invoked when the related method is called
         /// </summary>
-        public Func<CookieResponseSignOutContext, Task> OnResponseSignOut { get; set; } = context => Task.FromResult(0);
+        public Func<CookieSigningOutContext, Task> OnSigningOut { get; set; } = context => Task.FromResult(0);
 
         /// <summary>
         /// A delegate assigned to this property will be invoked when the related method is called
@@ -58,19 +58,19 @@ namespace Microsoft.AspNet.Authentication.Cookies
         /// Implements the interface method by invoking the related delegate method
         /// </summary>
         /// <param name="context"></param>
-        public virtual Task ResponseSignIn(CookieResponseSignInContext context) => OnResponseSignIn(context);
+        public virtual Task SigningIn(CookieSigningInContext context) => OnSigningIn(context);
 
         /// <summary>
         /// Implements the interface method by invoking the related delegate method
         /// </summary>
         /// <param name="context"></param>
-        public virtual Task ResponseSignedIn(CookieResponseSignedInContext context) => OnResponseSignedIn(context);
+        public virtual Task SignedIn(CookieSignedInContext context) => OnSignedIn(context);
 
         /// <summary>
         /// Implements the interface method by invoking the related delegate method
         /// </summary>
         /// <param name="context"></param>
-        public virtual Task ResponseSignOut(CookieResponseSignOutContext context) => OnResponseSignOut(context);
+        public virtual Task SigningOut(CookieSigningOutContext context) => OnSigningOut(context);
 
         /// <summary>
         /// Implements the interface method by invoking the related delegate method

@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
     /// while only sending a simple identifier key to the client. This is most commonly used to mitigate
     /// issues with serializing large identities into cookies.
     /// </summary>
-    public interface IAuthenticationSessionStore
+    public interface ITicketStore
     {
         /// <summary>
         /// Store the identity ticket and return the associated key.
