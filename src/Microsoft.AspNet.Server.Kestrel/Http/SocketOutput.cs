@@ -216,6 +216,18 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         Task ISocketOutput.WriteAsync(ArraySegment<byte> buffer, bool immediate, CancellationToken cancellationToken)
         {
+            if (!immediate)
+            {
+                // immediate==false calls always return complete tasks, because there is guaranteed
+                // to be a subsequent immediate==true call which will go down the following code-path
+                Write(
+                    buffer,
+                    (error, state) => { },
+                    null,
+                    immediate: false);
+                return TaskUtilities.CompletedTask;
+            }
+
             // TODO: Optimize task being used, and remove callback model from the underlying Write
             var tcs = new TaskCompletionSource<int>();
 
@@ -233,7 +245,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     }
                 },
                 tcs,
-                immediate: immediate);
+                immediate: true);
 
             return tcs.Task;
         }
