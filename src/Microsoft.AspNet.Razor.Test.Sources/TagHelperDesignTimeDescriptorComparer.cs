@@ -33,12 +33,13 @@ namespace Microsoft.AspNet.Razor.Test.Internal
 
         public int GetHashCode(TagHelperDesignTimeDescriptor descriptor)
         {
-            return HashCodeCombiner
-                .Start()
-                .Add(descriptor.Summary, StringComparer.Ordinal)
-                .Add(descriptor.Remarks, StringComparer.Ordinal)
-                .Add(descriptor.OutputElementHint, StringComparer.Ordinal)
-                .CombinedHash;
+            var hashCodeCombiner = HashCodeCombiner.Start();
+
+            hashCodeCombiner.Add(descriptor.Summary, StringComparer.Ordinal);
+            hashCodeCombiner.Add(descriptor.Remarks, StringComparer.Ordinal);
+            hashCodeCombiner.Add(descriptor.OutputElementHint, StringComparer.Ordinal);
+
+            return hashCodeCombiner;
         }
     }
 }

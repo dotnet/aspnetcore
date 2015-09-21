@@ -50,10 +50,11 @@ namespace Microsoft.AspNet.Razor.Tokenizer.Symbols
         public override int GetHashCode()
         {
             // Hash code should include only immutable properties.
-            return HashCodeCombiner.Start()
-                .Add(Content, StringComparer.Ordinal)
-                .Add(Type)
-                .CombinedHash;
+            var hashCodeCombiner = HashCodeCombiner.Start();
+            hashCodeCombiner.Add(Content, StringComparer.Ordinal);
+            hashCodeCombiner.Add(Type);
+
+            return hashCodeCombiner;
         }
 
         public override string ToString()

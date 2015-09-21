@@ -50,11 +50,12 @@ namespace Microsoft.AspNet.Razor.Test.Generator
 
         public override int GetHashCode()
         {
-            return HashCodeCombiner.Start()
-                .Add(Kind)
-                .Add(Start)
-                .Add(End)
-                .CombinedHash;
+            var hashCodeCombiner = HashCodeCombiner.Start();
+            hashCodeCombiner.Add(Kind);
+            hashCodeCombiner.Add(Start);
+            hashCodeCombiner.Add(End);
+
+            return hashCodeCombiner;
         }
     }
 }

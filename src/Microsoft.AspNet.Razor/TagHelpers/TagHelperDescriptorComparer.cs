@@ -68,11 +68,11 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 throw new ArgumentNullException(nameof(descriptor));
             }
 
-            var hashCodeCombiner = HashCodeCombiner.Start()
-                .Add(descriptor.TypeName, StringComparer.Ordinal)
-                .Add(descriptor.TagName, StringComparer.OrdinalIgnoreCase)
-                .Add(descriptor.AssemblyName, StringComparer.Ordinal)
-                .Add(descriptor.TagStructure);
+            var hashCodeCombiner = HashCodeCombiner.Start();
+            hashCodeCombiner.Add(descriptor.TypeName, StringComparer.Ordinal);
+            hashCodeCombiner.Add(descriptor.TagName, StringComparer.OrdinalIgnoreCase);
+            hashCodeCombiner.Add(descriptor.AssemblyName, StringComparer.Ordinal);
+            hashCodeCombiner.Add(descriptor.TagStructure);
 
             var attributes = descriptor.RequiredAttributes.OrderBy(
                 attribute => attribute,

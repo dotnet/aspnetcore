@@ -96,10 +96,11 @@ namespace Microsoft.AspNet.Razor
         /// <inheritdoc />
         public override int GetHashCode()
         {
-            return HashCodeCombiner.Start()
-                .Add(FilePath, StringComparer.Ordinal)
-                .Add(AbsoluteIndex)
-                .CombinedHash;
+            var hashCodeCombiner = HashCodeCombiner.Start();
+            hashCodeCombiner.Add(FilePath, StringComparer.Ordinal);
+            hashCodeCombiner.Add(AbsoluteIndex);
+
+            return hashCodeCombiner;
         }
 
         /// <inheritdoc />

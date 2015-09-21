@@ -146,14 +146,15 @@ namespace Microsoft.AspNet.Razor.Text
 
         public override int GetHashCode()
         {
-            return HashCodeCombiner.Start()
-                .Add(OldPosition)
-                .Add(NewPosition)
-                .Add(OldLength)
-                .Add(NewLength)
-                .Add(OldBuffer)
-                .Add(NewBuffer)
-                .CombinedHash;
+            var hashCodeCombiner = HashCodeCombiner.Start();
+            hashCodeCombiner.Add(OldPosition);
+            hashCodeCombiner.Add(NewPosition);
+            hashCodeCombiner.Add(OldLength);
+            hashCodeCombiner.Add(NewLength);
+            hashCodeCombiner.Add(OldBuffer);
+            hashCodeCombiner.Add(NewBuffer);
+
+            return hashCodeCombiner;
         }
 
         public string ApplyChange(string content, int changeOffset)

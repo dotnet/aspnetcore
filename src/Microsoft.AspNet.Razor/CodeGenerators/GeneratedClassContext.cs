@@ -177,13 +177,15 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
         public override int GetHashCode()
         {
             // Hash code should include only immutable properties.
-            return HashCodeCombiner.Start()
-                .Add(WriteMethodName, StringComparer.Ordinal)
-                .Add(WriteLiteralMethodName, StringComparer.Ordinal)
-                .Add(WriteToMethodName, StringComparer.Ordinal)
-                .Add(WriteLiteralToMethodName, StringComparer.Ordinal)
-                .Add(ExecuteMethodName, StringComparer.Ordinal)
-                .CombinedHash;
+            var hashCodeCombiner = HashCodeCombiner.Start();
+
+            hashCodeCombiner.Add(WriteMethodName, StringComparer.Ordinal);
+            hashCodeCombiner.Add(WriteLiteralMethodName, StringComparer.Ordinal);
+            hashCodeCombiner.Add(WriteToMethodName, StringComparer.Ordinal);
+            hashCodeCombiner.Add(WriteLiteralToMethodName, StringComparer.Ordinal);
+            hashCodeCombiner.Add(ExecuteMethodName, StringComparer.Ordinal);
+
+            return hashCodeCombiner;
         }
 
         public static bool operator ==(GeneratedClassContext left, GeneratedClassContext right)

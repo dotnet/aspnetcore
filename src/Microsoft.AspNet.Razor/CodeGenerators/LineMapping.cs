@@ -32,10 +32,11 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
 
         public override int GetHashCode()
         {
-            return HashCodeCombiner.Start()
-                .Add(DocumentLocation)
-                .Add(GeneratedLocation)
-                .CombinedHash;
+            var hashCodeCombiner = HashCodeCombiner.Start();
+            hashCodeCombiner.Add(DocumentLocation);
+            hashCodeCombiner.Add(GeneratedLocation);
+
+            return hashCodeCombiner;
         }
 
         public static bool operator ==(LineMapping left, LineMapping right)

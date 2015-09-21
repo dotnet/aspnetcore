@@ -54,11 +54,12 @@ namespace Microsoft.AspNet.Razor.Chunks.Generators
 
         public override int GetHashCode()
         {
-            return HashCodeCombiner.Start()
-                .Add(Name, StringComparer.Ordinal)
-                .Add(Prefix)
-                .Add(Suffix)
-                .CombinedHash;
+            var hashCodeCombiner = HashCodeCombiner.Start();
+            hashCodeCombiner.Add(Name, StringComparer.Ordinal);
+            hashCodeCombiner.Add(Prefix);
+            hashCodeCombiner.Add(Suffix);
+
+            return hashCodeCombiner;
         }
     }
 }

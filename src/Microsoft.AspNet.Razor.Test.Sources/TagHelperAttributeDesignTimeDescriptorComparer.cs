@@ -35,11 +35,11 @@ namespace Microsoft.AspNet.Razor.Test.Internal
 
         public int GetHashCode(TagHelperAttributeDesignTimeDescriptor descriptor)
         {
-            return HashCodeCombiner
-                .Start()
-                .Add(descriptor.Summary, StringComparer.Ordinal)
-                .Add(descriptor.Remarks, StringComparer.Ordinal)
-                .CombinedHash;
+            var hashCodeCombiner = HashCodeCombiner.Start();
+            hashCodeCombiner.Add(descriptor.Summary, StringComparer.Ordinal);
+            hashCodeCombiner.Add(descriptor.Remarks, StringComparer.Ordinal);
+
+            return hashCodeCombiner;
         }
     }
 }

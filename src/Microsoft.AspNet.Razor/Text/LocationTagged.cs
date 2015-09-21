@@ -55,10 +55,11 @@ namespace Microsoft.AspNet.Razor.Text
 
         public override int GetHashCode()
         {
-            return HashCodeCombiner.Start()
-                .Add(Location)
-                .Add(Value)
-                .CombinedHash;
+            var hashCodeCombiner = HashCodeCombiner.Start();
+            hashCodeCombiner.Add(Location);
+            hashCodeCombiner.Add(Value);
+                
+            return hashCodeCombiner.CombinedHash;
         }
 
         public override string ToString()

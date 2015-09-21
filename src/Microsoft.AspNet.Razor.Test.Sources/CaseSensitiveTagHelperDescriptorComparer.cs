@@ -49,10 +49,10 @@ namespace Microsoft.AspNet.Razor.Test.Internal
 
         public override int GetHashCode(TagHelperDescriptor descriptor)
         {
-            var hashCodeCombiner = HashCodeCombiner.Start()
-                .Add(base.GetHashCode(descriptor))
-                .Add(descriptor.TagName, StringComparer.Ordinal)
-                .Add(descriptor.Prefix, StringComparer.Ordinal);
+            var hashCodeCombiner = HashCodeCombiner.Start();
+            hashCodeCombiner.Add(base.GetHashCode(descriptor));
+            hashCodeCombiner.Add(descriptor.TagName, StringComparer.Ordinal);
+            hashCodeCombiner.Add(descriptor.Prefix, StringComparer.Ordinal);
 
             if (descriptor.DesignTimeDescriptor != null)
             {

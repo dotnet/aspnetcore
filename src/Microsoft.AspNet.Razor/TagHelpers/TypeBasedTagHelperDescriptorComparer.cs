@@ -54,10 +54,11 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 throw new ArgumentNullException(nameof(descriptor));
             }
 
-            return HashCodeCombiner.Start()
-                .Add(descriptor.AssemblyName, StringComparer.Ordinal)
-                .Add(descriptor.TypeName, StringComparer.Ordinal)
-                .CombinedHash;
+            var hashCodeCombiner = HashCodeCombiner.Start();
+            hashCodeCombiner.Add(descriptor.AssemblyName, StringComparer.Ordinal);
+            hashCodeCombiner.Add(descriptor.TypeName, StringComparer.Ordinal);
+
+            return hashCodeCombiner;
         }
     }
 }

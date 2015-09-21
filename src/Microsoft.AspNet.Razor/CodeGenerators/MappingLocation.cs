@@ -44,12 +44,13 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
 
         public override int GetHashCode()
         {
-            return HashCodeCombiner.Start()
-                .Add(AbsoluteIndex)
-                .Add(ContentLength)
-                .Add(LineIndex)
-                .Add(CharacterIndex)
-                .CombinedHash;
+            var hashCodeCombiner = HashCodeCombiner.Start();
+            hashCodeCombiner.Add(AbsoluteIndex);
+            hashCodeCombiner.Add(ContentLength);
+            hashCodeCombiner.Add(LineIndex);
+            hashCodeCombiner.Add(CharacterIndex);
+
+            return hashCodeCombiner;
         }
 
         public override string ToString()

@@ -38,15 +38,16 @@ namespace Microsoft.AspNet.Razor.Test.Internal
 
         public int GetHashCode(TagHelperAttributeDescriptor descriptor)
         {
-            return HashCodeCombiner.Start()
-                .Add(descriptor.IsIndexer)
-                .Add(descriptor.Name, StringComparer.Ordinal)
-                .Add(descriptor.PropertyName, StringComparer.Ordinal)
-                .Add(descriptor.TypeName, StringComparer.Ordinal)
-                .Add(descriptor.IsStringProperty)
-                .Add(TagHelperAttributeDesignTimeDescriptorComparer.Default.GetHashCode(
-                    descriptor.DesignTimeDescriptor))
-                .CombinedHash;
+            var hashCodeCombiner = HashCodeCombiner.Start();
+            hashCodeCombiner.Add(descriptor.IsIndexer);
+            hashCodeCombiner.Add(descriptor.Name, StringComparer.Ordinal);
+            hashCodeCombiner.Add(descriptor.PropertyName, StringComparer.Ordinal);
+            hashCodeCombiner.Add(descriptor.TypeName, StringComparer.Ordinal);
+            hashCodeCombiner.Add(descriptor.IsStringProperty);
+            hashCodeCombiner.Add(TagHelperAttributeDesignTimeDescriptorComparer.Default.GetHashCode(
+                descriptor.DesignTimeDescriptor));
+
+            return hashCodeCombiner;
         }
     }
 }

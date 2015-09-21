@@ -291,11 +291,12 @@ namespace Microsoft.AspNet.Razor.TagHelpers
 
             public int GetHashCode(TagHelperDirectiveDescriptor directiveDescriptor)
             {
-                return HashCodeCombiner.Start()
-                                       .Add(base.GetHashCode())
-                                       .Add(directiveDescriptor.DirectiveText)
-                                       .Add(directiveDescriptor.DirectiveType)
-                                       .CombinedHash;
+                var hashCodeCombiner = HashCodeCombiner.Start();
+                hashCodeCombiner.Add(base.GetHashCode());
+                hashCodeCombiner.Add(directiveDescriptor.DirectiveText);
+                hashCodeCombiner.Add(directiveDescriptor.DirectiveType);
+
+                return hashCodeCombiner;
             }
         }
 

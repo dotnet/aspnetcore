@@ -65,10 +65,11 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
         public override int GetHashCode()
         {
             // Hash code should include only immutable properties but Equals also checks the type.
-            return HashCodeCombiner.Start()
-                .Add(TypeHashCode)
-                .Add(AutoCompleteAtEndOfSpan)
-                .CombinedHash;
+            var hashCodeCombiner = HashCodeCombiner.Start();
+            hashCodeCombiner.Add(TypeHashCode);
+            hashCodeCombiner.Add(AutoCompleteAtEndOfSpan);
+
+            return hashCodeCombiner.CombinedHash;
         }
     }
 }

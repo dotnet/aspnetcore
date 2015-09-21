@@ -71,11 +71,13 @@ namespace Microsoft.AspNet.Razor.Chunks.Generators
 
         public override int GetHashCode()
         {
-            return HashCodeCombiner.Start()
-                .Add(Prefix)
-                .Add(Value)
-                .Add(ValueGenerator)
-                .CombinedHash;
+            var hashCodeCombiner = HashCodeCombiner.Start();
+
+            hashCodeCombiner.Add(Prefix);
+            hashCodeCombiner.Add(Value);
+            hashCodeCombiner.Add(ValueGenerator);
+
+            return hashCodeCombiner;
         }
     }
 }

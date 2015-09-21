@@ -129,11 +129,12 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
 
         public override int GetHashCode()
         {
-            return HashCodeCombiner.Start()
-                .Add(Type)
-                .Add(ChunkGenerator)
-                .Add(Children)
-                .CombinedHash;
+            var hashCodeCombiner = HashCodeCombiner.Start();
+            hashCodeCombiner.Add(Type);
+            hashCodeCombiner.Add(ChunkGenerator);
+            hashCodeCombiner.Add(Children);
+
+            return hashCodeCombiner;
         }
 
         public IEnumerable<Span> Flatten()
@@ -222,13 +223,14 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
 
         public override int GetEquivalenceHash()
         {
-            var combiner = HashCodeCombiner.Start().Add(Type);
+            var hashCodeCombiner = HashCodeCombiner.Start();
+            hashCodeCombiner.Add(Type);
             foreach (var child in Children)
             {
-                combiner.Add(child.GetEquivalenceHash());
+                hashCodeCombiner.Add(child.GetEquivalenceHash());
             }
 
-            return combiner.CombinedHash;
+            return hashCodeCombiner.CombinedHash;
         }
     }
 }

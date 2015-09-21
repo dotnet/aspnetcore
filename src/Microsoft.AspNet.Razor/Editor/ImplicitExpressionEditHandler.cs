@@ -60,10 +60,11 @@ namespace Microsoft.AspNet.Razor.Editor
         public override int GetHashCode()
         {
             // Hash code should include only immutable properties and base has none.
-            return HashCodeCombiner.Start()
-                .Add(Keywords)
-                .Add(AcceptTrailingDot)
-                .CombinedHash;
+            var hashCodeCombiner = HashCodeCombiner.Start();
+            hashCodeCombiner.Add(Keywords);
+            hashCodeCombiner.Add(AcceptTrailingDot);
+
+            return hashCodeCombiner;
         }
 
         protected override PartialParseResult CanAcceptChange(Span target, TextChange normalizedChange)

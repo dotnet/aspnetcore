@@ -62,10 +62,11 @@ namespace Microsoft.AspNet.Razor
 
         public override int GetHashCode()
         {
-            return HashCodeCombiner.Start()
-                .Add(Message, StringComparer.Ordinal)
-                .Add(Location)
-                .CombinedHash;
+            var hashCodeCombiner = HashCodeCombiner.Start();
+            hashCodeCombiner.Add(Message, StringComparer.Ordinal);
+            hashCodeCombiner.Add(Location);
+
+            return hashCodeCombiner;
         }
 
         public bool Equals(RazorError other)

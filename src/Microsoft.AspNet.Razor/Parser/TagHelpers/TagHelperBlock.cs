@@ -127,11 +127,12 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
         /// <inheritdoc />
         public override int GetHashCode()
         {
-            return HashCodeCombiner.Start()
-                .Add(base.GetHashCode())
-                .Add(TagName, StringComparer.OrdinalIgnoreCase)
-                .Add(Attributes)
-                .CombinedHash;
+            var hashCodeCombiner = HashCodeCombiner.Start();
+            hashCodeCombiner.Add(base.GetHashCode());
+            hashCodeCombiner.Add(TagName, StringComparer.OrdinalIgnoreCase);
+            hashCodeCombiner.Add(Attributes);
+
+            return hashCodeCombiner;
         }
     }
 }
