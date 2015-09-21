@@ -14,6 +14,7 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Routing;
+using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
 using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
@@ -25,9 +26,13 @@ namespace Microsoft.AspNet.Mvc
     /// </summary>
     public abstract class Controller : IActionFilter, IAsyncActionFilter, IDisposable
     {
+        private ActionContext _actionContext;
+        private IModelMetadataProvider _metadataProvider;
+        private IObjectModelValidator _objectValidator;
+        private ITempDataDictionary _tempData;
+        private IUrlHelper _url;
         private DynamicViewData _viewBag;
         private ViewDataDictionary _viewData;
-        private ActionContext _actionContext;
 
         /// <summary>
         /// Gets the request-specific <see cref="IServiceProvider"/>.
@@ -131,17 +136,68 @@ namespace Microsoft.AspNet.Mvc
         /// <summary>
         /// Gets or sets the <see cref="IModelMetadataProvider"/>.
         /// </summary>
-        [FromServices]
-        public IModelMetadataProvider MetadataProvider { get; set; }
+        public IModelMetadataProvider MetadataProvider
+        {
+            get
+            {
+                if (_metadataProvider == null)
+                {
+                    _metadataProvider = Resolver?.GetRequiredService<IModelMetadataProvider>();
+                }
+
+                return _metadataProvider;
+            }
+
+            [param: NotNull]
+            set
+            {
+                _metadataProvider = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the <see cref="IUrlHelper"/>.
         /// </summary>
-        [FromServices]
-        public IUrlHelper Url { get; set; }
+        public IUrlHelper Url
+        {
+            get
+            {
+                if (_url == null)
+                {
+                    _url = Resolver?.GetRequiredService<IUrlHelper>();
+                }
 
-        [FromServices]
-        public IObjectModelValidator ObjectValidator { get; set; }
+                return _url;
+            }
+
+            [param: NotNull]
+            set
+            {
+                _url = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the <see cref="IObjectModelValidator"/>.
+        /// </summary>
+        public IObjectModelValidator ObjectValidator
+        {
+            get
+            {
+                if (_objectValidator == null)
+                {
+                    _objectValidator = Resolver?.GetRequiredService<IObjectModelValidator>();
+                }
+
+                return _objectValidator;
+            }
+
+            [param: NotNull]
+            set
+            {
+                _objectValidator = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the <see cref="ClaimsPrincipal"/> for user associated with the executing action.
@@ -192,8 +248,24 @@ namespace Microsoft.AspNet.Mvc
         /// <summary>
         /// Gets or sets <see cref="ITempDataDictionary"/> used by <see cref="ViewResult"/>.
         /// </summary>
-        [FromServices]
-        public ITempDataDictionary TempData { get; set; }
+        public ITempDataDictionary TempData
+        {
+            get
+            {
+                if (_tempData == null)
+                {
+                    _tempData = Resolver?.GetRequiredService<ITempDataDictionary>();
+                }
+
+                return _tempData;
+            }
+
+            [param: NotNull]
+            set
+            {
+                _tempData = value;
+            }
+        }
 
         /// <summary>
         /// Gets the dynamic view bag.
