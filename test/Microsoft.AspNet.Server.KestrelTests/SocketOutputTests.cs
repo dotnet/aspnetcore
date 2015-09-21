@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 var bufferSize = 1048576;
                 var buffer = new ArraySegment<byte>(new byte[bufferSize], 0, bufferSize);
                 var completedWh = new ManualResetEventSlim();
-                Action<Exception, object> onCompleted = (ex, state) =>
+                Action<Exception, object, bool> onCompleted = (ex, state, calledInline) =>
                 {
                     Assert.Null(ex);
                     Assert.Null(state);
@@ -89,7 +89,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 var bufferSize = maxBytesPreCompleted;
                 var buffer = new ArraySegment<byte>(new byte[bufferSize], 0, bufferSize);
                 var completedWh = new ManualResetEventSlim();
-                Action<Exception, object> onCompleted = (ex, state) =>
+                Action<Exception, object, bool> onCompleted = (ex, state, calledInline) =>
                 {
                     Assert.Null(ex);
                     Assert.Null(state);
