@@ -1,9 +1,6 @@
 # dnvm.sh
 # Source this file from your .bash-profile or script to use
 
-unset DNX_USER_HOME
-unset DNX_GLOBAL_HOME
-unset DNX_HOME
 
 # "Constants"
 _DNVM_BUILDNUMBER="beta8-15516"
