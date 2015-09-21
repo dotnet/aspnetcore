@@ -109,9 +109,8 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <inheritdoc />
         public override int GetHashCode()
         {
-            var hashCodeCombiner = HashCodeCombiner.Start()
-                .Add(IsFoundResult);
-
+            var hashCodeCombiner = HashCodeCombiner.Start();
+            hashCodeCombiner.Add(IsFoundResult);
 
             if (IsFoundResult)
             {

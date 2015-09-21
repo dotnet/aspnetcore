@@ -82,10 +82,11 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
 
             public override int GetHashCode()
             {
-                return HashCodeCombiner
-                    .Start()
-                    .Add(Configuration)
-                    .Add(TargetFramework);
+                var hashCodeCombiner = HashCodeCombiner.Start();
+                hashCodeCombiner.Add(Configuration);
+                hashCodeCombiner.Add(TargetFramework);
+
+                return hashCodeCombiner;
             }
         }
     }

@@ -131,11 +131,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <inheritdoc />
         public override int GetHashCode()
         {
-            var hash = HashCodeCombiner.Start();
-            hash.Add(Key, StringComparer.OrdinalIgnoreCase);
-            hash.Add(IsModelSet);
-            hash.Add(Model);
-            return hash.CombinedHash;
+            var hashCodeCombiner = HashCodeCombiner.Start();
+            hashCodeCombiner.Add(Key, StringComparer.OrdinalIgnoreCase);
+            hashCodeCombiner.Add(IsModelSet);
+            hashCodeCombiner.Add(Model);
+
+            return hashCodeCombiner.CombinedHash;
         }
 
         /// <inheritdoc />
