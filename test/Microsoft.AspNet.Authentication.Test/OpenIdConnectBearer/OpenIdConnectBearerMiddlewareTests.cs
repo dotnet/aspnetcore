@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnectBearer
                 options.AutomaticAuthentication = true;
 
                 options.Authority = "https://login.windows.net/tushartest.onmicrosoft.com";
-                options.Audience = "https://TusharTest.onmicrosoft.com/TodoListService-ManualOpenIdConnect";
+                options.Audience = "https://TusharTest.onmicrosoft.com/TodoListService-ManualJwt";
                 options.TokenValidationParameters.ValidateLifetime = false;
             });
 
