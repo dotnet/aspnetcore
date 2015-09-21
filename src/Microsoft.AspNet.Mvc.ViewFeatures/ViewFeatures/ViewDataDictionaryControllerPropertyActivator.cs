@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
-using Microsoft.AspNet.Mvc.Actions;
+using Microsoft.AspNet.Mvc.Controllers;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.Framework.Internal;
 

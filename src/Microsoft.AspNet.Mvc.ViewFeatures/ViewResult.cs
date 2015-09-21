@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Mvc
         /// Gets or sets the name of the view to render.
         /// </summary>
         /// <remarks>
-        /// When <c>null</c>, defaults to <see cref="Actions.ActionDescriptor.Name"/>.
+        /// When <c>null</c>, defaults to <see cref="Abstractions.ActionDescriptor.Name"/>.
         /// </remarks>
         public string ViewName { get; set; }
 

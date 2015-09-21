@@ -6,7 +6,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using ActionConstraintsWebSite;
-using Microsoft.AspNet.Mvc.Actions;
+using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.Testing.xunit;
 using Newtonsoft.Json;
 using Xunit;

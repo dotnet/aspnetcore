@@ -3,7 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Mvc.Actions;
+using Microsoft.AspNet.Mvc.Controllers;
 using Microsoft.AspNet.Mvc.Formatters;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewComponents;

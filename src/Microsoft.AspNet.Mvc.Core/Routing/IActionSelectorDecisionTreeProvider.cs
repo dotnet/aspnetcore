@@ -5,12 +5,12 @@ namespace Microsoft.AspNet.Mvc.Routing
 {
     /// <summary>
     /// Stores an <see cref="ActionSelectionDecisionTree"/> for the current value of
-    /// <see cref="Actions.IActionDescriptorsCollectionProvider.ActionDescriptors"/>.
+    /// <see cref="Infrastructure.IActionDescriptorsCollectionProvider.ActionDescriptors"/>.
     /// </summary>
     public interface IActionSelectorDecisionTreeProvider
     {
         /// <summary>
-        /// Gets the <see cref="Actions.IActionDescriptorsCollectionProvider"/>.
+        /// Gets the <see cref="Infrastructure.IActionDescriptorsCollectionProvider"/>.
         /// </summary>
         IActionSelectionDecisionTree DecisionTree
         {

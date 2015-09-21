@@ -6,8 +6,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Mvc.ActionConstraints;
-using Microsoft.AspNet.Mvc.Actions;
 using Microsoft.AspNet.Mvc.Filters;
+using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ApplicationModels
@@ -92,7 +92,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
 
         /// <summary>
         /// Gets a set of properties associated with the action.
-        /// These properties will be copied to <see cref="ActionDescriptor.Properties"/>.
+        /// These properties will be copied to <see cref="Abstractions.ActionDescriptor.Properties"/>.
         /// </summary>
         /// <remarks>
         /// Entries will take precedence over entries with the same key in

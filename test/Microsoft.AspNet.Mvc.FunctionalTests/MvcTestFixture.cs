@@ -9,7 +9,7 @@ using System.Net.Http;
 using System.Reflection;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
-using Microsoft.AspNet.Mvc.Actions;
+using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.TestHost;
 using Microsoft.AspNet.Testing;
 using Microsoft.Dnx.Runtime;

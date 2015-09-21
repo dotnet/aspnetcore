@@ -8,7 +8,6 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Mvc.Actions;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
@@ -104,8 +103,9 @@ namespace Microsoft.AspNet.Mvc
         /// Gets or sets the <see cref="Mvc.ActionContext"/> object.
         /// </summary>
         /// <remarks>
-        /// <see cref="IControllerActivator"/> activates this property while activating controllers. If user codes
-        /// directly instantiate controllers, the getter returns an empty <see cref="Mvc.ActionContext"/>.
+        /// <see cref="Controllers.IControllerActivator"/> activates this property while activating controllers.
+       ///  If user code directly instantiates a controller, the getter returns an empty
+       /// <see cref="Mvc.ActionContext"/>.
         /// </remarks>
         [ActionContext]
         public ActionContext ActionContext
@@ -214,9 +214,9 @@ namespace Microsoft.AspNet.Mvc
         /// Gets or sets <see cref="ViewDataDictionary"/> used by <see cref="ViewResult"/> and <see cref="ViewBag"/>.
         /// </summary>
         /// <remarks>
-        /// By default, this property is activated when <see cref="IControllerActivator"/> activates controllers.
-        /// However, when controllers are directly instantiated in user codes, this property is initialized with
-        /// <see cref="EmptyModelMetadataProvider"/>.
+        /// By default, this property is activated when <see cref="Controllers.IControllerActivator"/> activates
+        ///  controllers. However, when controllers are directly instantiated in user code, this property is
+        /// initialized with <see cref="EmptyModelMetadataProvider"/>.
         /// </remarks>
         [ViewDataDictionary]
         public ViewDataDictionary ViewData

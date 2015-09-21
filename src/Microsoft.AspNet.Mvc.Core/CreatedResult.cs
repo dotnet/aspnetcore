@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Mvc.Actions;
 using Microsoft.Framework.Internal;
 using Microsoft.Net.Http.Headers;
 

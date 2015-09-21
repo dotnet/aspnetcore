@@ -4,7 +4,7 @@
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.Actions;
+using Microsoft.AspNet.Mvc.Infrastructure;
 using Newtonsoft.Json;
 using Xunit;
 

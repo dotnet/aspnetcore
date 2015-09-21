@@ -6,7 +6,7 @@ using System.IO;
 using System.Reflection;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
-using Microsoft.AspNet.Mvc.Actions;
+using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.TestHost;
 using Microsoft.Dnx.Runtime;
 using Microsoft.Framework.DependencyInjection;

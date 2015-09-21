@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.ExceptionServices;
-using Microsoft.AspNet.Mvc.Actions;
 
 namespace Microsoft.AspNet.Mvc.Filters
 {

@@ -3,7 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Mvc.Actions;
+using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.Framework.OptionsModel;
 

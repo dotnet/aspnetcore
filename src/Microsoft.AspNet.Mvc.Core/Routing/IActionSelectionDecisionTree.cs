@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using Microsoft.AspNet.Mvc.Actions;
+using Microsoft.AspNet.Mvc.Abstractions;
 
 namespace Microsoft.AspNet.Mvc.Routing
 {
@@ -13,7 +13,8 @@ namespace Microsoft.AspNet.Mvc.Routing
     public interface IActionSelectionDecisionTree
     {
         /// <summary>
-        /// Gets the version. The same as the value of <see cref="ActionDescriptorsCollection.Version"/>.
+        /// Gets the version. The same as the value of
+        /// <see cref="Infrastructure.ActionDescriptorsCollection.Version"/>.
         /// </summary>
         int Version { get; }
 

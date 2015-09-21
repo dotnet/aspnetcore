@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Mvc.Actions;
+using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ActionConstraints

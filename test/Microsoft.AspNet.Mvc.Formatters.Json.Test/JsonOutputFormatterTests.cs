@@ -8,7 +8,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
-using Microsoft.AspNet.Mvc.Actions;
 using Microsoft.AspNet.Testing;
 using Microsoft.Net.Http.Headers;
 using Moq;

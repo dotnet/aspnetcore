@@ -4,9 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.ActionConstraints;
-using Microsoft.AspNet.Mvc.Actions;
 using Microsoft.AspNet.Mvc.Filters;
+using Microsoft.AspNet.Mvc.Infrastructure;
+using Microsoft.AspNet.Mvc.Routing;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ApplicationModels

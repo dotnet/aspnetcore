@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using Microsoft.AspNet.Mvc.Actions;
+using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Mvc.ViewEngines;
 using Microsoft.Framework.OptionsModel;
 
@@ -162,9 +162,9 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <remarks>
         /// The casing of a route value in <see cref="ActionContext.RouteData"/> is determined by the client.
         /// This making constructing paths for view locations in a case sensitive file system unreliable. Using the
-        /// <see cref="ActionDescriptor.RouteValueDefaults"/> for attribute routes and
-        /// <see cref="ActionDescriptor.RouteConstraints"/> for traditional routes to get route values produces
-        /// consistently cased results.
+        /// <see cref="Abstractions.ActionDescriptor.RouteValueDefaults"/> for attribute routes and
+        /// <see cref="Abstractions.ActionDescriptor.RouteConstraints"/> for traditional routes to get route values
+        /// produces consistently cased results.
         /// </remarks>
         public static string GetNormalizedRouteValue(
             ActionContext context,

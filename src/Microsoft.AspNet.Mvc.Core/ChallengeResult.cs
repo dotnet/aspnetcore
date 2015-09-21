@@ -4,7 +4,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Authentication;
-using Microsoft.AspNet.Mvc.Actions;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc

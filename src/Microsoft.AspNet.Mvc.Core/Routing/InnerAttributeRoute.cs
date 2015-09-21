@@ -93,7 +93,7 @@ namespace Microsoft.AspNet.Mvc.Routing
 
         /// <summary>
         /// Gets the version of this route. This corresponds to the value of
-        /// <see cref="Actions.ActionDescriptorsCollection.Version"/> when this route was created.
+        /// <see cref="Infrastructure.ActionDescriptorsCollection.Version"/> when this route was created.
         /// </summary>
         public int Version { get; }
 
