@@ -309,6 +309,65 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal(contentTypeBeforeViewResultExecution, contentTypeAfterViewResultExecution);
         }
 
+        [Fact]
+        public async Task ViewComponentResult_SetsContentTypeHeader_OverrideResponseContentType()
+        {
+            // Arrange
+            var descriptor = new ViewComponentDescriptor()
+            {
+                FullName = "Full.Name.Text",
+                ShortName = "Text",
+                Type = typeof(TextViewComponent),
+            };
+
+            var actionContext = CreateActionContext(descriptor);
+
+            var expectedContentType = "text/html; charset=utf-8";
+            actionContext.HttpContext.Response.ContentType = "application/x-will-be-overridden";
+
+            var viewComponentResult = new ViewComponentResult()
+            {
+                Arguments = new object[] { "World!" },
+                ViewComponentName = "Text",
+                ContentType = new MediaTypeHeaderValue("text/html") { Encoding = Encoding.UTF8 },
+            };
+
+            // Act
+            await viewComponentResult.ExecuteResultAsync(actionContext);
+
+            // Assert
+            Assert.Equal(expectedContentType, actionContext.HttpContext.Response.ContentType);
+        }
+
+        [Fact]
+        public async Task ViewComponentResult_NoContentTypeSet_PreservesResponseContentType()
+        {
+            // Arrange
+            var descriptor = new ViewComponentDescriptor()
+            {
+                FullName = "Full.Name.Text",
+                ShortName = "Text",
+                Type = typeof(TextViewComponent),
+            };
+
+            var actionContext = CreateActionContext(descriptor);
+
+            var expectedContentType = "application/x-will-not-be-overridden";
+            actionContext.HttpContext.Response.ContentType = expectedContentType;
+
+            var viewComponentResult = new ViewComponentResult()
+            {
+                Arguments = new object[] { "World!" },
+                ViewComponentName = "Text",
+            };
+
+            // Act
+            await viewComponentResult.ExecuteResultAsync(actionContext);
+
+            // Assert
+            Assert.Equal(expectedContentType, actionContext.HttpContext.Response.ContentType);
+        }
+
         private IServiceCollection CreateServices(params ViewComponentDescriptor[] descriptors)
         {
             var services = new ServiceCollection();
