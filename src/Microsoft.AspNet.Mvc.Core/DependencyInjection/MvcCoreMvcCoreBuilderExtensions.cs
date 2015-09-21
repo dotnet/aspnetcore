@@ -16,6 +16,20 @@ namespace Microsoft.Framework.DependencyInjection
 {
     public static class MvcCoreMvcCoreBuilderExtensions
     {
+        /// <summary>
+        /// Registers an action to configure <see cref="MvcOptions"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="IMvcCoreBuilder"/>.</param>
+        /// <param name="setupAction">An <see cref="Action{MvcOptions}"/>.</param>
+        /// <returns>The <see cref="IMvcCoreBuilder"/>.</returns>
+        public static IMvcCoreBuilder AddMvcOptions(
+            [NotNull] this IMvcCoreBuilder builder,
+            [NotNull] Action<MvcOptions> setupAction)
+        {
+            builder.Services.Configure<MvcOptions>(setupAction);
+            return builder;
+        }
+
         public static IMvcCoreBuilder AddFormatterMappings(this IMvcCoreBuilder builder)
         {
             AddFormatterMappingsServices(builder.Services);
