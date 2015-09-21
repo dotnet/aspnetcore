@@ -34,8 +34,6 @@ App_Data/
 bower_components
 node_modules
 *.sln.ide
-*/*.Spa/public/*
-*/*.Spa/wwwroot/lib
 *.ng.ts
 *.sln.ide
 project.lock.json

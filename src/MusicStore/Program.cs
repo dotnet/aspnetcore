@@ -6,8 +6,8 @@ using Microsoft.Framework.Configuration;
 namespace MusicStore
 {
     /// <summary>
-    /// This demonstrates how the application can be launched in a console application. 
-    /// "dnx . run" command in the application folder will invoke this.
+    /// This demonstrates how the application can be launched in a console application.
+    /// "dnx run" command in the application folder will invoke this.
     /// </summary>
     public class Program
     {
