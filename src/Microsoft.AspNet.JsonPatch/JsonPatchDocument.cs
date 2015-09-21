@@ -1,14 +1,12 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.JsonPatch.Adapters;
 using Microsoft.AspNet.JsonPatch.Converters;
-using Microsoft.AspNet.JsonPatch.Exceptions;
 using Microsoft.AspNet.JsonPatch.Helpers;
 using Microsoft.AspNet.JsonPatch.Operations;
-using Microsoft.Framework.Internal;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -24,15 +22,25 @@ namespace Microsoft.AspNet.JsonPatch
 
         [JsonIgnore]
         public IContractResolver ContractResolver { get; set; }
-      
+
         public JsonPatchDocument()
         {
             Operations = new List<Operation>();
-            ContractResolver = new DefaultContractResolver();             
+            ContractResolver = new DefaultContractResolver();
         }
 
-        public JsonPatchDocument([NotNull] List<Operation> operations, [NotNull] IContractResolver contractResolver)
+        public JsonPatchDocument(List<Operation> operations, IContractResolver contractResolver)
         {
+            if (operations == null)
+            {
+                throw new ArgumentNullException(nameof(operations));
+            }
+
+            if (contractResolver == null)
+            {
+                throw new ArgumentNullException(nameof(contractResolver));
+            }
+
             Operations = operations;
             ContractResolver = contractResolver;
         }
@@ -44,8 +52,13 @@ namespace Microsoft.AspNet.JsonPatch
         /// <param name="path">target location</param>
         /// <param name="value">value</param>
         /// <returns></returns>
-        public JsonPatchDocument Add([NotNull] string path, object value)
+        public JsonPatchDocument Add(string path, object value)
         {
+            if (path == null)
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
             Operations.Add(new Operation("add", PathHelpers.NormalizePath(path), null, value));
             return this;
         }
@@ -56,8 +69,13 @@ namespace Microsoft.AspNet.JsonPatch
         /// </summary>
         /// <param name="path">target location</param>
         /// <returns></returns>
-        public JsonPatchDocument Remove([NotNull] string path)
+        public JsonPatchDocument Remove(string path)
         {
+            if (path == null)
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
             Operations.Add(new Operation("remove", PathHelpers.NormalizePath(path), null, null));
             return this;
         }
@@ -69,8 +87,13 @@ namespace Microsoft.AspNet.JsonPatch
         /// <param name="path">target location</param>
         /// <param name="value">value</param>
         /// <returns></returns>
-        public JsonPatchDocument Replace([NotNull] string path, object value)
+        public JsonPatchDocument Replace(string path, object value)
         {
+            if (path == null)
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
             Operations.Add(new Operation("replace", PathHelpers.NormalizePath(path), null, value));
             return this;
         }
@@ -82,8 +105,18 @@ namespace Microsoft.AspNet.JsonPatch
         /// <param name="from">source location</param>
         /// <param name="path">target location</param>
         /// <returns></returns>
-        public JsonPatchDocument Move([NotNull] string from, [NotNull] string path)
+        public JsonPatchDocument Move(string from, string path)
         {
+            if (from == null)
+            {
+                throw new ArgumentNullException(nameof(from));
+            }
+
+            if (path == null)
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
             Operations.Add(new Operation("move", PathHelpers.NormalizePath(path), PathHelpers.NormalizePath(from)));
             return this;
         }
@@ -95,8 +128,18 @@ namespace Microsoft.AspNet.JsonPatch
         /// <param name="from">source location</param>
         /// <param name="path">target location</param>
         /// <returns></returns>
-        public JsonPatchDocument Copy([NotNull] string from, [NotNull] string path)
+        public JsonPatchDocument Copy(string from, string path)
         {
+            if (from == null)
+            {
+                throw new ArgumentNullException(nameof(from));
+            }
+
+            if (path == null)
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
             Operations.Add(new Operation("copy", PathHelpers.NormalizePath(path), PathHelpers.NormalizePath(from)));
             return this;
         }
@@ -105,8 +148,13 @@ namespace Microsoft.AspNet.JsonPatch
         /// Apply this JsonPatchDocument 
         /// </summary>
         /// <param name="objectToApplyTo">Object to apply the JsonPatchDocument to</param>
-        public void ApplyTo([NotNull] object objectToApplyTo)           
+        public void ApplyTo(object objectToApplyTo)
         {
+            if (objectToApplyTo == null)
+            {
+                throw new ArgumentNullException(nameof(objectToApplyTo));
+            }
+
             ApplyTo(objectToApplyTo, new ObjectAdapter(ContractResolver, logErrorAction: null));
         }
 
@@ -115,8 +163,13 @@ namespace Microsoft.AspNet.JsonPatch
         /// </summary>
         /// <param name="objectToApplyTo">Object to apply the JsonPatchDocument to</param>
         /// <param name="logErrorAction">Action to log errors</param>
-        public void ApplyTo([NotNull] object objectToApplyTo, Action<JsonPatchError> logErrorAction)          
+        public void ApplyTo(object objectToApplyTo, Action<JsonPatchError> logErrorAction)
         {
+            if (objectToApplyTo == null)
+            {
+                throw new ArgumentNullException(nameof(objectToApplyTo));
+            }
+
             ApplyTo(objectToApplyTo, new ObjectAdapter(ContractResolver, logErrorAction));
         }
 
@@ -125,15 +178,25 @@ namespace Microsoft.AspNet.JsonPatch
         /// </summary>
         /// <param name="objectToApplyTo">Object to apply the JsonPatchDocument to</param>
         /// <param name="adapter">IObjectAdapter instance to use when applying</param>
-        public void ApplyTo([NotNull] object objectToApplyTo, [NotNull] IObjectAdapter adapter)            
+        public void ApplyTo(object objectToApplyTo, IObjectAdapter adapter)
         {
+            if (objectToApplyTo == null)
+            {
+                throw new ArgumentNullException(nameof(objectToApplyTo));
+            }
+
+            if (adapter == null)
+            {
+                throw new ArgumentNullException(nameof(adapter));
+            }
+
             // apply each operation in order
             foreach (var op in Operations)
             {
                 op.Apply(objectToApplyTo, adapter);
             }
         }
-              
+
         IList<Operation> IJsonPatchDocument.GetOperations()
         {
             var allOps = new List<Operation>();

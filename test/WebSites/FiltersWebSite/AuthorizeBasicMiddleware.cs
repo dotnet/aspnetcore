@@ -11,12 +11,14 @@ namespace FiltersWebSite
     public class AuthorizeBasicMiddleware : AuthenticationMiddleware<BasicOptions>
     {
         public AuthorizeBasicMiddleware(
-            RequestDelegate next, 
+            RequestDelegate next,
             ILoggerFactory loggerFactory,
             IUrlEncoder encoder,
-            string authScheme) : 
-                base(next, new BasicOptions { AuthenticationScheme = authScheme }, loggerFactory, 
-                     encoder, configureOptions: null)
+            string authScheme) :
+                base(next,
+                     new BasicOptions { AuthenticationScheme = authScheme },
+                     loggerFactory,
+                     encoder)
         {
         }
 

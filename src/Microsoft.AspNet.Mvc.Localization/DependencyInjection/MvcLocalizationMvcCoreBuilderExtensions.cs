@@ -1,9 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNet.Mvc.Localization.Internal;
 using Microsoft.AspNet.Mvc.Razor;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.DependencyInjection
 {
@@ -22,8 +22,13 @@ namespace Microsoft.Framework.DependencyInjection
         /// <see cref="MvcViewFeaturesMvcCoreBuilderExtensions.AddViews(IMvcCoreBuilder)"/> and the Razor view engine
         /// via <see cref="MvcRazorMvcCoreBuilderExtensions.AddRazorViewEngine(IMvcCoreBuilder)"/>.
         /// </remarks>
-        public static IMvcCoreBuilder AddViewLocalization([NotNull] this IMvcCoreBuilder builder)
+        public static IMvcCoreBuilder AddViewLocalization(this IMvcCoreBuilder builder)
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
             return AddViewLocalization(builder, LanguageViewLocationExpanderFormat.Suffix);
         }
 
@@ -39,9 +44,14 @@ namespace Microsoft.Framework.DependencyInjection
         /// via <see cref="MvcRazorMvcCoreBuilderExtensions.AddRazorViewEngine(IMvcCoreBuilder)"/>.
         /// </remarks>
         public static IMvcCoreBuilder AddViewLocalization(
-            [NotNull] this IMvcCoreBuilder builder,
+            this IMvcCoreBuilder builder,
             LanguageViewLocationExpanderFormat format)
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
 
             builder.AddViews();
             builder.AddRazorViewEngine();

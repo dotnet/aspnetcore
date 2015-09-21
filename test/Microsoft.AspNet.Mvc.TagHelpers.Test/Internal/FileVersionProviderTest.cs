@@ -7,7 +7,6 @@ using System.Text;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Framework.Caching;
 using Microsoft.Framework.Caching.Memory;
 using Moq;
@@ -54,6 +53,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
             var mockFileProvider = new Mock<IFileProvider>();
             mockFileProvider.Setup(fp => fp.GetFileInfo(It.IsAny<string>()))
                 .Returns(mockFile.Object);
+            mockFileProvider.Setup(fp => fp.Watch(It.IsAny<string>()))
+                .Returns(new TestFileTrigger());
 
             var hostingEnvironment = new Mock<IHostingEnvironment>();
             hostingEnvironment.Setup(h => h.WebRootFileProvider).Returns(mockFileProvider.Object);
@@ -194,6 +195,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
                 mockFileProvider.Setup(fp => fp.GetFileInfo(It.IsAny<string>()))
                     .Returns(fileDoesNotExist? nonExistingMockFile.Object : existingMockFile.Object);
             }
+
+            mockFileProvider.Setup(fp => fp.Watch(It.IsAny<string>()))
+                .Returns(new TestFileTrigger());
 
             var hostingEnvironment = new Mock<IHostingEnvironment>();
             hostingEnvironment.Setup(h => h.WebRootFileProvider).Returns(mockFileProvider.Object);

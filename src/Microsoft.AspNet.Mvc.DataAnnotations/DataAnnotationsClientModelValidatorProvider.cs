@@ -32,11 +32,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         /// <inheritdoc />
         public void GetValidators(ClientValidatorProviderContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var hasRequiredAttribute = false;
 
             foreach (var attribute in context.ValidatorMetadata.OfType<ValidationAttribute>())
             {
-                hasRequiredAttribute |= attribute is RequiredAttribute; 
+                hasRequiredAttribute |= attribute is RequiredAttribute;
 
                 DataAnnotationsClientModelValidationFactory factory;
                 if (_attributeFactories.TryGetValue(attribute.GetType(), out factory))

@@ -1,11 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.Actions;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
@@ -39,8 +38,13 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="value">The value to format as JSON.</param>
         /// <param name="serializerSettings">The <see cref="JsonSerializerSettings"/> to be used by
         /// the formatter.</param>
-        public JsonResult(object value, [NotNull] JsonSerializerSettings serializerSettings)
+        public JsonResult(object value, JsonSerializerSettings serializerSettings)
         {
+            if (serializerSettings == null)
+            {
+                throw new ArgumentNullException(nameof(serializerSettings));
+            }
+
             Value = value;
             _serializerSettings = serializerSettings;
         }
@@ -61,8 +65,13 @@ namespace Microsoft.AspNet.Mvc
         public object Value { get; set; }
 
         /// <inheritdoc />
-        public override Task ExecuteResultAsync([NotNull] ActionContext context)
+        public override Task ExecuteResultAsync(ActionContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var response = context.HttpContext.Response;
 
             var contentTypeHeader = ContentType;

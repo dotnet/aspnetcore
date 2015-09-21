@@ -1,10 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.JsonPatch;
-using Microsoft.Framework.Internal;
 using Microsoft.AspNet.Mvc.Internal;
 using Newtonsoft.Json;
 
@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
         {
         }
 
-        public JsonPatchInputFormatter([NotNull] JsonSerializerSettings serializerSettings)
+        public JsonPatchInputFormatter(JsonSerializerSettings serializerSettings)
             : base(serializerSettings)
         {
             // Clear all values and only include json-patch+json value.
@@ -27,8 +27,13 @@ namespace Microsoft.AspNet.Mvc.Formatters
         }
 
         /// <inheritdoc />
-        public async override Task<InputFormatterResult> ReadRequestBodyAsync([NotNull] InputFormatterContext context)
+        public async override Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var result = await base.ReadRequestBodyAsync(context);
             if (!result.HasError)
             {

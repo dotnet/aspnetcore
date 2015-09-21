@@ -5,7 +5,6 @@ using System;
 using System.Xml;
 using System.Xml.Schema;
 using System.Xml.Serialization;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Formatters.Xml
 {
@@ -25,8 +24,13 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
         /// Initializes a new instance of the <see cref="SerializableErrorWrapper"/> class.
         /// </summary>
         /// <param name="error">The <see cref="SerializableError"/> object that needs to be wrapped.</param>
-        public SerializableErrorWrapper([NotNull] SerializableError error)
+        public SerializableErrorWrapper(SerializableError error)
         {
+            if (error == null)
+            {
+                throw new ArgumentNullException(nameof(error));
+            }
+
             SerializableError = error;
         }
 
@@ -88,8 +92,13 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
         }
 
         /// <inheritdoc />
-        public object Unwrap([NotNull] Type declaredType)
+        public object Unwrap(Type declaredType)
         {
+            if (declaredType == null)
+            {
+                throw new ArgumentNullException(nameof(declaredType));
+            }
+
             return SerializableError;
         }
     }

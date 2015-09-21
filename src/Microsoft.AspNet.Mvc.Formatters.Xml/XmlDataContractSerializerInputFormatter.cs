@@ -12,7 +12,6 @@ using System.Xml;
 using Microsoft.AspNet.Mvc.Formatters.Xml;
 using Microsoft.AspNet.Mvc.Formatters.Xml.Internal;
 using Microsoft.AspNet.Mvc.Internal;
-using Microsoft.Framework.Internal;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc.Formatters
@@ -118,8 +117,13 @@ namespace Microsoft.AspNet.Mvc.Formatters
         }
 
         /// <inheritdoc />
-        protected override bool CanReadType([NotNull] Type type)
+        protected override bool CanReadType(Type type)
         {
+            if (type == null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
             return GetCachedSerializer(GetSerializableType(type)) != null;
         }
 
@@ -129,8 +133,18 @@ namespace Microsoft.AspNet.Mvc.Formatters
         /// <param name="readStream">The <see cref="Stream"/> from which to read.</param>
         /// <param name="encoding">The <see cref="Encoding"/> used to read the stream.</param>
         /// <returns>The <see cref="XmlReader"/> used during deserialization.</returns>
-        protected virtual XmlReader CreateXmlReader([NotNull] Stream readStream, [NotNull] Encoding encoding)
+        protected virtual XmlReader CreateXmlReader(Stream readStream, Encoding encoding)
         {
+            if (readStream == null)
+            {
+                throw new ArgumentNullException(nameof(readStream));
+            }
+
+            if (encoding == null)
+            {
+                throw new ArgumentNullException(nameof(encoding));
+            }
+
             return XmlDictionaryReader.CreateTextReader(readStream, encoding, _readerQuotas, onClose: null);
         }
 
@@ -139,8 +153,13 @@ namespace Microsoft.AspNet.Mvc.Formatters
         /// </summary>
         /// <param name="declaredType">The declared type.</param>
         /// <returns>The type to which the XML will be deserialized.</returns>
-        protected virtual Type GetSerializableType([NotNull] Type declaredType)
+        protected virtual Type GetSerializableType(Type declaredType)
         {
+            if (declaredType == null)
+            {
+                throw new ArgumentNullException(nameof(declaredType));
+            }
+
             var wrapperProvider = WrapperProviderFactories.GetWrapperProvider(
                 new WrapperProviderContext(declaredType, isSerialization: false));
 
@@ -152,8 +171,13 @@ namespace Microsoft.AspNet.Mvc.Formatters
         /// </summary>
         /// <param name="type">The type of object for which the serializer should be created.</param>
         /// <returns>The <see cref="DataContractSerializer"/> used during deserialization.</returns>
-        protected virtual DataContractSerializer CreateSerializer([NotNull] Type type)
+        protected virtual DataContractSerializer CreateSerializer(Type type)
         {
+            if (type == null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
             try
             {
                 // If the serializer does not support this type it will throw an exception.

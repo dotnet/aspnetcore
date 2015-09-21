@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Framework.Internal;
+using System;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {
@@ -14,10 +14,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         private const string EqualToValidationParameter = "other";
 
         public ModelClientValidationEqualToRule(
-            [NotNull] string errorMessage,
-            [NotNull] object other)
+            string errorMessage,
+            object other)
             : base(EqualToValidationType, errorMessage)
         {
+            if (other == null)
+            {
+                throw new ArgumentNullException(nameof(other));
+            }
+
             ValidationParameters[EqualToValidationParameter] = other;
         }
     }

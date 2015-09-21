@@ -15,10 +15,6 @@
             "version": "1.0.0-*",
             "type": "build"
         },
-        "Microsoft.Framework.NotNullAttribute.Sources": {
-            "version": "1.0.0-*",
-            "type": "build"
-        },
         "Newtonsoft.Json": "6.0.6"
     },
 

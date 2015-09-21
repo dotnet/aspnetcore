@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Framework.Internal;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.JsonPatch.Operations
@@ -32,8 +31,18 @@ namespace Microsoft.AspNet.JsonPatch.Operations
 
         }
 
-        public OperationBase([NotNull] string op, [NotNull] string path, string from)
+        public OperationBase(string op, string path, string from)
         {
+            if (op == null)
+            {
+                throw new ArgumentNullException(nameof(op));
+            }
+
+            if (path == null)
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
             this.op = op;
             this.path = path;
             this.from = from;

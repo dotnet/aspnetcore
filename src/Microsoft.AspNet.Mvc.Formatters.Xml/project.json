@@ -11,7 +11,6 @@
     "dependencies": {
         "Microsoft.AspNet.Mvc.Core": "6.0.0-*",
         "Microsoft.Framework.ClosedGenericMatcher.Sources": { "version": "1.0.0-*", "type": "build" },
-        "Microsoft.Framework.NotNullAttribute.Sources": { "version": "1.0.0-*", "type": "build" },
         "Microsoft.Framework.PropertyHelper.Sources": { "version": "1.0.0-*", "type": "build" }
     },
     "frameworks": {

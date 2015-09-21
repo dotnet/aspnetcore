@@ -5,11 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.Serialization;
-using System.Threading;
 using Microsoft.AspNet.Testing;
-using Microsoft.Framework.Internal;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
@@ -1044,7 +1041,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
                     new ModelAttributes(_attributes.Concat(entry.ModelAttributes.TypeAttributes).ToArray()));
             }
 
-            protected override DefaultMetadataDetails[] CreatePropertyDetails([NotNull] ModelMetadataIdentity key)
+            protected override DefaultMetadataDetails[] CreatePropertyDetails(ModelMetadataIdentity key)
             {
                 var entries = base.CreatePropertyDetails(key);
                 return entries.Select(e =>

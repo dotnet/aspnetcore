@@ -1,10 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Formatters.Xml.Internal;
 using Microsoft.Framework.DependencyInjection.Extensions;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.Framework.DependencyInjection
@@ -19,8 +19,13 @@ namespace Microsoft.Framework.DependencyInjection
         /// </summary>
         /// <param name="builder">The <see cref="IMvcCoreBuilder"/>.</param>
         /// <returns>The <see cref="IMvcCoreBuilder"/>.</returns>
-        public static IMvcCoreBuilder AddXmlDataContractSerializerFormatters([NotNull] this IMvcCoreBuilder builder)
+        public static IMvcCoreBuilder AddXmlDataContractSerializerFormatters(this IMvcCoreBuilder builder)
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
             AddXmlDataContractSerializerFormatterServices(builder.Services);
             return builder;
         }
@@ -30,8 +35,13 @@ namespace Microsoft.Framework.DependencyInjection
         /// </summary>
         /// <param name="builder">The <see cref="IMvcCoreBuilder"/>.</param>
         /// <returns>The <see cref="IMvcCoreBuilder"/>.</returns>
-        public static IMvcCoreBuilder AddXmlSerializerFormatters([NotNull] this IMvcCoreBuilder builder)
+        public static IMvcCoreBuilder AddXmlSerializerFormatters(this IMvcCoreBuilder builder)
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
             AddXmlSerializerFormatterServices(builder.Services);
             return builder;
         }

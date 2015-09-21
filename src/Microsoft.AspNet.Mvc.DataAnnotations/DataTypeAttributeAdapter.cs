@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNet.Mvc.DataAnnotations;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {
@@ -17,9 +16,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
     {
         public DataTypeAttributeAdapter(
             DataTypeAttribute attribute,
-            [NotNull] string ruleName)
+            string ruleName)
             : base(attribute)
         {
+            if (ruleName == null)
+            {
+                throw new ArgumentNullException(nameof(ruleName));
+            }
+
             if (string.IsNullOrEmpty(ruleName))
             {
                 throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(ruleName));
@@ -30,8 +34,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         public string RuleName { get; private set; }
 
         public override IEnumerable<ModelClientValidationRule> GetClientValidationRules(
-            [NotNull] ClientModelValidationContext context)
+            ClientModelValidationContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var errorMessage = GetErrorMessage(context.ModelMetadata);
             return new[] { new ModelClientValidationRule(RuleName, errorMessage) };
         }

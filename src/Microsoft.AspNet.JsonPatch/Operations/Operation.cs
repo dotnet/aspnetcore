@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNet.JsonPatch.Adapters;
-using Microsoft.Framework.Internal;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.JsonPatch.Operations
@@ -18,20 +17,29 @@ namespace Microsoft.AspNet.JsonPatch.Operations
 
         }
 
-        public Operation([NotNull] string op, [NotNull] string path, string from, object value)
+        public Operation(string op, string path, string from, object value)
             : base(op, path, from)
         {
             this.value = value;
         }
 
-        public Operation([NotNull] string op, [NotNull] string path, string from)
+        public Operation(string op, string path, string from)
             : base(op, path, from)
         {
-
         }
 
-        public void Apply([NotNull] object objectToApplyTo, [NotNull] IObjectAdapter adapter)
+        public void Apply(object objectToApplyTo, IObjectAdapter adapter)
         {
+            if (objectToApplyTo == null)
+            {
+                throw new ArgumentNullException(nameof(objectToApplyTo));
+            }
+
+            if (adapter == null)
+            {
+                throw new ArgumentNullException(nameof(adapter));
+            }
+
             switch (OperationType)
             {
                 case OperationType.Add:

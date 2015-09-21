@@ -1,11 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Internal;
-using Microsoft.Framework.Internal;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.Mvc.Formatters
@@ -22,8 +22,13 @@ namespace Microsoft.AspNet.Mvc.Formatters
         {
         }
 
-        public JsonOutputFormatter([NotNull] JsonSerializerSettings serializerSettings)
+        public JsonOutputFormatter(JsonSerializerSettings serializerSettings)
         {
+            if (serializerSettings == null)
+            {
+                throw new ArgumentNullException(nameof(serializerSettings));
+            }
+
             _serializerSettings = serializerSettings;
 
             SupportedEncodings.Add(Encoding.UTF8);
@@ -41,15 +46,24 @@ namespace Microsoft.AspNet.Mvc.Formatters
             {
                 return _serializerSettings;
             }
-            [param: NotNull]
             set
             {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
                 _serializerSettings = value;
             }
         }
 
-        public void WriteObject([NotNull] TextWriter writer, object value)
+        public void WriteObject(TextWriter writer, object value)
         {
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
             using (var jsonWriter = CreateJsonWriter(writer))
             {
                 var jsonSerializer = CreateJsonSerializer();
@@ -62,8 +76,13 @@ namespace Microsoft.AspNet.Mvc.Formatters
         /// </summary>
         /// <param name="writer">The <see cref="TextWriter"/> used to write.</param>
         /// <returns>The <see cref="JsonWriter"/> used during serialization.</returns>
-        protected virtual JsonWriter CreateJsonWriter([NotNull] TextWriter writer)
+        protected virtual JsonWriter CreateJsonWriter(TextWriter writer)
         {
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
             var jsonWriter = new JsonTextWriter(writer);
             jsonWriter.CloseOutput = false;
 
@@ -81,6 +100,11 @@ namespace Microsoft.AspNet.Mvc.Formatters
 
         public override Task WriteResponseBodyAsync(OutputFormatterContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var response = context.HttpContext.Response;
             var selectedEncoding = context.SelectedEncoding;
 

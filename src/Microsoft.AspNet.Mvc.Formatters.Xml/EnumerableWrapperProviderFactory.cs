@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.Framework.Internal;
@@ -20,8 +21,13 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
         /// <see cref="IWrapperProviderFactory"/>.
         /// </summary>
         /// <param name="wrapperProviderFactories">List of <see cref="IWrapperProviderFactory"/>.</param>
-        public EnumerableWrapperProviderFactory([NotNull] IEnumerable<IWrapperProviderFactory> wrapperProviderFactories)
+        public EnumerableWrapperProviderFactory(IEnumerable<IWrapperProviderFactory> wrapperProviderFactories)
         {
+            if (wrapperProviderFactories == null)
+            {
+                throw new ArgumentNullException(nameof(wrapperProviderFactories));
+            }
+
             _wrapperProviderFactories = wrapperProviderFactories;
         }
 
@@ -31,8 +37,13 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
         /// <param name="context">The <see cref="WrapperProviderContext"/>.</param>
         /// <returns>An instance of <see cref="EnumerableWrapperProvider"/> if the declared type is
         /// an interface and implements <see cref="IEnumerable{T}"/>.</returns>
-        public IWrapperProvider GetProvider([NotNull] WrapperProviderContext context)
+        public IWrapperProvider GetProvider(WrapperProviderContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             if (context.IsSerialization)
             {
                 // Example: IEnumerable<SerializableError>

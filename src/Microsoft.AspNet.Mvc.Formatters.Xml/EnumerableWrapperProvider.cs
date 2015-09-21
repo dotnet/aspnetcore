@@ -25,9 +25,14 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
         /// <param name="elementWrapperProvider">The <see cref="IWrapperProvider"/> for the element type.
         /// Can be null.</param>
         public EnumerableWrapperProvider(
-            [NotNull] Type sourceEnumerableOfT,
+            Type sourceEnumerableOfT,
             IWrapperProvider elementWrapperProvider)
         {
+            if (sourceEnumerableOfT == null)
+            {
+                throw new ArgumentNullException(nameof(sourceEnumerableOfT));
+            }
+
             var enumerableOfT = ClosedGenericMatcher.ExtractGenericInterface(
                 sourceEnumerableOfT,
                 typeof(IEnumerable<>));

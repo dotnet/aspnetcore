@@ -9,10 +9,6 @@
         "Microsoft.AspNet.Mvc.Razor": "6.0.0-*",
         "Microsoft.Framework.DependencyInjection": "1.0.0-*",
         "Microsoft.Framework.Localization": "1.0.0-*",
-        "Microsoft.Framework.NotNullAttribute.Sources": {
-            "version": "1.0.0-*",
-            "type": "build"
-        },
         "Microsoft.Framework.PropertyHelper.Sources": {
             "version": "1.0.0-*",
             "type": "build"

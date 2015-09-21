@@ -6,7 +6,6 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Internal;
-using Microsoft.Framework.Internal;
 using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
 
@@ -21,8 +20,13 @@ namespace Microsoft.AspNet.Mvc.Formatters
         {
         }
 
-        public JsonInputFormatter([NotNull] JsonSerializerSettings serializerSettings)
+        public JsonInputFormatter(JsonSerializerSettings serializerSettings)
         {
+            if (serializerSettings == null)
+            {
+                throw new ArgumentNullException(nameof(serializerSettings));
+            }
+
             _serializerSettings = serializerSettings;
 
             SupportedEncodings.Add(UTF8EncodingWithoutBOM);
@@ -41,16 +45,25 @@ namespace Microsoft.AspNet.Mvc.Formatters
             {
                 return _serializerSettings;
             }
-            [param: NotNull]
             set
             {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
                 _serializerSettings = value;
             }
         }
 
         /// <inheritdoc />
-        public override Task<InputFormatterResult> ReadRequestBodyAsync([NotNull] InputFormatterContext context)
+        public override Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             // Get the character encoding for the content.
             var effectiveEncoding = SelectCharacterEncoding(context);
             if (effectiveEncoding == null)
@@ -128,10 +141,25 @@ namespace Microsoft.AspNet.Mvc.Formatters
         /// <param name="effectiveEncoding">The <see cref="Encoding"/> to use when reading.</param>
         /// <returns>The <see cref="JsonReader"/> used during deserialization.</returns>
         protected virtual JsonReader CreateJsonReader(
-            [NotNull] InputFormatterContext context,
-            [NotNull] Stream readStream,
-            [NotNull] Encoding effectiveEncoding)
+            InputFormatterContext context,
+            Stream readStream,
+            Encoding effectiveEncoding)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (readStream == null)
+            {
+                throw new ArgumentNullException(nameof(readStream));
+            }
+
+            if (effectiveEncoding == null)
+            {
+                throw new ArgumentNullException(nameof(effectiveEncoding));
+            }
+
             return new JsonTextReader(new StreamReader(readStream, effectiveEncoding));
         }
 

@@ -1,8 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.Localization;
 using Microsoft.Framework.WebEncoders;
 
@@ -21,8 +20,18 @@ namespace Microsoft.AspNet.Mvc.Localization
         /// </summary>
         /// <param name="localizerFactory">The <see cref="IStringLocalizerFactory"/>.</param>
         /// <param name="encoder">The <see cref="IHtmlEncoder"/>.</param>
-        public HtmlLocalizerFactory([NotNull] IStringLocalizerFactory localizerFactory, [NotNull] IHtmlEncoder encoder)
+        public HtmlLocalizerFactory(IStringLocalizerFactory localizerFactory, IHtmlEncoder encoder)
         {
+            if (localizerFactory == null)
+            {
+                throw new ArgumentNullException(nameof(localizerFactory));
+            }
+
+            if (encoder == null)
+            {
+                throw new ArgumentNullException(nameof(encoder));
+            }
+
             _factory = localizerFactory;
             _encoder = encoder;
         }
@@ -35,6 +44,11 @@ namespace Microsoft.AspNet.Mvc.Localization
         /// <returns>The <see cref="HtmlLocalizer"/>.</returns>
         public virtual IHtmlLocalizer Create(Type resourceSource)
         {
+            if (resourceSource == null)
+            {
+                throw new ArgumentNullException(nameof(resourceSource));
+            }
+
             return new HtmlLocalizer(_factory.Create(resourceSource), _encoder);
         }
 
@@ -46,6 +60,16 @@ namespace Microsoft.AspNet.Mvc.Localization
         /// <returns>The <see cref="HtmlLocalizer"/>.</returns>
         public virtual IHtmlLocalizer Create(string baseName, string location)
         {
+            if (baseName == null)
+            {
+                throw new ArgumentNullException(nameof(baseName));
+            }
+
+            if (location == null)
+            {
+                throw new ArgumentNullException(nameof(location));
+            }
+
             var localizer = _factory.Create(baseName, location);
             return new HtmlLocalizer(localizer, _encoder);
         }

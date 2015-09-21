@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using System.Xml;
 using Microsoft.AspNet.Mvc.Formatters.Xml;
 using Microsoft.AspNet.Mvc.Formatters.Xml.Internal;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Formatters
 {
@@ -37,8 +36,13 @@ namespace Microsoft.AspNet.Mvc.Formatters
         /// Initializes a new instance of <see cref="XmlDataContractSerializerOutputFormatter"/>
         /// </summary>
         /// <param name="writerSettings">The settings to be used by the <see cref="DataContractSerializer"/>.</param>
-        public XmlDataContractSerializerOutputFormatter([NotNull] XmlWriterSettings writerSettings)
+        public XmlDataContractSerializerOutputFormatter(XmlWriterSettings writerSettings)
         {
+            if (writerSettings == null)
+            {
+                throw new ArgumentNullException(nameof(writerSettings));
+            }
+
             SupportedEncodings.Add(Encoding.UTF8);
             SupportedEncodings.Add(Encoding.Unicode);
 
@@ -132,8 +136,13 @@ namespace Microsoft.AspNet.Mvc.Formatters
         /// </summary>
         /// <param name="type">The type of object for which the serializer should be created.</param>
         /// <returns>A new instance of <see cref="DataContractSerializer"/></returns>
-        protected virtual DataContractSerializer CreateSerializer([NotNull] Type type)
+        protected virtual DataContractSerializer CreateSerializer(Type type)
         {
+            if (type == null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
             try
             {
 #if DNX451
@@ -157,17 +166,32 @@ namespace Microsoft.AspNet.Mvc.Formatters
         /// <param name="writeStream">The stream on which the XmlWriter should operate on.</param>
         /// <returns>A new instance of <see cref="XmlWriter"/></returns>
         public virtual XmlWriter CreateXmlWriter(
-            [NotNull] Stream writeStream,
-            [NotNull] XmlWriterSettings xmlWriterSettings)
+            Stream writeStream,
+            XmlWriterSettings xmlWriterSettings)
         {
+            if (writeStream == null)
+            {
+                throw new ArgumentNullException(nameof(writeStream));
+            }
+
+            if (xmlWriterSettings == null)
+            {
+                throw new ArgumentNullException(nameof(xmlWriterSettings));
+            }
+
             return XmlWriter.Create(
                 new HttpResponseStreamWriter(writeStream, xmlWriterSettings.Encoding),
                 xmlWriterSettings);
         }
 
         /// <inheritdoc />
-        public override Task WriteResponseBodyAsync([NotNull] OutputFormatterContext context)
+        public override Task WriteResponseBodyAsync(OutputFormatterContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var tempWriterSettings = WriterSettings.Clone();
             tempWriterSettings.Encoding = context.SelectedEncoding;
 

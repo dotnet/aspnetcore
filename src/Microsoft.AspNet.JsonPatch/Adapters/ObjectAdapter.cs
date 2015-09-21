@@ -8,7 +8,6 @@ using System.Reflection;
 using Microsoft.AspNet.JsonPatch.Exceptions;
 using Microsoft.AspNet.JsonPatch.Helpers;
 using Microsoft.AspNet.JsonPatch.Operations;
-using Microsoft.Framework.Internal;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -23,9 +22,14 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
         /// <param name="contractResolver">The <see cref="IContractResolver"/>.</param>
         /// <param name="logErrorAction">The <see cref="Action"/> for logging <see cref="JsonPatchError"/>.</param>
         public ObjectAdapter(
-            [NotNull] IContractResolver contractResolver,
+            IContractResolver contractResolver,
             Action<JsonPatchError> logErrorAction)
         {
+            if (contractResolver == null)
+            {
+                throw new ArgumentNullException(nameof(contractResolver));
+            }
+
             ContractResolver = contractResolver;
             LogErrorAction = logErrorAction;
         }
@@ -100,8 +104,18 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
         /// </summary>
         /// <param name="operation">The add operation.</param>
         /// <param name="objectToApplyTo">Object to apply the operation to.</param>
-        public void Add([NotNull] Operation operation, [NotNull] object objectToApplyTo)
+        public void Add(Operation operation, object objectToApplyTo)
         {
+            if (operation == null)
+            {
+                throw new ArgumentNullException(nameof(operation));
+            }
+
+            if (objectToApplyTo == null)
+            {
+                throw new ArgumentNullException(nameof(objectToApplyTo));
+            }
+
             Add(operation.path, operation.value, objectToApplyTo, operation);
         }
 
@@ -110,11 +124,26 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
         /// This method allows code reuse yet reporting the correct operation on error
         /// </summary>
         private void Add(
-            [NotNull] string path,
+            string path,
             object value,
-            [NotNull] object objectToApplyTo,
-            [NotNull] Operation operationToReport)
+            object objectToApplyTo,
+            Operation operationToReport)
         {
+            if (path == null)
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
+            if (objectToApplyTo == null)
+            {
+                throw new ArgumentNullException(nameof(objectToApplyTo));
+            }
+
+            if (operationToReport == null)
+            {
+                throw new ArgumentNullException(nameof(operationToReport));
+            }
+
             // first up: if the path ends in a numeric value, we're inserting in a list and
             // that value represents the position; if the path ends in "-", we're appending
             // to the list.
@@ -357,8 +386,18 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
         /// </summary>
         /// <param name="operation">The move operation.</param>
         /// <param name="objectToApplyTo">Object to apply the operation to.</param>
-        public void Move([NotNull] Operation operation, [NotNull] object objectToApplyTo)
+        public void Move(Operation operation, object objectToApplyTo)
         {
+            if (operation == null)
+            {
+                throw new ArgumentNullException(nameof(operation));
+            }
+
+            if (objectToApplyTo == null)
+            {
+                throw new ArgumentNullException(nameof(objectToApplyTo));
+            }
+
             var valueAtFromLocationResult = GetValueAtLocation(operation.from, objectToApplyTo, operation);
 
             if (valueAtFromLocationResult.HasError)
@@ -399,8 +438,18 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
         /// </summary>
         /// <param name="operation">The remove operation.</param>
         /// <param name="objectToApplyTo">Object to apply the operation to.</param>
-        public void Remove([NotNull] Operation operation, [NotNull] object objectToApplyTo)
+        public void Remove(Operation operation, object objectToApplyTo)
         {
+            if (operation == null)
+            {
+                throw new ArgumentNullException(nameof(operation));
+            }
+
+            if (objectToApplyTo == null)
+            {
+                throw new ArgumentNullException(nameof(objectToApplyTo));
+            }
+
             Remove(operation.path, objectToApplyTo, operation);
         }
 
@@ -661,8 +710,18 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
         /// </summary>
         /// <param name="operation">The replace operation.</param>
         /// <param name="objectToApplyTo">Object to apply the operation to.</param>
-        public void Replace([NotNull] Operation operation, [NotNull] object objectToApplyTo)
+        public void Replace(Operation operation, object objectToApplyTo)
         {
+            if (operation == null)
+            {
+                throw new ArgumentNullException(nameof(operation));
+            }
+
+            if (objectToApplyTo == null)
+            {
+                throw new ArgumentNullException(nameof(objectToApplyTo));
+            }
+
             var removeResult = Remove(operation.path, objectToApplyTo, operation);
 
             if (removeResult.HasError)
@@ -672,7 +731,7 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
             }
 
             if (!removeResult.HasError && removeResult.ActualType == null)
-            {                
+            {
                 // the remove operation completed succesfully, but we could not determine the type.
                 LogError(new JsonPatchError(
                                 objectToApplyTo,
@@ -718,8 +777,18 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
         /// </summary>
         /// <param name="operation">The copy operation.</param>
         /// <param name="objectToApplyTo">Object to apply the operation to.</param>
-        public void Copy([NotNull] Operation operation, [NotNull] object objectToApplyTo)
+        public void Copy(Operation operation, object objectToApplyTo)
         {
+            if (operation == null)
+            {
+                throw new ArgumentNullException(nameof(operation));
+            }
+
+            if (objectToApplyTo == null)
+            {
+                throw new ArgumentNullException(nameof(objectToApplyTo));
+            }
+
             // get value at from location and add that value to the path location
             var valueAtFromLocationResult = GetValueAtLocation(operation.from, objectToApplyTo, operation);
 
@@ -743,10 +812,25 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
         /// <param name="operationToReport">Operation to report in case of an error</param>
         /// <returns>GetValueResult containing value and a bool signifying a possible error</returns>
         private GetValueResult GetValueAtLocation(
-            [NotNull] string location, 
-            [NotNull] object objectToGetValueFrom, 
-            [NotNull] Operation operationToReport)
+            string location,
+            object objectToGetValueFrom,
+            Operation operationToReport)
         {
+            if (location == null)
+            {
+                throw new ArgumentNullException(nameof(location));
+            }
+
+            if (objectToGetValueFrom == null)
+            {
+                throw new ArgumentNullException(nameof(objectToGetValueFrom));
+            }
+
+            if (operationToReport == null)
+            {
+                throw new ArgumentNullException(nameof(operationToReport));
+            }
+
             // get path result
             var pathResult = GetActualPropertyPath(
                 location,
@@ -801,7 +885,7 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
                     // get the array
                     var array = (IList)treeAnalysisResult.Container.GetValueForCaseInsensitiveKey(
                         treeAnalysisResult.PropertyPathInParent);
-                    
+
                     if (positionAsInteger >= array.Count)
                     {
                         LogError(new JsonPatchError(
@@ -815,12 +899,12 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
 
                     if (getAtEndOfList)
                     {
-                        return new GetValueResult(array[array.Count-1], false);
+                        return new GetValueResult(array[array.Count - 1], false);
                     }
                     else
                     {
                         return new GetValueResult(array[positionAsInteger], false);
-                    }                   
+                    }
                 }
                 else
                 {
@@ -829,7 +913,7 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
                         treeAnalysisResult.PropertyPathInParent);
 
                     return new GetValueResult(propertyValueAtLocation, false);
-                } 
+                }
             }
             else
             {
@@ -846,7 +930,7 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
                                Resources.FormatInvalidIndexForArrayProperty(operationToReport.op, location)));
                         return new GetValueResult(null, true);
                     }
- 
+
                     if (!patchProperty.Property.Readable)
                     {
                         LogError(new JsonPatchError(
@@ -877,7 +961,7 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
                     else
                     {
                         return new GetValueResult(array[positionAsInteger], false);
-                    }                   
+                    }
                 }
                 else
                 {
@@ -886,9 +970,9 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
                         LogError(new JsonPatchError(
                             objectToGetValueFrom,
                             operationToReport,
-                            Resources.FormatCannotReadProperty(                                
+                            Resources.FormatCannotReadProperty(
                                 location)));
-                        return new GetValueResult(null, true); 
+                        return new GetValueResult(null, true);
                     }
 
                     var propertyValueAtLocation = patchProperty.Property.ValueProvider
@@ -965,10 +1049,25 @@ namespace Microsoft.AspNet.JsonPatch.Adapters
         }
 
         private ActualPropertyPathResult GetActualPropertyPath(
-            [NotNull] string propertyPath,
-            [NotNull] object objectToApplyTo,
-            [NotNull]  Operation operationToReport)
+            string propertyPath,
+            object objectToApplyTo,
+            Operation operationToReport)
         {
+            if (propertyPath == null)
+            {
+                throw new ArgumentNullException(nameof(propertyPath));
+            }
+
+            if (objectToApplyTo == null)
+            {
+                throw new ArgumentNullException(nameof(objectToApplyTo));
+            }
+
+            if (operationToReport == null)
+            {
+                throw new ArgumentNullException(nameof(operationToReport));
+            }
+
             if (propertyPath.EndsWith("/-"))
             {
                 return new ActualPropertyPathResult(-1, propertyPath.Substring(0, propertyPath.Length - 2), true);
