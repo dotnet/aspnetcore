@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             _authorizationOptions = authorizationOptionsAccessor.Value;
         }
 
-        public int Order {  get { return DefaultOrder.DefaultFrameworkSortOrder + 10; } }
+        public int Order {  get { return -1000 + 10; } }
 
         public void OnProvidersExecuted([NotNull]ApplicationModelProviderContext context)
         {

@@ -156,7 +156,7 @@ namespace Microsoft.AspNet.Mvc.Routing
 
             actionProvider
                 .SetupGet(p => p.Order)
-                .Returns(DefaultOrder.DefaultFrameworkSortOrder);
+                .Returns(-1000);
 
             actionProvider
                 .Setup(p => p.OnProvidersExecuting(It.IsAny<ActionDescriptorProviderContext>()))

@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Mvc.Cors
         {
             get
             {
-                return DefaultOrder.DefaultCorsSortOrder;
+                return int.MaxValue - 100;
             }
         }
 

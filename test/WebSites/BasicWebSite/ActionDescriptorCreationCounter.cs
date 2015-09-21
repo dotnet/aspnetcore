@@ -26,7 +26,7 @@ namespace BasicWebSite
         {
             get
             {
-                return DefaultOrder.DefaultFrameworkSortOrder - 100;
+                return -1000 - 100;
             }
         }
 

@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.Mvc.Actions
 
         public int Order
         {
-            get { return DefaultOrder.DefaultFrameworkSortOrder; }
+            get { return -1000; }
         }
 
         /// <inheritdoc />

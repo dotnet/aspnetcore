@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Mvc.Cors
 {
     public class CorsApplicationModelProvider : IApplicationModelProvider
     {
-        public int Order {  get { return DefaultOrder.DefaultFrameworkSortOrder + 10; } }
+        public int Order {  get { return -1000 + 10; } }
 
         public void OnProvidersExecuted([NotNull]ApplicationModelProviderContext context)
         {

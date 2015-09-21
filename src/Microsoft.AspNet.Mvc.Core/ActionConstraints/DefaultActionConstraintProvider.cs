@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Mvc.ActionConstraints
         /// <inheritdoc />
         public int Order
         {
-            get { return DefaultOrder.DefaultFrameworkSortOrder; }
+            get { return -1000; }
         }
 
         /// <inheritdoc />

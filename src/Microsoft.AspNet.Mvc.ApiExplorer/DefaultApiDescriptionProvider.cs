@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Mvc.ApiExplorer
         /// <inheritdoc />
         public int Order
         {
-            get { return DefaultOrder.DefaultFrameworkSortOrder; }
+            get { return -1000; }
         }
 
         /// <inheritdoc />

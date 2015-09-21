@@ -97,7 +97,7 @@ namespace Microsoft.AspNet.Mvc.Razor.TagHelpers
         {
             get
             {
-                return DefaultOrder.DefaultFrameworkSortOrder - 999;
+                return -1000 - 999;
             }
         }
 

@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Mvc.Filters
     {
         public int Order
         {
-            get { return DefaultOrder.DefaultFrameworkSortOrder; }
+            get { return -1000; }
         }
 
         /// <inheritdoc />

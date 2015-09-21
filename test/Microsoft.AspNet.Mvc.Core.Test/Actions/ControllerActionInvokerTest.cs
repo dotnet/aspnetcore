@@ -2029,7 +2029,7 @@ namespace Microsoft.AspNet.Mvc.Actions
                           .Verifiable();
 
             filterProvider.SetupGet(fp => fp.Order)
-                          .Returns(DefaultOrder.DefaultFrameworkSortOrder);
+                          .Returns(-1000);
 
             var invoker = new TestControllerActionInvoker(
                 actionContext,

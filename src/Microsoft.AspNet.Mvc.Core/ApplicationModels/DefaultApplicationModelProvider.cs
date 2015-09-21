@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         {
             get
             {
-                return DefaultOrder.DefaultFrameworkSortOrder;
+                return -1000;
             }
         }
 
