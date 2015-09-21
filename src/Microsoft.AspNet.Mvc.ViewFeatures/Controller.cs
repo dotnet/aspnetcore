@@ -941,17 +941,13 @@ namespace Microsoft.AspNet.Mvc
         [NonAction]
         public virtual CreatedResult Created([NotNull] Uri uri, object value)
         {
-            string location;
-            if (uri.IsAbsoluteUri)
+            var disposableValue = value as IDisposable;
+            if (disposableValue != null)
             {
-                location = uri.AbsoluteUri;
+                Response.RegisterForDispose(disposableValue);
             }
-            else
-            {
-                location = uri.GetComponents(UriComponents.SerializationInfoString, UriFormat.UriEscaped);
-            }
-
-            return Created(location, value);
+            
+            return new CreatedResult(uri, value);
         }
 
         /// <summary>
