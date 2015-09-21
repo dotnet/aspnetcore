@@ -8,6 +8,9 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+#if DNXCORE50
+using Microsoft.AspNet.Testing.xunit;
+#endif
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -218,7 +221,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal("content", await response.Content.ReadAsStringAsync());
         }
 
-        [Fact]
+#if DNXCORE50
+        // Work around aspnet/External#43. Encoding.ASCII is of type System.Text.UTF8Encoding with Core CLR on Linux.
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Linux)]
+#else
+        [Theory]
+#endif
         public async Task ContentResult_WritesContent_SetsContentTypeAndEncoding()
         {
             // Arrange

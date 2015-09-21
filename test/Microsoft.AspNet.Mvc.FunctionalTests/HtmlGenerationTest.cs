@@ -12,6 +12,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.TagHelpers;
+#if DNXCORE50
+using Microsoft.AspNet.Testing;
+#endif
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Extensions;
 using Xunit;
@@ -41,34 +44,54 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
         public HttpClient EncodedClient { get; }
 
+        public static TheoryData<string, string> WebPagesData
+        {
+            get
+            {
+                var data = new TheoryData<string, string>
+                {
+                    { "Customer", "/Customer/HtmlGeneration_Customer" },
+                    { "Index", null },
+                    { "Product", null },
+                    // Testing attribute values with boolean and null values
+                    { "AttributesWithBooleanValues", null },
+                    // Testing SelectTagHelper with Html.BeginForm
+                    { "CreateWarehouse", null },
+                    // Testing the HTML helpers with FormTagHelper
+                    { "EditWarehouse", null },
+                    // Testing the EnvironmentTagHelper
+                    { "Environment", null },
+                    // Testing the ImageTagHelper
+                    { "Image", null },
+                    // Testing InputTagHelper with File
+                    { "Input", null },
+                    // Test ability to generate nearly identical HTML with MVC tag and HTML helpers.
+                    // Only attribute order should differ.
+                    { "Order", "/HtmlGeneration_Order/Submit" },
+                    { "OrderUsingHtmlHelpers", "/HtmlGeneration_Order/Submit" },
+                    // Testing InputTagHelpers invoked in the partial views
+                    { "ProductList", null },
+                    // Testing the ScriptTagHelper
+                    { "Script", null },
+                };
+
+#if DNXCORE50
+                // Work around aspnet/External#33. Large resources corrupted with Core CLR on Linux.
+                if (!TestPlatformHelper.IsLinux)
+#endif
+                {
+                    // Testing MVC tag helpers invoked in the editor templates from HTML helpers
+                    data.Add("EmployeeList", null);
+                    // Testing the LinkTagHelper
+                    data.Add("Link", null);
+                }
+
+                return data;
+            }
+        }
+
         [Theory]
-        [InlineData("Index", null)]
-        // Test ability to generate nearly identical HTML with MVC tag and HTML helpers.
-        // Only attribute order should differ.
-        [InlineData("Order", "/HtmlGeneration_Order/Submit")]
-        [InlineData("OrderUsingHtmlHelpers", "/HtmlGeneration_Order/Submit")]
-        [InlineData("Product", null)]
-        [InlineData("Customer", "/Customer/HtmlGeneration_Customer")]
-        // Testing InputTagHelpers invoked in the partial views
-        [InlineData("ProductList", null)]
-        // Testing MVC tag helpers invoked in the editor templates from HTML helpers
-        [InlineData("EmployeeList", null)]
-        // Testing SelectTagHelper with Html.BeginForm
-        [InlineData("CreateWarehouse", null)]
-        // Testing the HTML helpers with FormTagHelper
-        [InlineData("EditWarehouse", null)]
-        // Testing the EnvironmentTagHelper
-        [InlineData("Environment", null)]
-        // Testing the LinkTagHelper
-        [InlineData("Link", null)]
-        // Testing the ScriptTagHelper
-        [InlineData("Script", null)]
-        // Testing the ImageTagHelper
-        [InlineData("Image", null)]
-        // Testing InputTagHelper with File
-        [InlineData("Input", null)]
-        // Testing attribute values with boolean and null values
-        [InlineData("AttributesWithBooleanValues", null)]
+        [MemberData(nameof(WebPagesData))]
         public async Task HtmlGenerationWebSite_GeneratesExpectedResults(string action, string antiforgeryPath)
         {
             // Arrange
@@ -117,15 +140,35 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             }
         }
 
+        public static TheoryData<string, string> EncodedPagesData
+        {
+            get
+            {
+                var data = new TheoryData<string, string>
+                {
+                    { "AttributesWithBooleanValues", null },
+                    { "EditWarehouse", null },
+                    { "Index", null },
+                    { "Link", null },
+                    { "OrderUsingHtmlHelpers", "/HtmlGeneration_Order/Submit" },
+                    { "Product", null },
+                };
+
+#if DNXCORE50
+                // Work around aspnet/External#33. Large resources corrupted with Core CLR on Linux.
+                if (!TestPlatformHelper.IsLinux)
+#endif
+                {
+                    data.Add("Order", "/HtmlGeneration_Order/Submit");
+                    data.Add("Script", null);
+                }
+
+                return data;
+            }
+        }
+
         [Theory]
-        [InlineData("EditWarehouse", null)]
-        [InlineData("Index", null)]
-        [InlineData("Link", null)]
-        [InlineData("Order", "/HtmlGeneration_Order/Submit")]
-        [InlineData("OrderUsingHtmlHelpers", "/HtmlGeneration_Order/Submit")]
-        [InlineData("Product", null)]
-        [InlineData("Script", null)]
-        [InlineData("AttributesWithBooleanValues", null)]
+        [MemberData(nameof(EncodedPagesData))]
         public async Task HtmlGenerationWebSite_GenerateEncodedResults(string action, string antiforgeryPath)
         {
             // Arrange

@@ -6,6 +6,9 @@ using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
+#if DNXCORE50
+using Microsoft.AspNet.Testing.xunit;
+#endif
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -22,7 +25,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
         public HttpClient Client { get; }
 
+#if DNXCORE50
+        // Work around aspnet/External#33. Large resources corrupted with Core CLR on Linux.
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Linux)]
+#else
         [Theory]
+#endif
         [InlineData("Aria", "/Aria")]
         [InlineData("Root", "")]
         public async Task RemoteAttribute_LeadsToExpectedValidationAttributes(string areaName, string pathSegment)

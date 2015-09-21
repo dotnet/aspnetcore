@@ -1181,7 +1181,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 #endif
         }
 
+#if DNXCORE50
+        [ConditionalFact]
+        // Work around aspnet/External#42. Only the invariant culture works with Core CLR on Linux.
+        [OSSkipCondition(OperatingSystems.Linux)]
+#else
         [Fact]
+#endif
         public async Task UpdateDealerVehicle_UsesDefaultValuesForOptionalProperties()
         {
             // Arrange
@@ -1329,7 +1335,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal("grandFatherName", employee.Parent.Parent.Name);
         }
 
+#if DNXCORE50
+        [ConditionalFact]
+        // Work around aspnet/External#42. Only the invariant culture works with Core CLR on Linux.
+        [OSSkipCondition(OperatingSystems.Linux)]
+#else
         [Fact]
+#endif
         public async Task HtmlHelper_DisplayFor_ShowsPropertiesInModelMetadataOrder()
         {
             // Arrange
@@ -1351,7 +1363,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 #endif
         }
 
+#if DNXCORE50
+        [ConditionalFact]
+        // Work around aspnet/External#42. Only the invariant culture works with Core CLR on Linux.
+        [OSSkipCondition(OperatingSystems.Linux)]
+#else
         [Fact]
+#endif
         public async Task HtmlHelper_EditorFor_ShowsPropertiesInModelMetadataOrder()
         {
             // Arrange
@@ -1377,7 +1395,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 #endif
         }
 
+#if DNXCORE50
+        [ConditionalFact]
+        // Work around aspnet/External#42. Only the invariant culture works with Core CLR on Linux.
+        [OSSkipCondition(OperatingSystems.Linux)]
+#else
         [Fact]
+#endif
         public async Task HtmlHelper_EditorFor_ShowsPropertiesAndErrorsInModelMetadataOrder()
         {
             // Arrange

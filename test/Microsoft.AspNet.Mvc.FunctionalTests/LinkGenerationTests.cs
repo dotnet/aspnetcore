@@ -27,16 +27,37 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
         public HttpClient Client { get; }
 
+        public static TheoryData<string, string> RelativeLinksData
+        {
+            get
+            {
+                var data = new TheoryData<string, string>
+                {
+                    { "http://localhost/Home/RedirectToActionReturningTaskAction", "/Home/ActionReturningTask" },
+                    { "http://localhost/Home/RedirectToRouteActionAsMethodAction", "/Home/ActionReturningTask" },
+                    { "http://localhost/Home/RedirectToRouteUsingRouteName", "/api/orders/10" },
+                };
+
+#if DNXCORE50
+                // Work around aspnet/External#41. Non-ASCII hostnames lead to a NotImplementedException with Core CLR
+                // on Linux.
+                if (!TestPlatformHelper.IsLinux)
+#endif
+                {
+                    data.Add("http://pingüino/Home/RedirectToRouteUsingRouteName", "/api/orders/10");
+                }
+
+                return data;
+            }
+        }
+
         [Theory]
-        [InlineData("http://pingüino/Home/RedirectToActionReturningTaskAction", "/Home/ActionReturningTask")]
-        [InlineData("http://pingüino/Home/RedirectToRouteActionAsMethodAction", "/Home/ActionReturningTask")]
-        [InlineData("http://pingüino/Home/RedirectToRouteUsingRouteName", "/api/orders/10")]
+        [MemberData(nameof(RelativeLinksData))]
         public async Task GeneratedLinksWithActionResults_AreRelativeLinks_WhenSetOnLocationHeader(
             string url,
             string expected)
         {
             // Act
-            // The host is not important as everything runs in memory and tests are isolated from each other.
             var response = await Client.GetAsync(url);
             var responseContent = await response.Content.ReadAsStringAsync();
 

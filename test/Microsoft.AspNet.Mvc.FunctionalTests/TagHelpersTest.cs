@@ -7,6 +7,9 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Threading.Tasks;
+#if DNXCORE50
+using Microsoft.AspNet.Testing.xunit;
+#endif
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -175,7 +178,13 @@ page:<root>root-content</root>"
 #endif
         }
 
+#if DNXCORE50
+        [ConditionalFact]
+        // Work around aspnet/External#42. Only the invariant culture works with Core CLR on Linux.
+        [OSSkipCondition(OperatingSystems.Linux)]
+#else
         [Fact]
+#endif
         public async Task ViewsWithModelMetadataAttributes_CanRenderPostedValue()
         {
             // Arrange
