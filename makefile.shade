@@ -713,7 +713,6 @@ functions
                 "RazorTooling",
                 "Hosting",
                 "EntityFramework",
-                "Helios",
                 "WebListener",
                 "KestrelHttpServer",
                 "ServerTests",
