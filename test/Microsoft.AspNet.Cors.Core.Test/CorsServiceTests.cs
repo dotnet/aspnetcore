@@ -4,8 +4,6 @@
 using System;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
-using Microsoft.Framework.OptionsModel;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Cors.Core.Test
@@ -16,7 +14,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
         public void EvaluatePolicy_NoOrigin_ReturnsInvalidResult()
         {
             // Arrange
-            var corsService = new CorsService(Mock.Of<IOptions<CorsOptions>>());
+            var corsService = new CorsService(new TestCorsOptions());
             var requestContext = GetHttpContext("GET", origin: null);
 
             // Act
@@ -31,7 +29,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
         public void EvaluatePolicy_NoMatchingOrigin_ReturnsInvalidResult()
         {
             // Arrange
-            var corsService = new CorsService(Mock.Of<IOptions<CorsOptions>>());
+            var corsService = new CorsService(new TestCorsOptions());
             var requestContext = GetHttpContext(origin: "http://example.com");
             var policy = new CorsPolicy();
             policy.Origins.Add("bar");
@@ -48,7 +46,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
         public void EvaluatePolicy_EmptyOriginsPolicy_ReturnsInvalidResult()
         {
             // Arrange
-            var corsService = new CorsService(Mock.Of<IOptions<CorsOptions>>());
+            var corsService = new CorsService(new TestCorsOptions());
             var requestContext = GetHttpContext(origin: "http://example.com");
             var policy = new CorsPolicy();
 
@@ -64,7 +62,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
         public void EvaluatePolicy_AllowAnyOrigin_DoesNotSupportCredentials_EmitsWildcardForOrigin()
         {
             // Arrange
-            var corsService = new CorsService(Mock.Of<IOptions<CorsOptions>>());
+            var corsService = new CorsService(new TestCorsOptions());
             var requestContext = GetHttpContext(origin: "http://example.com");
 
             var policy = new CorsPolicy
@@ -85,7 +83,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
         public void EvaluatePolicy_AllowAnyOrigin_SupportsCredentials_AddsSpecificOrigin()
         {
             // Arrange
-            var corsService = new CorsService(Mock.Of<IOptions<CorsOptions>>());
+            var corsService = new CorsService(new TestCorsOptions());
             var requestContext = GetHttpContext(origin: "http://example.com");
             var policy = new CorsPolicy
             {
@@ -105,7 +103,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
         public void EvaluatePolicy_DoesNotSupportCredentials_AllowCredentialsReturnsFalse()
         {
             // Arrange
-            var corsService = new CorsService(Mock.Of<IOptions<CorsOptions>>());
+            var corsService = new CorsService(new TestCorsOptions());
             var requestContext = GetHttpContext(origin: "http://example.com");
             var policy = new CorsPolicy
             {
@@ -124,7 +122,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
         public void EvaluatePolicy_SupportsCredentials_AllowCredentialsReturnsTrue()
         {
             // Arrange
-            var corsService = new CorsService(Mock.Of<IOptions<CorsOptions>>());
+            var corsService = new CorsService(new TestCorsOptions());
             var requestContext = GetHttpContext(origin: "http://example.com");
             var policy = new CorsPolicy
             {
@@ -143,7 +141,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
         public void EvaluatePolicy_NoExposedHeaders_NoAllowExposedHeaders()
         {
             // Arrange
-            var corsService = new CorsService(Mock.Of<IOptions<CorsOptions>>());
+            var corsService = new CorsService(new TestCorsOptions());
             var requestContext = GetHttpContext(origin: "http://example.com");
             var policy = new CorsPolicy();
             policy.Origins.Add(CorsConstants.AnyOrigin);
@@ -159,7 +157,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
         public void EvaluatePolicy_OneExposedHeaders_HeadersAllowed()
         {
             // Arrange
-            var corsService = new CorsService(Mock.Of<IOptions<CorsOptions>>());
+            var corsService = new CorsService(new TestCorsOptions());
             var requestContext = GetHttpContext(origin: "http://example.com");
             var policy = new CorsPolicy();
             policy.Origins.Add(CorsConstants.AnyOrigin);
@@ -177,7 +175,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
         public void EvaluatePolicy_ManyExposedHeaders_HeadersAllowed()
         {
             // Arrange
-            var corsService = new CorsService(Mock.Of<IOptions<CorsOptions>>());
+            var corsService = new CorsService(new TestCorsOptions());
             var requestContext = GetHttpContext(origin: "http://example.com");
             var policy = new CorsPolicy();
             policy.Origins.Add(CorsConstants.AnyOrigin);
@@ -199,7 +197,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
         public void EvaluatePolicy_PreflightRequest_MethodNotAllowed_ReturnsInvalidResult()
         {
             // Arrange
-            var corsService = new CorsService(Mock.Of<IOptions<CorsOptions>>());
+            var corsService = new CorsService(new TestCorsOptions());
             var requestContext = GetHttpContext(method: "OPTIONS", origin: "http://example.com", accessControlRequestMethod: "PUT");
             var policy = new CorsPolicy();
             policy.Origins.Add(CorsConstants.AnyOrigin);
@@ -216,7 +214,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
         public void EvaluatePolicy_PreflightRequest_MethodAllowed_ReturnsAllowMethods()
         {
             // Arrange
-            var corsService = new CorsService(Mock.Of<IOptions<CorsOptions>>());
+            var corsService = new CorsService(new TestCorsOptions());
             var requestContext = GetHttpContext(method: "OPTIONS", origin: "http://example.com", accessControlRequestMethod: "PUT");
             var policy = new CorsPolicy();
             policy.Origins.Add(CorsConstants.AnyOrigin);
@@ -234,7 +232,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
         public void EvaluatePolicy_PreflightRequest_OriginAllowed_ReturnsOrigin()
         {
             // Arrange
-            var corsService = new CorsService(Mock.Of<IOptions<CorsOptions>>());
+            var corsService = new CorsService(new TestCorsOptions());
             var requestContext = GetHttpContext(method: "OPTIONS", origin: "http://example.com", accessControlRequestMethod: "PUT");
             var policy = new CorsPolicy();
             policy.Origins.Add(CorsConstants.AnyOrigin);
@@ -252,7 +250,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
         public void EvaluatePolicy_PreflightRequest_SupportsCredentials_AllowCredentialsReturnsTrue()
         {
             // Arrange
-            var corsService = new CorsService(Mock.Of<IOptions<CorsOptions>>());
+            var corsService = new CorsService(new TestCorsOptions());
             var requestContext = GetHttpContext(method: "OPTIONS", origin: "http://example.com", accessControlRequestMethod: "PUT");
             var policy = new CorsPolicy
             {
@@ -272,7 +270,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
         public void EvaluatePolicy_PreflightRequest_NoPreflightMaxAge_NoPreflightMaxAgeSet()
         {
             // Arrange
-            var corsService = new CorsService(Mock.Of<IOptions<CorsOptions>>());
+            var corsService = new CorsService(new TestCorsOptions());
             var requestContext = GetHttpContext(method: "OPTIONS", origin: "http://example.com", accessControlRequestMethod: "PUT");
             var policy = new CorsPolicy
             {
@@ -292,7 +290,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
         public void EvaluatePolicy_PreflightRequest_PreflightMaxAge_PreflightMaxAgeSet()
         {
             // Arrange
-            var corsService = new CorsService(Mock.Of<IOptions<CorsOptions>>());
+            var corsService = new CorsService(new TestCorsOptions());
             var requestContext = GetHttpContext(method: "OPTIONS", origin: "http://example.com", accessControlRequestMethod: "PUT");
             var policy = new CorsPolicy
             {
@@ -312,7 +310,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
         public void EvaluatePolicy_PreflightRequest_AnyMethod_ReturnsRequestMethod()
         {
             // Arrange
-            var corsService = new CorsService(Mock.Of<IOptions<CorsOptions>>());
+            var corsService = new CorsService(new TestCorsOptions());
             var requestContext = GetHttpContext(method: "OPTIONS", origin: "http://example.com", accessControlRequestMethod: "GET");
             var policy = new CorsPolicy();
             policy.Origins.Add(CorsConstants.AnyOrigin);
@@ -330,7 +328,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
         public void EvaluatePolicy_PreflightRequest_ListedMethod_ReturnsSubsetOfListedMethods()
         {
             // Arrange
-            var corsService = new CorsService(Mock.Of<IOptions<CorsOptions>>());
+            var corsService = new CorsService(new TestCorsOptions());
             var requestContext = GetHttpContext(method: "OPTIONS", origin: "http://example.com", accessControlRequestMethod: "PUT");
             var policy = new CorsPolicy();
             policy.Origins.Add(CorsConstants.AnyOrigin);
@@ -349,7 +347,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
         public void EvaluatePolicy_PreflightRequest_NoHeadersRequested_AllowedAllHeaders_ReturnsEmptyHeaders()
         {
             // Arrange
-            var corsService = new CorsService(Mock.Of<IOptions<CorsOptions>>());
+            var corsService = new CorsService(new TestCorsOptions());
             var requestContext = GetHttpContext(method: "OPTIONS", origin: "http://example.com", accessControlRequestMethod: "PUT");
             var policy = new CorsPolicy();
             policy.Origins.Add(CorsConstants.AnyOrigin);
@@ -367,7 +365,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
         public void EvaluatePolicy_PreflightRequest_HeadersRequested_AllowAllHeaders_ReturnsRequestedHeaders()
         {
             // Arrange
-            var corsService = new CorsService(Mock.Of<IOptions<CorsOptions>>());
+            var corsService = new CorsService(new TestCorsOptions());
             var requestContext = GetHttpContext(
                 method: "OPTIONS",
                 origin: "http://example.com",
@@ -391,7 +389,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
         public void EvaluatePolicy_PreflightRequest_HeadersRequested_AllowSomeHeaders_ReturnsSubsetOfListedHeaders()
         {
             // Arrange
-            var corsService = new CorsService(Mock.Of<IOptions<CorsOptions>>());
+            var corsService = new CorsService(new TestCorsOptions());
             var requestContext = GetHttpContext(
                 method: "OPTIONS",
                 origin: "http://example.com",
@@ -416,7 +414,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
         public void EvaluatePolicy_PreflightRequest_HeadersRequested_NotAllHeaderMatches_ReturnsInvalidResult()
         {
             // Arrange
-            var corsService = new CorsService(Mock.Of<IOptions<CorsOptions>>());
+            var corsService = new CorsService(new TestCorsOptions());
             var requestContext = GetHttpContext(
                 method: "OPTIONS",
                 origin: "http://example.com",
@@ -442,7 +440,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
         public void EaluatePolicy_DoesCaseSensitiveComparison()
         {
             // Arrange
-            var corsService = new CorsService(Mock.Of<IOptions<CorsOptions>>());
+            var corsService = new CorsService(new TestCorsOptions());
 
             var policy = new CorsPolicy();
             policy.Methods.Add("POST");
@@ -462,7 +460,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
         public void TryValidateOrigin_DoesCaseSensitiveComparison()
         {
             // Arrange
-            var corsService = new CorsService(Mock.Of<IOptions<CorsOptions>>());
+            var corsService = new CorsService(new TestCorsOptions());
 
             var policy = new CorsPolicy();
             policy.Origins.Add("http://Example.com");
@@ -485,7 +483,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
             // Arrange
             var result = new CorsResult();
             var httpContext = new DefaultHttpContext();
-            var service = new CorsService(Mock.Of<IOptions<CorsOptions>>());
+            var service = new CorsService(new TestCorsOptions());
 
             // Act
             service.ApplyResult(result, httpContext.Response);
@@ -504,7 +502,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
             };
 
             var httpContext = new DefaultHttpContext();
-            var service = new CorsService(Mock.Of<IOptions<CorsOptions>>());
+            var service = new CorsService(new TestCorsOptions());
 
             // Act
             service.ApplyResult(result, httpContext.Response);
@@ -523,7 +521,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
             };
 
             var httpContext = new DefaultHttpContext();
-            var service = new CorsService(Mock.Of<IOptions<CorsOptions>>());
+            var service = new CorsService(new TestCorsOptions());
 
             // Act
             service.ApplyResult(result, httpContext.Response);
@@ -541,7 +539,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
                 SupportsCredentials = true
             };
 
-            var service = new CorsService(Mock.Of<IOptions<CorsOptions>>());
+            var service = new CorsService(new TestCorsOptions());
 
             // Act
             var httpContext = new DefaultHttpContext();
@@ -561,7 +559,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
             };
 
             var httpContext = new DefaultHttpContext();
-            var service = new CorsService(Mock.Of<IOptions<CorsOptions>>());
+            var service = new CorsService(new TestCorsOptions());
 
             // Act
             service.ApplyResult(result, httpContext.Response);
@@ -580,7 +578,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
             };
 
             var httpContext = new DefaultHttpContext();
-            var service = new CorsService(Mock.Of<IOptions<CorsOptions>>());
+            var service = new CorsService(new TestCorsOptions());
 
             // Act
             service.ApplyResult(result, httpContext.Response);
@@ -599,7 +597,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
             };
 
             var httpContext = new DefaultHttpContext();
-            var service = new CorsService(Mock.Of<IOptions<CorsOptions>>());
+            var service = new CorsService(new TestCorsOptions());
 
             // Act
             service.ApplyResult(result, httpContext.Response);
@@ -616,7 +614,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
             result.AllowedMethods.Add("PUT");
 
             var httpContext = new DefaultHttpContext();
-            var service = new CorsService(Mock.Of<IOptions<CorsOptions>>());
+            var service = new CorsService(new TestCorsOptions());
 
             // Act
             service.ApplyResult(result, httpContext.Response);
@@ -636,7 +634,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
             result.AllowedMethods.Add("POST");
 
             var httpContext = new DefaultHttpContext();
-            var service = new CorsService(Mock.Of<IOptions<CorsOptions>>());
+            var service = new CorsService(new TestCorsOptions());
 
             // Act
             service.ApplyResult(result, httpContext.Response);
@@ -661,7 +659,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
             result.AllowedMethods.Add("POST");
 
             var httpContext = new DefaultHttpContext();
-            var service = new CorsService(Mock.Of<IOptions<CorsOptions>>());
+            var service = new CorsService(new TestCorsOptions());
 
             // Act
             service.ApplyResult(result, httpContext.Response);
@@ -680,7 +678,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
             };
 
             var httpContext = new DefaultHttpContext();
-            var service = new CorsService(Mock.Of<IOptions<CorsOptions>>());
+            var service = new CorsService(new TestCorsOptions());
 
             // Act
             service.ApplyResult(result, httpContext.Response);
@@ -697,7 +695,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
             result.AllowedHeaders.Add("foo");
 
             var httpContext = new DefaultHttpContext();
-            var service = new CorsService(Mock.Of<IOptions<CorsOptions>>());
+            var service = new CorsService(new TestCorsOptions());
 
             // Act
             service.ApplyResult(result, httpContext.Response);
@@ -716,7 +714,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
             result.AllowedHeaders.Add("baz");
 
             var httpContext = new DefaultHttpContext();
-            var service = new CorsService(Mock.Of<IOptions<CorsOptions>>());
+            var service = new CorsService(new TestCorsOptions());
 
             // Act
             service.ApplyResult(result, httpContext.Response);
@@ -743,7 +741,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
             result.AllowedHeaders.Add("Accept");
 
             var httpContext = new DefaultHttpContext();
-            var service = new CorsService(Mock.Of<IOptions<CorsOptions>>());
+            var service = new CorsService(new TestCorsOptions());
 
             // Act
             service.ApplyResult(result, httpContext.Response);
@@ -766,7 +764,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
             result.AllowedHeaders.Add("Content-Language");
 
             var httpContext = new DefaultHttpContext();
-            var service = new CorsService(Mock.Of<IOptions<CorsOptions>>());
+            var service = new CorsService(new TestCorsOptions());
 
             // Act
             service.ApplyResult(result, httpContext.Response);
@@ -785,7 +783,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
             };
 
             var httpContext = new DefaultHttpContext();
-            var service = new CorsService(Mock.Of<IOptions<CorsOptions>>());
+            var service = new CorsService(new TestCorsOptions());
 
             // Act
             service.ApplyResult(result, httpContext.Response);
@@ -802,7 +800,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
             result.AllowedExposedHeaders.Add("foo");
 
             var httpContext = new DefaultHttpContext();
-            var service = new CorsService(Mock.Of<IOptions<CorsOptions>>());
+            var service = new CorsService(new TestCorsOptions());
 
             // Act
             service.ApplyResult(result, httpContext.Response);
@@ -821,7 +819,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
             result.AllowedExposedHeaders.Add("baz");
 
             var httpContext = new DefaultHttpContext();
-            var service = new CorsService(Mock.Of<IOptions<CorsOptions>>());
+            var service = new CorsService(new TestCorsOptions());
 
             // Act
             service.ApplyResult(result, httpContext.Response);
@@ -847,7 +845,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
             };
 
             var httpContext = new DefaultHttpContext();
-            var service = new CorsService(Mock.Of<IOptions<CorsOptions>>());
+            var service = new CorsService(new TestCorsOptions());
 
             // Act
             service.ApplyResult(result, httpContext.Response);
@@ -865,7 +863,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
                 PreflightMaxAge = TimeSpan.FromSeconds(30)
             };
             var httpContext = new DefaultHttpContext();
-            var service = new CorsService(Mock.Of<IOptions<CorsOptions>>());
+            var service = new CorsService(new TestCorsOptions());
 
             // Act
             service.ApplyResult(result, httpContext.Response);

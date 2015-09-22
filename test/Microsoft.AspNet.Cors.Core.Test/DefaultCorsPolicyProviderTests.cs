@@ -3,8 +3,6 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Internal;
-using Microsoft.Framework.OptionsModel;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Cors.Core.Test
@@ -19,11 +17,11 @@ namespace Microsoft.AspNet.Cors.Core.Test
             var policy = new CorsPolicy();
             options.AddPolicy(options.DefaultPolicyName, policy);
 
-            var mockOptions = new Mock<IOptions<CorsOptions>>();
-            mockOptions
-                .SetupGet(o => o.Value)
-                .Returns(options);
-            var policyProvider = new DefaultCorsPolicyProvider(mockOptions.Object);
+            var corsOptions = new TestCorsOptions
+            {
+                Value = options
+            };
+            var policyProvider = new DefaultCorsPolicyProvider(corsOptions);
 
             // Act 
             var actualPolicy = await policyProvider.GetPolicyAsync(new DefaultHttpContext(), policyName: null);
@@ -42,11 +40,11 @@ namespace Microsoft.AspNet.Cors.Core.Test
             var policy = new CorsPolicy();
             options.AddPolicy(policyName, policy);
 
-            var mockOptions = new Mock<IOptions<CorsOptions>>();
-            mockOptions
-                .SetupGet(o => o.Value)
-                .Returns(options);
-            var policyProvider = new DefaultCorsPolicyProvider(mockOptions.Object);
+            var corsOptions = new TestCorsOptions
+            {
+                Value = options
+            };
+            var policyProvider = new DefaultCorsPolicyProvider(corsOptions);
 
             // Act 
             var actualPolicy = await policyProvider.GetPolicyAsync(new DefaultHttpContext(), policyName);
