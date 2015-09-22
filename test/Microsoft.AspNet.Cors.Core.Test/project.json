@@ -2,7 +2,7 @@
     "version": "1.0.0-*",
 
     "dependencies": {
-        "Microsoft.AspNet.Cors.Core": "1.0.0-*",
+        "Microsoft.AspNet.Cors.Core": "6.0.0-*",
         "Microsoft.AspNet.Http": "1.0.0-*",
         "Moq": "4.2.1312.1622",
         "xunit.runner.aspnet": "2.0.0-aspnet-*"
@@ -13,9 +13,6 @@
     },
 
     "frameworks" : {
-        "dnx451" : {
-            "dependencies": {
-            }
-        }
+        "dnx451" : { }
     }
 }

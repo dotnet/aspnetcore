@@ -1,8 +1,11 @@
 {
-    "version": "1.0.0-*",
+    "version": "6.0.0-*",
     "repository": {
         "type": "git",
         "url": "https://github.com/aspnet/cors"
+    },
+    "compilationOptions": {
+        "warningsAsErrors": true
     },
     "dependencies": {
          "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
