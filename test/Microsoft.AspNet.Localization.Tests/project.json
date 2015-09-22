@@ -3,13 +3,13 @@
         "Microsoft.AspNet.Localization": "1.0.0-*",
         "Microsoft.AspNet.TestHost": "1.0.0-*",
         "xunit": "2.1.0-*",
-        "xunit.runner.dnx": "2.1.0-*"
+        "xunit.runner.aspnet": "2.0.0-aspnet-*"
     },
   "frameworks": {
     "dnx451": { },
     "dnxcore50": { }
   },
   "commands": {
-    "test": "xunit.runner.dnx"
+    "test": "xunit.runner.aspnet"
   }
 }
