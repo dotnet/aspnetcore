@@ -6,12 +6,12 @@ using Microsoft.Framework.Caching.Memory;
 
 namespace CookieSessionSample
 {
-    public class MemoryCacheSessionStore : ITicketStore
+    public class MemoryCacheTicketStore : ITicketStore
     {
         private const string KeyPrefix = "AuthSessionStore-";
         private IMemoryCache _cache;
 
-        public MemoryCacheSessionStore()
+        public MemoryCacheTicketStore()
         {
             _cache = new MemoryCache(new MemoryCacheOptions());
         }

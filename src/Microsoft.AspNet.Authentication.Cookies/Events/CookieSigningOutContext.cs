@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
         /// <summary>
         /// The options for creating the outgoing cookie.
-        /// May be replace or altered during the ResponseSignOut call.
+        /// May be replace or altered during the SigningOut call.
         /// </summary>
         public CookieOptions CookieOptions
         {

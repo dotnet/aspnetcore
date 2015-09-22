@@ -10,30 +10,30 @@ using Microsoft.Framework.WebEncoders;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
-namespace Microsoft.AspNet.Authentication.OpenIdConnectBearer
+namespace Microsoft.AspNet.Authentication.JwtBearer
 {
     /// <summary>
     /// Bearer authentication middleware component which is added to an HTTP pipeline. This class is not
-    /// created by application code directly, instead it is added by calling the the IAppBuilder UseOpenIdConnectBearerAuthentication
+    /// created by application code directly, instead it is added by calling the the IAppBuilder UseJwtBearerAuthentication
     /// extension method.
     /// </summary>
-    public class OpenIdConnectBearerMiddleware : AuthenticationMiddleware<OpenIdConnectBearerOptions>
+    public class JwtBearerMiddleware : AuthenticationMiddleware<JwtBearerOptions>
     {
         /// <summary>
         /// Bearer authentication component which is added to an HTTP pipeline. This constructor is not
-        /// called by application code directly, instead it is added by calling the the IAppBuilder UseOpenIdConnectBearerAuthentication 
+        /// called by application code directly, instead it is added by calling the the IAppBuilder UseJwtBearerAuthentication 
         /// extension method.
         /// </summary>
-        public OpenIdConnectBearerMiddleware(
+        public JwtBearerMiddleware(
             [NotNull] RequestDelegate next,
             [NotNull] ILoggerFactory loggerFactory,
             [NotNull] IUrlEncoder encoder,
-            [NotNull] OpenIdConnectBearerOptions options)
+            [NotNull] JwtBearerOptions options)
             : base(next, options, loggerFactory, encoder)
         {
             if (Options.Events == null)
             {
-                Options.Events = new OpenIdConnectBearerEvents();
+                Options.Events = new JwtBearerEvents();
             }
 
             if (string.IsNullOrEmpty(Options.TokenValidationParameters.ValidAudience) && !string.IsNullOrEmpty(Options.Audience))
@@ -73,9 +73,9 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnectBearer
         /// Called by the AuthenticationMiddleware base class to create a per-request handler. 
         /// </summary>
         /// <returns>A new instance of the request handler</returns>
-        protected override AuthenticationHandler<OpenIdConnectBearerOptions> CreateHandler()
+        protected override AuthenticationHandler<JwtBearerOptions> CreateHandler()
         {
-            return new OpenIdConnectBearerHandler();
+            return new JwtBearerHandler();
         }
     }
 }

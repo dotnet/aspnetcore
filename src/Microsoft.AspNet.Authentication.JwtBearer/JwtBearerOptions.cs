@@ -9,19 +9,19 @@ using System.Net.Http;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
-namespace Microsoft.AspNet.Authentication.OpenIdConnectBearer
+namespace Microsoft.AspNet.Authentication.JwtBearer
 {
     /// <summary>
     /// Options class provides information needed to control Bearer Authentication middleware behavior
     /// </summary>
-    public class OpenIdConnectBearerOptions : AuthenticationOptions
+    public class JwtBearerOptions : AuthenticationOptions
     {
         /// <summary>
         /// Creates an instance of bearer authentication options with default values.
         /// </summary>
-        public OpenIdConnectBearerOptions() : base()
+        public JwtBearerOptions() : base()
         {
-            AuthenticationScheme = OpenIdConnectBearerDefaults.AuthenticationScheme;
+            AuthenticationScheme = JwtBearerDefaults.AuthenticationScheme;
         }
 
         /// <summary>
@@ -45,14 +45,14 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnectBearer
         /// <summary>
         /// Gets or sets the challenge to put in the "WWW-Authenticate" header.
         /// </summary>
-        public string Challenge { get; set; } = OpenIdConnectBearerDefaults.AuthenticationScheme;
+        public string Challenge { get; set; } = JwtBearerDefaults.AuthenticationScheme;
 
         /// <summary>
         /// The object provided by the application to process events raised by the bearer authentication middleware.
-        /// The application may implement the interface fully, or it may create an instance of OpenIdConnectBearerAuthenticationEvents
+        /// The application may implement the interface fully, or it may create an instance of JwtBearerAuthenticationEvents
         /// and assign delegates only to the events it wants to process.
         /// </summary>
-        public IOpenIdConnectBearerEvents Events { get; set; } = new OpenIdConnectBearerEvents();
+        public IJwtBearerEvents Events { get; set; } = new JwtBearerEvents();
 
         /// <summary>
         /// The HttpMessageHandler used to retrieve metadata.

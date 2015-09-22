@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Authentication.OpenIdConnectBearer;
+using Microsoft.AspNet.Authentication.JwtBearer;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 
@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Builder
     /// <summary>
     /// Extension methods to add OpenIdConnect Bearer authentication capabilities to an HTTP application pipeline
     /// </summary>
-    public static class OpenIdConnectBearerAppBuilderExtensions
+    public static class JwtBearerAppBuilderExtensions
     {
         /// <summary>
         /// Adds Bearer token processing to an HTTP application pipeline. This middleware understands appropriately
@@ -24,9 +24,9 @@ namespace Microsoft.AspNet.Builder
         /// <param name="app">The application builder</param>
         /// <param name="options">Options which control the processing of the bearer header.</param>
         /// <returns>The application builder</returns>
-        public static IApplicationBuilder UseOpenIdConnectBearerAuthentication([NotNull] this IApplicationBuilder app, [NotNull] OpenIdConnectBearerOptions options)
+        public static IApplicationBuilder UseJwtBearerAuthentication([NotNull] this IApplicationBuilder app, [NotNull] JwtBearerOptions options)
         {
-            return app.UseMiddleware<OpenIdConnectBearerMiddleware>(options);
+            return app.UseMiddleware<JwtBearerMiddleware>(options);
         }
 
         /// <summary>
@@ -40,14 +40,14 @@ namespace Microsoft.AspNet.Builder
         /// <param name="app">The application builder</param>
         /// <param name="configureOptions">Used to configure Middleware options.</param>
         /// <returns>The application builder</returns>
-        public static IApplicationBuilder UseOpenIdConnectBearerAuthentication([NotNull] this IApplicationBuilder app, Action<OpenIdConnectBearerOptions> configureOptions)
+        public static IApplicationBuilder UseJwtBearerAuthentication([NotNull] this IApplicationBuilder app, Action<JwtBearerOptions> configureOptions)
         {
-            var options = new OpenIdConnectBearerOptions();
+            var options = new JwtBearerOptions();
             if (configureOptions != null)
             {
                 configureOptions(options);
             }
-            return app.UseOpenIdConnectBearerAuthentication(options);
+            return app.UseJwtBearerAuthentication(options);
         }
     }
 }

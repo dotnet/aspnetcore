@@ -15,9 +15,9 @@ using Microsoft.AspNet.TestHost;
 using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
-namespace Microsoft.AspNet.Authentication.OpenIdConnectBearer
+namespace Microsoft.AspNet.Authentication.JwtBearer
 {
-    public class OpenIdConnectBearerMiddlewareTests
+    public class JwtBearerMiddlewareTests
     {
         [Fact]
         public async Task BearerTokenValidation()
@@ -66,7 +66,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnectBearer
             {
                 options.AutomaticAuthentication = true;
 
-                options.Events = new OpenIdConnectBearerEvents()
+                options.Events = new JwtBearerEvents()
                 {
                     OnMessageReceived = context =>
                     {
@@ -116,7 +116,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnectBearer
             {
                 options.AutomaticAuthentication = true;
 
-                options.Events = new OpenIdConnectBearerEvents()
+                options.Events = new JwtBearerEvents()
                 {
                     OnSecurityTokenReceived = context =>
                     {
@@ -150,7 +150,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnectBearer
             {
                 options.AutomaticAuthentication = true;
 
-                options.Events = new OpenIdConnectBearerEvents()
+                options.Events = new JwtBearerEvents()
                 {
                     OnSecurityTokenValidated = context =>
                     {
@@ -187,7 +187,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnectBearer
             {
                 options.AutomaticAuthentication = true;
 
-                options.Events = new OpenIdConnectBearerEvents()
+                options.Events = new JwtBearerEvents()
                 {
                     OnMessageReceived = context =>
                     {
@@ -224,7 +224,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnectBearer
         {
             var server = CreateServer(options =>
             {
-                options.Events = new OpenIdConnectBearerEvents()
+                options.Events = new JwtBearerEvents()
                 {
                     OnSecurityTokenReceived = context =>
                     {
@@ -255,7 +255,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnectBearer
         {
             var server = CreateServer(options =>
             {
-                options.Events = new OpenIdConnectBearerEvents()
+                options.Events = new JwtBearerEvents()
                 {
                     OnSecurityTokenReceived = context =>
                     {
@@ -323,13 +323,13 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnectBearer
             }
         }
 
-        private static TestServer CreateServer(Action<OpenIdConnectBearerOptions> configureOptions, Func<HttpContext, bool> handler = null)
+        private static TestServer CreateServer(Action<JwtBearerOptions> configureOptions, Func<HttpContext, bool> handler = null)
         {
             return TestServer.Create(app =>
             {
                 if (configureOptions != null)
                 {
-                    app.UseOpenIdConnectBearerAuthentication(configureOptions);
+                    app.UseJwtBearerAuthentication(configureOptions);
                 }
 
                 app.Use(async (context, next) =>
@@ -359,17 +359,17 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnectBearer
                     else if (context.Request.Path == new PathString("/unauthorized"))
                     {
                         // Simulate Authorization failure 
-                        var result = await context.Authentication.AuthenticateAsync(OpenIdConnectBearerDefaults.AuthenticationScheme);
-                        await context.Authentication.ChallengeAsync(OpenIdConnectBearerDefaults.AuthenticationScheme);
+                        var result = await context.Authentication.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
+                        await context.Authentication.ChallengeAsync(JwtBearerDefaults.AuthenticationScheme);
                     }
 
                     else if (context.Request.Path == new PathString("/signIn"))
                     {
-                        await Assert.ThrowsAsync<NotSupportedException>(() => context.Authentication.SignInAsync(OpenIdConnectBearerDefaults.AuthenticationScheme, new ClaimsPrincipal()));
+                        await Assert.ThrowsAsync<NotSupportedException>(() => context.Authentication.SignInAsync(JwtBearerDefaults.AuthenticationScheme, new ClaimsPrincipal()));
                     }
                     else if (context.Request.Path == new PathString("/signOut"))
                     {
-                        await Assert.ThrowsAsync<NotSupportedException>(() => context.Authentication.SignOutAsync(OpenIdConnectBearerDefaults.AuthenticationScheme));
+                        await Assert.ThrowsAsync<NotSupportedException>(() => context.Authentication.SignOutAsync(JwtBearerDefaults.AuthenticationScheme));
                     }
                     else
                     {

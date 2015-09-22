@@ -48,7 +48,7 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.CookiePoli
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.CookiePolicy.Test", "test\Microsoft.AspNet.CookiePolicy.Test\Microsoft.AspNet.CookiePolicy.Test.xproj", "{1790E052-646F-4529-B90E-6FEA95520D69}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Authentication.OpenIdConnectBearer", "src\Microsoft.AspNet.Authentication.OpenIdConnectBearer\Microsoft.AspNet.Authentication.OpenIdConnectBearer.xproj", "{2755BFE5-7421-4A31-A644-F817DF5CAA98}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Authentication.JwtBearer", "src\Microsoft.AspNet.Authentication.OpenIdConnectBearer\Microsoft.AspNet.Authentication.JwtBearer.xproj", "{2755BFE5-7421-4A31-A644-F817DF5CAA98}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

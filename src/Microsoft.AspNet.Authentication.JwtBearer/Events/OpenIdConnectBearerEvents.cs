@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 
 /// <summary>
-/// Specifies events which the <see cref="OpenIdConnectBearerAuthenticationMiddleware"></see> invokes to enable developer control over the authentication process. />
+/// Specifies events which the <see cref="JwtBearerAuthenticationMiddleware"></see> invokes to enable developer control over the authentication process. />
 /// </summary>
-namespace Microsoft.AspNet.Authentication.OpenIdConnectBearer
+namespace Microsoft.AspNet.Authentication.JwtBearer
 {
     /// <summary>
     /// OpenIdConnect bearer token middleware events.
     /// </summary>
-    public class OpenIdConnectBearerEvents : IOpenIdConnectBearerEvents
+    public class JwtBearerEvents : IJwtBearerEvents
     {
         /// <summary>
         /// Invoked if exceptions are thrown during request processing. The exceptions will be re-thrown after this event unless suppressed.

@@ -8,7 +8,7 @@ using Microsoft.AspNet.Http.Authentication;
 namespace Microsoft.AspNet.Authentication.Cookies
 {
     /// <summary>
-    /// Context object passed to the ICookieAuthenticationEvents method ResponseSignIn.
+    /// Context object passed to the ICookieAuthenticationEvents method SigningIn.
     /// </summary>    
     public class CookieSigningInContext : BaseContext<CookieAuthenticationOptions>
     {
@@ -43,19 +43,19 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
         /// <summary>
         /// Contains the claims about to be converted into the outgoing cookie.
-        /// May be replaced or altered during the ResponseSignIn call.
+        /// May be replaced or altered during the SigningIn call.
         /// </summary>
         public ClaimsPrincipal Principal { get; set; }
 
         /// <summary>
         /// Contains the extra data about to be contained in the outgoing cookie.
-        /// May be replaced or altered during the ResponseSignIn call.
+        /// May be replaced or altered during the SigningIn call.
         /// </summary>
         public AuthenticationProperties Properties { get; set; }
 
         /// <summary>
         /// The options for creating the outgoing cookie.
-        /// May be replace or altered during the ResponseSignIn call.
+        /// May be replace or altered during the SigningIn call.
         /// </summary>
         public CookieOptions CookieOptions { get; set; }
     }
