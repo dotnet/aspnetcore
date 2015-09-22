@@ -111,9 +111,9 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             Assert.Same(expected, result1.CompilationResult);
 
             // Act 2
-            // Delete the file from the file system and set it's expiration trigger.
+            // Delete the file from the file system and set it's expiration token.
             fileProvider.DeleteFile(ViewPath);
-            fileProvider.GetTrigger(ViewPath).IsExpired = true;
+            fileProvider.GetChangeToken(ViewPath).HasChanged = true;
             var result2 = cache.GetOrAdd(ViewPath, ThrowsIfCalled);
 
             // Assert 2
@@ -147,7 +147,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             Assert.Same(expected1.CompiledType, result2.CompilationResult.CompiledType);
 
             // Act 3
-            fileProvider.GetTrigger(ViewPath).IsExpired = true;
+            fileProvider.GetChangeToken(ViewPath).HasChanged = true;
             var result3 = cache.GetOrAdd(ViewPath, _ => expected2);
 
             // Assert 3
@@ -182,7 +182,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             Assert.Same(expected1.CompiledType, result2.CompilationResult.CompiledType);
 
             // Act 3
-            fileProvider.GetTrigger(globalImportPath).IsExpired = true;
+            fileProvider.GetChangeToken(globalImportPath).HasChanged = true;
             var result3 = cache.GetOrAdd(ViewPath, _ => expected2);
 
             // Assert 2
@@ -242,7 +242,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
 
             // Act
             fileProvider.Watch(PrecompiledViewsPath);
-            fileProvider.GetTrigger(PrecompiledViewsPath).IsExpired = true;
+            fileProvider.GetChangeToken(PrecompiledViewsPath).HasChanged = true;
             var result = cache.GetOrAdd(PrecompiledViewsPath, ThrowsIfCalled);
 
             // Assert
@@ -260,7 +260,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
 
             // Act
             fileProvider.Watch(globalImportPath);
-            fileProvider.GetTrigger(globalImportPath).IsExpired = true;
+            fileProvider.GetChangeToken(globalImportPath).HasChanged = true;
             var result = cache.GetOrAdd(PrecompiledViewsPath, ThrowsIfCalled);
 
             // Assert

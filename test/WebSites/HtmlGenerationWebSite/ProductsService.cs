@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading;
-using Microsoft.Framework.Caching;
+using Microsoft.Framework.Primitives;
 
 namespace HtmlGenerationWebSite
 {
@@ -10,11 +10,11 @@ namespace HtmlGenerationWebSite
     {
         private readonly CancellationTokenSource _tokenSource = new CancellationTokenSource();
 
-        public string GetProducts(string category, out IExpirationTrigger trigger)
+        public string GetProducts(string category, out IChangeToken changeToken)
         {
-            var token = _tokenSource.IsCancellationRequested ? CancellationToken.None :
-                                                               _tokenSource.Token;
-            trigger = new CancellationTokenTrigger(token);
+            var token = _tokenSource.IsCancellationRequested ?
+                CancellationToken.None : _tokenSource.Token;
+            changeToken = new CancellationChangeToken(token);
             if (category == "Books")
             {
                 return "Book1, Book2";

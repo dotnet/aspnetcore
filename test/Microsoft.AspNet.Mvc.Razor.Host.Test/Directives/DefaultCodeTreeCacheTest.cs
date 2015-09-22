@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Host.Directives
             Assert.Same(expected1, result1);
 
             // Act 2
-            fileProvider.GetTrigger(path).IsExpired = true;
+            fileProvider.GetChangeToken(path).HasChanged = true;
             var result2 = chunkTreeCache.GetOrAdd(path, fileInfo => expected2);
 
             // Assert 2
@@ -97,7 +97,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Host.Directives
 
             // Act 2
             fileProvider.DeleteFile(path);
-            fileProvider.GetTrigger(path).IsExpired = true;
+            fileProvider.GetChangeToken(path).HasChanged = true;
             var result2 = chunkTreeCache.GetOrAdd(path, fileInfo => { throw new Exception("Shouldn't be called."); });
 
             // Assert 2
@@ -121,7 +121,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Host.Directives
 
             // Act 2
             fileProvider.AddFile(path, "test content");
-            fileProvider.GetTrigger(path).IsExpired = true;
+            fileProvider.GetChangeToken(path).HasChanged = true;
             var result2 = chunkTreeCache.GetOrAdd(path, fileInfo => expected);
 
             // Assert 2

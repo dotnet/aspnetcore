@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
                 // negative results and adding a Watch for that file.
 
                 var options = new MemoryCacheEntryOptions()
-                    .AddExpirationTrigger(_fileProvider.Watch(pagePath))
+                    .AddExpirationToken(_fileProvider.Watch(pagePath))
                     .SetSlidingExpiration(SlidingExpirationDuration);
 
                 var file = _fileProvider.GetFileInfo(pagePath);

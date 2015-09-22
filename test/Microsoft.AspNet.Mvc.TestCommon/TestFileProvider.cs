@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.AspNet.FileProviders;
-using Microsoft.Framework.Caching;
+using Microsoft.Framework.Primitives;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -13,8 +13,8 @@ namespace Microsoft.AspNet.Mvc.Razor
     {
         private readonly Dictionary<string, IFileInfo> _lookup =
             new Dictionary<string, IFileInfo>(StringComparer.Ordinal);
-        private readonly Dictionary<string, TestFileTrigger> _fileTriggers =
-            new Dictionary<string, TestFileTrigger>(StringComparer.Ordinal);
+        private readonly Dictionary<string, TestFileChangeToken> _fileTriggers =
+            new Dictionary<string, TestFileChangeToken>(StringComparer.Ordinal);
 
         public virtual IDirectoryContents GetDirectoryContents(string subpath)
         {
@@ -58,19 +58,19 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
         }
 
-        public virtual IExpirationTrigger Watch(string filter)
+        public virtual IChangeToken Watch(string filter)
         {
-            TestFileTrigger trigger;
-            if (!_fileTriggers.TryGetValue(filter, out trigger) || trigger.IsExpired)
+            TestFileChangeToken changeToken;
+            if (!_fileTriggers.TryGetValue(filter, out changeToken) || changeToken.HasChanged)
             {
-                trigger = new TestFileTrigger();
-                _fileTriggers[filter] = trigger;
+                changeToken = new TestFileChangeToken();
+                _fileTriggers[filter] = changeToken;
             }
 
-            return trigger;
+            return changeToken;
         }
 
-        public TestFileTrigger GetTrigger(string filter)
+        public TestFileChangeToken GetChangeToken(string filter)
         {
             return _fileTriggers[filter];
         }

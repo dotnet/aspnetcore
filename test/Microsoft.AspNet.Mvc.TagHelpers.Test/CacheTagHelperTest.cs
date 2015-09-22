@@ -18,9 +18,9 @@ using Microsoft.AspNet.Mvc.ViewEngines;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Routing;
-using Microsoft.Framework.Caching;
 using Microsoft.Framework.Caching.Memory;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.Primitives;
 using Moq;
 using Xunit;
 
@@ -536,7 +536,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             // Arrange
             var expiresSliding = TimeSpan.FromSeconds(30);
-            var expected = new[] { Mock.Of<IExpirationTrigger>(), Mock.Of<IExpirationTrigger>() };
+            var expected = new[] { Mock.Of<IChangeToken>(), Mock.Of<IChangeToken>() };
             var cache = new MemoryCache(new MemoryCacheOptions());
             var cacheTagHelper = new CacheTagHelper(cache)
             {
@@ -544,13 +544,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             };
 
             var entryLink = new EntryLink();
-            entryLink.AddExpirationTriggers(expected);
+            entryLink.AddExpirationTokens(expected);
 
             // Act
             var cacheEntryOptions = cacheTagHelper.GetMemoryCacheEntryOptions(entryLink);
 
             // Assert
-            Assert.Equal(expected, cacheEntryOptions.Triggers.ToArray());
+            Assert.Equal(expected, cacheEntryOptions.ExpirationTokens.ToArray());
         }
 
         [Fact]
@@ -722,7 +722,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var tokenSource = new CancellationTokenSource();
             var cache = new MemoryCache(new MemoryCacheOptions());
             var cacheEntryOptions = new MemoryCacheEntryOptions()
-                .AddExpirationTrigger(new CancellationTokenTrigger(tokenSource.Token));
+                .AddExpirationToken(new CancellationChangeToken(tokenSource.Token));
             var tagHelperContext = new TagHelperContext(
                 allAttributes: new TagHelperAttributeList(),
                 items: new Dictionary<object, object>(),

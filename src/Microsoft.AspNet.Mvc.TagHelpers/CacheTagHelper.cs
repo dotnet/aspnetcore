@@ -144,7 +144,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 var key = GenerateKey(context);
                 if (!MemoryCache.TryGetValue(key, out result))
                 {
-                    // Create an entry link scope and flow it so that any triggers related to the cache entries
+                    // Create an entry link scope and flow it so that any tokens related to the cache entries
                     // created within this scope get copied to this scope.
                     using (var link = MemoryCache.CreateLinkingScope())
                     {

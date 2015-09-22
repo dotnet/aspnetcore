@@ -236,10 +236,10 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
             PrecompilationCacheEntry cacheEntry)
         {
             var options = new MemoryCacheEntryOptions();
-            options.AddExpirationTrigger(FileProvider.Watch(fileInfo.RelativePath));
+            options.AddExpirationToken(FileProvider.Watch(fileInfo.RelativePath));
             foreach (var path in ViewHierarchyUtility.GetViewImportsLocations(fileInfo.RelativePath))
             {
-                options.AddExpirationTrigger(FileProvider.Watch(path));
+                options.AddExpirationToken(FileProvider.Watch(path));
             }
             return options;
         }

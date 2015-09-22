@@ -43,6 +43,10 @@
         "System.Runtime": ""
       }
     },
-    "dnxcore50": { }
+    "dnxcore50": {
+        "dependencies": {
+            "System.Text.Encoding": "4.0.11-*"
+        }
+    }
   }
 }

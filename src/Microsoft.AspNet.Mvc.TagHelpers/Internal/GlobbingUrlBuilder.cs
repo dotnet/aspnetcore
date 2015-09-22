@@ -115,8 +115,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
                     var options = new MemoryCacheEntryOptions();
                     foreach (var pattern in includePatterns)
                     {
-                        var trigger = FileProvider.Watch(pattern);
-                        options.AddExpirationTrigger(trigger);
+                        var changeToken = FileProvider.Watch(pattern);
+                        options.AddExpirationToken(changeToken);
                     }
 
                     files = FindFiles(includePatterns, excludePatterns);

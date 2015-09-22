@@ -3,8 +3,8 @@
 
 using System.Collections.Generic;
 using Microsoft.AspNet.Mvc;
-using Microsoft.Framework.Caching;
 using Microsoft.Framework.Caching.Memory;
+using Microsoft.Framework.Primitives;
 using TagHelperSample.Web.Models;
 using TagHelperSample.Web.Services;
 
@@ -25,15 +25,15 @@ namespace TagHelperSample.Web.Components
         public IViewComponentResult Invoke()
         {
             // Since this component is invoked from within a CacheTagHelper,
-            // cache the movie list and provide an expiration trigger, which when triggered causes the
+            // cache the movie list and provide an expiration token, which when notified causes the
             // CacheTagHelper's cached data to be invalidated.
             var cacheKey = "featured_movies";
             IEnumerable<FeaturedMovies> movies;
             if (!_cache.TryGetValue(cacheKey, out movies))
             {
-                IExpirationTrigger trigger;
-                movies = _moviesService.GetFeaturedMovies(out trigger);
-                _cache.Set(cacheKey, movies, new MemoryCacheEntryOptions().AddExpirationTrigger(trigger));
+                IChangeToken expirationToken;
+                movies = _moviesService.GetFeaturedMovies(out expirationToken);
+                _cache.Set(cacheKey, movies, new MemoryCacheEntryOptions().AddExpirationToken(expirationToken));
             }
 
             return View(movies);
@@ -44,9 +44,9 @@ namespace TagHelperSample.Web.Components
             string quote;
             if (!_cache.TryGetValue(movieName, out quote))
             {
-                IExpirationTrigger trigger;
-                quote = _moviesService.GetCriticsQuote(out trigger);
-                _cache.Set(movieName, quote, new MemoryCacheEntryOptions().AddExpirationTrigger(trigger));
+                IChangeToken expirationToken;
+                quote = _moviesService.GetCriticsQuote(out expirationToken);
+                _cache.Set(movieName, quote, new MemoryCacheEntryOptions().AddExpirationToken(expirationToken));
             }
 
             return Content(quote);

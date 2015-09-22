@@ -17,8 +17,8 @@ using Microsoft.AspNet.Mvc.ViewEngines;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Routing;
-using Microsoft.Framework.Caching;
 using Microsoft.Framework.Caching.Memory;
+using Microsoft.Framework.Primitives;
 using Microsoft.Framework.WebEncoders.Testing;
 using Moq;
 using Xunit;
@@ -304,7 +304,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             mockFileProvider.Setup(fp => fp.GetFileInfo(It.IsAny<string>()))
                 .Returns(mockFile.Object);
             mockFileProvider.Setup(fp => fp.Watch(It.IsAny<string>()))
-                .Returns(new TestFileTrigger());
+                .Returns(new TestFileChangeToken());
             var hostingEnvironment = new Mock<IHostingEnvironment>();
             hostingEnvironment.Setup(h => h.WebRootFileProvider).Returns(mockFileProvider.Object);
 

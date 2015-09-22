@@ -97,10 +97,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
             if (!_cache.TryGetValue(path, out value))
             {
                 value = QueryHelpers.AddQueryString(path, VersionKey, GetHashForFile(fileInfo));
-                _cache.Set(
-                    path,
-                    value,
-                    new MemoryCacheEntryOptions().AddExpirationTrigger(_fileProvider.Watch(resolvedPath)));
+                var cacheEntryOptions = new MemoryCacheEntryOptions().AddExpirationToken(_fileProvider.Watch(resolvedPath));
+                _cache.Set(path, value, cacheEntryOptions);
             }
 
             return value;

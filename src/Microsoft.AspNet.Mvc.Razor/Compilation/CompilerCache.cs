@@ -105,7 +105,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                 cacheResult = CompilerCacheResult.FileNotFound;
 
                 cacheEntryOptions = new MemoryCacheEntryOptions();
-                cacheEntryOptions.AddExpirationTrigger(_fileProvider.Watch(normalizedPath));
+                cacheEntryOptions.AddExpirationToken(_fileProvider.Watch(normalizedPath));
             }
             else
             {
@@ -128,12 +128,12 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         private MemoryCacheEntryOptions GetMemoryCacheEntryOptions(string relativePath)
         {
             var options = new MemoryCacheEntryOptions();
-            options.AddExpirationTrigger(_fileProvider.Watch(relativePath));
+            options.AddExpirationToken(_fileProvider.Watch(relativePath));
 
             var viewImportsPaths = ViewHierarchyUtility.GetViewImportsLocations(relativePath);
             foreach (var location in viewImportsPaths)
             {
-                options.AddExpirationTrigger(_fileProvider.Watch(location));
+                options.AddExpirationToken(_fileProvider.Watch(location));
             }
 
             return options;
