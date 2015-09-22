@@ -7,8 +7,8 @@ using System.IO;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
-using Microsoft.Framework.Caching;
 using Microsoft.Framework.Logging.Testing;
+using Microsoft.Framework.Primitives;
 using Xunit;
 
 namespace Microsoft.AspNet.StaticFiles
@@ -81,7 +81,7 @@ namespace Microsoft.AspNet.StaticFiles
                 return new NotFoundFileInfo();
             }
 
-            public IExpirationTrigger Watch(string filter)
+            public IChangeToken Watch(string filter)
             {
                 throw new NotSupportedException();
             }
