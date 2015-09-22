@@ -191,13 +191,19 @@ namespace Microsoft.AspNet.Hosting.Internal
             var builder = builderFactory.CreateBuilder(_serverInstance);
             builder.ApplicationServices = _applicationServices;
 
-            var port = _config[ServerPort];
-            if (!string.IsNullOrEmpty(port))
+            var addresses = builder.ServerFeatures?.Get<IServerAddressesFeature>()?.Addresses;
+            if (addresses != null && !addresses.IsReadOnly)
             {
-                var addresses = builder.ServerFeatures.Get<IServerAddressesFeature>()?.Addresses;
-                if (addresses != null && !addresses.IsReadOnly)
+                var port = _config[ServerPort];
+                if (!string.IsNullOrEmpty(port))
                 {
-                    addresses.Add(port);
+                    addresses.Add("http://localhost:" + port);
+                }
+
+                // Provide a default address if there aren't any configured.
+                if (addresses.Count == 0)
+                {
+                    addresses.Add("http://localhost:5000");
                 }
             }
 

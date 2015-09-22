@@ -92,7 +92,24 @@ namespace Microsoft.AspNet.Hosting
             var host = CreateBuilder(config).Build();
             var app = host.Start();
             Assert.NotNull(host.ApplicationServices.GetRequiredService<IHostingEnvironment>());
-            Assert.Equal("abc123", app.ServerFeatures.Get<IServerAddressesFeature>().Addresses.First());
+            Assert.Equal("http://localhost:abc123", app.ServerFeatures.Get<IServerAddressesFeature>().Addresses.First());
+        }
+
+        [Fact]
+        public void CanDefaultAddresseIfNotConfigured()
+        {
+            var vals = new Dictionary<string, string>
+            {
+                { "Hosting:Server", "Microsoft.AspNet.Hosting.Tests" }
+            };
+
+            var builder = new ConfigurationBuilder()
+                .AddInMemoryCollection(vals);
+            var config = builder.Build();
+            var host = CreateBuilder(config).Build();
+            var app = host.Start();
+            Assert.NotNull(host.ApplicationServices.GetRequiredService<IHostingEnvironment>());
+            Assert.Equal("http://localhost:5000", app.ServerFeatures.Get<IServerAddressesFeature>().Addresses.First());
         }
 
         [Fact]
