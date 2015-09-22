@@ -19,15 +19,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             string ruleName)
             : base(attribute)
         {
-            if (ruleName == null)
-            {
-                throw new ArgumentNullException(nameof(ruleName));
-            }
-
             if (string.IsNullOrEmpty(ruleName))
             {
                 throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(ruleName));
             }
+
             RuleName = ruleName;
         }
 
