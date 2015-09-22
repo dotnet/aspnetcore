@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Framework.WebEncoders.Testing;
 using Xunit;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
@@ -54,6 +55,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             // Arrange
             var defaultTagHelperContent = new DefaultTagHelperContent();
+            var content = string.Empty;
             var expectedContent = string.Empty;
             var executionContext = new TagHelperExecutionContext(
                 "p",
@@ -64,10 +66,11 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 {
                     if (string.IsNullOrEmpty(expectedContent))
                     {
-                        expectedContent = "Hello from child content: " + Guid.NewGuid().ToString();
+                        content = "Hello from child content: " + Guid.NewGuid().ToString();
+                        expectedContent = $"HtmlEncode[[{content}]]";
                     }
 
-                    defaultTagHelperContent.SetContent(expectedContent);
+                    defaultTagHelperContent.SetContent(content);
 
                     return Task.FromResult(result: true);
                 },
@@ -79,8 +82,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var content2 = await executionContext.GetChildContentAsync(useCachedResult: true);
 
             // Assert
-            Assert.Equal(expectedContent, content1.GetContent());
-            Assert.Equal(expectedContent, content2.GetContent());
+            Assert.Equal(expectedContent, content1.GetContent(new CommonTestEncoder()));
+            Assert.Equal(expectedContent, content2.GetContent(new CommonTestEncoder()));
         }
 
         [Fact]
@@ -134,7 +137,9 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // Assert
             Assert.NotSame(content1, content2);
-            Assert.Empty((await executionContext.GetChildContentAsync(useCachedResult)).GetContent());
+
+            var content3 = await executionContext.GetChildContentAsync(useCachedResult);
+            Assert.Empty(content3.GetContent(new CommonTestEncoder()));
         }
 
         [Fact]

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using Microsoft.AspNet.Html.Abstractions;
@@ -13,6 +14,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
     /// <summary>
     /// Default concrete <see cref="TagHelperContent"/>.
     /// </summary>
+    [DebuggerDisplay("{DebuggerToString(),nq}")]
     public class DefaultTagHelperContent : TagHelperContent
     {
         private BufferedHtmlContent _buffer;
@@ -279,6 +281,12 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <inheritdoc />
         public override string GetContent()
         {
+            return GetContent(HtmlEncoder.Default);
+        }
+
+        /// <inheritdoc />
+        public override string GetContent(IHtmlEncoder encoder)
+        {
             if (_buffer == null)
             {
                 return string.Empty;
@@ -286,7 +294,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             using (var writer = new StringWriter())
             {
-                WriteTo(writer, HtmlEncoder.Default);
+                WriteTo(writer, encoder);
                 return writer.ToString();
             }
         }
@@ -307,8 +315,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             Buffer.WriteTo(writer, encoder);
         }
 
-        /// <inheritdoc />
-        public override string ToString()
+        private string DebuggerToString()
         {
             return GetContent();
         }

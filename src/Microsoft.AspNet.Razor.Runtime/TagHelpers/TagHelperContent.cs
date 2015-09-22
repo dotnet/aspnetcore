@@ -202,6 +202,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <returns>A <see cref="string"/> containing the content.</returns>
         public abstract string GetContent();
 
+        /// <summary>
+        /// Gets the content.
+        /// </summary>
+        /// <param name="encoder">The <see cref="IHtmlEncoder"/>.</param>
+        /// <returns>A <see cref="string"/> containing the content.</returns>
+        public abstract string GetContent(IHtmlEncoder encoder);
+
         /// <inheritdoc />
         public abstract void WriteTo(TextWriter writer, IHtmlEncoder encoder);
     }

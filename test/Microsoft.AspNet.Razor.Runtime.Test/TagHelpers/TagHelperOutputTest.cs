@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.Framework.WebEncoders.Testing;
 using Xunit;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
@@ -20,7 +21,9 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             Assert.NotNull(tagHelperOutput.Content);
             Assert.NotNull(tagHelperOutput.PostContent);
             Assert.NotNull(tagHelperOutput.PostElement);
-            Assert.Equal("Hello World", tagHelperOutput.PreElement.GetContent());
+            Assert.Equal(
+                "HtmlEncode[[Hello World]]",
+                tagHelperOutput.PreElement.GetContent(new CommonTestEncoder()));
         }
 
         [Fact]
@@ -36,7 +39,9 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             Assert.NotNull(tagHelperOutput.Content);
             Assert.NotNull(tagHelperOutput.PostContent);
             Assert.NotNull(tagHelperOutput.PostElement);
-            Assert.Equal("Hello World", tagHelperOutput.PostElement.GetContent());
+            Assert.Equal(
+                "HtmlEncode[[Hello World]]",
+                tagHelperOutput.PostElement.GetContent(new CommonTestEncoder()));
         }
 
         [Fact]
@@ -75,7 +80,9 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             Assert.NotNull(tagHelperOutput.Content);
             Assert.NotNull(tagHelperOutput.PostContent);
             Assert.NotNull(tagHelperOutput.PostElement);
-            Assert.Equal("Hello World", tagHelperOutput.PreContent.GetContent());
+            Assert.Equal(
+                "HtmlEncode[[Hello World]]",
+                tagHelperOutput.PreContent.GetContent(new CommonTestEncoder()));
         }
 
         [Fact]
@@ -91,7 +98,9 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             Assert.NotNull(tagHelperOutput.Content);
             Assert.NotNull(tagHelperOutput.PostContent);
             Assert.NotNull(tagHelperOutput.PostElement);
-            Assert.Equal("Hello World", tagHelperOutput.Content.GetContent());
+            Assert.Equal(
+                "HtmlEncode[[Hello World]]",
+                tagHelperOutput.Content.GetContent(new CommonTestEncoder()));
         }
 
         [Fact]
@@ -107,7 +116,9 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             Assert.NotNull(tagHelperOutput.Content);
             Assert.NotNull(tagHelperOutput.PostContent);
             Assert.NotNull(tagHelperOutput.PostElement);
-            Assert.Equal("Hello World", tagHelperOutput.PostContent.GetContent());
+            Assert.Equal(
+                "HtmlEncode[[Hello World]]",
+                tagHelperOutput.PostContent.GetContent(new CommonTestEncoder()));
         }
 
         [Fact]
@@ -125,15 +136,15 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Assert
             Assert.Null(tagHelperOutput.TagName);
             Assert.NotNull(tagHelperOutput.PreElement);
-            Assert.Empty(tagHelperOutput.PreElement.GetContent());
+            Assert.Empty(tagHelperOutput.PreElement.GetContent(new CommonTestEncoder()));
             Assert.NotNull(tagHelperOutput.PreContent);
-            Assert.Empty(tagHelperOutput.PreContent.GetContent());
+            Assert.Empty(tagHelperOutput.PreContent.GetContent(new CommonTestEncoder()));
             Assert.NotNull(tagHelperOutput.Content);
-            Assert.Empty(tagHelperOutput.Content.GetContent());
+            Assert.Empty(tagHelperOutput.Content.GetContent(new CommonTestEncoder()));
             Assert.NotNull(tagHelperOutput.PostContent);
-            Assert.Empty(tagHelperOutput.PostContent.GetContent());
+            Assert.Empty(tagHelperOutput.PostContent.GetContent(new CommonTestEncoder()));
             Assert.NotNull(tagHelperOutput.PostElement);
-            Assert.Empty(tagHelperOutput.PostElement.GetContent());
+            Assert.Empty(tagHelperOutput.PostElement.GetContent(new CommonTestEncoder()));
         }
 
         [Fact]
@@ -155,15 +166,15 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // Assert
             Assert.NotNull(tagHelperOutput.PreElement);
-            Assert.Empty(tagHelperOutput.PreElement.GetContent());
+            Assert.Empty(tagHelperOutput.PreElement.GetContent(new CommonTestEncoder()));
             Assert.NotNull(tagHelperOutput.PreContent);
-            Assert.Empty(tagHelperOutput.PreContent.GetContent());
+            Assert.Empty(tagHelperOutput.PreContent.GetContent(new CommonTestEncoder()));
             Assert.NotNull(tagHelperOutput.Content);
-            Assert.Empty(tagHelperOutput.Content.GetContent());
+            Assert.Empty(tagHelperOutput.Content.GetContent(new CommonTestEncoder()));
             Assert.NotNull(tagHelperOutput.PostContent);
-            Assert.Empty(tagHelperOutput.PostContent.GetContent());
+            Assert.Empty(tagHelperOutput.PostContent.GetContent(new CommonTestEncoder()));
             Assert.NotNull(tagHelperOutput.PostElement);
-            Assert.Empty(tagHelperOutput.PostElement.GetContent());
+            Assert.Empty(tagHelperOutput.PostElement.GetContent(new CommonTestEncoder()));
         }
 
         [Theory]

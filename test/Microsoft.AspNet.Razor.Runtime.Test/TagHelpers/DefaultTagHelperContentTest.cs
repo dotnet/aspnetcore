@@ -4,9 +4,7 @@
 using System;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using Microsoft.AspNet.Testing;
-using Microsoft.Framework.WebEncoders;
 using Microsoft.Framework.WebEncoders.Testing;
 using Xunit;
 
@@ -19,13 +17,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             // Arrange
             var tagHelperContent = new DefaultTagHelperContent();
-            var expected = "Hello World!";
+            var expected = "HtmlEncode[[Hello World!]]";
 
             // Act
-            tagHelperContent.SetContent(expected);
+            tagHelperContent.SetContent("Hello World!");
 
             // Assert
-            Assert.Equal(expected, tagHelperContent.GetContent());
+            Assert.Equal(expected, tagHelperContent.GetContent(new CommonTestEncoder()));
         }
 
         [Fact]
@@ -33,34 +31,34 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             // Arrange
             var tagHelperContent = new DefaultTagHelperContent();
-            var expected = "Hello World!";
+            var expected = "HtmlEncode[[Hello World!]]";
             tagHelperContent.SetContent("Contoso");
 
             // Act
-            tagHelperContent.SetContent(expected);
+            tagHelperContent.SetContent("Hello World!");
 
             // Assert
-            Assert.Equal(expected, tagHelperContent.GetContent());
+            Assert.Equal(expected, tagHelperContent.GetContent(new CommonTestEncoder()));
         }
 
         [Theory]
-        [InlineData("HelloWorld!")]
-        [InlineData("  ")]
-        public void SetContent_WithTagHelperContent_WorksAsExpected(string expected)
+        [InlineData("HelloWorld!", "HtmlEncode[[HelloWorld!]]")]
+        [InlineData("  ", "HtmlEncode[[  ]]")]
+        public void SetContent_WithTagHelperContent_WorksAsExpected(string content, string expected)
         {
             // Arrange
             var tagHelperContent = new DefaultTagHelperContent();
             var copiedTagHelperContent = new DefaultTagHelperContent();
-            tagHelperContent.SetContent(expected);
+            tagHelperContent.SetContent(content);
 
             // Act
             copiedTagHelperContent.SetContent(tagHelperContent);
 
             // Assert
-            Assert.Equal(expected, copiedTagHelperContent.GetContent());
+            Assert.Equal(expected, copiedTagHelperContent.GetContent(new CommonTestEncoder()));
         }
 
-        // GetContent
+        // GetContent - this one relies on the default encoder.
         [Fact]
         public void CanGetContent()
         {
@@ -81,13 +79,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             // Arrange
             var tagHelperContent = new DefaultTagHelperContent();
-            var expected = "Hello World!";
+            var expected = "HtmlEncode[[Hello World!]]";
 
             // Act
-            tagHelperContent.Append(expected);
+            tagHelperContent.Append("Hello World!");
 
             // Assert
-            Assert.Equal(expected, tagHelperContent.GetContent());
+            Assert.Equal(expected, tagHelperContent.GetContent(new CommonTestEncoder()));
         }
 
         // Overload with args array is called.
@@ -101,7 +99,9 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             tagHelperContent.AppendFormat("{0} {1} {2} {3}!", "First", "Second", "Third", "Fourth");
 
             // Assert
-            Assert.Equal("First Second Third Fourth!", tagHelperContent.GetContent());
+            Assert.Equal(
+                "HtmlEncode[[First Second Third Fourth!]]",
+                tagHelperContent.GetContent(new CommonTestEncoder()));
         }
 
         [Fact]
@@ -114,7 +114,9 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             tagHelperContent.AppendFormat("0x{0, -5:X} - hex equivalent for 50.", 50);
 
             // Assert
-            Assert.Equal("0x32    - hex equivalent for 50.", tagHelperContent.GetContent());
+            Assert.Equal(
+                "HtmlEncode[[0x32    - hex equivalent for 50.]]",
+                tagHelperContent.GetContent(new CommonTestEncoder()));
         }
 
         [Fact]
@@ -127,7 +129,9 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             tagHelperContent.AppendFormat("0x{0, -5:X} - hex equivalent for {1}.", 50, 50);
 
             // Assert
-            Assert.Equal("0x32    - hex equivalent for 50.", tagHelperContent.GetContent());
+            Assert.Equal(
+                "HtmlEncode[[0x32    - hex equivalent for 50.]]",
+                tagHelperContent.GetContent(new CommonTestEncoder()));
         }
 
         [Fact]
@@ -140,7 +144,9 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             tagHelperContent.AppendFormat("0x{0, -5:X} - {1} equivalent for {2}.", 50, "hex", 50);
 
             // Assert
-            Assert.Equal("0x32    - hex equivalent for 50.", tagHelperContent.GetContent());
+            Assert.Equal(
+                "HtmlEncode[[0x32    - hex equivalent for 50.]]",
+                tagHelperContent.GetContent(new CommonTestEncoder()));
         }
 
         [Fact]
@@ -153,7 +159,9 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             tagHelperContent.AppendFormat("{0, -10} World!", "Hello");
 
             // Assert
-            Assert.Equal("Hello      World!", tagHelperContent.GetContent());
+            Assert.Equal(
+                "HtmlEncode[[Hello      World!]]",
+                tagHelperContent.GetContent(new CommonTestEncoder()));
         }
 
         [Fact]
@@ -166,7 +174,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             tagHelperContent.AppendFormat("0x{0:X}", 50);
 
             // Assert
-            Assert.Equal("0x32", tagHelperContent.GetContent());
+            Assert.Equal("HtmlEncode[[0x32]]", tagHelperContent.GetContent(new CommonTestEncoder()));
         }
 
         // Overload with args array is called.
@@ -186,7 +194,9 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 32.86);
 
             // Assert
-            Assert.Equal("Numbers in InvariantCulture - 1.10  2.98 145.82 32.86!", tagHelperContent.GetContent());
+            Assert.Equal(
+                "HtmlEncode[[Numbers in InvariantCulture - 1.10  2.98 145.82 32.86!]]",
+                tagHelperContent.GetContent(new CommonTestEncoder()));
         }
 
         [Fact]
@@ -202,7 +212,9 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 1.1);
 
             // Assert
-            Assert.Equal("Numbers in InvariantCulture - 1.10 !", tagHelperContent.GetContent());
+            Assert.Equal(
+                "HtmlEncode[[Numbers in InvariantCulture - 1.10 !]]",
+                tagHelperContent.GetContent(new CommonTestEncoder()));
         }
 
         [Fact]
@@ -219,7 +231,9 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 2.98);
 
             // Assert
-            Assert.Equal("Numbers in InvariantCulture - 1.10  2.98!", tagHelperContent.GetContent());
+            Assert.Equal(
+                "HtmlEncode[[Numbers in InvariantCulture - 1.10  2.98!]]",
+                tagHelperContent.GetContent(new CommonTestEncoder()));
         }
 
         [Fact]
@@ -237,7 +251,9 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 3.12);
 
             // Assert
-            Assert.Equal("Numbers in InvariantCulture - 1.10  2.98 3.12!", tagHelperContent.GetContent());
+            Assert.Equal(
+                "HtmlEncode[[Numbers in InvariantCulture - 1.10  2.98 3.12!]]",
+                tagHelperContent.GetContent(new CommonTestEncoder()));
         }
 
         [Fact]
@@ -251,7 +267,9 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             tagHelperContent.AppendFormat(culture, "{0} in french!", 1.21);
 
             // Assert
-            Assert.Equal("1,21 in french!", tagHelperContent.GetContent());
+            Assert.Equal(
+                "HtmlEncode[[1,21 in french!]]",
+                tagHelperContent.GetContent(new CommonTestEncoder()));
         }
 
         [Fact]
@@ -265,23 +283,25 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             tagHelperContent.AppendFormat(CultureInfo.CurrentCulture, "{0:D}", DateTime.Parse("01/02/2015"));
 
             // Assert
-            Assert.Equal("01 February 2015", tagHelperContent.GetContent());
+            Assert.Equal(
+                "HtmlEncode[[01 February 2015]]",
+                tagHelperContent.GetContent(new CommonTestEncoder()));
         }
 
-        [Fact]
+        [Fact(Skip = "Blocked by #526")]
         public void CanAppendDefaultTagHelperContent()
         {
             // Arrange
             var tagHelperContent = new DefaultTagHelperContent();
             var helloWorldContent = new DefaultTagHelperContent();
             helloWorldContent.SetContent("HelloWorld");
-            var expected = "Content was HelloWorld";
+            var expected = "HtmlEncode[[Content was HelloWorld]]";
 
             // Act
             tagHelperContent.AppendFormat("Content was {0}", helloWorldContent);
 
             // Assert
-            Assert.Equal(expected, tagHelperContent.GetContent());
+            Assert.Equal(expected, tagHelperContent.GetContent(new CommonTestEncoder()));
         }
 
         [Fact]
@@ -292,7 +312,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var copiedTagHelperContent = new DefaultTagHelperContent();
             var text1 = "Hello";
             var text2 = " World!";
-            var expected = text1 + text2;
+            var expected = "HtmlEncode[[Hello]]HtmlEncode[[ World!]]";
             tagHelperContent.Append(text1);
             tagHelperContent.Append(text2);
 
@@ -300,7 +320,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             copiedTagHelperContent.Append(tagHelperContent);
 
             // Assert
-            Assert.Equal(expected, copiedTagHelperContent.GetContent());
+            Assert.Equal(expected, copiedTagHelperContent.GetContent(new CommonTestEncoder()));
         }
 
         [Fact]
@@ -511,32 +531,17 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         }
 
         [Fact]
-        public void ToString_ReturnsExpectedValue()
-        {
-            // Arrange
-            var tagHelperContent = new DefaultTagHelperContent();
-            var expected = "Hello World!";
-            tagHelperContent.SetContent(expected);
-
-            // Act
-            var actual = tagHelperContent.ToString();
-
-            // Assert
-            Assert.Equal(expected, actual, StringComparer.Ordinal);
-        }
-
-        [Fact]
         public void Fluent_SetContent_Append_WritesExpectedContent()
         {
             // Arrange
             var tagHelperContent = new DefaultTagHelperContent();
-            var expected = "Hello World!";
+            var expected = "HtmlEncode[[Hello ]]HtmlEncode[[World!]]";
 
             // Act
             tagHelperContent.SetContent("Hello ").Append("World!");
 
             // Assert
-            Assert.Equal(expected, tagHelperContent.GetContent());
+            Assert.Equal(expected, tagHelperContent.GetContent(new CommonTestEncoder()));
         }
 
         [Fact]
@@ -544,13 +549,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             // Arrange
             var tagHelperContent = new DefaultTagHelperContent();
-            var expected = "First Second Third";
+            var expected = "HtmlEncode[[First ]]HtmlEncode[[Second Third]]";
 
             // Act
             tagHelperContent.SetContent("First ").AppendFormat("{0} Third", "Second");
 
             // Assert
-            Assert.Equal(expected, tagHelperContent.GetContent());
+            Assert.Equal(expected, tagHelperContent.GetContent(new CommonTestEncoder()));
         }
 
         [Fact]
@@ -558,7 +563,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             // Arrange
             var tagHelperContent = new DefaultTagHelperContent();
-            var expected = "First Second Third Fourth";
+            var expected = "HtmlEncode[[First ]]HtmlEncode[[Second Third ]]HtmlEncode[[Fourth]]";
 
             // Act
             tagHelperContent
@@ -567,7 +572,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 .Append("Fourth");
 
             // Assert
-            Assert.Equal(expected, tagHelperContent.GetContent());
+            Assert.Equal(expected, tagHelperContent.GetContent(new CommonTestEncoder()));
         }
 
         [Fact]
@@ -575,14 +580,14 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             // Arrange
             var tagHelperContent = new DefaultTagHelperContent();
-            var expected = "Hello World!";
+            var expected = "HtmlEncode[[Hello World]]";
             tagHelperContent.SetContent("Some Random Content");
 
             // Act
-            tagHelperContent.Clear().SetContent(expected);
+            tagHelperContent.Clear().SetContent("Hello World");
 
             // Assert
-            Assert.Equal(expected, tagHelperContent.GetContent());
+            Assert.Equal(expected, tagHelperContent.GetContent(new CommonTestEncoder()));
         }
 
         [Fact]
@@ -590,14 +595,14 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             // Arrange
             var tagHelperContent = new DefaultTagHelperContent();
-            var expected = "Hello World!";
+            var expected = "HtmlEncode[[Hello ]]HtmlEncode[[World!]]";
             tagHelperContent.SetContent("Some Random Content");
 
             // Act
             tagHelperContent.Clear().SetContent("Hello ").Append("World!");
 
             // Assert
-            Assert.Equal(expected, tagHelperContent.GetContent());
+            Assert.Equal(expected, tagHelperContent.GetContent(new CommonTestEncoder()));
         }
 
         [Fact]
