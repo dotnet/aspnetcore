@@ -12,12 +12,12 @@ namespace Microsoft.AspNet.Authentication.OAuth
     public class OAuthEvents : IOAuthEvents
     {
         /// <summary>
-        /// Gets or sets the function that is invoked when the Authenticated method is invoked.
+        /// Gets or sets the function that is invoked when the CreatingTicket method is invoked.
         /// </summary>
         public Func<OAuthCreatingTicketContext, Task> OnCreatingTicket { get; set; } = context => Task.FromResult(0);
 
         /// <summary>
-        /// Gets or sets the function that is invoked when the ReturnEndpoint method is invoked.
+        /// Gets or sets the function that is invoked when the SigningIn method is invoked.
         /// </summary>
         public Func<SigningInContext, Task> OnSigningIn { get; set; } = context => Task.FromResult(0);
 

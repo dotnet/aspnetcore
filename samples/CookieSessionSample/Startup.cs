@@ -24,7 +24,7 @@ namespace CookieSessionSample
             {
                 options.AutomaticAuthentication = true;
                 options.SessionStore = new MemoryCacheTicketStore();
-            }));
+            });
 
             app.Run(async context =>
             {
