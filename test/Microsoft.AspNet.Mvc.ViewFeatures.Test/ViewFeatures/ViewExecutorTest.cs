@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
@@ -89,7 +90,6 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             view.Setup(v => v.RenderAsync(It.IsAny<ViewContext>()))
                  .Callback((ViewContext v) =>
                  {
-                     view.ToString();
                      v.Writer.Write("abcd");
                  })
                  .Returns(Task.FromResult(0));
@@ -99,9 +99,10 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             context.Response.Body = memoryStream;
             context.Response.ContentType = responseContentType;
 
-            var actionContext = new ActionContext(context,
-                                                  new RouteData(),
-                                                  new ActionDescriptor());
+            var actionContext = new ActionContext(
+                context,
+                new RouteData(),
+                new ActionDescriptor());
             var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider());
 
             // Act
@@ -135,9 +136,10 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             var memoryStream = new MemoryStream();
             context.Response.Body = memoryStream;
 
-            var actionContext = new ActionContext(context,
-                                                  new RouteData(),
-                                                  new ActionDescriptor());
+            var actionContext = new ActionContext(
+                context,
+                new RouteData(),
+                new ActionDescriptor());
             var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider());
 
             // Act
@@ -152,6 +154,46 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
             // Assert
             Assert.Equal(expectedLength, memoryStream.Length);
+        }
+
+        [Theory]
+        [InlineData(HttpResponseStreamWriter.DefaultBufferSize - 1)]
+        [InlineData(HttpResponseStreamWriter.DefaultBufferSize + 1)]
+        [InlineData(2 * HttpResponseStreamWriter.DefaultBufferSize + 4)]
+        public async Task ExecuteAsync_AsynchronouslyFlushesToTheResponseStream_PriorToDispose(int writeLength)
+        {
+            // Arrange
+            var view = new Mock<IView>();
+            view.Setup(v => v.RenderAsync(It.IsAny<ViewContext>()))
+                .Returns((ViewContext v) =>
+                    Task.Run(async () =>
+                    {
+                        var text = new string('a', writeLength);
+                        await v.Writer.WriteAsync(text);
+                    }));
+
+            var context = new DefaultHttpContext();
+            var stream = new Mock<Stream>();
+            context.Response.Body = stream.Object;
+
+            var actionContext = new ActionContext(
+                context,
+                new RouteData(),
+                new ActionDescriptor());
+            var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider());
+
+            // Act
+            await ViewExecutor.ExecuteAsync(
+                view.Object,
+                actionContext,
+                viewData,
+                Mock.Of<ITempDataDictionary>(),
+                new HtmlHelperOptions(),
+                ViewExecutor.DefaultContentType);
+
+            // Assert
+            stream.Verify(s => s.FlushAsync(It.IsAny<CancellationToken>()), Times.Once());
+            stream.Verify(s => s.Write(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>()), Times.Never());
         }
     }
 }

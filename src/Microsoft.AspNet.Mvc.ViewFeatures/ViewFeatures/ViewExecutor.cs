@@ -62,6 +62,10 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                     htmlHelperOptions);
 
                 await view.RenderAsync(viewContext);
+                // Invoke FlushAsync to ensure any buffered content is asynchronously written to the underlying
+                // response. In the absence of this line, the buffer gets synchronously written to the response
+                // as part of the Dispose which has a perf impact.
+                await writer.FlushAsync();
             }
         }
     }

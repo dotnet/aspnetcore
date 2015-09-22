@@ -15,7 +15,10 @@ namespace Microsoft.AspNet.Mvc
     /// </summary>
     public class HttpResponseStreamWriter : TextWriter
     {
-        private const int DefaultBufferSize = 1024;
+        /// <summary>
+        /// Default buffer size.
+        /// </summary>
+        public const int DefaultBufferSize = 1024;
         private readonly Stream _stream;
         private Encoder _encoder;
         private byte[] _byteBuffer;
