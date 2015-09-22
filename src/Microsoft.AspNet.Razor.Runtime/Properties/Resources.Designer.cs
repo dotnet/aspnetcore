@@ -426,6 +426,22 @@ namespace Microsoft.AspNet.Razor.Runtime
             return string.Format(CultureInfo.CurrentCulture, GetString("TagHelperDescriptorFactory_InvalidRestrictChildrenAttributeNameNullWhitespace"), p0, p1);
         }
 
+        /// <summary>
+        /// Parent Tag
+        /// </summary>
+        internal static string TagHelperDescriptorFactory_ParentTag
+        {
+            get { return GetString("TagHelperDescriptorFactory_ParentTag"); }
+        }
+
+        /// <summary>
+        /// Parent Tag
+        /// </summary>
+        internal static string FormatTagHelperDescriptorFactory_ParentTag()
+        {
+            return GetString("TagHelperDescriptorFactory_ParentTag");
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

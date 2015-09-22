@@ -195,4 +195,7 @@
   <data name="TagHelperDescriptorFactory_InvalidRestrictChildrenAttributeNameNullWhitespace" xml:space="preserve">
     <value>Invalid '{0}' tag name for tag helper '{1}'. Name cannot be null or whitespace.</value>
   </data>
+  <data name="TagHelperDescriptorFactory_ParentTag" xml:space="preserve">
+    <value>Parent Tag</value>
+  </data>
 </root>

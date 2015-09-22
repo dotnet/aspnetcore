@@ -40,10 +40,14 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// <param name="tagName">The name of the HTML tag to match. Providing a '*' tag name
         /// retrieves catch-all <see cref="TagHelperDescriptor"/>s (descriptors that target every tag).</param>
         /// <param name="attributeNames">Attributes the HTML element must contain to match.</param>
+        /// <param name="parentTagName">The parent tag name of the given <paramref name="tagName"/> tag.</param>
         /// <returns><see cref="TagHelperDescriptor"/>s that apply to the given <paramref name="tagName"/>.
         /// Will return an empty <see cref="Enumerable" /> if no <see cref="TagHelperDescriptor"/>s are
         /// found.</returns>
-        public IEnumerable<TagHelperDescriptor> GetDescriptors(string tagName, IEnumerable<string> attributeNames)
+        public IEnumerable<TagHelperDescriptor> GetDescriptors(
+            string tagName,
+            IEnumerable<string> attributeNames,
+            string parentTagName)
         {
             if (!string.IsNullOrEmpty(_tagHelperPrefix) &&
                 (tagName.Length <= _tagHelperPrefix.Length ||
@@ -75,8 +79,18 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             }
 
             var applicableDescriptors = ApplyRequiredAttributes(descriptors, attributeNames);
+            applicableDescriptors = ApplyParentTagFilter(applicableDescriptors, parentTagName);
 
             return applicableDescriptors;
+        }
+
+        private IEnumerable<TagHelperDescriptor> ApplyParentTagFilter(
+            IEnumerable<TagHelperDescriptor> descriptors,
+            string parentTagName)
+        {
+            return descriptors.Where(descriptor =>
+                descriptor.RequiredParent == null ||
+                string.Equals(parentTagName, descriptor.RequiredParent, StringComparison.OrdinalIgnoreCase));
         }
 
         private IEnumerable<TagHelperDescriptor> ApplyRequiredAttributes(

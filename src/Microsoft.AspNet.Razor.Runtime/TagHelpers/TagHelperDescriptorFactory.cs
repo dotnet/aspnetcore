@@ -142,6 +142,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         requiredAttributes: Enumerable.Empty<string>(),
                         allowedChildren: allowedChildren,
                         tagStructure: default(TagStructure),
+                        parentTag: null,
                         designTimeDescriptor: typeDesignTimeDescriptor)
                 };
             }
@@ -231,6 +232,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 attributeDescriptors,
                 requiredAttributes,
                 allowedChildren,
+                targetElementAttribute.ParentTag,
                 targetElementAttribute.TagStructure,
                 designTimeDescriptor);
         }
@@ -242,6 +244,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             IEnumerable<TagHelperAttributeDescriptor> attributeDescriptors,
             IEnumerable<string> requiredAttributes,
             IEnumerable<string> allowedChildren,
+            string parentTag,
             TagStructure tagStructure,
             TagHelperDesignTimeDescriptor designTimeDescriptor)
         {
@@ -253,6 +256,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 Attributes = attributeDescriptors,
                 RequiredAttributes = requiredAttributes,
                 AllowedChildren = allowedChildren,
+                RequiredParent = parentTag,
                 TagStructure = tagStructure,
                 DesignTimeDescriptor = designTimeDescriptor
             };
@@ -286,7 +290,27 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 }
             }
 
-            return validTagName && validAttributeNames;
+            var validParentTagName = ValidateParentTagName(attribute.ParentTag, errorSink);
+
+            return validTagName && validAttributeNames && validParentTagName;
+        }
+
+        /// <summary>
+        /// Internal for unit testing.
+        /// </summary>
+        internal static bool ValidateParentTagName(string parentTag, ErrorSink errorSink)
+        {
+            return parentTag == null ||
+                TryValidateName(
+                    parentTag,
+                    Resources.FormatHtmlTargetElementAttribute_NameCannotBeNullOrWhitespace(
+                        Resources.TagHelperDescriptorFactory_ParentTag),
+                    characterErrorBuilder: (invalidCharacter) =>
+                        Resources.FormatHtmlTargetElementAttribute_InvalidName(
+                            Resources.TagHelperDescriptorFactory_ParentTag.ToLower(),
+                            parentTag,
+                            invalidCharacter),
+                    errorSink: errorSink);
         }
 
         private static bool ValidateName(

@@ -46,6 +46,10 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 string.Equals(descriptorX.TypeName, descriptorY.TypeName, StringComparison.Ordinal) &&
                 string.Equals(descriptorX.TagName, descriptorY.TagName, StringComparison.OrdinalIgnoreCase) &&
                 string.Equals(descriptorX.AssemblyName, descriptorY.AssemblyName, StringComparison.Ordinal) &&
+                string.Equals(
+                    descriptorX.RequiredParent,
+                    descriptorY.RequiredParent,
+                    StringComparison.OrdinalIgnoreCase) &&
                 Enumerable.SequenceEqual(
                     descriptorX.RequiredAttributes.OrderBy(attribute => attribute, StringComparer.OrdinalIgnoreCase),
                     descriptorY.RequiredAttributes.OrderBy(attribute => attribute, StringComparer.OrdinalIgnoreCase),
@@ -72,6 +76,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             hashCodeCombiner.Add(descriptor.TypeName, StringComparer.Ordinal);
             hashCodeCombiner.Add(descriptor.TagName, StringComparer.OrdinalIgnoreCase);
             hashCodeCombiner.Add(descriptor.AssemblyName, StringComparer.Ordinal);
+            hashCodeCombiner.Add(descriptor.RequiredParent, StringComparer.OrdinalIgnoreCase);
             hashCodeCombiner.Add(descriptor.TagStructure);
 
             var attributes = descriptor.RequiredAttributes.OrderBy(

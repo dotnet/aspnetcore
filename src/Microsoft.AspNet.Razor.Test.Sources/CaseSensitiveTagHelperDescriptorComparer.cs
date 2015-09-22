@@ -34,6 +34,7 @@ namespace Microsoft.AspNet.Razor.Test.Internal
             Assert.Equal(descriptorX.TagName, descriptorY.TagName, StringComparer.Ordinal);
             Assert.Equal(descriptorX.Prefix, descriptorY.Prefix, StringComparer.Ordinal);
             Assert.Equal(descriptorX.RequiredAttributes, descriptorY.RequiredAttributes, StringComparer.Ordinal);
+            Assert.Equal(descriptorX.RequiredParent, descriptorY.RequiredParent, StringComparer.Ordinal);
 
             if (descriptorX.AllowedChildren != descriptorY.AllowedChildren)
             {

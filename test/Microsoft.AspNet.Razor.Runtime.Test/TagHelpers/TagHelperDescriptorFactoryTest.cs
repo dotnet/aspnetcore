@@ -13,10 +13,99 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 {
     public abstract class TagHelperDescriptorFactoryTest
     {
-        protected static readonly AssemblyName TagHelperDescriptorFactoryTestAssembly =  
+        protected static readonly AssemblyName TagHelperDescriptorFactoryTestAssembly =
             typeof(TagHelperDescriptorFactoryTest).GetTypeInfo().Assembly.GetName();
 
         protected static readonly string AssemblyName = TagHelperDescriptorFactoryTestAssembly.Name;
+
+        public static TheoryData RequiredParentData
+        {
+            get
+            {
+                // tagHelperType, expectedDescriptors
+                return new TheoryData<Type, TagHelperDescriptor[]>
+                {
+                    {
+                        typeof(RequiredParentTagHelper),
+                        new[]
+                        {
+                            new TagHelperDescriptor
+                            {
+                                TagName = "input",
+                                TypeName = typeof(RequiredParentTagHelper).FullName,
+                                AssemblyName = AssemblyName,
+                                RequiredParent = "div"
+                            }
+                        }
+                    },
+                    {
+                        typeof(MultiSpecifiedRequiredParentTagHelper),
+                        new[]
+                        {
+                            new TagHelperDescriptor
+                            {
+                                TagName = "input",
+                                TypeName = typeof(MultiSpecifiedRequiredParentTagHelper).FullName,
+                                AssemblyName = AssemblyName,
+                                RequiredParent = "section"
+                            },
+                            new TagHelperDescriptor
+                            {
+                                TagName = "p",
+                                TypeName = typeof(MultiSpecifiedRequiredParentTagHelper).FullName,
+                                AssemblyName = AssemblyName,
+                                RequiredParent = "div"
+                            }
+                        }
+                    },
+                    {
+                        typeof(MultiWithUnspecifiedRequiredParentTagHelper),
+                        new[]
+                        {
+                            new TagHelperDescriptor
+                            {
+                                TagName = "input",
+                                TypeName = typeof(MultiWithUnspecifiedRequiredParentTagHelper).FullName,
+                                AssemblyName = AssemblyName,
+                                RequiredParent = "div"
+                            },
+                            new TagHelperDescriptor
+                            {
+                                TagName = "p",
+                                TypeName = typeof(MultiWithUnspecifiedRequiredParentTagHelper).FullName,
+                                AssemblyName = AssemblyName
+                            }
+                        }
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(RequiredParentData))]
+        public void CreateDescriptors_CreatesDesignTimeDescriptorsWithRequiredParent(
+            Type tagHelperType,
+            TagHelperDescriptor[] expectedDescriptors)
+        {
+            // Arrange
+            var errorSink = new ErrorSink();
+
+            // Act
+            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
+                AssemblyName,
+                GetTypeInfo(tagHelperType),
+                designTime: false,
+                errorSink: errorSink);
+
+            // Assert
+            Assert.Empty(errorSink.Errors);
+
+            // We don't care about order. Mono returns reflected attributes differently so we need to ensure order
+            // doesn't matter by sorting.
+            descriptors = descriptors.OrderBy(descriptor => descriptor.TagName);
+
+            Assert.Equal(expectedDescriptors, descriptors, CaseSensitiveTagHelperDescriptorComparer.Default);
+        }
 
         public static TheoryData RestrictChildrenData
         {
@@ -1708,6 +1797,41 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // Act
             TagHelperDescriptorFactory.GetValidAllowedChildren(new[] { name }, "SomeTagHelper", errorSink);
+
+            // Assert
+            Assert.Equal(expectedErrors, errorSink.Errors);
+        }
+
+        public static TheoryData<string, string[]> InvalidParentTagData
+        {
+            get
+            {
+                var nullOrWhiteSpaceError =
+                    Resources.FormatHtmlTargetElementAttribute_NameCannotBeNullOrWhitespace(
+                        Resources.TagHelperDescriptorFactory_ParentTag);
+
+                return GetInvalidNameOrPrefixData(
+                    onNameError: (invalidInput, invalidCharacter) =>
+                        Resources.FormatHtmlTargetElementAttribute_InvalidName(
+                            Resources.TagHelperDescriptorFactory_ParentTag.ToLower(),
+                            invalidInput,
+                            invalidCharacter),
+                    whitespaceErrorString: nullOrWhiteSpaceError,
+                    onDataError: null);
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(InvalidParentTagData))]
+        public void ValidateParentTagName_AddsExpectedErrors(string name, string[] expectedErrorMessages)
+        {
+            // Arrange
+            var errorSink = new ErrorSink();
+            var expectedErrors = expectedErrorMessages.Select(
+                message => new RazorError(message, SourceLocation.Zero, 0));
+
+            // Act
+            TagHelperDescriptorFactory.ValidateParentTagName(name, errorSink);
 
             // Assert
             Assert.Equal(expectedErrors, errorSink.Errors);

@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
@@ -15,16 +14,38 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
 {
     public class TagHelperParseTreeRewriter : ISyntaxTreeRewriter
     {
+        // From http://dev.w3.org/html5/spec/Overview.html#elements-0
+        private static readonly HashSet<string> VoidElements = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "area",
+            "base",
+            "br",
+            "col",
+            "command",
+            "embed",
+            "hr",
+            "img",
+            "input",
+            "keygen",
+            "link",
+            "meta",
+            "param",
+            "source",
+            "track",
+            "wbr"
+        };
+
         private TagHelperDescriptorProvider _provider;
-        private Stack<TagHelperBlockTracker> _trackerStack;
+        private Stack<TagBlockTracker> _trackerStack;
         private TagHelperBlockTracker _currentTagHelperTracker;
         private Stack<BlockBuilder> _blockStack;
         private BlockBuilder _currentBlock;
+        private string _currentParentTagName;
 
         public TagHelperParseTreeRewriter(TagHelperDescriptorProvider provider)
         {
             _provider = provider;
-            _trackerStack = new Stack<TagHelperBlockTracker>();
+            _trackerStack = new Stack<TagBlockTracker>();
             _blockStack = new Stack<BlockBuilder>();
         }
 
@@ -44,7 +65,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                 ChunkGenerator = input.ChunkGenerator
             });
 
-            var activeTagHelpers = _trackerStack.Count;
+            var activeTrackers = _trackerStack.Count;
 
             foreach (var child in input.Children)
             {
@@ -60,6 +81,8 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                         }
                         else
                         {
+                            TrackTagBlock(childBlock);
+
                             // Non-TagHelper tag.
                             ValidateParentTagHelperAllowsPlainTag(childBlock, context.ErrorSink);
                         }
@@ -88,17 +111,46 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
 
             // We captured the number of active tag helpers at the start of our logic, it should be the same. If not
             // it means that there are malformed tag helpers at the top of our stack.
-            if (activeTagHelpers != _trackerStack.Count)
+            if (activeTrackers != _trackerStack.Count)
             {
                 // Malformed tag helpers built here will be tag helpers that do not have end tags in the current block
                 // scope. Block scopes are special cases in Razor such as @<p> would cause an error because there's no
                 // matching end </p> tag in the template block scope and therefore doesn't make sense as a tag helper.
-                BuildMalformedTagHelpers(_trackerStack.Count - activeTagHelpers, context);
+                BuildMalformedTagHelpers(_trackerStack.Count - activeTrackers, context);
 
-                Debug.Assert(activeTagHelpers == _trackerStack.Count);
+                Debug.Assert(activeTrackers == _trackerStack.Count);
             }
 
             BuildCurrentlyTrackedBlock();
+        }
+
+        private void TrackTagBlock(Block childBlock)
+        {
+            var tagName = GetTagName(childBlock);
+
+            // Don't want to track incomplete tags that have no tag name.
+            if (string.IsNullOrWhiteSpace(tagName))
+            {
+                return;
+            }
+
+            if (IsEndTag(childBlock))
+            {
+                var parentTracker = _trackerStack.Count > 0 ? _trackerStack.Peek() : null;
+                if (parentTracker != null &&
+                    !parentTracker.IsTagHelper &&
+                    string.Equals(parentTracker.TagName, tagName, StringComparison.OrdinalIgnoreCase))
+                {
+                    PopTrackerStack();
+                }
+            }
+            else if (!VoidElements.Contains(tagName) && !IsSelfClosing(childBlock))
+            {
+                // If it's not a void element and it's not self-closing then we need to create a tag
+                // tracker for it.
+                var tracker = new TagBlockTracker(tagName, isTagHelper: false);
+                PushTrackerStack(tracker);
+            }
         }
 
         private bool TryRewriteTagHelper(Block tagBlock, RewritingContext context)
@@ -120,15 +172,14 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
             }
 
             var tracker = _currentTagHelperTracker;
-            var tagNameScope = tracker?.Builder.TagName ?? string.Empty;
+            var tagNameScope = tracker?.TagName ?? string.Empty;
 
             if (!IsEndTag(tagBlock))
             {
                 // We're now in a start tag block, we first need to see if the tag block is a tag helper.
                 var providedAttributes = GetAttributeNames(tagBlock);
 
-                descriptors = _provider.GetDescriptors(tagName, providedAttributes);
-
+                descriptors = _provider.GetDescriptors(tagName, providedAttributes, _currentParentTagName);
 
                 // If there aren't any TagHelperDescriptors registered then we aren't a TagHelper
                 if (!descriptors.Any())
@@ -193,7 +244,10 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                 }
                 else
                 {
-                    descriptors = _provider.GetDescriptors(tagName, attributeNames: Enumerable.Empty<string>());
+                    descriptors = _provider.GetDescriptors(
+                        tagName,
+                        attributeNames: Enumerable.Empty<string>(),
+                        parentTagName: _currentParentTagName);
 
                     // If there are not TagHelperDescriptors associated with the end tag block that also have no
                     // required attributes then it means we can't be a TagHelper, bail out.
@@ -297,7 +351,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                     errorSink.OnError(
                         errorStart,
                         RazorResources.FormatTagHelperParseTreeRewriter_CannotHaveNonTagContent(
-                            _currentTagHelperTracker.Builder.TagName,
+                            _currentTagHelperTracker.TagName,
                             allowedChildrenString),
                         length);
                 }
@@ -343,7 +397,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
             var allowedChildrenString = string.Join(", ", tracker.AllowedChildren);
             var errorMessage = RazorResources.FormatTagHelperParseTreeRewriter_InvalidNestedTag(
                 tagName,
-                tracker.Builder.TagName,
+                tracker.TagName,
                 allowedChildrenString);
             var errorStart = GetTagDeclarationErrorStart(tagBlock);
 
@@ -450,11 +504,23 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
 
         private void BuildCurrentlyTrackedTagHelperBlock(Block endTag)
         {
+            Debug.Assert(_trackerStack.Any(tracker => tracker.IsTagHelper));
+
+            // We need to pop all trackers until we reach our TagHelperBlock. We can throw away any non-TagHelper
+            // trackers because they don't need to be well-formed.
+            TagHelperBlockTracker tagHelperTracker;
+            do
+            {
+                tagHelperTracker = PopTrackerStack() as TagHelperBlockTracker;
+            }
+            while (tagHelperTracker == null);
+
             // Track the original end tag so the editor knows where each piece of the TagHelperBlock lies
             // for formatting.
-            _trackerStack.Pop().Builder.SourceEndTag = endTag;
+            tagHelperTracker.Builder.SourceEndTag = endTag;
 
-            _currentTagHelperTracker = _trackerStack.Count > 0 ? _trackerStack.Peek() : null;
+            _currentTagHelperTracker =
+                (TagHelperBlockTracker)_trackerStack.FirstOrDefault(tagBlockTracker => tagBlockTracker.IsTagHelper);
 
             BuildCurrentlyTrackedBlock();
         }
@@ -481,7 +547,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
         private void TrackTagHelperBlock(TagHelperBlockBuilder builder)
         {
             _currentTagHelperTracker = new TagHelperBlockTracker(builder);
-            _trackerStack.Push(_currentTagHelperTracker);
+            PushTrackerStack(_currentTagHelperTracker);
 
             TrackBlock(builder);
         }
@@ -492,7 +558,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
 
             foreach (var tracker in _trackerStack)
             {
-                if (tracker.Builder.TagName.Equals(tagName, StringComparison.OrdinalIgnoreCase))
+                if (tracker.IsTagHelper && tracker.TagName.Equals(tagName, StringComparison.OrdinalIgnoreCase))
                 {
                     break;
                 }
@@ -521,7 +587,16 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
         {
             for (var i = 0; i < count; i++)
             {
-                var malformedTagHelper = _trackerStack.Peek().Builder;
+                var tracker = _trackerStack.Peek();
+
+                // Skip all non-TagHelper entries. Non TagHelper trackers do not need to represent well-formed HTML.
+                if (!tracker.IsTagHelper)
+                {
+                    PopTrackerStack();
+                    continue;
+                }
+
+                var malformedTagHelper = ((TagHelperBlockTracker)tracker).Builder;
 
                 context.ErrorSink.OnError(
                     SourceLocation.Advance(malformedTagHelper.Start, "<"),
@@ -570,11 +645,46 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
             Debug.Assert(tagBlock.Children.First() is Span);
         }
 
-        private class TagHelperBlockTracker
+        private static bool IsSelfClosing(Block childBlock)
+        {
+            var childSpan = childBlock.FindLastDescendentSpan();
+
+            return childSpan?.Content.EndsWith("/>") ?? false;
+        }
+
+        private void PushTrackerStack(TagBlockTracker tracker)
+        {
+            _currentParentTagName = tracker.TagName;
+            _trackerStack.Push(tracker);
+        }
+
+        private TagBlockTracker PopTrackerStack()
+        {
+            var poppedTracker = _trackerStack.Pop();
+            _currentParentTagName = _trackerStack.Count > 0 ? _trackerStack.Peek().TagName : null;
+
+            return poppedTracker;
+        }
+
+        private class TagBlockTracker
+        {
+            public TagBlockTracker(string tagName, bool isTagHelper)
+            {
+                TagName = tagName;
+                IsTagHelper = isTagHelper;
+            }
+
+            public string TagName { get; }
+
+            public bool IsTagHelper { get; }
+        }
+
+        private class TagHelperBlockTracker : TagBlockTracker
         {
             private IEnumerable<string> _prefixedAllowedChildren;
 
             public TagHelperBlockTracker(TagHelperBlockBuilder builder)
+                : base(builder.TagName, isTagHelper: true)
             {
                 Builder = builder;
 

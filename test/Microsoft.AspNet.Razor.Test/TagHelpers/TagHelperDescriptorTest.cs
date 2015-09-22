@@ -24,12 +24,13 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 AssemblyName =  "assembly name",
                 RequiredAttributes = new[] { "required attribute one", "required attribute two" },
                 AllowedChildren = new[] { "allowed child one" },
+                RequiredParent = "parent name",
                 DesignTimeDescriptor = new TagHelperDesignTimeDescriptor
                 {
                     Summary = "usage summary",
                     Remarks = "usage remarks",
                     OutputElementHint = "some-tag"
-                }
+                },
             };
 
             var expectedSerializedDescriptor =
@@ -42,6 +43,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 $"\"{ nameof(TagHelperDescriptor.RequiredAttributes) }\":" +
                 "[\"required attribute one\",\"required attribute two\"]," +
                 $"\"{ nameof(TagHelperDescriptor.AllowedChildren) }\":[\"allowed child one\"]," +
+                $"\"{ nameof(TagHelperDescriptor.RequiredParent) }\":\"parent name\"," +
                 $"\"{ nameof(TagHelperDescriptor.TagStructure) }\":0," +
                 $"\"{ nameof(TagHelperDescriptor.DesignTimeDescriptor) }\":{{"+
                 $"\"{ nameof(TagHelperDesignTimeDescriptor.Summary) }\":\"usage summary\"," +
@@ -105,6 +107,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 $"\"{ nameof(TagHelperAttributeDescriptor.DesignTimeDescriptor) }\":null}}]," +
                 $"\"{ nameof(TagHelperDescriptor.RequiredAttributes) }\":[]," +
                 $"\"{ nameof(TagHelperDescriptor.AllowedChildren) }\":null," +
+                $"\"{ nameof(TagHelperDescriptor.RequiredParent) }\":null," +
                 $"\"{ nameof(TagHelperDescriptor.TagStructure) }\":1," +
                 $"\"{ nameof(TagHelperDescriptor.DesignTimeDescriptor) }\":null}}";
 
@@ -143,7 +146,8 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                         IsStringProperty = true
                     },
                 },
-                AllowedChildren = new[] { "allowed child one", "allowed child two" }
+                AllowedChildren = new[] { "allowed child one", "allowed child two" },
+                RequiredParent = "parent name"
             };
 
             var expectedSerializedDescriptor =
@@ -167,6 +171,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 $"\"{ nameof(TagHelperAttributeDescriptor.DesignTimeDescriptor) }\":null}}]," +
                 $"\"{ nameof(TagHelperDescriptor.RequiredAttributes) }\":[]," +
                 $"\"{ nameof(TagHelperDescriptor.AllowedChildren) }\":[\"allowed child one\",\"allowed child two\"]," +
+                $"\"{ nameof(TagHelperDescriptor.RequiredParent) }\":\"parent name\"," +
                 $"\"{ nameof(TagHelperDescriptor.TagStructure) }\":0," +
                 $"\"{ nameof(TagHelperDescriptor.DesignTimeDescriptor) }\":null}}";
 
@@ -191,6 +196,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 $"\"{nameof(TagHelperDescriptor.RequiredAttributes)}\":" +
                 "[\"required attribute one\",\"required attribute two\"]," +
                 $"\"{ nameof(TagHelperDescriptor.AllowedChildren) }\":[\"allowed child one\",\"allowed child two\"]," +
+                $"\"{ nameof(TagHelperDescriptor.RequiredParent) }\":\"parent name\"," +
                 $"\"{nameof(TagHelperDescriptor.TagStructure)}\":2," +
                 $"\"{ nameof(TagHelperDescriptor.DesignTimeDescriptor) }\":{{" +
                 $"\"{ nameof(TagHelperDesignTimeDescriptor.Summary) }\":\"usage summary\"," +
@@ -204,6 +210,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 AssemblyName = "assembly name",
                 RequiredAttributes = new[] { "required attribute one", "required attribute two" },
                 AllowedChildren = new[] { "allowed child one", "allowed child two" },
+                RequiredParent = "parent name",
                 DesignTimeDescriptor = new TagHelperDesignTimeDescriptor
                 {
                     Summary = "usage summary",
@@ -255,6 +262,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 $"\"{ nameof(TagHelperAttributeDescriptor.DesignTimeDescriptor) }\":null}}]," +
                 $"\"{ nameof(TagHelperDescriptor.RequiredAttributes) }\":[]," +
                 $"\"{ nameof(TagHelperDescriptor.AllowedChildren) }\":null," +
+                $"\"{ nameof(TagHelperDescriptor.RequiredParent) }\":null," +
                 $"\"{nameof(TagHelperDescriptor.TagStructure)}\":0," +
                 $"\"{ nameof(TagHelperDescriptor.DesignTimeDescriptor) }\":null}}";
             var expectedDescriptor = new TagHelperDescriptor
@@ -321,6 +329,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 $"\"{ nameof(TagHelperAttributeDescriptor.DesignTimeDescriptor) }\":null}}]," +
                 $"\"{ nameof(TagHelperDescriptor.RequiredAttributes) }\":[]," +
                 $"\"{ nameof(TagHelperDescriptor.AllowedChildren) }\":null," +
+                $"\"{ nameof(TagHelperDescriptor.RequiredParent) }\":null," +
                 $"\"{nameof(TagHelperDescriptor.TagStructure)}\":1," +
                 $"\"{ nameof(TagHelperDescriptor.DesignTimeDescriptor) }\":null}}";
             var expectedDescriptor = new TagHelperDescriptor

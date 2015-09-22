@@ -9,6 +9,23 @@ using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 {
+    [HtmlTargetElement("input", ParentTag = "div")]
+    public class RequiredParentTagHelper : TagHelper
+    {
+    }
+
+    [HtmlTargetElement("p", ParentTag = "div")]
+    [HtmlTargetElement("input", ParentTag = "section")]
+    public class MultiSpecifiedRequiredParentTagHelper : TagHelper
+    {
+    }
+
+    [HtmlTargetElement("p")]
+    [HtmlTargetElement("input", ParentTag = "div")]
+    public class MultiWithUnspecifiedRequiredParentTagHelper : TagHelper
+    {
+    }
+
 
     [RestrictChildren("p")]
     public class RestrictChildrenTagHelper

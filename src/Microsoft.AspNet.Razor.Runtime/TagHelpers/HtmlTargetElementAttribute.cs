@@ -79,5 +79,11 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// </para>
         /// </remarks>
         public TagStructure TagStructure { get; set; }
+
+        /// <summary>
+        /// The required HTML element name of the direct parent.
+        /// </summary>
+        /// <remarks>A <c>null</c> value indicates any HTML element name is appropriate.</remarks>
+        public string ParentTag { get; set; }
     }
 }

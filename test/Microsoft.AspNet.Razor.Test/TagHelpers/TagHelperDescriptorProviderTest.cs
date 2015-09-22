@@ -4,12 +4,94 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
+using Microsoft.AspNet.Razor.Test.Internal;
 using Xunit;
 
 namespace Microsoft.AspNet.Razor.TagHelpers
 {
     public class TagHelperDescriptorProviderTest
     {
+        public static TheoryData RequiredParentData
+        {
+            get
+            {
+                var strongPParent = new TagHelperDescriptor
+                {
+                    TagName = "strong",
+                    TypeName = "StrongTagHelper",
+                    AssemblyName = "SomeAssembly",
+                    RequiredParent = "p",
+                };
+                var strongDivParent = new TagHelperDescriptor
+                {
+                    TagName = "strong",
+                    TypeName = "StrongTagHelper",
+                    AssemblyName = "SomeAssembly",
+                    RequiredParent = "div",
+                };
+                var catchAllPParent = new TagHelperDescriptor
+                {
+                    TagName = "*",
+                    TypeName = "CatchAllTagHelper",
+                    AssemblyName = "SomeAssembly",
+                    RequiredParent = "p",
+                };
+
+                return new TheoryData<
+                    string, // tagName
+                    string, // parentTagName
+                    IEnumerable<TagHelperDescriptor>, // availableDescriptors
+                    IEnumerable<TagHelperDescriptor>> // expectedDescriptors
+                {
+                    {
+                        "strong",
+                        "p",
+                        new[] { strongPParent, strongDivParent },
+                        new[] { strongPParent }
+                    },
+                    {
+                        "strong",
+                        "div",
+                        new[] { strongPParent, strongDivParent, catchAllPParent },
+                        new[] { strongDivParent }
+                    },
+                    {
+                        "strong",
+                        "p",
+                        new[] { strongPParent, strongDivParent, catchAllPParent },
+                        new[] { strongPParent, catchAllPParent }
+                    },
+                    {
+                        "custom",
+                        "p",
+                        new[] { strongPParent, strongDivParent, catchAllPParent },
+                        new[] { catchAllPParent }
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(RequiredParentData))]
+        public void GetDescriptors_ReturnsDescriptorsWithRequiredAttributes(
+            string tagName,
+            string parentTagName,
+            IEnumerable<TagHelperDescriptor> availableDescriptors,
+            IEnumerable<TagHelperDescriptor> expectedDescriptors)
+        {
+            // Arrange
+            var provider = new TagHelperDescriptorProvider(availableDescriptors);
+
+            // Act
+            var resolvedDescriptors = provider.GetDescriptors(
+                tagName,
+                attributeNames: Enumerable.Empty<string>(),
+                parentTagName: parentTagName);
+
+            // Assert
+            Assert.Equal(expectedDescriptors, resolvedDescriptors, CaseSensitiveTagHelperDescriptorComparer.Default);
+        }
+
         public static TheoryData RequiredAttributeData
         {
             get
@@ -163,10 +245,10 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             var provider = new TagHelperDescriptorProvider(availableDescriptors);
 
             // Act
-            var resolvedDescriptors = provider.GetDescriptors(tagName, providedAttributes);
+            var resolvedDescriptors = provider.GetDescriptors(tagName, providedAttributes, parentTagName: "p");
 
             // Assert
-            Assert.Equal(expectedDescriptors, resolvedDescriptors, TagHelperDescriptorComparer.Default);
+            Assert.Equal(expectedDescriptors, resolvedDescriptors, CaseSensitiveTagHelperDescriptorComparer.Default);
         }
 
         [Fact]
@@ -181,7 +263,10 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             var provider = new TagHelperDescriptorProvider(descriptors);
 
             // Act
-            var resolvedDescriptors = provider.GetDescriptors("th", attributeNames: Enumerable.Empty<string>());
+            var resolvedDescriptors = provider.GetDescriptors(
+                tagName: "th",
+                attributeNames: Enumerable.Empty<string>(),
+                parentTagName: "p");
 
             // Assert
             Assert.Empty(resolvedDescriptors);
@@ -197,8 +282,14 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             var provider = new TagHelperDescriptorProvider(descriptors);
 
             // Act
-            var retrievedDescriptorsDiv = provider.GetDescriptors("th:div", attributeNames: Enumerable.Empty<string>());
-            var retrievedDescriptorsSpan = provider.GetDescriptors("th2:span", attributeNames: Enumerable.Empty<string>());
+            var retrievedDescriptorsDiv = provider.GetDescriptors(
+                tagName: "th:div",
+                attributeNames: Enumerable.Empty<string>(),
+                parentTagName: "p");
+            var retrievedDescriptorsSpan = provider.GetDescriptors(
+                tagName: "th2:span",
+                attributeNames: Enumerable.Empty<string>(),
+                parentTagName: "p");
 
             // Assert
             var descriptor = Assert.Single(retrievedDescriptorsDiv);
@@ -215,8 +306,14 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             var provider = new TagHelperDescriptorProvider(descriptors);
 
             // Act
-            var retrievedDescriptorsDiv = provider.GetDescriptors("th:div", attributeNames: Enumerable.Empty<string>());
-            var retrievedDescriptorsSpan = provider.GetDescriptors("th:span", attributeNames: Enumerable.Empty<string>());
+            var retrievedDescriptorsDiv = provider.GetDescriptors(
+                tagName: "th:div",
+                attributeNames: Enumerable.Empty<string>(),
+                parentTagName: "p");
+            var retrievedDescriptorsSpan = provider.GetDescriptors(
+                tagName: "th:span",
+                attributeNames: Enumerable.Empty<string>(),
+                parentTagName: "p");
 
             // Assert
             var descriptor = Assert.Single(retrievedDescriptorsDiv);
@@ -234,7 +331,10 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             var provider = new TagHelperDescriptorProvider(descriptors);
 
             // Act
-            var retrievedDescriptors = provider.GetDescriptors("th:div", attributeNames: Enumerable.Empty<string>());
+            var retrievedDescriptors = provider.GetDescriptors(
+                tagName: "th:div",
+                attributeNames: Enumerable.Empty<string>(),
+                parentTagName: "p");
 
             // Assert
             var descriptor = Assert.Single(retrievedDescriptors);
@@ -252,7 +352,10 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             var provider = new TagHelperDescriptorProvider(descriptors);
 
             // Act
-            var retrievedDescriptorsDiv = provider.GetDescriptors("div", attributeNames: Enumerable.Empty<string>());
+            var retrievedDescriptorsDiv = provider.GetDescriptors(
+                tagName: "div",
+                attributeNames: Enumerable.Empty<string>(),
+                parentTagName: "p");
 
             // Assert
             Assert.Empty(retrievedDescriptorsDiv);
@@ -278,7 +381,10 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             var provider = new TagHelperDescriptorProvider(descriptors);
 
             // Act
-            var retrievedDescriptors = provider.GetDescriptors("foo", attributeNames: Enumerable.Empty<string>());
+            var retrievedDescriptors = provider.GetDescriptors(
+                tagName: "foo",
+                attributeNames: Enumerable.Empty<string>(),
+                parentTagName: "p");
 
             // Assert
             Assert.Empty(retrievedDescriptors);
@@ -310,8 +416,14 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             var provider = new TagHelperDescriptorProvider(descriptors);
 
             // Act
-            var divDescriptors = provider.GetDescriptors("div", attributeNames: Enumerable.Empty<string>());
-            var spanDescriptors = provider.GetDescriptors("span", attributeNames: Enumerable.Empty<string>());
+            var divDescriptors = provider.GetDescriptors(
+                tagName: "div",
+                attributeNames: Enumerable.Empty<string>(),
+                parentTagName: "p");
+            var spanDescriptors = provider.GetDescriptors(
+                tagName: "span",
+                attributeNames: Enumerable.Empty<string>(),
+                parentTagName: "p");
 
             // Assert
             // For divs
@@ -339,7 +451,10 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             var provider = new TagHelperDescriptorProvider(descriptors);
 
             // Act
-            var retrievedDescriptors = provider.GetDescriptors("div", attributeNames: Enumerable.Empty<string>());
+            var retrievedDescriptors = provider.GetDescriptors(
+                tagName: "div",
+                attributeNames: Enumerable.Empty<string>(),
+                parentTagName: "p");
 
             // Assert
             var descriptor = Assert.Single(retrievedDescriptors);

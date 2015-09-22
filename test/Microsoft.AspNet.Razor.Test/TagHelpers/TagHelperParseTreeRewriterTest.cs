@@ -18,6 +18,330 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
 {
     public class TagHelperParseTreeRewriterTest : TagHelperRewritingTestBase
     {
+        public static TheoryData PartialRequiredParentData
+        {
+            get
+            {
+                var factory = CreateDefaultSpanFactory();
+                var blockFactory = new BlockFactory(factory);
+                Func<int, string, RazorError> errorFormatUnclosed = (location, tagName) =>
+                    new RazorError(
+                        $"Found a malformed '{tagName}' tag helper. Tag helpers must have a start and end tag or be " +
+                        "self closing.",
+                        new SourceLocation(location, 0, location),
+                        tagName.Length);
+                Func<int, string, RazorError> errorFormatNoCloseAngle = (location, tagName) =>
+                    new RazorError(
+                        $"Missing close angle for tag helper '{tagName}'.",
+                        new SourceLocation(location, 0, location),
+                        tagName.Length);
+
+                // documentContent, expectedOutput, expectedErrors
+                return new TheoryData<string, MarkupBlock, RazorError[]>
+                {
+                    {
+                        "<p><strong>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p",
+                                new MarkupTagHelperBlock("strong"))),
+                        new[] { errorFormatUnclosed(1, "p"), errorFormatUnclosed(4, "strong") }
+                    },
+                    {
+                        "<p><strong></strong>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p",
+                                new MarkupTagHelperBlock("strong"))),
+                        new[] { errorFormatUnclosed(1, "p") }
+                    },
+                    {
+                        "<p><strong></p><strong>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p",
+                                new MarkupTagHelperBlock("strong")),
+                            blockFactory.MarkupTagBlock("<strong>")),
+                        new[] { errorFormatUnclosed(4, "strong") }
+                    },
+                    {
+                        "<<p><<strong></</strong</strong></p>",
+                        new MarkupBlock(
+                            blockFactory.MarkupTagBlock("<"),
+                            new MarkupTagHelperBlock("p",
+                                blockFactory.MarkupTagBlock("<"),
+                                new MarkupTagHelperBlock("strong",
+                                    blockFactory.MarkupTagBlock("</")),
+                                blockFactory.MarkupTagBlock("</strong>"))),
+                        new[] { errorFormatNoCloseAngle(17, "strong"), errorFormatUnclosed(25, "strong") }
+                    },
+                    {
+                        "<<p><<strong></</strong></strong></p>",
+                        new MarkupBlock(
+                            blockFactory.MarkupTagBlock("<"),
+                            new MarkupTagHelperBlock("p",
+                                blockFactory.MarkupTagBlock("<"),
+                                new MarkupTagHelperBlock("strong",
+                                    blockFactory.MarkupTagBlock("</")),
+                                blockFactory.MarkupTagBlock("</strong>"))),
+                        new[] { errorFormatUnclosed(26, "strong") }
+                    },
+
+                    {
+                        "<<p><<custom></<</custom></custom></p>",
+                        new MarkupBlock(
+                            blockFactory.MarkupTagBlock("<"),
+                            new MarkupTagHelperBlock("p",
+                                blockFactory.MarkupTagBlock("<"),
+                                new MarkupTagHelperBlock("custom",
+                                    blockFactory.MarkupTagBlock("</"),
+                                    blockFactory.MarkupTagBlock("<")),
+                                blockFactory.MarkupTagBlock("</custom>"))),
+                        new[] { errorFormatUnclosed(27, "custom") }
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(PartialRequiredParentData))]
+        public void Rewrite_UnderstandsPartialRequiredParentTags(
+            string documentContent,
+            MarkupBlock expectedOutput,
+            RazorError[] expectedErrors)
+        {
+            // Arrange
+            var descriptors = new TagHelperDescriptor[]
+            {
+                new TagHelperDescriptor
+                {
+                    TagName = "strong",
+                    TypeName = "StrongTagHelper",
+                    AssemblyName = "SomeAssembly",
+                    RequiredParent = "p",
+                },
+                new TagHelperDescriptor
+                {
+                    TagName = "strong",
+                    TypeName = "StrongTagHelper",
+                    AssemblyName = "SomeAssembly",
+                    RequiredParent = "div",
+                },
+                new TagHelperDescriptor
+                {
+                    TagName = "*",
+                    TypeName = "CatchALlTagHelper",
+                    AssemblyName = "SomeAssembly",
+                    RequiredParent = "p",
+                },
+                new TagHelperDescriptor
+                {
+                    TagName = "p",
+                    TypeName = "PTagHelper",
+                    AssemblyName = "SomeAssembly"
+                }
+            };
+            var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
+
+            // Act & Assert
+            EvaluateData(descriptorProvider, documentContent, expectedOutput, expectedErrors);
+        }
+
+        public static TheoryData NestedVoidSelfClosingRequiredParentData
+        {
+            get
+            {
+                var factory = CreateDefaultSpanFactory();
+                var blockFactory = new BlockFactory(factory);
+
+                // documentContent, expectedOutput
+                return new TheoryData<string, MarkupBlock>
+                {
+                    {
+                        "<input><strong></strong>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("input", TagMode.StartTagOnly),
+                            blockFactory.MarkupTagBlock("<strong>"),
+                            blockFactory.MarkupTagBlock("</strong>"))
+                    },
+                    {
+                        "<p><input><strong></strong></p>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p",
+                                new MarkupTagHelperBlock("input", TagMode.StartTagOnly),
+                                new MarkupTagHelperBlock("strong")))
+                    },
+                    {
+                        "<p><br><strong></strong></p>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p",
+                                blockFactory.MarkupTagBlock("<br>"),
+                                new MarkupTagHelperBlock("strong")))
+                    },
+                    {
+                        "<p><p><br></p><strong></strong></p>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p",
+                                new MarkupTagHelperBlock("p",
+                                    blockFactory.MarkupTagBlock("<br>")),
+                                new MarkupTagHelperBlock("strong")))
+                    },
+                    {
+                        "<input><strong></strong>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("input", TagMode.StartTagOnly),
+                            blockFactory.MarkupTagBlock("<strong>"),
+                            blockFactory.MarkupTagBlock("</strong>"))
+                    },
+                    {
+                        "<p><input /><strong /></p>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p",
+                                new MarkupTagHelperBlock("input", TagMode.SelfClosing),
+                                new MarkupTagHelperBlock("strong", TagMode.SelfClosing)))
+                    },
+                    {
+                        "<p><br /><strong /></p>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p",
+                                blockFactory.MarkupTagBlock("<br />"),
+                                new MarkupTagHelperBlock("strong", TagMode.SelfClosing)))
+                    },
+                    {
+                        "<p><p><br /></p><strong /></p>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p",
+                                new MarkupTagHelperBlock("p",
+                                    blockFactory.MarkupTagBlock("<br />")),
+                                new MarkupTagHelperBlock("strong", TagMode.SelfClosing)))
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(NestedVoidSelfClosingRequiredParentData))]
+        public void Rewrite_UnderstandsNestedVoidSelfClosingRequiredParent(
+            string documentContent,
+            MarkupBlock expectedOutput)
+        {
+            // Arrange
+            var descriptors = new TagHelperDescriptor[]
+            {
+                new TagHelperDescriptor
+                {
+                    TagName = "input",
+                    TypeName = "InputTagHelper",
+                    AssemblyName = "SomeAssembly",
+                    TagStructure = TagStructure.WithoutEndTag,
+                },
+                new TagHelperDescriptor
+                {
+                    TagName = "strong",
+                    TypeName = "StrongTagHelper",
+                    AssemblyName = "SomeAssembly",
+                    RequiredParent = "p",
+                },
+                new TagHelperDescriptor
+                {
+                    TagName = "strong",
+                    TypeName = "StrongTagHelper",
+                    AssemblyName = "SomeAssembly",
+                    RequiredParent = "input",
+                },
+                new TagHelperDescriptor
+                {
+                    TagName = "p",
+                    TypeName = "PTagHelper",
+                    AssemblyName = "SomeAssembly"
+                }
+            };
+            var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
+
+            // Act & Assert
+            EvaluateData(descriptorProvider, documentContent, expectedOutput, expectedErrors: new RazorError[0]);
+        }
+
+        public static TheoryData NestedRequiredParentData
+        {
+            get
+            {
+                var factory = CreateDefaultSpanFactory();
+                var blockFactory = new BlockFactory(factory);
+
+                // documentContent, expectedOutput
+                return new TheoryData<string, MarkupBlock>
+                {
+                    {
+                        "<strong></strong>",
+                        new MarkupBlock(
+                            blockFactory.MarkupTagBlock("<strong>"),
+                            blockFactory.MarkupTagBlock("</strong>"))
+                    },
+                    {
+                        "<p><strong></strong></p>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p",
+                                new MarkupTagHelperBlock("strong")))
+                    },
+                    {
+                        "<div><strong></strong></div>",
+                        new MarkupBlock(
+                            blockFactory.MarkupTagBlock("<div>"),
+                            new MarkupTagHelperBlock("strong"),
+                            blockFactory.MarkupTagBlock("</div>"))
+                    },
+                    {
+                        "<strong><strong></strong></strong>",
+                        new MarkupBlock(
+                            blockFactory.MarkupTagBlock("<strong>"),
+                            blockFactory.MarkupTagBlock("<strong>"),
+                            blockFactory.MarkupTagBlock("</strong>"),
+                            blockFactory.MarkupTagBlock("</strong>"))
+                    },
+                    {
+                        "<p><strong><strong></strong></strong></p>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p",
+                                new MarkupTagHelperBlock("strong",
+                                    blockFactory.MarkupTagBlock("<strong>"),
+                                    blockFactory.MarkupTagBlock("</strong>"))))
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(NestedRequiredParentData))]
+        public void Rewrite_UnderstandsNestedRequiredParent(string documentContent, MarkupBlock expectedOutput)
+        {
+            // Arrange
+            var descriptors = new TagHelperDescriptor[]
+            {
+                new TagHelperDescriptor
+                {
+                    TagName = "strong",
+                    TypeName = "StrongTagHelper",
+                    AssemblyName = "SomeAssembly",
+                    RequiredParent = "p",
+                },
+                new TagHelperDescriptor
+                {
+                    TagName = "strong",
+                    TypeName = "StrongTagHelper",
+                    AssemblyName = "SomeAssembly",
+                    RequiredParent = "div",
+                },
+                new TagHelperDescriptor
+                {
+                    TagName = "p",
+                    TypeName = "PTagHelper",
+                    AssemblyName = "SomeAssembly"
+                }
+            };
+            var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
+
+            // Act & Assert
+            EvaluateData(descriptorProvider, documentContent, expectedOutput, expectedErrors: new RazorError[0]);
+        }
+
         [Fact]
         public void Rewrite_UnderstandsTagHelperPrefixAndAllowedChildren()
         {
