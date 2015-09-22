@@ -204,7 +204,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
                     cookieValue,
                     cookieOptions);
 
-                ApplyHeaders();
+                await ApplyHeaders(shouldRedirectToReturnUrl: false);
             }
             catch (Exception exception)
             {
@@ -288,8 +288,9 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
                 await Options.Events.SignedIn(signedInContext);
 
-                var shouldLoginRedirect = Options.LoginPath.HasValue && OriginalPath == Options.LoginPath;
-                ApplyHeaders(shouldLoginRedirect);
+                // Only redirect on the login path
+                var shouldRedirect = Options.LoginPath.HasValue && OriginalPath == Options.LoginPath;
+                await ApplyHeaders(shouldRedirect);
             }
             catch (Exception exception)
             {
@@ -326,8 +327,9 @@ namespace Microsoft.AspNet.Authentication.Cookies
                     Options.CookieName,
                     context.CookieOptions);
 
-                var shouldLogoutRedirect = Options.LogoutPath.HasValue && OriginalPath == Options.LogoutPath;
-                ApplyHeaders(shouldLogoutRedirect);
+                // Only redirect on the logout path
+                var shouldRedirect = Options.LogoutPath.HasValue && OriginalPath == Options.LogoutPath;
+                await ApplyHeaders(shouldRedirect);
             }
             catch (Exception exception)
             {
@@ -341,12 +343,11 @@ namespace Microsoft.AspNet.Authentication.Cookies
             }
         }
 
-        private void ApplyHeaders(bool shouldRedirectToReturnUrl = false)
+        private async Task ApplyHeaders(bool shouldRedirectToReturnUrl)
         {
             Response.Headers[HeaderNames.CacheControl] = HeaderValueNoCache;
             Response.Headers[HeaderNames.Pragma] = HeaderValueNoCache;
             Response.Headers[HeaderNames.Expires] = HeaderValueMinusOne;
-
             if (shouldRedirectToReturnUrl && Response.StatusCode == 200)
             {
                 var query = Request.Query;
@@ -354,10 +355,11 @@ namespace Microsoft.AspNet.Authentication.Cookies
                 if (!StringValues.IsNullOrEmpty(redirectUri)
                     && IsHostRelative(redirectUri))
                 {
-                    var redirectContext = new CookieApplyRedirectContext(Context, Options, redirectUri);
-                    Options.Events.ApplyRedirect(redirectContext);
+                    var redirectContext = new CookieRedirectContext(Context, Options, redirectUri);
+                    await Options.Events.RedirectToReturnUrl(redirectContext);
                 }
             }
+
         }
 
         private static bool IsHostRelative(string path)
@@ -384,8 +386,8 @@ namespace Microsoft.AspNet.Authentication.Cookies
                     OriginalPathBase +
                     Options.AccessDeniedPath;
 
-                var redirectContext = new CookieApplyRedirectContext(Context, Options, accessDeniedUri);
-                await Options.Events.ApplyRedirect(redirectContext);
+                var redirectContext = new CookieRedirectContext(Context, Options, accessDeniedUri);
+                await Options.Events.RedirectToAccessDenied(redirectContext);
             }
             catch (Exception exception)
             {
@@ -411,8 +413,8 @@ namespace Microsoft.AspNet.Authentication.Cookies
                 }
 
                 var loginUri = Options.LoginPath + QueryString.Create(Options.ReturnUrlParameter, redirectUri);
-                var redirectContext = new CookieApplyRedirectContext(Context, Options, BuildRedirectUri(loginUri));
-                await Options.Events.ApplyRedirect(redirectContext);
+                var redirectContext = new CookieRedirectContext(Context, Options, BuildRedirectUri(loginUri));
+                await Options.Events.RedirectToLogin(redirectContext);
             }
             catch (Exception exception)
             {

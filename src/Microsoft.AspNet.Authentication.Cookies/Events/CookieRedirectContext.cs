@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
     /// <summary>
     /// Context passed when a Challenge, SignIn, or SignOut causes a redirect in the cookie middleware 
     /// </summary>
-    public class CookieApplyRedirectContext : BaseContext<CookieAuthenticationOptions>
+    public class CookieRedirectContext : BaseContext<CookieAuthenticationOptions>
     {
         /// <summary>
         /// Creates a new context object.
@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
         /// <param name="options">The cookie middleware options</param>
         /// <param name="redirectUri">The initial redirect URI</param>
         [SuppressMessage("Microsoft.Design", "CA1054:UriParametersShouldNotBeStrings", MessageId = "2#", Justification = "Represents header value")]
-        public CookieApplyRedirectContext(HttpContext context, CookieAuthenticationOptions options, string redirectUri)
+        public CookieRedirectContext(HttpContext context, CookieAuthenticationOptions options, string redirectUri)
             : base(context, options)
         {
             RedirectUri = redirectUri;

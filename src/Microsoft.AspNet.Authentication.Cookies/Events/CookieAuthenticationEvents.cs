@@ -36,7 +36,34 @@ namespace Microsoft.AspNet.Authentication.Cookies
         /// <summary>
         /// A delegate assigned to this property will be invoked when the related method is called
         /// </summary>
-        public Func<CookieApplyRedirectContext, Task> OnApplyRedirect { get; set; } = context =>
+        public Func<CookieRedirectContext, Task> OnRedirectToReturnUrl { get; set; } = context =>
+        {
+            context.Response.Redirect(context.RedirectUri);
+            return Task.FromResult(0);
+        };
+
+        /// <summary>
+        /// A delegate assigned to this property will be invoked when the related method is called
+        /// </summary>
+        public Func<CookieRedirectContext, Task> OnRedirectToAccessDenied { get; set; } = context =>
+        {
+            context.Response.Redirect(context.RedirectUri);
+            return Task.FromResult(0);
+        };
+
+        /// <summary>
+        /// A delegate assigned to this property will be invoked when the related method is called
+        /// </summary>
+        public Func<CookieRedirectContext, Task> OnRedirectToLogin { get; set; } = context =>
+        {
+            context.Response.Redirect(context.RedirectUri);
+            return Task.FromResult(0);
+        };
+
+        /// <summary>
+        /// A delegate assigned to this property will be invoked when the related method is called
+        /// </summary>
+        public Func<CookieRedirectContext, Task> OnRedirectToLogout { get; set; } = context =>
         {
             context.Response.Redirect(context.RedirectUri);
             return Task.FromResult(0);
@@ -76,7 +103,25 @@ namespace Microsoft.AspNet.Authentication.Cookies
         /// Implements the interface method by invoking the related delegate method
         /// </summary>
         /// <param name="context">Contains information about the event</param>
-        public virtual Task ApplyRedirect(CookieApplyRedirectContext context) => OnApplyRedirect(context);
+        public virtual Task RedirectToLogout(CookieRedirectContext context) => OnRedirectToLogout(context);
+
+        /// <summary>
+        /// Implements the interface method by invoking the related delegate method
+        /// </summary>
+        /// <param name="context">Contains information about the event</param>
+        public virtual Task RedirectToLogin(CookieRedirectContext context) => OnRedirectToLogin(context);
+
+        /// <summary>
+        /// Implements the interface method by invoking the related delegate method
+        /// </summary>
+        /// <param name="context">Contains information about the event</param>
+        public virtual Task RedirectToReturnUrl(CookieRedirectContext context) => OnRedirectToReturnUrl(context);
+
+        /// <summary>
+        /// Implements the interface method by invoking the related delegate method
+        /// </summary>
+        /// <param name="context">Contains information about the event</param>
+        public virtual Task RedirectToAccessDenied(CookieRedirectContext context) => OnRedirectToAccessDenied(context);
 
         /// <summary>
         /// Implements the interface method by invoking the related delegate method

@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Authentication.OAuth
         /// <summary>
         /// Gets or sets the delegate that is invoked when the RedirectToAuthorizationEndpoint method is invoked.
         /// </summary>
-        public Func<OAuthRedirectToAuthorizationEndpointContext, Task> OnRedirectToAuthorizationEndpoint { get; set; } = context =>
+        public Func<OAuthRedirectToAuthorizationContext, Task> OnRedirectToAuthorizationEndpoint { get; set; } = context =>
         {
             context.Response.Redirect(context.RedirectUri);
             return Task.FromResult(0);
@@ -48,6 +48,6 @@ namespace Microsoft.AspNet.Authentication.OAuth
         /// Called when a Challenge causes a redirect to authorize endpoint in the OAuth middleware.
         /// </summary>
         /// <param name="context">Contains redirect URI and <see cref="AuthenticationProperties"/> of the challenge.</param>
-        public virtual Task RedirectToAuthorizationEndpoint(OAuthRedirectToAuthorizationEndpointContext context) => OnRedirectToAuthorizationEndpoint(context);
+        public virtual Task RedirectToAuthorizationEndpoint(OAuthRedirectToAuthorizationContext context) => OnRedirectToAuthorizationEndpoint(context);
     }
 }

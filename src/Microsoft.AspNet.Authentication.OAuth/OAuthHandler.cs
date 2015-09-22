@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.Authentication.OAuth
                 return true;
             }
 
-            var context = new OAuthReturnEndpointContext(Context, ticket)
+            var context = new SigningInContext(Context, ticket)
             {
                 SignInScheme = Options.SignInScheme,
                 RedirectUri = ticket.Properties.RedirectUri,
@@ -212,7 +212,7 @@ namespace Microsoft.AspNet.Authentication.OAuth
 
             var authorizationEndpoint = BuildChallengeUrl(properties, BuildRedirectUri(Options.CallbackPath));
 
-            var redirectContext = new OAuthRedirectToAuthorizationEndpointContext(
+            var redirectContext = new OAuthRedirectToAuthorizationContext(
                 Context, Options,
                 properties, authorizationEndpoint);
             await Options.Events.RedirectToAuthorizationEndpoint(redirectContext);
