@@ -46,6 +46,7 @@
     ]
   },
   "packInclude": {
+    "/": "../../content/thirdpartynotices.txt",
     "native/darwin/universal/": "native/darwin/universal/*",
     "native/windows/amd64/": "native/windows/amd64/*",
     "native/windows/x86/": "native/windows/x86/*"
