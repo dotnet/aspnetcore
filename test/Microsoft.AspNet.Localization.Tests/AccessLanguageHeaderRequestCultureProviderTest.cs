@@ -106,5 +106,38 @@ namespace Microsoft.Framework.Localization.Tests
                 var response = await client.GetAsync(string.Empty);
             }
         }
+        
+        [Fact]
+        public async void OmitDefaultRequestCultureShouldNotThrowNullReferenceException_And_ShouldGetTheRightCulture()
+        {
+            using (var server = TestServer.Create(app =>
+            {
+                var options = new RequestLocalizationOptions()
+                {
+                    SupportedCultures = new List<CultureInfo>
+                    {
+                        new CultureInfo("ar-YE")
+                    },
+                    SupportedUICultures = new List<CultureInfo>
+                    {
+                        new CultureInfo("ar-YE")
+                    }
+                };
+                app.UseRequestLocalization(options);
+                app.Run(context =>
+                {
+                    var requestCultureFeature = context.Features.Get<IRequestCultureFeature>();
+                    var requestCulture = requestCultureFeature.RequestCulture;
+                    Assert.Equal("ar-YE", requestCulture.Culture.Name);
+                    Assert.Equal("ar-YE", requestCulture.UICulture.Name);
+                    return Task.FromResult(0);
+                });
+            }))
+            {
+                var client = server.CreateClient();
+                client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("en-GB,ar-YE,en-US");
+                var response = await client.GetAsync(string.Empty);
+            }
+        }
     }
 }
