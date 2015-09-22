@@ -21,10 +21,6 @@ namespace Microsoft.AspNet.Server.Kestrel
             {
                 Addresses.Add(url);
             }
-            if (Addresses.Count == 0)
-            {
-                Addresses.Add("http://+:5000/");
-            }
         }
     }
 }
