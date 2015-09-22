@@ -11,11 +11,11 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Diagnostics.Views;
 using Microsoft.AspNet.FileProviders;
-using Microsoft.Framework.Caching;
-using Microsoft.Framework.Logging;
-using Microsoft.Dnx.Runtime;
-using Xunit;
 using Microsoft.AspNet.Testing;
+using Microsoft.Dnx.Runtime;
+using Microsoft.Framework.Logging;
+using Microsoft.Framework.Primitives;
+using Xunit;
 
 namespace Microsoft.AspNet.Diagnostics
 {
@@ -383,7 +383,7 @@ namespace Microsoft.AspNet.Diagnostics
                 return new TestFileInfo(_sourceCodeLines);
             }
 
-            public IExpirationTrigger Watch(string filter)
+            public IChangeToken Watch(string filter)
             {
                 throw new NotImplementedException();
             }
