@@ -236,16 +236,20 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 return false;
             }
 
-            // We need to escape the TypePattern so we can choose to only allow specific regex.
-            var escaped = Regex.Escape(lookupInfo.TypePattern);
+            if (lookupInfo.TypePattern.EndsWith("*", StringComparison.Ordinal))
+            {
+                if (lookupInfo.TypePattern.Length == 1)
+                {
+                    // TypePattern is "*".
+                    return true;
+                }
 
-            // We surround the escaped with ^ and $ in order ot ensure a regex match matches the entire
-            // string. We also replace any '*' or '?' characters with regex to match appropriate content.
-            // '*' matches 0 or more characters lazily and '?' matches 1 character.
-            var pattern = "^" + escaped.Replace(@"\?", ".").Replace(@"\*", ".*?") + "$";
-            var regex = new Regex(pattern, RegexOptions.Singleline, Constants.RegexMatchTimeout);
+                var lookupTypeName = lookupInfo.TypePattern.Substring(0, lookupInfo.TypePattern.Length - 1);
 
-            return regex.IsMatch(descriptor.TypeName);
+                return descriptor.TypeName.StartsWith(lookupTypeName, StringComparison.Ordinal);
+            }
+
+            return string.Equals(descriptor.TypeName, lookupInfo.TypePattern, StringComparison.Ordinal);
         }
 
         private static LookupInfo GetLookupInfo(
@@ -255,9 +259,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var lookupText = directiveDescriptor.DirectiveText;
             var lookupStrings = lookupText?.Split(new[] { ',' });
 
-            // Ensure that we have valid lookupStrings to work with. Valid formats are:
-            // "assemblyName"
-            // "typeName, assemblyName"
+            // Ensure that we have valid lookupStrings to work with. The valid format is "typeName, assemblyName"
             if (lookupStrings == null ||
                 lookupStrings.Any(string.IsNullOrWhiteSpace) ||
                 lookupStrings.Length != 2)
