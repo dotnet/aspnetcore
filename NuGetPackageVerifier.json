@@ -1,0 +1,35 @@
+{
+    "adx": { // Packages written by the ADX team and that ship on NuGet.org
+        "rules": [
+            "AssemblyHasDocumentFileRule",
+            "AssemblyHasVersionAttributesRule",
+            "AssemblyHasServicingAttributeRule",
+            "AssemblyHasNeutralResourcesLanguageAttributeRule",
+            "SatellitePackageRule",
+            "StrictSemanticVersionValidationRule"
+        ],
+        "packages": {
+            "Microsoft.AspNet.Authentication": { },
+            "Microsoft.AspNet.Authentication.Cookies": { },
+            "Microsoft.AspNet.Authentication.Facebook": { },
+            "Microsoft.AspNet.Authentication.Google": { },
+            "Microsoft.AspNet.Authentication.JwtBearer": { },
+            "Microsoft.AspNet.Authentication.MicrosoftAccount": { },
+            "Microsoft.AspNet.Authentication.OAuth": { },
+            "Microsoft.AspNet.Authentication.OpenIdConnect": { },
+            "Microsoft.AspNet.Authentication.Twitter": { },
+            "Microsoft.AspNet.Authorization": { },
+            "Microsoft.AspNet.CookiePolicy": { }
+        }
+    },
+    "Default": { // Rules to run for packages not listed in any other set.
+        "rules": [
+            "AssemblyHasDocumentFileRule",
+            "AssemblyHasVersionAttributesRule",
+            "AssemblyHasServicingAttributeRule",
+            "AssemblyHasNeutralResourcesLanguageAttributeRule",
+            "SatellitePackageRule",
+            "StrictSemanticVersionValidationRule"
+        ]
+    }
+}
