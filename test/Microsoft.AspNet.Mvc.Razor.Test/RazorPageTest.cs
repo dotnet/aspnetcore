@@ -39,7 +39,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                 v.Write("Hello from Output");
                 v.ViewContext.Writer.Write("Hello from view context writer");
                 var scopeValue = v.EndTagHelperWritingScope();
-                v.Write("From Scope: " + scopeValue.ToString());
+                v.Write("From Scope: ");
+                v.Write(scopeValue);
             });
 
             // Act
@@ -47,8 +48,8 @@ namespace Microsoft.AspNet.Mvc.Razor
             var pageOutput = page.Output.ToString();
 
             // Assert
-            Assert.Equal("HtmlEncode[[Hello Prefix]]HtmlEncode[[From Scope: HtmlEncode[[Hello from Output]]" +
-                "Hello from view context writer]]", pageOutput);
+            Assert.Equal("HtmlEncode[[Hello Prefix]]HtmlEncode[[From Scope: ]]HtmlEncode[[Hello from Output]]" +
+                "Hello from view context writer", pageOutput);
         }
 
         [Fact]
@@ -63,7 +64,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                 v.StartTagHelperWritingScope();
                 v.Write("Hello In Scope");
                 var scopeValue = v.EndTagHelperWritingScope();
-                v.Write("From Scope: " + scopeValue.ToString());
+                v.Write("From Scope: ");
+                v.Write(scopeValue);
             });
 
             // Act
@@ -71,7 +73,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var pageOutput = page.Output.ToString();
 
             // Assert
-            Assert.Equal("HtmlEncode[[Hello Prefix]]HtmlEncode[[From Scope: HtmlEncode[[Hello In Scope]]]]", pageOutput);
+            Assert.Equal("HtmlEncode[[Hello Prefix]]HtmlEncode[[From Scope: ]]HtmlEncode[[Hello In Scope]]", pageOutput);
         }
 
         [Fact]
@@ -93,7 +95,9 @@ namespace Microsoft.AspNet.Mvc.Razor
                 v.Write("Hello In Scope Post Nest");
                 var scopeValue2 = v.EndTagHelperWritingScope();
 
-                v.Write("From Scopes: " + scopeValue2.ToString() + scopeValue1.ToString());
+                v.Write("From Scopes: ");
+                v.Write(scopeValue2);
+                v.Write(scopeValue1);
             });
 
             // Act
@@ -101,8 +105,8 @@ namespace Microsoft.AspNet.Mvc.Razor
             var pageOutput = page.Output.ToString();
 
             // Assert
-            Assert.Equal("HtmlEncode[[Hello Prefix]]HtmlEncode[[From Scopes: HtmlEncode[[Hello In Scope Pre Nest]]" +
-                "HtmlEncode[[Hello In Scope Post Nest]]HtmlEncode[[Hello In Nested Scope]]]]", pageOutput);
+            Assert.Equal("HtmlEncode[[Hello Prefix]]HtmlEncode[[From Scopes: ]]HtmlEncode[[Hello In Scope Pre Nest]]" +
+                "HtmlEncode[[Hello In Scope Post Nest]]HtmlEncode[[Hello In Nested Scope]]", pageOutput);
         }
 
         [Fact]
