@@ -1,7 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.AspNet.Razor.Tokenizer;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
@@ -11,6 +14,51 @@ namespace Microsoft.AspNet.Razor.Test.Tokenizer
 {
     public class TokenizerLookaheadTest : HtmlTokenizerTestBase
     {
+        [Fact]
+        public void Lookahead_MaintainsExistingBufferWhenRejected()
+        {
+            // Arrange
+            var tokenizer = new ExposedTokenizer("01234");
+            tokenizer.Buffer.Append("pre-existing values");
+
+            // Act
+            var result = tokenizer.Lookahead("0x", takeIfMatch: true, caseSensitive: true);
+
+            // Assert
+            Assert.False(result);
+            Assert.Equal("pre-existing values", tokenizer.Buffer.ToString(), StringComparer.Ordinal);
+        }
+
+        [Fact]
+        public void Lookahead_AddsToExistingBufferWhenSuccessfulAndTakeIfMatchIsTrue()
+        {
+            // Arrange
+            var tokenizer = new ExposedTokenizer("0x1234");
+            tokenizer.Buffer.Append("pre-existing values");
+
+            // Act
+            var result = tokenizer.Lookahead("0x", takeIfMatch: true, caseSensitive: true);
+
+            // Assert
+            Assert.True(result);
+            Assert.Equal("pre-existing values0x", tokenizer.Buffer.ToString(), StringComparer.Ordinal);
+        }
+
+        [Fact]
+        public void Lookahead_MaintainsExistingBufferWhenSuccessfulAndTakeIfMatchIsFalse()
+        {
+            // Arrange
+            var tokenizer = new ExposedTokenizer("0x1234");
+            tokenizer.Buffer.Append("pre-existing values");
+
+            // Act
+            var result = tokenizer.Lookahead("0x", takeIfMatch: false, caseSensitive: true);
+
+            // Assert
+            Assert.True(result);
+            Assert.Equal("pre-existing values", tokenizer.Buffer.ToString(), StringComparer.Ordinal);
+        }
+
         [Fact]
         public void After_Cancelling_Lookahead_Tokenizer_Returns_Same_Tokens_As_It_Did_Before_Lookahead()
         {
@@ -37,6 +85,63 @@ namespace Microsoft.AspNet.Razor.Test.Tokenizer
                 lookahead.Accept();
             }
             Assert.Equal(new HtmlSymbol(4, 0, 4, ">", HtmlSymbolType.CloseAngle), tokenizer.NextSymbol());
+        }
+
+        private class ExposedTokenizer : Tokenizer<CSharpSymbol, CSharpSymbolType>
+        {
+            public ExposedTokenizer(string input)
+                : base(new SeekableTextReader(new StringReader(input)))
+            {
+            }
+
+            public new StringBuilder Buffer
+            {
+                get
+                {
+                    return base.Buffer;
+                }
+            }
+
+            public override CSharpSymbolType RazorCommentStarType
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public override CSharpSymbolType RazorCommentTransitionType
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public override CSharpSymbolType RazorCommentType
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            protected override State StartState
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            protected override CSharpSymbol CreateSymbol(
+                SourceLocation start,
+                string content,
+                CSharpSymbolType type,
+                IEnumerable<RazorError> errors)
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }

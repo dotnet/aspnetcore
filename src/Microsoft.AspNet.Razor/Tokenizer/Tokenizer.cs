@@ -10,7 +10,6 @@ using System.Globalization;
 #endif
 using System.Linq;
 using System.Text;
-using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
 
@@ -223,7 +222,10 @@ namespace Microsoft.AspNet.Razor.Tokenizer
             return Transition(EndSymbol(RazorCommentType), StartState);
         }
 
-        private bool Lookahead(string expected, bool takeIfMatch, bool caseSensitive)
+        /// <summary>
+        /// Internal for unit testing
+        /// </summary>
+        internal bool Lookahead(string expected, bool takeIfMatch, bool caseSensitive)
         {
             Func<char, char> filter = c => c;
             if (!caseSensitive)
@@ -240,7 +242,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer
             string oldBuffer = null;
             if (takeIfMatch)
             {
-                Buffer.ToString();
+                oldBuffer = Buffer.ToString();
             }
 
             using (LookaheadToken lookahead = Source.BeginLookahead())
