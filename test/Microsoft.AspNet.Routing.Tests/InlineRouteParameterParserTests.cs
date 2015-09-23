@@ -8,6 +8,7 @@ using Microsoft.AspNet.Routing.Template;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.OptionsModel;
 using Xunit;
+using System.Linq;
 
 namespace Microsoft.AspNet.Routing.Tests
 {

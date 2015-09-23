@@ -91,6 +91,11 @@ namespace Microsoft.AspNet.Routing.Template
             get { return _dataTokens; }
         }
 
+        public RouteTemplate ParsedTemplate
+        {
+            get { return _parsedTemplate; }
+        }
+
         public string RouteTemplate
         {
             get { return _routeTemplate; }

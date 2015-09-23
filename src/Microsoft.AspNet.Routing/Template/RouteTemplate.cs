@@ -37,9 +37,9 @@ namespace Microsoft.AspNet.Routing.Template
             }
         }
 
-        public List<TemplatePart> Parameters { get; private set; }
+        public IList<TemplatePart> Parameters { get; private set; }
 
-        public List<TemplateSegment> Segments { get; private set; }
+        public IList<TemplateSegment> Segments { get; private set; }
 
         private string DebuggerToString()
         {
