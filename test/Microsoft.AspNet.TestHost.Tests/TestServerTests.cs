@@ -11,6 +11,8 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Hosting.Startup;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Features;
+using Microsoft.AspNet.Http.Features.Internal;
 using Microsoft.Framework.Configuration;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
@@ -131,6 +133,103 @@ namespace Microsoft.AspNet.TestHost
             services => services.AddTransient<IStartupFilter, RequestServicesFilter>());
             string result = await server.CreateClient().GetStringAsync("/path");
             Assert.Equal("Found:True", result);
+        }
+
+        [Fact]
+        public async Task SettingApplicationServicesOnFeatureToNullThrows()
+        {
+            var server = TestServer.Create(app =>
+            {
+                app.Run(context =>
+                {
+                    var feature = context.Features.Get<IServiceProvidersFeature>();
+                    Assert.Throws<ArgumentNullException>(() => feature.ApplicationServices = null);
+                    return context.Response.WriteAsync("Success");
+                });
+            });
+            string result = await server.CreateClient().GetStringAsync("/path");
+            Assert.Equal("Success", result);
+        }
+
+        public class ReplaceServiceProvidersFeatureFilter : IStartupFilter, IServiceProvidersFeature
+        {
+            public ReplaceServiceProvidersFeatureFilter(IServiceProvider appServices, IServiceProvider requestServices)
+            {
+                ApplicationServices = appServices;
+                RequestServices = requestServices;
+            }
+
+            public IServiceProvider ApplicationServices { get; set; }
+
+            public IServiceProvider RequestServices { get; set; }
+
+            public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
+            {
+                return app =>
+                {
+                    app.Use(async (context, nxt) =>
+                    {
+                        context.Features.Set<IServiceProvidersFeature>(this);
+                        await nxt();
+                    });
+                    next(app);
+                };
+            }
+        }
+
+        [Fact]
+        public async Task ExistingServiceProviderFeatureWillNotBeReplaced()
+        {
+            var appServices = new ServiceCollection().BuildServiceProvider();
+            var server = TestServer.Create(app =>
+            {
+                app.Run(context =>
+                {
+                    Assert.Equal(appServices, context.ApplicationServices);
+                    Assert.Equal(appServices, context.RequestServices);
+                    return context.Response.WriteAsync("Success");
+                });
+            },
+            services => services.AddInstance<IStartupFilter>(new ReplaceServiceProvidersFeatureFilter(appServices, appServices)));
+            var result = await server.CreateClient().GetStringAsync("/path");
+            Assert.Equal("Success", result);
+        }
+
+        public class NullServiceProvidersFeatureFilter : IStartupFilter, IServiceProvidersFeature
+        {
+            public IServiceProvider ApplicationServices { get; set; }
+
+            public IServiceProvider RequestServices { get; set; }
+
+            public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
+            {
+                return app =>
+                {
+                    app.Use(async (context, nxt) =>
+                    {
+                        context.Features.Set<IServiceProvidersFeature>(this);
+                        await nxt();
+                    });
+                    next(app);
+                };
+            }
+        }
+
+        [Fact]
+        public async Task WillReplaceServiceProviderFeatureWithNullRequestServices()
+        {
+            var server = TestServer.Create(app =>
+            {
+                app.Run(context =>
+                {
+                    Assert.NotNull(context.ApplicationServices);
+                    Assert.NotNull(context.RequestServices);
+                    return context.Response.WriteAsync("Success");
+                });
+            },
+            services => services.AddTransient<IStartupFilter, NullServiceProvidersFeatureFilter>());
+            var result = await server.CreateClient().GetStringAsync("/path");
+            Assert.Equal("Success", result);
         }
 
         public class EnsureApplicationServicesFilter : IStartupFilter
