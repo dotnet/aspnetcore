@@ -386,7 +386,7 @@ namespace Microsoft.AspNet.Identity
         /// <returns>A collection of <see cref="AuthenticationDescription"/>s for the known external login providers.</returns>
         public virtual IEnumerable<AuthenticationDescription> GetExternalAuthenticationSchemes()
         {
-            return Context.Authentication.GetAuthenticationSchemes().Where(d => !string.IsNullOrEmpty(d.Caption));
+            return Context.Authentication.GetAuthenticationSchemes().Where(d => !string.IsNullOrEmpty(d.DisplayName));
         }
 
         /// <summary>
@@ -424,7 +424,7 @@ namespace Microsoft.AspNet.Identity
                 return null;
             }
             // REVIEW: fix this wrap
-            return new ExternalLoginInfo(auth.Principal, provider, providerKey, new AuthenticationDescription(auth.Description).Caption);
+            return new ExternalLoginInfo(auth.Principal, provider, providerKey, new AuthenticationDescription(auth.Description).DisplayName);
         }
         
         /// <summary>
