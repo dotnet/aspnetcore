@@ -90,7 +90,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             // Base allowMultiple on the instance or declared type of the expression to avoid a
             // "SelectExpressionNotEnumerable" InvalidOperationException during generation.
-            // Metadata.IsCollectionType() is similar but does not take runtime type into account.
+            // Metadata.IsEnumerableType is similar but does not take runtime type into account.
             var realModelType = For.ModelExplorer.ModelType;
             var allowMultiple = typeof(string) != realModelType &&
                 typeof(IEnumerable).GetTypeInfo().IsAssignableFrom(realModelType.GetTypeInfo());

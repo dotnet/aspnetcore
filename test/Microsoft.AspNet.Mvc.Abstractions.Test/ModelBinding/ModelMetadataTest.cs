@@ -50,7 +50,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.True(modelMetadata.IsComplexType);
         }
 
-        // IsCollectionType
+        // IsCollectionType / IsEnumerableType
+
         private class NonCollectionType
         {
         }
@@ -59,11 +60,49 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
         }
 
+        private class JustEnumerable : IEnumerable
+        {
+            public IEnumerator GetEnumerator()
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public static TheoryData<Type> NonCollectionNonEnumerableData
+        {
+            get
+            {
+                return new TheoryData<Type>
+                {
+                    typeof(object),
+                    typeof(int),
+                    typeof(NonCollectionType),
+                    typeof(string),
+                };
+            }
+        }
+
+        public static TheoryData<Type> CollectionAndEnumerableData
+        {
+            get
+            {
+                return new TheoryData<Type>
+                {
+                    typeof(int[]),
+                    typeof(List<string>),
+                    typeof(DerivedList),
+                    typeof(Collection<int>),
+                    typeof(Dictionary<object, object>),
+                    typeof(CollectionImplementation),
+                };
+            }
+        }
+
         [Theory]
-        [InlineData(typeof(object))]
-        [InlineData(typeof(int))]
-        [InlineData(typeof(NonCollectionType))]
-        [InlineData(typeof(string))]
+        [MemberData(nameof(NonCollectionNonEnumerableData))]
+        [InlineData(typeof(IEnumerable))]
+        [InlineData(typeof(IEnumerable<string>))]
+        [InlineData(typeof(JustEnumerable))]
         public void IsCollectionType_ReturnsFalseForNonCollectionTypes(Type type)
         {
             // Arrange
@@ -77,13 +116,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         [Theory]
-        [InlineData(typeof(int[]))]
-        [InlineData(typeof(List<string>))]
-        [InlineData(typeof(DerivedList))]
-        [InlineData(typeof(IEnumerable))]
-        [InlineData(typeof(IEnumerable<string>))]
-        [InlineData(typeof(Collection<int>))]
-        [InlineData(typeof(Dictionary<object, object>))]
+        [MemberData(nameof(CollectionAndEnumerableData))]
         public void IsCollectionType_ReturnsTrueForCollectionTypes(Type type)
         {
             // Arrange
@@ -94,6 +127,37 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Assert
             Assert.True(modelMetadata.IsCollectionType);
+        }
+
+        [Theory]
+        [MemberData(nameof(NonCollectionNonEnumerableData))]
+        public void IsEnumerableType_ReturnsFalseForNonEnumerableTypes(Type type)
+        {
+            // Arrange
+            var provider = new EmptyModelMetadataProvider();
+
+            // Act
+            var modelMetadata = new TestModelMetadata(type);
+
+            // Assert
+            Assert.False(modelMetadata.IsEnumerableType);
+        }
+
+        [Theory]
+        [MemberData(nameof(CollectionAndEnumerableData))]
+        [InlineData(typeof(IEnumerable))]
+        [InlineData(typeof(IEnumerable<string>))]
+        [InlineData(typeof(JustEnumerable))]
+        public void IsEnumerableType_ReturnsTrueForEnumerableTypes(Type type)
+        {
+            // Arrange
+            var provider = new EmptyModelMetadataProvider();
+
+            // Act
+            var modelMetadata = new TestModelMetadata(type);
+
+            // Assert
+            Assert.True(modelMetadata.IsEnumerableType);
         }
 
         // IsNullableValueType
@@ -479,6 +543,60 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 {
                     throw new NotImplementedException();
                 }
+            }
+        }
+
+        private class CollectionImplementation : ICollection<string>
+        {
+            public int Count
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public bool IsReadOnly
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public void Add(string item)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void Clear()
+            {
+                throw new NotImplementedException();
+            }
+
+            public bool Contains(string item)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void CopyTo(string[] array, int arrayIndex)
+            {
+                throw new NotImplementedException();
+            }
+
+            public IEnumerator<string> GetEnumerator()
+            {
+                throw new NotImplementedException();
+            }
+
+            public bool Remove(string item)
+            {
+                throw new NotImplementedException();
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                throw new NotImplementedException();
             }
         }
     }

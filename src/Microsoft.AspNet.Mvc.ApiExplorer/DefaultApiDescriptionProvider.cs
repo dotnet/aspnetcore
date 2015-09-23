@@ -544,7 +544,7 @@ namespace Microsoft.AspNet.Mvc.ApiExplorer
                 //
                 //  3)  Types with no properties. Obviously nothing to explore there.
                 //
-                if (modelMetadata.IsCollectionType ||
+                if (modelMetadata.IsEnumerableType ||
                     !modelMetadata.IsComplexType ||
                     !modelMetadata.Properties.Any())
                 {

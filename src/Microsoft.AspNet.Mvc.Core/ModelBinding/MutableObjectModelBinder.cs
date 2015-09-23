@@ -231,7 +231,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 return false;
             }
 
-            if (modelMetadata.IsCollectionType)
+            if (modelMetadata.IsEnumerableType)
             {
                 return false;
             }
@@ -522,17 +522,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Determine T if this is an ICollection<T> property. No need for a T[] case because CanUpdateProperty()
             // ensures property is either settable or not an array. Underlying assumption is that CanUpdateProperty()
             // and SetProperty() are overridden together.
-            var collectionTypeArguments = ClosedGenericMatcher.ExtractGenericInterface(
-                    propertyExplorer.ModelType,
-                    typeof(ICollection<>))
-                ?.GenericTypeArguments;
-            if (collectionTypeArguments == null)
+            if (!propertyExplorer.Metadata.IsCollectionType)
             {
                 // Not a collection model.
                 return;
             }
 
-            var propertyAddRange = CallPropertyAddRangeOpenGenericMethod.MakeGenericMethod(collectionTypeArguments);
+            var propertyAddRange = CallPropertyAddRangeOpenGenericMethod.MakeGenericMethod(
+                propertyExplorer.Metadata.ElementMetadata.ModelType);
             try
             {
                 propertyAddRange.Invoke(obj: null, parameters: new[] { target, source });

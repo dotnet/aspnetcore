@@ -124,13 +124,11 @@ namespace Microsoft.AspNet.Mvc.Controllers
                 var propertyHelper = propertyHelpers.First(helper =>
                     string.Equals(helper.Name, property.Key, StringComparison.Ordinal));
                 var propertyType = propertyHelper.Property.PropertyType;
+                var metadata = _modelMetadataProvider.GetMetadataForType(propertyType);
                 var source = property.Value;
                 if (propertyHelper.Property.CanWrite && propertyHelper.Property.SetMethod?.IsPublic == true)
                 {
-                    // Handle settable property.
-                    var metadata = _modelMetadataProvider.GetMetadataForType(propertyType);
-
-                    // Do not set the property to null if the type is a non-nullable type.
+                    // Handle settable property. Do not set the property to null if the type is a non-nullable type.
                     if (source != null || metadata.IsReferenceOrNullableType)
                     {
                         propertyHelper.SetValue(controller, source);
@@ -153,12 +151,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
                     continue;
                 }
 
-                // Determine T if this is an ICollection<T> property.
-                var collectionTypeArguments = ClosedGenericMatcher.ExtractGenericInterface(
-                        propertyType,
-                        typeof(ICollection<>))
-                    ?.GenericTypeArguments;
-                if (collectionTypeArguments == null)
+                if (!metadata.IsCollectionType)
                 {
                     // Not a collection model.
                     continue;
@@ -166,7 +159,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
 
                 // Handle a read-only collection property.
                 var propertyAddRange = CallPropertyAddRangeOpenGenericMethod.MakeGenericMethod(
-                    collectionTypeArguments);
+                    metadata.ElementMetadata.ModelType);
                 propertyAddRange.Invoke(obj: null, parameters: new[] { target, source });
             }
         }

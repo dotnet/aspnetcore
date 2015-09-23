@@ -117,9 +117,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 // ICollection<T>. For example an IEnumerable<T> property may have a List<T> default value. Do not use
                 // IsAssignableFrom() because that does not handle explicit interface implementations and binders all
                 // perform explicit casts.
-                var closedGenericInterface =
-                    ClosedGenericMatcher.ExtractGenericInterface(context.Model.GetType(), typeof(ICollection<>));
-                if (closedGenericInterface == null)
+                if (!context.ModelMetadata.IsCollectionType)
                 {
                     return null;
                 }

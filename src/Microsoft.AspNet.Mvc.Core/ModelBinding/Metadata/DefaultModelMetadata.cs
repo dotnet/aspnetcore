@@ -236,10 +236,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
                 if (!_haveCalculatedElementMetadata)
                 {
                     _haveCalculatedElementMetadata = true;
-                    if (!IsCollectionType)
+                    if (!IsEnumerableType)
                     {
-                        // Short-circuit checks below. If not IsCollectionType, ElementMetadata is null.
-                        // For example, as in IsCollectionType, do not consider strings collections.
+                        // Short-circuit checks below. If not IsEnumerableType, ElementMetadata is null.
+                        // For example, as in IsEnumerableType, do not consider strings collections.
                         return null;
                     }
 
@@ -261,7 +261,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 
                     Debug.Assert(
                         elementType != null,
-                        $"Unable to find element type for '{ ModelType.FullName }' though IsCollectionType is true.");
+                        $"Unable to find element type for '{ ModelType.FullName }' though IsEnumerableType is true.");
 
                     // Success
                     _elementMetadata = _provider.GetMetadataForType(elementType);

@@ -40,8 +40,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             Assert.True(metadata.HtmlEncode);
             Assert.True(metadata.IsBindingAllowed);
             Assert.False(metadata.IsBindingRequired);
-            Assert.False(metadata.IsComplexType);
             Assert.False(metadata.IsCollectionType);
+            Assert.False(metadata.IsComplexType);
+            Assert.False(metadata.IsEnumerableType);
             Assert.False(metadata.IsEnum);
             Assert.False(metadata.IsFlagsEnum);
             Assert.False(metadata.IsNullableValueType);
@@ -218,7 +219,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 
             // Act
             var isBindingRequired = metadata.IsBindingRequired;
-            
+
             // Assert
             Assert.False(isBindingRequired);
         }

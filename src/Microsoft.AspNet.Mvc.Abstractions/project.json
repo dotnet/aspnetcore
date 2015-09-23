@@ -10,6 +10,10 @@
   },
   "dependencies": {
     "Microsoft.AspNet.Routing": "1.0.0-*",
+    "Microsoft.Framework.ClosedGenericMatcher.Sources": {
+      "version": "1.0.0-*",
+      "type": "build"
+    },
     "Microsoft.Framework.CopyOnWriteDictionary.Sources": {
       "version": "1.0.0-*",
       "type": "build"

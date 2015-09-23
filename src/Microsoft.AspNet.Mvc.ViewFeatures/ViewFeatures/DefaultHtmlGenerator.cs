@@ -818,7 +818,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             modelExplorer = modelExplorer ??
                 ExpressionMetadataProvider.FromStringExpression(expression, viewContext.ViewData, _metadataProvider);
             var metadata = modelExplorer.Metadata;
-            if (allowMultiple && metadata.IsCollectionType)
+            if (allowMultiple && metadata.IsEnumerableType)
             {
                 metadata = metadata.ElementMetadata;
             }
