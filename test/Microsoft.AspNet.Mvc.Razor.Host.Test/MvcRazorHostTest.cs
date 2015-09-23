@@ -137,18 +137,18 @@ namespace Microsoft.AspNet.Mvc.Razor
                     generatedCharacterIndex: 14,
                     contentLength: 85),
                 BuildLineMapping(
-                    documentAbsoluteIndex: 0,
+                    documentAbsoluteIndex: 7,
                     documentLineIndex: 0,
-                    documentCharacterIndex: 0,
-                    generatedAbsoluteIndex: 910,
+                    documentCharacterIndex: 7,
+                    generatedAbsoluteIndex: 938,
                     generatedLineIndex: 25,
-                    generatedCharacterIndex: 0,
-                    contentLength: 46),
+                    generatedCharacterIndex: 28,
+                    contentLength: 8),
                 BuildLineMapping(
                     documentAbsoluteIndex: 139,
                     documentLineIndex: 4,
                     documentCharacterIndex: 17,
-                    generatedAbsoluteIndex: 2371,
+                    generatedAbsoluteIndex: 2338,
                     generatedLineIndex: 54,
                     generatedCharacterIndex: 95,
                     contentLength: 3),
@@ -156,16 +156,17 @@ namespace Microsoft.AspNet.Mvc.Razor
                     documentAbsoluteIndex: 166,
                     documentLineIndex: 5,
                     documentCharacterIndex: 18,
-                    generatedAbsoluteIndex: 2684,
+                    generatedAbsoluteIndex: 2651,
                     generatedLineIndex: 60,
                     generatedCharacterIndex: 87,
                     contentLength: 5),
             };
 
             // Act and Assert
-            RunDesignTimeTest(host,
-                              testName: "ModelExpressionTagHelper",
-                              expectedLineMappings: expectedLineMappings);
+            RunDesignTimeTest(
+                host,
+                testName: "ModelExpressionTagHelper",
+                expectedLineMappings: expectedLineMappings);
         }
 
         [Theory]
@@ -198,27 +199,19 @@ namespace Microsoft.AspNet.Mvc.Razor
             var expectedLineMappings = new[]
             {
                 BuildLineMapping(
-                    documentAbsoluteIndex: 0,
-                    documentLineIndex: 0,
-                    documentCharacterIndex: 0,
-                    generatedAbsoluteIndex: 343,
-                    generatedLineIndex: 11,
-                    generatedCharacterIndex: 0,
-                    contentLength: 45),
-                BuildLineMapping(
                     documentAbsoluteIndex: 13,
                     documentLineIndex: 0,
                     documentCharacterIndex: 13,
-                    generatedAbsoluteIndex: 1412,
-                    generatedLineIndex: 37,
+                    generatedAbsoluteIndex: 1269,
+                    generatedLineIndex: 32,
                     generatedCharacterIndex: 13,
                     contentLength: 4),
                 BuildLineMapping(
                     documentAbsoluteIndex: 43,
                     documentLineIndex: 2,
                     documentCharacterIndex: 5,
-                    generatedAbsoluteIndex: 1496,
-                    generatedLineIndex: 42,
+                    generatedAbsoluteIndex: 1353,
+                    generatedLineIndex: 37,
                     generatedCharacterIndex: 6,
                     contentLength: 21),
             };
@@ -248,19 +241,11 @@ namespace Microsoft.AspNet.Mvc.Razor
                     generatedCharacterIndex: 0,
                     contentLength: 17),
                 BuildLineMapping(
-                    documentAbsoluteIndex: 0,
-                    documentLineIndex: 0,
-                    documentCharacterIndex: 0,
-                    generatedAbsoluteIndex: 443,
-                    generatedLineIndex: 17,
-                    generatedCharacterIndex: 0,
-                    contentLength: 45),
-                BuildLineMapping(
                     documentAbsoluteIndex: 28,
                     documentLineIndex: 1,
                     documentCharacterIndex: 8,
-                    generatedAbsoluteIndex: 850,
-                    generatedLineIndex: 31,
+                    generatedAbsoluteIndex: 706,
+                    generatedLineIndex: 26,
                     generatedCharacterIndex: 8,
                     contentLength: 20),
             };
@@ -282,18 +267,18 @@ namespace Microsoft.AspNet.Mvc.Razor
             var expectedLineMappings = new[]
             {
                 BuildLineMapping(
-                    documentAbsoluteIndex: 0,
+                    documentAbsoluteIndex: 7,
                     documentLineIndex: 0,
-                    documentCharacterIndex: 0,
-                    generatedAbsoluteIndex: 363,
+                    documentCharacterIndex: 7,
+                    generatedAbsoluteIndex: 391,
                     generatedLineIndex: 11,
-                    generatedCharacterIndex: 0,
-                    contentLength: 45),
+                    generatedCharacterIndex: 28,
+                    contentLength: 7),
                 BuildLineMapping(
                     documentAbsoluteIndex: 24,
                     documentLineIndex: 1,
                     documentCharacterIndex: 8,
-                    generatedAbsoluteIndex: 788,
+                    generatedAbsoluteIndex: 755,
                     generatedLineIndex: 25,
                     generatedCharacterIndex: 8,
                     contentLength: 20),
@@ -301,7 +286,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     documentAbsoluteIndex: 54,
                     documentLineIndex: 2,
                     documentCharacterIndex: 8,
-                    generatedAbsoluteIndex: 1014,
+                    generatedAbsoluteIndex: 981,
                     generatedLineIndex: 33,
                     generatedCharacterIndex: 8,
                     contentLength: 23),
@@ -324,18 +309,18 @@ namespace Microsoft.AspNet.Mvc.Razor
             var expectedLineMappings = new[]
             {
                 BuildLineMapping(
-                    documentAbsoluteIndex: 0,
+                    documentAbsoluteIndex: 7,
                     documentLineIndex: 0,
-                    documentCharacterIndex: 0,
-                    generatedAbsoluteIndex: 371,
+                    documentCharacterIndex: 7,
+                    generatedAbsoluteIndex: 399,
                     generatedLineIndex: 11,
-                    generatedCharacterIndex: 0,
-                    contentLength: 45),
+                    generatedCharacterIndex: 28,
+                    contentLength: 7),
                 BuildLineMapping(
                     documentAbsoluteIndex: 24,
                     documentLineIndex: 1,
                     documentCharacterIndex: 8,
-                    generatedAbsoluteIndex: 804,
+                    generatedAbsoluteIndex: 771,
                     generatedLineIndex: 25,
                     generatedCharacterIndex: 8,
                     contentLength: 20),
@@ -343,7 +328,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     documentAbsoluteIndex: 58,
                     documentLineIndex: 2,
                     documentCharacterIndex: 8,
-                    generatedAbsoluteIndex: 1034,
+                    generatedAbsoluteIndex: 1001,
                     generatedLineIndex: 33,
                     generatedCharacterIndex: 8,
                     contentLength: 23),
@@ -351,7 +336,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     documentAbsoluteIndex: 93,
                     documentLineIndex: 3,
                     documentCharacterIndex: 8,
-                    generatedAbsoluteIndex: 1267,
+                    generatedAbsoluteIndex: 1234,
                     generatedLineIndex: 41,
                     generatedCharacterIndex: 8,
                     contentLength: 21),
@@ -359,7 +344,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     documentAbsoluteIndex: 129,
                     documentLineIndex: 4,
                     documentCharacterIndex: 8,
-                    generatedAbsoluteIndex: 1498,
+                    generatedAbsoluteIndex: 1465,
                     generatedLineIndex: 49,
                     generatedCharacterIndex: 8,
                     contentLength: 24),
@@ -382,17 +367,49 @@ namespace Microsoft.AspNet.Mvc.Razor
             var expectedLineMappings = new[]
             {
                 BuildLineMapping(
-                    documentAbsoluteIndex: 0,
+                    documentAbsoluteIndex: 7,
                     documentLineIndex: 0,
-                    documentCharacterIndex: 0,
-                    generatedAbsoluteIndex: 366,
+                    documentCharacterIndex: 7,
+                    generatedAbsoluteIndex: 394,
                     generatedLineIndex: 11,
-                    generatedCharacterIndex: 0,
-                    contentLength: 68),
+                    generatedCharacterIndex: 28,
+                    contentLength: 30),
             };
 
             // Act and Assert
             RunDesignTimeTest(host, "Model", expectedLineMappings);
+        }
+
+        [Fact]
+        public void ModelVisitor_GeneratesLineMappingsForLastModel_WhenMultipleModelsArePresent()
+        {
+            // Arrange
+            var fileProvider = new TestFileProvider();
+            var host = new MvcRazorHostWithNormalizedNewLine(new DefaultChunkTreeCache(fileProvider))
+            {
+                DesignTimeMode = true
+            };
+            host.NamespaceImports.Clear();
+            var inputFile = "TestFiles/Input/MultipleModels.cshtml";
+            var outputFile = "TestFiles/Output/DesignTime/MultipleModels.cs";
+            var expectedCode = ResourceFile.ReadResource(_assembly, outputFile, sourceFile: false);
+
+            // Act
+            GeneratorResults results;
+            using (var stream = ResourceFile.GetResourceStream(_assembly, inputFile, sourceFile: true))
+            {
+                results = host.GenerateCode(inputFile, stream);
+            }
+
+            // Assert
+            Assert.False(results.Success);
+            var parserError = Assert.Single(results.ParserErrors);
+            Assert.Equal("Only one 'model' statement is allowed in a file.", parserError.Message);
+#if GENERATE_BASELINES
+            ResourceFile.UpdateFile(_assembly, outputFile, expectedCode, results.GeneratedCode);
+#else
+            Assert.Equal(expectedCode, results.GeneratedCode, ignoreLineEndingDifferences: true);
+#endif
         }
 
         private static void RunRuntimeTest(

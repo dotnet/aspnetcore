@@ -23,7 +23,7 @@ namespace Asp
 #line hidden
             ;
 #line 1 "TestFiles/Input/ModelExpressionTagHelper.cshtml"
-Microsoft.AspNet.Mvc.Razor.RazorPage<DateTime> __inheritsHelper = null;
+var __modelHelper = default(DateTime);
 
 #line default
 #line hidden

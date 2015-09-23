@@ -67,6 +67,29 @@ namespace Microsoft.AspNet.Mvc.Razor
             return csharpCodeVisitor;
         }
 
+        protected override CSharpDesignTimeCodeVisitor CreateCSharpDesignTimeCodeVisitor(
+            CSharpCodeVisitor csharpCodeVisitor,
+            CSharpCodeWriter writer,
+            CodeGeneratorContext context)
+        {
+            if (csharpCodeVisitor == null)
+            {
+                throw new ArgumentNullException(nameof(csharpCodeVisitor));
+            }
+
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new MvcCSharpDesignTimeCodeVisitor(csharpCodeVisitor, writer, context);
+        }
+
         protected override void BuildConstructor(CSharpCodeWriter writer)
         {
             if (writer == null)

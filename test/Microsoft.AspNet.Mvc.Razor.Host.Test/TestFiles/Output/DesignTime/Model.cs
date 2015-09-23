@@ -9,7 +9,7 @@ namespace Asp
         {
             #pragma warning disable 219
 #line 1 "TestFiles/Input/Model.cshtml"
-Microsoft.AspNet.Mvc.Razor.RazorPage<System.Collections.IEnumerable> __inheritsHelper = null;
+var __modelHelper = default(System.Collections.IEnumerable);
 
 #line default
 #line hidden
