@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
     /// A type which is used to represent a property in a <see cref="ControllerModel"/>.
     /// </summary>
     [DebuggerDisplay("PropertyModel: Name={PropertyName}")]
-    public class PropertyModel
+    public class PropertyModel : ICommonModel, IBindingModel
     {
         /// <summary>
         /// Creates a new instance of <see cref="PropertyModel"/>.
@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             [NotNull] IReadOnlyList<object> attributes)
         {
             PropertyInfo = propertyInfo;
-
+            Properties = new Dictionary<object, object>();
             Attributes = new List<object>(attributes);
         }
 
@@ -37,9 +37,10 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         {
             Controller = other.Controller;
             Attributes = new List<object>(other.Attributes);
-            BindingInfo = other.BindingInfo;
+            BindingInfo = BindingInfo == null ? null : new BindingInfo(other.BindingInfo);
             PropertyInfo = other.PropertyInfo;
             PropertyName = other.PropertyName;
+            Properties = new Dictionary<object, object>(other.Properties);
         }
 
         /// <summary>
@@ -51,6 +52,12 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         /// Gets any attributes which are annotated on the property.
         /// </summary>
         public IReadOnlyList<object> Attributes { get; }
+
+        public IDictionary<object, object> Properties { get; }
+
+        MemberInfo ICommonModel.MemberInfo => PropertyInfo;
+
+        string ICommonModel.Name => PropertyName;
 
         /// <summary>
         /// Gets or sets the <see cref="BindingInfo"/> associated with this model.

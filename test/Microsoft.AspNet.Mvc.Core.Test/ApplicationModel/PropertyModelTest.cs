@@ -21,6 +21,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             propertyModel.Controller = new ControllerModel(typeof(TestController).GetTypeInfo(), new List<object>());
             propertyModel.BindingInfo = BindingInfo.GetBindingInfo(propertyModel.Attributes);
             propertyModel.PropertyName = "Property";
+            propertyModel.Properties.Add(new KeyValuePair<object, object>("test key", "test value"));
 
             // Act
             var propertyModel2 = new PropertyModel(propertyModel);
@@ -28,6 +29,12 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             // Assert
             foreach (var property in typeof(PropertyModel).GetProperties())
             {
+                if (property.Name.Equals("BindingInfo"))
+                {
+                    // This test excludes other mutable objects on purpose because we deep copy them.
+                    continue;
+                }
+
                 var value1 = property.GetValue(propertyModel);
                 var value2 = property.GetValue(propertyModel2);
 
@@ -37,6 +44,13 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
 
                     // Ensure non-default value
                     Assert.NotEmpty((IEnumerable<object>)value1);
+                }
+                else if (typeof(IDictionary<object, object>).IsAssignableFrom(property.PropertyType))
+                {
+                    Assert.Equal(value1, value2);
+
+                    // Ensure non-default value
+                    Assert.NotEmpty((IDictionary<object, object>)value1);
                 }
                 else if (property.PropertyType.IsValueType ||
                     Nullable.GetUnderlyingType(property.PropertyType) != null)

@@ -13,6 +13,30 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     public class BindingInfo
     {
         /// <summary>
+        /// Creates a new <see cref="BindingInfo"/>.
+        /// </summary>
+        public BindingInfo()
+        {
+        }
+
+        /// <summary>
+        /// Creates a copy of a <see cref="BindingInfo"/>.
+        /// </summary>
+        /// <param name="other">The <see cref="BindingInfo"/> to copy.</param>
+        public BindingInfo(BindingInfo other)
+        {
+            if (other == null)
+            {
+                throw new ArgumentNullException(nameof(other));
+            }
+
+            BindingSource = other.BindingSource;
+            BinderModelName = other.BinderModelName;
+            BinderType = other.BinderType;
+            PropertyBindingPredicateProvider = other.PropertyBindingPredicateProvider;
+        }
+
+        /// <summary>
         /// Gets or sets the <see cref="ModelBinding.BindingSource"/>.
         /// </summary>
         public BindingSource BindingSource { get; set; }

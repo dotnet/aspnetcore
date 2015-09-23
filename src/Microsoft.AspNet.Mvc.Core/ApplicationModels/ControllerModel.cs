@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
 {
     [DebuggerDisplay("Name={ControllerName}, Type={ControllerType.Name}," +
                      " Routes: {AttributeRoutes.Count}, Filters: {Filters.Count}")]
-    public class ControllerModel
+    public class ControllerModel : ICommonModel, IFilterModel, IApiExplorerModel
     {
         public ControllerModel(
             [NotNull] TypeInfo controllerType,
@@ -78,6 +78,10 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public IList<AttributeRouteModel> AttributeRoutes { get; private set; }
 
         public IReadOnlyList<object> Attributes { get; }
+
+        MemberInfo ICommonModel.MemberInfo => ControllerType;
+
+        string ICommonModel.Name => ControllerName;
 
         public string ControllerName { get; set; }
 
