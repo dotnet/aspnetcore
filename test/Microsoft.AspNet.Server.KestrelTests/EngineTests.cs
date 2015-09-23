@@ -60,18 +60,9 @@ namespace Microsoft.AspNet.Server.KestrelTests
 
         private async Task AppChunked(Frame frame)
         {
-            Console.WriteLine($"----");
-            Console.WriteLine($"{frame.Method} {frame.RequestUri} {frame.HttpVersion}");
-            foreach (var h in frame.RequestHeaders)
-            {
-                Console.WriteLine($"{h.Key}: {h.Value}");
-            }
-            Console.WriteLine($"");
-
             var data = new MemoryStream();
             await frame.RequestBody.CopyToAsync(data);
             var bytes = data.ToArray();
-            Console.WriteLine($"{Encoding.ASCII.GetString(bytes)}");
 
             frame.ResponseHeaders.Clear();
             frame.ResponseHeaders["Content-Length"] = new[] { bytes.Length.ToString() };

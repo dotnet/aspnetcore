@@ -30,7 +30,9 @@ namespace Microsoft.AspNet.Server.KestrelTests
         {
             public void Log(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
             {
+#if false
                 Console.WriteLine($"Log {logLevel}[{eventId}]: {formatter(state, exception)} {exception?.Message}");
+#endif
             }
 
             public bool IsEnabled(LogLevel logLevel)
