@@ -171,6 +171,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         [Theory]
         [InlineData("Basic")]
+        [InlineData("_ViewImports")]
         [InlineData("Inject")]
         [InlineData("InjectWithModel")]
         [InlineData("InjectWithSemicolon")]
@@ -218,6 +219,32 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             // Act and Assert
             RunDesignTimeTest(host, "Basic", expectedLineMappings);
+        }
+
+        [Fact]
+        public void MvcRazorHost_GeneratesCorrectLineMappingsAndUsingStatementsForViewImports()
+        {
+            // Arrange
+            var fileProvider = new TestFileProvider();
+            var host = new MvcRazorHostWithNormalizedNewLine(new DefaultChunkTreeCache(fileProvider))
+            {
+                DesignTimeMode = true
+            };
+            host.NamespaceImports.Clear();
+            var expectedLineMappings = new[]
+            {
+                BuildLineMapping(
+                    documentAbsoluteIndex: 8,
+                    documentLineIndex: 0,
+                    documentCharacterIndex: 8,
+                    generatedAbsoluteIndex: 661,
+                    generatedLineIndex: 21,
+                    generatedCharacterIndex: 8,
+                    contentLength: 26),
+            };
+
+            // Act and Assert
+            RunDesignTimeTest(host, "_ViewImports", expectedLineMappings);
         }
 
         [Fact]

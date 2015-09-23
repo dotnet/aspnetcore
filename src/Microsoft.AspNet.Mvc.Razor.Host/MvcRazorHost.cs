@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             new SetBaseTypeChunk
             {
                 // Microsoft.Aspnet.Mvc.Razor.RazorPage<TModel>
-                TypeName = BaseType + ChunkHelper.TModelToken,
+                TypeName = $"{BaseType}<{ChunkHelper.TModelToken}>",
                 // Set the Start to Undefined to prevent Razor design time code generation from rendering a line mapping
                 // for this chunk.
                 Start = SourceLocation.Undefined
@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             _pathNormalizer = pathNormalizer;
             _chunkTreeCache = chunkTreeCache;
 
-            DefaultBaseClass = BaseType + ChunkHelper.TModelToken;
+            DefaultBaseClass = $"{BaseType}<{ChunkHelper.TModelToken}>";
             DefaultNamespace = "Asp";
             // Enable instrumentation by default to allow precompiled views to work with BrowserLink.
             EnableInstrumentation = true;

@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
+using Microsoft.AspNet.Mvc.Razor.Directives;
 using Microsoft.AspNet.Razor.CodeGenerators;
 using Microsoft.AspNet.Razor.CodeGenerators.Visitors;
 
@@ -43,6 +45,21 @@ namespace Microsoft.AspNet.Mvc.Razor
             _tagHelperAttributeContext = tagHelperAttributeContext;
             _defaultModel = defaultModel;
             _injectAttribute = injectAttribute;
+        }
+
+        protected override CSharpCodeWritingScope BuildClassDeclaration(CSharpCodeWriter writer)
+        {
+            if (Context.Host.DesignTimeMode &&
+                string.Equals(
+                    Path.GetFileName(Context.SourceFile),
+                    ViewHierarchyUtility.ViewImportsFileName,
+                    StringComparison.Ordinal))
+            {
+                // Write a using TModel = System.Object; token during design time to make intellisense work
+                writer.WriteLine($"using {ChunkHelper.TModelToken} = {typeof(object).FullName};");
+            }
+
+            return base.BuildClassDeclaration(writer);
         }
 
         protected override CSharpCodeVisitor CreateCSharpCodeVisitor(

@@ -14,7 +14,11 @@ namespace Microsoft.AspNet.Mvc.Razor
     public static class ViewHierarchyUtility
     {
         private const string ViewStartFileName = "_ViewStart.cshtml";
-        private const string ViewImportsFileName = "_ViewImports.cshtml";
+
+        /// <summary>
+        /// File name of <c>_ViewImports.cshtml</c> file
+        /// </summary>
+        public static readonly string ViewImportsFileName = "_ViewImports.cshtml";
 
         /// <summary>
         /// Gets the view start locations that are applicable to the specified path.
