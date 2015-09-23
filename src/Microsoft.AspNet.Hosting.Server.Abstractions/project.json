@@ -1,5 +1,6 @@
 ﻿{
     "version": "1.0.0-*",
+    "description": "ASP.NET 5 Hosting server abstractions.",
     "repository": {
         "type": "git",
         "url": "git://github.com/aspnet/hosting"
