@@ -43,7 +43,7 @@ namespace CookieSample
             app.UseOAuthAuthentication(new OAuthOptions
             {
                 AuthenticationScheme = "Google-AccessToken",
-                Caption = "Google-AccessToken",
+                DisplayName = "Google-AccessToken",
                 ClientId = "560027070069-37ldt4kfuohhu3m495hk2j4pjp92d382.apps.googleusercontent.com",
                 ClientSecret = "n2Q-GEw9RQjzcRbU3qhfTj8f",
                 CallbackPath = new PathString("/signin-google-token"),
@@ -86,7 +86,7 @@ namespace CookieSample
             app.UseOAuthAuthentication(new OAuthOptions
             {
                 AuthenticationScheme = "Microsoft-AccessToken",
-                Caption = "MicrosoftAccount-AccessToken - Requires project changes",
+                DisplayName = "MicrosoftAccount-AccessToken - Requires project changes",
                 ClientId = "00000000480FF62E",
                 ClientSecret = "bLw2JIvf8Y1TaToipPEqxTVlOeJwCUsr",
                 CallbackPath = new PathString("/signin-microsoft-token"),
@@ -97,7 +97,7 @@ namespace CookieSample
 
             app.UseMicrosoftAccountAuthentication(options =>
             {
-                options.Caption = "MicrosoftAccount - Requires project changes";
+                options.DisplayName = "MicrosoftAccount - Requires project changes";
                 options.ClientId = "00000000480FF62E";
                 options.ClientSecret = "bLw2JIvf8Y1TaToipPEqxTVlOeJwCUsr";
                 options.Scope.Add("wl.emails");
@@ -107,7 +107,7 @@ namespace CookieSample
             app.UseOAuthAuthentication(new OAuthOptions
             {
                 AuthenticationScheme = "GitHub-AccessToken",
-                Caption = "Github-AccessToken",
+                DisplayName = "Github-AccessToken",
                 ClientId = "8c0c5a572abe8fe89588",
                 ClientSecret = "e1d95eaf03461d27acd6f49d4fc7bf19d6ac8cda",
                 CallbackPath = new PathString("/signin-github-token"),
@@ -118,7 +118,7 @@ namespace CookieSample
             app.UseOAuthAuthentication(new OAuthOptions
             {
                 AuthenticationScheme = "GitHub",
-                Caption = "Github",
+                DisplayName = "Github",
                 ClientId = "49e302895d8b09ea5656",
                 ClientSecret = "98f1bf028608901e9df91d64ee61536fe562064b",
                 CallbackPath = new PathString("/signin-github"),
@@ -196,7 +196,7 @@ namespace CookieSample
                     await context.Response.WriteAsync("Choose an authentication scheme: <br>");
                     foreach (var type in context.Authentication.GetAuthenticationSchemes())
                     {
-                        await context.Response.WriteAsync("<a href=\"?authscheme=" + type.AuthenticationScheme + "\">" + (type.Caption ?? "(suppressed)") + "</a><br>");
+                        await context.Response.WriteAsync("<a href=\"?authscheme=" + type.AuthenticationScheme + "\">" + (type.DisplayName ?? "(suppressed)") + "</a><br>");
                     }
                     await context.Response.WriteAsync("</body></html>");
                 });

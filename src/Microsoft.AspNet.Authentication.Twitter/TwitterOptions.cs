@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
         public TwitterOptions()
         {
             AuthenticationScheme = TwitterDefaults.AuthenticationScheme;
-            Caption = AuthenticationScheme;
+            DisplayName = AuthenticationScheme;
             CallbackPath = new PathString("/signin-twitter");
             BackchannelTimeout = TimeSpan.FromSeconds(60);
         }
@@ -53,10 +53,10 @@ namespace Microsoft.AspNet.Authentication.Twitter
         /// <summary>
         /// Get or sets the text that the user can display on a sign in user interface.
         /// </summary>
-        public string Caption
+        public string DisplayName
         {
-            get { return Description.Caption; }
-            set { Description.Caption = value; }
+            get { return Description.DisplayName; }
+            set { Description.DisplayName = value; }
         }
 
         /// <summary>

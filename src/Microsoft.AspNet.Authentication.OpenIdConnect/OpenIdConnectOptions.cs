@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         public OpenIdConnectOptions(string authenticationScheme)
         {
             AuthenticationScheme = authenticationScheme;
-            Caption = OpenIdConnectDefaults.Caption;
+            DisplayName = OpenIdConnectDefaults.Caption;
         }
 
         /// <summary>
@@ -81,10 +81,10 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         /// <summary>
         /// Get or sets the text that the user can display on a sign in user interface.
         /// </summary>
-        public string Caption
+        public string DisplayName
         {
-            get { return Description.Caption; }
-            set { Description.Caption = value; }
+            get { return Description.DisplayName; }
+            set { Description.DisplayName = value; }
         }
 
         /// <summary>

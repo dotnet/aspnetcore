@@ -44,10 +44,10 @@ namespace Microsoft.AspNet.Authentication.OAuth
         /// <summary>
         /// Get or sets the text that the user can display on a sign in user interface.
         /// </summary>
-        public string Caption
+        public string DisplayName
         {
-            get { return Description.Caption; }
-            set { Description.Caption = value; }
+            get { return Description.DisplayName; }
+            set { Description.DisplayName = value; }
         }
 
         /// <summary>

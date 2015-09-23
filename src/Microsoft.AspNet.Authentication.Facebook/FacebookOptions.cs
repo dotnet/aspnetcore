@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Authentication.Facebook
         public FacebookOptions()
         {
             AuthenticationScheme = FacebookDefaults.AuthenticationScheme;
-            Caption = AuthenticationScheme;
+            DisplayName = AuthenticationScheme;
             CallbackPath = new PathString("/signin-facebook");
             SendAppSecretProof = true;
             AuthorizationEndpoint = FacebookDefaults.AuthorizationEndpoint;
