@@ -27,16 +27,17 @@ namespace MusicStore
         {
             _runtimeEnvironment = runtimeEnvironment;
         }
-        
+
         public bool IsRunningOnWindows
         {
             get
             {
                 if (_isWindows == null)
                 {
-                    _isWindows = _runtimeEnvironment.OperatingSystem.Equals("Windows", StringComparison.OrdinalIgnoreCase);
+                    _isWindows = _runtimeEnvironment.OperatingSystem.Equals(
+                        "Windows", StringComparison.OrdinalIgnoreCase);
                 }
-                
+
                 return _isWindows.Value;
             }
         }
@@ -65,7 +66,7 @@ namespace MusicStore
                     try
                     {
                         int productType;
-                        if (GetProductInfo(osVersion.Major, osVersion.Minor, 0,0, out productType))
+                        if (GetProductInfo(osVersion.Major, osVersion.Minor, 0, 0, out productType))
                         {
                             _isNano = productType == PRODUCT_NANO_SERVER;
                         }
@@ -76,7 +77,7 @@ namespace MusicStore
                     }
                     catch
                     {
-                        // If the API call fails, the API set is not there which means 
+                        // If the API call fails, the API set is not there which means
                         // that we are definetely not running on Nano
                         _isNano = false;
                     }

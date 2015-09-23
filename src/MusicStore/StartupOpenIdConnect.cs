@@ -1,15 +1,13 @@
-using System;
 using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.Diagnostics.Entity;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.Data.Entity;
+using Microsoft.Dnx.Runtime;
 using Microsoft.Framework.Caching.Memory;
 using Microsoft.Framework.Configuration;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
-using Microsoft.Dnx.Runtime;
 using MusicStore.Components;
 using MusicStore.Models;
 
@@ -18,14 +16,18 @@ namespace MusicStore
     /// <summary>
     /// To make runtime to load an environment based startup class, specify the environment by the following ways:
     /// 1. Drop a Microsoft.AspNet.Hosting.ini file in the wwwroot folder
-    /// 2. Add a setting in the ini file named 'ASPNET_ENV' with value of the format 'Startup[EnvironmentName]'. For example: To load a Startup class named
-    /// 'StartupOpenIdConnect' the value of the env should be 'OpenIdConnect' (eg. ASPNET_ENV=OpenIdConnect). Runtime adds a 'Startup' prefix to this and loads 'StartupOpenIdConnect'.
+    /// 2. Add a setting in the ini file named 'ASPNET_ENV' with value of the format 'Startup[EnvironmentName]'.
+    ///    For example: To load a Startup class named 'StartupOpenIdConnect' the value of the env should be
+    ///    'OpenIdConnect' (eg. ASPNET_ENV=OpenIdConnect). Runtime adds a 'Startup' prefix to this
+    ///    and loads 'StartupOpenIdConnect'.
+    ///
     /// If no environment name is specified the default startup class loaded is 'Startup'.
     /// Alternative ways to specify environment are:
     /// 1. Set the environment variable named SET ASPNET_ENV=OpenIdConnect
     /// 2. For selfhost based servers pass in a command line variable named --env with this value. Eg:
     /// "commands": {
-    ///    "web": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls http://localhost:5002 --ASPNET_ENV OpenIdConnect",
+    ///    "web": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener
+    /// --server.urls http://localhost:5002 --ASPNET_ENV OpenIdConnect",
     ///  },
     /// </summary>
     public class StartupOpenIdConnect
@@ -34,11 +36,13 @@ namespace MusicStore
 
         public StartupOpenIdConnect(IApplicationEnvironment env, IRuntimeEnvironment runtimeEnvironment)
         {
-            //Below code demonstrates usage of multiple configuration sources. For instance a setting say 'setting1' is found in both the registered sources,
-            //then the later source will win. By this way a Local config can be overridden by a different setting while deployed remotely.
+            // Below code demonstrates usage of multiple configuration sources. For instance a setting say 'setting1'
+            // is found in both the registered sources, then the later source will win. By this way a Local config can
+            // be overridden by a different setting while deployed remotely.
             var builder = new ConfigurationBuilder(env.ApplicationBasePath)
                         .AddJsonFile("config.json")
-                        .AddEnvironmentVariables(); //All environment variables in the process's context flow in as configuration values.
+                        //All environment variables in the process's context flow in as configuration values.
+                        .AddEnvironmentVariables();
 
             Configuration = builder.Build();
             _platform = new Platform(runtimeEnvironment);
@@ -97,7 +101,8 @@ namespace MusicStore
             // Configure Auth
             services.Configure<AuthorizationOptions>(options =>
             {
-                options.AddPolicy("ManageStore", new AuthorizationPolicyBuilder().RequireClaim("ManageStore", "Allowed").Build());
+                options.AddPolicy(
+                    "ManageStore", new AuthorizationPolicyBuilder().RequireClaim("ManageStore", "Allowed").Build());
             });
         }
 

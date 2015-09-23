@@ -1,16 +1,15 @@
-using System;
 using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Diagnostics;
+using Microsoft.AspNet.Cors.Core;
 using Microsoft.AspNet.Diagnostics.Entity;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.Data.Entity;
+using Microsoft.Dnx.Runtime;
 using Microsoft.Framework.Caching.Memory;
 using Microsoft.Framework.Configuration;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
-using Microsoft.Dnx.Runtime;
 using MusicStore.Components;
 using MusicStore.Models;
 
@@ -20,13 +19,15 @@ namespace MusicStore
     {
         private readonly Platform _platform;
 
-        public Startup(IApplicationEnvironment env, IRuntimeEnvironment runtimeEnvironment)
+        public Startup(IApplicationEnvironment applicationEnvironment, IRuntimeEnvironment runtimeEnvironment)
         {
-            //Below code demonstrates usage of multiple configuration sources. For instance a setting say 'setting1' is found in both the registered sources,
-            //then the later source will win. By this way a Local config can be overridden by a different setting while deployed remotely.
-            var builder = new ConfigurationBuilder(env.ApplicationBasePath)
+            // Below code demonstrates usage of multiple configuration sources. For instance a setting say 'setting1'
+            // is found in both the registered sources, then the later source will win. By this way a Local config
+            // can be overridden by a different setting while deployed remotely.
+            var builder = new ConfigurationBuilder(applicationEnvironment.ApplicationBasePath)
                         .AddJsonFile("config.json")
-                        .AddEnvironmentVariables(); //All environment variables in the process's context flow in as configuration values.
+                        //All environment variables in the process's context flow in as configuration values.
+                        .AddEnvironmentVariables();
 
             Configuration = builder.Build();
             _platform = new Platform(runtimeEnvironment);
@@ -38,7 +39,9 @@ namespace MusicStore
         {
             services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
 
-            var useInMemoryStore = !_platform.IsRunningOnWindows || _platform.IsRunningOnMono || _platform.IsRunningOnNanoServer;
+            var useInMemoryStore = !_platform.IsRunningOnWindows
+                || _platform.IsRunningOnMono
+                || _platform.IsRunningOnNanoServer;
 
             // Add EF services to the services container
             if (useInMemoryStore)
@@ -64,7 +67,8 @@ namespace MusicStore
                     .AddEntityFrameworkStores<MusicStoreContext>()
                     .AddDefaultTokenProviders();
 
-            services.AddCors(options =>
+
+            services.Configure<CorsOptions>(options =>
             {
                 options.AddPolicy("CorsPolicy", builder =>
                 {
@@ -88,7 +92,8 @@ namespace MusicStore
             // Configure Auth
             services.AddAuthorization(options =>
             {
-                options.AddPolicy("ManageStore", new AuthorizationPolicyBuilder().RequireClaim("ManageStore", "Allowed").Build());
+                options.AddPolicy(
+                    "ManageStore", new AuthorizationPolicyBuilder().RequireClaim("ManageStore", "Allowed").Build());
             });
         }
 
@@ -172,7 +177,8 @@ namespace MusicStore
                 options.ConsumerSecret = "jUBYkQuBFyqp7G3CUB9SW3AfflFr9z3oQBiNvumYy87Al0W4h8";
             });
 
-            // The MicrosoftAccount service has restrictions that prevent the use of http://localhost:5001/ for test applications.
+            // The MicrosoftAccount service has restrictions that prevent the use of
+            // http://localhost:5001/ for test applications.
             // As such, here is how to change this sample to uses http://ktesting.com:5001/ instead.
 
             // Edit the Project.json file and replace http://localhost:5001/ with http://ktesting.com:5001/.
