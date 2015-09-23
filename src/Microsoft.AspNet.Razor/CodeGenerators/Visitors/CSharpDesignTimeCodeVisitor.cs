@@ -8,22 +8,19 @@ using Microsoft.AspNet.Razor.Chunks;
 
 namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
 {
-    public class CSharpDesignTimeHelpersVisitor : CodeVisitor<CSharpCodeWriter>
+    public class CSharpDesignTimeCodeVisitor : CodeVisitor<CSharpCodeWriter>
     {
-        internal const string InheritsHelper = "__inheritsHelper";
-        internal const string DesignTimeHelperMethodName = "__RazorDesignTimeHelpers__";
-
+        private const string InheritsHelper = "__inheritsHelper";
+        private const string DesignTimeHelperMethodName = "__RazorDesignTimeHelpers__";
         private const string TagHelperDirectiveSyntaxHelper = "__tagHelperDirectiveSyntaxHelper";
         private const int DisableVariableNamingWarnings = 219;
 
-        private readonly CSharpCodeVisitor _csharpCodeVisitor;
-
         private bool _initializedTagHelperDirectiveSyntaxHelper;
 
-        public CSharpDesignTimeHelpersVisitor(CSharpCodeVisitor csharpCodeVisitor,
-                                              CSharpCodeWriter writer,
-                                              CodeGeneratorContext context)
-
+        public CSharpDesignTimeCodeVisitor(
+            CSharpCodeVisitor csharpCodeVisitor,
+            CSharpCodeWriter writer,
+            CodeGeneratorContext context)
             : base(writer, context)
         {
             if (csharpCodeVisitor == null)
@@ -31,18 +28,10 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
                 throw new ArgumentNullException(nameof(csharpCodeVisitor));
             }
 
-            if (writer == null)
-            {
-                throw new ArgumentNullException(nameof(writer));
-            }
-
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            _csharpCodeVisitor = csharpCodeVisitor;
+            CSharpCodeVisitor = csharpCodeVisitor;
         }
+
+        public CSharpCodeVisitor CSharpCodeVisitor { get; }
 
         public void AcceptTree(ChunkTree tree)
         {
@@ -52,17 +41,25 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
                 {
                     using (Writer.BuildDisableWarningScope(DisableVariableNamingWarnings))
                     {
-                        Accept(tree.Chunks);
+                        AcceptTreeCore(tree);
                     }
                 }
             }
         }
 
+        protected virtual void AcceptTreeCore(ChunkTree tree)
+        {
+            Accept(tree.Chunks);
+        }
+
         protected override void Visit(SetBaseTypeChunk chunk)
         {
-            if (Context.Host.DesignTimeMode)
+            Debug.Assert(Context.Host.DesignTimeMode);
+
+            if (chunk.Start != SourceLocation.Undefined)
             {
-                using (CSharpLineMappingWriter lineMappingWriter = Writer.BuildLineMapping(chunk.Start, chunk.TypeName.Length, Context.SourceFile))
+                using (var lineMappingWriter =
+                    Writer.BuildLineMapping(chunk.Start, chunk.TypeName.Length, Context.SourceFile))
                 {
                     Writer.Indent(chunk.Start.CharacterIndex);
 
@@ -105,7 +102,7 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
 
             // The parsing mechanism for a TagHelper directive chunk (CSharpCodeParser.TagHelperDirective())
             // removes quotes that surround the text.
-            _csharpCodeVisitor.CreateExpressionCodeMapping(
+            CSharpCodeVisitor.CreateExpressionCodeMapping(
                 string.Format(CultureInfo.InvariantCulture, "\"{0}\"", text),
                 chunk);
 

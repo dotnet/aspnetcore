@@ -65,7 +65,8 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
                     var csharpCodeVisitor = CreateCSharpCodeVisitor(writer, Context);
 
                     new CSharpTypeMemberVisitor(csharpCodeVisitor, writer, Context).Accept(Tree.Chunks);
-                    new CSharpDesignTimeHelpersVisitor(csharpCodeVisitor, writer, Context).AcceptTree(Tree);
+                    CreateCSharpDesignTimeCodeVisitor(csharpCodeVisitor, writer, Context)
+                        .AcceptTree(Tree);
                     new CSharpTagHelperFieldDeclarationVisitor(writer, Context).Accept(Tree.Chunks);
 
                     BuildConstructor(writer);
@@ -87,8 +88,9 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
             return new CodeGeneratorResult(writer.GenerateCode(), writer.LineMappingManager.Mappings);
         }
 
-        protected virtual CSharpCodeVisitor CreateCSharpCodeVisitor(CSharpCodeWriter writer,
-                                                                    CodeGeneratorContext context)
+        protected virtual CSharpCodeVisitor CreateCSharpCodeVisitor(
+            CSharpCodeWriter writer,
+            CodeGeneratorContext context)
         {
             if (writer == null)
             {
@@ -101,6 +103,29 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
             }
 
             return new CSharpCodeVisitor(writer, context);
+        }
+
+        protected virtual CSharpDesignTimeCodeVisitor CreateCSharpDesignTimeCodeVisitor(
+            CSharpCodeVisitor csharpCodeVisitor,
+            CSharpCodeWriter writer,
+            CodeGeneratorContext context)
+        {
+            if (csharpCodeVisitor == null)
+            {
+                throw new ArgumentNullException(nameof(csharpCodeVisitor));
+            }
+
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new CSharpDesignTimeCodeVisitor(csharpCodeVisitor, writer, context);
         }
 
         protected virtual CSharpCodeWritingScope BuildClassDeclaration(CSharpCodeWriter writer)
