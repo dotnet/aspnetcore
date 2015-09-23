@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.Data.Entity;
+using Microsoft.Data.Entity.Infrastructure;
 using Microsoft.Data.Entity.Metadata;
 
 namespace Microsoft.AspNet.Identity.EntityFramework
@@ -17,6 +18,26 @@ namespace Microsoft.AspNet.Identity.EntityFramework
         where TRole : IdentityRole<TKey>
         where TKey : IEquatable<TKey>
     {
+        public IdentityDbContext(DbContextOptions options) : base(options)
+        {
+            
+        }
+
+        public IdentityDbContext(IServiceProvider serviceProvider) : base(serviceProvider)
+        {
+            
+        }
+
+        public IdentityDbContext(IServiceProvider serviceProvider, DbContextOptions options) : base(serviceProvider, options)
+        {
+            
+        }
+
+        protected IdentityDbContext()
+        {
+            
+        }
+
         public DbSet<TUser> Users { get; set; }
         public DbSet<IdentityUserClaim<TKey>> UserClaims { get; set; }
         public DbSet<IdentityUserLogin<TKey>> UserLogins { get; set; }
