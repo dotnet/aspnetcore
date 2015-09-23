@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Http.Authentication
 {
@@ -13,7 +12,7 @@ namespace Microsoft.AspNet.Http.Authentication
     /// </summary>
     public class AuthenticationDescription
     {
-        private const string CaptionPropertyKey = "Caption";
+        private const string DisplayNamePropertyKey = "DisplayName";
         private const string AuthenticationSchemePropertyKey = "AuthenticationScheme";
 
         /// <summary>
@@ -50,10 +49,10 @@ namespace Microsoft.AspNet.Http.Authentication
         /// <summary>
         /// Gets or sets the display name for the authentication provider.
         /// </summary>
-        public string Caption
+        public string DisplayName
         {
-            get { return GetString(CaptionPropertyKey); }
-            set { Items[CaptionPropertyKey] = value; }
+            get { return GetString(DisplayNamePropertyKey); }
+            set { Items[DisplayNamePropertyKey] = value; }
         }
 
         private string GetString(string name)
