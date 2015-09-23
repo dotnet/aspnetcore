@@ -42,11 +42,14 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
                 LookupText = "Microsoft.AspNet.Mvc.Razor.TagHelpers.UrlResolutionTagHelper, Microsoft.AspNet.Mvc.Razor"
             },
+            new SetBaseTypeChunk
+            {
+                // Microsoft.Aspnet.Mvc.Razor.RazorPage<TModel>
+                TypeName = BaseType + ChunkHelper.TModelToken
+            }
         };
 
         // CodeGenerationContext.DefaultBaseClass is set to MyBaseType<dynamic>.
-        // This field holds the type name without the generic decoration (MyBaseType)
-        private readonly string _baseType;
         private readonly IChunkTreeCache _chunkTreeCache;
         private readonly RazorPathNormalizer _pathNormalizer;
         private ChunkInheritanceUtility _chunkInheritanceUtility;
@@ -56,10 +59,9 @@ namespace Microsoft.AspNet.Mvc.Razor
             : base(new CSharpRazorCodeLanguage())
         {
             _pathNormalizer = pathNormalizer;
-            _baseType = BaseType;
             _chunkTreeCache = chunkTreeCache;
 
-            DefaultBaseClass = BaseType + "<" + DefaultModel + ">";
+            DefaultBaseClass = BaseType + ChunkHelper.TModelToken;
             DefaultNamespace = "Asp";
             // Enable instrumentation by default to allow precompiled views to work with BrowserLink.
             EnableInstrumentation = true;
@@ -282,7 +284,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 throw new ArgumentNullException(nameof(incomingCodeParser));
             }
 
-            return new MvcRazorCodeParser(_baseType);
+            return new MvcRazorCodeParser();
         }
 
         /// <inheritdoc />

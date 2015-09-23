@@ -27,9 +27,5 @@ namespace Microsoft.AspNet.Mvc.Razor
         protected override void Visit(InjectChunk chunk)
         {
         }
-
-        protected override void Visit(ModelChunk chunk)
-        {
-        }
     }
 }

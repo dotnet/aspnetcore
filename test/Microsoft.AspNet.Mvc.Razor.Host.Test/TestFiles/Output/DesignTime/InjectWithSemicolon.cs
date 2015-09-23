@@ -2,18 +2,17 @@ namespace Asp
 {
     using System.Threading.Tasks;
 
-    public class ASPV_TestFiles_Input_InjectWithSemicolon_cshtml : Microsoft.AspNet.Mvc.Razor.RazorPage<
-#line 1 "TestFiles/Input/InjectWithSemicolon.cshtml"
-       MyModel
-
-#line default
-#line hidden
-    >
+    public class ASPV_TestFiles_Input_InjectWithSemicolon_cshtml : Microsoft.AspNet.Mvc.Razor.RazorPage<MyModel>
     {
         private static object @__o;
         private void @__RazorDesignTimeHelpers__()
         {
             #pragma warning disable 219
+#line 1 "TestFiles/Input/InjectWithSemicolon.cshtml"
+Microsoft.AspNet.Mvc.Razor.RazorPage<MyModel> __inheritsHelper = null;
+
+#line default
+#line hidden
             #pragma warning restore 219
         }
         #line hidden

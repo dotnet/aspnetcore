@@ -16,13 +16,11 @@ namespace Microsoft.AspNet.Mvc.Razor
     {
         private const string ModelKeyword = "model";
         private const string InjectKeyword = "inject";
-        private readonly string _baseType;
         private SourceLocation? _endInheritsLocation;
         private bool _modelStatementFound;
 
-        public MvcRazorCodeParser(string baseType)
+        public MvcRazorCodeParser()
         {
-            _baseType = baseType;
             MapDirectives(ModelDirective, ModelKeyword);
             MapDirectives(InjectDirective, InjectKeyword);
         }
@@ -120,9 +118,10 @@ namespace Microsoft.AspNet.Mvc.Razor
             if (!hasTypeError && (EndOfFile || At(CSharpSymbolType.NewLine)))
             {
                 // Add an error for the property name only if we successfully read the type name
-                Context.OnError(startLocation,
-                                Resources.FormatMvcRazorCodeParser_InjectDirectivePropertyNameRequired(InjectKeyword),
-                                keywordwithSingleWhitespaceLength + remainingWhitespaceLength + typeName.Length);
+                Context.OnError(
+                    startLocation,
+                    Resources.FormatMvcRazorCodeParser_InjectDirectivePropertyNameRequired(InjectKeyword),
+                    keywordwithSingleWhitespaceLength + remainingWhitespaceLength + typeName.Length);
             }
 
             // Read until end of line. Span now contains 'MyApp.MyService MyServiceName'.
@@ -135,8 +134,8 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             // Parse out 'MyServicePropertyName' from the Span.
             var propertyName = Span.GetContent()
-                               .Value
-                               .Substring(typeName.Length);
+                .Value
+                .Substring(typeName.Length);
 
             // ';' is optional
             propertyName = RemoveWhitespaceAndTrailingSemicolons(propertyName);
@@ -149,7 +148,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private SpanChunkGenerator CreateModelChunkGenerator(string model)
         {
-            return new ModelChunkGenerator(_baseType, model);
+            return new ModelChunkGenerator(model);
         }
 
         // Internal for unit testing

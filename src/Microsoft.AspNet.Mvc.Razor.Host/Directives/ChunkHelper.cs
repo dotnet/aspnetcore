@@ -12,7 +12,11 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
     /// </summary>
     public static class ChunkHelper
     {
-        private const string TModelToken = "<TModel>";
+        /// <summary>
+        /// Token that is replaced by the model name in <c>@inherits</c> and <c>@inject</c>
+        /// chunks as part of <see cref="ChunkInheritanceUtility"/>.
+        /// </summary>
+        public static readonly string TModelToken = "<TModel>";
 
         /// <summary>
         /// Returns the <see cref="ModelChunk"/> used to determine the model name for the page generated

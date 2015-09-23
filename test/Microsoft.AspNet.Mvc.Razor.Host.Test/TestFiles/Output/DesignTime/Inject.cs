@@ -14,6 +14,11 @@ using MyNamespace
         private void @__RazorDesignTimeHelpers__()
         {
             #pragma warning disable 219
+#line 1 "TestFiles/Input/Inject.cshtml"
+Microsoft.AspNet.Mvc.Razor.RazorPage<dynamic> __inheritsHelper = null;
+
+#line default
+#line hidden
             #pragma warning restore 219
         }
         #line hidden

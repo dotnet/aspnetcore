@@ -5,20 +5,23 @@ using Microsoft.AspNet.Razor.Chunks;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
+    /// <summary>
+    /// <see cref="Chunk"/> for an <c>@model</c> directive.
+    /// </summary>
     public class ModelChunk : Chunk
     {
         /// <summary>
-        /// Represents the chunk for an @model statement.
+        /// Initializes a new instance of <see cref="ModelChunk"/>.
         /// </summary>
-        /// <param name="baseType">The base type of the view.</param>
-        /// <param name="modelType">The type of the view's Model.</param>
-        public ModelChunk(string baseType, string modelType)
+        /// <param name="modelType">The type of the view's model.</param>
+        public ModelChunk(string modelType)
         {
-            BaseType = baseType;
             ModelType = modelType;
         }
 
-        public string BaseType { get; private set; }
-        public string ModelType { get; private set; }
+        /// <summary>
+        /// Gets the type of the view's model.
+        /// </summary>
+        public string ModelType { get; }
     }
 }

@@ -31,10 +31,6 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
                 Visit((InjectChunk)chunk);
             }
-            else if (chunk is ModelChunk)
-            {
-                Visit((ModelChunk)chunk);
-            }
             else
             {
                 base.Accept(chunk);
@@ -42,6 +38,5 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         protected abstract void Visit(InjectChunk chunk);
-        protected abstract void Visit(ModelChunk chunk);
     }
 }

@@ -42,5 +42,20 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Assert
             Assert.Equal(expected, body.Trim());
         }
+
+        [Fact]
+        public async Task ViewAndViewComponentsReplaceTModelTokenFromInheritedBasePages()
+        {
+            // Arrange
+            var expected =
+@"WriteLiteral says:<h1>Write says:BobWriteLiteral says:</h1>
+Write says:WriteLiteral says:<strong>Write says:98052WriteLiteral says:</strong>";
+
+            // Act
+            var body = await Client.GetStringAsync("Directives/ViewReplacesTModelTokenFromInheritedBasePages");
+
+            // Assert
+            Assert.Equal(expected, body.Trim());
+        }
     }
 }

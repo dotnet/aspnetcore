@@ -17,5 +17,19 @@ namespace RazorWebSite
             return View("/Views/Directives/Scoped/ViewInheritsBasePageFromViewImports.cshtml",
                         new Person { Name = "Person2" });
         }
+
+        public IActionResult ViewReplacesTModelTokenFromInheritedBasePages()
+        {
+            var model = new Person
+            {
+                Name = "Bob",
+                Address = new Address
+                {
+                    ZipCode = "98052"
+                }
+            };
+
+            return View("/Views/InheritingInherits/Index", model);
+        }
     }
 }

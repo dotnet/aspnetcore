@@ -8,13 +8,7 @@ namespace Asp
     using Microsoft.AspNet.Mvc.Rendering;
     using System.Threading.Tasks;
 
-    public class ASPV_TestFiles_Input_Model_cshtml : Microsoft.AspNet.Mvc.Razor.RazorPage<
-#line 1 "TestFiles/Input/Model.cshtml"
-       System.Collections.IEnumerable
-
-#line default
-#line hidden
-    >
+    public class ASPV_TestFiles_Input_Model_cshtml : Microsoft.AspNet.Mvc.Razor.RazorPage<System.Collections.IEnumerable>
     {
         #line hidden
         public ASPV_TestFiles_Input_Model_cshtml()

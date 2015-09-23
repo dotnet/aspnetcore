@@ -8,13 +8,7 @@ namespace Asp
     using Microsoft.AspNet.Mvc.Rendering;
     using System.Threading.Tasks;
 
-    public class ASPV_TestFiles_Input_InjectWithSemicolon_cshtml : Microsoft.AspNet.Mvc.Razor.RazorPage<
-#line 1 "TestFiles/Input/InjectWithSemicolon.cshtml"
-       MyModel
-
-#line default
-#line hidden
-    >
+    public class ASPV_TestFiles_Input_InjectWithSemicolon_cshtml : Microsoft.AspNet.Mvc.Razor.RazorPage<MyModel>
     {
         #line hidden
         public ASPV_TestFiles_Input_InjectWithSemicolon_cshtml()

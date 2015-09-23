@@ -9,13 +9,7 @@ namespace Asp
     using Microsoft.AspNet.Mvc.Rendering;
     using System.Threading.Tasks;
 
-    public class ASPV_TestFiles_Input_ModelExpressionTagHelper_cshtml : Microsoft.AspNet.Mvc.Razor.RazorPage<
-#line 1 "TestFiles/Input/ModelExpressionTagHelper.cshtml"
-       DateTime
-
-#line default
-#line hidden
-    >
+    public class ASPV_TestFiles_Input_ModelExpressionTagHelper_cshtml : Microsoft.AspNet.Mvc.Razor.RazorPage<DateTime>
     {
         #line hidden
         #pragma warning disable 0414

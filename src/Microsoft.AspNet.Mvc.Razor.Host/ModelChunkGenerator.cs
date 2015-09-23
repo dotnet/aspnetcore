@@ -10,36 +10,31 @@ namespace Microsoft.AspNet.Razor.Generator
 {
     public class ModelChunkGenerator : SpanChunkGenerator
     {
-        public ModelChunkGenerator(string baseType, string modelType)
+        public ModelChunkGenerator(string modelType)
         {
-            BaseType = baseType;
             ModelType = modelType;
         }
 
-        public string BaseType { get; private set; }
-        public string ModelType { get; private set; }
+        public string ModelType { get; }
 
         public override void GenerateChunk(Span target, ChunkGeneratorContext context)
         {
-            var modelChunk = new ModelChunk(BaseType, ModelType);
+            var modelChunk = new ModelChunk(ModelType);
             context.ChunkTreeBuilder.AddChunk(modelChunk, target, topLevel: true);
         }
 
-        public override string ToString()
-        {
-            return BaseType + "<" + ModelType + ">";
-        }
+        public override string ToString() => ModelType;
 
         public override bool Equals(object obj)
         {
             var other = obj as ModelChunkGenerator;
             return other != null &&
-                   string.Equals(ModelType, other.ModelType, StringComparison.Ordinal);
+                string.Equals(ModelType, other.ModelType, StringComparison.Ordinal);
         }
 
         public override int GetHashCode()
         {
-            return ModelType.GetHashCode();
+            return StringComparer.Ordinal.GetHashCode(ModelType);
         }
     }
 }
