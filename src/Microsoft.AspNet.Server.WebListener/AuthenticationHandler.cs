@@ -137,7 +137,7 @@ namespace Microsoft.AspNet.Server.WebListener
             return new Dictionary<string, object>()
             {
                 { "AuthenticationScheme", authenticationScheme },
-                { "Caption", "Windows:" + authenticationScheme },
+                { "DisplayName", "Windows:" + authenticationScheme },
             };
         }
 
