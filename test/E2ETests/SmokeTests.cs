@@ -16,9 +16,12 @@ namespace E2ETests
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         // [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5001/")]
         [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5002/")]
-        //https://github.com/aspnet/MusicStore/issues/488
-        // [InlineData(ServerType.Kestrel, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5003/")]
-        public async Task SmokeTestSuite_OnX86_clr(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5003/")]
+        public async Task SmokeTestSuite_OnX86_clr(
+            ServerType serverType,
+            RuntimeFlavor runtimeFlavor,
+            RuntimeArchitecture architecture,
+            string applicationBaseUrl)
         {
             var smokeTestRunner = new SmokeTests();
             await smokeTestRunner.SmokeTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl);
@@ -29,10 +32,14 @@ namespace E2ETests
     {
         [ConditionalTheory, Trait("E2Etests", "E2Etests")]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        // [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5004/")]
+        //[InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5004/")]
         [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5005/")]
-        // [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5006/")]
-        public async Task SmokeTestSuite_OnX86_coreclr(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5006/")]
+        public async Task SmokeTestSuite_OnX86_coreclr(
+            ServerType serverType,
+            RuntimeFlavor runtimeFlavor,
+            RuntimeArchitecture architecture,
+            string applicationBaseUrl)
         {
             var smokeTestRunner = new SmokeTests();
             await smokeTestRunner.SmokeTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl);
@@ -45,9 +52,13 @@ namespace E2ETests
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [SkipOn32BitOS]
         [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5007/")]
-        // [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5008/")]
-        // [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5009/")]
-        public async Task SmokeTestSuite_OnAMD64(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
+        //[InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5008/")]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5009/")]
+        public async Task SmokeTestSuite_OnAMD64(
+            ServerType serverType,
+            RuntimeFlavor runtimeFlavor,
+            RuntimeArchitecture architecture,
+            string applicationBaseUrl)
         {
             var smokeTestRunner = new SmokeTests();
             await smokeTestRunner.SmokeTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl);
@@ -59,7 +70,11 @@ namespace E2ETests
         [ConditionalTheory, Trait("E2Etests", "E2Etests")]
         [FrameworkSkipCondition(RuntimeFrameworks.CLR | RuntimeFrameworks.CoreCLR)]
         [InlineData(ServerType.Kestrel, RuntimeFlavor.Mono, RuntimeArchitecture.x86, "http://localhost:5010/")]
-        public async Task SmokeTestSuite_OnMono(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
+        public async Task SmokeTestSuite_OnMono(
+            ServerType serverType,
+            RuntimeFlavor runtimeFlavor,
+            RuntimeArchitecture architecture,
+            string applicationBaseUrl)
         {
             var smokeTestRunner = new SmokeTests();
             await smokeTestRunner.SmokeTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl);
@@ -73,8 +88,13 @@ namespace E2ETests
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [OSSkipCondition(OperatingSystems.Win7And2008R2 | OperatingSystems.MacOSX | OperatingSystems.Linux)]
         [SkipIfCurrentRuntimeIsCoreClr]
-        [InlineData(ServerType.IISNativeModule, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5011/")]
-        public async Task SmokeTestSuite_On_NativeModule_X86(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
+        [InlineData(
+            ServerType.IISNativeModule, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5011/")]
+        public async Task SmokeTestSuite_On_NativeModule_X86(
+            ServerType serverType,
+            RuntimeFlavor runtimeFlavor,
+            RuntimeArchitecture architecture,
+            string applicationBaseUrl)
         {
             var smokeTestRunner = new SmokeTests();
             await smokeTestRunner.SmokeTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl);
@@ -86,8 +106,13 @@ namespace E2ETests
         [OSSkipCondition(OperatingSystems.Win7And2008R2 | OperatingSystems.MacOSX | OperatingSystems.Linux)]
         [SkipOn32BitOS]
         [SkipIfCurrentRuntimeIsCoreClr]
-        [InlineData(ServerType.IISNativeModule, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5012/")]
-        public async Task SmokeTestSuite_On_NativeModule_AMD64(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
+        [InlineData(
+            ServerType.IISNativeModule, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5012/")]
+        public async Task SmokeTestSuite_On_NativeModule_AMD64(
+            ServerType serverType,
+            RuntimeFlavor runtimeFlavor,
+            RuntimeArchitecture architecture,
+            string applicationBaseUrl)
         {
             var smokeTestRunner = new SmokeTests();
             await smokeTestRunner.SmokeTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl);
@@ -103,10 +128,15 @@ namespace E2ETests
         [SkipIfIISVariationsNotEnabled]
         [InlineData(ServerType.IIS, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5013/")]
         [InlineData(ServerType.IIS, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5013/")]
-        public async Task SmokeTestSuite_On_IIS_X86(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
+        public async Task SmokeTestSuite_On_IIS_X86(
+            ServerType serverType,
+            RuntimeFlavor runtimeFlavor,
+            RuntimeArchitecture architecture,
+            string applicationBaseUrl)
         {
             var smokeTestRunner = new SmokeTests();
-            await smokeTestRunner.SmokeTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl, noSource: true);
+            await smokeTestRunner.SmokeTestSuite(
+                serverType, runtimeFlavor, architecture, applicationBaseUrl, noSource: true);
         }
     }
 
@@ -127,7 +157,8 @@ namespace E2ETests
             {
                 var musicStoreDbName = Guid.NewGuid().ToString().Replace("-", string.Empty);
 
-                var deploymentParameters = new DeploymentParameters(Helpers.GetApplicationPath(), serverType, donetFlavor, architecture)
+                var deploymentParameters = new DeploymentParameters(
+                    Helpers.GetApplicationPath(), serverType, donetFlavor, architecture)
                 {
                     ApplicationBaseUriHint = applicationBaseUrl,
                     EnvironmentName = "SocialTesting",
@@ -156,9 +187,13 @@ namespace E2ETests
                     Helpers.SetInMemoryStoreForIIS(deploymentParameters, logger);
 
                     var httpClientHandler = new HttpClientHandler();
-                    var httpClient = new HttpClient(httpClientHandler) { BaseAddress = new Uri(deploymentResult.ApplicationBaseUri) };
+                    var httpClient = new HttpClient(httpClientHandler)
+                    {
+                        BaseAddress = new Uri(deploymentResult.ApplicationBaseUri)
+                    };
 
-                    // Request to base address and check if various parts of the body are rendered & measure the cold startup time.
+                    // Request to base address and check if various parts of the body are rendered
+                    // & measure the cold startup time.
                     var response = await RetryHelper.RetryRequest(async () =>
                     {
                         return await httpClient.GetAsync(string.Empty);
@@ -212,7 +247,8 @@ namespace E2ETests
                     // Login as an admin user
                     await validator.SignInWithUser("Administrator@test.com", "YouShouldChangeThisPassword1!");
 
-                    // Now navigating to the store manager should work fine as this user has the necessary permission to administer the store.
+                    // Now navigating to the store manager should work fine as this user has
+                    // the necessary permission to administer the store.
                     await validator.AccessStoreWithPermissions();
 
                     // Create an album
