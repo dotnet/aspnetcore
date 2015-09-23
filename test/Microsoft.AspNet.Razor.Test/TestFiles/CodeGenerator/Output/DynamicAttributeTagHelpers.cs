@@ -105,7 +105,7 @@ WriteLiteral(DateTime.Now);
 #line hidden
             WriteLiteral(" suffix");
             __tagHelperStringValueBuffer = EndTagHelperWritingScope();
-            __InputTagHelper.Bound = __tagHelperStringValueBuffer.ToString();
+            __InputTagHelper.Bound = __tagHelperStringValueBuffer.GetContent(HtmlEncoder);
             __tagHelperExecutionContext.AddTagHelperAttribute("bound", __InputTagHelper.Bound);
             AddHtmlAttributeValues("unbound", __tagHelperExecutionContext, Tuple.Create(Tuple.Create("", 206), Tuple.Create("prefix", 206), true), 
             Tuple.Create(Tuple.Create(" ", 212), Tuple.Create<System.Object, System.Int32>(DateTime.Now, 213), false), Tuple.Create(Tuple.Create(" ", 226), Tuple.Create("suffix", 227), true));
@@ -164,7 +164,7 @@ WriteLiteral(int.MaxValue);
 #line default
 #line hidden
             __tagHelperStringValueBuffer = EndTagHelperWritingScope();
-            __InputTagHelper.Bound = __tagHelperStringValueBuffer.ToString();
+            __InputTagHelper.Bound = __tagHelperStringValueBuffer.GetContent(HtmlEncoder);
             __tagHelperExecutionContext.AddTagHelperAttribute("bound", __InputTagHelper.Bound);
             AddHtmlAttributeValues("unbound", __tagHelperExecutionContext, 
             Tuple.Create(Tuple.Create("", 347), Tuple.Create<System.Object, System.Int32>(long.MinValue, 347), false), 

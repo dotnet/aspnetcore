@@ -182,7 +182,7 @@ WriteLiteral(literate);
 #line hidden
             WriteLiteral("?");
             __tagHelperStringValueBuffer = EndTagHelperWritingScope();
-            __InputTagHelper2.StringDictionaryProperty["cumin"] = __tagHelperStringValueBuffer.ToString();
+            __InputTagHelper2.StringDictionaryProperty["cumin"] = __tagHelperStringValueBuffer.GetContent(HtmlEncoder);
             __tagHelperExecutionContext.AddTagHelperAttribute("string-prefix-cumin", __InputTagHelper2.StringDictionaryProperty["cumin"]);
             __InputTagHelper1.StringDictionaryProperty["cumin"] = __InputTagHelper2.StringDictionaryProperty["cumin"];
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);

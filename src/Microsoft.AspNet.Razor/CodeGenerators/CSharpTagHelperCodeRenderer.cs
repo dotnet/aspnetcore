@@ -650,9 +650,11 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
             }
             else
             {
-                writer.WriteInstanceMethodInvocation(StringValueBufferVariableName,
-                                                     "ToString",
-                                                     endLine: false);
+                writer.WriteInstanceMethodInvocation(
+                    StringValueBufferVariableName,
+                    _tagHelperContext.TagHelperContentGetContentMethodName,
+                    endLine: false,
+                    parameters: new string[] { _tagHelperContext.HtmlEncoderPropertyName });
             }
         }
 

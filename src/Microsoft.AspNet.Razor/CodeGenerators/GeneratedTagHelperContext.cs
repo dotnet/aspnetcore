@@ -33,6 +33,8 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
             TagHelperContentTypeName = "TagHelperContent";
             WriteTagHelperAsyncMethodName = "WriteTagHelperAsync";
             WriteTagHelperToAsyncMethodName = "WriteTagHelperToAsync";
+            TagHelperContentGetContentMethodName = "GetContent";
+            HtmlEncoderPropertyName = "HtmlEncoder";
         }
 
         /// <summary>
@@ -161,5 +163,15 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
         /// <see cref="System.IO.TextWriter"/>.
         /// </summary>
         public string WriteTagHelperToAsyncMethodName { get; set; }
+
+        /// <summary>
+        /// The name of the property containing the <c>IHtmlEncoder</c>.
+        /// </summary>
+        public string HtmlEncoderPropertyName { get; set; }
+
+        /// <summary>
+        /// The name of the method used to convert a <c>TagHelperContent</c> into a <see cref="string"/>.
+        /// </summary>
+        public string TagHelperContentGetContentMethodName { get; set; }
     }
 }

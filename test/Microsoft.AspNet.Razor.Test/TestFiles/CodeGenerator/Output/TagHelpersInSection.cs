@@ -81,7 +81,7 @@ WriteLiteral(DateTime.Now);
 #line default
 #line hidden
                 __tagHelperStringValueBuffer = EndTagHelperWritingScope();
-                __MyTagHelper.BoundProperty = __tagHelperStringValueBuffer.ToString();
+                __MyTagHelper.BoundProperty = __tagHelperStringValueBuffer.GetContent(HtmlEncoder);
                 __tagHelperExecutionContext.AddTagHelperAttribute("boundproperty", __MyTagHelper.BoundProperty);
                 AddHtmlAttributeValues("unboundproperty", __tagHelperExecutionContext, Tuple.Create(Tuple.Create("", 188), Tuple.Create("Current", 188), true), Tuple.Create(Tuple.Create(" ", 195), Tuple.Create("Time:", 196), true), 
                 Tuple.Create(Tuple.Create(" ", 201), Tuple.Create<System.Object, System.Int32>(DateTime.Now, 202), false));

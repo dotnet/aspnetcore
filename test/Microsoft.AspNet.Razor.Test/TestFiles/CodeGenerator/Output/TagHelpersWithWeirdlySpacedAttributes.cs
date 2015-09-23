@@ -51,7 +51,7 @@ Write(true);
 #line default
 #line hidden
             __tagHelperStringValueBuffer = EndTagHelperWritingScope();
-            __tagHelperExecutionContext.AddHtmlAttribute("data-content", Html.Raw(__tagHelperStringValueBuffer.ToString()));
+            __tagHelperExecutionContext.AddHtmlAttribute("data-content", Html.Raw(__tagHelperStringValueBuffer.GetContent(HtmlEncoder)));
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             Instrumentation.BeginContext(35, 85, false);
             await WriteTagHelperAsync(__tagHelperExecutionContext);

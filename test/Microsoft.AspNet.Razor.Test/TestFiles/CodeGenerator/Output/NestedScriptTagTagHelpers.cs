@@ -66,7 +66,7 @@ Write(ViewBag.DefaultInterval);
 #line hidden
                 WriteLiteral(" + 1");
                 __tagHelperStringValueBuffer = EndTagHelperWritingScope();
-                __tagHelperExecutionContext.AddHtmlAttribute("data-interval", Html.Raw(__tagHelperStringValueBuffer.ToString()));
+                __tagHelperExecutionContext.AddHtmlAttribute("data-interval", Html.Raw(__tagHelperStringValueBuffer.GetContent(HtmlEncoder)));
                 __InputTagHelper.Type = "text";
                 __tagHelperExecutionContext.AddTagHelperAttribute("type", __InputTagHelper.Type);
                 __InputTagHelper2.Type = __InputTagHelper.Type;

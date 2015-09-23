@@ -123,7 +123,7 @@ WriteLiteral(checkbox);
 #line default
 #line hidden
                     __tagHelperStringValueBuffer = EndTagHelperWritingScope();
-                    __InputTagHelper.Type = __tagHelperStringValueBuffer.ToString();
+                    __InputTagHelper.Type = __tagHelperStringValueBuffer.GetContent(HtmlEncoder);
                     __tagHelperExecutionContext.AddTagHelperAttribute("type", __InputTagHelper.Type);
                     __InputTagHelper2.Type = __InputTagHelper.Type;
 #line 16 "ComplexTagHelpers.cshtml"
@@ -163,7 +163,7 @@ WriteLiteral(true ? "checkbox" : "anything");
 #line default
 #line hidden
                 __tagHelperStringValueBuffer = EndTagHelperWritingScope();
-                __InputTagHelper.Type = __tagHelperStringValueBuffer.ToString();
+                __InputTagHelper.Type = __tagHelperStringValueBuffer.GetContent(HtmlEncoder);
                 __tagHelperExecutionContext.AddTagHelperAttribute("tYPe", __InputTagHelper.Type);
                 __InputTagHelper2.Type = __InputTagHelper.Type;
                 __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
@@ -215,7 +215,7 @@ if(true) {
 #line hidden
 
                 __tagHelperStringValueBuffer = EndTagHelperWritingScope();
-                __InputTagHelper.Type = __tagHelperStringValueBuffer.ToString();
+                __InputTagHelper.Type = __tagHelperStringValueBuffer.GetContent(HtmlEncoder);
                 __tagHelperExecutionContext.AddTagHelperAttribute("type", __InputTagHelper.Type);
                 __InputTagHelper2.Type = __InputTagHelper.Type;
                 __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);

@@ -52,7 +52,7 @@ WriteLiteral(DateTime.Now);
 #line default
 #line hidden
             __tagHelperStringValueBuffer = EndTagHelperWritingScope();
-            __InputTagHelper.Type = __tagHelperStringValueBuffer.ToString();
+            __InputTagHelper.Type = __tagHelperStringValueBuffer.GetContent(HtmlEncoder);
             __tagHelperExecutionContext.AddTagHelperAttribute("type", __InputTagHelper.Type);
             __InputTagHelper2.Type = __InputTagHelper.Type;
 #line 6 "EscapedTagHelpers.cshtml"
