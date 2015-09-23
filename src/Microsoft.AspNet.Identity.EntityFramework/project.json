@@ -1,4 +1,5 @@
 {
+  "description": "ASP.NET Identity providers that use Entity Framework.",
   "version": "3.0.0-*",
   "repository": {
     "type": "git",

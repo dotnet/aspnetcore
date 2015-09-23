@@ -1,4 +1,5 @@
 {
+  "description": "Core implementation for ASP.NET Identity.",
   "version": "3.0.0-*",
   "repository": {
     "type": "git",
