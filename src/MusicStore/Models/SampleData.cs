@@ -20,8 +20,10 @@ namespace MusicStore.Models
 
         public static async Task InitializeMusicStoreDatabaseAsync(IServiceProvider serviceProvider, bool createUsers = true)
         {
-            using (var db = serviceProvider.GetService<MusicStoreContext>())
+            using (var serviceScope = serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope())
             {
+                var db = serviceScope.ServiceProvider.GetService<MusicStoreContext>();
+
                 if (await db.Database.EnsureCreatedAsync())
                 {
                     await InsertTestData(serviceProvider);
@@ -50,13 +52,15 @@ namespace MusicStore.Models
         {
             // Query in a separate context so that we can attach existing entities as modified
             List<TEntity> existingData;
-            using (var db = serviceProvider.GetService<MusicStoreContext>())
+            using (var serviceScope = serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope())
             {
+                var db = serviceScope.ServiceProvider.GetService<MusicStoreContext>();
                 existingData = db.Set<TEntity>().ToList();
             }
 
-            using (var db = serviceProvider.GetService<MusicStoreContext>())
+            using (var serviceScope = serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope())
             {
+                var db = serviceScope.ServiceProvider.GetService<MusicStoreContext>();
                 foreach (var item in entities)
                 {
                     db.Entry(item).State = existingData.Any(g => propertyToMatch(g).Equals(propertyToMatch(item)))
@@ -120,8 +124,8 @@ namespace MusicStore.Models
 
         private static Album[] GetAlbums(string imgUrl, Dictionary<string, Genre> genres, Dictionary<string, Artist> artists)
         {
-            var albums = new Album[] 
-            { 
+            var albums = new Album[]
+            {
                 new Album { Title = "The Best Of The Men At Work", Genre = genres["Pop"], Price = 8.99M, Artist = artists["Men At Work"], AlbumArtUrl = imgUrl },
                 new Album { Title = "...And Justice For All", Genre = genres["Metal"], Price = 8.99M, Artist = artists["Metallica"], AlbumArtUrl = imgUrl },
                 new Album { Title = "עד גבול האור", Genre = genres["World"], Price = 8.99M, Artist = artists["אריק אינשטיין"], AlbumArtUrl = imgUrl },
