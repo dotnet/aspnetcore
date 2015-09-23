@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Authentication;
 using Microsoft.AspNet.Authentication.Twitter;
 using Microsoft.AspNet.Identity;
 using MusicStore.Mocks.Common;
@@ -10,7 +11,7 @@ namespace MusicStore.Mocks.Twitter
 {
     internal class TestTwitterEvents
     {
-        internal static Task OnAuthenticated(TwitterAuthenticatedContext context)
+        internal static Task OnCreatingTicket(TwitterCreatingTicketContext context)
         {
             if (context.Principal != null)
             {
@@ -24,7 +25,7 @@ namespace MusicStore.Mocks.Twitter
             return Task.FromResult(0);
         }
 
-        internal static Task OnReturnEndpoint(TwitterReturnEndpointContext context)
+        internal static Task OnSigningIn(SigningInContext context)
         {
             if (context.Principal != null && context.SignInScheme == new IdentityCookieOptions().ExternalCookieAuthenticationScheme)
             {
@@ -41,7 +42,7 @@ namespace MusicStore.Mocks.Twitter
             return Task.FromResult(0);
         }
 
-        internal static Task OnApplyRedirect(TwitterApplyRedirectContext context)
+        internal static Task RedirectToAuthorizationEndpoint(TwitterRedirectToAuthorizationEndpointContext context)
         {
             context.Response.Redirect(context.RedirectUri + "&custom_redirect_uri=custom");
             return Task.FromResult(0);

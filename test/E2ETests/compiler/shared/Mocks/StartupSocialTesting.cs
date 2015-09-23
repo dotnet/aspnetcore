@@ -135,9 +135,9 @@ namespace MusicStore
                 options.AppSecret = "[AppSecret]";
                 options.Events = new OAuthEvents()
                 {
-                    OnAuthenticated = TestFacebookEvents.OnAuthenticated,
-                    OnReturnEndpoint = TestFacebookEvents.OnReturnEndpoint,
-                    OnApplyRedirect = TestFacebookEvents.OnApplyRedirect
+                    OnCreatingTicket = TestFacebookEvents.OnCreatingTicket,
+                    OnSigningIn = TestFacebookEvents.OnSigningIn,
+                    OnRedirectToAuthorizationEndpoint = TestFacebookEvents.RedirectToAuthorizationEndpoint
                 };
                 options.BackchannelHttpHandler = new FacebookMockBackChannelHttpHandler();
                 options.StateDataFormat = new CustomStateDataFormat();
@@ -153,9 +153,9 @@ namespace MusicStore
                 options.AccessType = "offline";
                 options.Events = new OAuthEvents()
                 {
-                    OnAuthenticated = TestGoogleEvents.OnAuthenticated,
-                    OnReturnEndpoint = TestGoogleEvents.OnReturnEndpoint,
-                    OnApplyRedirect = TestGoogleEvents.OnApplyRedirect
+                    OnCreatingTicket = TestGoogleEvents.OnCreatingTicket,
+                    OnSigningIn = TestGoogleEvents.OnSigningIn,
+                    OnRedirectToAuthorizationEndpoint = TestGoogleEvents.RedirectToAuthorizationEndpoint
                 };
                 options.StateDataFormat = new CustomStateDataFormat();
                 options.BackchannelHttpHandler = new GoogleMockBackChannelHttpHandler();
@@ -167,9 +167,9 @@ namespace MusicStore
                 options.ConsumerSecret = "[ConsumerSecret]";
                 options.Events = new TwitterEvents()
                 {
-                    OnAuthenticated = TestTwitterEvents.OnAuthenticated,
-                    OnReturnEndpoint = TestTwitterEvents.OnReturnEndpoint,
-                    OnApplyRedirect = TestTwitterEvents.OnApplyRedirect
+                    OnCreatingTicket = TestTwitterEvents.OnCreatingTicket,
+                    OnSigningIn = TestTwitterEvents.OnSigningIn,
+                    OnRedirectToAuthorizationEndpoint = TestTwitterEvents.RedirectToAuthorizationEndpoint
                 };
                 options.StateDataFormat = new CustomTwitterStateDataFormat();
                 options.BackchannelHttpHandler = new TwitterMockBackChannelHttpHandler();
@@ -182,9 +182,9 @@ namespace MusicStore
                 options.ClientSecret = "[ClientSecret]";
                 options.Events = new OAuthEvents()
                 {
-                    OnAuthenticated = TestMicrosoftAccountEvents.OnAuthenticated,
-                    OnReturnEndpoint = TestMicrosoftAccountEvents.OnReturnEndpoint,
-                    OnApplyRedirect = TestMicrosoftAccountEvents.OnApplyRedirect
+                    OnCreatingTicket = TestMicrosoftAccountEvents.OnCreatingTicket,
+                    OnSigningIn = TestMicrosoftAccountEvents.OnSigningIn,
+                    OnRedirectToAuthorizationEndpoint = TestMicrosoftAccountEvents.RedirectToAuthorizationEndpoint
                 };
                 options.BackchannelHttpHandler = new MicrosoftAccountMockBackChannelHandler();
                 options.StateDataFormat = new CustomStateDataFormat();

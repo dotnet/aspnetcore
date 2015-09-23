@@ -3,6 +3,7 @@ using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Authentication;
 using Microsoft.AspNet.Authentication.Facebook;
 using Microsoft.AspNet.Authentication.OAuth;
 using Microsoft.AspNet.Identity;
@@ -12,7 +13,7 @@ namespace MusicStore.Mocks.Facebook
 {
     internal class TestFacebookEvents
     {
-        internal static Task OnAuthenticated(OAuthAuthenticatedContext context)
+        internal static Task OnCreatingTicket(OAuthCreatingTicketContext context)
         {
             if (context.Principal != null)
             {
@@ -31,7 +32,7 @@ namespace MusicStore.Mocks.Facebook
             return Task.FromResult(0);
         }
 
-        internal static Task OnReturnEndpoint(OAuthReturnEndpointContext context)
+        internal static Task OnSigningIn(SigningInContext context)
         {
             if (context.Principal != null && context.SignInScheme == new IdentityCookieOptions().ExternalCookieAuthenticationScheme)
             {
@@ -48,7 +49,7 @@ namespace MusicStore.Mocks.Facebook
             return Task.FromResult(0);
         }
 
-        internal static Task OnApplyRedirect(OAuthApplyRedirectContext context)
+        internal static Task RedirectToAuthorizationEndpoint(OAuthRedirectToAuthorizationContext context)
         {
             context.Response.Redirect(context.RedirectUri + "&custom_redirect_uri=custom");
             return Task.FromResult(0);
