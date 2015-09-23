@@ -177,7 +177,7 @@ namespace MusicStore
 
             app.UseMicrosoftAccountAuthentication(options =>
             {
-                options.Caption = "MicrosoftAccount - Requires project changes";
+                options.DisplayName = "MicrosoftAccount - Requires project changes";
                 options.ClientId = "[ClientId]";
                 options.ClientSecret = "[ClientSecret]";
                 options.Events = new OAuthEvents()

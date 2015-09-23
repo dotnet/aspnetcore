@@ -189,7 +189,7 @@ namespace MusicStore
             // dnx . web
             app.UseMicrosoftAccountAuthentication(options =>
             {
-                options.Caption = "MicrosoftAccount - Requires project changes";
+                options.DisplayName = "MicrosoftAccount - Requires project changes";
                 options.ClientId = "000000004012C08A";
                 options.ClientSecret = "GaMQ2hCnqAC6EcDLnXsAeBVIJOLmeutL";
             });
