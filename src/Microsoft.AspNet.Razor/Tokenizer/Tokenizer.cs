@@ -101,21 +101,6 @@ namespace Microsoft.AspNet.Razor.Tokenizer
             return EndSymbol(type);
         }
 
-        protected bool TakeString(string input, bool caseSensitive)
-        {
-            var position = 0;
-            Func<char, char> charFilter = c => c;
-            if (caseSensitive)
-            {
-                charFilter = Char.ToLower;
-            }
-            while (!EndOfFile && position < input.Length && charFilter(CurrentCharacter) == charFilter(input[position++]))
-            {
-                TakeCurrent();
-            }
-            return position == input.Length;
-        }
-
         protected void StartSymbol()
         {
             Buffer.Clear();
@@ -139,26 +124,6 @@ namespace Microsoft.AspNet.Razor.Tokenizer
             return sym;
         }
 
-        protected void ResumeSymbol(TSymbol previous)
-        {
-            // Verify the symbol can be resumed
-            if (previous.Start.AbsoluteIndex + previous.Content.Length != CurrentStart.AbsoluteIndex)
-            {
-                throw new InvalidOperationException(RazorResources.Tokenizer_CannotResumeSymbolUnlessIsPrevious);
-            }
-
-            // Reset the start point
-            CurrentStart = previous.Start;
-
-            // Capture the current buffer content
-            var newContent = Buffer.ToString();
-
-            // Clear the buffer, then put the old content back and add the new content to the end
-            Buffer.Clear();
-            Buffer.Append(previous.Content);
-            Buffer.Append(newContent);
-        }
-
         protected bool TakeUntil(Func<char, bool> predicate)
         {
             // Take all the characters up to the end character
@@ -169,11 +134,6 @@ namespace Microsoft.AspNet.Razor.Tokenizer
 
             // Why did we end?
             return !EndOfFile;
-        }
-
-        protected Func<char, bool> CharOrWhiteSpace(char character)
-        {
-            return c => c == character || ParserHelpers.IsWhitespace(c) || ParserHelpers.IsNewLine(c);
         }
 
         protected void TakeCurrent()
@@ -197,11 +157,6 @@ namespace Microsoft.AspNet.Razor.Tokenizer
         protected bool TakeAll(string expected, bool caseSensitive)
         {
             return Lookahead(expected, takeIfMatch: true, caseSensitive: caseSensitive);
-        }
-
-        protected bool At(string expected, bool caseSensitive)
-        {
-            return Lookahead(expected, takeIfMatch: false, caseSensitive: caseSensitive);
         }
 
         protected char Peek()
