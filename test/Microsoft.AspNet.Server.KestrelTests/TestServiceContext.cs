@@ -8,6 +8,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
         {
             AppShutdown = new ShutdownNotImplemented();
             Log = new TestKestrelTrace();
+            DateHeaderValueManager = new TestDateHeaderValueManager();
         }
     }
 }

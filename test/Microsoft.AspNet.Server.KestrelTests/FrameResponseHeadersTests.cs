@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [Fact]
         public void InitialDictionaryContainsServerAndDate()
         {
-            var frame = new Frame(new ConnectionContext());
+            var frame = new Frame(new ConnectionContext { DateHeaderValueManager = new DateHeaderValueManager() });
             IDictionary<string, StringValues> headers = frame.ResponseHeaders;
 
             Assert.Equal(2, headers.Count);
@@ -37,13 +37,15 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [Fact]
         public void InitialEntriesCanBeCleared()
         {
-            IDictionary<string, StringValues> headers = new FrameResponseHeaders();
+            var frame = new Frame(new ConnectionContext { DateHeaderValueManager = new DateHeaderValueManager() });
+            
+            Assert.True(frame.ResponseHeaders.Count > 0);
 
-            headers.Clear();
+            frame.ResponseHeaders.Clear();
 
-            Assert.Equal(0, headers.Count);
-            Assert.False(headers.ContainsKey("Server"));
-            Assert.False(headers.ContainsKey("Date"));
+            Assert.Equal(0, frame.ResponseHeaders.Count);
+            Assert.False(frame.ResponseHeaders.ContainsKey("Server"));
+            Assert.False(frame.ResponseHeaders.ContainsKey("Date"));
         }
     }
 }
