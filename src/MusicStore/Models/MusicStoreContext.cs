@@ -18,7 +18,7 @@ namespace MusicStore.Models
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            builder.Entity<CartItem>().Key(b => b.CartItemId);
+            builder.Entity<CartItem>().HasKey(b => b.CartItemId);
 
             // TODO: Remove when explicit values insertion removed.
             builder.Entity<Artist>().Property(a => a.ArtistId).ValueGeneratedNever();
