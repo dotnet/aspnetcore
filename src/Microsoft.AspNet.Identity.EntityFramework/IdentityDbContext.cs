@@ -49,50 +49,50 @@ namespace Microsoft.AspNet.Identity.EntityFramework
         {
             builder.Entity<TUser>(b =>
                 {
-                    b.Key(u => u.Id);
+                    b.HasKey(u => u.Id);
                     b.Index(u => u.NormalizedUserName).Name("UserNameIndex");
                     b.Index(u => u.NormalizedEmail).Name("EmailIndex");
                     b.ToTable("AspNetUsers");
-                    b.Property(u => u.ConcurrencyStamp).ConcurrencyToken();
+                    b.Property(u => u.ConcurrencyStamp).IsConcurrencyToken();
 
-                    b.Property(u => u.UserName).MaxLength(256);
-                    b.Property(u => u.NormalizedUserName).MaxLength(256);
-                    b.Property(u => u.Email).MaxLength(256);
-                    b.Property(u => u.NormalizedEmail).MaxLength(256);
-                    b.Collection(u => u.Claims).InverseReference().ForeignKey(uc => uc.UserId);
-                    b.Collection(u => u.Logins).InverseReference().ForeignKey(ul => ul.UserId);
-                    b.Collection(u => u.Roles).InverseReference().ForeignKey(ur => ur.UserId);
+                    b.Property(u => u.UserName).HasMaxLength(256);
+                    b.Property(u => u.NormalizedUserName).HasMaxLength(256);
+                    b.Property(u => u.Email).HasMaxLength(256);
+                    b.Property(u => u.NormalizedEmail).HasMaxLength(256);
+                    b.HasMany(u => u.Claims).WithOne().ForeignKey(uc => uc.UserId);
+                    b.HasMany(u => u.Logins).WithOne().ForeignKey(ul => ul.UserId);
+                    b.HasMany(u => u.Roles).WithOne().ForeignKey(ur => ur.UserId);
                 });
 
             builder.Entity<TRole>(b =>
                 {
-                    b.Key(r => r.Id);
+                    b.HasKey(r => r.Id);
                     b.Index(r => r.NormalizedName).Name("RoleNameIndex");
                     b.ToTable("AspNetRoles");
-                    b.Property(r => r.ConcurrencyStamp).ConcurrencyToken();
+                    b.Property(r => r.ConcurrencyStamp).IsConcurrencyToken();
 
-                    b.Property(u => u.Name).MaxLength(256);
-                    b.Property(u => u.NormalizedName).MaxLength(256);
+                    b.Property(u => u.Name).HasMaxLength(256);
+                    b.Property(u => u.NormalizedName).HasMaxLength(256);
 
-                    b.Collection(r => r.Users).InverseReference().ForeignKey(ur => ur.RoleId);
-                    b.Collection(r => r.Claims).InverseReference().ForeignKey(rc => rc.RoleId);
+                    b.HasMany(r => r.Users).WithOne().ForeignKey(ur => ur.RoleId);
+                    b.HasMany(r => r.Claims).WithOne().ForeignKey(rc => rc.RoleId);
                 });
 
             builder.Entity<IdentityUserClaim<TKey>>(b =>
                 {
-                    b.Key(uc => uc.Id);
+                    b.HasKey(uc => uc.Id);
                     b.ToTable("AspNetUserClaims");
                 });
 
             builder.Entity<IdentityRoleClaim<TKey>>(b =>
                 {
-                    b.Key(rc => rc.Id);
+                    b.HasKey(rc => rc.Id);
                     b.ToTable("AspNetRoleClaims");
                 });
 
             builder.Entity<IdentityUserRole<TKey>>(b =>
                 {
-                    b.Key(r => new { r.UserId, r.RoleId });
+                    b.HasKey(r => new { r.UserId, r.RoleId });
                     b.ToTable("AspNetUserRoles");
                 });
             // Blocks delete currently without cascade
@@ -101,7 +101,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
 
             builder.Entity<IdentityUserLogin<TKey>>(b =>
                 {
-                    b.Key(l => new { l.LoginProvider, l.ProviderKey });
+                    b.HasKey(l => new { l.LoginProvider, l.ProviderKey });
                     b.ToTable("AspNetUserLogins");
                 });
         }
