@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
+using Microsoft.AspNet.Testing;
 using Microsoft.Framework.WebEncoders;
 using Microsoft.Framework.WebEncoders.Testing;
 using Xunit;
@@ -126,6 +128,220 @@ namespace Microsoft.AspNet.Html.Abstractions.Test
                 entry => Assert.Equal("Hi", Assert.IsType<EncodedString>(entry).Value));
         }
 
+        [Fact]
+        public void Builder_AppendFormat()
+        {
+            // Arrange
+            var builder = new TestHtmlContentBuilder();
+
+            // Act
+            builder.AppendFormat("{0} {1} {2} {3}!", "First", "Second", "Third", "Fourth");
+
+            // Assert
+            Assert.Equal(
+                "HtmlEncode[[First]] HtmlEncode[[Second]] HtmlEncode[[Third]] HtmlEncode[[Fourth]]!",
+                HtmlContentToString(builder));
+        }
+
+        [Fact]
+        public void Builder_AppendFormat_HtmlContent()
+        {
+            // Arrange
+            var builder = new TestHtmlContentBuilder();
+
+            // Act
+            builder.AppendFormat("{0}!", new EncodedString("First"));
+
+            // Assert
+            Assert.Equal(
+                "First!",
+                HtmlContentToString(builder));
+        }
+
+        [Fact]
+        public void Builder_AppendFormatContent_With1Argument()
+        {
+            // Arrange
+            var builder = new TestHtmlContentBuilder();
+
+            // Act
+            builder.AppendFormat("0x{0:X} - hex equivalent for 50.", 50);
+
+            // Assert
+            Assert.Equal(
+                "0xHtmlEncode[[32]] - hex equivalent for 50.",
+                HtmlContentToString(builder));
+        }
+
+        [Fact]
+        public void Builder_AppendFormatContent_With2Arguments()
+        {
+            // Arrange
+            var builder = new TestHtmlContentBuilder();
+
+            // Act
+            builder.AppendFormat("0x{0:X} - hex equivalent for {1}.", 50, 50);
+
+            // Assert
+            Assert.Equal(
+                "0xHtmlEncode[[32]] - hex equivalent for HtmlEncode[[50]].",
+                HtmlContentToString(builder));
+        }
+
+        [Fact]
+        public void Builder_AppendFormatContent_With3Arguments()
+        {
+            // Arrange
+            var builder = new TestHtmlContentBuilder();
+
+            // Act
+            builder.AppendFormat("0x{0:X} - {1} equivalent for {2}.", 50, "hex", 50);
+
+            // Assert
+            Assert.Equal(
+                "0xHtmlEncode[[32]] - HtmlEncode[[hex]] equivalent for HtmlEncode[[50]].",
+                HtmlContentToString(builder));
+        }
+
+        [Fact]
+        public void Builder_AppendFormat_WithAlignmentComponent()
+        {
+            // Arrange
+            var builder = new TestHtmlContentBuilder();
+
+            // Act
+            builder.AppendFormat("{0, -25} World!", "Hello");
+
+            // Assert
+            Assert.Equal(
+                "HtmlEncode[[Hello]]       World!",
+                HtmlContentToString(builder));
+        }
+
+        [Fact]
+        public void Builder_AppendFormat_WithFormatStringComponent()
+        {
+            // Arrange
+            var builder = new TestHtmlContentBuilder();
+
+            // Act
+            builder.AppendFormat("0x{0:X}", 50);
+
+            // Assert
+            Assert.Equal("0xHtmlEncode[[32]]", HtmlContentToString(builder));
+        }
+        
+        [Fact]
+        public void Builder_AppendFormat_WithCulture()
+        {
+            // Arrange
+            var builder = new TestHtmlContentBuilder();
+
+            // Act
+            builder.AppendFormat(
+                CultureInfo.InvariantCulture,
+                "Numbers in InvariantCulture - {0, -5:N} {1} {2} {3}!",
+                1.1,
+                2.98,
+                145.82,
+                32.86);
+
+            // Assert
+            Assert.Equal(
+                "Numbers in InvariantCulture - HtmlEncode[[1.10]] HtmlEncode[[2.98]] " + 
+                    "HtmlEncode[[145.82]] HtmlEncode[[32.86]]!",
+                HtmlContentToString(builder));
+        }
+
+        [Fact]
+        public void Builder_AppendFormat_WithCulture_1Argument()
+        {
+            // Arrange
+            var builder = new TestHtmlContentBuilder();
+
+            // Act
+            builder.AppendFormat(
+                CultureInfo.InvariantCulture,
+                "Numbers in InvariantCulture - {0:N}!",
+                1.1);
+
+            // Assert
+            Assert.Equal(
+                "Numbers in InvariantCulture - HtmlEncode[[1.10]]!",
+                HtmlContentToString(builder));
+        }
+
+        [Fact]
+        public void Builder_AppendFormat_WithCulture_2Arguments()
+        {
+            // Arrange
+            var builder = new TestHtmlContentBuilder();
+
+            // Act
+            builder.AppendFormat(
+                CultureInfo.InvariantCulture,
+                "Numbers in InvariantCulture - {0:N} {1}!",
+                1.1,
+                2.98);
+
+            // Assert
+            Assert.Equal(
+                "Numbers in InvariantCulture - HtmlEncode[[1.10]] HtmlEncode[[2.98]]!",
+                HtmlContentToString(builder));
+        }
+
+        [Fact]
+        public void Builder_AppendFormat_WithCulture_3Arguments()
+        {
+            // Arrange
+            var builder = new TestHtmlContentBuilder();
+
+            // Act
+            builder.AppendFormat(
+                CultureInfo.InvariantCulture,
+                "Numbers in InvariantCulture - {0:N} {1} {2}!",
+                1.1,
+                2.98,
+                3.12);
+
+            // Assert
+            Assert.Equal(
+                "Numbers in InvariantCulture - HtmlEncode[[1.10]] HtmlEncode[[2.98]] HtmlEncode[[3.12]]!",
+                HtmlContentToString(builder));
+        }
+
+        [Fact]
+        public void Builder_AppendFormat_WithDifferentCulture()
+        {
+            // Arrange
+            var builder = new TestHtmlContentBuilder();
+            var culture = new CultureInfo("fr-FR");
+
+            // Act
+            builder.AppendFormat(culture, "{0} in french!", 1.21);
+
+            // Assert
+            Assert.Equal(
+                "HtmlEncode[[1,21]] in french!",
+                HtmlContentToString(builder));
+        }
+
+        [Fact]
+        [ReplaceCulture]
+        public void Builder_AppendFormat_WithDifferentCurrentCulture()
+        {
+            // Arrange
+            var builder = new TestHtmlContentBuilder();
+
+            // Act
+            builder.AppendFormat(CultureInfo.CurrentCulture, "{0:D}", DateTime.Parse("01/02/2015"));
+
+            // Assert
+            Assert.Equal(
+                "HtmlEncode[[01 February 2015]]",
+                HtmlContentToString(builder));
+        }
+
         private static string HtmlContentToString(IHtmlContent content)
         {
             using (var writer = new StringWriter())
@@ -164,7 +380,10 @@ namespace Microsoft.AspNet.Html.Abstractions.Test
 
             public void WriteTo(TextWriter writer, IHtmlEncoder encoder)
             {
-                throw new NotImplementedException();
+                foreach (var entry in Entries)
+                {
+                    entry.WriteTo(writer, encoder);
+                }
             }
         }
 
@@ -179,7 +398,7 @@ namespace Microsoft.AspNet.Html.Abstractions.Test
 
             public void WriteTo(TextWriter writer, IHtmlEncoder encoder)
             {
-                throw new NotImplementedException();
+                writer.Write(Value);
             }
         }
 
@@ -194,7 +413,7 @@ namespace Microsoft.AspNet.Html.Abstractions.Test
 
             public void WriteTo(TextWriter writer, IHtmlEncoder encoder)
             {
-                throw new NotImplementedException();
+                encoder.HtmlEncode(Value, writer);
             }
         }
 
