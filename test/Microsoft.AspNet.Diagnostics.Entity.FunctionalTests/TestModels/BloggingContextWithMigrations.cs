@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
                 {
                     b.Property<int>("BlogId");
                     b.Property<string>("Name");
-                    b.Key("BlogId");
+                    b.HasKey("BlogId");
                 });
             }
         }
