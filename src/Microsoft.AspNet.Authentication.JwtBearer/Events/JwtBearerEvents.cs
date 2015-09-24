@@ -23,22 +23,22 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
         /// <summary>
         /// Invoked when a protocol message is first received.
         /// </summary>
-        public Func<MessageReceivedContext, Task> OnMessageReceived { get; set; } = context => Task.FromResult(0);
+        public Func<ReceivingTokenContext, Task> OnReceivingToken { get; set; } = context => Task.FromResult(0);
 
         /// <summary>
         /// Invoked with the security token that has been extracted from the protocol message.
         /// </summary>
-        public Func<SecurityTokenReceivedContext, Task> OnSecurityTokenReceived { get; set; } = context => Task.FromResult(0);
+        public Func<ReceivedTokenContext, Task> OnReceivedToken { get; set; } = context => Task.FromResult(0);
 
         /// <summary>
         /// Invoked after the security token has passed validation and a ClaimsIdentity has been generated.
         /// </summary>
-        public Func<SecurityTokenValidatedContext, Task> OnSecurityTokenValidated { get; set; } = context => Task.FromResult(0);
+        public Func<ValidatedTokenContext, Task> OnValidatedToken { get; set; } = context => Task.FromResult(0);
 
         /// <summary>
         /// Invoked to apply a challenge sent back to the caller.
         /// </summary>
-        public Func<AuthenticationChallengeContext, Task> OnApplyChallenge { get; set; } = context =>
+        public Func<JwtBearerChallengeContext, Task> OnChallenge { get; set; } = context =>
         {
             context.HttpContext.Response.Headers.Append("WWW-Authenticate", context.Options.Challenge);
             return Task.FromResult(0);
@@ -46,12 +46,12 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
 
         public virtual Task AuthenticationFailed(AuthenticationFailedContext context) => OnAuthenticationFailed(context);
 
-        public virtual Task MessageReceived(MessageReceivedContext context) => OnMessageReceived(context);
+        public virtual Task ReceivingToken(ReceivingTokenContext context) => OnReceivingToken(context);
 
-        public virtual Task SecurityTokenReceived(SecurityTokenReceivedContext context) => OnSecurityTokenReceived(context);
+        public virtual Task ReceivedToken(ReceivedTokenContext context) => OnReceivedToken(context);
 
-        public virtual Task SecurityTokenValidated(SecurityTokenValidatedContext context) => OnSecurityTokenValidated(context);
+        public virtual Task ValidatedToken(ValidatedTokenContext context) => OnValidatedToken(context);
 
-        public virtual Task ApplyChallenge(AuthenticationChallengeContext context) => OnApplyChallenge(context);
+        public virtual Task Challenge(JwtBearerChallengeContext context) => OnChallenge(context);
     }
 }

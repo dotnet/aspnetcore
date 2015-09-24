@@ -21,21 +21,21 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
         /// <summary>
         /// Invoked when a protocol message is first received.
         /// </summary>
-        Task MessageReceived(MessageReceivedContext context);
+        Task ReceivingToken(ReceivingTokenContext context);
 
         /// <summary>
         /// Invoked with the security token that has been extracted from the protocol message.
         /// </summary>
-        Task SecurityTokenReceived(SecurityTokenReceivedContext context);
+        Task ReceivedToken(ReceivedTokenContext context);
 
         /// <summary>
         /// Invoked after the security token has passed validation and a ClaimsIdentity has been generated.
         /// </summary>
-        Task SecurityTokenValidated(SecurityTokenValidatedContext context);
+        Task ValidatedToken(ValidatedTokenContext context);
 
         /// <summary>
         /// Invoked to apply a challenge sent back to the caller.
         /// </summary>
-        Task ApplyChallenge(AuthenticationChallengeContext context);
+        Task Challenge(JwtBearerChallengeContext context);
     }
 }

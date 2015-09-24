@@ -5,13 +5,11 @@ using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Authentication.JwtBearer
 {
-    public class SecurityTokenReceivedContext : BaseControlContext<JwtBearerOptions>
+    public class JwtBearerChallengeContext : BaseControlContext<JwtBearerOptions>
     {
-        public SecurityTokenReceivedContext(HttpContext context, JwtBearerOptions options)
+        public JwtBearerChallengeContext(HttpContext context, JwtBearerOptions options)
             : base(context, options)
         {
         }
-
-        public string SecurityToken { get; set; }
     }
 }

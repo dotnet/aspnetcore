@@ -68,7 +68,7 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
 
                 options.Events = new JwtBearerEvents()
                 {
-                    OnMessageReceived = context =>
+                    OnReceivingToken = context =>
                     {
                         var claims = new[]
                         {
@@ -118,7 +118,7 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
 
                 options.Events = new JwtBearerEvents()
                 {
-                    OnSecurityTokenReceived = context =>
+                    OnReceivedToken = context =>
                     {
                         var claims = new[]
                         {
@@ -152,7 +152,7 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
 
                 options.Events = new JwtBearerEvents()
                 {
-                    OnSecurityTokenValidated = context =>
+                    OnValidatedToken = context =>
                     {
                         // Retrieve the NameIdentifier claim from the identity
                         // returned by the custom security token validator.
@@ -189,12 +189,12 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
 
                 options.Events = new JwtBearerEvents()
                 {
-                    OnMessageReceived = context =>
+                    OnReceivingToken = context =>
                     {
                         context.Token = "CustomToken";
                         return Task.FromResult<object>(null);
                     },
-                    OnSecurityTokenReceived = context =>
+                    OnReceivedToken = context =>
                     {
                         var claims = new[]
                         {
@@ -226,7 +226,7 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
             {
                 options.Events = new JwtBearerEvents()
                 {
-                    OnSecurityTokenReceived = context =>
+                    OnReceivedToken = context =>
                     {
                         var claims = new[]
                         {
@@ -257,7 +257,7 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
             {
                 options.Events = new JwtBearerEvents()
                 {
-                    OnSecurityTokenReceived = context =>
+                    OnReceivedToken = context =>
                     {
                         var claims = new[]
                         {
