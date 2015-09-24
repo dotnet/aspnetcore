@@ -281,7 +281,8 @@ namespace Microsoft.AspNet.Hosting
         }
 
         [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(@"sub/sub2\sub3\", @"sub/sub2/sub3/")]
         public void MapPath_Windows_Facts(string virtualPath, string expectedSuffix)
         {

@@ -1,3 +1,3 @@
 {
-    "projects": ["src"]
+    "projects": ["src","c:/github/testing/src","/home/kiran/github/testing/src"]
 }

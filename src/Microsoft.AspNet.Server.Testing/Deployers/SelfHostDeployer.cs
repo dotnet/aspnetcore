@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
+using Microsoft.AspNet.Testing;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.Server.Testing
@@ -50,11 +51,11 @@ namespace Microsoft.AspNet.Server.Testing
             var commandName = DeploymentParameters.Command;
             if (string.IsNullOrEmpty(commandName))
             {
-                commandName = DeploymentParameters.ServerType == ServerType.WebListener ? "web" : "kestrel";
+                commandName = DeploymentParameters.ServerType == ServerType.WebListener ? "weblistener" : "kestrel";
             }
-            var dnxPath = Path.Combine(ChosenRuntimePath, "dnx.exe");
+            var dnxPath = Path.Combine(ChosenRuntimePath, DnxCommandName);
             var dnxArgs = $"-p \"{DeploymentParameters.ApplicationPath}\" {commandName} --server.urls {DeploymentParameters.ApplicationBaseUriHint}";
-            Logger.LogInformation("Executing {dnxexe} {dnxArgs}", dnxPath, dnxArgs);
+            Logger.LogInformation($"Executing {dnxPath} {dnxArgs}");
 
             var startInfo = new ProcessStartInfo
             {

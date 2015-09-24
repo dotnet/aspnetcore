@@ -3,10 +3,12 @@
 
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using Microsoft.AspNet.Testing;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.Server.Testing
@@ -16,8 +18,14 @@ namespace Microsoft.AspNet.Server.Testing
     /// </summary>
     public abstract class ApplicationDeployer : IApplicationDeployer
     {
+        /// <summary>
+        /// Example: runtimes/dnx-coreclr-win-x64.1.0.0-rc1-15844/bin
+        /// </summary>
         protected string ChosenRuntimePath { get; set; }
 
+        /// <summary>
+        /// Examples: dnx-coreclr-win-x64.1.0.0-rc1-15844, dnx-mono.1.0.0-rc1-15844
+        /// </summary>
         protected string ChosenRuntimeName { get; set; }
 
         protected DeploymentParameters DeploymentParameters { get; private set; }
@@ -25,6 +33,59 @@ namespace Microsoft.AspNet.Server.Testing
         protected ILogger Logger { get; private set; }
 
         protected Stopwatch StopWatch { get; private set; } = new Stopwatch();
+
+        protected string OSPrefix
+        {
+            get
+            {
+                if (TestPlatformHelper.IsLinux)
+                {
+                    return "linux";
+                }
+                else if (TestPlatformHelper.IsMac)
+                {
+                    return "darwin";
+                }
+                else if (TestPlatformHelper.IsWindows)
+                {
+                    return "win";
+                }
+                else
+                {
+                    throw new InvalidOperationException("Unrecognized operating system");
+                }
+            }
+        }
+
+        protected string DnuCommandName
+        {
+            get
+            {
+                if (TestPlatformHelper.IsWindows)
+                {
+                    return "dnu.cmd";
+                }
+                else
+                {
+                    return "dnu";
+                }
+            }
+        }
+
+        protected string DnxCommandName
+        {
+            get
+            {
+                if (TestPlatformHelper.IsWindows)
+                {
+                    return "dnx.exe";
+                }
+                else
+                {
+                    return "dnx";
+                }
+            }
+        }
 
         public abstract DeploymentResult Deploy();
 
@@ -38,31 +99,44 @@ namespace Microsoft.AspNet.Server.Testing
 
         protected string PopulateChosenRuntimeInformation()
         {
-            var runtimePath = Process.GetCurrentProcess().MainModule.FileName;
-            Logger.LogInformation(string.Empty);
-            Logger.LogInformation($"Current runtime path is : {runtimePath}");
+            // ex: runtimes/dnx-coreclr-win-x64.1.0.0-rc1-15844/bin
+            var currentRuntimeBinPath = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
+            Logger.LogInformation($"Current runtime path is : {currentRuntimeBinPath}");
 
-            var replaceStr = new StringBuilder().
-                Append("dnx").
-                Append((DeploymentParameters.RuntimeFlavor == RuntimeFlavor.CoreClr) ? "-coreclr" : "-clr").
-                Append("-win").
-                Append((DeploymentParameters.RuntimeArchitecture == RuntimeArchitecture.x86) ? "-x86" : "-x64").
-                ToString();
+            var targetRuntimeName = new StringBuilder()
+                .Append("dnx")
+                .Append((DeploymentParameters.RuntimeFlavor == RuntimeFlavor.CoreClr) ? "-coreclr" : "-clr")
+                .Append($"-{OSPrefix}")
+                .Append((DeploymentParameters.RuntimeArchitecture == RuntimeArchitecture.x86) ? "-x86" : "-x64")
+                .ToString();
 
-            runtimePath = Regex.Replace(runtimePath, "dnx-(clr|coreclr)-win-(x86|x64)", replaceStr, RegexOptions.IgnoreCase);
-            ChosenRuntimePath = Path.GetDirectoryName(runtimePath);
-
-            var runtimeDirectoryInfo = new DirectoryInfo(ChosenRuntimePath);
-            if (!runtimeDirectoryInfo.Exists)
+            string targetRuntimeBinPath;
+            // Ex: When current runtime is Mono and the tests are being run for CoreClr
+            if (currentRuntimeBinPath.Contains("dnx-mono"))
             {
-                throw new Exception(
-                    string.Format("Requested runtime at location '{0}' does not exist. Please make sure it is installed before running test.",
-                    runtimeDirectoryInfo.FullName));
+                targetRuntimeBinPath = currentRuntimeBinPath.Replace("dnx-mono", targetRuntimeName);
+            }
+            else
+            {
+                targetRuntimeBinPath = Regex.Replace(
+                    currentRuntimeBinPath,
+                    "dnx-(clr|coreclr)-(win|linux|darwin)-(x86|x64)",
+                    targetRuntimeName,
+                    RegexOptions.IgnoreCase);
             }
 
-            ChosenRuntimeName = runtimeDirectoryInfo.Parent.Name;
-            Logger.LogInformation(string.Empty);
-            Logger.LogInformation($"Changing to use runtime : {ChosenRuntimeName}");
+            var targetRuntimeBinDir = new DirectoryInfo(targetRuntimeBinPath);
+            if (targetRuntimeBinDir == null || !targetRuntimeBinDir.Exists)
+            {
+                throw new Exception($"Requested runtime at location '{targetRuntimeBinPath}' does not exist.Please make sure it is installed before running test.");
+            }
+
+            ChosenRuntimePath = targetRuntimeBinDir.FullName;
+            ChosenRuntimeName = targetRuntimeBinDir.Parent.Name;
+            DeploymentParameters.DnxRuntime = ChosenRuntimeName;
+
+            Logger.LogInformation($"Chosen runtime path is {ChosenRuntimePath}");
+
             return ChosenRuntimeName;
         }
 
@@ -75,7 +149,7 @@ namespace Microsoft.AspNet.Server.Testing
             var parameters = $"publish {DeploymentParameters.ApplicationPath} -o {DeploymentParameters.PublishedApplicationRootPath}"
                 + $" --runtime {DeploymentParameters.DnxRuntime} {noSource} --iis-command {command}";
 
-            var dnuPath = Path.Combine(ChosenRuntimePath, "dnu.cmd");
+            var dnuPath = Path.Combine(ChosenRuntimePath, DnuCommandName);
             Logger.LogInformation($"Executing command {dnuPath} {parameters}");
 
             var startInfo = new ProcessStartInfo
@@ -115,7 +189,7 @@ namespace Microsoft.AspNet.Server.Testing
         {
             try
             {
-                // We've originally published the application in a temp folder. We need to delete it. 
+                // We've originally published the application in a temp folder. We need to delete it.
                 Directory.Delete(DeploymentParameters.PublishedApplicationRootPath, true);
             }
             catch (Exception exception)
