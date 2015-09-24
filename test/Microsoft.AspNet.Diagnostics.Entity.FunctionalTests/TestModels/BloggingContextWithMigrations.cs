@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
                 migrationBuilder.CreateTable("Blog",
                 c => new
                 {
-                    BlogId = c.Column<int>().Annotation("SqlServer:ValueGenerationStrategy", SqlServerIdentityStrategy.IdentityColumn),
+                    BlogId = c.Column<int>().Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     Name = c.Column<string>(nullable: true),
                 })
                 .PrimaryKey("PK_Blog", t => t.BlogId);
