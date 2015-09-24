@@ -21,7 +21,7 @@ namespace E2ETests
         public async Task NtlmAuthenticationTest(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
             var logger = new LoggerFactory()
-                            .AddConsole()
+                            .AddConsole(LogLevel.Warning)
                             .CreateLogger(string.Format("Ntlm:{0}:{1}:{2}", serverType, runtimeFlavor, architecture));
 
             using (logger.BeginScope("NtlmAuthenticationTest"))
@@ -62,6 +62,9 @@ namespace E2ETests
                     {
                         return await httpClient.GetAsync(string.Empty);
                     }, logger: logger, cancellationToken: deploymentResult.HostShutdownToken);
+
+                    Assert.False(response == null, "Response object is null because the client could not " +
+                        "connect to the server after multiple retries");
 
                     var validator = new Validator(httpClient, httpClientHandler, logger, deploymentResult);
                     await validator.VerifyNtlmHomePage(response);

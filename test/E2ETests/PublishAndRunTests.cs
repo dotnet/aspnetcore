@@ -54,7 +54,6 @@ namespace E2ETests
                 serverType, runtimeFlavor, architecture, applicationBaseUrl, noSource);
         }
 
-        // https://github.com/aspnet/MusicStore/issues/487
         [ConditionalTheory, Trait("E2Etests", "E2Etests")]
         [FrameworkSkipCondition(RuntimeFrameworks.CLR | RuntimeFrameworks.CoreCLR)]
         [InlineData(ServerType.Kestrel, RuntimeFlavor.Mono, RuntimeArchitecture.x86, "http://localhost:5029/", false)]
@@ -82,7 +81,7 @@ namespace E2ETests
             bool noSource)
         {
             var logger = new LoggerFactory()
-                            .AddConsole()
+                            .AddConsole(LogLevel.Warning)
                             .CreateLogger($"Publish:{serverType}:{runtimeFlavor}:{architecture}:{noSource}");
 
             using (logger.BeginScope("Publish_And_Run_Tests"))
@@ -126,6 +125,9 @@ namespace E2ETests
                     {
                         return await httpClient.GetAsync(string.Empty);
                     }, logger: logger, cancellationToken: deploymentResult.HostShutdownToken);
+
+                    Assert.False(response == null, "Response object is null because the client could not " +
+                        "connect to the server after multiple retries");
 
                     var validator = new Validator(httpClient, httpClientHandler, logger, deploymentResult);
                     await validator.VerifyHomePage(response);

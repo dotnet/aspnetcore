@@ -150,8 +150,8 @@ namespace E2ETests
             bool noSource = false)
         {
             var logger = new LoggerFactory()
-                           .AddConsole()
-                           .CreateLogger(string.Format("Smoke:{0}:{1}:{2}", serverType, donetFlavor, architecture));
+                           .AddConsole(LogLevel.Warning)
+                           .CreateLogger($"Smoke:{serverType}:{donetFlavor}:{architecture}");
 
             using (logger.BeginScope("SmokeTestSuite"))
             {
@@ -198,6 +198,9 @@ namespace E2ETests
                     {
                         return await httpClient.GetAsync(string.Empty);
                     }, logger: logger, cancellationToken: deploymentResult.HostShutdownToken);
+
+                    Assert.False(response == null, "Response object is null because the client could not " +
+                        "connect to the server after multiple retries");
 
                     var validator = new Validator(httpClient, httpClientHandler, logger, deploymentResult);
 

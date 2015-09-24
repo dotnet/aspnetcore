@@ -14,10 +14,15 @@ namespace E2ETests
     {
         [ConditionalTheory(Skip = "Temporarily skipped the test to fix potential product issue"), Trait("E2Etests", "E2Etests")]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5040/")]
+        //[InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5040/")]
         // https://github.com/aspnet/Security/issues/223
-        // [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5041/")]
-        public async Task OpenIdConnect_OnX86(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
+        // [InlineData(
+        //          ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5041/")]
+        public async Task OpenIdConnect_OnX86(
+            ServerType serverType,
+            RuntimeFlavor runtimeFlavor,
+            RuntimeArchitecture architecture,
+            string applicationBaseUrl)
         {
             await OpenIdConnectTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl);
         }
@@ -33,7 +38,7 @@ namespace E2ETests
         private async Task OpenIdConnectTestSuite(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
             var logger = new LoggerFactory()
-                            .AddConsole()
+                            .AddConsole(LogLevel.Warning)
                             .CreateLogger(string.Format("OpenId:{0}:{1}:{2}", serverType, runtimeFlavor, architecture));
 
             using (logger.BeginScope("OpenIdConnectTestSuite"))
@@ -72,6 +77,9 @@ namespace E2ETests
                     {
                         return await httpClient.GetAsync(string.Empty);
                     }, logger: logger, cancellationToken: deploymentResult.HostShutdownToken);
+
+                    Assert.False(response == null, "Response object is null because the client could not " +
+                        "connect to the server after multiple retries");
 
                     var validator = new Validator(httpClient, httpClientHandler, logger, deploymentResult);
                     await validator.VerifyHomePage(response);
