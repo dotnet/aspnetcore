@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         /// <para>ResponseType: <see cref="OpenIdConnectResponseTypes.CodeIdToken"/></para>
         /// <para>Scope: <see cref="OpenIdConnectScopes.OpenIdProfile"/>.</para>
         /// <para>TokenValidationParameters: new <see cref="TokenValidationParameters"/> with AuthenticationScheme = authenticationScheme.</para>
-        /// <para>UseTokenLifetime: true.</para>
+        /// <para>UseTokenLifetime: false.</para>
         /// </remarks>
         /// <param name="authenticationScheme"> will be used to when creating the <see cref="System.Security.Claims.ClaimsIdentity"/> for the AuthenticationScheme property.</param>
         [SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters", MessageId = "Microsoft.Owin.Security.OpenIdConnect.OpenIdConnectOptions.set_Caption(System.String)", Justification = "Not a LOC field")]
@@ -223,9 +223,9 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         /// <summary>
         /// Indicates that the authentication session lifetime (e.g. cookies) should match that of the authentication token.
         /// If the token does not provide lifetime information then normal session lifetimes will be used.
-        /// This is enabled by default.
+        /// This is disabled by default.
         /// </summary>
-        public bool UseTokenLifetime { get; set; } = true;
+        public bool UseTokenLifetime { get; set; }
 
         /// <summary>
         /// Defines whether access and refresh tokens should be stored in the
