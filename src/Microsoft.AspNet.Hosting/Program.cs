@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Hosting
             builder.AddCommandLine(args);
             var config = builder.Build();
 
-            var host = new WebHostBuilder(_serviceProvider, config).Build();
+            var host = new WebHostBuilder(_serviceProvider, config, captureStartupErrors: true).Build();
             using (var app = host.Start())
             {
                 var hostingEnv = app.Services.GetRequiredService<IHostingEnvironment>();

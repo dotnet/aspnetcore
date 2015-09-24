@@ -39,6 +39,7 @@ namespace Microsoft.AspNet.Hosting
         private StartupMethods _startup;
         private Type _startupType;
         private string _startupAssemblyName;
+        private readonly bool _captureStartupErrors;
 
         // Only one of these should be set
         private string _serverFactoryLocation;
@@ -50,6 +51,11 @@ namespace Microsoft.AspNet.Hosting
         }
 
         public WebHostBuilder(IServiceProvider services, IConfiguration config)
+            : this(services, config: config, captureStartupErrors: false)
+        {
+        }
+
+        public WebHostBuilder(IServiceProvider services, IConfiguration config, bool captureStartupErrors)
         {
             if (services == null)
             {
@@ -65,6 +71,7 @@ namespace Microsoft.AspNet.Hosting
             _loggerFactory = new LoggerFactory();
             _services = services;
             _config = config;
+            _captureStartupErrors = captureStartupErrors;
         }
 
         private IServiceCollection BuildHostingServices()
@@ -117,8 +124,7 @@ namespace Microsoft.AspNet.Hosting
             var startupLoader = hostingContainer.GetRequiredService<IStartupLoader>();
 
             _hostingEnvironment.Initialize(appEnvironment.ApplicationBasePath, _config?[EnvironmentKey] ?? _config?[OldEnvironmentKey]);
-
-            var engine = new HostingEngine(hostingServices, startupLoader, _config);
+            var engine = new HostingEngine(hostingServices, startupLoader, _config, _captureStartupErrors);
 
             // Only one of these should be set, but they are used in priority
             engine.ServerFactory = _serverFactory;
