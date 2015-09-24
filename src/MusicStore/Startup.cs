@@ -167,14 +167,14 @@ namespace MusicStore
 
             app.UseGoogleAuthentication(options =>
             {
-                options.ClientId = "977382855444.apps.googleusercontent.com";
-                options.ClientSecret = "NafT482F70Vjj_9q1PU4B0pN";
+                options.ClientId = "995291875932-0rt7417v5baevqrno24kv332b7d6d30a.apps.googleusercontent.com";
+                options.ClientSecret = "J_AT57H5KH_ItmMdu0r6PfXm";
             });
 
             app.UseTwitterAuthentication(options =>
             {
-                options.ConsumerKey = "9J3j3pSwgbWkgPFH7nAf0Spam";
-                options.ConsumerSecret = "jUBYkQuBFyqp7G3CUB9SW3AfflFr9z3oQBiNvumYy87Al0W4h8";
+                options.ConsumerKey = "lDSPIu480ocnXYZ9DumGCDw37";
+                options.ConsumerSecret = "fpo0oWRNc3vsZKlZSq1PyOSoeXlJd7NnG4Rfc94xbFXsdcc3nH";
             });
 
             // The MicrosoftAccount service has restrictions that prevent the use of
