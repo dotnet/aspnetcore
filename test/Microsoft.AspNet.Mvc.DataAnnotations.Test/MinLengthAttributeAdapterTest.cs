@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             var provider = TestModelMetadataProvider.CreateDefaultProvider();
             var metadata = provider.GetMetadataForProperty(typeof(string), "Length");
             var attribute = new MinLengthAttribute(6);
-            var adapter = new MinLengthAttributeAdapter(attribute);
+            var adapter = new MinLengthAttributeAdapter(attribute, stringLocalizer: null);
             var serviceCollection = new ServiceCollection();
             var requestServices = serviceCollection.BuildServiceProvider();
             var context = new ClientModelValidationContext(metadata, provider, requestServices);
@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             var provider = TestModelMetadataProvider.CreateDefaultProvider();
             var metadata = provider.GetMetadataForProperty(typeof(string), propertyName);
             var attribute = new MinLengthAttribute(2) { ErrorMessage = message };
-            var adapter = new MinLengthAttributeAdapter(attribute);
+            var adapter = new MinLengthAttributeAdapter(attribute, stringLocalizer: null);
             var serviceCollection = new ServiceCollection();
             var requestServices = serviceCollection.BuildServiceProvider();
             var context = new ClientModelValidationContext(metadata, provider, requestServices);

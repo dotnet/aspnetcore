@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using LocalizationWebSite.Models;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Localization;
 
@@ -24,6 +25,18 @@ namespace LocalizationWebSite.Controllers
         {
             ViewData["Message"] = _localizer["Learn More"];
             return View();
+        }
+
+        public IActionResult GetInvalidUser()
+        {
+            var user = new User
+            {
+                Name = "A",
+                Product = new Product()
+            };
+
+            TryValidateModel(user);
+            return View(user);
         }
     }
 }

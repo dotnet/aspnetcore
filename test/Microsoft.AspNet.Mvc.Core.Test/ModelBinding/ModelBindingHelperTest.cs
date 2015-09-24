@@ -72,7 +72,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 new MutableObjectModelBinder()
             };
 
-            var validator = new DataAnnotationsModelValidatorProvider();
+            var validator = new DataAnnotationsModelValidatorProvider(
+                new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                stringLocalizerFactory: null);
             var model = new MyModel();
             var modelStateDictionary = new ModelStateDictionary();
             var values = new Dictionary<string, object>
@@ -111,7 +113,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 new MutableObjectModelBinder()
             };
 
-            var validator = new DataAnnotationsModelValidatorProvider();
+            var validator = new DataAnnotationsModelValidatorProvider(
+                new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                stringLocalizerFactory: null);
             var model = new MyModel { MyProperty = "Old-Value" };
             var modelStateDictionary = new ModelStateDictionary();
             var values = new Dictionary<string, object>
@@ -185,7 +189,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 new MutableObjectModelBinder()
             };
 
-            var validator = new DataAnnotationsModelValidatorProvider();
+            var validator = new DataAnnotationsModelValidatorProvider(
+                new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                stringLocalizerFactory: null);
             var model = new MyModel {
                 MyProperty = "Old-Value",
                 IncludedProperty = "Old-IncludedPropertyValue",
@@ -274,7 +280,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 new MutableObjectModelBinder()
             };
 
-            var validator = new DataAnnotationsModelValidatorProvider();
+            var validator = new DataAnnotationsModelValidatorProvider(
+                new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                stringLocalizerFactory: null);
             var model = new MyModel
             {
                 MyProperty = "Old-Value",
@@ -326,7 +334,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 new MutableObjectModelBinder()
             };
 
-            var validator = new DataAnnotationsModelValidatorProvider();
+            var validator = new DataAnnotationsModelValidatorProvider(
+                new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                stringLocalizerFactory: null);
             var model = new MyModel
             {
                 MyProperty = "Old-Value",
@@ -532,7 +542,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 new MutableObjectModelBinder()
             };
 
-            var validator = new DataAnnotationsModelValidatorProvider();
+            var validator = new DataAnnotationsModelValidatorProvider(
+                new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                stringLocalizerFactory: null);
             var model = new MyModel
             {
                 MyProperty = "Old-Value",
@@ -623,7 +635,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 new MutableObjectModelBinder()
             };
 
-            var validator = new DataAnnotationsModelValidatorProvider();
+            var validator = new DataAnnotationsModelValidatorProvider(
+                new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                stringLocalizerFactory: null);
             var model = new MyModel { MyProperty = "Old-Value" };
             var modelStateDictionary = new ModelStateDictionary();
             var values = new Dictionary<string, object>

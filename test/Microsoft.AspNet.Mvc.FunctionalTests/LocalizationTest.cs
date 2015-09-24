@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Testing;
 using Microsoft.Net.Http.Headers;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -120,6 +121,33 @@ Salut John      ! Vous êtes en 2015 an aujourd'hui est Thursday";
 
             // Assert
             Assert.Equal(expected, body.Trim());
+        }
+
+        [Fact]
+        public async Task Localization_InvalidModel_ValidationAttributes_ReturnsLocalizedErrorMessage()
+        {
+            // Arrange
+            var expected =
+@"<span class=""field-validation-error"" data-valmsg-for=""Name"" data-valmsg-replace=""true"">Nom non valide. Longueur minimale de nom est 4</span>
+<span class=""field-validation-error"" data-valmsg-for=""Product.ProductName"" data-valmsg-replace=""true"">Nom du produit est invalide</span>
+<div class=""editor-label""><label for=""Name"">Name</label></div>
+<div class=""editor-field""><input class=""input-validation-error text-box single-line"" data-val=""true"" data-val-minlength=""Nom non valide. Longueur minimale de nom est 4"" data-val-minlength-min=""4"" id=""Name"" name=""Name"" type=""text"" value=""A"" /> <span class=""field-validation-error"" data-valmsg-for=""Name"" data-valmsg-replace=""true"">Nom non valide. Longueur minimale de nom est 4</span></div>
+
+<div class=""editor-label""><label for=""Product_ProductName"">ProductName</label></div>
+<div class=""editor-field""><input class=""input-validation-error text-box single-line"" data-val=""true"" data-val-required=""Nom du produit est invalide"" id=""Product_ProductName"" name=""Product.ProductName"" type=""text"" value="""" /> <span class=""field-validation-error"" data-valmsg-for=""Product.ProductName"" data-valmsg-replace=""true"">Nom du produit est invalide</span></div>";
+
+            var cultureCookie = "c=fr|uic=fr";
+            var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Home/GetInvalidUser");
+            request.Headers.Add(
+                "Cookie",
+                new CookieHeaderValue("ASPNET_CULTURE", cultureCookie).ToString());
+
+            // Act
+            var response = await Client.SendAsync(request);
+            var body = await response.Content.ReadAsStringAsync();
+
+            // Assert
+            Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);
         }
     }
 }

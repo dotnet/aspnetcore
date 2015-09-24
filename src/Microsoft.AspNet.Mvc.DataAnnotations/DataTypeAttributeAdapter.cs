@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNet.Mvc.DataAnnotations;
+using Microsoft.Framework.Localization;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {
@@ -14,10 +15,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
     /// </summary>
     public class DataTypeAttributeAdapter : DataAnnotationsClientModelValidator<DataTypeAttribute>
     {
-        public DataTypeAttributeAdapter(
-            DataTypeAttribute attribute,
-            string ruleName)
-            : base(attribute)
+        public DataTypeAttributeAdapter(DataTypeAttribute attribute, string ruleName, IStringLocalizer stringLocalizer)
+            : base(attribute, stringLocalizer)
         {
             if (string.IsNullOrEmpty(ruleName))
             {

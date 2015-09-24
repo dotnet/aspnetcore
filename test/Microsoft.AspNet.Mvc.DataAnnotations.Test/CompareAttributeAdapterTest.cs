@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             var metadata = metadataProvider.GetMetadataForProperty(typeof(PropertyDisplayNameModel), "MyProperty");
 
             var attribute = new CompareAttribute("OtherProperty");
-            var adapter = new CompareAttributeAdapter(attribute);
+            var adapter = new CompareAttributeAdapter(attribute, stringLocalizer: null);
 
             var serviceCollection = new ServiceCollection();
             var requestServices = serviceCollection.BuildServiceProvider();
@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             var serviceCollection = new ServiceCollection();
             var requestServices = serviceCollection.BuildServiceProvider();
             var context = new ClientModelValidationContext(metadata, metadataProvider, requestServices);
-            var adapter = new CompareAttributeAdapter(attribute);
+            var adapter = new CompareAttributeAdapter(attribute, stringLocalizer: null);
 
             // Act
             var rules = adapter.GetClientValidationRules(context);
@@ -76,7 +76,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             var serviceCollection = new ServiceCollection();
             var requestServices = serviceCollection.BuildServiceProvider();
             var context = new ClientModelValidationContext(metadata, metadataProvider, requestServices);
-            var adapter = new CompareAttributeAdapter(attribute);
+            var adapter = new CompareAttributeAdapter(attribute, stringLocalizer: null);
 
             // Act
             var rules = adapter.GetClientValidationRules(context);
@@ -102,7 +102,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             var serviceCollection = new ServiceCollection();
             var requestServices = serviceCollection.BuildServiceProvider();
             var context = new ClientModelValidationContext(metadata, metadataProvider, requestServices);
-            var adapter = new CompareAttributeAdapter(attribute);
+            var adapter = new CompareAttributeAdapter(attribute, stringLocalizer: null);
 
             // Act
             var rules = adapter.GetClientValidationRules(context);

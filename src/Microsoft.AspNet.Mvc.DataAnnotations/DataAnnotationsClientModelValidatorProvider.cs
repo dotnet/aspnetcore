@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using Microsoft.Framework.Localization;
+using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {
@@ -18,11 +20,27 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
     public class DataAnnotationsClientModelValidatorProvider : IClientModelValidatorProvider
     {
         // A factory for validators based on ValidationAttribute.
-        internal delegate IClientModelValidator
-            DataAnnotationsClientModelValidationFactory(ValidationAttribute attribute);
+        internal delegate IClientModelValidator DataAnnotationsClientModelValidationFactory(
+            ValidationAttribute attribute,
+            IStringLocalizer stringLocalizer);
 
         private readonly Dictionary<Type, DataAnnotationsClientModelValidationFactory> _attributeFactories =
             BuildAttributeFactoriesDictionary();
+        private readonly IOptions<MvcDataAnnotationsLocalizationOptions> _options;
+        private readonly IStringLocalizerFactory _stringLocalizerFactory;
+
+        /// <summary>
+        /// Create a new instance of <see cref="DataAnnotationsClientModelValidatorProvider"/>.
+        /// </summary>
+        /// <param name="options">The <see cref="IOptions{MvcDataAnnotationsLocalizationOptions}"/>.</param>
+        /// <param name="stringLocalizerFactory">The <see cref="IStringLocalizerFactory"/>.</param>
+        public DataAnnotationsClientModelValidatorProvider(
+            IOptions<MvcDataAnnotationsLocalizationOptions> options,
+            IStringLocalizerFactory stringLocalizerFactory)
+        {
+            _options = options;
+            _stringLocalizerFactory = stringLocalizerFactory;
+        }
 
         internal Dictionary<Type, DataAnnotationsClientModelValidationFactory> AttributeFactories
         {
@@ -36,6 +54,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             {
                 throw new ArgumentNullException(nameof(context));
             }
+            IStringLocalizer stringLocalizer = null;
+            if (_options.Value.DataAnnotationLocalizerProvider != null && _stringLocalizerFactory != null)
+            {
+                // This will pass first non-null type (either containerType or modelType) to delegate.
+                // Pass the root model type(container type) if it is non null, else pass the model type.
+                stringLocalizer = _options.Value.DataAnnotationLocalizerProvider(
+                    context.ModelMetadata.ContainerType ?? context.ModelMetadata.ModelType,
+                    _stringLocalizerFactory);
+            }
 
             var hasRequiredAttribute = false;
 
@@ -46,14 +73,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                 DataAnnotationsClientModelValidationFactory factory;
                 if (_attributeFactories.TryGetValue(attribute.GetType(), out factory))
                 {
-                    context.Validators.Add(factory(attribute));
+                    context.Validators.Add(factory(attribute, stringLocalizer));
                 }
             }
 
             if (!hasRequiredAttribute && context.ModelMetadata.IsRequired)
             {
                 // Add a default '[Required]' validator for generating HTML if necessary.
-                context.Validators.Add(new RequiredAttributeAdapter(new RequiredAttribute()));
+                context.Validators.Add(new RequiredAttributeAdapter(new RequiredAttribute(), stringLocalizer));
             }
         }
 
@@ -63,47 +90,73 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             {
                 {
                     typeof(RegularExpressionAttribute),
-                    (attribute) => new RegularExpressionAttributeAdapter((RegularExpressionAttribute)attribute)
+                    (attribute, stringLocalizer) => new RegularExpressionAttributeAdapter(
+                        (RegularExpressionAttribute)attribute,
+                        stringLocalizer)
                 },
                 {
                     typeof(MaxLengthAttribute),
-                    (attribute) => new MaxLengthAttributeAdapter((MaxLengthAttribute)attribute)
+                    (attribute, stringLocalizer) => new MaxLengthAttributeAdapter(
+                        (MaxLengthAttribute)attribute,
+                        stringLocalizer)
                 },
                 {
                     typeof(MinLengthAttribute),
-                    (attribute) => new MinLengthAttributeAdapter((MinLengthAttribute)attribute)
+                    (attribute, stringLocalizer) => new MinLengthAttributeAdapter(
+                        (MinLengthAttribute)attribute,
+                        stringLocalizer)
                 },
                 {
                     typeof(CompareAttribute),
-                    (attribute) => new CompareAttributeAdapter((CompareAttribute)attribute)
+                    (attribute, stringLocalizer) => new CompareAttributeAdapter(
+                        (CompareAttribute)attribute,
+                        stringLocalizer)
                 },
                 {
                     typeof(RequiredAttribute),
-                    (attribute) => new RequiredAttributeAdapter((RequiredAttribute)attribute)
+                    (attribute, stringLocalizer) => new RequiredAttributeAdapter(
+                        (RequiredAttribute)attribute,
+                        stringLocalizer)
                 },
                 {
                     typeof(RangeAttribute),
-                    (attribute) => new RangeAttributeAdapter((RangeAttribute)attribute)
+                    (attribute, stringLocalizer) => new RangeAttributeAdapter(
+                        (RangeAttribute)attribute,
+                        stringLocalizer)
                 },
                 {
                     typeof(StringLengthAttribute),
-                    (attribute) => new StringLengthAttributeAdapter((StringLengthAttribute)attribute)
+                    (attribute, stringLocalizer) => new StringLengthAttributeAdapter(
+                        (StringLengthAttribute)attribute,
+                        stringLocalizer)
                 },
                 {
                     typeof(CreditCardAttribute),
-                    (attribute) => new DataTypeAttributeAdapter((DataTypeAttribute)attribute, "creditcard")
+                    (attribute, stringLocalizer) => new DataTypeAttributeAdapter(
+                        (DataTypeAttribute)attribute,
+                        "creditcard",
+                        stringLocalizer)
                 },
                 {
                     typeof(EmailAddressAttribute),
-                    (attribute) => new DataTypeAttributeAdapter((DataTypeAttribute)attribute, "email")
+                    (attribute, stringLocalizer) => new DataTypeAttributeAdapter(
+                        (DataTypeAttribute)attribute,
+                        "email",
+                        stringLocalizer)
                 },
                 {
                     typeof(PhoneAttribute),
-                    (attribute) => new DataTypeAttributeAdapter((DataTypeAttribute)attribute, "phone")
+                    (attribute, stringLocalizer) => new DataTypeAttributeAdapter(
+                        (DataTypeAttribute)attribute,
+                        "phone",
+                        stringLocalizer)
                 },
                 {
                     typeof(UrlAttribute),
-                    (attribute) => new DataTypeAttributeAdapter((DataTypeAttribute)attribute, "url")
+                    (attribute, stringLocalizer) => new DataTypeAttributeAdapter(
+                        (DataTypeAttribute)attribute,
+                        "url",
+                        stringLocalizer)
                 }
             };
         }

@@ -4,13 +4,14 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.Framework.Localization;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {
     public class RegularExpressionAttributeAdapter : DataAnnotationsClientModelValidator<RegularExpressionAttribute>
     {
-        public RegularExpressionAttributeAdapter(RegularExpressionAttribute attribute)
-            : base(attribute)
+        public RegularExpressionAttributeAdapter(RegularExpressionAttribute attribute, IStringLocalizer stringLocalizer)
+            : base(attribute, stringLocalizer)
         {
         }
 

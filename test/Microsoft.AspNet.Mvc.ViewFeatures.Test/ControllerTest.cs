@@ -1753,7 +1753,9 @@ namespace Microsoft.AspNet.Mvc.Test
             {
                 ModelBinder = binder,
                 ValueProvider = provider,
-                ValidatorProvider = new DataAnnotationsModelValidatorProvider()
+                ValidatorProvider = new DataAnnotationsModelValidatorProvider(
+                    options: null,
+                    stringLocalizerFactory: null)
             };
 
             return new TestableController()

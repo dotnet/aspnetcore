@@ -5,13 +5,14 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
+using Microsoft.Framework.Localization;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {
     public class CompareAttributeAdapter : DataAnnotationsClientModelValidator<CompareAttribute>
     {
-        public CompareAttributeAdapter(CompareAttribute attribute)
-            : base(new CompareAttributeWrapper(attribute))
+        public CompareAttributeAdapter(CompareAttribute attribute, IStringLocalizer stringLocalizer)
+            : base(new CompareAttributeWrapper(attribute), stringLocalizer)
         {
             if (attribute == null)
             {

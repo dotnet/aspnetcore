@@ -4,13 +4,14 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.Framework.Localization;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {
     public class RangeAttributeAdapter : DataAnnotationsClientModelValidator<RangeAttribute>
     {
-        public RangeAttributeAdapter(RangeAttribute attribute)
-            : base(attribute)
+        public RangeAttributeAdapter(RangeAttribute attribute, IStringLocalizer stringLocalizer)
+            : base(attribute, stringLocalizer)
         {
         }
 

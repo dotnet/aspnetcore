@@ -4,13 +4,14 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.Framework.Localization;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {
     public class RequiredAttributeAdapter : DataAnnotationsClientModelValidator<RequiredAttribute>
     {
-        public RequiredAttributeAdapter(RequiredAttribute attribute)
-            : base(attribute)
+        public RequiredAttributeAdapter(RequiredAttribute attribute, IStringLocalizer stringLocalizer)
+            : base(attribute, stringLocalizer)
         {
         }
 

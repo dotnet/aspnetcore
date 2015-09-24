@@ -2,10 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Framework.Localization;
+using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {
@@ -16,11 +17,35 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
     /// </summary>
     public class DataAnnotationsModelValidatorProvider : IModelValidatorProvider
     {
+        private readonly IOptions<MvcDataAnnotationsLocalizationOptions> _options;
+        private readonly IStringLocalizerFactory _stringLocalizerFactory;
+
+        /// <summary>
+        /// Create a new instance of <see cref="DataAnnotationsModelValidatorProvider"/>.
+        /// </summary>
+        /// <param name="options">The <see cref="IOptions{MvcDataAnnotationsLocalizationOptions}"/>.</param>
+        /// <param name="stringLocalizerFactory">The <see cref="IStringLocalizerFactory"/>.</param>
+        public DataAnnotationsModelValidatorProvider(
+            IOptions<MvcDataAnnotationsLocalizationOptions> options,
+            IStringLocalizerFactory stringLocalizerFactory)
+        {
+            _options = options;
+            _stringLocalizerFactory = stringLocalizerFactory;
+        }
+
         public void GetValidators(ModelValidatorProviderContext context)
         {
+            IStringLocalizer stringLocalizer = null;
+            if (_options.Value.DataAnnotationLocalizerProvider != null && _stringLocalizerFactory != null)
+            {
+                stringLocalizer = _options.Value.DataAnnotationLocalizerProvider(
+                    context.ModelMetadata.ContainerType ?? context.ModelMetadata.ModelType,
+                    _stringLocalizerFactory);
+            }
+
             foreach (var attribute in context.ValidatorMetadata.OfType<ValidationAttribute>())
             {
-                context.Validators.Add(new DataAnnotationsModelValidator(attribute));
+                context.Validators.Add(new DataAnnotationsModelValidator(attribute, stringLocalizer));
             }
 
             // Produce a validator if the type supports IValidatableObject

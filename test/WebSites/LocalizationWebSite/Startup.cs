@@ -10,7 +10,10 @@ namespace LocalizationWebSite
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc().AddViewLocalization(options => options.ResourcesPath = "Resources");
+            services
+                .AddMvc()
+                .AddViewLocalization(options => options.ResourcesPath = "Resources")
+                .AddDataAnnotationsLocalization();
         }
 
         public void Configure(IApplicationBuilder app)
@@ -18,7 +21,7 @@ namespace LocalizationWebSite
             app.UseCultureReplacer();
 
             app.UseRequestLocalization();
-            
+
             app.UseMvcWithDefaultRoute();
         }
     }

@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             var provider = TestModelMetadataProvider.CreateDefaultProvider();
             var metadata = provider.GetMetadataForProperty(typeof(string), "Length");
             var attribute = new RangeAttribute(typeof(decimal), "0", "100");
-            var adapter = new RangeAttributeAdapter(attribute);
+            var adapter = new RangeAttributeAdapter(attribute, stringLocalizer: null);
             var serviceCollection = new ServiceCollection();
             var requestServices = serviceCollection.BuildServiceProvider();
             var context = new ClientModelValidationContext(metadata, provider, requestServices);

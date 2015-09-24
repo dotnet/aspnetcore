@@ -4,13 +4,14 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.Framework.Localization;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {
     public class MinLengthAttributeAdapter : DataAnnotationsClientModelValidator<MinLengthAttribute>
     {
-        public MinLengthAttributeAdapter(MinLengthAttribute attribute)
-            : base(attribute)
+        public MinLengthAttributeAdapter(MinLengthAttribute attribute, IStringLocalizer stringLocalizer)
+            : base(attribute, stringLocalizer)
         {
         }
 

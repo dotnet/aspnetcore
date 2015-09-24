@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             var provider = TestModelMetadataProvider.CreateDefaultProvider();
             var metadata = provider.GetMetadataForProperty(typeof(string), "Length");
             var attribute = new RequiredAttribute();
-            var adapter = new RequiredAttributeAdapter(attribute);
+            var adapter = new RequiredAttributeAdapter(attribute, stringLocalizer: null);
             var serviceCollection = new ServiceCollection();
             var requestServices = serviceCollection.BuildServiceProvider();
             var context = new ClientModelValidationContext(metadata, provider, requestServices);
