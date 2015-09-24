@@ -243,13 +243,13 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void uv_connect_cb(IntPtr req, int status);
         [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        unsafe protected delegate int uv_pipe_connect(UvConnectRequest req, UvPipeHandle handle, string name, uv_connect_cb cb);
+        unsafe protected delegate void uv_pipe_connect(UvConnectRequest req, UvPipeHandle handle, string name, uv_connect_cb cb);
         protected uv_pipe_connect _uv_pipe_connect = default(uv_pipe_connect);
         unsafe public void pipe_connect(UvConnectRequest req, UvPipeHandle handle, string name, uv_connect_cb cb)
         {
             req.Validate();
             handle.Validate();
-            Check(_uv_pipe_connect(req, handle, name, cb));
+            _uv_pipe_connect(req, handle, name, cb);
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
