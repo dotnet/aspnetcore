@@ -1531,7 +1531,7 @@ namespace Microsoft.AspNet.Razor
         }
 
         /// <summary>
-        /// The &lt;{0}&gt; tag is not allowed by parent &lt;{1}&gt; tag helper. Only child tag helper(s) targeting tag name(s) '{2}' are allowed.
+        /// The &lt;{0}&gt; tag is not allowed by parent &lt;{1}&gt; tag helper. Only child tags with name(s) '{2}' are allowed.
         /// </summary>
         internal static string TagHelperParseTreeRewriter_InvalidNestedTag
         {
@@ -1539,7 +1539,7 @@ namespace Microsoft.AspNet.Razor
         }
 
         /// <summary>
-        /// The &lt;{0}&gt; tag is not allowed by parent &lt;{1}&gt; tag helper. Only child tag helper(s) targeting tag name(s) '{2}' are allowed.
+        /// The &lt;{0}&gt; tag is not allowed by parent &lt;{1}&gt; tag helper. Only child tags with name(s) '{2}' are allowed.
         /// </summary>
         internal static string FormatTagHelperParseTreeRewriter_InvalidNestedTag(object p0, object p1, object p2)
         {

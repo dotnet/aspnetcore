@@ -81,10 +81,10 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                         }
                         else
                         {
-                            TrackTagBlock(childBlock);
-
                             // Non-TagHelper tag.
-                            ValidateParentTagHelperAllowsPlainTag(childBlock, context.ErrorSink);
+                            ValidateParentAllowsPlainTag(childBlock, context.ErrorSink);
+
+                            TrackTagBlock(childBlock);
                         }
 
                         // If we get to here it means that we're a normal html tag.  No need to iterate any deeper into
@@ -99,7 +99,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                 }
                 else
                 {
-                    ValidateParentTagHelperAllowsContent((Span)child, context.ErrorSink);
+                    ValidateParentAllowsContent((Span)child, context.ErrorSink);
                 }
 
                 // At this point the child is a Span or Block with Type BlockType.Tag that doesn't happen to be a
@@ -197,7 +197,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                     return false;
                 }
 
-                ValidateParentTagHelperAllowsTagHelper(tagName, tagBlock, context.ErrorSink);
+                ValidateParentAllowsTagHelper(tagName, tagBlock, context.ErrorSink);
                 ValidateDescriptors(descriptors, tagName, tagBlock, context.ErrorSink);
 
                 // We're in a start TagHelper block.
@@ -277,7 +277,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                     // can't recover it means there was no corresponding tag helper start tag.
                     if (TryRecoverTagHelper(tagName, tagBlock, context))
                     {
-                        ValidateParentTagHelperAllowsTagHelper(tagName, tagBlock, context.ErrorSink);
+                        ValidateParentAllowsTagHelper(tagName, tagBlock, context.ErrorSink);
                         ValidateTagSyntax(tagName, tagBlock, context);
 
                         // Successfully recovered, move onto the next element.
@@ -335,10 +335,22 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
             return attributeNames;
         }
 
-        private void ValidateParentTagHelperAllowsContent(Span child, ErrorSink errorSink)
+        private bool HasAllowedChildren()
         {
-            var allowedChildren = _currentTagHelperTracker?.AllowedChildren;
-            if (allowedChildren != null)
+            var currentTracker = _trackerStack.Count > 0 ? _trackerStack.Peek() : null;
+
+            // If the current tracker is not a TagHelper then there's no AllowedChildren to enforce.
+            if (currentTracker == null || !currentTracker.IsTagHelper)
+            {
+                return false;
+            }
+
+            return _currentTagHelperTracker.AllowedChildren != null;
+        }
+
+        private void ValidateParentAllowsContent(Span child, ErrorSink errorSink)
+        {
+            if (HasAllowedChildren())
             {
                 var content = child.Content;
                 if (!string.IsNullOrWhiteSpace(content))
@@ -347,6 +359,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                     var whitespace = content.Substring(0, content.Length - trimmedStart.Length);
                     var errorStart = SourceLocation.Advance(child.Start, whitespace);
                     var length = trimmedStart.TrimEnd().Length;
+                    var allowedChildren = _currentTagHelperTracker.AllowedChildren;
                     var allowedChildrenString = string.Join(", ", allowedChildren);
                     errorSink.OnError(
                         errorStart,
@@ -358,31 +371,32 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
             }
         }
 
-        private void ValidateParentTagHelperAllowsPlainTag(Block tagBlock, ErrorSink errorSink)
+        private void ValidateParentAllowsPlainTag(Block tagBlock, ErrorSink errorSink)
         {
-            if (_currentTagHelperTracker?.AllowedChildren != null)
+            var tagName = GetTagName(tagBlock);
+
+            // Treat partial tags such as '</' which have no tag names as content.
+            if (string.IsNullOrEmpty(tagName))
             {
-                var tagName = GetTagName(tagBlock);
+                Debug.Assert(tagBlock.Children.First() is Span);
 
-                // Treat partial tags such as '</' which have no tag names as content based errors.
-                if (string.IsNullOrEmpty(tagName))
-                {
-                    Debug.Assert(tagBlock.Children.First() is Span);
+                ValidateParentAllowsContent((Span)tagBlock.Children.First(), errorSink);
+                return;
+            }
 
-                    ValidateParentTagHelperAllowsContent(tagBlock.Children.First() as Span, errorSink);
-                    return;
-                }
+            var currentTracker = _trackerStack.Count > 0 ? _trackerStack.Peek() : null;
 
+            if (HasAllowedChildren() &&
+                !_currentTagHelperTracker.AllowedChildren.Contains(tagName, StringComparer.OrdinalIgnoreCase))
+            {
                 OnAllowedChildrenTagError(_currentTagHelperTracker, tagName, tagBlock, errorSink);
             }
         }
 
-        private void ValidateParentTagHelperAllowsTagHelper(string tagName, Block tagBlock, ErrorSink errorSink)
+        private void ValidateParentAllowsTagHelper(string tagName, Block tagBlock, ErrorSink errorSink)
         {
-            var currentlyAllowedChildren = _currentTagHelperTracker?.PrefixedAllowedChildren;
-
-            if (currentlyAllowedChildren != null &&
-                !currentlyAllowedChildren.Contains(tagName, StringComparer.OrdinalIgnoreCase))
+            if (HasAllowedChildren() &&
+                !_currentTagHelperTracker.PrefixedAllowedChildren.Contains(tagName, StringComparer.OrdinalIgnoreCase))
             {
                 OnAllowedChildrenTagError(_currentTagHelperTracker, tagName, tagBlock, errorSink);
             }

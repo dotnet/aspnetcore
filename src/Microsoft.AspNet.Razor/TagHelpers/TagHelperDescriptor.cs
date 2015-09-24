@@ -158,7 +158,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         }
 
         /// <summary>
-        /// Get the names of elements allowed as children. Tag helpers must target all such elements.
+        /// Get the names of elements allowed as children.
         /// </summary>
         /// <remarks><c>null</c> indicates all children are allowed.</remarks>
         public IEnumerable<string> AllowedChildren { get; set; }

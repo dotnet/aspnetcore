@@ -661,18 +661,6 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                     lineIndex: 1,
                     columnIndex: 5,
                     length: 6),
-                new RazorError(
-                    RazorResources.FormatTagHelperParseTreeRewriter_CannotHaveNonTagContent("p", "br"),
-                    absoluteIndex: 23 + newLineLength * 2,
-                    lineIndex: 2,
-                    columnIndex: 8,
-                    length: 5),
-                new RazorError(
-                    RazorResources.FormatTagHelperParseTreeRewriter_InvalidNestedTag("strong", "p", "br"),
-                    absoluteIndex: 34 + newLineLength * 3,
-                    lineIndex: 3,
-                    columnIndex: 5,
-                    length: 6),
             };
             var expectedOutput = new MarkupBlock(
                 new MarkupTagHelperBlock("p",
@@ -711,13 +699,7 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                     absoluteIndex: 18,
                     lineIndex: 0,
                     columnIndex: 18,
-                    length: 6),
-                new RazorError(
-                    RazorResources.FormatTagHelperParseTreeRewriter_InvalidNestedTag("strong", "strong", "br"),
-                    absoluteIndex: 27,
-                    lineIndex: 0,
-                    columnIndex: 27,
-                    length: 6),
+                    length: 6)
             };
             var expectedOutput = new MarkupBlock(
                 new MarkupTagHelperBlock("strong",
@@ -973,8 +955,6 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                             nestedContentError("strong", "strong", 11, 6),
                             nestedTagError("br", "strong", "strong", 18, 2),
                             nestedTagError("em", "strong", "strong", 22, 2),
-                            nestedContentError("strong", "strong", 25, 11),
-                            nestedTagError("em", "strong", "strong", 38, 2),
                             nestedTagError("br", "p", "strong", 51, 2),
                             nestedContentError("p", "strong", 56, 9)
                         }
@@ -995,13 +975,6 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                 factory.Markup("Something"))),
                         new[]
                         {
-                            nestedTagError("custom", "p", "custom", 4, 6),
-                            nestedContentError("p", "custom", 11, 6),
-                            nestedTagError("br", "p", "custom", 18, 2),
-                            nestedTagError("em", "p", "custom", 22, 2),
-                            nestedContentError("p", "custom", 25, 11),
-                            nestedTagError("em", "p", "custom", 38, 2),
-                            nestedTagError("custom", "p", "custom", 43, 6),
                             nestedTagError("br", "p", "custom", 51, 2),
                             nestedContentError("p", "custom", 56, 9)
                         }
@@ -1027,7 +1000,26 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                         {
                             nestedContentError("p", "custom", 3, 1),
                         }
-                    }
+                    },
+                    {
+                        "<p><custom><br>:<strong><strong>Hello</strong></strong>:<input></custom></p>",
+                        new[] { "custom", "strong" },
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p",
+                                blockFactory.MarkupTagBlock("<custom>"),
+                                new MarkupTagHelperBlock("br", TagMode.StartTagOnly),
+                                factory.Markup(":"),
+                                new MarkupTagHelperBlock("strong",
+                                    new MarkupTagHelperBlock("strong",
+                                        factory.Markup("Hello"))),
+                                factory.Markup(":"),
+                                blockFactory.MarkupTagBlock("<input>"),
+                                blockFactory.MarkupTagBlock("</custom>"))),
+                        new[]
+                        {
+                            nestedContentError("strong", "custom, strong", 32, 5),
+                        }
+                    },
                 };
             }
         }
