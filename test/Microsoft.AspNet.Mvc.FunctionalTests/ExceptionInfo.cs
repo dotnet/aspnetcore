@@ -4,7 +4,7 @@
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     /// <summary>
-    /// Information about an exception that occured on the server side of a functional
+    /// Information about an exception that occurred on the server side of a functional
     /// test.
     /// </summary>
     public class ExceptionInfo

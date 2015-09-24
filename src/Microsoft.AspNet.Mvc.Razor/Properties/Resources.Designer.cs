@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <summary>
-        /// One or more compilation failures occured:
+        /// One or more compilation failures occurred:
         /// </summary>
         internal static string CompilationFailed
         {
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <summary>
-        /// One or more compilation failures occured:
+        /// One or more compilation failures occurred:
         /// </summary>
         internal static string FormatCompilationFailed()
         {
