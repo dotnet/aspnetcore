@@ -60,7 +60,7 @@ namespace HtmlGenerationWebSite.Controllers
             var identity = new ClaimsIdentity();
             identity.AddClaim(new Claim(ClaimsIdentity.DefaultNameClaimType, id));
 
-            Context.User = new ClaimsPrincipal(identity);
+            HttpContext.User = new ClaimsPrincipal(identity);
             ViewData["CorrelationId"] = correlationId;
             return View();
         }

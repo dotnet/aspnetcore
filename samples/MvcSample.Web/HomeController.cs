@@ -151,7 +151,7 @@ namespace MvcSample.Web
 
         public void Raw()
         {
-            Context.Response.WriteAsync("Hello World raw");
+            HttpContext.Response.WriteAsync("Hello World raw");
         }
 
         public ActionResult Language()

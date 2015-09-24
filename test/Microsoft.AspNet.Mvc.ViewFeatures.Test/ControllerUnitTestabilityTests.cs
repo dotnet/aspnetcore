@@ -502,7 +502,7 @@ namespace Microsoft.AspNet.Mvc
             controller.ActionContext = actionContext;
 
             // Assert
-            Assert.Equal(actionContext.HttpContext, controller.Context);
+            Assert.Equal(actionContext.HttpContext, controller.HttpContext);
             Assert.Equal(actionContext.RouteData, controller.RouteData);
             Assert.Equal(actionContext.ModelState, controller.ModelState);
         }
@@ -528,7 +528,7 @@ namespace Microsoft.AspNet.Mvc
             controller.ActionContext = actionContext;
 
             // Assert
-            Assert.Equal(httpContext.Object, controller.Context);
+            Assert.Equal(httpContext.Object, controller.HttpContext);
             Assert.Equal(routeData.Object, controller.RouteData);
             Assert.Equal(actionContext.ModelState, controller.ModelState);
             Assert.Equal(actionDescriptor.Object, actionContext.ActionDescriptor);

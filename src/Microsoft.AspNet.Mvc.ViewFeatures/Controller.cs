@@ -45,9 +45,9 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
-        /// Gets the <see cref="HttpContext"/> for the executing action.
+        /// Gets the <see cref="Http.HttpContext"/> for the executing action.
         /// </summary>
-        public HttpContext Context
+        public HttpContext HttpContext
         {
             get
             {
@@ -206,7 +206,7 @@ namespace Microsoft.AspNet.Mvc
         {
             get
             {
-                return Context?.User;
+                return HttpContext?.User;
             }
         }
 
