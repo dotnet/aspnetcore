@@ -3,7 +3,6 @@
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.Core;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -30,7 +29,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 bindingContext.ModelState.TryAddModelError(
                     keyResult.Key,
-                    Resources.KeyValuePair_BothKeyAndValueMustBePresent);
+                    bindingContext.ModelMetadata.ModelBindingMessageProvider.MissingKeyOrValueAccessor());
 
                 // Were able to get some data for this model.
                 // Always tell the model binding system to skip other model binders.
@@ -40,7 +39,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 bindingContext.ModelState.TryAddModelError(
                     valueResult.Key,
-                    Resources.KeyValuePair_BothKeyAndValueMustBePresent);
+                    bindingContext.ModelMetadata.ModelBindingMessageProvider.MissingKeyOrValueAccessor());
 
                 // Were able to get some data for this model.
                 // Always tell the model binding system to skip other model binders.

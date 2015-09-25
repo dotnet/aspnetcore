@@ -457,6 +457,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 }
             }
 
+            public override IModelBindingMessageProvider ModelBindingMessageProvider
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
             public override string NullDisplayText
             {
                 get

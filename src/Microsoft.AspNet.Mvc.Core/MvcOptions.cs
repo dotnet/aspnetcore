@@ -28,6 +28,7 @@ namespace Microsoft.AspNet.Mvc
             InputFormatters = new FormatterCollection<IInputFormatter>();
             OutputFormatters = new FormatterCollection<IOutputFormatter>();
             ModelBinders = new List<IModelBinder>();
+            ModelBindingMessageProvider = new ModelBindingMessageProvider();
             ModelMetadataDetailsProviders = new List<IMetadataDetailsProvider>();
             ModelValidatorProviders = new List<IModelValidatorProvider>();
             ValidationExcludeFilters = new ExcludeTypeValidationFilterCollection();
@@ -87,7 +88,14 @@ namespace Microsoft.AspNet.Mvc
         public IList<IModelBinder> ModelBinders { get; }
 
         /// <summary>
-        /// Gets a list of <see cref="IMetadataDetailsProvider"/> instances that will be used to 
+        /// Gets the default <see cref="IModelBindingMessageProvider"/>. Changes here are copied to the
+        /// <see cref="ModelMetadata.ModelBindingMessageProvider"/> property of all <see cref="ModelMetadata"/>
+        /// instances unless overridden in a custom <see cref="IBindingMetadataProvider"/>.
+        /// </summary>
+        public ModelBindingMessageProvider ModelBindingMessageProvider { get; }
+
+        /// <summary>
+        /// Gets a list of <see cref="IMetadataDetailsProvider"/> instances that will be used to
         /// create <see cref="ModelMetadata"/> instances.
         /// </summary>
         /// <remarks>
@@ -112,7 +120,7 @@ namespace Microsoft.AspNet.Mvc
         public FormatterCollection<IOutputFormatter> OutputFormatters { get; }
 
         /// <summary>
-        /// Gets or sets the flag which causes content negotiation to ignore Accept header 
+        /// Gets or sets the flag which causes content negotiation to ignore Accept header
         /// when it contains the media type */*. <see langword="false"/> by default.
         /// </summary>
         public bool RespectBrowserAcceptHeader { get; set; }

@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Formatters;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
@@ -23,6 +24,12 @@ namespace Microsoft.AspNet.Mvc.Internal
 
         public static void ConfigureMvc(MvcOptions options)
         {
+            // Set up default error messages
+            var messageProvider = options.ModelBindingMessageProvider;
+            messageProvider.MissingBindRequiredValueAccessor = Resources.FormatModelBinding_MissingBindRequiredMember;
+            messageProvider.MissingKeyOrValueAccessor = Resources.FormatKeyValuePair_BothKeyAndValueMustBePresent;
+            messageProvider.ValueMustNotBeNullAccessor = Resources.FormatModelBinding_NullValueNotValid;
+
             // Set up ModelBinding
             options.ModelBinders.Add(new BinderTypeBasedModelBinder());
             options.ModelBinders.Add(new ServicesModelBinder());
@@ -48,7 +55,7 @@ namespace Microsoft.AspNet.Mvc.Internal
             options.ValueProviderFactories.Add(new JQueryFormValueProviderFactory());
 
             // Set up metadata providers
-            options.ModelMetadataDetailsProviders.Add(new DefaultBindingMetadataProvider());
+            options.ModelMetadataDetailsProviders.Add(new DefaultBindingMetadataProvider(messageProvider));
             options.ModelMetadataDetailsProviders.Add(new DefaultValidationMetadataProvider());
 
             // Set up validators

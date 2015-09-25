@@ -10,6 +10,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features.Internal;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
+using Microsoft.AspNet.Mvc.Controllers;
 using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.Framework.Primitives;
@@ -859,8 +860,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             // Need to have a key here so that the MutableObjectModelBinder will recurse to bind elements.
             var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
             {
-                request.QueryString =
-                    new QueryString("?Name=bill&ProductIds[0]=10&ProductIds[1]=11");
+                request.QueryString = new QueryString("?Name=bill&ProductIds[0]=10&ProductIds[1]=11");
             });
 
             var modelState = new ModelStateDictionary();
@@ -1032,8 +1032,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             // Need to have a key here so that the MutableObjectModelBinder will recurse to bind elements.
             var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
             {
-                request.QueryString =
-                    new QueryString("?Name=bill&ProductIds[0]=10&ProductIds[1]=11");
+                request.QueryString = new QueryString("?Name=bill&ProductIds[0]=10&ProductIds[1]=11");
             });
 
             var modelState = new ModelStateDictionary();
@@ -1205,8 +1204,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             // Need to have a key here so that the MutableObjectModelBinder will recurse to bind elements.
             var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
             {
-                request.QueryString =
-                    new QueryString("?Name=bill&ProductIds[0].Key=key0&ProductIds[0].Value=10");
+                request.QueryString = new QueryString("?Name=bill&ProductIds[0].Key=key0&ProductIds[0].Value=10");
             });
 
             var modelState = new ModelStateDictionary();
@@ -1378,8 +1376,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             // Need to have a key here so that the MutableObjectModelBinder will recurse to bind elements.
             var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
             {
-                request.QueryString =
-                    new QueryString("?Name=bill&ProductId.Key=key0&ProductId.Value=10");
+                request.QueryString = new QueryString("?Name=bill&ProductId.Key=key0&ProductId.Value=10");
             });
 
             var modelState = new ModelStateDictionary();
@@ -1563,9 +1560,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             };
 
             // No Data
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
-            {
-            });
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext();
 
             var modelState = new ModelStateDictionary();
 
@@ -1587,6 +1582,53 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Null(entry.AttemptedValue);
             var error = Assert.Single(modelState["Customer"].Errors);
             Assert.Equal("A value for the 'Customer' property was not provided.", error.ErrorMessage);
+        }
+
+        [Fact]
+        public async Task MutableObjectModelBinder_WithBindRequired_NoData_AndCustomizedMessage_AddsGivenMessage()
+        {
+            // Arrange
+            var metadataProvider = new TestModelMetadataProvider();
+            metadataProvider
+                .ForType(typeof(Order10))
+                .BindingDetails((Action<ModelBinding.Metadata.BindingMetadata>)(binding =>
+                {
+                    // A real details provider could customize message based on BindingMetadataProviderContext.
+                    binding.ModelBindingMessageProvider.MissingBindRequiredValueAccessor =
+                        name => $"Hurts when '{ name }' is not provided.";
+                }));
+            var argumentBinder = new DefaultControllerActionArgumentBinder(
+                metadataProvider,
+                ModelBindingTestHelper.GetObjectValidator());
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Order10)
+            };
+
+            // No Data
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext();
+
+            var modelState = new ModelStateDictionary();
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Order10>(modelBindingResult.Model);
+            Assert.Null(model.Customer);
+
+            Assert.Equal(1, modelState.Count);
+            Assert.Equal(1, modelState.ErrorCount);
+            Assert.False(modelState.IsValid);
+
+            var entry = Assert.Single(modelState, e => e.Key == "Customer").Value;
+            Assert.Null(entry.RawValue);
+            Assert.Null(entry.AttemptedValue);
+            var error = Assert.Single(modelState["Customer"].Errors);
+            Assert.Equal("Hurts when 'Customer' is not provided.", error.ErrorMessage);
         }
 
         private class Order11

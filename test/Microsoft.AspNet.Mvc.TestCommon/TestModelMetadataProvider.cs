@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             var detailsProviders = new IMetadataDetailsProvider[]
             {
-                new DefaultBindingMetadataProvider(),
+                new DefaultBindingMetadataProvider(CreateMessageProvider()),
                 new DefaultValidationMetadataProvider(),
                 new DataAnnotationsMetadataProvider(),
                 new DataMemberRequiredBindingMetadataProvider(),
@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private TestModelMetadataProvider(TestModelMetadataDetailsProvider detailsProvider)
             : base(new DefaultCompositeMetadataDetailsProvider(new IMetadataDetailsProvider[]
                 {
-                    new DefaultBindingMetadataProvider(),
+                    new DefaultBindingMetadataProvider(CreateMessageProvider()),
                     new DefaultValidationMetadataProvider(),
                     new DataAnnotationsMetadataProvider(),
                     detailsProvider
@@ -74,6 +74,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public IMetadataBuilder ForProperty<TContainer>(string propertyName)
         {
             return ForProperty(typeof(TContainer), propertyName);
+        }
+
+        private static ModelBindingMessageProvider CreateMessageProvider()
+        {
+            return new ModelBindingMessageProvider
+            {
+                MissingBindRequiredValueAccessor = name => $"A value for the '{ name }' property was not provided.",
+                MissingKeyOrValueAccessor = () => $"A value is required.",
+                ValueMustNotBeNullAccessor = value => $"The value '{ value }' is invalid.",
+            };
         }
 
         private class TestModelMetadataDetailsProvider :

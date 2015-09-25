@@ -787,7 +787,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 property => ModelBindingResult.Failed(property.PropertyName));
             var nameProperty = containerMetadata.Properties[nameof(model.Name)];
             results[nameProperty] = ModelBindingResult.Success(string.Empty, "John Doe");
-            
+
             var testableBinder = new TestableMutableObjectModelBinder();
 
             // Act
@@ -1219,7 +1219,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             results[lastNameProperty] = ModelBindingResult.Success(
                 nameof(model.LastName),
                 "Doe");
-            
+
             var testableBinder = new TestableMutableObjectModelBinder();
 
             // Act

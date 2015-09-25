@@ -3,7 +3,6 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.Core;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -51,7 +50,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 {
                     bindingContext.ModelState.TryAddModelError(
                         bindingContext.ModelName,
-                        Resources.FormatCommon_ValueNotValidForProperty(model));
+                        bindingContext.ModelMetadata.ModelBindingMessageProvider.ValueMustNotBeNullAccessor(
+                            valueProviderResult.ToString()));
 
                     return ModelBindingResult.FailedAsync(bindingContext.ModelName);
                 }

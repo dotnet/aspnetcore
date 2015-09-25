@@ -75,22 +75,6 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         /// <summary>
-        /// Replacing the action context is not supported.
-        /// </summary>
-        internal static string ActionContextAccessor_SetValueNotSupported
-        {
-            get { return GetString("ActionContextAccessor_SetValueNotSupported"); }
-        }
-
-        /// <summary>
-        /// Replacing the action context is not supported.
-        /// </summary>
-        internal static string FormatActionContextAccessor_SetValueNotSupported()
-        {
-            return GetString("ActionContextAccessor_SetValueNotSupported");
-        }
-
-        /// <summary>
         /// An action invoker could not be created for action '{0}'.
         /// </summary>
         internal static string ActionInvokerFactory_CouldNotCreateInvoker
@@ -171,51 +155,19 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         /// <summary>
-        /// The supplied route values are ambiguous and can select multiple sets of actions.
+        /// The value '{0}' is invalid.
         /// </summary>
-        internal static string ActionSelector_GetCandidateActionsIsAmbiguous
+        internal static string ModelBinding_NullValueNotValid
         {
-            get { return GetString("ActionSelector_GetCandidateActionsIsAmbiguous"); }
-        }
-
-        /// <summary>
-        /// The supplied route values are ambiguous and can select multiple sets of actions.
-        /// </summary>
-        internal static string FormatActionSelector_GetCandidateActionsIsAmbiguous()
-        {
-            return GetString("ActionSelector_GetCandidateActionsIsAmbiguous");
-        }
-
-        /// <summary>
-        /// Property '{0}' is of type '{1}', but this method requires a value of type '{2}'.
-        /// </summary>
-        internal static string ArgumentPropertyUnexpectedType
-        {
-            get { return GetString("ArgumentPropertyUnexpectedType"); }
-        }
-
-        /// <summary>
-        /// Property '{0}' is of type '{1}', but this method requires a value of type '{2}'.
-        /// </summary>
-        internal static string FormatArgumentPropertyUnexpectedType(object p0, object p1, object p2)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ArgumentPropertyUnexpectedType"), p0, p1, p2);
+            get { return GetString("ModelBinding_NullValueNotValid"); }
         }
 
         /// <summary>
         /// The value '{0}' is invalid.
         /// </summary>
-        internal static string Common_ValueNotValidForProperty
+        internal static string FormatModelBinding_NullValueNotValid(object p0)
         {
-            get { return GetString("Common_ValueNotValidForProperty"); }
-        }
-
-        /// <summary>
-        /// The value '{0}' is invalid.
-        /// </summary>
-        internal static string FormatCommon_ValueNotValidForProperty(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Common_ValueNotValidForProperty"), p0);
+            return string.Format(CultureInfo.CurrentCulture, GetString("ModelBinding_NullValueNotValid"), p0);
         }
 
         /// <summary>
@@ -280,38 +232,6 @@ namespace Microsoft.AspNet.Mvc.Core
         internal static string FormatAsyncResultFilter_InvalidShortCircuit(object p0, object p1, object p2, object p3)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("AsyncResultFilter_InvalidShortCircuit"), p0, p1, p2, p3);
-        }
-
-        /// <summary>
-        /// Unable to locate an implementation of IAuthorizationService.
-        /// </summary>
-        internal static string AuthorizeAttribute_AuthorizationServiceMustBeDefined
-        {
-            get { return GetString("AuthorizeAttribute_AuthorizationServiceMustBeDefined"); }
-        }
-
-        /// <summary>
-        /// Unable to locate an implementation of IAuthorizationService.
-        /// </summary>
-        internal static string FormatAuthorizeAttribute_AuthorizationServiceMustBeDefined()
-        {
-            return GetString("AuthorizeAttribute_AuthorizationServiceMustBeDefined");
-        }
-
-        /// <summary>
-        /// OnAuthorization is not implemented by this filter, use OnAuthorizationAsync instead.
-        /// </summary>
-        internal static string AuthorizeAttribute_OnAuthorizationNotImplemented
-        {
-            get { return GetString("AuthorizeAttribute_OnAuthorizationNotImplemented"); }
-        }
-
-        /// <summary>
-        /// OnAuthorization is not implemented by this filter, use OnAuthorizationAsync instead.
-        /// </summary>
-        internal static string FormatAuthorizeAttribute_OnAuthorizationNotImplemented()
-        {
-            return GetString("AuthorizeAttribute_OnAuthorizationNotImplemented");
         }
 
         /// <summary>
@@ -827,22 +747,6 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         /// <summary>
-        /// The property '{0}' on controller '{1}' cannot be activated.
-        /// </summary>
-        internal static string ControllerFactory_PropertyCannotBeActivated
-        {
-            get { return GetString("ControllerFactory_PropertyCannotBeActivated"); }
-        }
-
-        /// <summary>
-        /// The property '{0}' on controller '{1}' cannot be activated.
-        /// </summary>
-        internal static string FormatControllerFactory_PropertyCannotBeActivated(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ControllerFactory_PropertyCannotBeActivated"), p0, p1);
-        }
-
-        /// <summary>
         /// The '{0}' cache profile is not defined.
         /// </summary>
         internal static string CacheProfileNotFound
@@ -936,22 +840,6 @@ namespace Microsoft.AspNet.Mvc.Core
         internal static string FormatBindingSource_CannotBeGreedy(object p0, object p1)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("BindingSource_CannotBeGreedy"), p0, p1);
-        }
-
-        /// <summary>
-        /// The provided binding source '{0}' is not a request-based binding source. '{1}' requires that the source must represent data from an HTTP request.
-        /// </summary>
-        internal static string BindingSource_MustBeFromRequest
-        {
-            get { return GetString("BindingSource_MustBeFromRequest"); }
-        }
-
-        /// <summary>
-        /// The provided binding source '{0}' is not a request-based binding source. '{1}' requires that the source must represent data from an HTTP request.
-        /// </summary>
-        internal static string FormatBindingSource_MustBeFromRequest(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("BindingSource_MustBeFromRequest"), p0, p1);
         }
 
         /// <summary>
@@ -1083,38 +971,6 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         /// <summary>
-        /// A value is required.
-        /// </summary>
-        internal static string ModelBinding_ValueRequired
-        {
-            get { return GetString("ModelBinding_ValueRequired"); }
-        }
-
-        /// <summary>
-        /// A value is required.
-        /// </summary>
-        internal static string FormatModelBinding_ValueRequired()
-        {
-            return GetString("ModelBinding_ValueRequired");
-        }
-
-        /// <summary>
-        /// More than one parameter and/or property is bound to the HTTP request's content.
-        /// </summary>
-        internal static string MultipleBodyParametersOrPropertiesAreNotAllowed
-        {
-            get { return GetString("MultipleBodyParametersOrPropertiesAreNotAllowed"); }
-        }
-
-        /// <summary>
-        /// More than one parameter and/or property is bound to the HTTP request's content.
-        /// </summary>
-        internal static string FormatMultipleBodyParametersOrPropertiesAreNotAllowed()
-        {
-            return GetString("MultipleBodyParametersOrPropertiesAreNotAllowed");
-        }
-
-        /// <summary>
         /// The type '{0}' does not implement the interface '{1}'.
         /// </summary>
         internal static string PropertyBindingPredicateProvider_WrongType
@@ -1128,38 +984,6 @@ namespace Microsoft.AspNet.Mvc.Core
         internal static string FormatPropertyBindingPredicateProvider_WrongType(object p0, object p1)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("PropertyBindingPredicateProvider_WrongType"), p0, p1);
-        }
-
-        /// <summary>
-        /// The model object inside the metadata claimed to be compatible with '{0}', but was actually '{1}'.
-        /// </summary>
-        internal static string ValidatableObjectAdapter_IncompatibleType
-        {
-            get { return GetString("ValidatableObjectAdapter_IncompatibleType"); }
-        }
-
-        /// <summary>
-        /// The model object inside the metadata claimed to be compatible with '{0}', but was actually '{1}'.
-        /// </summary>
-        internal static string FormatValidatableObjectAdapter_IncompatibleType(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ValidatableObjectAdapter_IncompatibleType"), p0, p1);
-        }
-
-        /// <summary>
-        /// Cannot convert value '{0}' to enum type '{1}'.
-        /// </summary>
-        internal static string ValueProviderResult_CannotConvertEnum
-        {
-            get { return GetString("ValueProviderResult_CannotConvertEnum"); }
-        }
-
-        /// <summary>
-        /// Cannot convert value '{0}' to enum type '{1}'.
-        /// </summary>
-        internal static string FormatValueProviderResult_CannotConvertEnum(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ValueProviderResult_CannotConvertEnum"), p0, p1);
         }
 
         /// <summary>

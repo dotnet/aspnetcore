@@ -243,6 +243,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public abstract bool IsRequired { get; }
 
         /// <summary>
+        /// Gets the <see cref="IModelBindingMessageProvider"/> instance.
+        /// </summary>
+        public abstract IModelBindingMessageProvider ModelBindingMessageProvider { get; }
+
+        /// <summary>
         /// Gets a value indicating where the current metadata should be ordered relative to other properties
         /// in its containing type.
         /// </summary>

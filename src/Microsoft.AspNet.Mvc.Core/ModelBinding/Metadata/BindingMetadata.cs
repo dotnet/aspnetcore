@@ -10,6 +10,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
     /// </summary>
     public class BindingMetadata
     {
+        private ModelBindingMessageProvider _messageProvider;
+
         /// <summary>
         /// Gets or sets the <see cref="ModelBinding.BindingSource"/>.
         /// See <see cref="ModelMetadata.BindingSource"/>.
@@ -49,6 +51,27 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         /// of the property accessor and model <see cref="Type"/>. See <see cref="ModelMetadata.IsReadOnly"/>.
         /// </summary>
         public bool? IsReadOnly { get; set; }
+
+        /// <summary>
+        /// Gets the <see cref="Metadata.ModelBindingMessageProvider"/> instance. See
+        /// <see cref="ModelMetadata.ModelBindingMessageProvider"/>.
+        /// </summary>
+        public ModelBindingMessageProvider ModelBindingMessageProvider
+        {
+            get
+            {
+                return _messageProvider;
+            }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                _messageProvider = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the <see cref="ModelBinding.IPropertyBindingPredicateProvider"/>.

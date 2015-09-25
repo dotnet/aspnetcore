@@ -419,6 +419,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         }
 
         /// <inheritdoc />
+        public override IModelBindingMessageProvider ModelBindingMessageProvider
+        {
+            get
+            {
+                return BindingMetadata.ModelBindingMessageProvider;
+            }
+        }
+
+        /// <inheritdoc />
         public override string NullDisplayText
         {
             get

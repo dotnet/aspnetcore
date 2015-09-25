@@ -4,7 +4,6 @@
 #if DNX451
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
@@ -54,7 +53,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.Null(result.Model);
             Assert.False(bindingContext.ModelState.IsValid);
             Assert.Equal("someName", bindingContext.ModelName);
-            Assert.Equal(bindingContext.ModelState["someName.Value"].Errors.First().ErrorMessage, "A value is required.");
+            var state = bindingContext.ModelState["someName.Value"];
+            Assert.NotNull(state);
+            var error = Assert.Single(state.Errors);
+            Assert.Equal("A value is required.", error.ErrorMessage);
         }
 
         [Fact]
@@ -117,7 +119,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             {
                 innerResult = ModelBindingResult.Failed("somename.key");
             }
-            
+
             var innerBinder = new Mock<IModelBinder>();
             innerBinder
                 .Setup(o => o.BindModelAsync(It.IsAny<ModelBindingContext>()))
@@ -161,7 +163,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             // Assert
             Assert.NotEqual(ModelBindingResult.NoResult, result);
 
-            Assert.Equal(default(KeyValuePair<string, string>), Assert.IsType<KeyValuePair<string, string>>(result.Model));
+            var model = Assert.IsType<KeyValuePair<string, string>>(result.Model);
+            Assert.Equal(default(KeyValuePair<string, string>), model);
             Assert.Equal("modelName", result.Key);
             Assert.True(result.IsModelSet);
         }
