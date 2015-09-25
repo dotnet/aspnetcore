@@ -33,8 +33,10 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             _uv.tcp_init(loop, this);
         }
 
-        public void Bind(IPEndPoint endpoint)
+        public void Bind(string host, int port)
         {
+            var endpoint = CreateIPEndpoint(host, port);
+
             Libuv.sockaddr addr;
             var addressText = endpoint.Address.ToString();
 
@@ -57,6 +59,30 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         public void Open(IntPtr hSocket)
         {
             _uv.tcp_open(this, hSocket);
+        }
+
+        /// <summary>
+        /// Returns an <see cref="IPEndPoint"/> for the given host an port.
+        /// If the host parameter isn't "localhost" or an IP address, use IPAddress.Any.
+        /// </summary>
+        public static IPEndPoint CreateIPEndpoint(string host, int port)
+        {
+            // TODO: IPv6 support
+            IPAddress ip;
+
+            if (!IPAddress.TryParse(host, out ip))
+            {
+                if (string.Equals(host, "localhost", StringComparison.OrdinalIgnoreCase))
+                {
+                    ip = IPAddress.Loopback;
+                }
+                else
+                {
+                    ip = IPAddress.Any;
+                }
+            }
+
+            return new IPEndPoint(ip, port);
         }
     }
 }

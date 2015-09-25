@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             var socket = new UvTcpHandle(Log);
             socket.Init(Thread.Loop, Thread.QueueCloseHandle);
-            socket.Bind(new IPEndPoint(IPAddress.Any, port));
+            socket.Bind(host, port);
             socket.Listen(Constants.ListenBacklog, ConnectionCallback, this);
             return socket;
         }
