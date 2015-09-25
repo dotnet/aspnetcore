@@ -59,6 +59,33 @@ The steps to set up a Linux machine are:
  * Add sources to NuGet.config (For package restore)
 
 
+---
+
+### Prerequisites
+
+* `Unzip`
+* `Curl`
+
+---
+
+### Get Unzip
+
+`Unzip` is needed to unpack runtime packages.
+
+```
+sudo apt-get install unzip
+```
+
+### Get Curl
+
+`Curl` is a command line tool for transferring data specified with URL syntax.
+
+```
+sudo apt-get install curl
+```
+
+---
+
 ### Get Mono
 
 Mono is how .NET applications can run on platforms other than Windows. Mono is an ongoing effort to port the .NET Framework to other platforms. In the process of developing ASP.NET 5 we worked with the Mono team to fix some bugs and add features that are needed to run ASP.NET applications. These changes are only in builds of mono that are greater than 4.0.1.
@@ -79,7 +106,7 @@ sudo apt-get install mono-complete
 To build libuv you should do the following:
 
 ```
-sudo apt-get install automake libtool curl
+sudo apt-get install automake libtool
 curl -sSL https://github.com/libuv/libuv/archive/v1.4.2.tar.gz | sudo tar zxfv - -C /usr/local/src
 cd /usr/local/src/libuv-1.4.2
 sudo sh autogen.sh
