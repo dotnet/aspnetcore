@@ -4,10 +4,6 @@
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
-using Microsoft.AspNet.Server.WebListener;
-using Microsoft.Dnx.Runtime;
-using Microsoft.Framework.Configuration;
-using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
 using Microsoft.Net.Http.Server;
 
@@ -28,22 +24,6 @@ namespace ServerComparison.TestSites
     /// </summary>
     public class StartupNtlmAuthentication
     {
-        public StartupNtlmAuthentication(IApplicationEnvironment env)
-        {
-            //Below code demonstrates usage of multiple configuration sources. For instance a setting say 'setting1' is found in both the registered sources, 
-            //then the later source will win. By this way a Local config can be overridden by a different setting while deployed remotely.
-            var builder = new ConfigurationBuilder(env.ApplicationBasePath)
-                        .AddJsonFile("config.json")
-                        .AddEnvironmentVariables(); //All environment variables in the process's context flow in as configuration values.
-            Configuration = builder.Build();
-        }
-
-        public IConfiguration Configuration { get; private set; }
-
-        public void ConfigureServices(IServiceCollection services)
-        {
-        }
-
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {
             loggerFactory.AddConsole(minLevel: LogLevel.Warning);
