@@ -183,14 +183,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {{
             get
             {{
-                if ({header.TestBit()})
-                {{
-                    return _{header.Identifier};
-                }}
-                else
-                {{
-                    return StringValues.Empty;
-                }}
+                return _{header.Identifier};
             }}
             set
             {{
@@ -316,6 +309,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             if ({header.TestBit()})
                             {{
                                 {header.ClearBit()};
+                                _{header.Identifier} = StringValues.Empty;
                                 return true;
                             }}
                             else
