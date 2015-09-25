@@ -410,112 +410,112 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         }
 
         // Type -> expected EnumDisplayNamesAndValues
-        public static TheoryData<Type, IEnumerable<KeyValuePair<string, string>>> EnumDisplayNamesData
+        public static TheoryData<Type, IEnumerable<KeyValuePair<EnumGroupAndName, string>>> EnumDisplayNamesData
         {
             get
             {
-                return new TheoryData<Type, IEnumerable<KeyValuePair<string, string>>>
+                return new TheoryData<Type, IEnumerable<KeyValuePair<EnumGroupAndName, string>>>
                 {
                     { typeof(ClassWithFields), null },
                     { typeof(StructWithFields), null },
-                    { typeof(EmptyEnum), new List<KeyValuePair<string, string>>() },
-                    { typeof(EmptyEnum?), new List<KeyValuePair<string, string>>() },
+                    { typeof(EmptyEnum), new List<KeyValuePair<EnumGroupAndName, string>>() },
+                    { typeof(EmptyEnum?), new List<KeyValuePair<EnumGroupAndName, string>>() },
                     {
                         typeof(EnumWithDisplayNames),
-                        new List<KeyValuePair<string, string>>
+                        new List<KeyValuePair<EnumGroupAndName, string>>
                         {
-                            new KeyValuePair<string, string>(string.Empty, "0"),
-                            new KeyValuePair<string, string>(nameof(EnumWithDisplayNames.One), "1"),
-                            new KeyValuePair<string, string>("dos", "2"),
-                            new KeyValuePair<string, string>("tres", "3"),
-                            new KeyValuePair<string, string>("name from resources", "-2"),
-                            new KeyValuePair<string, string>("menos uno", "-1"),
+                            new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName("Zero", string.Empty), "0"),
+                            new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, nameof(EnumWithDisplayNames.One)), "1"),
+                            new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, "dos"), "2"),
+                            new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, "tres"), "3"),
+                            new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, "name from resources"), "-2"),
+                            new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName("Negatives", "menos uno"), "-1"),
                         }
                     },
                     {
                         typeof(EnumWithDisplayNames?),
-                        new List<KeyValuePair<string, string>>
+                        new List<KeyValuePair<EnumGroupAndName, string>>
                         {
-                            new KeyValuePair<string, string>(string.Empty, "0"),
-                            new KeyValuePair<string, string>(nameof(EnumWithDisplayNames.One), "1"),
-                            new KeyValuePair<string, string>("dos", "2"),
-                            new KeyValuePair<string, string>("tres", "3"),
-                            new KeyValuePair<string, string>("name from resources", "-2"),
-                            new KeyValuePair<string, string>("menos uno", "-1"),
+                            new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName("Zero", string.Empty), "0"),
+                            new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, nameof(EnumWithDisplayNames.One)), "1"),
+                            new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, "dos"), "2"),
+                            new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, "tres"), "3"),
+                            new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, "name from resources"), "-2"),
+                            new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName("Negatives", "menos uno"), "-1"),
                         }
                     },
                     {
                         // Note order duplicates appear cannot be inferred easily e.g. does not match the source.
                         // Zero is before None but Two is before Duece in the class below.
                         typeof(EnumWithDuplicates),
-                        new List<KeyValuePair<string, string>>
+                        new List<KeyValuePair<EnumGroupAndName, string>>
                         {
-                            new KeyValuePair<string, string>(nameof(EnumWithDuplicates.Zero), "0"),
-                            new KeyValuePair<string, string>(nameof(EnumWithDuplicates.None), "0"),
-                            new KeyValuePair<string, string>(nameof(EnumWithDuplicates.One), "1"),
-                            new KeyValuePair<string, string>(nameof(EnumWithDuplicates.Duece), "2"),
-                            new KeyValuePair<string, string>(nameof(EnumWithDuplicates.Two), "2"),
-                            new KeyValuePair<string, string>(nameof(EnumWithDuplicates.MoreThanTwo), "3"),
-                            new KeyValuePair<string, string>(nameof(EnumWithDuplicates.Three), "3"),
+                            new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, nameof(EnumWithDuplicates.Zero)), "0"),
+                            new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, nameof(EnumWithDuplicates.None)), "0"),
+                            new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, nameof(EnumWithDuplicates.One)), "1"),
+                            new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, nameof(EnumWithDuplicates.Duece)), "2"),
+                            new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, nameof(EnumWithDuplicates.Two)), "2"),
+                            new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, nameof(EnumWithDuplicates.MoreThanTwo)), "3"),
+                            new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, nameof(EnumWithDuplicates.Three)), "3"),
                         }
                     },
                     {
                         typeof(EnumWithDuplicates?),
-                        new List<KeyValuePair<string, string>>
+                        new List<KeyValuePair<EnumGroupAndName, string>>
                         {
-                            new KeyValuePair<string, string>(nameof(EnumWithDuplicates.Zero), "0"),
-                            new KeyValuePair<string, string>(nameof(EnumWithDuplicates.None), "0"),
-                            new KeyValuePair<string, string>(nameof(EnumWithDuplicates.One), "1"),
-                            new KeyValuePair<string, string>(nameof(EnumWithDuplicates.Duece), "2"),
-                            new KeyValuePair<string, string>(nameof(EnumWithDuplicates.Two), "2"),
-                            new KeyValuePair<string, string>(nameof(EnumWithDuplicates.MoreThanTwo), "3"),
-                            new KeyValuePair<string, string>(nameof(EnumWithDuplicates.Three), "3"),
+                            new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, nameof(EnumWithDuplicates.Zero)), "0"),
+                            new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, nameof(EnumWithDuplicates.None)), "0"),
+                            new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, nameof(EnumWithDuplicates.One)), "1"),
+                            new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, nameof(EnumWithDuplicates.Duece)), "2"),
+                            new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, nameof(EnumWithDuplicates.Two)), "2"),
+                            new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, nameof(EnumWithDuplicates.MoreThanTwo)), "3"),
+                            new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, nameof(EnumWithDuplicates.Three)), "3"),
                         }
                     },
                     {
                         typeof(EnumWithFlags),
-                        new List<KeyValuePair<string, string>>
+                        new List<KeyValuePair<EnumGroupAndName, string>>
                         {
-                            new KeyValuePair<string, string>(nameof(EnumWithFlags.Zero), "0"),
-                            new KeyValuePair<string, string>(nameof(EnumWithFlags.One), "1"),
-                            new KeyValuePair<string, string>(nameof(EnumWithFlags.Two), "2"),
-                            new KeyValuePair<string, string>(nameof(EnumWithFlags.Four), "4"),
-                            new KeyValuePair<string, string>(nameof(EnumWithFlags.All), "-1"),
+                            new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, nameof(EnumWithFlags.Zero)), "0"),
+                            new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, nameof(EnumWithFlags.One)), "1"),
+                            new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, nameof(EnumWithFlags.Two)), "2"),
+                            new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, nameof(EnumWithFlags.Four)), "4"),
+                            new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, nameof(EnumWithFlags.All)), "-1"),
                         }
                     },
                     {
                         typeof(EnumWithFlags?),
-                        new List<KeyValuePair<string, string>>
+                        new List<KeyValuePair<EnumGroupAndName, string>>
                         {
-                            new KeyValuePair<string, string>(nameof(EnumWithFlags.Zero), "0"),
-                            new KeyValuePair<string, string>(nameof(EnumWithFlags.One), "1"),
-                            new KeyValuePair<string, string>(nameof(EnumWithFlags.Two), "2"),
-                            new KeyValuePair<string, string>(nameof(EnumWithFlags.Four), "4"),
-                            new KeyValuePair<string, string>(nameof(EnumWithFlags.All), "-1"),
+                            new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, nameof(EnumWithFlags.Zero)), "0"),
+                            new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, nameof(EnumWithFlags.One)), "1"),
+                            new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, nameof(EnumWithFlags.Two)), "2"),
+                            new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, nameof(EnumWithFlags.Four)), "4"),
+                            new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, nameof(EnumWithFlags.All)), "-1"),
                         }
                     },
                     {
                         typeof(EnumWithFields),
-                        new List<KeyValuePair<string, string>>
+                        new List<KeyValuePair<EnumGroupAndName, string>>
                         {
-                            new KeyValuePair<string, string>(nameof(EnumWithFields.Zero), "0"),
-                            new KeyValuePair<string, string>(nameof(EnumWithFields.One), "1"),
-                            new KeyValuePair<string, string>(nameof(EnumWithFields.Two), "2"),
-                            new KeyValuePair<string, string>(nameof(EnumWithFields.Three), "3"),
-                            new KeyValuePair<string, string>(nameof(EnumWithFields.MinusTwo), "-2"),
-                            new KeyValuePair<string, string>(nameof(EnumWithFields.MinusOne), "-1"),
+                            new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, nameof(EnumWithFields.Zero)), "0"),
+                            new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, nameof(EnumWithFields.One)), "1"),
+                            new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, nameof(EnumWithFields.Two)), "2"),
+                            new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, nameof(EnumWithFields.Three)), "3"),
+                            new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, nameof(EnumWithFields.MinusTwo)), "-2"),
+                            new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, nameof(EnumWithFields.MinusOne)), "-1"),
                         }
                     },
                     {
                         typeof(EnumWithFields?),
-                        new List<KeyValuePair<string, string>>
+                        new List<KeyValuePair<EnumGroupAndName, string>>
                         {
-                            new KeyValuePair<string, string>(nameof(EnumWithFields.Zero), "0"),
-                            new KeyValuePair<string, string>(nameof(EnumWithFields.One), "1"),
-                            new KeyValuePair<string, string>(nameof(EnumWithFields.Two), "2"),
-                            new KeyValuePair<string, string>(nameof(EnumWithFields.Three), "3"),
-                            new KeyValuePair<string, string>(nameof(EnumWithFields.MinusTwo), "-2"),
-                            new KeyValuePair<string, string>(nameof(EnumWithFields.MinusOne), "-1"),
+                            new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, nameof(EnumWithFields.Zero)), "0"),
+                            new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, nameof(EnumWithFields.One)), "1"),
+                            new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, nameof(EnumWithFields.Two)), "2"),
+                            new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, nameof(EnumWithFields.Three)), "3"),
+                            new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, nameof(EnumWithFields.MinusTwo)), "-2"),
+                            new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, nameof(EnumWithFields.MinusOne)), "-1"),
                         }
                     },
                 };
@@ -524,9 +524,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 
         [Theory]
         [MemberData(nameof(EnumDisplayNamesData))]
-        public void GetDisplayMetadata_EnumDisplayNamesAndValues_ReflectsModelType(
+        public void GetDisplayMetadata_EnumGroupedDisplayNamesAndValues_ReflectsModelType(
             Type type,
-            IEnumerable<KeyValuePair<string, string>> expectedKeyValuePairs)
+            IEnumerable<KeyValuePair<EnumGroupAndName, string>> expectedKeyValuePairs)
         {
             // Arrange
             var provider = new DataAnnotationsMetadataProvider();
@@ -541,8 +541,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             // Assert
             // OrderBy is used because the order of the results may very depending on the platform / client.
             Assert.Equal(
-                expectedKeyValuePairs?.OrderBy(item => item.Key, StringComparer.Ordinal),
-                context.DisplayMetadata.EnumDisplayNamesAndValues?.OrderBy(item => item.Key, StringComparer.Ordinal));
+                expectedKeyValuePairs?.OrderBy(item => item.Key.Group, StringComparer.Ordinal)
+                .ThenBy(item => item.Key.Name, StringComparer.Ordinal),
+                context.DisplayMetadata.EnumGroupedDisplayNamesAndValues?.OrderBy(item => item.Key.Group, StringComparer.Ordinal)
+                .ThenBy(item => item.Key.Name, StringComparer.Ordinal));
         }
 
         [Fact]
@@ -708,10 +710,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             [Display(ShortName = "uno")]
             One = 1,
 
-            [Display(Name = "")]
+            [Display(Name = "", GroupName = "Zero")]
             Zero = 0,
 
-            [Display(Name = "menos uno")]
+            [Display(Name = "menos uno", GroupName = "Negatives")]
             MinusOne = -1,
 
 #if USE_REAL_RESOURCES

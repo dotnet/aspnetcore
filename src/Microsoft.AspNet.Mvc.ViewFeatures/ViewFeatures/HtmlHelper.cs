@@ -1168,13 +1168,24 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             }
 
             var selectList = new List<SelectListItem>();
-            foreach (var keyValuePair in metadata.EnumDisplayNamesAndValues)
+            var groupList = new Dictionary<string, SelectListGroup>();
+            foreach (var keyValuePair in metadata.EnumGroupedDisplayNamesAndValues)
             {
                 var selectListItem = new SelectListItem
                 {
-                    Text = keyValuePair.Key,
+                    Text = keyValuePair.Key.Name,
                     Value = keyValuePair.Value,
                 };
+
+                if (!string.IsNullOrEmpty(keyValuePair.Key.Group))
+                {
+                    if (!groupList.ContainsKey(keyValuePair.Key.Group))
+                    {
+                        groupList[keyValuePair.Key.Group] = new SelectListGroup() { Name = keyValuePair.Key.Group };
+                    }
+
+                    selectListItem.Group = groupList[keyValuePair.Key.Group];
+                }
 
                 selectList.Add(selectListItem);
             }

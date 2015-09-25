@@ -272,11 +272,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         }
 
         /// <inheritdoc />
-        public override IEnumerable<KeyValuePair<string, string>> EnumDisplayNamesAndValues
+        public override IEnumerable<KeyValuePair<EnumGroupAndName, string>> EnumGroupedDisplayNamesAndValues
         {
             get
             {
-                return DisplayMetadata.EnumDisplayNamesAndValues;
+                return DisplayMetadata.EnumGroupedDisplayNamesAndValues;
             }
         }
 

@@ -112,8 +112,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             "\"http://schemas.datacontract.org/2004/07/MvcSample.Web.Models\"><About>I like playing Football" +
             "</About><Address>My address</Address><Age>13</Age><Alive>true</Alive><Dependent><About i:nil=\"true\" />" +
             "<Address>Dependents address</Address><Age>0</Age><Alive>false</Alive><Dependent i:nil=\"true\" />" +
-            "<GPA>0</GPA><Log i:nil=\"true\" /><Name>Dependents name</Name>" +
-            "<Profession i:nil=\"true\" /></Dependent><GPA>13.37</GPA><Log i:nil=\"true\" />" +
+            "<EnumInformation>Zero</EnumInformation><GPA>0</GPA><Log i:nil=\"true\" /><Name>Dependents name</Name>" +
+            "<Profession i:nil=\"true\" /></Dependent><EnumInformation>Zero</EnumInformation><GPA>13.37</GPA><Log i:nil=\"true\" />" +
             "<Name>My name</Name><Profession>Software Engineer</Profession></User>",
                 await response.Content.ReadAsStringAsync());
         }

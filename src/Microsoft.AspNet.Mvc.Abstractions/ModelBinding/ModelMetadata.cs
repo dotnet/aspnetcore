@@ -139,14 +139,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public abstract ModelMetadata ElementMetadata { get; }
 
         /// <summary>
-        /// Gets the ordered display names and values of all <see cref="Enum"/> values in
+        /// Gets the ordered and grouped display names and values of all <see cref="Enum"/> values in
         /// <see cref="UnderlyingOrModelType"/>.
         /// </summary>
         /// <value>
-        /// An <see cref="IEnumerable{KeyValuePair{string, string}}"/> of mappings between <see cref="Enum"/> field names
-        /// and values. <c>null</c> if <see cref="IsEnum"/> is <c>false</c>.
+        /// An <see cref="IEnumerable{KeyValuePair{EnumGroupAndName, string}"/> of mappings between
+        /// <see cref="Enum"/> field groups, names and values. <c>null</c> if <see cref="IsEnum"/> is <c>false</c>.
         /// </value>
-        public abstract IEnumerable<KeyValuePair<string, string>> EnumDisplayNamesAndValues { get; }
+        public abstract IEnumerable<KeyValuePair<EnumGroupAndName, string>> EnumGroupedDisplayNamesAndValues { get; }
 
         /// <summary>
         /// Gets the names and values of all <see cref="Enum"/> values in <see cref="UnderlyingOrModelType"/>.

@@ -29,6 +29,7 @@ namespace MvcSample.Web.Models
         public string About { get; set; }
         public string Log { get; set; }
         public IEnumerable<string> OwnedAddresses { get; private set; }
+        public TestEnum EnumInformation { get; set; }
 
         // This does not bind correctly. Only gets highest value.
         public List<int> ParentsAges { get; private set; }

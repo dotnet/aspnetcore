@@ -57,11 +57,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         public string EditFormatString { get; set; }
 
         /// <summary>
-        /// Gets the ordered display names and values of all <see cref="System.Enum"/> values in
+        /// Gets the ordered and grouped display names and values of all <see cref="System.Enum"/> values in
         /// <see cref="ModelMetadata.UnderlyingOrModelType"/>. See
-        /// <see cref="ModelMetadata.EnumDisplayNamesAndValues"/>.
+        /// <see cref="ModelMetadata.EnumGroupedDisplayNamesAndValues"/>.
         /// </summary>
-        public IEnumerable<KeyValuePair<string, string>> EnumDisplayNamesAndValues { get; set; }
+        public IEnumerable<KeyValuePair<EnumGroupAndName, string>> EnumGroupedDisplayNamesAndValues { get; set; }
 
         /// <summary>
         /// Gets the names and values of all <see cref="System.Enum"/> values in
