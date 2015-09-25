@@ -151,6 +151,31 @@ namespace Microsoft.AspNet.TestHost
             Assert.Equal("Success", result);
         }
 
+        [Fact]
+        public async Task CanSetCustomServiceProvider()
+        {
+            var server = TestServer.Create(app =>
+            {
+                app.Run(context =>
+                {
+                    context.ApplicationServices = new ServiceCollection()
+                    .AddTransient<TestService>()
+                    .BuildServiceProvider();
+
+                    context.RequestServices = new ServiceCollection()
+                    .AddTransient<TestService>()
+                    .BuildServiceProvider();
+
+                    var s1 = context.ApplicationServices.GetRequiredService<TestService>();
+                    var s2 = context.RequestServices.GetRequiredService<TestService>();
+
+                    return context.Response.WriteAsync("Success");
+                });
+            });
+            string result = await server.CreateClient().GetStringAsync("/path");
+            Assert.Equal("Success", result);
+        }
+
         public class ReplaceServiceProvidersFeatureFilter : IStartupFilter, IServiceProvidersFeature
         {
             public ReplaceServiceProvidersFeatureFilter(IServiceProvider appServices, IServiceProvider requestServices)
@@ -231,6 +256,7 @@ namespace Microsoft.AspNet.TestHost
             var result = await server.CreateClient().GetStringAsync("/path");
             Assert.Equal("Success", result);
         }
+
 
         public class EnsureApplicationServicesFilter : IStartupFilter
         {

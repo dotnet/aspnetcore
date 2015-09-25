@@ -55,8 +55,8 @@ namespace Microsoft.AspNet.Hosting.Internal
 
             set
             {
+                _requestServices = value;
                 _requestServicesSet = true;
-                RequestServices = value;
             }
         }
 
