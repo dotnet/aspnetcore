@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using Microsoft.AspNet.Server.Kestrel.Networking;
 
@@ -42,9 +42,14 @@ namespace Microsoft.AspNet.Server.KestrelTests.TestHelpers
                     _onPost(_postHandle.InternalGetHandle());
                 }
 
-                _postHandle.Dispose();
-                loopHandle.Dispose();
                 return 0;
+            };
+
+            _uv_ref = handle => { };
+            _uv_unref = handle =>
+            {
+                _stopLoop = true;
+                _loopWh.Set();
             };
 
             _uv_stop = handle =>
@@ -60,7 +65,6 @@ namespace Microsoft.AspNet.Server.KestrelTests.TestHelpers
             _uv_tcp_init = (loopHandle, tcpHandle) => 0;
             _uv_close = (handle, callback) => callback(handle);
             _uv_loop_close = handle => 0;
-            _uv_unref = handle => { };
             _uv_walk = (loop, callback, ignore) => 0;
         }
 
