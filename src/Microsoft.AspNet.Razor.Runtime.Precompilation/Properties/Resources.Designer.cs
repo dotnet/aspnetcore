@@ -11,6 +11,22 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
             = new ResourceManager("Microsoft.AspNet.Razor.Runtime.Precompilation.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
+        /// Argument must be an instance of '{0}' or '{1}'.
+        /// </summary>
+        internal static string ArgumentMustBeAnInstanceOf
+        {
+            get { return GetString("ArgumentMustBeAnInstanceOf"); }
+        }
+
+        /// <summary>
+        /// Argument must be an instance of '{0}' or '{1}'.
+        /// </summary>
+        internal static string FormatArgumentMustBeAnInstanceOf(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ArgumentMustBeAnInstanceOf"), p0, p1);
+        }
+
+        /// <summary>
         /// Unable to find a suitable constructor for type '{0}'.
         /// </summary>
         internal static string CodeAnalysisConstructorNotFound

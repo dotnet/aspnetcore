@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
     /// </summary>
     public class TagHelperTypeResolver
     {
-        private static readonly TypeInfo ITagHelperTypeInfo = typeof(ITagHelper).GetTypeInfo();
+        private static readonly ITypeInfo ITagHelperTypeInfo = new RuntimeTypeInfo(typeof(ITagHelper).GetTypeInfo());
 
         /// <summary>
         /// Locates valid <see cref="ITagHelper"/> types from the <see cref="Assembly"/> named <paramref name="name"/>.
@@ -109,7 +109,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             return typeInfo.IsPublic &&
                    !typeInfo.IsAbstract &&
                    !typeInfo.IsGenericType &&
-                   typeInfo.IsTagHelper;
+                   typeInfo.ImplementsInterface(ITagHelperTypeInfo);
         }
     }
 }

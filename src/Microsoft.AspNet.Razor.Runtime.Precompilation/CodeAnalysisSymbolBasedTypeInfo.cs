@@ -18,13 +18,8 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
     [DebuggerDisplay("{Name}")]
     public class CodeAnalysisSymbolBasedTypeInfo : ITypeInfo
     {
-        /// <summary>
-        /// The <see cref="System.Reflection.TypeInfo"/> for <see cref="IDictionary{TKey, TValue}"/>.
-        /// </summary>
-        public static readonly System.Reflection.TypeInfo OpenGenericDictionaryTypeInfo =
+        private static readonly System.Reflection.TypeInfo OpenGenericDictionaryTypeInfo =
             typeof(IDictionary<,>).GetTypeInfo();
-        private static readonly System.Reflection.TypeInfo TagHelperTypeInfo =
-            typeof(ITagHelper).GetTypeInfo();
         private readonly ITypeSymbol _type;
         private readonly ITypeSymbol _underlyingType;
         private string _fullName;
@@ -120,13 +115,33 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
         }
 
         /// <inheritdoc />
-        public bool IsTagHelper
+        public bool ImplementsInterface(ITypeInfo interfaceTypeInfo)
         {
-            get
+            if (interfaceTypeInfo == null)
             {
-                return _type.AllInterfaces.Any(
-                    implementedInterface => IsType(implementedInterface, TagHelperTypeInfo));
+                throw new ArgumentNullException(nameof(interfaceTypeInfo));
             }
+
+            var runtimeTypeInfo = interfaceTypeInfo as RuntimeTypeInfo;
+            if (runtimeTypeInfo != null)
+            {
+                return runtimeTypeInfo.TypeInfo.IsInterface &&
+                    _type.AllInterfaces.Any(implementedInterface => IsType(implementedInterface, runtimeTypeInfo.TypeInfo));
+            }
+
+            var codeAnalysisTypeInfo = interfaceTypeInfo as CodeAnalysisSymbolBasedTypeInfo;
+            if (codeAnalysisTypeInfo != null)
+            {
+                return codeAnalysisTypeInfo.TypeSymbol.TypeKind == TypeKind.Interface &&
+                    _type.AllInterfaces.Any(
+                        implementedInterface => implementedInterface == codeAnalysisTypeInfo.TypeSymbol);
+            }
+
+            throw new ArgumentException(
+                Resources.FormatArgumentMustBeAnInstanceOf(
+                    typeof(RuntimeTypeInfo).FullName,
+                    typeof(CodeAnalysisSymbolBasedTypeInfo).FullName),
+                nameof(interfaceTypeInfo));
         }
 
         private string SanitizedFullName
@@ -193,8 +208,8 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
             System.Reflection.TypeInfo targetTypeInfo)
         {
             return string.Equals(
-                targetTypeInfo.FullName,
-                GetFullName(sourceTypeSymbol),
+                RuntimeTypeInfo.SanitizeFullName(targetTypeInfo.FullName),
+                RuntimeTypeInfo.SanitizeFullName(GetFullName(sourceTypeSymbol)),
                 StringComparison.Ordinal);
         }
 

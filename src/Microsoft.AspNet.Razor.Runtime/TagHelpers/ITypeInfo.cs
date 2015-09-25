@@ -49,9 +49,9 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         bool IsGenericType { get; }
 
         /// <summary>
-        /// Gets a value indicating whether the type implements the <see cref="ITagHelper"/> interface.
+        /// Gets a value indicating whether the type implements the <param name="interfaceTypeInfo"/> interface.
         /// </summary>
-        bool IsTagHelper { get; }
+        bool ImplementsInterface(ITypeInfo interfaceTypeInfo);
 
         /// <summary>
         /// Gets the <see cref="ITypeInfo[]"/> for the <c>TKey</c> and <c>TValue</c> parameters of

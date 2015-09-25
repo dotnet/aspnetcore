@@ -77,7 +77,23 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         }
 
         /// <inheritdoc />
-        public bool IsTagHelper => TagHelperTypeInfo.IsAssignableFrom(TypeInfo);
+        public bool ImplementsInterface(ITypeInfo interfaceTypeInfo)
+        {
+            if (interfaceTypeInfo == null)
+            {
+                throw new ArgumentNullException(nameof(interfaceTypeInfo));
+            }
+
+            var runtimeTypeInfo = interfaceTypeInfo as RuntimeTypeInfo;
+            if (runtimeTypeInfo == null)
+            {
+                throw new ArgumentException(
+                    Resources.FormatArgumentMustBeAnInstanceOf(typeof(RuntimeTypeInfo).FullName),
+                    nameof(interfaceTypeInfo));
+            }
+
+            return runtimeTypeInfo.TypeInfo.IsInterface && runtimeTypeInfo.TypeInfo.IsAssignableFrom(TypeInfo);
+        }
 
         private string SanitizedFullName
         {

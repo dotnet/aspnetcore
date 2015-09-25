@@ -442,6 +442,22 @@ namespace Microsoft.AspNet.Razor.Runtime
             return GetString("TagHelperDescriptorFactory_ParentTag");
         }
 
+        /// <summary>
+        /// Argument must be an instance of '{0}'.
+        /// </summary>
+        internal static string ArgumentMustBeAnInstanceOf
+        {
+            get { return GetString("ArgumentMustBeAnInstanceOf"); }
+        }
+
+        /// <summary>
+        /// Argument must be an instance of '{0}'.
+        /// </summary>
+        internal static string FormatArgumentMustBeAnInstanceOf(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ArgumentMustBeAnInstanceOf"), p0);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

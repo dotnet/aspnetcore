@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Testing;
 using Xunit;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
@@ -110,35 +111,58 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             Assert.Empty(actual);
         }
 
-        [Theory]
-        [InlineData(typeof(ITagHelper))]
-        [InlineData(typeof(TagHelper))]
-        [InlineData(typeof(ImplementsITagHelper))]
-        [InlineData(typeof(DerivesFromTagHelper))]
-        [InlineData(typeof(Fake.ImplementsRealITagHelper))]
-        public void IsTagHelper_ReturnsTrueIfTypeImplementsTagHelper(Type type)
+        [Fact]
+        public void ImplementsInterface_ThrowsIfArgumentIsNotRuntimeType()
         {
             // Arrange
-            var runtimeTypeInfo = new RuntimeTypeInfo(type.GetTypeInfo());
+            var typeInfo = new RuntimeTypeInfo(typeof(object).GetTypeInfo());
+            var interfaceTypeInfo = new TestTypeInfo();
+
+            // Act and Assert
+            ExceptionAssert.ThrowsArgument(() => typeInfo.ImplementsInterface(interfaceTypeInfo),
+                "interfaceTypeInfo",
+                $"Argument must be an instance of '{typeof(RuntimeTypeInfo)}'.");
+        }
+
+        [Theory]
+        [InlineData(typeof(ITagHelper), typeof(ITagHelper))]
+        [InlineData(typeof(TagHelper), typeof(ITagHelper))]
+        [InlineData(typeof(ImplementsITagHelper), typeof(ITagHelper))]
+        [InlineData(typeof(DerivesFromTagHelper), typeof(ITagHelper))]
+        [InlineData(typeof(Fake.ImplementsRealITagHelper), typeof(ITagHelper))]
+        [InlineData(typeof(string), typeof(IEnumerable<char>))]
+        [InlineData(typeof(Dictionary<string, string>), typeof(IDictionary<string, string>))]
+        [InlineData(typeof(List<string>), typeof(IList<string>))]
+        [InlineData(typeof(IList<string>), typeof(IEnumerable<string>))]
+        public void ImplementsInterface_ReturnsTrueIfTypeImplementsInterface(Type runtimeType, Type interfaceType)
+        {
+            // Arrange
+            var runtimeTypeInfo = new RuntimeTypeInfo(runtimeType.GetTypeInfo());
+            var interfaceTypeInfo = new RuntimeTypeInfo(interfaceType.GetTypeInfo());
 
             // Act
-            var result = runtimeTypeInfo.IsTagHelper;
+            var result = runtimeTypeInfo.ImplementsInterface(interfaceTypeInfo);
 
             // Assert
             Assert.True(result);
         }
 
         [Theory]
-        [InlineData(typeof(string))]
-        [InlineData(typeof(SubType))]
-        [InlineData(typeof(Fake.DoesNotImplementRealITagHelper))]
-        public void IsTagHelper_ReturnsFalseIfTypeDoesNotImplementTagHelper(Type type)
+        [InlineData(typeof(string), typeof(object))]
+        [InlineData(typeof(DerivesFromTagHelper), typeof(TagHelper))]
+        [InlineData(typeof(string), typeof(ITagHelper))]
+        [InlineData(typeof(string), typeof(IList<char>))]
+        [InlineData(typeof(SubType), typeof(ITagHelper))]
+        [InlineData(typeof(Fake.DoesNotImplementRealITagHelper), typeof(ITagHelper))]
+        [InlineData(typeof(IDictionary<,>), typeof(IDictionary<string, string>))]
+        public void ImplementsInterface_ReturnsTrueIfTypeDoesNotImplementInterface(Type runtimeType, Type interfaceType)
         {
             // Arrange
-            var runtimeTypeInfo = new RuntimeTypeInfo(type.GetTypeInfo());
+            var runtimeTypeInfo = new RuntimeTypeInfo(runtimeType.GetTypeInfo());
+            var interfaceTypeInfo = new RuntimeTypeInfo(interfaceType.GetTypeInfo());
 
             // Act
-            var result = runtimeTypeInfo.IsTagHelper;
+            var result = runtimeTypeInfo.ImplementsInterface(interfaceTypeInfo);
 
             // Assert
             Assert.False(result);
@@ -501,74 +525,6 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
         private class CustomType
         {
-        }
-
-        private class TestTypeInfo : ITypeInfo
-        {
-            public string FullName { get; set; }
-
-            public bool IsAbstract
-            {
-                get
-                {
-                    throw new NotImplementedException();
-    }
-}
-
-            public bool IsGenericType
-            {
-                get
-                {
-                    throw new NotImplementedException();
-                }
-            }
-
-            public bool IsPublic
-            {
-                get
-                {
-                    throw new NotImplementedException();
-                }
-            }
-
-            public bool IsTagHelper
-            {
-                get
-                {
-                    throw new NotImplementedException();
-                }
-            }
-
-            public string Name
-            {
-                get
-                {
-                    throw new NotImplementedException();
-                }
-            }
-
-            public IEnumerable<IPropertyInfo> Properties
-            {
-                get
-                {
-                    throw new NotImplementedException();
-                }
-            }
-
-            public bool Equals(ITypeInfo other)
-            {
-                throw new NotImplementedException();
-            }
-
-            public IEnumerable<TAttribute> GetCustomAttributes<TAttribute>() where TAttribute : Attribute
-            {
-                throw new NotImplementedException();
-            }
-
-            public ITypeInfo[] GetGenericDictionaryParameters()
-            {
-                throw new NotImplementedException();
-            }
         }
     }
 }

@@ -8,6 +8,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
+using Microsoft.AspNet.Testing;
 using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
 
@@ -15,7 +16,7 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
 {
     public class PrecompilationTagHelperTypeResolverTest
     {
-        private static readonly TypeInfo TagHelperTypeInfo = typeof(ITagHelper).GetTypeInfo();
+        private static readonly ITypeInfo TagHelperTypeInfo = new RuntimeTypeInfo(typeof(ITagHelper).GetTypeInfo());
 
         [Theory]
         [InlineData(typeof(TypeDerivingFromITagHelper))]
@@ -33,6 +34,60 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
             // Assert
             var actual = Assert.Single(exportedTypes, type => type.FullName == expected.FullName);
             AssertEqual(expected, actual);
+        }
+
+        [Fact]
+        public void ImplementsInterface_ThrowsIfPassedInParameterIsNotRuntimeTypeOrCodeAnalysisBasedTypeInfo()
+        {
+            // Arrange
+            var interfaceType = new TestTypeInfo();
+            var compilation = CompilationUtility.GetCompilation(nameof(DerivingFromList));
+            var tagHelperResolver = new PrecompilationTagHelperTypeResolver(compilation);
+
+            // Act
+            var exportedTypes = tagHelperResolver.GetExportedTypes(compilation.AssemblyName);
+
+            // Assert
+            var actual = Assert.Single(exportedTypes);
+            ExceptionAssert.ThrowsArgument(() => actual.ImplementsInterface(interfaceType),
+                "interfaceTypeInfo",
+                $"Argument must be an instance of '{typeof(RuntimeTypeInfo)}' or '{typeof(CodeAnalysisSymbolBasedTypeInfo)}'.");
+        }
+
+        [Theory]
+        [InlineData(typeof(DerivingFromList))]
+        [InlineData(typeof(DerivingFromIList))]
+        public void ImplementsInterface_ReturnsTrueIfTypeDerivesFromInterface(Type expected)
+        {
+            // Arrange
+            var interfaceType = new RuntimeTypeInfo(typeof(IEnumerable<string>).GetTypeInfo());
+            var compilation = CompilationUtility.GetCompilation(expected.Name);
+            var tagHelperResolver = new PrecompilationTagHelperTypeResolver(compilation);
+
+            // Act
+            var exportedTypes = tagHelperResolver.GetExportedTypes(compilation.AssemblyName);
+
+            // Assert
+            var actual = Assert.Single(exportedTypes);
+            Assert.True(actual.ImplementsInterface(interfaceType));
+        }
+
+        [Theory]
+        [InlineData(typeof(TagHelper))]
+        [InlineData(typeof(IEnumerable<string>))]
+        public void ImplementsInterface_ReturnsFalseIfTypeDoesNotDerivesFromInterface(Type interfaceType)
+        {
+            // Arrange
+            var interfaceTypeInfo = new RuntimeTypeInfo(interfaceType.GetTypeInfo());
+            var compilation = CompilationUtility.GetCompilation("TagHelperDescriptorFactoryTagHelpers");
+            var tagHelperResolver = new PrecompilationTagHelperTypeResolver(compilation);
+
+            // Act
+            var exportedTypes = tagHelperResolver.GetExportedTypes(compilation.AssemblyName);
+
+            // Assert
+            var actual = Assert.Single(exportedTypes, type => type.Name == nameof(RequiredParentTagHelper));
+            Assert.False(actual.ImplementsInterface(interfaceTypeInfo));
         }
 
         [Fact]
@@ -472,7 +527,7 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
 
             // Assert
             var type = Assert.Single(exportedTypes);
-            Assert.False(type.IsTagHelper);
+            Assert.False(type.ImplementsInterface(TagHelperTypeInfo));
         }
 
         private static void AssertAttributes<TAttribute>(
@@ -481,7 +536,7 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
             Action<TAttribute, TAttribute> assertItem)
             where TAttribute : Attribute
         {
-            AssertAttributes<TAttribute>(expected, actual, assertItem, attributes => attributes);
+            AssertAttributes(expected, actual, assertItem, attributes => attributes);
         }
 
         private static void AssertAttributes<TAttribute>(
@@ -519,7 +574,9 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
             Assert.Equal(expected.IsPublic, actual.IsPublic);
             Assert.Equal(expected.IsAbstract, actual.IsAbstract);
             Assert.Equal(expected.IsGenericType, actual.IsGenericType);
-            Assert.Equal(expected.IsTagHelper, actual.IsTagHelper);
+            Assert.Equal(
+                expected.ImplementsInterface(TagHelperTypeInfo),
+                actual.ImplementsInterface(TagHelperTypeInfo));
             Assert.Equal(
                 expected.GetGenericDictionaryParameters(),
                 actual.GetGenericDictionaryParameters(),
