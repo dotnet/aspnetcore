@@ -22,7 +22,7 @@ namespace MusicStore.Controllers
         // GET: /ShoppingCart/
         public async Task<IActionResult> Index()
         {
-            var cart = ShoppingCart.GetCart(DbContext, Context);
+            var cart = ShoppingCart.GetCart(DbContext, HttpContext);
 
             // Set up our ViewModel
             var viewModel = new ShoppingCartViewModel
@@ -45,7 +45,7 @@ namespace MusicStore.Controllers
                 .Single(album => album.AlbumId == id);
 
             // Add it to the shopping cart
-            var cart = ShoppingCart.GetCart(DbContext, Context);
+            var cart = ShoppingCart.GetCart(DbContext, HttpContext);
 
             cart.AddToCart(addedAlbum);
 
@@ -65,7 +65,7 @@ namespace MusicStore.Controllers
             StringValues tokenHeaders;
             string[] tokens = null;
 
-            if (Context.Request.Headers.TryGetValue("RequestVerificationToken", out tokenHeaders))
+            if (HttpContext.Request.Headers.TryGetValue("RequestVerificationToken", out tokenHeaders))
             {
                 tokens = tokenHeaders.First().Split(':');
                 if (tokens != null && tokens.Length == 2)
@@ -75,10 +75,10 @@ namespace MusicStore.Controllers
                 }
             }
 
-            Antiforgery.ValidateTokens(Context, new AntiforgeryTokenSet(formToken, cookieToken));
+            Antiforgery.ValidateTokens(HttpContext, new AntiforgeryTokenSet(formToken, cookieToken));
 
             // Retrieve the current user's shopping cart
-            var cart = ShoppingCart.GetCart(DbContext, Context);
+            var cart = ShoppingCart.GetCart(DbContext, HttpContext);
 
             // Get the name of the album to display confirmation
             var cartItem = await DbContext.CartItems

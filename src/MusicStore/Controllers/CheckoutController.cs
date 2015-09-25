@@ -37,7 +37,7 @@ namespace MusicStore.Controllers
                 return View(order);
             }
 
-            var formCollection = await Context.Request.ReadFormAsync();
+            var formCollection = await HttpContext.Request.ReadFormAsync();
 
             try
             {
@@ -48,14 +48,14 @@ namespace MusicStore.Controllers
                 }
                 else
                 {
-                    order.Username = Context.User.GetUserName();
+                    order.Username = HttpContext.User.GetUserName();
                     order.OrderDate = DateTime.Now;
 
                     //Add the Order
                     DbContext.Orders.Add(order);
 
                     //Process the order
-                    var cart = ShoppingCart.GetCart(DbContext, Context);
+                    var cart = ShoppingCart.GetCart(DbContext, HttpContext);
                     await cart.CreateOrder(order);
 
                     // Save all changes
@@ -79,7 +79,7 @@ namespace MusicStore.Controllers
             // Validate customer owns this order
             bool isValid = await DbContext.Orders.AnyAsync(
                 o => o.OrderId == id &&
-                o.Username == Context.User.GetUserName());
+                o.Username == HttpContext.User.GetUserName());
 
             if (isValid)
             {

@@ -146,7 +146,7 @@ namespace MusicStore.Controllers
                     // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=320771
                     // Send an email with this link
                     string code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
-                    var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Context.Request.Scheme);
+                    var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: HttpContext.Request.Scheme);
                     await MessageServices.SendEmailAsync(model.Email, "Confirm your account",
                         "Please confirm your account by clicking this link: <a href=\"" + callbackUrl + "\">link</a>");
 #if !DEMO
@@ -210,7 +210,7 @@ namespace MusicStore.Controllers
                 // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=320771
                 // Send an email with this link
                 string code = await UserManager.GeneratePasswordResetTokenAsync(user);
-                var callbackUrl = Url.Action("ResetPassword", "Account", new { code = code }, protocol: Context.Request.Scheme);
+                var callbackUrl = Url.Action("ResetPassword", "Account", new { code = code }, protocol: HttpContext.Request.Scheme);
                 await MessageServices.SendEmailAsync(model.Email, "Reset Password",
                     "Please reset your password by clicking here: <a href=\"" + callbackUrl + "\">link</a>");
 #if !DEMO
@@ -438,16 +438,16 @@ namespace MusicStore.Controllers
         public async Task<ActionResult> LogOff()
         {
             // clear all items from the cart
-            Context.Session.Clear();
+            HttpContext.Session.Clear();
 
             await SignInManager.SignOutAsync();
 
             // TODO: Currently SignInManager.SignOut does not sign out OpenIdc and does not have a way to pass in a specific
             // AuthType to sign out.
-            var appEnv = Context.RequestServices.GetService<IHostingEnvironment>();
+            var appEnv = HttpContext.RequestServices.GetService<IHostingEnvironment>();
             if (appEnv.EnvironmentName.StartsWith("OpenIdConnect"))
             {
-                await Context.Authentication.SignOutAsync("OpenIdConnect");
+                await HttpContext.Authentication.SignOutAsync("OpenIdConnect");
             }
 
             return RedirectToAction("Index", "Home");
@@ -473,7 +473,7 @@ namespace MusicStore.Controllers
 
         private async Task<ApplicationUser> GetCurrentUserAsync()
         {
-            return await UserManager.FindByIdAsync(Context.User.GetUserId());
+            return await UserManager.FindByIdAsync(HttpContext.User.GetUserId());
         }
 
         private ActionResult RedirectToLocal(string returnUrl)
