@@ -25,8 +25,8 @@ namespace Microsoft.AspNet.Mvc
             Conventions = new List<IApplicationModelConvention>();
             Filters = new FilterCollection();
             FormatterMappings = new FormatterMappings();
-            InputFormatters = new List<IInputFormatter>();
-            OutputFormatters = new List<IOutputFormatter>();
+            InputFormatters = new FormatterCollection<IInputFormatter>();
+            OutputFormatters = new FormatterCollection<IOutputFormatter>();
             ModelBinders = new List<IModelBinder>();
             ModelMetadataDetailsProviders = new List<IMetadataDetailsProvider>();
             ModelValidatorProviders = new List<IModelValidatorProvider>();
@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.Mvc
         /// <summary>
         /// Gets a list of <see cref="IInputFormatter"/>s that are used by this application.
         /// </summary>
-        public IList<IInputFormatter> InputFormatters { get; }
+        public FormatterCollection<IInputFormatter> InputFormatters { get; }
 
         /// <summary>
         /// Gets or sets the maximum number of validation errors that are allowed by this application before further
@@ -109,7 +109,7 @@ namespace Microsoft.AspNet.Mvc
         /// <summary>
         /// Gets a list of <see cref="IOutputFormatter"/>s that are used by this application.
         /// </summary>
-        public IList<IOutputFormatter> OutputFormatters { get; }
+        public FormatterCollection<IOutputFormatter> OutputFormatters { get; }
 
         /// <summary>
         /// Gets or sets the flag which causes content negotiation to ignore Accept header 
