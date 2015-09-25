@@ -11,30 +11,30 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
         /// <summary>
         /// The gap between blocks' starting address. 4096 is chosen because most operating systems are 4k pages in size and alignment.
         /// </summary>
-        private const int blockStride = 4096;
+        private const int _blockStride = 4096;
 
         /// <summary>
         /// The last 64 bytes of a block are unused to prevent CPU from pre-fetching the next 64 byte into it's memory cache. 
         /// See https://github.com/aspnet/KestrelHttpServer/issues/117 and https://www.youtube.com/watch?v=L7zSU9HI-6I
         /// </summary>
-        private const int blockUnused = 64;
+        private const int _blockUnused = 64;
 
         /// <summary>
         /// Allocating 32 contiguous blocks per slab makes the slab size 128k. This is larger than the 85k size which will place the memory
         /// in the large object heap. This means the GC will not try to relocate this array, so the fact it remains pinned does not negatively
         /// affect memory management's compactification.
         /// </summary>
-        private const int blockCount = 32;
+        private const int _blockCount = 32;
 
         /// <summary>
         /// 4096 - 64 gives you a blockLength of 4032 usable bytes per block.
         /// </summary>
-        private const int blockLength = blockStride - blockUnused;
+        private const int _blockLength = _blockStride - _blockUnused;
 
         /// <summary>
         /// 4096 * 32 gives you a slabLength of 128k contiguous bytes allocated per slab
         /// </summary>
-        private const int slabLength = blockStride * blockCount;
+        private const int _slabLength = _blockStride * _blockCount;
 
         /// <summary>
         /// Thread-safe collection of blocks which are currently in the pool. A slab will pre-allocate all of the block tracking objects
@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
         /// <returns>The block that is reserved for the called. It must be passed to Return when it is no longer being used.</returns>
         public MemoryPoolBlock2 Lease(int minimumSize)
         {
-            if (minimumSize > blockLength)
+            if (minimumSize > _blockLength)
             {
                 // The requested minimumSize is actually larger then the usable memory of a single block.
                 // Because this is the degenerate case, a one-time-use byte[] array and tracking object are allocated.
@@ -93,18 +93,18 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
         /// </summary>
         private void AllocateSlab()
         {
-            var slab = MemoryPoolSlab2.Create(slabLength);
+            var slab = MemoryPoolSlab2.Create(_slabLength);
             _slabs.Push(slab);
 
             var basePtr = slab.ArrayPtr;
-            var firstOffset = (blockStride - 1) - ((ushort)(basePtr + blockStride - 1) % blockStride);
+            var firstOffset = (_blockStride - 1) - ((ushort)(basePtr + _blockStride - 1) % _blockStride);
 
             for (var offset = firstOffset;
-                offset + blockLength <= slabLength;
-                offset += blockStride)
+                offset + _blockLength <= _slabLength;
+                offset += _blockStride)
             {
                 var block = MemoryPoolBlock2.Create(
-                    new ArraySegment<byte>(slab.Array, offset, blockLength),
+                    new ArraySegment<byte>(slab.Array, offset, _blockLength),
                     basePtr,
                     this,
                     slab);
