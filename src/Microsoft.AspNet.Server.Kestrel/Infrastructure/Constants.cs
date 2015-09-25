@@ -14,5 +14,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
         /// Prefix of host name used to specify Unix sockets in the configuration.
         /// </summary>
         public const string UnixPipeHostPrefix = "unix:/";
+
+        /// <summary>
+        /// DateTime format string for RFC1123. See  https://msdn.microsoft.com/en-us/library/az4se3k1(v=vs.110).aspx#RFC1123
+        /// for info on the format.
+        /// </summary>
+        public const string RFC1123DateFormat = "r";
     }
 }

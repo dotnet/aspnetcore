@@ -4,6 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Server.Kestrel.Http;
+using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 using Microsoft.AspNet.Server.KestrelTests.TestHelpers;
 using Xunit;
 
@@ -33,7 +34,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 dateHeaderValueManager.Dispose();
             }
 
-            Assert.Equal(now.ToString("r"), result);
+            Assert.Equal(now.ToString(Constants.RFC1123DateFormat), result);
         }
 
         [Fact]
@@ -62,8 +63,8 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 dateHeaderValueManager.Dispose();
             }
 
-            Assert.Equal(now.ToString("r"), result1);
-            Assert.Equal(now.ToString("r"), result2);
+            Assert.Equal(now.ToString(Constants.RFC1123DateFormat), result1);
+            Assert.Equal(now.ToString(Constants.RFC1123DateFormat), result2);
             Assert.Equal(1, systemClock.UtcNowCalled);
         }
 
@@ -95,8 +96,8 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 dateHeaderValueManager.Dispose();
             }
 
-            Assert.Equal(now.ToString("r"), result1);
-            Assert.Equal(future.ToString("r"), result2);
+            Assert.Equal(now.ToString(Constants.RFC1123DateFormat), result1);
+            Assert.Equal(future.ToString(Constants.RFC1123DateFormat), result2);
             Assert.True(systemClock.UtcNowCalled >= 2);
         }
 
@@ -118,8 +119,8 @@ namespace Microsoft.AspNet.Server.KestrelTests
             systemClock.UtcNow = future;
             var result2 = dateHeaderValueManager.GetDateHeaderValue();
             
-            Assert.Equal(now.ToString("r"), result1);
-            Assert.Equal(future.ToString("r"), result2);
+            Assert.Equal(now.ToString(Constants.RFC1123DateFormat), result1);
+            Assert.Equal(future.ToString(Constants.RFC1123DateFormat), result2);
         }
     }
 }

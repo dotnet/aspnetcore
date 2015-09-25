@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             // string used here.
             // The null-coalesce here is to protect against returning null after Dispose() is called, at which
             // point _dateValue will be null forever after.
-            return _dateValue ?? _systemClock.UtcNow.ToString("r");
+            return _dateValue ?? _systemClock.UtcNow.ToString(Constants.RFC1123DateFormat);
         }
 
         /// <summary>
@@ -69,11 +69,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             lock (_timerLocker)
             {
-                if (_dateValueTimer != null)
-                {
-                    DisposeTimer();
-                }
-
+                DisposeTimer();
+                
                 _isDisposed = true;
             }
         }
@@ -94,7 +91,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         // Immediately assign the date value and start the timer again. We assign the value immediately
                         // here as the timer won't fire until the timer interval has passed and we want a value assigned
                         // inline now to serve requests that occur in the meantime.
-                        _dateValue = _systemClock.UtcNow.ToString("r");
+                        _dateValue = _systemClock.UtcNow.ToString(Constants.RFC1123DateFormat);
                         _dateValueTimer = new Timer(UpdateDateValue, state: null, dueTime: _timerInterval, period: _timerInterval);
                     }
                 }
@@ -107,7 +104,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             var now = _systemClock.UtcNow;
 
             // See http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.18 for required format of Date header
-            _dateValue = now.ToString("r");
+            _dateValue = now.ToString(Constants.RFC1123DateFormat);
 
             if (_hadRequestsSinceLastTimerTick)
             {
@@ -137,9 +134,12 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         private void DisposeTimer()
         {
-            _dateValueTimer.Dispose();
-            _dateValueTimer = null;
-            _dateValue = null;
+            if (_dateValueTimer != null)
+            {
+                _dateValueTimer.Dispose();
+                _dateValueTimer = null;
+                _dateValue = null;
+            }
         }
     }
 }
