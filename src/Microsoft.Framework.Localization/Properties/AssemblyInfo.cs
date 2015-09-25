@@ -5,6 +5,6 @@ using System.Reflection;
 using System.Resources;
 using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("Microsoft.Framework.Localization.Test")]
+[assembly: InternalsVisibleTo("Microsoft.Framework.Localization.Tests")]
 [assembly: AssemblyMetadata("Serviceable", "True")]
 [assembly: NeutralResourcesLanguage("en-us")]
