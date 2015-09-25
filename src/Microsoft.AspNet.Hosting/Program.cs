@@ -30,11 +30,12 @@ namespace Microsoft.AspNet.Hosting
             var configFilePath = tempConfig[ConfigFileKey] ?? HostingJsonFile;
 
             var appBasePath = _serviceProvider.GetRequiredService<IApplicationEnvironment>().ApplicationBasePath;
-            var builder = new ConfigurationBuilder(appBasePath);
-            builder.AddJsonFile(configFilePath, optional: true);
-            builder.AddEnvironmentVariables();
-            builder.AddCommandLine(args);
-            var config = builder.Build();
+            var config = new ConfigurationBuilder()
+                .SetBasePath(appBasePath)
+                .AddJsonFile(configFilePath, optional: true)
+                .AddEnvironmentVariables()
+                .AddCommandLine(args)
+                .Build();
 
             var host = new WebHostBuilder(_serviceProvider, config, captureStartupErrors: true).Build();
             using (var app = host.Start())
