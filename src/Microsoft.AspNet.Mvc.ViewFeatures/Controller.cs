@@ -104,8 +104,8 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         /// <remarks>
         /// <see cref="Controllers.IControllerActivator"/> activates this property while activating controllers.
-       ///  If user code directly instantiates a controller, the getter returns an empty
-       /// <see cref="Mvc.ActionContext"/>.
+        ///  If user code directly instantiates a controller, the getter returns an empty
+        /// <see cref="Mvc.ActionContext"/>.
         /// </remarks>
         [ActionContext]
         public ActionContext ActionContext
@@ -147,10 +147,13 @@ namespace Microsoft.AspNet.Mvc
 
                 return _metadataProvider;
             }
-
-            [param: NotNull]
             set
             {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
                 _metadataProvider = value;
             }
         }
@@ -169,10 +172,13 @@ namespace Microsoft.AspNet.Mvc
 
                 return _url;
             }
-
-            [param: NotNull]
             set
             {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
                 _url = value;
             }
         }
@@ -191,10 +197,13 @@ namespace Microsoft.AspNet.Mvc
 
                 return _objectValidator;
             }
-
-            [param: NotNull]
             set
             {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
                 _objectValidator = value;
             }
         }
@@ -259,10 +268,13 @@ namespace Microsoft.AspNet.Mvc
 
                 return _tempData;
             }
-
-            [param: NotNull]
             set
             {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
                 _tempData = value;
             }
         }
@@ -525,8 +537,13 @@ namespace Microsoft.AspNet.Mvc
         /// <remarks>Callers should cache an instance of <see cref="JsonSerializerSettings"/> to avoid
         /// recreating cached data with each call.</remarks>
         [NonAction]
-        public virtual JsonResult Json(object data, [NotNull] JsonSerializerSettings serializerSettings)
+        public virtual JsonResult Json(object data, JsonSerializerSettings serializerSettings)
         {
+            if (serializerSettings == null)
+            {
+                throw new ArgumentNullException(nameof(serializerSettings));
+            }
+
             var disposableValue = data as IDisposable;
             if (disposableValue != null)
             {
@@ -981,8 +998,13 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
         [NonAction]
-        public virtual BadRequestObjectResult HttpBadRequest([NotNull] ModelStateDictionary modelState)
+        public virtual BadRequestObjectResult HttpBadRequest(ModelStateDictionary modelState)
         {
+            if (modelState == null)
+            {
+                throw new ArgumentNullException(nameof(modelState));
+            }
+
             return new BadRequestObjectResult(modelState);
         }
 
@@ -993,8 +1015,13 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="value">The content value to format in the entity body.</param>
         /// <returns>The created <see cref="CreatedResult"/> for the response.</returns>
         [NonAction]
-        public virtual CreatedResult Created([NotNull] string uri, object value)
+        public virtual CreatedResult Created(string uri, object value)
         {
+            if (uri == null)
+            {
+                throw new ArgumentNullException(nameof(uri));
+            }
+
             var disposableValue = value as IDisposable;
             if (disposableValue != null)
             {
@@ -1011,14 +1038,19 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="value">The content value to format in the entity body.</param>
         /// <returns>The created <see cref="CreatedResult"/> for the response.</returns>
         [NonAction]
-        public virtual CreatedResult Created([NotNull] Uri uri, object value)
+        public virtual CreatedResult Created(Uri uri, object value)
         {
+            if (uri == null)
+            {
+                throw new ArgumentNullException(nameof(uri));
+            }
+
             var disposableValue = value as IDisposable;
             if (disposableValue != null)
             {
                 Response.RegisterForDispose(disposableValue);
             }
-            
+
             return new CreatedResult(uri, value);
         }
 
@@ -1119,8 +1151,12 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         /// <param name="context">The action executing context.</param>
         [NonAction]
-        public virtual void OnActionExecuting([NotNull] ActionExecutingContext context)
+        public virtual void OnActionExecuting(ActionExecutingContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
         }
 
         /// <summary>
@@ -1128,8 +1164,12 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         /// <param name="context">The action executed context.</param>
         [NonAction]
-        public virtual void OnActionExecuted([NotNull] ActionExecutedContext context)
+        public virtual void OnActionExecuted(ActionExecutedContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
         }
 
         /// <summary>
@@ -1141,9 +1181,19 @@ namespace Microsoft.AspNet.Mvc
         /// <returns>A <see cref="Task"/> instance.</returns>
         [NonAction]
         public virtual async Task OnActionExecutionAsync(
-            [NotNull] ActionExecutingContext context,
-            [NotNull] ActionExecutionDelegate next)
+            ActionExecutingContext context,
+            ActionExecutionDelegate next)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (next == null)
+            {
+                throw new ArgumentNullException(nameof(next));
+            }
+
             OnActionExecuting(context);
             if (context.Result == null)
             {
@@ -1160,9 +1210,14 @@ namespace Microsoft.AspNet.Mvc
         /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
         [NonAction]
         public virtual Task<bool> TryUpdateModelAsync<TModel>(
-            [NotNull] TModel model)
+            TModel model)
             where TModel : class
         {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
             return TryUpdateModelAsync(model, prefix: string.Empty);
         }
 
@@ -1177,10 +1232,20 @@ namespace Microsoft.AspNet.Mvc
         /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
         [NonAction]
         public virtual Task<bool> TryUpdateModelAsync<TModel>(
-            [NotNull] TModel model,
-            [NotNull] string prefix)
+            TModel model,
+            string prefix)
             where TModel : class
         {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            if (prefix == null)
+            {
+                throw new ArgumentNullException(nameof(prefix));
+            }
+
             if (BindingContext == null)
             {
                 var message = Resources.FormatPropertyOfTypeCannotBeNull(
@@ -1204,11 +1269,26 @@ namespace Microsoft.AspNet.Mvc
         /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
         [NonAction]
         public virtual Task<bool> TryUpdateModelAsync<TModel>(
-            [NotNull] TModel model,
-            [NotNull] string prefix,
-            [NotNull] IValueProvider valueProvider)
+            TModel model,
+            string prefix,
+            IValueProvider valueProvider)
             where TModel : class
         {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            if (prefix == null)
+            {
+                throw new ArgumentNullException(nameof(prefix));
+            }
+
+            if (valueProvider == null)
+            {
+                throw new ArgumentNullException(nameof(valueProvider));
+            }
+
             if (BindingContext == null)
             {
                 var message = Resources.FormatPropertyOfTypeCannotBeNull(
@@ -1243,11 +1323,21 @@ namespace Microsoft.AspNet.Mvc
         /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
         [NonAction]
         public Task<bool> TryUpdateModelAsync<TModel>(
-            [NotNull] TModel model,
+            TModel model,
             string prefix,
-            [NotNull] params Expression<Func<TModel, object>>[] includeExpressions)
+            params Expression<Func<TModel, object>>[] includeExpressions)
            where TModel : class
         {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            if (includeExpressions == null)
+            {
+                throw new ArgumentNullException(nameof(includeExpressions));
+            }
+
             if (BindingContext == null)
             {
                 var message = Resources.FormatPropertyOfTypeCannotBeNull(
@@ -1282,11 +1372,21 @@ namespace Microsoft.AspNet.Mvc
         /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
         [NonAction]
         public Task<bool> TryUpdateModelAsync<TModel>(
-            [NotNull] TModel model,
+            TModel model,
             string prefix,
-            [NotNull] Func<ModelBindingContext, string, bool> predicate)
+            Func<ModelBindingContext, string, bool> predicate)
             where TModel : class
         {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            if (predicate == null)
+            {
+                throw new ArgumentNullException(nameof(predicate));
+            }
+
             if (BindingContext == null)
             {
                 var message = Resources.FormatPropertyOfTypeCannotBeNull(
@@ -1323,12 +1423,27 @@ namespace Microsoft.AspNet.Mvc
         /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
         [NonAction]
         public Task<bool> TryUpdateModelAsync<TModel>(
-            [NotNull] TModel model,
+            TModel model,
             string prefix,
-            [NotNull] IValueProvider valueProvider,
-            [NotNull] params Expression<Func<TModel, object>>[] includeExpressions)
+            IValueProvider valueProvider,
+            params Expression<Func<TModel, object>>[] includeExpressions)
            where TModel : class
         {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            if (valueProvider == null)
+            {
+                throw new ArgumentNullException(nameof(valueProvider));
+            }
+
+            if (includeExpressions == null)
+            {
+                throw new ArgumentNullException(nameof(includeExpressions));
+            }
+
             if (BindingContext == null)
             {
                 var message = Resources.FormatPropertyOfTypeCannotBeNull(
@@ -1364,12 +1479,27 @@ namespace Microsoft.AspNet.Mvc
         /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
         [NonAction]
         public Task<bool> TryUpdateModelAsync<TModel>(
-            [NotNull] TModel model,
+            TModel model,
             string prefix,
-            [NotNull] IValueProvider valueProvider,
-            [NotNull] Func<ModelBindingContext, string, bool> predicate)
+            IValueProvider valueProvider,
+            Func<ModelBindingContext, string, bool> predicate)
             where TModel : class
         {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            if (valueProvider == null)
+            {
+                throw new ArgumentNullException(nameof(valueProvider));
+            }
+
+            if (predicate == null)
+            {
+                throw new ArgumentNullException(nameof(predicate));
+            }
+
             if (BindingContext == null)
             {
                 var message = Resources.FormatPropertyOfTypeCannotBeNull(
@@ -1403,10 +1533,20 @@ namespace Microsoft.AspNet.Mvc
         /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
         [NonAction]
         public virtual Task<bool> TryUpdateModelAsync(
-            [NotNull] object model,
-            [NotNull] Type modelType,
+            object model,
+            Type modelType,
             string prefix)
         {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            if (modelType == null)
+            {
+                throw new ArgumentNullException(nameof(modelType));
+            }
+
             if (BindingContext == null)
             {
                 var message = Resources.FormatPropertyOfTypeCannotBeNull(
@@ -1442,12 +1582,32 @@ namespace Microsoft.AspNet.Mvc
         /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
         [NonAction]
         public Task<bool> TryUpdateModelAsync(
-            [NotNull] object model,
-            [NotNull] Type modelType,
+            object model,
+            Type modelType,
             string prefix,
-            [NotNull] IValueProvider valueProvider,
-            [NotNull] Func<ModelBindingContext, string, bool> predicate)
+            IValueProvider valueProvider,
+            Func<ModelBindingContext, string, bool> predicate)
         {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            if (modelType == null)
+            {
+                throw new ArgumentNullException(nameof(modelType));
+            }
+
+            if (valueProvider == null)
+            {
+                throw new ArgumentNullException(nameof(valueProvider));
+            }
+
+            if (predicate == null)
+            {
+                throw new ArgumentNullException(nameof(predicate));
+            }
+
             if (BindingContext == null)
             {
                 var message = Resources.FormatPropertyOfTypeCannotBeNull(
@@ -1478,8 +1638,13 @@ namespace Microsoft.AspNet.Mvc
         /// <returns><c>true</c> if the <see cref="ModelState"/> is valid; <c>false</c> otherwise.</returns>
         [NonAction]
         public virtual bool TryValidateModel(
-            [NotNull] object model)
+            object model)
         {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
             return TryValidateModel(model, prefix: null);
         }
 
@@ -1492,9 +1657,14 @@ namespace Microsoft.AspNet.Mvc
         /// <returns><c>true</c> if the <see cref="ModelState"/> is valid;<c>false</c> otherwise.</returns>
         [NonAction]
         public virtual bool TryValidateModel(
-            [NotNull] object model,
+            object model,
             string prefix)
         {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
             if (BindingContext == null)
             {
                 var message = Resources.FormatPropertyOfTypeCannotBeNull(

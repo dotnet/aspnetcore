@@ -6,10 +6,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.AspNet.Antiforgery;
+using Microsoft.AspNet.Http.Internal;
+using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Mvc.ViewEngines;
+using Microsoft.AspNet.Routing;
 using Microsoft.Framework.OptionsModel;
 using Microsoft.Framework.WebEncoders;
 using Moq;
@@ -661,7 +664,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         // GetCurrentValues uses only the ModelStateDictionary and ViewDataDictionary from the passed ViewContext.
         private static ViewContext GetViewContext<TModel>(TModel model, IModelMetadataProvider metadataProvider)
         {
-            var actionContext = new ActionContext();
+            var actionContext = new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
             var viewData = new ViewDataDictionary<TModel>(metadataProvider, actionContext.ModelState)
             {
                 Model = model,

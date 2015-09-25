@@ -1,11 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Mvc.Infrastructure;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ViewComponents
 {
@@ -53,8 +53,13 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
         /// <returns>
         /// <c>true</c> if <paramref name="typeInfo"/>represents a View Component class, otherwise <c>false</c>.
         /// </returns>
-        protected virtual bool IsViewComponentType([NotNull] TypeInfo typeInfo)
+        protected virtual bool IsViewComponentType(TypeInfo typeInfo)
         {
+            if (typeInfo == null)
+            {
+                throw new ArgumentNullException(nameof(typeInfo));
+            }
+
             return ViewComponentConventions.IsComponent(typeInfo);
         }
 

@@ -8,7 +8,6 @@ using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewEngines;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.Mvc.ViewFeatures
@@ -19,21 +18,50 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         /// Initializes a new instance of the <see cref="HtmlHelper{TModel}"/> class.
         /// </summary>
         public HtmlHelper(
-            [NotNull] IHtmlGenerator htmlGenerator,
-            [NotNull] ICompositeViewEngine viewEngine,
-            [NotNull] IModelMetadataProvider metadataProvider,
-            [NotNull] IHtmlEncoder htmlEncoder,
-            [NotNull] IUrlEncoder urlEncoder,
-            [NotNull] IJavaScriptStringEncoder javaScriptStringEncoder)
+            IHtmlGenerator htmlGenerator,
+            ICompositeViewEngine viewEngine,
+            IModelMetadataProvider metadataProvider,
+            IHtmlEncoder htmlEncoder,
+            IUrlEncoder urlEncoder,
+            IJavaScriptStringEncoder javaScriptStringEncoder)
             : base(htmlGenerator, viewEngine, metadataProvider, htmlEncoder, urlEncoder, javaScriptStringEncoder)
         {
+            if (htmlGenerator == null)
+            {
+                throw new ArgumentNullException(nameof(htmlGenerator));
+            }
+            if (viewEngine == null)
+            {
+                throw new ArgumentNullException(nameof(viewEngine));
+            }
+            if (metadataProvider == null)
+            {
+                throw new ArgumentNullException(nameof(metadataProvider));
+            }
+            if (htmlEncoder == null)
+            {
+                throw new ArgumentNullException(nameof(htmlEncoder));
+            }
+            if (urlEncoder == null)
+            {
+                throw new ArgumentNullException(nameof(urlEncoder));
+            }
+            if (javaScriptStringEncoder == null)
+            {
+                throw new ArgumentNullException(nameof(javaScriptStringEncoder));
+            }
         }
 
         /// <inheritdoc />
         public new ViewDataDictionary<TModel> ViewData { get; private set; }
 
-        public override void Contextualize([NotNull] ViewContext viewContext)
+        public override void Contextualize(ViewContext viewContext)
         {
+            if (viewContext == null)
+            {
+                throw new ArgumentNullException(nameof(viewContext));
+            }
+
             if (viewContext.ViewData == null)
             {
                 throw new ArgumentException(Resources.FormatPropertyOfTypeCannotBeNull(
@@ -58,9 +86,14 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
         /// <inheritdoc />
         public IHtmlContent CheckBoxFor(
-            [NotNull] Expression<Func<TModel, bool>> expression,
+            Expression<Func<TModel, bool>> expression,
             object htmlAttributes)
         {
+            if (expression == null)
+            {
+                throw new ArgumentNullException(nameof(expression));
+            }
+
             var modelExplorer = GetModelExplorer(expression);
             return GenerateCheckBox(modelExplorer, GetExpressionName(expression), isChecked: null,
                 htmlAttributes: htmlAttributes);
@@ -68,11 +101,16 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
         /// <inheritdoc />
         public IHtmlContent DropDownListFor<TResult>(
-            [NotNull] Expression<Func<TModel, TResult>> expression,
+            Expression<Func<TModel, TResult>> expression,
             IEnumerable<SelectListItem> selectList,
             string optionLabel,
             object htmlAttributes)
         {
+            if (expression == null)
+            {
+                throw new ArgumentNullException(nameof(expression));
+            }
+
             var modelExplorer = ExpressionMetadataProvider.FromLambdaExpression(expression, ViewData, MetadataProvider);
 
             return GenerateDropDown(modelExplorer, ExpressionHelper.GetExpressionText(expression), selectList,
@@ -81,11 +119,16 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
         /// <inheritdoc />
         public IHtmlContent DisplayFor<TResult>(
-            [NotNull] Expression<Func<TModel, TResult>> expression,
+            Expression<Func<TModel, TResult>> expression,
             string templateName,
             string htmlFieldName,
             object additionalViewData)
         {
+            if (expression == null)
+            {
+                throw new ArgumentNullException(nameof(expression));
+            }
+
             var modelExplorer = ExpressionMetadataProvider.FromLambdaExpression(expression,
                                                                            ViewData,
                                                                            MetadataProvider);
@@ -97,16 +140,26 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         }
 
         /// <inheritdoc />
-        public string DisplayNameFor<TResult>([NotNull] Expression<Func<TModel, TResult>> expression)
+        public string DisplayNameFor<TResult>(Expression<Func<TModel, TResult>> expression)
         {
+            if (expression == null)
+            {
+                throw new ArgumentNullException(nameof(expression));
+            }
+
             var modelExplorer = GetModelExplorer(expression);
             return GenerateDisplayName(modelExplorer, ExpressionHelper.GetExpressionText(expression));
         }
 
         /// <inheritdoc />
         public string DisplayNameForInnerType<TModelItem, TResult>(
-            [NotNull] Expression<Func<TModelItem, TResult>> expression)
+            Expression<Func<TModelItem, TResult>> expression)
         {
+            if (expression == null)
+            {
+                throw new ArgumentNullException(nameof(expression));
+            }
+
             var modelExplorer = ExpressionMetadataProvider.FromLambdaExpression<TModelItem, TResult>(
                 expression,
                 new ViewDataDictionary<TModelItem>(ViewData, model: null),
@@ -122,18 +175,28 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         }
 
         /// <inheritdoc />
-        public string DisplayTextFor<TResult>([NotNull] Expression<Func<TModel, TResult>> expression)
+        public string DisplayTextFor<TResult>(Expression<Func<TModel, TResult>> expression)
         {
+            if (expression == null)
+            {
+                throw new ArgumentNullException(nameof(expression));
+            }
+
             return GenerateDisplayText(GetModelExplorer(expression));
         }
 
         /// <inheritdoc />
         public IHtmlContent EditorFor<TResult>(
-            [NotNull] Expression<Func<TModel, TResult>> expression,
+            Expression<Func<TModel, TResult>> expression,
             string templateName,
             string htmlFieldName,
             object additionalViewData)
         {
+            if (expression == null)
+            {
+                throw new ArgumentNullException(nameof(expression));
+            }
+
             var modelExplorer = ExpressionMetadataProvider.FromLambdaExpression(expression, ViewData, MetadataProvider);
 
             return GenerateEditor(
@@ -145,9 +208,14 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
         /// <inheritdoc />
         public IHtmlContent HiddenFor<TResult>(
-            [NotNull] Expression<Func<TModel, TResult>> expression,
+            Expression<Func<TModel, TResult>> expression,
             object htmlAttributes)
         {
+            if (expression == null)
+            {
+                throw new ArgumentNullException(nameof(expression));
+            }
+
             var modelExplorer = GetModelExplorer(expression);
             return GenerateHidden(
                 modelExplorer,
@@ -158,17 +226,27 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         }
 
         /// <inheritdoc />
-        public string IdFor<TResult>([NotNull] Expression<Func<TModel, TResult>> expression)
+        public string IdFor<TResult>(Expression<Func<TModel, TResult>> expression)
         {
+            if (expression == null)
+            {
+                throw new ArgumentNullException(nameof(expression));
+            }
+
             return GenerateId(GetExpressionName(expression));
         }
 
         /// <inheritdoc />
         public IHtmlContent LabelFor<TResult>(
-            [NotNull] Expression<Func<TModel, TResult>> expression,
+            Expression<Func<TModel, TResult>> expression,
             string labelText,
             object htmlAttributes)
         {
+            if (expression == null)
+            {
+                throw new ArgumentNullException(nameof(expression));
+            }
+
             var modelExplorer = GetModelExplorer(expression);
             return GenerateLabel(
                 modelExplorer,
@@ -179,10 +257,15 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
         /// <inheritdoc />
         public IHtmlContent ListBoxFor<TResult>(
-            [NotNull] Expression<Func<TModel, TResult>> expression,
+            Expression<Func<TModel, TResult>> expression,
             IEnumerable<SelectListItem> selectList,
             object htmlAttributes)
         {
+            if (expression == null)
+            {
+                throw new ArgumentNullException(nameof(expression));
+            }
+
             var modelExplorer = GetModelExplorer(expression);
             var name = ExpressionHelper.GetExpressionText(expression);
 
@@ -190,17 +273,27 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         }
 
         /// <inheritdoc />
-        public string NameFor<TResult>([NotNull] Expression<Func<TModel, TResult>> expression)
+        public string NameFor<TResult>(Expression<Func<TModel, TResult>> expression)
         {
+            if (expression == null)
+            {
+                throw new ArgumentNullException(nameof(expression));
+            }
+
             var expressionName = GetExpressionName(expression);
             return Name(expressionName);
         }
 
         /// <inheritdoc />
         public IHtmlContent PasswordFor<TResult>(
-            [NotNull] Expression<Func<TModel, TResult>> expression,
+            Expression<Func<TModel, TResult>> expression,
             object htmlAttributes)
         {
+            if (expression == null)
+            {
+                throw new ArgumentNullException(nameof(expression));
+            }
+
             var modelExplorer = GetModelExplorer(expression);
             return GeneratePassword(
                 modelExplorer,
@@ -211,10 +304,20 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
         /// <inheritdoc />
         public IHtmlContent RadioButtonFor<TResult>(
-            [NotNull] Expression<Func<TModel, TResult>> expression,
-            [NotNull] object value,
+            Expression<Func<TModel, TResult>> expression,
+            object value,
             object htmlAttributes)
         {
+            if (expression == null)
+            {
+                throw new ArgumentNullException(nameof(expression));
+            }
+
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
             var modelExplorer = GetModelExplorer(expression);
             return GenerateRadioButton(
                 modelExplorer,
@@ -226,21 +329,31 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
         /// <inheritdoc />
         public IHtmlContent TextAreaFor<TResult>(
-            [NotNull] Expression<Func<TModel, TResult>> expression,
+            Expression<Func<TModel, TResult>> expression,
             int rows,
             int columns,
             object htmlAttributes)
         {
+            if (expression == null)
+            {
+                throw new ArgumentNullException(nameof(expression));
+            }
+
             var modelExplorer = GetModelExplorer(expression);
             return GenerateTextArea(modelExplorer, GetExpressionName(expression), rows, columns, htmlAttributes);
         }
 
         /// <inheritdoc />
         public IHtmlContent TextBoxFor<TResult>(
-            [NotNull] Expression<Func<TModel, TResult>> expression,
+            Expression<Func<TModel, TResult>> expression,
             string format,
             object htmlAttributes)
         {
+            if (expression == null)
+            {
+                throw new ArgumentNullException(nameof(expression));
+            }
+
             var modelExplorer = GetModelExplorer(expression);
             return GenerateTextBox(
                 modelExplorer,
@@ -250,13 +363,23 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 htmlAttributes);
         }
 
-        protected string GetExpressionName<TResult>([NotNull] Expression<Func<TModel, TResult>> expression)
+        protected string GetExpressionName<TResult>(Expression<Func<TModel, TResult>> expression)
         {
+            if (expression == null)
+            {
+                throw new ArgumentNullException(nameof(expression));
+            }
+
             return ExpressionHelper.GetExpressionText(expression);
         }
 
-        protected ModelExplorer GetModelExplorer<TResult>([NotNull] Expression<Func<TModel, TResult>> expression)
+        protected ModelExplorer GetModelExplorer<TResult>(Expression<Func<TModel, TResult>> expression)
         {
+            if (expression == null)
+            {
+                throw new ArgumentNullException(nameof(expression));
+            }
+
             var modelExplorer = ExpressionMetadataProvider.FromLambdaExpression(expression, ViewData, MetadataProvider);
             if (modelExplorer == null)
             {
@@ -269,11 +392,16 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
         /// <inheritdoc />
         public IHtmlContent ValidationMessageFor<TResult>(
-            [NotNull] Expression<Func<TModel, TResult>> expression,
+            Expression<Func<TModel, TResult>> expression,
             string message,
             object htmlAttributes,
             string tag)
         {
+            if (expression == null)
+            {
+                throw new ArgumentNullException(nameof(expression));
+            }
+
             return GenerateValidationMessage(ExpressionHelper.GetExpressionText(expression),
                 message,
                 htmlAttributes,
@@ -281,8 +409,13 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         }
 
         /// <inheritdoc />
-        public string ValueFor<TResult>([NotNull] Expression<Func<TModel, TResult>> expression, string format)
+        public string ValueFor<TResult>(Expression<Func<TModel, TResult>> expression, string format)
         {
+            if (expression == null)
+            {
+                throw new ArgumentNullException(nameof(expression));
+            }
+
             var modelExplorer = GetModelExplorer(expression);
             return GenerateValue(
                 ExpressionHelper.GetExpressionText(expression),

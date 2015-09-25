@@ -1,9 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc.ViewEngines
@@ -25,17 +25,37 @@ namespace Microsoft.AspNet.Mvc.ViewEngines
 
         /// <inheritdoc />
         public ViewEngineResult FindPartialView(
-            [NotNull] ActionContext context,
-            [NotNull] string partialViewName)
+            ActionContext context,
+            string partialViewName)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (partialViewName == null)
+            {
+                throw new ArgumentNullException(nameof(partialViewName));
+            }
+
             return FindView(context, partialViewName, partial: true);
         }
 
         /// <inheritdoc />
         public ViewEngineResult FindView(
-            [NotNull] ActionContext context,
-            [NotNull] string viewName)
+            ActionContext context,
+            string viewName)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (viewName == null)
+            {
+                throw new ArgumentNullException(nameof(viewName));
+            }
+
             return FindView(context, viewName, partial: false);
         }
 

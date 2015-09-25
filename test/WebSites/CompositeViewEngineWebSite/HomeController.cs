@@ -5,16 +5,16 @@ using Microsoft.AspNet.Mvc;
 
 namespace CompositeViewEngineWebSite
 {
-    public class HomeController
+    public class HomeController : Controller
     {
         public ViewResult Index()
         {
-            return new ViewResult();
+            return View();
         }
 
         public ViewResult TestView()
         {
-            return new ViewResult { ViewName = "test-view" };
+            return View("test-view");
         }
     }
 }

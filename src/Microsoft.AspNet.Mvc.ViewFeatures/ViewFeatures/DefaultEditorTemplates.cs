@@ -280,7 +280,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
                     var valueDivTag = new TagBuilder("div");
                     valueDivTag.AddCssClass("editor-field");
-                    
+
                     valueDivTag.InnerHtml.Append(templateBuilderResult);
                     valueDivTag.InnerHtml.AppendEncoded(" ");
                     valueDivTag.InnerHtml.Append(htmlHelper.ValidationMessage(
@@ -365,13 +365,23 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             return GenerateTextBox(htmlHelper, inputType: "number");
         }
 
-        public static IHtmlContent FileInputTemplate([NotNull] IHtmlHelper htmlHelper)
+        public static IHtmlContent FileInputTemplate(IHtmlHelper htmlHelper)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             return GenerateTextBox(htmlHelper, inputType: "file");
         }
 
-        public static IHtmlContent FileCollectionInputTemplate([NotNull] IHtmlHelper htmlHelper)
+        public static IHtmlContent FileCollectionInputTemplate(IHtmlHelper htmlHelper)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             var htmlAttributes =
                 CreateHtmlAttributes(htmlHelper, className: "text-box single-line", inputType: "file");
             htmlAttributes["multiple"] = "multiple";

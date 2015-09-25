@@ -8,12 +8,15 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.AspNet.Http.Internal;
+using Microsoft.AspNet.Mvc.Abstractions;
+using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.TestCommon;
 using Microsoft.AspNet.Mvc.ViewEngines;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.PageExecutionInstrumentation;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
+using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing;
 using Microsoft.Framework.WebEncoders.Testing;
 using Moq;
@@ -1827,11 +1830,14 @@ namespace Microsoft.AspNet.Mvc.Razor
         private static ViewContext CreateViewContext(TextWriter writer = null)
         {
             writer = writer ?? new StringWriter();
-            var actionContext = new ActionContext(new DefaultHttpContext(), routeData: null, actionDescriptor: null);
+            var actionContext = new ActionContext(
+                new DefaultHttpContext(),
+                new RouteData(),
+                new ActionDescriptor());
             return new ViewContext(
                 actionContext,
                 Mock.Of<IView>(),
-                null,
+                new ViewDataDictionary(new EmptyModelMetadataProvider()),
                 Mock.Of<ITempDataDictionary>(),
                 writer,
                 new HtmlHelperOptions());

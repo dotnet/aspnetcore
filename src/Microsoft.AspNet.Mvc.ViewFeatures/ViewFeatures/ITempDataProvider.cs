@@ -3,7 +3,6 @@
 
 using System.Collections.Generic;
 using Microsoft.AspNet.Http;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ViewFeatures
 {
@@ -17,13 +16,13 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/>.</param>
         /// <returns>The temporary data.</returns>
-        IDictionary<string, object> LoadTempData([NotNull] HttpContext context);
+        IDictionary<string, object> LoadTempData(HttpContext context);
 
         /// <summary>
         /// Saves the temporary data.
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/>.</param>
         /// <param name="values">The values to save.</param>
-        void SaveTempData([NotNull] HttpContext context, IDictionary<string, object> values);
+        void SaveTempData(HttpContext context, IDictionary<string, object> values);
     }
 }

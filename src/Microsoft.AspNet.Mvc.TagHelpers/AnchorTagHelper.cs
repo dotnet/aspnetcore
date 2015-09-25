@@ -147,14 +147,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 TagBuilder tagBuilder;
                 if (Route == null)
                 {
-                    tagBuilder = Generator.GenerateActionLink(linkText: string.Empty,
-                                                              actionName: Action,
-                                                              controllerName: Controller,
-                                                              protocol: Protocol,
-                                                              hostname: Host,
-                                                              fragment: Fragment,
-                                                              routeValues: routeValues,
-                                                              htmlAttributes: null);
+                    tagBuilder = Generator.GenerateActionLink(
+                        linkText: string.Empty,
+                        actionName: Action,
+                        controllerName: Controller,
+                        protocol: Protocol,
+                        hostname: Host,
+                        fragment: Fragment,
+                        routeValues: routeValues,
+                        htmlAttributes: null);
                 }
                 else if (Action != null || Controller != null)
                 {

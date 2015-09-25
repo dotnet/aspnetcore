@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Mvc
                 actionContext,
                 view,
                 viewData,
-                null,
+                Mock.Of<ITempDataDictionary>(),
                 TextWriter.Null,
                 new HtmlHelperOptions());
 

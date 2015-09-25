@@ -285,7 +285,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 actionContext,
                 Mock.Of<IView>(),
                 viewData,
-                null,
+                new TempDataDictionary(
+                    new HttpContextAccessor(),
+                    Mock.Of<ITempDataProvider>()),
                 new StringWriter(),
                 options.HtmlHelperOptions);
 

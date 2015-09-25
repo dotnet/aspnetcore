@@ -110,7 +110,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 view.Object,
                 actionContext,
                 viewData,
-                null,
+                Mock.Of<ITempDataDictionary>(),
                 new HtmlHelperOptions(),
                 contentType);
 

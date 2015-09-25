@@ -30,7 +30,8 @@ namespace ModelBindingWebSite.Controllers
                     var context = new ViewContext(
                         ActionContext,
                         new TestView(),
-                        viewData, null,
+                        viewData,
+                        TempData,
                         TextWriter.Null,
                         new HtmlHelperOptions());
 

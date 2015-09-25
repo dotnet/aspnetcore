@@ -7,7 +7,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
+using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ViewEngines;
+using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
@@ -23,27 +25,32 @@ namespace Microsoft.AspNet.Mvc
         public async Task ExecuteResultAsync_ReturnsError_IfViewCouldNotBeFound()
         {
             // Arrange
-            var expected = string.Join(Environment.NewLine,
-                                       "The view 'MyView' was not found. The following locations were searched:",
-                                       "Location1",
-                                       "Location2.");
-            var actionContext = new ActionContext(GetHttpContext(),
-                                                  new RouteData(),
-                                                  new ActionDescriptor());
+            var expected = string.Join(
+                Environment.NewLine,
+                "The view 'MyView' was not found. The following locations were searched:",
+                "Location1",
+                "Location2.");
+            var actionContext = new ActionContext(
+                GetHttpContext(),
+                new RouteData(),
+                new ActionDescriptor());
             var viewEngine = new Mock<IViewEngine>();
-            viewEngine.Setup(v => v.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
-                      .Returns(ViewEngineResult.NotFound("MyView", new[] { "Location1", "Location2" }))
-                       .Verifiable();
+            viewEngine
+                .Setup(v => v.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
+                .Returns(ViewEngineResult.NotFound("MyView", new[] { "Location1", "Location2" }))
+                .Verifiable();
 
             var viewResult = new PartialViewResult
             {
                 ViewEngine = viewEngine.Object,
-                ViewName = "MyView"
+                ViewName = "MyView",
+                ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider()),
+                TempData = Mock.Of<ITempDataDictionary>(),
             };
 
             // Act and Assert
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-                                () => viewResult.ExecuteResultAsync(actionContext));
+                () => viewResult.ExecuteResultAsync(actionContext));
             Assert.Equal(expected, ex.Message);
             viewEngine.Verify();
         }
@@ -57,14 +64,17 @@ namespace Microsoft.AspNet.Mvc
             var viewEngine = new Mock<IViewEngine>();
             var view = Mock.Of<IView>();
 
-            viewEngine.Setup(e => e.FindPartialView(context, "myview"))
-                      .Returns(ViewEngineResult.Found("myview", view))
-                      .Verifiable();
+            viewEngine
+                .Setup(e => e.FindPartialView(context, "myview"))
+                .Returns(ViewEngineResult.Found("myview", view))
+                .Verifiable();
 
             var viewResult = new PartialViewResult
             {
                 ViewName = viewName,
-                ViewEngine = viewEngine.Object
+                ViewEngine = viewEngine.Object,
+                ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider()),
+                TempData = Mock.Of<ITempDataDictionary>(),
             };
 
             // Act
@@ -109,14 +119,17 @@ namespace Microsoft.AspNet.Mvc
             var viewEngine = new Mock<IViewEngine>();
             var view = Mock.Of<IView>();
 
-            viewEngine.Setup(e => e.FindPartialView(context, "myview"))
-                      .Returns(ViewEngineResult.Found("myview", view));
+            viewEngine
+                .Setup(e => e.FindPartialView(context, "myview"))
+                .Returns(ViewEngineResult.Found("myview", view));
 
             var viewResult = new PartialViewResult
             {
                 ViewName = viewName,
                 ViewEngine = viewEngine.Object,
-                ContentType = contentType
+                ContentType = contentType,
+                ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider()),
+                TempData = Mock.Of<ITempDataDictionary>(),
             };
 
             // Act
@@ -136,14 +149,17 @@ namespace Microsoft.AspNet.Mvc
             var viewEngine = new Mock<IViewEngine>();
             var view = Mock.Of<IView>();
 
-            viewEngine.Setup(e => e.FindPartialView(context, "myview"))
-                      .Returns(ViewEngineResult.Found("myview", view));
+            viewEngine
+                .Setup(e => e.FindPartialView(context, "myview"))
+                .Returns(ViewEngineResult.Found("myview", view));
 
             var viewResult = new PartialViewResult
             {
                 ViewName = viewName,
                 ViewEngine = viewEngine.Object,
                 StatusCode = 404,
+                ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider()),
+                TempData = Mock.Of<ITempDataDictionary>(),
             };
 
             // Act
@@ -158,17 +174,21 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var viewName = "some-view-name";
-            var context = new ActionContext(GetHttpContext(),
-                                            new RouteData(),
-                                            new ActionDescriptor { Name = viewName });
+            var context = new ActionContext(
+                GetHttpContext(),
+                new RouteData(),
+                new ActionDescriptor { Name = viewName });
             var viewEngine = new Mock<ICompositeViewEngine>();
-            viewEngine.Setup(e => e.FindPartialView(context, viewName))
-                      .Returns(ViewEngineResult.Found(viewName, Mock.Of<IView>()))
-                      .Verifiable();
+            viewEngine
+                .Setup(e => e.FindPartialView(context, viewName))
+                .Returns(ViewEngineResult.Found(viewName, Mock.Of<IView>()))
+                .Verifiable();
 
             var viewResult = new PartialViewResult
             {
-                ViewEngine = viewEngine.Object
+                ViewEngine = viewEngine.Object,
+                ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider()),
+                TempData = Mock.Of<ITempDataDictionary>(),
             };
 
             // Act
@@ -183,19 +203,23 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var viewName = "partial-view-name";
-            var context = new ActionContext(new DefaultHttpContext(),
-                                            new RouteData(),
-                                            new ActionDescriptor { Name = viewName });
+            var context = new ActionContext(
+                new DefaultHttpContext(),
+                new RouteData(),
+                new ActionDescriptor { Name = viewName });
             var viewEngine = new Mock<ICompositeViewEngine>();
-            viewEngine.Setup(e => e.FindPartialView(It.IsAny<ActionContext>(), viewName))
-                      .Returns(ViewEngineResult.Found(viewName, Mock.Of<IView>()))
-                      .Verifiable();
+            viewEngine
+                .Setup(e => e.FindPartialView(It.IsAny<ActionContext>(), viewName))
+                .Returns(ViewEngineResult.Found(viewName, Mock.Of<IView>()))
+                .Verifiable();
 
             var serviceProvider = new Mock<IServiceProvider>();
-            serviceProvider.Setup(p => p.GetService(typeof(ICompositeViewEngine)))
-                           .Returns(viewEngine.Object);
-            serviceProvider.Setup(p => p.GetService(typeof(ILogger<PartialViewResult>)))
-                           .Returns(new Mock<ILogger<PartialViewResult>>().Object);
+            serviceProvider
+                .Setup(p => p.GetService(typeof(ICompositeViewEngine)))
+                .Returns(viewEngine.Object);
+            serviceProvider
+                .Setup(p => p.GetService(typeof(ILogger<PartialViewResult>)))
+                .Returns(new Mock<ILogger<PartialViewResult>>().Object);
             serviceProvider.Setup(s => s.GetService(typeof(IOptions<MvcViewOptions>)))
                 .Returns(() => {
                     var optionsAccessor = new Mock<IOptions<MvcViewOptions>>();
@@ -207,7 +231,9 @@ namespace Microsoft.AspNet.Mvc
 
             var viewResult = new PartialViewResult
             {
-                ViewName = viewName
+                ViewName = viewName,
+                ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider()),
+                TempData = Mock.Of<ITempDataDictionary>(),
             };
 
             // Act

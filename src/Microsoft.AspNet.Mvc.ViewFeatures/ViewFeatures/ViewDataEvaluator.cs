@@ -1,9 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ViewFeatures
 {
@@ -20,8 +20,13 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         /// <returns>
         /// <see cref="ViewDataInfo"/> for named <paramref name="expression"/> in given <paramref name="viewData"/>.
         /// </returns>
-        public static ViewDataInfo Eval([NotNull] ViewDataDictionary viewData, string expression)
+        public static ViewDataInfo Eval(ViewDataDictionary viewData, string expression)
         {
+            if (viewData == null)
+            {
+                throw new ArgumentNullException(nameof(viewData));
+            }
+
             // While it is not valid to generate a field for the top-level model itself because the result is an
             // unnamed input element, do not throw here if full name is null or empty. Support is needed for cases
             // such as Html.Label() and Html.Value(), where the user's code is not creating a name attribute. Checks

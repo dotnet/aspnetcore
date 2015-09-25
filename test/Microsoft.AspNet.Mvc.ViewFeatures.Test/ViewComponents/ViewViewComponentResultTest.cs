@@ -20,6 +20,9 @@ namespace Microsoft.AspNet.Mvc
 {
     public class ViewViewComponentResultTest
     {
+        private readonly ITempDataDictionary _tempDataDictionary =
+            new TempDataDictionary(new HttpContextAccessor(), new SessionStateTempDataProvider());
+
         [Fact]
         public void Execute_RendersPartialViews()
         {
@@ -40,7 +43,8 @@ namespace Microsoft.AspNet.Mvc
             {
                 ViewEngine = viewEngine.Object,
                 ViewName = "some-view",
-                ViewData = viewData
+                ViewData = viewData,
+                TempData = _tempDataDictionary,
             };
 
             var viewComponentContext = GetViewComponentContext(view.Object, viewData);
@@ -72,7 +76,8 @@ namespace Microsoft.AspNet.Mvc
             var result = new ViewViewComponentResult
             {
                 ViewEngine = viewEngine.Object,
-                ViewData = viewData
+                ViewData = viewData,
+                TempData = _tempDataDictionary,
             };
 
             var viewComponentContext = GetViewComponentContext(view.Object, viewData);
@@ -107,7 +112,8 @@ namespace Microsoft.AspNet.Mvc
             {
                 ViewEngine = viewEngine.Object,
                 ViewName = "some-view",
-                ViewData = viewData
+                ViewData = viewData,
+                TempData = _tempDataDictionary,
             };
 
             var viewComponentContext = GetViewComponentContext(view, viewData);
@@ -139,7 +145,8 @@ namespace Microsoft.AspNet.Mvc
             {
                 ViewEngine = viewEngine.Object,
                 ViewName = "some-view",
-                ViewData = viewData
+                ViewData = viewData,
+                TempData = _tempDataDictionary,
             };
 
             var viewComponentContext = GetViewComponentContext(view.Object, viewData);
@@ -169,7 +176,8 @@ namespace Microsoft.AspNet.Mvc
             {
                 ViewEngine = viewEngine.Object,
                 ViewName = "some-view",
-                ViewData = viewData
+                ViewData = viewData,
+                TempData = _tempDataDictionary,
             };
 
             var viewComponentContext = GetViewComponentContext(view, viewData);
@@ -201,7 +209,8 @@ namespace Microsoft.AspNet.Mvc
             var result = new ViewViewComponentResult
             {
                 ViewName = "some-view",
-                ViewData = viewData
+                ViewData = viewData,
+                TempData = _tempDataDictionary,
             };
 
             var viewComponentContext = GetViewComponentContext(view, viewData);
@@ -239,7 +248,8 @@ namespace Microsoft.AspNet.Mvc
             {
                 ViewEngine = viewEngine.Object,
                 ViewName = "some-view",
-                ViewData = viewData
+                ViewData = viewData,
+                TempData = _tempDataDictionary,
             };
 
             var viewComponentContext = GetViewComponentContext(view, viewData);
@@ -266,7 +276,8 @@ namespace Microsoft.AspNet.Mvc
             var result = new ViewViewComponentResult
             {
                 ViewName = "some-view",
-                ViewData = viewData
+                ViewData = viewData,
+                TempData = _tempDataDictionary,
             };
 
             var viewComponentContext = GetViewComponentContext(view, viewData);
@@ -299,6 +310,7 @@ namespace Microsoft.AspNet.Mvc
             componentResult.ViewEngine = viewEngine.Object;
             componentResult.ViewData = viewData;
             componentResult.ViewName = viewName;
+            componentResult.TempData = _tempDataDictionary;
 
             // Act & Assert
             componentResult.Execute(componentContext);
@@ -323,7 +335,8 @@ namespace Microsoft.AspNet.Mvc
             {
                 ViewEngine = viewEngine.Object,
                 ViewData = viewData,
-                ViewName = viewName
+                ViewName = viewName,
+                TempData = _tempDataDictionary,
             };
 
             // Act & Assert
@@ -338,7 +351,7 @@ namespace Microsoft.AspNet.Mvc
                 actionContext,
                 view,
                 viewData,
-                null,
+                new TempDataDictionary(new HttpContextAccessor(), new SessionStateTempDataProvider()),
                 TextWriter.Null,
                 new HtmlHelperOptions());
 

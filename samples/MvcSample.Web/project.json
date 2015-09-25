@@ -18,15 +18,7 @@
         "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
         "Microsoft.AspNet.Session": "1.0.0-*",
         "Microsoft.AspNet.StaticFiles": "1.0.0-*",
-        "Microsoft.Framework.Configuration.Json": "1.0.0-*",
-        "Microsoft.Framework.PropertyHelper.Sources": {
-            "version": "1.0.0-*",
-            "type": "build"
-        },
-        "Microsoft.Framework.NotNullAttribute.Sources": {
-            "type": "build",
-            "version": "1.0.0-*"
-        }
+        "Microsoft.Framework.Configuration.Json": "1.0.0-*"
     },
     "frameworks": {
         "dnx451": { },

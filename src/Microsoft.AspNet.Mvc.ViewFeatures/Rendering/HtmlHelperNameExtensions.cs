@@ -1,8 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Mvc.ViewFeatures;
-using Microsoft.Framework.Internal;
+using System;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
@@ -16,8 +15,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </summary>
         /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <returns>A <see cref="string"/> containing the element name.</returns>
-        public static string NameForModel([NotNull] this IHtmlHelper htmlHelper)
+        public static string NameForModel(this IHtmlHelper htmlHelper)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             return htmlHelper.Name(expression: null);
         }
 
@@ -26,8 +30,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </summary>
         /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <returns>A <see cref="string"/> containing the element Id.</returns>
-        public static string IdForModel([NotNull] this IHtmlHelper htmlHelper)
+        public static string IdForModel(this IHtmlHelper htmlHelper)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             return htmlHelper.Id(expression: null);
         }
     }

@@ -3,7 +3,6 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ViewComponents;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -16,7 +15,7 @@ namespace Microsoft.AspNet.Mvc
         /// Executes the result of a <see cref="ViewComponent"/> using the specified <paramref name="context"/>.
         /// </summary>
         /// <param name="context">The <see cref="ViewComponentContext"/> for the current component execution.</param>
-        void Execute([NotNull] ViewComponentContext context);
+        void Execute(ViewComponentContext context);
 
         /// <summary>
         /// Asynchronously executes the result of a <see cref="ViewComponent"/> using the specified
@@ -24,6 +23,6 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         /// <param name="context">The <see cref="ViewComponentContext"/> for the current component execution.</param>
         /// <returns>A <see cref="Task"/> that represents the asynchronous execution.</returns>
-        Task ExecuteAsync([NotNull] ViewComponentContext context);
+        Task ExecuteAsync(ViewComponentContext context);
     }
 }

@@ -13,6 +13,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.Filters;
+using Microsoft.AspNet.Mvc.Formatters;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Mvc.ViewFeatures;
@@ -1753,6 +1754,7 @@ namespace Microsoft.AspNet.Mvc.Test
             {
                 ModelBinder = binder,
                 ValueProvider = provider,
+                InputFormatters = new List<IInputFormatter>(),
                 ValidatorProvider = new DataAnnotationsModelValidatorProvider(
                     options: null,
                     stringLocalizerFactory: null)

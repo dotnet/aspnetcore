@@ -4,8 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
-using Microsoft.AspNet.Mvc.ViewFeatures;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ViewFeatures
 {
@@ -13,8 +11,13 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
     {
         private readonly Func<ViewDataDictionary> _viewDataFunc;
 
-        public DynamicViewData([NotNull] Func<ViewDataDictionary> viewDataFunc)
+        public DynamicViewData(Func<ViewDataDictionary> viewDataFunc)
         {
+            if (viewDataFunc == null)
+            {
+                throw new ArgumentNullException(nameof(viewDataFunc));
+            }
+
             _viewDataFunc = viewDataFunc;
         }
 
@@ -40,8 +43,13 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             return ViewData.Keys;
         }
 
-        public override bool TryGetMember([NotNull] GetMemberBinder binder, out object result)
+        public override bool TryGetMember(GetMemberBinder binder, out object result)
         {
+            if (binder == null)
+            {
+                throw new ArgumentNullException(nameof(binder));
+            }
+
             result = ViewData[binder.Name];
 
             // ViewDataDictionary[key] will never throw a KeyNotFoundException.
@@ -49,8 +57,13 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             return true;
         }
 
-        public override bool TrySetMember([NotNull] SetMemberBinder binder, object value)
+        public override bool TrySetMember(SetMemberBinder binder, object value)
         {
+            if (binder == null)
+            {
+                throw new ArgumentNullException(nameof(binder));
+            }
+
             ViewData[binder.Name] = value;
 
             // Can always add / update a ViewDataDictionary value.

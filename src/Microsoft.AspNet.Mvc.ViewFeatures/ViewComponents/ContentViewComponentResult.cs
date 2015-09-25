@@ -1,10 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ViewComponents
 {
@@ -26,8 +26,13 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
         /// Initializes a new <see cref="ContentViewComponentResult"/>.
         /// </summary>
         /// <param name="content">Content to write. The content be HTML encoded when output.</param>
-        public ContentViewComponentResult([NotNull] string content)
+        public ContentViewComponentResult(string content)
         {
+            if (content == null)
+            {
+                throw new ArgumentNullException(nameof(content));
+            }
+
             Content = content;
             EncodedContent = new HtmlString(WebUtility.HtmlEncode(content));
         }
@@ -39,8 +44,13 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
         /// Content to write. The content is treated as already HTML encoded, and no further encoding
         /// will be performed.
         /// </param>
-        public ContentViewComponentResult([NotNull] HtmlString encodedContent)
+        public ContentViewComponentResult(HtmlString encodedContent)
         {
+            if (encodedContent == null)
+            {
+                throw new ArgumentNullException(nameof(encodedContent));
+            }
+
             EncodedContent = encodedContent;
             Content = WebUtility.HtmlDecode(encodedContent.ToString());
         }
@@ -59,8 +69,13 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
         /// Writes the <see cref="EncodedContent"/>.
         /// </summary>
         /// <param name="context">The <see cref="ViewComponentContext"/>.</param>
-        public void Execute([NotNull] ViewComponentContext context)
+        public void Execute(ViewComponentContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             context.Writer.Write(EncodedContent.ToString());
         }
 
@@ -69,8 +84,13 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
         /// </summary>
         /// <param name="context">The <see cref="ViewComponentContext"/>.</param>
         /// <returns>A completed <see cref="Task"/>.</returns>
-        public Task ExecuteAsync([NotNull] ViewComponentContext context)
+        public Task ExecuteAsync(ViewComponentContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             return context.Writer.WriteAsync(EncodedContent.ToString());
         }
     }

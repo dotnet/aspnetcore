@@ -12,7 +12,6 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewEngines;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ViewFeatures.Internal
 {
@@ -75,12 +74,27 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures.Internal
         private bool _readOnly;
 
         public TemplateRenderer(
-            [NotNull] IViewEngine viewEngine,
-            [NotNull] ViewContext viewContext,
-            [NotNull] ViewDataDictionary viewData,
+            IViewEngine viewEngine,
+            ViewContext viewContext,
+            ViewDataDictionary viewData,
             string templateName,
             bool readOnly)
         {
+            if (viewEngine == null)
+            {
+                throw new ArgumentNullException(nameof(viewEngine));
+            }
+
+            if (viewContext == null)
+            {
+                throw new ArgumentNullException(nameof(viewContext));
+            }
+
+            if (viewData == null)
+            {
+                throw new ArgumentNullException(nameof(viewData));
+            }
+
             _viewEngine = viewEngine;
             _viewContext = viewContext;
             _viewData = viewData;

@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ViewFeatures
 {
@@ -30,16 +29,26 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             }
         }
 
-        public bool RenderedField([NotNull] string fieldName)
+        public bool RenderedField(string fieldName)
         {
+            if (fieldName == null)
+            {
+                throw new ArgumentNullException(nameof(fieldName));
+            }
+
             bool result;
             _renderedFields.TryGetValue(fieldName, out result);
 
             return result;
         }
 
-        public void RenderedField([NotNull] string fieldName, bool value)
+        public void RenderedField(string fieldName, bool value)
         {
+            if (fieldName == null)
+            {
+                throw new ArgumentNullException(nameof(fieldName));
+            }
+
             _renderedFields[fieldName] = value;
         }
     }

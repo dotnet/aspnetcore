@@ -1,35 +1,52 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
     public class SelectList : MultiSelectList
     {
-        public SelectList([NotNull] IEnumerable items)
+        public SelectList(IEnumerable items)
             : this(items, selectedValue: null)
         {
+            if (items == null)
+            {
+                throw new ArgumentNullException(nameof(items));
+            }
         }
 
-        public SelectList([NotNull] IEnumerable items, object selectedValue)
+        public SelectList(IEnumerable items, object selectedValue)
             : this(items, dataValueField: null, dataTextField: null, selectedValue: selectedValue)
         {
+            if (items == null)
+            {
+                throw new ArgumentNullException(nameof(items));
+            }
         }
 
-        public SelectList([NotNull] IEnumerable items, string dataValueField, string dataTextField)
+        public SelectList(IEnumerable items, string dataValueField, string dataTextField)
             : this(items, dataValueField, dataTextField, selectedValue: null)
         {
+            if (items == null)
+            {
+                throw new ArgumentNullException(nameof(items));
+            }
         }
 
         public SelectList(
-            [NotNull] IEnumerable items,
+            IEnumerable items,
             string dataValueField,
             string dataTextField,
             object selectedValue)
             : base(items, dataValueField, dataTextField, ToEnumerable(selectedValue))
         {
+            if (items == null)
+            {
+                throw new ArgumentNullException(nameof(items));
+            }
+
             SelectedValue = selectedValue;
         }
 
@@ -47,13 +64,18 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="dataGroupField">The data group field. Used to match the Group property of the corresponding
         /// <see cref="SelectListItem"/>.</param>
         public SelectList(
-            [NotNull] IEnumerable items,
+            IEnumerable items,
             string dataValueField,
             string dataTextField,
             object selectedValue,
             string dataGroupField)
             : base(items, dataValueField, dataTextField, ToEnumerable(selectedValue), dataGroupField)
         {
+            if (items == null)
+            {
+                throw new ArgumentNullException(nameof(items));
+            }
+
             SelectedValue = selectedValue;
         }
 

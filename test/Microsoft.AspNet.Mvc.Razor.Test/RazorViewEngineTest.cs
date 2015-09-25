@@ -297,14 +297,18 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             var pageFactory = new Mock<IRazorPageFactory>();
             var viewFactory = new Mock<IRazorViewFactory>();
             var page = Mock.Of<IRazorPage>();
-            pageFactory.Setup(p => p.CreateInstance("fake-path1/bar/test-view.rzr"))
-                       .Returns(Mock.Of<IRazorPage>())
-                       .Verifiable();
-            var viewEngine = new OverloadedLocationViewEngine(pageFactory.Object,
-                                                              viewFactory.Object,
-                                                              GetOptionsAccessor(),
-                                                              GetViewLocationCache());
+            pageFactory
+                .Setup(p => p.CreateInstance("fake-path1/bar/test-view.rzr"))
+                .Returns(page)
+                .Verifiable();
+            var viewEngine = new OverloadedLocationViewEngine(
+                pageFactory.Object,
+                viewFactory.Object,
+                GetOptionsAccessor(),
+                GetViewLocationCache());
             var context = GetActionContext(_controllerTestContext);
+            viewFactory.Setup(v => v.GetView(viewEngine, page, false))
+                .Returns(Mock.Of<IView>());
 
             // Act
             var result = viewEngine.FindView(context, "test-view");
@@ -320,14 +324,18 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             var pageFactory = new Mock<IRazorPageFactory>();
             var viewFactory = new Mock<IRazorViewFactory>();
             var page = Mock.Of<IRazorPage>();
-            pageFactory.Setup(p => p.CreateInstance("fake-area-path/foo/bar/test-view2.rzr"))
-                       .Returns(Mock.Of<IRazorPage>())
-                       .Verifiable();
-            var viewEngine = new OverloadedLocationViewEngine(pageFactory.Object,
-                                                              viewFactory.Object,
-                                                              GetOptionsAccessor(),
-                                                              GetViewLocationCache());
+            pageFactory
+                .Setup(p => p.CreateInstance("fake-area-path/foo/bar/test-view2.rzr"))
+                .Returns(page)
+                .Verifiable();
+            var viewEngine = new OverloadedLocationViewEngine(
+                pageFactory.Object,
+                viewFactory.Object,
+                GetOptionsAccessor(),
+                GetViewLocationCache());
             var context = GetActionContext(_areaTestContext);
+            viewFactory.Setup(v => v.GetView(viewEngine, page, false))
+                .Returns(Mock.Of<IView>());
 
             // Act
             var result = viewEngine.FindView(context, "test-view2");

@@ -1,17 +1,16 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Security.Principal;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Mvc.ViewComponents;
 using Microsoft.AspNet.Mvc.ViewEngines;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Internal;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.Mvc
@@ -114,10 +113,13 @@ namespace Microsoft.AspNet.Mvc
 
                 return _url;
             }
-
-            [param: NotNull]
             set
             {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
                 _url = value;
             }
         }
@@ -135,10 +137,13 @@ namespace Microsoft.AspNet.Mvc
 
                 return _viewComponentContext;
             }
-
-            [param: NotNull]
             set
             {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
                 _viewComponentContext = value;
             }
         }
@@ -181,10 +186,13 @@ namespace Microsoft.AspNet.Mvc
 
                 return _viewEngine;
             }
-
-            [param: NotNull]
             set
             {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
                 _viewEngine = value;
             }
         }
@@ -194,8 +202,13 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         /// <param name="content">The content, will be HTML encoded before output.</param>
         /// <returns>A <see cref="ContentViewComponentResult"/>.</returns>
-        public ContentViewComponentResult Content([NotNull] string content)
+        public ContentViewComponentResult Content(string content)
         {
+            if (content == null)
+            {
+                throw new ArgumentNullException(nameof(content));
+            }
+
             return new ContentViewComponentResult(content);
         }
 
@@ -218,8 +231,13 @@ namespace Microsoft.AspNet.Mvc
         /// <returns>A <see cref="JsonViewComponentResult"/>.</returns>
         /// <remarks>Callers should cache an instance of <see cref="JsonSerializerSettings"/> to avoid
         /// recreating cached data with each call.</remarks>
-        public JsonViewComponentResult Json(object value, [NotNull] JsonSerializerSettings serializerSettings)
+        public JsonViewComponentResult Json(object value, JsonSerializerSettings serializerSettings)
         {
+            if (serializerSettings == null)
+            {
+                throw new ArgumentNullException(nameof(serializerSettings));
+            }
+
             return new JsonViewComponentResult(value, serializerSettings);
         }
 

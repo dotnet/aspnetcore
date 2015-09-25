@@ -4,11 +4,9 @@
 using System;
 using System.Diagnostics.Tracing;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewEngines;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
 using Microsoft.Net.Http.Headers;
@@ -56,8 +54,13 @@ namespace Microsoft.AspNet.Mvc
         public MediaTypeHeaderValue ContentType { get; set; }
 
         /// <inheritdoc />
-        public override async Task ExecuteResultAsync([NotNull] ActionContext context)
+        public override async Task ExecuteResultAsync(ActionContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var services = context.HttpContext.RequestServices;
             var viewEngine = ViewEngine ?? services.GetRequiredService<ICompositeViewEngine>();
 
@@ -68,7 +71,7 @@ namespace Microsoft.AspNet.Mvc
 
             var viewName = ViewName ?? context.ActionDescriptor.Name;
             var viewEngineResult = viewEngine.FindView(context, viewName);
-            if(!viewEngineResult.Success)
+            if (!viewEngineResult.Success)
             {
                 if (telemetry.IsEnabled("Microsoft.AspNet.Mvc.ViewResultViewNotFound"))
                 {
@@ -84,7 +87,7 @@ namespace Microsoft.AspNet.Mvc
                 }
 
                 logger.LogError(
-                    "The view '{ViewName}' was not found. Searched locations: {SearchedViewLocations}", 
+                    "The view '{ViewName}' was not found. Searched locations: {SearchedViewLocations}",
                     viewName,
                     viewEngineResult.SearchedLocations);
             }

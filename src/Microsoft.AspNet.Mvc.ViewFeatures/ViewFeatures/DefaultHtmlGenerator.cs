@@ -13,7 +13,6 @@ using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Mvc.ViewFeatures.Internal;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
@@ -43,12 +42,37 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         /// <param name="urlHelper">The <see cref="IUrlHelper"/>.</param>
         /// <param name="htmlEncoder">The <see cref="IHtmlEncoder"/>.</param>
         public DefaultHtmlGenerator(
-            [NotNull] IAntiforgery antiforgery,
-            [NotNull] IOptions<MvcViewOptions> optionsAccessor,
-            [NotNull] IModelMetadataProvider metadataProvider,
-            [NotNull] IUrlHelper urlHelper,
-            [NotNull] IHtmlEncoder htmlEncoder)
+            IAntiforgery antiforgery,
+            IOptions<MvcViewOptions> optionsAccessor,
+            IModelMetadataProvider metadataProvider,
+            IUrlHelper urlHelper,
+            IHtmlEncoder htmlEncoder)
         {
+            if (antiforgery == null)
+            {
+                throw new ArgumentNullException(nameof(antiforgery));
+            }
+
+            if (optionsAccessor == null)
+            {
+                throw new ArgumentNullException(nameof(optionsAccessor));
+            }
+
+            if (metadataProvider == null)
+            {
+                throw new ArgumentNullException(nameof(metadataProvider));
+            }
+
+            if (urlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(urlHelper));
+            }
+
+            if (htmlEncoder == null)
+            {
+                throw new ArgumentNullException(nameof(htmlEncoder));
+            }
+
             _antiforgery = antiforgery;
             var clientValidatorProviders = optionsAccessor.Value.ClientModelValidatorProviders;
             _clientModelValidatorProvider = new CompositeClientModelValidatorProvider(clientValidatorProviders);
@@ -83,7 +107,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
         /// <inheritdoc />
         public virtual TagBuilder GenerateActionLink(
-            [NotNull] string linkText,
+            string linkText,
             string actionName,
             string controllerName,
             string protocol,
@@ -92,25 +116,40 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             object routeValues,
             object htmlAttributes)
         {
+            if (linkText == null)
+            {
+                throw new ArgumentNullException(nameof(linkText));
+            }
+
             var url = _urlHelper.Action(actionName, controllerName, routeValues, protocol, hostname, fragment);
             return GenerateLink(linkText, url, htmlAttributes);
         }
 
         /// <inheritdoc />
-        public virtual IHtmlContent GenerateAntiforgery([NotNull] ViewContext viewContext)
+        public virtual IHtmlContent GenerateAntiforgery(ViewContext viewContext)
         {
+            if (viewContext == null)
+            {
+                throw new ArgumentNullException(nameof(viewContext));
+            }
+
             var tag = _antiforgery.GetHtml(viewContext.HttpContext);
             return new HtmlString(tag);
         }
 
         /// <inheritdoc />
         public virtual TagBuilder GenerateCheckBox(
-            [NotNull] ViewContext viewContext,
+            ViewContext viewContext,
             ModelExplorer modelExplorer,
             string expression,
             bool? isChecked,
             object htmlAttributes)
         {
+            if (viewContext == null)
+            {
+                throw new ArgumentNullException(nameof(viewContext));
+            }
+
             if (modelExplorer != null)
             {
                 // CheckBoxFor() case. That API does not support passing isChecked directly.
@@ -150,10 +189,15 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
         /// <inheritdoc />
         public virtual TagBuilder GenerateHiddenForCheckbox(
-            [NotNull] ViewContext viewContext,
+            ViewContext viewContext,
             ModelExplorer modelExplorer,
             string expression)
         {
+            if (viewContext == null)
+            {
+                throw new ArgumentNullException(nameof(viewContext));
+            }
+
             var tagBuilder = new TagBuilder("input");
             tagBuilder.MergeAttribute("type", GetInputTypeString(InputType.Hidden));
             tagBuilder.MergeAttribute("value", "false");
@@ -167,13 +211,18 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
         /// <inheritdoc />
         public virtual TagBuilder GenerateForm(
-            [NotNull] ViewContext viewContext,
+            ViewContext viewContext,
             string actionName,
             string controllerName,
             object routeValues,
             string method,
             object htmlAttributes)
         {
+            if (viewContext == null)
+            {
+                throw new ArgumentNullException(nameof(viewContext));
+            }
+
             var defaultMethod = false;
             if (string.IsNullOrEmpty(method))
             {
@@ -203,12 +252,17 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
         /// <inheritdoc />
         public TagBuilder GenerateRouteForm(
-            [NotNull] ViewContext viewContext,
+            ViewContext viewContext,
             string routeName,
             object routeValues,
             string method,
             object htmlAttributes)
         {
+            if (viewContext == null)
+            {
+                throw new ArgumentNullException(nameof(viewContext));
+            }
+
             var action =
                 _urlHelper.RouteUrl(routeName, values: routeValues, protocol: null, host: null, fragment: null);
 
@@ -217,13 +271,18 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
         /// <inheritdoc />
         public virtual TagBuilder GenerateHidden(
-            [NotNull] ViewContext viewContext,
+            ViewContext viewContext,
             ModelExplorer modelExplorer,
             string expression,
             object value,
             bool useViewData,
             object htmlAttributes)
         {
+            if (viewContext == null)
+            {
+                throw new ArgumentNullException(nameof(viewContext));
+            }
+
             // Special-case opaque values and arbitrary binary data.
             var byteArrayValue = value as byte[];
             if (byteArrayValue != null)
@@ -248,12 +307,22 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
         /// <inheritdoc />
         public virtual TagBuilder GenerateLabel(
-            [NotNull] ViewContext viewContext,
-            [NotNull] ModelExplorer modelExplorer,
+            ViewContext viewContext,
+            ModelExplorer modelExplorer,
             string expression,
             string labelText,
             object htmlAttributes)
         {
+            if (viewContext == null)
+            {
+                throw new ArgumentNullException(nameof(viewContext));
+            }
+
+            if (modelExplorer == null)
+            {
+                throw new ArgumentNullException(nameof(modelExplorer));
+            }
+
             var resolvedLabelText = labelText ??
                 modelExplorer.Metadata.DisplayName ??
                 modelExplorer.Metadata.PropertyName;
@@ -280,12 +349,17 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
         /// <inheritdoc />
         public virtual TagBuilder GeneratePassword(
-            [NotNull] ViewContext viewContext,
+            ViewContext viewContext,
             ModelExplorer modelExplorer,
             string expression,
             object value,
             object htmlAttributes)
         {
+            if (viewContext == null)
+            {
+                throw new ArgumentNullException(nameof(viewContext));
+            }
+
             var htmlAttributeDictionary = GetHtmlAttributeDictionaryOrNull(htmlAttributes);
             return GenerateInput(
                 viewContext,
@@ -303,13 +377,18 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
         /// <inheritdoc />
         public virtual TagBuilder GenerateRadioButton(
-            [NotNull] ViewContext viewContext,
+            ViewContext viewContext,
             ModelExplorer modelExplorer,
             string expression,
             object value,
             bool? isChecked,
             object htmlAttributes)
         {
+            if (viewContext == null)
+            {
+                throw new ArgumentNullException(nameof(viewContext));
+            }
+
             var htmlAttributeDictionary = GetHtmlAttributeDictionaryOrNull(htmlAttributes);
             if (modelExplorer == null)
             {
@@ -367,7 +446,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
         /// <inheritdoc />
         public virtual TagBuilder GenerateRouteLink(
-            [NotNull] string linkText,
+            string linkText,
             string routeName,
             string protocol,
             string hostName,
@@ -375,13 +454,18 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             object routeValues,
             object htmlAttributes)
         {
+            if (linkText == null)
+            {
+                throw new ArgumentNullException(nameof(linkText));
+            }
+
             var url = _urlHelper.RouteUrl(routeName, routeValues, protocol, hostName, fragment);
             return GenerateLink(linkText, url, htmlAttributes);
         }
 
         /// <inheritdoc />
         public TagBuilder GenerateSelect(
-            [NotNull] ViewContext viewContext,
+            ViewContext viewContext,
             ModelExplorer modelExplorer,
             string optionLabel,
             string expression,
@@ -389,6 +473,11 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             bool allowMultiple,
             object htmlAttributes)
         {
+            if (viewContext == null)
+            {
+                throw new ArgumentNullException(nameof(viewContext));
+            }
+
             var currentValues = GetCurrentValues(viewContext, modelExplorer, expression, allowMultiple);
             return GenerateSelect(
                 viewContext,
@@ -403,7 +492,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
         /// <inheritdoc />
         public virtual TagBuilder GenerateSelect(
-            [NotNull] ViewContext viewContext,
+            ViewContext viewContext,
             ModelExplorer modelExplorer,
             string optionLabel,
             string expression,
@@ -412,6 +501,11 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             bool allowMultiple,
             object htmlAttributes)
         {
+            if (viewContext == null)
+            {
+                throw new ArgumentNullException(nameof(viewContext));
+            }
+
             var fullName = GetFullHtmlFieldName(viewContext, expression);
             if (string.IsNullOrEmpty(fullName))
             {
@@ -423,7 +517,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                         nameof(IHtmlHelper<object>.EditorFor),
                         "htmlFieldName"),
                     nameof(expression));
-        }
+            }
 
             // If we got a null selectList, try to use ViewData to get the list of items.
             if (selectList == null)
@@ -468,13 +562,18 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
         /// <inheritdoc />
         public virtual TagBuilder GenerateTextArea(
-            [NotNull] ViewContext viewContext,
+            ViewContext viewContext,
             ModelExplorer modelExplorer,
             string expression,
             int rows,
             int columns,
             object htmlAttributes)
         {
+            if (viewContext == null)
+            {
+                throw new ArgumentNullException(nameof(viewContext));
+            }
+
             if (rows < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(rows), Resources.HtmlHelper_TextAreaParameterOutOfRange);
@@ -545,13 +644,18 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
         /// <inheritdoc />
         public virtual TagBuilder GenerateTextBox(
-            [NotNull] ViewContext viewContext,
+            ViewContext viewContext,
             ModelExplorer modelExplorer,
             string expression,
             object value,
             string format,
             object htmlAttributes)
         {
+            if (viewContext == null)
+            {
+                throw new ArgumentNullException(nameof(viewContext));
+            }
+
             var htmlAttributeDictionary = GetHtmlAttributeDictionaryOrNull(htmlAttributes);
             return GenerateInput(
                 viewContext,
@@ -569,12 +673,17 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
         /// <inheritdoc />
         public virtual TagBuilder GenerateValidationMessage(
-            [NotNull] ViewContext viewContext,
+            ViewContext viewContext,
             string expression,
             string message,
             string tag,
             object htmlAttributes)
         {
+            if (viewContext == null)
+            {
+                throw new ArgumentNullException(nameof(viewContext));
+            }
+
             var fullName = GetFullHtmlFieldName(viewContext, expression);
             if (string.IsNullOrEmpty(fullName))
             {
@@ -649,12 +758,17 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
         /// <inheritdoc />
         public virtual TagBuilder GenerateValidationSummary(
-            [NotNull] ViewContext viewContext,
+            ViewContext viewContext,
             bool excludePropertyErrors,
             string message,
             string headerTag,
             object htmlAttributes)
         {
+            if (viewContext == null)
+            {
+                throw new ArgumentNullException(nameof(viewContext));
+            }
+
             var formContext = viewContext.ClientValidationEnabled ? viewContext.FormContext : null;
             if (viewContext.ViewData.ModelState.IsValid && (formContext == null || excludePropertyErrors))
             {
@@ -717,7 +831,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             {
                 tagBuilder.AddCssClass(HtmlHelper.ValidationSummaryCssClassName);
             }
-            
+
             tagBuilder.InnerHtml.Append(wrappedMessage);
             tagBuilder.InnerHtml.Append(htmlSummary);
 
@@ -732,10 +846,15 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
         /// <inheritdoc />
         public IEnumerable<ModelClientValidationRule> GetClientValidationRules(
-            [NotNull] ViewContext viewContext,
+            ViewContext viewContext,
             ModelExplorer modelExplorer,
             string expression)
         {
+            if (viewContext == null)
+            {
+                throw new ArgumentNullException(nameof(viewContext));
+            }
+
             modelExplorer = modelExplorer ??
                 ExpressionMetadataProvider.FromStringExpression(expression, viewContext.ViewData, _metadataProvider);
             var validationContext = new ClientModelValidationContext(
@@ -752,11 +871,16 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
         /// <inheritdoc />
         public virtual IReadOnlyCollection<string> GetCurrentValues(
-            [NotNull] ViewContext viewContext,
+            ViewContext viewContext,
             ModelExplorer modelExplorer,
             string expression,
             bool allowMultiple)
         {
+            if (viewContext == null)
+            {
+                throw new ArgumentNullException(nameof(viewContext));
+            }
+
             var fullName = GetFullHtmlFieldName(viewContext, expression);
             if (string.IsNullOrEmpty(fullName))
             {
@@ -953,11 +1077,16 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         /// A <see cref="TagBuilder"/> instance for the &lt;/form&gt; element.
         /// </returns>
         protected virtual TagBuilder GenerateFormCore(
-            [NotNull] ViewContext viewContext,
+            ViewContext viewContext,
             string action,
             string method,
             object htmlAttributes)
         {
+            if (viewContext == null)
+            {
+                throw new ArgumentNullException(nameof(viewContext));
+            }
+
             var tagBuilder = new TagBuilder("form");
             tagBuilder.MergeAttributes(GetHtmlAttributeDictionaryOrNull(htmlAttributes));
 
@@ -978,7 +1107,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         }
 
         protected virtual TagBuilder GenerateInput(
-            [NotNull] ViewContext viewContext,
+            ViewContext viewContext,
             InputType inputType,
             ModelExplorer modelExplorer,
             string expression,
@@ -990,6 +1119,11 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             string format,
             IDictionary<string, object> htmlAttributes)
         {
+            if (viewContext == null)
+            {
+                throw new ArgumentNullException(nameof(viewContext));
+            }
+
             // Not valid to use TextBoxForModel() and so on in a top-level view; would end up with an unnamed input
             // elements. But we support the *ForModel() methods in any lower-level template, once HtmlFieldPrefix is
             // non-empty.
@@ -1104,10 +1238,15 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         }
 
         protected virtual TagBuilder GenerateLink(
-            [NotNull] string linkText,
-            [NotNull] string url,
+            string linkText,
+            string url,
             object htmlAttributes)
         {
+            if (linkText == null)
+            {
+                throw new ArgumentNullException(nameof(linkText));
+            }
+
             var tagBuilder = new TagBuilder("a");
             tagBuilder.InnerHtml.SetContent(linkText);
 
@@ -1215,9 +1354,14 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         }
 
         private static IEnumerable<SelectListItem> GetSelectListItems(
-            [NotNull] ViewContext viewContext,
+            ViewContext viewContext,
             string expression)
         {
+            if (viewContext == null)
+            {
+                throw new ArgumentNullException(nameof(viewContext));
+            }
+
             // Method is called only if user did not pass a select list in. They must provide select list items in the
             // ViewData dictionary and definitely not as the Model. (Even if the Model datatype were correct, a
             // <select> element generated for a collection of SelectListItems would be useless.)
@@ -1311,7 +1455,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                     {
                         groupBuilder.InnerHtml.AppendLine(GenerateOption(item));
                     }
-                    
+
                     listItemBuilder.AppendLine(groupBuilder);
                 }
                 else

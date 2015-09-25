@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.Mvc.ViewFeatures;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ViewComponents
 {
@@ -28,8 +27,13 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
         }
 
         /// <inheritdoc />
-        public ViewComponentDescriptor SelectComponent([NotNull] string componentName)
+        public ViewComponentDescriptor SelectComponent(string componentName)
         {
+            if (componentName == null)
+            {
+                throw new ArgumentNullException(nameof(componentName));
+            }
+
             var collection = _descriptorProvider.ViewComponents;
             if (_cache == null || _cache.Version != collection.Version)
             {

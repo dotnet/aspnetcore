@@ -4,8 +4,6 @@
 using System;
 using System.Linq.Expressions;
 using Microsoft.AspNet.Html.Abstractions;
-using Microsoft.AspNet.Mvc.ViewFeatures;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
@@ -20,8 +18,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="expression">Expression name, relative to the current model.</param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;label&gt; element.</returns>
-        public static IHtmlContent Label([NotNull] this IHtmlHelper htmlHelper, string expression)
+        public static IHtmlContent Label(this IHtmlHelper htmlHelper, string expression)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             return htmlHelper.Label(expression, labelText: null, htmlAttributes: null);
         }
 
@@ -32,8 +35,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="expression">Expression name, relative to the current model.</param>
         /// <param name="labelText">The inner text of the element.</param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;label&gt; element.</returns>
-        public static IHtmlContent Label([NotNull] this IHtmlHelper htmlHelper, string expression, string labelText)
+        public static IHtmlContent Label(this IHtmlHelper htmlHelper, string expression, string labelText)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             return htmlHelper.Label(expression, labelText, htmlAttributes: null);
         }
 
@@ -46,9 +54,19 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;label&gt; element.</returns>
         public static IHtmlContent LabelFor<TModel, TResult>(
-            [NotNull] this IHtmlHelper<TModel> htmlHelper,
-            [NotNull] Expression<Func<TModel, TResult>> expression)
+            this IHtmlHelper<TModel> htmlHelper,
+            Expression<Func<TModel, TResult>> expression)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
+            if (expression == null)
+            {
+                throw new ArgumentNullException(nameof(expression));
+            }
+
             return htmlHelper.LabelFor<TResult>(expression, labelText: null, htmlAttributes: null);
         }
 
@@ -62,10 +80,20 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;label&gt; element.</returns>
         public static IHtmlContent LabelFor<TModel, TResult>(
-            [NotNull] this IHtmlHelper<TModel> htmlHelper,
-            [NotNull] Expression<Func<TModel, TResult>> expression,
+            this IHtmlHelper<TModel> htmlHelper,
+            Expression<Func<TModel, TResult>> expression,
             string labelText)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
+            if (expression == null)
+            {
+                throw new ArgumentNullException(nameof(expression));
+            }
+
             return htmlHelper.LabelFor<TResult>(expression, labelText, htmlAttributes: null);
         }
 
@@ -83,10 +111,20 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;label&gt; element.</returns>
         public static IHtmlContent LabelFor<TModel, TResult>(
-            [NotNull] this IHtmlHelper<TModel> htmlHelper,
-            [NotNull] Expression<Func<TModel, TResult>> expression,
+            this IHtmlHelper<TModel> htmlHelper,
+            Expression<Func<TModel, TResult>> expression,
             object htmlAttributes)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
+            if (expression == null)
+            {
+                throw new ArgumentNullException(nameof(expression));
+            }
+
             return htmlHelper.LabelFor<TResult>(expression, labelText: null, htmlAttributes: htmlAttributes);
         }
 
@@ -95,8 +133,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </summary>
         /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;label&gt; element.</returns>
-        public static IHtmlContent LabelForModel([NotNull] this IHtmlHelper htmlHelper)
+        public static IHtmlContent LabelForModel(this IHtmlHelper htmlHelper)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             return htmlHelper.Label(expression: null, labelText: null, htmlAttributes: null);
         }
 
@@ -106,8 +149,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="labelText">The inner text of the element.</param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;label&gt; element.</returns>
-        public static IHtmlContent LabelForModel([NotNull] this IHtmlHelper htmlHelper, string labelText)
+        public static IHtmlContent LabelForModel(this IHtmlHelper htmlHelper, string labelText)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             return htmlHelper.Label(expression: null, labelText: labelText, htmlAttributes: null);
         }
 
@@ -121,8 +169,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// attributes.
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;label&gt; element.</returns>
-        public static IHtmlContent LabelForModel([NotNull] this IHtmlHelper htmlHelper, object htmlAttributes)
+        public static IHtmlContent LabelForModel(this IHtmlHelper htmlHelper, object htmlAttributes)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             return htmlHelper.Label(expression: null, labelText: null, htmlAttributes: htmlAttributes);
         }
 
@@ -138,10 +191,15 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;label&gt; element.</returns>
         public static IHtmlContent LabelForModel(
-            [NotNull] this IHtmlHelper htmlHelper,
+            this IHtmlHelper htmlHelper,
             string labelText,
             object htmlAttributes)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             return htmlHelper.Label(expression: null, labelText: labelText, htmlAttributes: htmlAttributes);
         }
     }

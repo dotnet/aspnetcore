@@ -8,7 +8,6 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Html.Abstractions;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.Mvc.ViewFeatures
@@ -61,8 +60,13 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         }
 
         /// <inheritdoc />
-        public override void Write([NotNull] char[] buffer, int index, int count)
+        public override void Write(char[] buffer, int index, int count)
         {
+            if (buffer == null)
+            {
+                throw new ArgumentNullException(nameof(buffer));
+            }
+
             if (index < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(index));
@@ -112,8 +116,13 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         }
 
         /// <inheritdoc />
-        public override Task WriteAsync([NotNull] char[] buffer, int index, int count)
+        public override Task WriteAsync(char[] buffer, int index, int count)
         {
+            if (buffer == null)
+            {
+                throw new ArgumentNullException(nameof(buffer));
+            }
+
             Write(buffer, index, count);
             return _completedTask;
         }

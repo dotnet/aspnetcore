@@ -6,18 +6,26 @@ using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Mvc.ViewFeatures;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ViewFeatures
 {
     public static class ExpressionMetadataProvider
     {
         public static ModelExplorer FromLambdaExpression<TModel, TResult>(
-            [NotNull] Expression<Func<TModel, TResult>> expression,
-            [NotNull] ViewDataDictionary<TModel> viewData,
+            Expression<Func<TModel, TResult>> expression,
+            ViewDataDictionary<TModel> viewData,
             IModelMetadataProvider metadataProvider)
         {
+            if (expression == null)
+            {
+                throw new ArgumentNullException(nameof(expression));
+            }
+
+            if (viewData == null)
+            {
+                throw new ArgumentNullException(nameof(viewData));
+            }
+
             string propertyName = null;
             Type containerType = null;
             var legalExpression = false;
@@ -103,9 +111,14 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         /// </returns>
         public static ModelExplorer FromStringExpression(
             string expression,
-            [NotNull] ViewDataDictionary viewData,
+            ViewDataDictionary viewData,
             IModelMetadataProvider metadataProvider)
         {
+            if (viewData == null)
+            {
+                throw new ArgumentNullException(nameof(viewData));
+            }
+
             var viewDataInfo = ViewDataEvaluator.Eval(viewData, expression);
             if (viewDataInfo == null)
             {
@@ -160,9 +173,14 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         }
 
         private static ModelExplorer FromModel(
-            [NotNull] ViewDataDictionary viewData,
+            ViewDataDictionary viewData,
             IModelMetadataProvider metadataProvider)
         {
+            if (viewData == null)
+            {
+                throw new ArgumentNullException(nameof(viewData));
+            }
+
             if (viewData.ModelMetadata.ModelType == typeof(object))
             {
                 // Use common simple type rather than object so e.g. Editor() at least generates a TextBox.

@@ -3,7 +3,6 @@
 
 using System.Collections.Generic;
 using Microsoft.AspNet.Http;
-using Microsoft.Framework.Internal;
 using Moq;
 using Xunit;
 
@@ -184,12 +183,12 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
         private class NullTempDataProvider : ITempDataProvider
         {
-            public IDictionary<string, object> LoadTempData([NotNull]HttpContext context)
+            public IDictionary<string, object> LoadTempData(HttpContext context)
             {
                 return null;
             }
 
-            public void SaveTempData([NotNull]HttpContext context, IDictionary<string, object> values)
+            public void SaveTempData(HttpContext context, IDictionary<string, object> values)
             {
             }
         }
@@ -203,12 +202,12 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 _data = data;
             }
 
-            public IDictionary<string, object> LoadTempData([NotNull]HttpContext context)
+            public IDictionary<string, object> LoadTempData(HttpContext context)
             {
                 return _data;
             }
 
-            public void SaveTempData([NotNull]HttpContext context, IDictionary<string, object> values)
+            public void SaveTempData(HttpContext context, IDictionary<string, object> values)
             {
             }
         }

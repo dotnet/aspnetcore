@@ -40,13 +40,43 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         /// Initializes a new instance of the <see cref="HtmlHelper"/> class.
         /// </summary>
         public HtmlHelper(
-            [NotNull] IHtmlGenerator htmlGenerator,
-            [NotNull] ICompositeViewEngine viewEngine,
-            [NotNull] IModelMetadataProvider metadataProvider,
-            [NotNull] IHtmlEncoder htmlEncoder,
-            [NotNull] IUrlEncoder urlEncoder,
-            [NotNull] IJavaScriptStringEncoder javaScriptStringEncoder)
+            IHtmlGenerator htmlGenerator,
+            ICompositeViewEngine viewEngine,
+            IModelMetadataProvider metadataProvider,
+            IHtmlEncoder htmlEncoder,
+            IUrlEncoder urlEncoder,
+            IJavaScriptStringEncoder javaScriptStringEncoder)
         {
+            if (htmlGenerator == null)
+            {
+                throw new ArgumentNullException(nameof(htmlGenerator));
+            }
+
+            if (viewEngine == null)
+            {
+                throw new ArgumentNullException(nameof(viewEngine));
+            }
+
+            if (metadataProvider == null)
+            {
+                throw new ArgumentNullException(nameof(metadataProvider));
+            }
+
+            if (htmlEncoder == null)
+            {
+                throw new ArgumentNullException(nameof(htmlEncoder));
+            }
+
+            if (urlEncoder == null)
+            {
+                throw new ArgumentNullException(nameof(urlEncoder));
+            }
+
+            if (javaScriptStringEncoder == null)
+            {
+                throw new ArgumentNullException(nameof(javaScriptStringEncoder));
+            }
+
             _viewEngine = viewEngine;
             _htmlGenerator = htmlGenerator;
             _htmlEncoder = htmlEncoder;
@@ -184,14 +214,19 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             return dictionary;
         }
 
-        public virtual void Contextualize([NotNull] ViewContext viewContext)
+        public virtual void Contextualize(ViewContext viewContext)
         {
+            if (viewContext == null)
+            {
+                throw new ArgumentNullException(nameof(viewContext));
+            }
+
             ViewContext = viewContext;
         }
 
         /// <inheritdoc />
         public IHtmlContent ActionLink(
-            [NotNull] string linkText,
+            string linkText,
             string actionName,
             string controllerName,
             string protocol,
@@ -200,6 +235,11 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             object routeValues,
             object htmlAttributes)
         {
+            if (linkText == null)
+            {
+                throw new ArgumentNullException(nameof(linkText));
+            }
+
             var tagBuilder = _htmlGenerator.GenerateActionLink(
                 linkText,
                 actionName,
@@ -277,8 +317,13 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         }
 
         /// <inheritdoc />
-        public string GenerateIdFromName([NotNull] string fullName)
+        public string GenerateIdFromName(string fullName)
         {
+            if (fullName == null)
+            {
+                throw new ArgumentNullException(nameof(fullName));
+            }
+
             return TagBuilder.CreateSanitizedId(fullName, IdAttributeDotReplacement);
         }
 
@@ -360,8 +405,13 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         }
 
         /// <inheritdoc />
-        public IEnumerable<SelectListItem> GetEnumSelectList([NotNull] Type enumType)
+        public IEnumerable<SelectListItem> GetEnumSelectList(Type enumType)
         {
+            if (enumType == null)
+            {
+                throw new ArgumentNullException(nameof(enumType));
+            }
+
             var metadata = MetadataProvider.GetMetadataForType(enumType);
             if (!metadata.IsEnum || metadata.IsFlagsEnum)
             {
@@ -421,10 +471,15 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
         /// <inheritdoc />
         public async Task<IHtmlContent> PartialAsync(
-            [NotNull] string partialViewName,
+            string partialViewName,
             object model,
             ViewDataDictionary viewData)
         {
+            if (partialViewName == null)
+            {
+                throw new ArgumentNullException(nameof(partialViewName));
+            }
+
             using (var writer = new StringCollectionTextWriter(Encoding.UTF8))
             {
                 await RenderPartialCoreAsync(partialViewName, model, viewData, writer);
@@ -433,8 +488,13 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         }
 
         /// <inheritdoc />
-        public Task RenderPartialAsync([NotNull] string partialViewName, object model, ViewDataDictionary viewData)
+        public Task RenderPartialAsync(string partialViewName, object model, ViewDataDictionary viewData)
         {
+            if (partialViewName == null)
+            {
+                throw new ArgumentNullException(nameof(partialViewName));
+            }
+
             return RenderPartialCoreAsync(partialViewName, model, viewData, ViewContext.Writer);
         }
 
@@ -455,11 +515,16 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             return templateBuilder.Build();
         }
 
-        protected virtual async Task RenderPartialCoreAsync([NotNull] string partialViewName,
+        protected virtual async Task RenderPartialCoreAsync(string partialViewName,
                                                             object model,
                                                             ViewDataDictionary viewData,
                                                             TextWriter writer)
         {
+            if (partialViewName == null)
+            {
+                throw new ArgumentNullException(nameof(partialViewName));
+            }
+
             // Determine which ViewData we should use to construct a new ViewData
             var baseViewData = viewData ?? ViewData;
 
@@ -522,7 +587,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
         /// <inheritdoc />
         public IHtmlContent RouteLink(
-            [NotNull] string linkText,
+            string linkText,
             string routeName,
             string protocol,
             string hostName,
@@ -530,6 +595,11 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             object routeValues,
             object htmlAttributes)
         {
+            if (linkText == null)
+            {
+                throw new ArgumentNullException(nameof(linkText));
+            }
+
             var tagBuilder = _htmlGenerator.GenerateRouteLink(
                 linkText,
                 routeName,
@@ -647,8 +717,13 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             return new BufferedHtmlContent().Append(checkbox).Append(hidden);
         }
 
-        protected virtual string GenerateDisplayName([NotNull] ModelExplorer modelExplorer, string expression)
+        protected virtual string GenerateDisplayName(ModelExplorer modelExplorer, string expression)
         {
+            if (modelExplorer == null)
+            {
+                throw new ArgumentNullException(nameof(modelExplorer));
+            }
+
             // We don't call ModelMetadata.GetDisplayName here because
             // we want to fall back to the field name rather than the ModelType.
             // This is similar to how the GenerateLabel get the text of a label.
@@ -852,11 +927,16 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         }
 
         protected virtual IHtmlContent GenerateLabel(
-            [NotNull] ModelExplorer modelExplorer,
+            ModelExplorer modelExplorer,
             string expression,
             string labelText,
             object htmlAttributes)
         {
+            if (modelExplorer == null)
+            {
+                throw new ArgumentNullException(nameof(modelExplorer));
+            }
+
             var tagBuilder = _htmlGenerator.GenerateLabel(
                 ViewContext,
                 modelExplorer,
@@ -1071,8 +1151,13 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         /// Thrown if <paramref name="metadata"/>'s <see cref="ModelMetadata.ModelType"/> is not an <see cref="Enum"/>
         /// or if it has a <see cref="FlagsAttribute"/>.
         /// </exception>
-        protected virtual IEnumerable<SelectListItem> GetEnumSelectList([NotNull] ModelMetadata metadata)
+        protected virtual IEnumerable<SelectListItem> GetEnumSelectList(ModelMetadata metadata)
         {
+            if (metadata == null)
+            {
+                throw new ArgumentNullException(nameof(metadata));
+            }
+
             if (!metadata.IsEnum || metadata.IsFlagsEnum)
             {
                 var message = Resources.FormatHtmlHelper_TypeNotSupported_ForGetEnumSelectList(

@@ -1,9 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 using Newtonsoft.Json;
 
@@ -31,8 +31,13 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
         /// <param name="value">The value to format as JSON text.</param>
         /// <param name="serializerSettings">The <see cref="JsonSerializerSettings"/> to be used by
         /// the formatter.</param>
-        public JsonViewComponentResult(object value, [NotNull] JsonSerializerSettings serializerSettings)
+        public JsonViewComponentResult(object value, JsonSerializerSettings serializerSettings)
         {
+            if (serializerSettings == null)
+            {
+                throw new ArgumentNullException(nameof(serializerSettings));
+            }
+
             Value = value;
             _serializerSettings = serializerSettings;
         }
@@ -46,8 +51,13 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
         /// Renders JSON text to the output.
         /// </summary>
         /// <param name="context">The <see cref="ViewComponentContext"/>.</param>
-        public void Execute([NotNull] ViewComponentContext context)
+        public void Execute(ViewComponentContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var serializerSettings = _serializerSettings;
             if (serializerSettings == null)
             {
@@ -73,8 +83,13 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
         /// </summary>
         /// <param name="context">The <see cref="ViewComponentContext"/>.</param>
         /// <returns>A completed <see cref="Task"/>.</returns>
-        public Task ExecuteAsync([NotNull] ViewComponentContext context)
+        public Task ExecuteAsync(ViewComponentContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             Execute(context);
             return Task.FromResult(true);
         }

@@ -17,7 +17,6 @@ using Microsoft.AspNet.Mvc.TestCommon;
 using Microsoft.AspNet.Mvc.ViewEngines;
 using Microsoft.AspNet.Mvc.ViewFeatures.Internal;
 using Microsoft.AspNet.Testing;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.WebEncoders;
 using Moq;
 using Xunit;
@@ -426,7 +425,7 @@ Environment.NewLine;
 
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(
                 model,
-                null,
+                Mock.Of<IUrlHelper>(),
                 viewEngine.Object,
                 provider,
                 innerHelper => new StubbyHtmlHelper(innerHelper));
@@ -465,7 +464,7 @@ Environment.NewLine;
 
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(
                 model,
-                null,
+                Mock.Of<IUrlHelper>(),
                 viewEngine.Object,
                 provider,
                 innerHelper => new StubbyHtmlHelper(innerHelper));
@@ -503,7 +502,7 @@ Environment.NewLine;
 
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(
                 model,
-                null,
+                Mock.Of<IUrlHelper>(),
                 viewEngine.Object,
                 provider,
                 innerHelper => new StubbyHtmlHelper(innerHelper));
@@ -542,7 +541,7 @@ Environment.NewLine;
 
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(
                 model,
-                null,
+                Mock.Of<IUrlHelper>(),
                 viewEngine.Object,
                 provider,
                 innerHelper => new StubbyHtmlHelper(innerHelper));
@@ -624,7 +623,7 @@ Environment.NewLine;
 
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(
                 model,
-                null,
+                Mock.Of<IUrlHelper>(),
                 viewEngine.Object,
                 provider);
             helper.ViewData.TemplateInfo.HtmlFieldPrefix = "FieldPrefix";
@@ -678,7 +677,7 @@ Environment.NewLine;
 
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(
                 model,
-                null,
+                Mock.Of<IUrlHelper>(),
                 viewEngine.Object,
                 provider);
             helper.Html5DateRenderingMode = Html5DateRenderingMode.Rfc3339;
@@ -737,7 +736,7 @@ Environment.NewLine;
 
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(
                 model,
-                null,
+                Mock.Of<IUrlHelper>(),
                 viewEngine.Object,
                 provider);
 
@@ -929,13 +928,13 @@ Environment.NewLine;
                 get { return _innerHelper.JavaScriptStringEncoder; }
             }
 
-            public void Contextualize([NotNull] ViewContext viewContext)
+            public void Contextualize(ViewContext viewContext)
             {
                 (_innerHelper as ICanHasViewContext)?.Contextualize(viewContext);
             }
 
             public IHtmlContent ActionLink(
-                [NotNull] string linkText,
+                string linkText,
                 string actionName,
                 string controllerName,
                 string protocol,
@@ -1033,7 +1032,7 @@ Environment.NewLine;
                 throw new NotImplementedException();
             }
 
-            public string GenerateIdFromName([NotNull] string name)
+            public string GenerateIdFromName(string name)
             {
                 throw new NotImplementedException();
             }
@@ -1050,7 +1049,7 @@ Environment.NewLine;
                 throw new NotImplementedException();
             }
 
-            public IEnumerable<SelectListItem> GetEnumSelectList([NotNull] Type enumType)
+            public IEnumerable<SelectListItem> GetEnumSelectList(Type enumType)
             {
                 throw new NotImplementedException();
             }
@@ -1081,7 +1080,7 @@ Environment.NewLine;
             }
 
             public Task<IHtmlContent> PartialAsync(
-                [NotNull] string partialViewName,
+                string partialViewName,
                 object model,
                 ViewDataDictionary viewData)
             {
@@ -1108,13 +1107,13 @@ Environment.NewLine;
                 throw new NotImplementedException();
             }
 
-            public Task RenderPartialAsync([NotNull] string partialViewName, object model, ViewDataDictionary viewData)
+            public Task RenderPartialAsync(string partialViewName, object model, ViewDataDictionary viewData)
             {
                 throw new NotImplementedException();
             }
 
             public IHtmlContent RouteLink(
-                [NotNull] string linkText,
+                string linkText,
                 string routeName,
                 string protocol,
                 string hostName,

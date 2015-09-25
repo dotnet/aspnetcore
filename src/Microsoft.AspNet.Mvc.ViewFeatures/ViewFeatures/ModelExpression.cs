@@ -1,8 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
@@ -20,8 +20,18 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="modelExplorer">
         /// Includes the model and metadata about the <see cref="System.Linq.Expressions.Expression"/> of interest.
         /// </param>
-        public ModelExpression([NotNull] string name, [NotNull] ModelExplorer modelExplorer)
+        public ModelExpression(string name, ModelExplorer modelExplorer)
         {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            if (modelExplorer == null)
+            {
+                throw new ArgumentNullException(nameof(modelExplorer));
+            }
+
             Name = name;
             ModelExplorer = modelExplorer;
         }

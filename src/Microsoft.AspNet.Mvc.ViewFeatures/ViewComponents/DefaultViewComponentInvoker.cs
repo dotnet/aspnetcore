@@ -9,7 +9,6 @@ using Microsoft.AspNet.Mvc.Controllers;
 using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewFeatures;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ViewComponents
 {
@@ -19,15 +18,30 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
         private readonly IViewComponentActivator _viewComponentActivator;
 
         public DefaultViewComponentInvoker(
-            [NotNull] ITypeActivatorCache typeActivatorCache,
-            [NotNull] IViewComponentActivator viewComponentActivator)
+            ITypeActivatorCache typeActivatorCache,
+            IViewComponentActivator viewComponentActivator)
         {
+            if (typeActivatorCache == null)
+            {
+                throw new ArgumentNullException(nameof(typeActivatorCache));
+            }
+
+            if (viewComponentActivator == null)
+            {
+                throw new ArgumentNullException(nameof(viewComponentActivator));
+            }
+
             _typeActivatorCache = typeActivatorCache;
             _viewComponentActivator = viewComponentActivator;
         }
 
-        public void Invoke([NotNull] ViewComponentContext context)
+        public void Invoke(ViewComponentContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var method = ViewComponentMethodSelector.FindSyncMethod(
                 context.ViewComponentDescriptor.Type.GetTypeInfo(),
                 context.Arguments);
@@ -41,8 +55,13 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
             result.Execute(context);
         }
 
-        public async Task InvokeAsync([NotNull] ViewComponentContext context)
+        public async Task InvokeAsync(ViewComponentContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             IViewComponentResult result;
 
             var asyncMethod = ViewComponentMethodSelector.FindAsyncMethod(
@@ -74,20 +93,35 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
             await result.ExecuteAsync(context);
         }
 
-        private object CreateComponent([NotNull] ViewComponentContext context)
+        private object CreateComponent(ViewComponentContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var services = context.ViewContext.HttpContext.RequestServices;
             var component = _typeActivatorCache.CreateInstance<object>(
-                services, 
+                services,
                 context.ViewComponentDescriptor.Type);
             _viewComponentActivator.Activate(component, context);
             return component;
         }
 
         private async Task<IViewComponentResult> InvokeAsyncCore(
-            [NotNull] MethodInfo method,
-            [NotNull] ViewComponentContext context)
+            MethodInfo method,
+            ViewComponentContext context)
         {
+            if (method == null)
+            {
+                throw new ArgumentNullException(nameof(method));
+            }
+
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var component = CreateComponent(context);
 
             var result = await ControllerActionExecutor.ExecuteAsync(method, component, context.Arguments);
@@ -95,8 +129,18 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
             return CoerceToViewComponentResult(result);
         }
 
-        public IViewComponentResult InvokeSyncCore([NotNull] MethodInfo method, [NotNull] ViewComponentContext context)
+        public IViewComponentResult InvokeSyncCore(MethodInfo method, ViewComponentContext context)
         {
+            if (method == null)
+            {
+                throw new ArgumentNullException(nameof(method));
+            }
+
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var component = CreateComponent(context);
 
             object result = null;

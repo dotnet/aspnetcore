@@ -1,8 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNet.Mvc.Infrastructure;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ViewComponents
 {
@@ -23,8 +23,13 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
         // We don't currently make use of the descriptor or the arguments here (they are available on the context).
         // We might do this some day to cache which method we select, so resist the urge to 'clean' this without
         // considering that possibility.
-        public IViewComponentInvoker CreateInstance([NotNull] ViewComponentContext context)
+        public IViewComponentInvoker CreateInstance(ViewComponentContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             return new DefaultViewComponentInvoker(
                 _typeActivatorCache,
                 _viewComponentActivator);

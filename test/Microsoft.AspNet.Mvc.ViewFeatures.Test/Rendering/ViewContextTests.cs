@@ -1,8 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.IO;
+using Microsoft.AspNet.Http.Internal;
+using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.ViewEngines;
 using Microsoft.AspNet.Mvc.ViewFeatures;
+using Microsoft.AspNet.Routing;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Rendering
@@ -12,15 +18,15 @@ namespace Microsoft.AspNet.Mvc.Rendering
         [Fact]
         public void SettingViewData_AlsoUpdatesViewBag()
         {
-            // Arrange (eventually passing null to these consturctors will throw)
+            // Arrange
+            var originalViewData = new ViewDataDictionary(metadataProvider: new EmptyModelMetadataProvider());
             var context = new ViewContext(
-                new ActionContext(null, null, null),
-                view: null,
-                viewData: null,
-                tempData: null,
-                writer: null,
+                new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor()),
+                view: Mock.Of<IView>(),
+                viewData: originalViewData,
+                tempData: new TempDataDictionary(new HttpContextAccessor(), Mock.Of<ITempDataProvider>()),
+                writer: TextWriter.Null,
                 htmlHelperOptions: new HtmlHelperOptions());
-            var originalViewData = context.ViewData = new ViewDataDictionary(metadataProvider: new EmptyModelMetadataProvider());
             var replacementViewData = new ViewDataDictionary(metadataProvider: new EmptyModelMetadataProvider());
 
             // Act

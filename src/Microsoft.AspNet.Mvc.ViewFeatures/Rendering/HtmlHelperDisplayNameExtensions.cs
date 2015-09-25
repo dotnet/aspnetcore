@@ -4,8 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using Microsoft.AspNet.Mvc.ViewFeatures;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
@@ -19,8 +17,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </summary>
         /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <returns>A <see cref="string"/> containing the display name.</returns>
-        public static string DisplayNameForModel([NotNull] this IHtmlHelper htmlHelper)
+        public static string DisplayNameForModel(this IHtmlHelper htmlHelper)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             return htmlHelper.DisplayName(expression: null);
         }
 
@@ -36,9 +39,19 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
         /// <returns>A <see cref="string"/> containing the display name.</returns>
         public static string DisplayNameFor<TModelItem, TResult>(
-            [NotNull] this IHtmlHelper<IEnumerable<TModelItem>> htmlHelper,
-            [NotNull] Expression<Func<TModelItem, TResult>> expression)
+            this IHtmlHelper<IEnumerable<TModelItem>> htmlHelper,
+            Expression<Func<TModelItem, TResult>> expression)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
+            if (expression == null)
+            {
+                throw new ArgumentNullException(nameof(expression));
+            }
+
             return htmlHelper.DisplayNameForInnerType<TModelItem, TResult>(expression);
         }
     }

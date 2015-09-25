@@ -60,7 +60,8 @@ namespace Microsoft.AspNet.Mvc
             var viewContext = new ViewContext(
                 actionContext,
                 view,
-                viewData, null,
+                viewData, 
+                new TempDataDictionary(new HttpContextAccessor(), new SessionStateTempDataProvider()),
                 TextWriter.Null,
                 new HtmlHelperOptions());
 

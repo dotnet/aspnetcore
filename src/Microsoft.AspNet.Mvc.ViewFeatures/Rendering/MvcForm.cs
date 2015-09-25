@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNet.Mvc.ViewFeatures;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
@@ -12,8 +11,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
         private readonly ViewContext _viewContext;
         private bool _disposed;
 
-        public MvcForm([NotNull] ViewContext viewContext)
+        public MvcForm(ViewContext viewContext)
         {
+            if (viewContext == null)
+            {
+                throw new ArgumentNullException(nameof(viewContext));
+            }
+
             _viewContext = viewContext;
 
             // Push the new FormContext; GenerateEndForm() does the corresponding pop.

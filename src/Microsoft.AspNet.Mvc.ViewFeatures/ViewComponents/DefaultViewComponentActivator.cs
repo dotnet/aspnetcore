@@ -35,8 +35,18 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
         }
 
         /// <inheritdoc />
-        public virtual void Activate([NotNull] object viewComponent, [NotNull] ViewComponentContext context)
+        public virtual void Activate(object viewComponent, ViewComponentContext context)
         {
+            if (viewComponent == null)
+            {
+                throw new ArgumentNullException(nameof(viewComponent));
+            }
+
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var propertiesToActivate = _injectActions.GetOrAdd(
                 viewComponent.GetType(),
                 _getPropertiesToActivate);

@@ -1,11 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewEngines;
-using Microsoft.Framework.Internal;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc.ViewFeatures
@@ -29,13 +29,38 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         /// <param name="tempData">The <see cref="ITempDataDictionary"/> for the view being rendered.</param>
         /// <returns>A <see cref="Task"/> that represents the asynchronous rendering.</returns>
         public static async Task ExecuteAsync(
-            [NotNull] IView view,
-            [NotNull] ActionContext actionContext,
-            [NotNull] ViewDataDictionary viewData,
-            [NotNull] ITempDataDictionary tempData,
-            [NotNull] HtmlHelperOptions htmlHelperOptions,
+            IView view,
+            ActionContext actionContext,
+            ViewDataDictionary viewData,
+            ITempDataDictionary tempData,
+            HtmlHelperOptions htmlHelperOptions,
             MediaTypeHeaderValue contentType)
         {
+            if (view == null)
+            {
+                throw new ArgumentNullException(nameof(view));
+            }
+
+            if (actionContext == null)
+            {
+                throw new ArgumentNullException(nameof(actionContext));
+            }
+
+            if (viewData == null)
+            {
+                throw new ArgumentNullException(nameof(viewData));
+            }
+
+            if (tempData == null)
+            {
+                throw new ArgumentNullException(nameof(tempData));
+            }
+
+            if (htmlHelperOptions == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelperOptions));
+            }
+
             var response = actionContext.HttpContext.Response;
 
             if (contentType != null && contentType.Encoding == null)

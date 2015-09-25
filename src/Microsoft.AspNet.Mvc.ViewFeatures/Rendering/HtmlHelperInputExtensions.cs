@@ -4,8 +4,6 @@
 using System;
 using System.Linq.Expressions;
 using Microsoft.AspNet.Html.Abstractions;
-using Microsoft.AspNet.Mvc.ViewFeatures;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
@@ -23,8 +21,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; elements.</returns>
         /// <remarks>
         /// <para>
-        /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set checkbox
-        /// element's "name" attribute. Sanitizes <paramref name="expression"/> to set checkbox element's "id"
+        /// Combines <see cref="ViewFeatures.TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
+        /// checkbox element's "name" attribute. Sanitizes <paramref name="expression"/> to set checkbox element's "id"
         /// attribute.
         /// </para>
         /// <para>Determines checkbox element's "checked" attribute based on the following precedence:</para>
@@ -34,8 +32,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// fully-qualified name) if entry exists and can be converted to a <see cref="bool"/>.
         /// </item>
         /// <item>
-        /// <see cref="ViewDataDictionary"/> entry for <paramref name="expression"/> (converted to a fully-qualified
-        /// name) if entry exists and can be converted to a <see cref="bool"/>.
+        /// <see cref="ViewFeatures.ViewDataDictionary"/> entry for <paramref name="expression"/> (converted to a 
+        /// fully-qualified name) if entry exists and can be converted to a <see cref="bool"/>.
         /// </item>
         /// <item>
         /// Linq expression based on <paramref name="expression"/> (converted to a fully-qualified name) run against
@@ -50,8 +48,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// value "checked" if the <see cref="bool"/> values is <c>true</c>; does not include the attribute otherwise.
         /// </para>
         /// </remarks>
-        public static IHtmlContent CheckBox([NotNull] this IHtmlHelper htmlHelper, string expression)
+        public static IHtmlContent CheckBox(this IHtmlHelper htmlHelper, string expression)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             return htmlHelper.CheckBox(expression, isChecked: null, htmlAttributes: null);
         }
 
@@ -65,8 +68,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; elements.</returns>
         /// <remarks>
         /// <para>
-        /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set checkbox
-        /// element's "name" attribute. Sanitizes <paramref name="expression"/> to set checkbox element's "id"
+        /// Combines <see cref="ViewFeatures.TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
+        /// checkbox element's "name" attribute. Sanitizes <paramref name="expression"/> to set checkbox element's "id"
         /// attribute.
         /// </para>
         /// <para>Determines checkbox element's "checked" attribute based on the following precedence:</para>
@@ -77,8 +80,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </item>
         /// <item><paramref name="isChecked"/> if non-<c>null</c>.</item>
         /// <item>
-        /// <see cref="ViewDataDictionary"/> entry for <paramref name="expression"/> (converted to a fully-qualified
-        /// name) if entry exists and can be converted to a <see cref="bool"/>.
+        /// <see cref="ViewFeatures.ViewDataDictionary"/> entry for <paramref name="expression"/> (converted to a 
+        /// fully-qualified name) if entry exists and can be converted to a <see cref="bool"/>.
         /// </item>
         /// <item>
         /// Linq expression based on <paramref name="expression"/> (converted to a fully-qualified name) run against
@@ -94,10 +97,15 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </para>
         /// </remarks>
         public static IHtmlContent CheckBox(
-            [NotNull] this IHtmlHelper htmlHelper,
+            this IHtmlHelper htmlHelper,
             string expression,
             bool isChecked)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             return htmlHelper.CheckBox(expression, isChecked, htmlAttributes: null);
         }
 
@@ -115,8 +123,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; elements.</returns>
         /// <remarks>
         /// <para>
-        /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set checkbox
-        /// element's "name" attribute. Sanitizes <paramref name="expression"/> to set checkbox element's "id"
+        /// Combines <see cref="ViewFeatures.TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
+        /// checkbox element's "name" attribute. Sanitizes <paramref name="expression"/> to set checkbox element's "id"
         /// attribute.
         /// </para>
         /// <para>Determines checkbox element's "checked" attribute based on the following precedence:</para>
@@ -126,8 +134,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// fully-qualified name) if entry exists and can be converted to a <see cref="bool"/>.
         /// </item>
         /// <item>
-        /// <see cref="ViewDataDictionary"/> entry for <paramref name="expression"/> (converted to a fully-qualified
-        /// name) if entry exists and can be converted to a <see cref="bool"/>.
+        /// <see cref="ViewFeatures.ViewDataDictionary"/> entry for <paramref name="expression"/> (converted to a 
+        /// fully-qualified name) if entry exists and can be converted to a <see cref="bool"/>.
         /// </item>
         /// <item>
         /// Linq expression based on <paramref name="expression"/> (converted to a fully-qualified name) run against
@@ -144,10 +152,15 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </para>
         /// </remarks>
         public static IHtmlContent CheckBox(
-            [NotNull] this IHtmlHelper htmlHelper,
+            this IHtmlHelper htmlHelper,
             string expression,
             object htmlAttributes)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             return htmlHelper.CheckBox(expression, isChecked: null, htmlAttributes: htmlAttributes);
         }
 
@@ -160,7 +173,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; elements.</returns>
         /// <remarks>
         /// <para>
-        /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and the string representation of the
+        /// Combines <see cref="ViewFeatures.TemplateInfo.HtmlFieldPrefix"/> and the string representation of the
         /// <paramref name="expression"/> to set checkbox element's "name" attribute. Sanitizes the string
         /// representation of the <paramref name="expression"/> to set checkbox element's "id" attribute.
         /// </para>
@@ -182,9 +195,19 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </para>
         /// </remarks>
         public static IHtmlContent CheckBoxFor<TModel>(
-            [NotNull] this IHtmlHelper<TModel> htmlHelper,
-            [NotNull] Expression<Func<TModel, bool>> expression)
+            this IHtmlHelper<TModel> htmlHelper,
+            Expression<Func<TModel, bool>> expression)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
+            if (expression == null)
+            {
+                throw new ArgumentNullException(nameof(expression));
+            }
+
             return htmlHelper.CheckBoxFor(expression, htmlAttributes: null);
         }
 
@@ -196,7 +219,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element.</returns>
         /// <remarks>
         /// <para>
-        /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
+        /// Combines <see cref="ViewFeatures.TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
         /// &lt;input&gt; element's "name" attribute. Sanitizes <paramref name="expression"/> to set element's "id"
         /// attribute.
         /// </para>
@@ -207,8 +230,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// fully-qualified name) if entry exists and can be converted to a <see cref="string"/>.
         /// </item>
         /// <item>
-        /// <see cref="ViewDataDictionary"/> entry for <paramref name="expression"/> (converted to a fully-qualified
-        /// name) if entry exists and can be converted to a <see cref="string"/>.
+        /// <see cref="ViewFeatures.ViewDataDictionary"/> entry for <paramref name="expression"/> (converted to a 
+        /// fully-qualified name) if entry exists and can be converted to a <see cref="string"/>.
         /// </item>
         /// <item>
         /// Linq expression based on <paramref name="expression"/> (converted to a fully-qualified name) run against
@@ -219,8 +242,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <item>Otherwise, <c>string.Empty</c>.</item>
         /// </list>
         /// </remarks>
-        public static IHtmlContent Hidden([NotNull] this IHtmlHelper htmlHelper, string expression)
+        public static IHtmlContent Hidden(this IHtmlHelper htmlHelper, string expression)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             return htmlHelper.Hidden(expression, value: null, htmlAttributes: null);
         }
 
@@ -233,7 +261,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element.</returns>
         /// <remarks>
         /// <para>
-        /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
+        /// Combines <see cref="ViewFeatures.TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
         /// &lt;input&gt; element's "name" attribute. Sanitizes <paramref name="expression"/> to set element's "id"
         /// attribute.
         /// </para>
@@ -245,8 +273,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </item>
         /// <item><paramref name="value"/> if non-<c>null</c>.</item>
         /// <item>
-        /// <see cref="ViewDataDictionary"/> entry for <paramref name="expression"/> (converted to a fully-qualified
-        /// name) if entry exists and can be converted to a <see cref="string"/>.
+        /// <see cref="ViewFeatures.ViewDataDictionary"/> entry for <paramref name="expression"/> (converted to a 
+        /// fully-qualified name) if entry exists and can be converted to a <see cref="string"/>.
         /// </item>
         /// <item>
         /// Linq expression based on <paramref name="expression"/> (converted to a fully-qualified name) run against
@@ -258,10 +286,15 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </list>
         /// </remarks>
         public static IHtmlContent Hidden(
-            [NotNull] this IHtmlHelper htmlHelper,
+            this IHtmlHelper htmlHelper,
             string expression,
             object value)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             return htmlHelper.Hidden(expression, value, htmlAttributes: null);
         }
 
@@ -275,7 +308,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element.</returns>
         /// <remarks>
         /// <para>
-        /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and the string representation of the
+        /// Combines <see cref="ViewFeatures.TemplateInfo.HtmlFieldPrefix"/> and the string representation of the
         /// <paramref name="expression"/> to set &lt;input&gt; element's "name" attribute. Sanitizes the string
         /// representation of the <paramref name="expression"/> to set element's "id" attribute.
         /// </para>
@@ -293,9 +326,19 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </list>
         /// </remarks>
         public static IHtmlContent HiddenFor<TModel, TResult>(
-            [NotNull] this IHtmlHelper<TModel> htmlHelper,
-            [NotNull] Expression<Func<TModel, TResult>> expression)
+            this IHtmlHelper<TModel> htmlHelper,
+            Expression<Func<TModel, TResult>> expression)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
+            if (expression == null)
+            {
+                throw new ArgumentNullException(nameof(expression));
+            }
+
             return htmlHelper.HiddenFor(expression, htmlAttributes: null);
         }
 
@@ -306,12 +349,17 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="expression">Expression name, relative to the current model.</param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element.</returns>
         /// <remarks>
-        /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
+        /// Combines <see cref="ViewFeatures.TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
         /// &lt;input&gt; element's "name" attribute. Sanitizes <paramref name="expression"/> to set element's "id"
         /// attribute. Sets &lt;input&gt; element's "value" attribute to <c>string.Empty</c>.
         /// </remarks>
-        public static IHtmlContent Password([NotNull] this IHtmlHelper htmlHelper, string expression)
+        public static IHtmlContent Password(this IHtmlHelper htmlHelper, string expression)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             return htmlHelper.Password(expression, value: null, htmlAttributes: null);
         }
 
@@ -324,7 +372,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element.</returns>
         /// <remarks>
         /// <para>
-        /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
+        /// Combines <see cref="ViewFeatures.TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
         /// &lt;input&gt; element's "name" attribute. Sanitizes <paramref name="expression"/> to set element's "id"
         /// attribute.
         /// </para>
@@ -335,10 +383,15 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </list>
         /// </remarks>
         public static IHtmlContent Password(
-            [NotNull] this IHtmlHelper htmlHelper,
+            this IHtmlHelper htmlHelper,
             string expression,
             object value)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             return htmlHelper.Password(expression, value, htmlAttributes: null);
         }
 
@@ -352,7 +405,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element.</returns>
         /// <remarks>
         /// <para>
-        /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and the string representation of the
+        /// Combines <see cref="ViewFeatures.TemplateInfo.HtmlFieldPrefix"/> and the string representation of the
         /// <paramref name="expression"/> to set &lt;input&gt; element's "name" attribute. Sanitizes the string
         /// representation of the <paramref name="expression"/> to set element's "id" attribute.
         /// </para>
@@ -366,9 +419,19 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </list>
         /// </remarks>
         public static IHtmlContent PasswordFor<TModel, TResult>(
-            [NotNull] this IHtmlHelper<TModel> htmlHelper,
-            [NotNull] Expression<Func<TModel, TResult>> expression)
+            this IHtmlHelper<TModel> htmlHelper,
+            Expression<Func<TModel, TResult>> expression)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
+            if (expression == null)
+            {
+                throw new ArgumentNullException(nameof(expression));
+            }
+
             return htmlHelper.PasswordFor(expression, htmlAttributes: null);
         }
 
@@ -381,7 +444,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element.</returns>
         /// <remarks>
         /// <para>
-        /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
+        /// Combines <see cref="ViewFeatures.TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
         /// &lt;input&gt; element's "name" attribute. Sanitizes <paramref name="expression"/> to set element's "id"
         /// attribute. Sets &lt;input&gt; element's "value" attribute to <paramref name="value"/>.
         /// </para>
@@ -392,8 +455,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// fully-qualified name) if entry exists and can be converted to a <see cref="string"/>.
         /// </item>
         /// <item>
-        /// <see cref="ViewDataDictionary"/> entry for <paramref name="expression"/> (converted to a fully-qualified
-        /// name) if entry exists and can be converted to a <see cref="string"/>.
+        /// <see cref="ViewFeatures.ViewDataDictionary"/> entry for <paramref name="expression"/> (converted to a 
+        /// fully-qualified name) if entry exists and can be converted to a <see cref="string"/>.
         /// </item>
         /// <item>
         /// Linq expression based on <paramref name="expression"/> (converted to a fully-qualified name) run against
@@ -411,10 +474,15 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </para>
         /// </remarks>
         public static IHtmlContent RadioButton(
-            [NotNull] this IHtmlHelper htmlHelper,
+            this IHtmlHelper htmlHelper,
             string expression,
             object value)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             return htmlHelper.RadioButton(expression, value, isChecked: null, htmlAttributes: null);
         }
 
@@ -435,7 +503,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element.</returns>
         /// <remarks>
         /// <para>
-        /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
+        /// Combines <see cref="ViewFeatures.TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
         /// &lt;input&gt; element's "name" attribute. Sanitizes <paramref name="expression"/> to set element's "id"
         /// attribute.
         /// </para>
@@ -453,8 +521,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </item>
         /// <item>Existing "checked" entry in <paramref name="htmlAttributes"/> if any.</item>
         /// <item>
-        /// <see cref="ViewDataDictionary"/> entry for <paramref name="expression"/> (converted to a fully-qualified
-        /// name) if entry exists and can be converted to a <see cref="string"/>.
+        /// <see cref="ViewFeatures.ViewDataDictionary"/> entry for <paramref name="expression"/> (converted to a 
+        /// fully-qualified name) if entry exists and can be converted to a <see cref="string"/>.
         /// </item>
         /// <item>
         /// Linq expression based on <paramref name="expression"/> (converted to a fully-qualified name) run against
@@ -472,11 +540,16 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </para>
         /// </remarks>
         public static IHtmlContent RadioButton(
-            [NotNull] this IHtmlHelper htmlHelper,
+            this IHtmlHelper htmlHelper,
             string expression,
             object value,
             object htmlAttributes)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             return htmlHelper.RadioButton(expression, value, isChecked: null, htmlAttributes: htmlAttributes);
         }
 
@@ -496,7 +569,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element.</returns>
         /// <remarks>
         /// <para>
-        /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
+        /// Combines <see cref="ViewFeatures.TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
         /// &lt;input&gt; element's "name" attribute. Sanitizes <paramref name="expression"/> to set element's "id"
         /// attribute.
         /// </para>
@@ -513,8 +586,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </item>
         /// <item><paramref name="isChecked"/> if non-<c>null</c>.</item>
         /// <item>
-        /// <see cref="ViewDataDictionary"/> entry for <paramref name="expression"/> (converted to a fully-qualified
-        /// name) if entry exists and can be converted to a <see cref="string"/>.
+        /// <see cref="ViewFeatures.ViewDataDictionary"/> entry for <paramref name="expression"/> (converted to a 
+        /// fully-qualified name) if entry exists and can be converted to a <see cref="string"/>.
         /// </item>
         /// <item>
         /// Linq expression based on <paramref name="expression"/> (converted to a fully-qualified name) run against
@@ -532,11 +605,16 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </para>
         /// </remarks>
         public static IHtmlContent RadioButton(
-            [NotNull] this IHtmlHelper htmlHelper,
+            this IHtmlHelper htmlHelper,
             string expression,
             object value,
             bool isChecked)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             return htmlHelper.RadioButton(expression, value, isChecked, htmlAttributes: null);
         }
 
@@ -551,7 +629,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element.</returns>
         /// <remarks>
         /// <para>
-        /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and the string representation of the
+        /// Combines <see cref="ViewFeatures.TemplateInfo.HtmlFieldPrefix"/> and the string representation of the
         /// <paramref name="expression"/> to set &lt;select&gt; element's "name" attribute. Sanitizes the string
         /// representation of the <paramref name="expression"/> to set element's "id" attribute. Converts the
         /// <paramref name="value"/> to a <see cref="string"/> to set element's "value" attribute.
@@ -574,10 +652,25 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </para>
         /// </remarks>
         public static IHtmlContent RadioButtonFor<TModel, TResult>(
-            [NotNull] this IHtmlHelper<TModel> htmlHelper,
-            [NotNull] Expression<Func<TModel, TResult>> expression,
-            [NotNull] object value)
+            this IHtmlHelper<TModel> htmlHelper,
+            Expression<Func<TModel, TResult>> expression,
+            object value)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
+            if (expression == null)
+            {
+                throw new ArgumentNullException(nameof(expression));
+            }
+
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
             return htmlHelper.RadioButtonFor(expression, value, htmlAttributes: null);
         }
 
@@ -589,7 +682,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element.</returns>
         /// <remarks>
         /// <para>
-        /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
+        /// Combines <see cref="ViewFeatures.TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
         /// &lt;input&gt; element's "name" attribute. Sanitizes <paramref name="expression"/> to set element's "id"
         /// attribute.
         /// </para>
@@ -600,8 +693,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// fully-qualified name) if entry exists and can be converted to a <see cref="string"/>.
         /// </item>
         /// <item>
-        /// <see cref="ViewDataDictionary"/> entry for <paramref name="expression"/> (converted to a fully-qualified
-        /// name) if entry exists and can be converted to a <see cref="string"/>.
+        /// <see cref="ViewFeatures.ViewDataDictionary"/> entry for <paramref name="expression"/> (converted to a 
+        /// fully-qualified name) if entry exists and can be converted to a <see cref="string"/>.
         /// </item>
         /// <item>
         /// Linq expression based on <paramref name="expression"/> (converted to a fully-qualified name) run against
@@ -612,8 +705,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <item>Otherwise, <c>string.Empty</c>.</item>
         /// </list>
         /// </remarks>
-        public static IHtmlContent TextBox([NotNull] this IHtmlHelper htmlHelper, string expression)
+        public static IHtmlContent TextBox(this IHtmlHelper htmlHelper, string expression)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             return htmlHelper.TextBox(expression, value: null, format: null, htmlAttributes: null);
         }
 
@@ -626,7 +724,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element.</returns>
         /// <remarks>
         /// <para>
-        /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
+        /// Combines <see cref="ViewFeatures.TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
         /// &lt;input&gt; element's "name" attribute. Sanitizes <paramref name="expression"/> to set element's "id"
         /// attribute.
         /// </para>
@@ -640,8 +738,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <paramref name="value"/> if non-<c>null</c>.
         /// </item>
         /// <item>
-        /// <see cref="ViewDataDictionary"/> entry for <paramref name="expression"/> (converted to a fully-qualified
-        /// name) if entry exists and can be converted to a <see cref="string"/>.
+        /// <see cref="ViewFeatures.ViewDataDictionary"/> entry for <paramref name="expression"/> (converted to a 
+        /// fully-qualified name) if entry exists and can be converted to a <see cref="string"/>.
         /// </item>
         /// <item>
         /// Linq expression based on <paramref name="expression"/> (converted to a fully-qualified name) run against
@@ -653,10 +751,15 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </list>
         /// </remarks>
         public static IHtmlContent TextBox(
-            [NotNull] this IHtmlHelper htmlHelper,
+            this IHtmlHelper htmlHelper,
             string expression,
             object value)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             return htmlHelper.TextBox(expression, value, format: null, htmlAttributes: null);
         }
 
@@ -672,7 +775,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element.</returns>
         /// <remarks>
         /// <para>
-        /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
+        /// Combines <see cref="ViewFeatures.TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
         /// &lt;input&gt; element's "name" attribute. Sanitizes <paramref name="expression"/> to set element's "id"
         /// attribute.
         /// </para>
@@ -688,8 +791,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <paramref name="format"/> is <c>null</c> or empty.
         /// </item>
         /// <item>
-        /// <see cref="ViewDataDictionary"/> entry for <paramref name="expression"/> (converted to a fully-qualified
-        /// name) if entry exists and can be converted to a <see cref="string"/>. Formats entry using
+        /// <see cref="ViewFeatures.ViewDataDictionary"/> entry for <paramref name="expression"/> (converted to a 
+        /// fully-qualified name) if entry exists and can be converted to a <see cref="string"/>. Formats entry using
         /// <paramref name="format"/> or converts entry to a <see cref="string"/> directly if <paramref name="format"/>
         /// is <c>null</c> or empty.
         /// </item>
@@ -704,11 +807,16 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </list>
         /// </remarks>
         public static IHtmlContent TextBox(
-            [NotNull] this IHtmlHelper htmlHelper,
+            this IHtmlHelper htmlHelper,
             string expression,
             object value,
             string format)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             return htmlHelper.TextBox(expression, value, format, htmlAttributes: null);
         }
 
@@ -726,7 +834,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element.</returns>
         /// <remarks>
         /// <para>
-        /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
+        /// Combines <see cref="ViewFeatures.TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
         /// &lt;input&gt; element's "name" attribute. Sanitizes <paramref name="expression"/> to set element's "id"
         /// attribute.
         /// </para>
@@ -740,8 +848,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <paramref name="value"/> if non-<c>null</c>.
         /// </item>
         /// <item>
-        /// <see cref="ViewDataDictionary"/> entry for <paramref name="expression"/> (converted to a fully-qualified
-        /// name) if entry exists and can be converted to a <see cref="string"/>.
+        /// <see cref="ViewFeatures.ViewDataDictionary"/> entry for <paramref name="expression"/> (converted to a 
+        /// fully-qualified name) if entry exists and can be converted to a <see cref="string"/>.
         /// </item>
         /// <item>
         /// Linq expression based on <paramref name="expression"/> (converted to a fully-qualified name) run against
@@ -754,11 +862,16 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </list>
         /// </remarks>
         public static IHtmlContent TextBox(
-            [NotNull] this IHtmlHelper htmlHelper,
+            this IHtmlHelper htmlHelper,
             string expression,
             object value,
             object htmlAttributes)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             return htmlHelper.TextBox(expression, value, format: null, htmlAttributes: htmlAttributes);
         }
 
@@ -772,7 +885,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element.</returns>
         /// <remarks>
         /// <para>
-        /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and the string representation of the
+        /// Combines <see cref="ViewFeatures.TemplateInfo.HtmlFieldPrefix"/> and the string representation of the
         /// <paramref name="expression"/> to set &lt;input&gt; element's "name" attribute. Sanitizes the string
         /// representation of the <paramref name="expression"/> to set element's "id" attribute.
         /// </para>
@@ -789,9 +902,19 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </list>
         /// </remarks>
         public static IHtmlContent TextBoxFor<TModel, TResult>(
-            [NotNull] this IHtmlHelper<TModel> htmlHelper,
-            [NotNull] Expression<Func<TModel, TResult>> expression)
+            this IHtmlHelper<TModel> htmlHelper,
+            Expression<Func<TModel, TResult>> expression)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
+            if (expression == null)
+            {
+                throw new ArgumentNullException(nameof(expression));
+            }
+
             return htmlHelper.TextBoxFor(expression, format: null, htmlAttributes: null);
         }
 
@@ -808,7 +931,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element.</returns>
         /// <remarks>
         /// <para>
-        /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and the string representation of the
+        /// Combines <see cref="ViewFeatures.TemplateInfo.HtmlFieldPrefix"/> and the string representation of the
         /// <paramref name="expression"/> to set &lt;input&gt; element's "name" attribute. Sanitizes the string
         /// representation of the <paramref name="expression"/> to set element's "id" attribute.
         /// </para>
@@ -827,10 +950,20 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </list>
         /// </remarks>
         public static IHtmlContent TextBoxFor<TModel, TResult>(
-            [NotNull] this IHtmlHelper<TModel> htmlHelper,
-            [NotNull] Expression<Func<TModel, TResult>> expression,
+            this IHtmlHelper<TModel> htmlHelper,
+            Expression<Func<TModel, TResult>> expression,
             string format)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
+            if (expression == null)
+            {
+                throw new ArgumentNullException(nameof(expression));
+            }
+
             return htmlHelper.TextBoxFor(expression, format, htmlAttributes: null);
         }
 
@@ -849,7 +982,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element.</returns>
         /// <remarks>
         /// <para>
-        /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and the string representation of the
+        /// Combines <see cref="ViewFeatures.TemplateInfo.HtmlFieldPrefix"/> and the string representation of the
         /// <paramref name="expression"/> to set &lt;input&gt; element's "name" attribute. Sanitizes the string
         /// representation of the <paramref name="expression"/> to set element's "id" attribute.
         /// </para>
@@ -867,10 +1000,20 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </list>
         /// </remarks>
         public static IHtmlContent TextBoxFor<TModel, TResult>(
-            [NotNull] this IHtmlHelper<TModel> htmlHelper,
-            [NotNull] Expression<Func<TModel, TResult>> expression,
+            this IHtmlHelper<TModel> htmlHelper,
+            Expression<Func<TModel, TResult>> expression,
             object htmlAttributes)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
+            if (expression == null)
+            {
+                throw new ArgumentNullException(nameof(expression));
+            }
+
             return htmlHelper.TextBoxFor(expression, format: null, htmlAttributes: htmlAttributes);
         }
 
@@ -882,7 +1025,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;textarea&gt; element.</returns>
         /// <remarks>
         /// <para>
-        /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
+        /// Combines <see cref="ViewFeatures.TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
         /// &lt;textarea&gt; element's "name" attribute. Sanitizes <paramref name="expression"/> to set element's "id"
         /// attribute.
         /// </para>
@@ -893,8 +1036,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// fully-qualified name) if entry exists and can be converted to a <see cref="string"/>.
         /// </item>
         /// <item>
-        /// <see cref="ViewDataDictionary"/> entry for <paramref name="expression"/> (converted to a fully-qualified
-        /// name) if entry exists and can be converted to a <see cref="string"/>.
+        /// <see cref="ViewFeatures.ViewDataDictionary"/> entry for <paramref name="expression"/> (converted to a 
+        /// fully-qualified name) if entry exists and can be converted to a <see cref="string"/>.
         /// </item>
         /// <item>
         /// Linq expression based on <paramref name="expression"/> (converted to a fully-qualified name) run against
@@ -906,9 +1049,14 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </list>
         /// </remarks>
         public static IHtmlContent TextArea(
-            [NotNull] this IHtmlHelper htmlHelper,
+            this IHtmlHelper htmlHelper,
             string expression)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             return htmlHelper.TextArea(expression, value: null, rows: 0, columns: 0, htmlAttributes: null);
         }
 
@@ -925,7 +1073,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;textarea&gt; element.</returns>
         /// <remarks>
         /// <para>
-        /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
+        /// Combines <see cref="ViewFeatures.TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
         /// &lt;textarea&gt; element's "name" attribute. Sanitizes <paramref name="expression"/> to set element's "id"
         /// attribute.
         /// </para>
@@ -936,8 +1084,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// fully-qualified name) if entry exists and can be converted to a <see cref="string"/>.
         /// </item>
         /// <item>
-        /// <see cref="ViewDataDictionary"/> entry for <paramref name="expression"/> (converted to a fully-qualified
-        /// name) if entry exists and can be converted to a <see cref="string"/>.
+        /// <see cref="ViewFeatures.ViewDataDictionary"/> entry for <paramref name="expression"/> (converted to a 
+        /// fully-qualified name) if entry exists and can be converted to a <see cref="string"/>.
         /// </item>
         /// <item>
         /// Linq expression based on <paramref name="expression"/> (converted to a fully-qualified name) run against
@@ -949,10 +1097,15 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </list>
         /// </remarks>
         public static IHtmlContent TextArea(
-            [NotNull] this IHtmlHelper htmlHelper,
+            this IHtmlHelper htmlHelper,
             string expression,
             object htmlAttributes)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             return htmlHelper.TextArea(expression, value: null, rows: 0, columns: 0, htmlAttributes: htmlAttributes);
         }
 
@@ -965,7 +1118,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;textarea&gt; element.</returns>
         /// <remarks>
         /// <para>
-        /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
+        /// Combines <see cref="ViewFeatures.TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
         /// &lt;textarea&gt; element's "name" attribute. Sanitizes <paramref name="expression"/> to set element's "id"
         /// attribute.
         /// </para>
@@ -977,8 +1130,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </item>
         /// <item><paramref name="value"/> if non-<c>null</c>.</item>
         /// <item>
-        /// <see cref="ViewDataDictionary"/> entry for <paramref name="expression"/> (converted to a fully-qualified
-        /// name) if entry exists and can be converted to a <see cref="string"/>.
+        /// <see cref="ViewFeatures.ViewDataDictionary"/> entry for <paramref name="expression"/> (converted to a 
+        /// fully-qualified name) if entry exists and can be converted to a <see cref="string"/>.
         /// </item>
         /// <item>
         /// Linq expression based on <paramref name="expression"/> (converted to a fully-qualified name) run against
@@ -990,10 +1143,15 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </list>
         /// </remarks>
         public static IHtmlContent TextArea(
-            [NotNull] this IHtmlHelper htmlHelper,
+            this IHtmlHelper htmlHelper,
             string expression,
             string value)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             return htmlHelper.TextArea(expression, value, rows: 0, columns: 0, htmlAttributes: null);
         }
 
@@ -1011,7 +1169,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;textarea&gt; element.</returns>
         /// <remarks>
         /// <para>
-        /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
+        /// Combines <see cref="ViewFeatures.TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
         /// &lt;textarea&gt; element's "name" attribute. Sanitizes <paramref name="expression"/> to set element's "id"
         /// attribute.
         /// </para>
@@ -1023,8 +1181,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </item>
         /// <item><paramref name="value"/> if non-<c>null</c>.</item>
         /// <item>
-        /// <see cref="ViewDataDictionary"/> entry for <paramref name="expression"/> (converted to a fully-qualified
-        /// name) if entry exists and can be converted to a <see cref="string"/>.
+        /// <see cref="ViewFeatures.ViewDataDictionary"/> entry for <paramref name="expression"/> (converted to a 
+        /// fully-qualified name) if entry exists and can be converted to a <see cref="string"/>.
         /// </item>
         /// <item>
         /// Linq expression based on <paramref name="expression"/> (converted to a fully-qualified name) run against
@@ -1036,11 +1194,16 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </list>
         /// </remarks>
         public static IHtmlContent TextArea(
-            [NotNull] this IHtmlHelper htmlHelper,
+            this IHtmlHelper htmlHelper,
             string expression,
             string value,
             object htmlAttributes)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             return htmlHelper.TextArea(expression, value, rows: 0, columns: 0, htmlAttributes: htmlAttributes);
         }
 
@@ -1054,7 +1217,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;textarea&gt; element.</returns>
         /// <remarks>
         /// <para>
-        /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and the string representation of the
+        /// Combines <see cref="ViewFeatures.TemplateInfo.HtmlFieldPrefix"/> and the string representation of the
         /// <paramref name="expression"/> to set &lt;textarea&gt; element's "name" attribute. Sanitizes the string
         /// representation of the <paramref name="expression"/> to set element's "id" attribute.
         /// </para>
@@ -1071,9 +1234,19 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </list>
         /// </remarks>
         public static IHtmlContent TextAreaFor<TModel, TResult>(
-            [NotNull] this IHtmlHelper<TModel> htmlHelper,
-            [NotNull] Expression<Func<TModel, TResult>> expression)
+            this IHtmlHelper<TModel> htmlHelper,
+            Expression<Func<TModel, TResult>> expression)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
+            if (expression == null)
+            {
+                throw new ArgumentNullException(nameof(expression));
+            }
+
             return htmlHelper.TextAreaFor(expression, rows: 0, columns: 0, htmlAttributes: null);
         }
 
@@ -1092,7 +1265,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;textarea&gt; element.</returns>
         /// <remarks>
         /// <para>
-        /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and the string representation of the
+        /// Combines <see cref="ViewFeatures.TemplateInfo.HtmlFieldPrefix"/> and the string representation of the
         /// <paramref name="expression"/> to set &lt;textarea&gt; element's "name" attribute. Sanitizes the string
         /// representation of the <paramref name="expression"/> to set element's "id" attribute.
         /// </para>
@@ -1109,10 +1282,20 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </list>
         /// </remarks>
         public static IHtmlContent TextAreaFor<TModel, TResult>(
-            [NotNull] this IHtmlHelper<TModel> htmlHelper,
-            [NotNull] Expression<Func<TModel, TResult>> expression,
+            this IHtmlHelper<TModel> htmlHelper,
+            Expression<Func<TModel, TResult>> expression,
             object htmlAttributes)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
+            if (expression == null)
+            {
+                throw new ArgumentNullException(nameof(expression));
+            }
+
             return htmlHelper.TextAreaFor(expression, rows: 0, columns: 0, htmlAttributes: htmlAttributes);
         }
     }

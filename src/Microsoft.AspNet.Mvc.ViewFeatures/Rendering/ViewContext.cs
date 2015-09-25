@@ -1,11 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ViewEngines;
 using Microsoft.AspNet.Mvc.ViewFeatures;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
@@ -40,14 +40,44 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="tempData">The <see cref="ITempDataDictionary"/>.</param>
         /// <param name="writer">The <see cref="TextWriter"/> to render output to.</param>
         public ViewContext(
-            [NotNull] ActionContext actionContext,
-            [NotNull] IView view,
-            [NotNull] ViewDataDictionary viewData,
-            [NotNull] ITempDataDictionary tempData,
-            [NotNull] TextWriter writer,
-            [NotNull] HtmlHelperOptions htmlHelperOptions)
+            ActionContext actionContext,
+            IView view,
+            ViewDataDictionary viewData,
+            ITempDataDictionary tempData,
+            TextWriter writer,
+            HtmlHelperOptions htmlHelperOptions)
             : base(actionContext)
         {
+            if (actionContext == null)
+            {
+                throw new ArgumentNullException(nameof(actionContext));
+            }
+
+            if (view == null)
+            {
+                throw new ArgumentNullException(nameof(view));
+            }
+
+            if (viewData == null)
+            {
+                throw new ArgumentNullException(nameof(viewData));
+            }
+
+            if (tempData == null)
+            {
+                throw new ArgumentNullException(nameof(tempData));
+            }
+
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            if (htmlHelperOptions == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelperOptions));
+            }
+
             View = view;
             ViewData = viewData;
             TempData = tempData;
@@ -68,12 +98,32 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="viewData">The <see cref="ViewDataDictionary"/>.</param>
         /// <param name="writer">The <see cref="TextWriter"/> to render output to.</param>
         public ViewContext(
-            [NotNull] ViewContext viewContext,
-            [NotNull] IView view,
-            [NotNull] ViewDataDictionary viewData,
-            [NotNull] TextWriter writer)
+            ViewContext viewContext,
+            IView view,
+            ViewDataDictionary viewData,
+            TextWriter writer)
             : base(viewContext)
         {
+            if (viewContext == null)
+            {
+                throw new ArgumentNullException(nameof(viewContext));
+            }
+
+            if (view == null)
+            {
+                throw new ArgumentNullException(nameof(view));
+            }
+
+            if (viewData == null)
+            {
+                throw new ArgumentNullException(nameof(viewData));
+            }
+
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
             _formContext = viewContext.FormContext;
             ClientValidationEnabled = viewContext.ClientValidationEnabled;
             Html5DateRenderingMode = viewContext.Html5DateRenderingMode;

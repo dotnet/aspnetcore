@@ -8,7 +8,6 @@ using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Mvc.ViewFeatures;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.Mvc.Rendering
@@ -86,7 +85,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the anchor element.</returns>
         IHtmlContent ActionLink(
-            [NotNull] string linkText,
+            string linkText,
             string actionName,
             string controllerName,
             string protocol,
@@ -360,7 +359,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// Fully-qualified expression name, ignoring the current model. Must not be <c>null</c>.
         /// </param>
         /// <returns>A <see cref="string"/> containing the element Id.</returns>
-        string GenerateIdFromName([NotNull] string fullName);
+        string GenerateIdFromName(string fullName);
 
         /// <summary>
         /// Returns information about about client validation rules for the specified <paramref name="metadata"/> or
@@ -402,7 +401,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// Thrown if <paramref name="enumType"/> is not an <see cref="Enum"/> or if it has a
         /// <see cref="FlagsAttribute"/>.
         /// </exception>
-        IEnumerable<SelectListItem> GetEnumSelectList([NotNull] Type enumType);
+        IEnumerable<SelectListItem> GetEnumSelectList(Type enumType);
 
         /// <summary>
         /// Returns an &lt;input&gt; element of type "hidden" for the specified <paramref name="expression"/>.
@@ -502,7 +501,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// A <see cref="Task"/> that on completion returns a new <see cref="HtmlString"/> containing
         /// the created HTML.
         /// </returns>
-        Task<IHtmlContent> PartialAsync([NotNull] string partialViewName, object model, ViewDataDictionary viewData);
+        Task<IHtmlContent> PartialAsync(string partialViewName, object model, ViewDataDictionary viewData);
 
         /// <summary>
         /// Returns an &lt;input&gt; element of type "password" for the specified <paramref name="expression"/>.
@@ -617,7 +616,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <remarks>
         /// In this context, "renders" means the method writes its output using <see cref="ViewContext.Writer"/>.
         /// </remarks>
-        Task RenderPartialAsync([NotNull] string partialViewName, object model, ViewDataDictionary viewData);
+        Task RenderPartialAsync(string partialViewName, object model, ViewDataDictionary viewData);
 
         /// <summary>
         /// Returns an anchor (&lt;a&gt;) element that contains a URL path to the specified route.
@@ -639,7 +638,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the anchor element.</returns>
         IHtmlContent RouteLink(
-            [NotNull] string linkText,
+            string linkText,
             string routeName,
             string protocol,
             string hostName,

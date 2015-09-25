@@ -5,8 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Mvc.ViewFeatures;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ViewFeatures.Internal
 {
@@ -62,8 +60,13 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures.Internal
         {
             private Dictionary<string, int> _ordering = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
-            public ErrorsOrderer([NotNull] ModelMetadata metadata)
+            public ErrorsOrderer(ModelMetadata metadata)
             {
+                if (metadata == null)
+                {
+                    throw new ArgumentNullException(nameof(metadata));
+                }
+
                 foreach (var data in metadata.Properties)
                 {
                     _ordering[data.PropertyName] = data.Order;

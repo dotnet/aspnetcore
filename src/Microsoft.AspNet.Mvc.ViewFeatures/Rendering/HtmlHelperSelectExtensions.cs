@@ -5,8 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using Microsoft.AspNet.Html.Abstractions;
-using Microsoft.AspNet.Mvc.ViewFeatures;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
@@ -22,12 +20,17 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="expression">Expression name, relative to the current model.</param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;select&gt; element.</returns>
         /// <remarks>
-        /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
+        /// Combines <see cref="ViewFeatures.TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
         /// &lt;select&gt; element's "name" attribute. Sanitizes <paramref name="expression"/> to set element's "id"
         /// attribute.
         /// </remarks>
-        public static IHtmlContent DropDownList([NotNull] this IHtmlHelper htmlHelper, string expression)
+        public static IHtmlContent DropDownList(this IHtmlHelper htmlHelper, string expression)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             return htmlHelper.DropDownList(expression, selectList: null, optionLabel: null, htmlAttributes: null);
         }
 
@@ -42,15 +45,20 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;select&gt; element.</returns>
         /// <remarks>
-        /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
+        /// Combines <see cref="ViewFeatures.TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
         /// &lt;select&gt; element's "name" attribute. Sanitizes <paramref name="expression"/> to set element's "id"
         /// attribute.
         /// </remarks>
         public static IHtmlContent DropDownList(
-            [NotNull] this IHtmlHelper htmlHelper,
+            this IHtmlHelper htmlHelper,
             string expression,
             string optionLabel)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             return htmlHelper.DropDownList(
                 expression,
                 selectList: null,
@@ -70,15 +78,20 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;select&gt; element.</returns>
         /// <remarks>
-        /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
+        /// Combines <see cref="ViewFeatures.TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
         /// &lt;select&gt; element's "name" attribute. Sanitizes <paramref name="expression"/> to set element's "id"
         /// attribute.
         /// </remarks>
         public static IHtmlContent DropDownList(
-            [NotNull] this IHtmlHelper htmlHelper,
+            this IHtmlHelper htmlHelper,
             string expression,
             IEnumerable<SelectListItem> selectList)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             return htmlHelper.DropDownList(expression, selectList, optionLabel: null, htmlAttributes: null);
         }
 
@@ -98,16 +111,21 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;select&gt; element.</returns>
         /// <remarks>
-        /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
+        /// Combines <see cref="ViewFeatures.TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
         /// &lt;select&gt; element's "name" attribute. Sanitizes <paramref name="expression"/> to set element's "id"
         /// attribute.
         /// </remarks>
         public static IHtmlContent DropDownList(
-            [NotNull] this IHtmlHelper htmlHelper,
+            this IHtmlHelper htmlHelper,
             string expression,
             IEnumerable<SelectListItem> selectList,
             object htmlAttributes)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             return htmlHelper.DropDownList(expression, selectList, optionLabel: null, htmlAttributes: htmlAttributes);
         }
 
@@ -126,16 +144,21 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;select&gt; element.</returns>
         /// <remarks>
-        /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
+        /// Combines <see cref="ViewFeatures.TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
         /// &lt;select&gt; element's "name" attribute. Sanitizes <paramref name="expression"/> to set element's "id"
         /// attribute.
         /// </remarks>
         public static IHtmlContent DropDownList(
-            [NotNull] this IHtmlHelper htmlHelper,
+            this IHtmlHelper htmlHelper,
             string expression,
             IEnumerable<SelectListItem> selectList,
             string optionLabel)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             return htmlHelper.DropDownList(expression, selectList, optionLabel, htmlAttributes: null);
         }
 
@@ -153,15 +176,25 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;select&gt; element.</returns>
         /// <remarks>
-        /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and the string representation of the
+        /// Combines <see cref="ViewFeatures.TemplateInfo.HtmlFieldPrefix"/> and the string representation of the
         /// <paramref name="expression"/> to set &lt;select&gt; element's "name" attribute. Sanitizes the string
         /// representation of the <paramref name="expression"/> to set element's "id" attribute.
         /// </remarks>
         public static IHtmlContent DropDownListFor<TModel, TResult>(
-            [NotNull] this IHtmlHelper<TModel> htmlHelper,
-            [NotNull] Expression<Func<TModel, TResult>> expression,
+            this IHtmlHelper<TModel> htmlHelper,
+            Expression<Func<TModel, TResult>> expression,
             IEnumerable<SelectListItem> selectList)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
+            if (expression == null)
+            {
+                throw new ArgumentNullException(nameof(expression));
+            }
+
             return htmlHelper.DropDownListFor(expression, selectList, optionLabel: null, htmlAttributes: null);
         }
 
@@ -183,16 +216,26 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;select&gt; element.</returns>
         /// <remarks>
-        /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and the string representation of the
+        /// Combines <see cref="ViewFeatures.TemplateInfo.HtmlFieldPrefix"/> and the string representation of the
         /// <paramref name="expression"/> to set &lt;select&gt; element's "name" attribute. Sanitizes the string
         /// representation of the <paramref name="expression"/> to set element's "id" attribute.
         /// </remarks>
         public static IHtmlContent DropDownListFor<TModel, TResult>(
-            [NotNull] this IHtmlHelper<TModel> htmlHelper,
-            [NotNull] Expression<Func<TModel, TResult>> expression,
+            this IHtmlHelper<TModel> htmlHelper,
+            Expression<Func<TModel, TResult>> expression,
             IEnumerable<SelectListItem> selectList,
             object htmlAttributes)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
+            if (expression == null)
+            {
+                throw new ArgumentNullException(nameof(expression));
+            }
+
             return htmlHelper.DropDownListFor(
                 expression,
                 selectList,
@@ -217,16 +260,26 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;select&gt; element.</returns>
         /// <remarks>
-        /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and the string representation of the
+        /// Combines <see cref="ViewFeatures.TemplateInfo.HtmlFieldPrefix"/> and the string representation of the
         /// <paramref name="expression"/> to set &lt;select&gt; element's "name" attribute. Sanitizes the string
         /// representation of the <paramref name="expression"/> to set element's "id" attribute.
         /// </remarks>
         public static IHtmlContent DropDownListFor<TModel, TResult>(
-            [NotNull] this IHtmlHelper<TModel> htmlHelper,
-            [NotNull] Expression<Func<TModel, TResult>> expression,
+            this IHtmlHelper<TModel> htmlHelper,
+            Expression<Func<TModel, TResult>> expression,
             IEnumerable<SelectListItem> selectList,
             string optionLabel)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
+            if (expression == null)
+            {
+                throw new ArgumentNullException(nameof(expression));
+            }
+
             return htmlHelper.DropDownListFor(expression, selectList, optionLabel, htmlAttributes: null);
         }
 
@@ -237,12 +290,17 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="expression">Expression name, relative to the current model.</param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;select&gt; element.</returns>
         /// <remarks>
-        /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
+        /// Combines <see cref="ViewFeatures.TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
         /// &lt;select&gt; element's "name" attribute. Sanitizes <paramref name="expression"/> to set element's "id"
         /// attribute.
         /// </remarks>
-        public static IHtmlContent ListBox([NotNull] this IHtmlHelper htmlHelper, string expression)
+        public static IHtmlContent ListBox(this IHtmlHelper htmlHelper, string expression)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             return htmlHelper.ListBox(expression, selectList: null, htmlAttributes: null);
         }
 
@@ -258,15 +316,20 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;select&gt; element.</returns>
         /// <remarks>
-        /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
+        /// Combines <see cref="ViewFeatures.TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
         /// &lt;select&gt; element's "name" attribute. Sanitizes <paramref name="expression"/> to set element's "id"
         /// attribute.
         /// </remarks>
         public static IHtmlContent ListBox(
-            [NotNull] this IHtmlHelper htmlHelper,
+            this IHtmlHelper htmlHelper,
             string expression,
             IEnumerable<SelectListItem> selectList)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             return htmlHelper.ListBox(expression, selectList, htmlAttributes: null);
         }
 
@@ -284,15 +347,25 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;select&gt; element.</returns>
         /// <remarks>
-        /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and the string representation of the
+        /// Combines <see cref="ViewFeatures.TemplateInfo.HtmlFieldPrefix"/> and the string representation of the
         /// <paramref name="expression"/> to set &lt;select&gt; element's "name" attribute. Sanitizes the string
         /// representation of the <paramref name="expression"/> to set element's "id" attribute.
         /// </remarks>
         public static IHtmlContent ListBoxFor<TModel, TResult>(
-            [NotNull] this IHtmlHelper<TModel> htmlHelper,
-            [NotNull] Expression<Func<TModel, TResult>> expression,
+            this IHtmlHelper<TModel> htmlHelper,
+            Expression<Func<TModel, TResult>> expression,
             IEnumerable<SelectListItem> selectList)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
+            if (expression == null)
+            {
+                throw new ArgumentNullException(nameof(expression));
+            }
+
             return htmlHelper.ListBoxFor(expression, selectList, htmlAttributes: null);
         }
     }

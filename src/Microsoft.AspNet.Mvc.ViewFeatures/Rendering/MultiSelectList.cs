@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Microsoft.AspNet.Mvc.ViewFeatures;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
@@ -15,28 +14,44 @@ namespace Microsoft.AspNet.Mvc.Rendering
     {
         private IList<SelectListGroup> _groups;
 
-        public MultiSelectList([NotNull] IEnumerable items)
+        public MultiSelectList(IEnumerable items)
             : this(items, selectedValues: null)
         {
+            if (items == null)
+            {
+                throw new ArgumentNullException(nameof(items));
+            }
         }
 
-        public MultiSelectList([NotNull] IEnumerable items, IEnumerable selectedValues)
+        public MultiSelectList(IEnumerable items, IEnumerable selectedValues)
             : this(items, dataValueField: null, dataTextField: null, selectedValues: selectedValues)
         {
+            if (items == null)
+            {
+                throw new ArgumentNullException(nameof(items));
+            }
         }
 
-        public MultiSelectList([NotNull] IEnumerable items, string dataValueField, string dataTextField)
+        public MultiSelectList(IEnumerable items, string dataValueField, string dataTextField)
             : this(items, dataValueField, dataTextField, selectedValues: null)
         {
+            if (items == null)
+            {
+                throw new ArgumentNullException(nameof(items));
+            }
         }
 
         public MultiSelectList(
-            [NotNull] IEnumerable items,
+            IEnumerable items,
             string dataValueField,
             string dataTextField,
             IEnumerable selectedValues)
             : this(items, dataValueField, dataTextField, selectedValues, dataGroupField: null)
         {
+            if (items == null)
+            {
+                throw new ArgumentNullException(nameof(items));
+            }
         }
 
         /// <summary>
@@ -53,12 +68,17 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="dataGroupField">The data group field. Used to match the Group property of the corresponding
         /// <see cref="SelectListItem"/>.</param>
         public MultiSelectList(
-            [NotNull] IEnumerable items,
+            IEnumerable items,
             string dataValueField,
             string dataTextField,
             IEnumerable selectedValues,
             string dataGroupField)
         {
+            if (items == null)
+            {
+                throw new ArgumentNullException(nameof(items));
+            }
+
             Items = items;
             DataValueField = dataValueField;
             DataTextField = dataTextField;

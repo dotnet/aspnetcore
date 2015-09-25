@@ -1,8 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ViewFeatures
 {
@@ -17,10 +17,18 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         /// <inheritdoc />
         // References may not show up due to ActivatorUtilities use in RazorPageActivator.
         public ViewDataDictionary(
-            [NotNull] IModelMetadataProvider metadataProvider,
-            [NotNull] ModelStateDictionary modelState)
+            IModelMetadataProvider metadataProvider,
+            ModelStateDictionary modelState)
             : base(metadataProvider, modelState, declaredModelType: typeof(TModel))
         {
+            if (metadataProvider == null)
+            {
+                throw new ArgumentNullException(nameof(metadataProvider));
+            }
+            if (modelState == null)
+            {
+                throw new ArgumentNullException(nameof(modelState));
+            }
         }
 
         /// <summary>
@@ -41,9 +49,13 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         /// </remarks>
         /// <inheritdoc />
         // References may not show up due to ActivatorUtilities use in RazorPageActivator.
-        public ViewDataDictionary([NotNull] ViewDataDictionary source)
+        public ViewDataDictionary(ViewDataDictionary source)
             : base(source, declaredModelType: typeof(TModel))
         {
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
         }
 
         /// <summary>
@@ -65,9 +77,13 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         // Model parameter type is object to allow "model: null" calls even when TModel is a value type. A TModel
         // parameter would likely require IEquatable<TModel> type restrictions to pass expected null value to the base
         // constructor.
-        public ViewDataDictionary([NotNull] ViewDataDictionary source, object model)
+        public ViewDataDictionary(ViewDataDictionary source, object model)
             : base(source, model, declaredModelType: typeof(TModel))
         {
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
         }
 
         /// <summary>
@@ -75,9 +91,13 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         /// </summary>
         /// <remarks>Internal for testing.</remarks>
         /// <inheritdoc />
-        internal ViewDataDictionary([NotNull] IModelMetadataProvider metadataProvider)
+        internal ViewDataDictionary(IModelMetadataProvider metadataProvider)
             : base(metadataProvider, declaredModelType: typeof(TModel))
         {
+            if (metadataProvider == null)
+            {
+                throw new ArgumentNullException(nameof(metadataProvider));
+            }
         }
 
         public new TModel Model

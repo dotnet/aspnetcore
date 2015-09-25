@@ -6,7 +6,6 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ViewFeatures;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ViewComponents
 {
@@ -15,8 +14,13 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
         public const string AsyncMethodName = "InvokeAsync";
         public const string SyncMethodName = "Invoke";
 
-        public static MethodInfo FindAsyncMethod([NotNull] TypeInfo componentType, object[] args)
+        public static MethodInfo FindAsyncMethod(TypeInfo componentType, object[] args)
         {
+            if (componentType == null)
+            {
+                throw new ArgumentNullException(nameof(componentType));
+            }
+
             var method = GetMethod(componentType, args, AsyncMethodName);
             if (method == null)
             {
@@ -33,8 +37,13 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
             return method;
         }
 
-        public static MethodInfo FindSyncMethod([NotNull] TypeInfo componentType, object[] args)
+        public static MethodInfo FindSyncMethod(TypeInfo componentType, object[] args)
         {
+            if (componentType == null)
+            {
+                throw new ArgumentNullException(nameof(componentType));
+            }
+
             var method = GetMethod(componentType, args, SyncMethodName);
             if (method == null)
             {

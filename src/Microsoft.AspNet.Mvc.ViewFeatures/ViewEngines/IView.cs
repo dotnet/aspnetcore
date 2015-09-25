@@ -3,7 +3,6 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ViewEngines
 {
@@ -22,6 +21,6 @@ namespace Microsoft.AspNet.Mvc.ViewEngines
         /// </summary>
         /// <param name="context">The <see cref="ViewContext"/>.</param>
         /// <returns>A <see cref="Task"/> that on completion renders the view.</returns>
-        Task RenderAsync([NotNull] ViewContext context);
+        Task RenderAsync(ViewContext context);
     }
 }

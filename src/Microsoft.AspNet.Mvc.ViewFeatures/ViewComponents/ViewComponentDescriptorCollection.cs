@@ -1,8 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ViewComponents
 {
@@ -16,8 +16,13 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
         /// </summary>
         /// <param name="items">The result of view component discovery</param>
         /// <param name="version">The unique version of discovered view components.</param>
-        public ViewComponentDescriptorCollection([NotNull] IEnumerable<ViewComponentDescriptor> items, int version)
+        public ViewComponentDescriptorCollection(IEnumerable<ViewComponentDescriptor> items, int version)
         {
+            if (items == null)
+            {
+                throw new ArgumentNullException(nameof(items));
+            }
+
             Items = new List<ViewComponentDescriptor>(items);
             Version = version;
         }

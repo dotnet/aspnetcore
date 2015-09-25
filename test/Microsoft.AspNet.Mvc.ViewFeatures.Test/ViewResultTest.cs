@@ -8,7 +8,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
+using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ViewEngines;
+using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
@@ -41,12 +43,14 @@ namespace Microsoft.AspNet.Mvc
             var viewResult = new ViewResult
             {
                 ViewEngine = viewEngine.Object,
-                ViewName = "MyView"
+                ViewName = "MyView",
+                ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider()),
+                TempData = Mock.Of<ITempDataDictionary>(),
             };
 
             // Act and Assert
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-                                () => viewResult.ExecuteResultAsync(actionContext));
+                () => viewResult.ExecuteResultAsync(actionContext));
             Assert.Equal(expected, ex.Message);
             viewEngine.Verify();
         }
@@ -60,14 +64,17 @@ namespace Microsoft.AspNet.Mvc
             var viewEngine = new Mock<IViewEngine>();
             var view = Mock.Of<IView>();
 
-            viewEngine.Setup(e => e.FindView(context, "myview"))
-                      .Returns(ViewEngineResult.Found("myview", view))
-                      .Verifiable();
+            viewEngine
+                .Setup(e => e.FindView(context, "myview"))
+                .Returns(ViewEngineResult.Found("myview", view))
+                .Verifiable();
 
             var viewResult = new ViewResult
             {
                 ViewName = viewName,
-                ViewEngine = viewEngine.Object
+                ViewEngine = viewEngine.Object,
+                ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider()),
+                TempData = Mock.Of<ITempDataDictionary>(),
             };
 
             // Act
@@ -124,7 +131,9 @@ namespace Microsoft.AspNet.Mvc
             {
                 ViewName = viewName,
                 ViewEngine = viewEngine.Object,
-                ContentType = contentType
+                ContentType = contentType,
+                ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider()),
+                TempData = Mock.Of<ITempDataDictionary>(),
             };
 
             // Act
@@ -158,6 +167,8 @@ namespace Microsoft.AspNet.Mvc
                 ViewName = viewName,
                 ViewEngine = viewEngine.Object,
                 StatusCode = 404,
+                ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider()),
+                TempData = Mock.Of<ITempDataDictionary>(),
             };
 
             // Act
@@ -182,7 +193,9 @@ namespace Microsoft.AspNet.Mvc
 
             var viewResult = new ViewResult
             {
-                ViewEngine = viewEngine.Object
+                ViewEngine = viewEngine.Object,
+                ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider()),
+                TempData = Mock.Of<ITempDataDictionary>(),
             };
 
             // Act
@@ -229,7 +242,9 @@ namespace Microsoft.AspNet.Mvc
 
             var viewResult = new ViewResult
             {
-                ViewName = viewName
+                ViewName = viewName,
+                ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider()),
+                TempData = Mock.Of<ITempDataDictionary>(),
             };
 
             // Act
@@ -260,6 +275,8 @@ namespace Microsoft.AspNet.Mvc
             {
                 ViewName = viewName,
                 ViewEngine = viewEngine.Object,
+                ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider()),
+                TempData = Mock.Of<ITempDataDictionary>(),
             };
 
             // Act
@@ -294,6 +311,8 @@ namespace Microsoft.AspNet.Mvc
             {
                 ViewName = viewName,
                 ViewEngine = viewEngine.Object,
+                ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider()),
+                TempData = Mock.Of<ITempDataDictionary>(),
             };
 
             // Act

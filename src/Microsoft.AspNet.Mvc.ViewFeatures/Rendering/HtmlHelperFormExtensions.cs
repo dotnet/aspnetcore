@@ -1,8 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Mvc.ViewFeatures;
-using Microsoft.Framework.Internal;
+using System;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
@@ -22,8 +21,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <remarks>
         /// In this context, "renders" means the method writes its output using <see cref="ViewContext.Writer"/>.
         /// </remarks>
-        public static MvcForm BeginForm([NotNull] this IHtmlHelper htmlHelper)
+        public static MvcForm BeginForm(this IHtmlHelper htmlHelper)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             // Generates <form action="{current url}" method="post">.
             return htmlHelper.BeginForm(actionName: null, controllerName: null, routeValues: null,
                                         method: FormMethod.Post, htmlAttributes: null);
@@ -41,8 +45,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <remarks>
         /// In this context, "renders" means the method writes its output using <see cref="ViewContext.Writer"/>.
         /// </remarks>
-        public static MvcForm BeginForm([NotNull] this IHtmlHelper htmlHelper, FormMethod method)
+        public static MvcForm BeginForm(this IHtmlHelper htmlHelper, FormMethod method)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             return htmlHelper.BeginForm(actionName: null, controllerName: null, routeValues: null,
                                         method: method, htmlAttributes: null);
         }
@@ -65,10 +74,15 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// In this context, "renders" means the method writes its output using <see cref="ViewContext.Writer"/>.
         /// </remarks>
         public static MvcForm BeginForm(
-            [NotNull] this IHtmlHelper htmlHelper,
+            this IHtmlHelper htmlHelper,
             FormMethod method,
             object htmlAttributes)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             return htmlHelper.BeginForm(actionName: null, controllerName: null, routeValues: null,
                                         method: method, htmlAttributes: htmlAttributes);
         }
@@ -91,8 +105,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <remarks>
         /// In this context, "renders" means the method writes its output using <see cref="ViewContext.Writer"/>.
         /// </remarks>
-        public static MvcForm BeginForm([NotNull] this IHtmlHelper htmlHelper, object routeValues)
+        public static MvcForm BeginForm(this IHtmlHelper htmlHelper, object routeValues)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             return htmlHelper.BeginForm(actionName: null, controllerName: null, routeValues: routeValues,
                                         method: FormMethod.Post, htmlAttributes: null);
         }
@@ -111,10 +130,15 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// In this context, "renders" means the method writes its output using <see cref="ViewContext.Writer"/>.
         /// </remarks>
         public static MvcForm BeginForm(
-            [NotNull] this IHtmlHelper htmlHelper,
+            this IHtmlHelper htmlHelper,
             string actionName,
             string controllerName)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             return htmlHelper.BeginForm(actionName, controllerName, routeValues: null,
                                         method: FormMethod.Post, htmlAttributes: null);
         }
@@ -140,11 +164,16 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// In this context, "renders" means the method writes its output using <see cref="ViewContext.Writer"/>.
         /// </remarks>
         public static MvcForm BeginForm(
-            [NotNull] this IHtmlHelper htmlHelper,
+            this IHtmlHelper htmlHelper,
             string actionName,
             string controllerName,
             object routeValues)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             return htmlHelper.BeginForm(actionName, controllerName, routeValues,
                                         FormMethod.Post, htmlAttributes: null);
         }
@@ -164,11 +193,16 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// In this context, "renders" means the method writes its output using <see cref="ViewContext.Writer"/>.
         /// </remarks>
         public static MvcForm BeginForm(
-            [NotNull] this IHtmlHelper htmlHelper,
+            this IHtmlHelper htmlHelper,
             string actionName,
             string controllerName,
             FormMethod method)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             return htmlHelper.BeginForm(actionName, controllerName, routeValues: null,
                                         method: method, htmlAttributes: null);
         }
@@ -195,12 +229,17 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// In this context, "renders" means the method writes its output using <see cref="ViewContext.Writer"/>.
         /// </remarks>
         public static MvcForm BeginForm(
-            [NotNull] this IHtmlHelper htmlHelper,
+            this IHtmlHelper htmlHelper,
             string actionName,
             string controllerName,
             object routeValues,
             FormMethod method)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             return htmlHelper.BeginForm(actionName, controllerName, routeValues,
                                         method, htmlAttributes: null);
         }
@@ -225,12 +264,17 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// In this context, "renders" means the method writes its output using <see cref="ViewContext.Writer"/>.
         /// </remarks>
         public static MvcForm BeginForm(
-            [NotNull] this IHtmlHelper htmlHelper,
+            this IHtmlHelper htmlHelper,
             string actionName,
             string controllerName,
             FormMethod method,
             object htmlAttributes)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             return htmlHelper.BeginForm(actionName, controllerName, routeValues: null,
                                         method: method, htmlAttributes: htmlAttributes);
         }
@@ -253,8 +297,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <remarks>
         /// In this context, "renders" means the method writes its output using <see cref="ViewContext.Writer"/>.
         /// </remarks>
-        public static MvcForm BeginRouteForm([NotNull] this IHtmlHelper htmlHelper, object routeValues)
+        public static MvcForm BeginRouteForm(this IHtmlHelper htmlHelper, object routeValues)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             return htmlHelper.BeginRouteForm(
                 routeName: null,
                 routeValues: routeValues,
@@ -274,8 +323,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <remarks>
         /// In this context, "renders" means the method writes its output using <see cref="ViewContext.Writer"/>.
         /// </remarks>
-        public static MvcForm BeginRouteForm([NotNull] this IHtmlHelper htmlHelper, string routeName)
+        public static MvcForm BeginRouteForm(this IHtmlHelper htmlHelper, string routeName)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             return htmlHelper.BeginRouteForm(
                 routeName,
                 routeValues: null,
@@ -303,10 +357,15 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// In this context, "renders" means the method writes its output using <see cref="ViewContext.Writer"/>.
         /// </remarks>
         public static MvcForm BeginRouteForm(
-            [NotNull] this IHtmlHelper htmlHelper,
+            this IHtmlHelper htmlHelper,
             string routeName,
             object routeValues)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             return htmlHelper.BeginRouteForm(routeName, routeValues, FormMethod.Post, htmlAttributes: null);
         }
 
@@ -324,10 +383,15 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// In this context, "renders" means the method writes its output using <see cref="ViewContext.Writer"/>.
         /// </remarks>
         public static MvcForm BeginRouteForm(
-            [NotNull] this IHtmlHelper htmlHelper,
+            this IHtmlHelper htmlHelper,
             string routeName,
             FormMethod method)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             return htmlHelper.BeginRouteForm(routeName, routeValues: null, method: method, htmlAttributes: null);
         }
 
@@ -352,11 +416,16 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// In this context, "renders" means the method writes its output using <see cref="ViewContext.Writer"/>.
         /// </remarks>
         public static MvcForm BeginRouteForm(
-            [NotNull] this IHtmlHelper htmlHelper,
+            this IHtmlHelper htmlHelper,
             string routeName,
             object routeValues,
             FormMethod method)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             return htmlHelper.BeginRouteForm(routeName, routeValues, method, htmlAttributes: null);
         }
 
@@ -379,11 +448,16 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// In this context, "renders" means the method writes its output using <see cref="ViewContext.Writer"/>.
         /// </remarks>
         public static MvcForm BeginRouteForm(
-            [NotNull] this IHtmlHelper htmlHelper,
+            this IHtmlHelper htmlHelper,
             string routeName,
             FormMethod method,
             object htmlAttributes)
         {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
             return htmlHelper.BeginRouteForm(
                 routeName,
                 routeValues: null,

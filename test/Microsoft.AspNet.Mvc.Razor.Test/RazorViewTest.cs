@@ -8,10 +8,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Internal;
+using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.PageExecutionInstrumentation;
+using Microsoft.AspNet.Routing;
 using Microsoft.Framework.WebEncoders.Testing;
 using Moq;
 using Xunit;
@@ -1404,12 +1406,13 @@ namespace Microsoft.AspNet.Mvc.Razor
             viewEngine.Setup(p => p.FindPage(It.IsAny<ActionContext>(), "/Layout.cshtml"))
                        .Returns(new RazorPageResult("Layout", layout));
 
-            var view = new RazorView(viewEngine.Object,
-                                     Mock.Of<IRazorPageActivator>(),
-                                     CreateViewStartProvider(viewStart),
-                                     page,
-                                     new CommonTestEncoder(),
-                                     isPartial: false);
+            var view = new RazorView(
+                viewEngine.Object,
+                Mock.Of<IRazorPageActivator>(),
+                CreateViewStartProvider(viewStart),
+                page,
+                new CommonTestEncoder(),
+                isPartial: false);
             var viewContext = CreateViewContext(view);
 
             // Act
@@ -1457,7 +1460,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         private static ViewContext CreateViewContext(RazorView view)
         {
             var httpContext = new DefaultHttpContext();
-            var actionContext = new ActionContext(httpContext, routeData: null, actionDescriptor: null);
+            var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
             return new ViewContext(
                 actionContext,
                 view,
@@ -1471,8 +1474,9 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             viewStartPages = viewStartPages ?? new IRazorPage[0];
             var viewStartProvider = new Mock<IViewStartProvider>();
-            viewStartProvider.Setup(v => v.GetViewStartPages(It.IsAny<string>()))
-                             .Returns(viewStartPages);
+            viewStartProvider
+                .Setup(v => v.GetViewStartPages(It.IsAny<string>()))
+                .Returns(viewStartPages);
 
             return viewStartProvider.Object;
         }

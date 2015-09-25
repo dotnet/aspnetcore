@@ -20,8 +20,13 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         private static readonly MethodInfo _strongTryGetValueImplInfo =
             typeof(TryGetValueProvider).GetTypeInfo().GetDeclaredMethod("StrongTryGetValueImpl");
 
-        public static TryGetValueDelegate CreateInstance([NotNull] Type targetType)
+        public static TryGetValueDelegate CreateInstance(Type targetType)
         {
+            if (targetType == null)
+            {
+                throw new ArgumentNullException(nameof(targetType));
+            }
+
             TryGetValueDelegate result;
 
             // Cache delegates since properties of model types are re-evaluated numerous times.
