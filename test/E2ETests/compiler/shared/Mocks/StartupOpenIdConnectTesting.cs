@@ -27,9 +27,10 @@ namespace MusicStore
         {
             //Below code demonstrates usage of multiple configuration sources. For instance a setting say 'setting1' is found in both the registered sources,
             //then the later source will win. By this way a Local config can be overridden by a different setting while deployed remotely.
-            var builder = new ConfigurationBuilder(env.ApplicationBasePath)
-                        .AddJsonFile("config.json")
-                        .AddEnvironmentVariables(); //All environment variables in the process's context flow in as configuration values.
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(env.ApplicationBasePath)
+                .AddJsonFile("config.json")
+                .AddEnvironmentVariables(); //All environment variables in the process's context flow in as configuration values.
 
             Configuration = builder.Build();
             _runtimeEnvironment = runtimeEnvironment;

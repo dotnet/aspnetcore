@@ -81,9 +81,10 @@ namespace MusicStore.Models
         {
             var appEnv = serviceProvider.GetService<IApplicationEnvironment>();
 
-            var builder = new ConfigurationBuilder(appEnv.ApplicationBasePath)
-                        .AddJsonFile("config.json")
-                        .AddEnvironmentVariables();
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(appEnv.ApplicationBasePath)
+                .AddJsonFile("config.json")
+                .AddEnvironmentVariables();
             var configuration = builder.Build();
 
             //const string adminRole = "Administrator";
