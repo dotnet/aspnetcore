@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
         /// <summary>
         /// This is part of implementing the IDisposable pattern.
         /// </summary>
-        private bool disposedValue = false; // To detect redundant calls
+        private bool _disposedValue = false; // To detect redundant calls
 
         /// <summary>
         /// Called to take a block from the pool.
@@ -128,7 +128,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            if (!_disposedValue)
             {
                 if (disposing)
                 {
@@ -144,7 +144,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
 
                 // N/A: set large fields to null.
 
-                disposedValue = true;
+                _disposedValue = true;
             }
         }
 

@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
         /// <summary>
         /// Part of the IDisposable implementation
         /// </summary>
-        private bool disposedValue = false; // To detect redundant calls
+        private bool _disposedValue = false; // To detect redundant calls
 
         public static MemoryPoolSlab2 Create(int length)
         {
@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            if (!_disposedValue)
             {
                 if (disposing)
                 {
@@ -73,7 +73,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
                 // set large fields to null.
                 Array = null;
 
-                disposedValue = true;
+                _disposedValue = true;
             }
         }
 
