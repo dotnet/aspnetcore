@@ -77,6 +77,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
 
         ~MemoryPoolBlock2()
         {
+            Debug.Assert(!_pinHandle.IsAllocated, "Ad-hoc memory block wasn't unpinned");
+            Debug.Assert(Slab == null || !Slab.IsActive, "Block being garbage collected instead of returned to pool");
+
             if (_pinHandle.IsAllocated)
             {
                 // if this is a one-time-use block, ensure that the GCHandle does not leak

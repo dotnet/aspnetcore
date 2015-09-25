@@ -196,8 +196,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 }
 
                 // Now that the while loop has completed the following invariants should hold true:
-                Trace.Assert(_numBytesPreCompleted >= 0);
-                Trace.Assert(_numBytesPreCompleted <= _maxBytesPreCompleted);
+                Debug.Assert(_numBytesPreCompleted >= 0);
+                Debug.Assert(_numBytesPreCompleted <= _maxBytesPreCompleted);
             }
         }
 
