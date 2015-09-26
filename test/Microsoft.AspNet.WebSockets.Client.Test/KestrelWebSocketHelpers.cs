@@ -8,7 +8,6 @@ using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 using Microsoft.Dnx.Runtime.Infrastructure;
 using Microsoft.Framework.Configuration;
-using Microsoft.Framework.Configuration.Memory;
 
 namespace Microsoft.AspNet.WebSockets.Client.Test
 {
@@ -43,7 +42,7 @@ namespace Microsoft.AspNet.WebSockets.Client.Test
             };
 
             var configBuilder = new ConfigurationBuilder();
-            configBuilder.Add(new MemoryConfigurationSource());
+            configBuilder.AddInMemoryCollection();
             var config = configBuilder.Build();
             config["server.urls"] = "http://localhost:54321";
 
