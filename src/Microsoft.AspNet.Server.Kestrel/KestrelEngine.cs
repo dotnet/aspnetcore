@@ -34,22 +34,22 @@ namespace Microsoft.AspNet.Server.Kestrel
                 {
                     var architecture = IntPtr.Size == 4
                         ? "x86"
-                        : "amd64";
+                        : "x64";
 
                     libraryPath = Path.Combine(
                         libraryPath,
+                        "runtimes",
+                        "win7-" + architecture,
                         "native",
-                        "windows",
-                        architecture,
                         "libuv.dll");
                 }
                 else if (Libuv.IsDarwin)
                 {
                     libraryPath = Path.Combine(
                         libraryPath,
+                        "runtimes",
+                        "osx",
                         "native",
-                        "darwin",
-                        "universal",
                         "libuv.dylib");
                 }
                 else

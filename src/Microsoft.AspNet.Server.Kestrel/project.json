@@ -13,6 +13,14 @@
     "Microsoft.StandardsPolice": {
       "version": "1.0.0-*",
       "type": "build"
+    },
+    "Microsoft.AspNet.Internal.libuv-Darwin": {
+      "version": "1.0.0-*",
+        "type":"build"
+    },
+    "Microsoft.AspNet.Internal.libuv-Windows": {
+      "version": "1.0.0-*",
+      "type": "build"
     }
   },
   "frameworks": {
@@ -44,13 +52,19 @@
   "scripts": {
     "prepare": [
       "dnu restore ../../tools/Microsoft.AspNet.Server.Kestrel.GeneratedCode",
-      "dnx --appbase ../../tools/Microsoft.AspNet.Server.Kestrel.GeneratedCode Microsoft.Dnx.ApplicationHost run Http/FrameHeaders.Generated.cs"
+      "dnx -p ../../tools/Microsoft.AspNet.Server.Kestrel.GeneratedCode run Http/FrameHeaders.Generated.cs"
+    ],
+    "postrestore": [
+      "dnu restore ../../tools/Microsoft.AspNet.Server.Kestrel.LibuvCopier",
+      "dnx -p ../../tools/Microsoft.AspNet.Server.Kestrel.LibuvCopier run"
     ]
   },
   "packInclude": {
     "/": "../../content/thirdpartynotices.txt",
-    "native/darwin/universal/": "native/darwin/universal/*",
-    "native/windows/amd64/": "native/windows/amd64/*",
-    "native/windows/x86/": "native/windows/x86/*"
+    "runtimes/win7-x64/native/": "runtimes/win7-x64/native/*",
+    "runtimes/win7-x86/native/": "runtimes/win7-x86/native/*",
+    "runtimes/win10-arm/native/": "runtimes/win10-arm/native/*",
+    "runtimes/osx/native/":  "runtimes/osx/native/*"
+
   }
 }
