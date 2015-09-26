@@ -104,7 +104,12 @@ namespace Microsoft.AspNet.Hosting.Internal
 
                     try
                     {
-                        using (logger.IsEnabled(LogLevel.Critical) 
+                        using (logger.IsEnabled(LogLevel.Critical) ||
+                               logger.IsEnabled(LogLevel.Error) ||
+                               logger.IsEnabled(LogLevel.Warning) ||
+                               logger.IsEnabled(LogLevel.Information) ||
+                               logger.IsEnabled(LogLevel.Verbose) ||
+                               logger.IsEnabled(LogLevel.Debug)
                             ? logger.BeginScope("Request Id: {RequestId}", requestIdentifier) 
                             : null)
                         {
