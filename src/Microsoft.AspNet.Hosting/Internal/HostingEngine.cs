@@ -104,7 +104,9 @@ namespace Microsoft.AspNet.Hosting.Internal
 
                     try
                     {
-                        using (logger.BeginScope("Request Id: {RequestId}", requestIdentifier))
+                        using (logger.IsEnabled(LogLevel.Critical) 
+                            ? logger.BeginScope("Request Id: {RequestId}", requestIdentifier) 
+                            : null)
                         {
                             contextAccessor.HttpContext = httpContext;
                             await application(httpContext);
