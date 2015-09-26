@@ -97,7 +97,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
             _slabs.Push(slab);
 
             var basePtr = slab.ArrayPtr;
-            var firstOffset = (_blockStride - 1) - ((ushort)(basePtr + _blockStride - 1) % _blockStride);
+            var firstOffset = (int)((_blockStride - 1) - ((ulong)(basePtr + _blockStride - 1) % _blockStride));
 
             for (var offset = firstOffset;
                 offset + _blockLength <= _slabLength;
