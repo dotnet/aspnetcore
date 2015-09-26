@@ -34,6 +34,7 @@ namespace Microsoft.AspNet.Html.Abstractions
         /// <summary>
         /// Clears the content.
         /// </summary>
-        void Clear();
+        /// <returns>The <see cref="IHtmlContentBuilder"/>.</returns>
+        IHtmlContentBuilder Clear();
     }
 }

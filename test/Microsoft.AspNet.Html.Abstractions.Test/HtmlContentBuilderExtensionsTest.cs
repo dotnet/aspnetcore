@@ -373,9 +373,10 @@ namespace Microsoft.AspNet.Html.Abstractions.Test
                 return this;
             }
 
-            public void Clear()
+            public IHtmlContentBuilder Clear()
             {
                 Entries.Clear();
+                return this;
             }
 
             public void WriteTo(TextWriter writer, IHtmlEncoder encoder)
