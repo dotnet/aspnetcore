@@ -3,8 +3,6 @@
 
 using System.Net;
 using System.Net.Http;
-using Microsoft.AspNet.Mvc;
-using Microsoft.Framework.Internal;
 using ShimResources = Microsoft.AspNet.Mvc.WebApiCompatShim.Resources;
 
 namespace System.Web.Http
@@ -24,9 +22,14 @@ namespace System.Web.Http
         /// Initializes a new instance of the <see cref="HttpResponseException"/> class.
         /// </summary>
         /// <param name="response">The response message.</param>
-        public HttpResponseException([NotNull] HttpResponseMessage response)
+        public HttpResponseException(HttpResponseMessage response)
             : base(ShimResources.HttpResponseExceptionMessage)
         {
+            if (response == null)
+            {
+                throw new ArgumentNullException(nameof(response));
+            }
+
             Response = response;
         }
 

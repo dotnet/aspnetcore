@@ -25,6 +25,11 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
 
         public void Apply(ControllerModel controller)
         {
+            if (controller == null)
+            {
+                throw new ArgumentNullException(nameof(controller));
+            }
+
             if (IsConventionApplicable(controller))
             {
                 var newActions = new List<ActionModel>();

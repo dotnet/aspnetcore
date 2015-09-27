@@ -3,7 +3,6 @@
 
 using System.Net.Http;
 using Microsoft.AspNet.Mvc;
-using Microsoft.Framework.Internal;
 
 namespace System.Web.Http
 {
@@ -16,9 +15,14 @@ namespace System.Web.Http
         /// Initializes a new instance of the <see cref="ResponseMessageResult"/> class.
         /// </summary>
         /// <param name="response">The response message.</param>
-        public ResponseMessageResult([NotNull] HttpResponseMessage response)
+        public ResponseMessageResult(HttpResponseMessage response)
             : base(response)
         {
+            if (response == null)
+            {
+                throw new ArgumentNullException(nameof(response));
+            }
+
             Response = response;
         }
 

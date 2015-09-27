@@ -6,7 +6,7 @@
     "url": "git://github.com/aspnet/mvc"
   },
   "compilationOptions": {
-    "warningsAsErrors": false
+    "warningsAsErrors": true
   },
   "dependencies": {
     "Microsoft.AspNet.WebUtilities": "1.0.0-*",
@@ -14,10 +14,6 @@
     "Microsoft.AspNet.Mvc.Formatters.Json": "6.0.0-*",
     "Microsoft.AspNet.WebApi.Client": "5.2.2",
     "Microsoft.Framework.PropertyHelper.Sources": {
-      "version": "1.0.0-*",
-      "type": "build"
-    },
-    "Microsoft.Framework.NotNullAttribute.Sources": {
       "version": "1.0.0-*",
       "type": "build"
     }

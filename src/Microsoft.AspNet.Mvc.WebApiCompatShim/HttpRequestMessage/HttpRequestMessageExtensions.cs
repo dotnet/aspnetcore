@@ -9,7 +9,6 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.WebApiCompatShim;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 using ShimResources = Microsoft.AspNet.Mvc.WebApiCompatShim.Resources;
 
@@ -37,9 +36,19 @@ namespace System.Net.Http
         /// range.
         /// </returns>
         public static HttpResponseMessage CreateErrorResponse(
-            [NotNull] this HttpRequestMessage request,
-            [NotNull] InvalidByteRangeException invalidByteRangeException)
+            this HttpRequestMessage request,
+            InvalidByteRangeException invalidByteRangeException)
         {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            if (invalidByteRangeException == null)
+            {
+                throw new ArgumentNullException(nameof(invalidByteRangeException));
+            }
+
             var rangeNotSatisfiableResponse = request.CreateErrorResponse(
                 HttpStatusCode.RequestedRangeNotSatisfiable,
                 invalidByteRangeException);
@@ -67,10 +76,20 @@ namespace System.Net.Http
         /// <paramref name="statusCode"/>.
         /// </returns>
         public static HttpResponseMessage CreateErrorResponse(
-            [NotNull] this HttpRequestMessage request,
+            this HttpRequestMessage request,
             HttpStatusCode statusCode,
-            [NotNull] string message)
+            string message)
         {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            if (message == null)
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
+
             return request.CreateErrorResponse(statusCode, new HttpError(message));
         }
 
@@ -92,11 +111,26 @@ namespace System.Net.Http
         /// <returns>An error response for <paramref name="exception"/> with error message <paramref name="message"/>
         /// and status code <paramref name="statusCode"/>.</returns>
         public static HttpResponseMessage CreateErrorResponse(
-            [NotNull] this HttpRequestMessage request,
+            this HttpRequestMessage request,
             HttpStatusCode statusCode,
-            [NotNull] string message,
-            [NotNull] Exception exception)
+            string message,
+            Exception exception)
         {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            if (message == null)
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
+
+            if (exception == null)
+            {
+                throw new ArgumentNullException(nameof(exception));
+            }
+
             var error = new HttpError(exception, includeErrorDetail: false) { Message = message };
             return request.CreateErrorResponse(statusCode, error);
         }
@@ -118,10 +152,20 @@ namespace System.Net.Http
         /// An error response for <paramref name="exception"/> with status code <paramref name="statusCode"/>.
         /// </returns>
         public static HttpResponseMessage CreateErrorResponse(
-            [NotNull] this HttpRequestMessage request,
+            this HttpRequestMessage request,
             HttpStatusCode statusCode,
-            [NotNull] Exception exception)
+            Exception exception)
         {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            if (exception == null)
+            {
+                throw new ArgumentNullException(nameof(exception));
+            }
+
             return request.CreateErrorResponse(statusCode, new HttpError(exception, includeErrorDetail: false));
         }
 
@@ -142,10 +186,20 @@ namespace System.Net.Http
         /// An error response for <paramref name="modelState"/> with status code <paramref name="statusCode"/>.
         /// </returns>
         public static HttpResponseMessage CreateErrorResponse(
-            [NotNull] this HttpRequestMessage request,
+            this HttpRequestMessage request,
             HttpStatusCode statusCode,
-            [NotNull] ModelStateDictionary modelState)
+            ModelStateDictionary modelState)
         {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            if (modelState == null)
+            {
+                throw new ArgumentNullException(nameof(modelState));
+            }
+
             return request.CreateErrorResponse(statusCode, new HttpError(modelState, includeErrorDetail: false));
         }
 
@@ -165,10 +219,20 @@ namespace System.Net.Http
         /// An error response wrapping <paramref name="error"/> with status code <paramref name="statusCode"/>.
         /// </returns>
         public static HttpResponseMessage CreateErrorResponse(
-            [NotNull] this HttpRequestMessage request,
+            this HttpRequestMessage request,
             HttpStatusCode statusCode,
-            [NotNull] HttpError error)
+            HttpError error)
         {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            if (error == null)
+            {
+                throw new ArgumentNullException(nameof(error));
+            }
+
             return request.CreateResponse<HttpError>(statusCode, error);
         }
 
@@ -188,8 +252,18 @@ namespace System.Net.Http
         /// <returns>
         /// A response wrapping <paramref name="value"/> with <see cref="System.Net.HttpStatusCode.OK"/> status code.
         /// </returns>
-        public static HttpResponseMessage CreateResponse<T>([NotNull] this HttpRequestMessage request, T value)
+        public static HttpResponseMessage CreateResponse<T>(this HttpRequestMessage request, T value)
         {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
             return request.CreateResponse<T>(HttpStatusCode.OK, value, formatters: null);
         }
 
@@ -232,11 +306,16 @@ namespace System.Net.Http
         /// <param name="formatters">The set of <see cref="MediaTypeFormatter"/> objects from which to choose.</param>
         /// <returns>A response wrapping <paramref name="value"/> with <paramref name="statusCode"/>.</returns>
         public static HttpResponseMessage CreateResponse<T>(
-            [NotNull] this HttpRequestMessage request,
+            this HttpRequestMessage request,
             HttpStatusCode statusCode,
             T value,
             IEnumerable<MediaTypeFormatter> formatters)
         {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
             var context = GetHttpContext(request);
 
             if (formatters == null)
@@ -296,11 +375,26 @@ namespace System.Net.Http
         /// </param>
         /// <returns>A response wrapping <paramref name="value"/> with <paramref name="statusCode"/>.</returns>
         public static HttpResponseMessage CreateResponse<T>(
-            [NotNull] this HttpRequestMessage request,
+            this HttpRequestMessage request,
             HttpStatusCode statusCode,
-            [NotNull] T value,
-            [NotNull] MediaTypeHeaderValue mediaType)
+            T value,
+            MediaTypeHeaderValue mediaType)
         {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
+            if (mediaType == null)
+            {
+                throw new ArgumentNullException(nameof(mediaType));
+            }
+
             var context = GetHttpContext(request);
 
             // Get the default formatters from options
@@ -330,11 +424,26 @@ namespace System.Net.Http
         /// <param name="formatter">The formatter to use.</param>
         /// <returns>A response wrapping <paramref name="value"/> with <paramref name="statusCode"/>.</returns>
         public static HttpResponseMessage CreateResponse<T>(
-            [NotNull] this HttpRequestMessage request,
+            this HttpRequestMessage request,
             HttpStatusCode statusCode,
-            [NotNull] T value,
-            [NotNull] MediaTypeFormatter formatter)
+            T value,
+            MediaTypeFormatter formatter)
         {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
+            if (formatter == null)
+            {
+                throw new ArgumentNullException(nameof(formatter));
+            }
+
             return request.CreateResponse(statusCode, value, formatter, (MediaTypeHeaderValue)null);
         }
 
@@ -352,12 +461,27 @@ namespace System.Net.Http
         /// </param>
         /// <returns>A response wrapping <paramref name="value"/> with <paramref name="statusCode"/>.</returns>
         public static HttpResponseMessage CreateResponse<T>(
-            [NotNull] this HttpRequestMessage request,
+            this HttpRequestMessage request,
             HttpStatusCode statusCode,
-            [NotNull] T value,
-            [NotNull] MediaTypeFormatter formatter,
+            T value,
+            MediaTypeFormatter formatter,
             string mediaType)
         {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
+            if (formatter == null)
+            {
+                throw new ArgumentNullException(nameof(formatter));
+            }
+
             var mediaTypeHeader = mediaType != null ? new MediaTypeHeaderValue(mediaType) : null;
             return request.CreateResponse(statusCode, value, formatter, mediaTypeHeader);
         }
@@ -376,12 +500,22 @@ namespace System.Net.Http
         /// </param>
         /// <returns>A response wrapping <paramref name="value"/> with <paramref name="statusCode"/>.</returns>
         public static HttpResponseMessage CreateResponse<T>(
-            [NotNull] this HttpRequestMessage request,
+            this HttpRequestMessage request,
             HttpStatusCode statusCode,
             T value,
-            [NotNull] MediaTypeFormatter formatter,
+            MediaTypeFormatter formatter,
             MediaTypeHeaderValue mediaType)
         {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            if (formatter == null)
+            {
+                throw new ArgumentNullException(nameof(formatter));
+            }
+
             var response = new HttpResponseMessage(statusCode)
             {
                 RequestMessage = request,

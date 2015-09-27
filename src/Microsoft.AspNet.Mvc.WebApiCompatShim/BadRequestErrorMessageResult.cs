@@ -4,7 +4,6 @@
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc;
-using Microsoft.Framework.Internal;
 
 namespace System.Web.Http
 {
@@ -16,9 +15,14 @@ namespace System.Web.Http
     {
         /// <summary>Initializes a new instance of the <see cref="BadRequestErrorMessageResult"/> class.</summary>
         /// <param name="message">The user-visible error message.</param>
-        public BadRequestErrorMessageResult([NotNull] string message)
+        public BadRequestErrorMessageResult(string message)
             : base(new HttpError(message))
         {
+            if (message == null)
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
+
             Message = message;
         }
 

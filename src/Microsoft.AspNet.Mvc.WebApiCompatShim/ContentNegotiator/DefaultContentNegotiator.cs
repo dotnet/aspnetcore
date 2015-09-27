@@ -57,10 +57,25 @@ namespace System.Net.Http.Formatting
         /// <returns>The result of the negotiation containing the most appropriate <see cref="MediaTypeFormatter"/>
         /// instance, or <c>null</c> if there is no appropriate formatter.</returns>
         public virtual ContentNegotiationResult Negotiate(
-            [NotNull] Type type,
-            [NotNull] HttpRequestMessage request,
-            [NotNull] IEnumerable<MediaTypeFormatter> formatters)
+            Type type,
+            HttpRequestMessage request,
+            IEnumerable<MediaTypeFormatter> formatters)
         {
+            if (type == null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            if (formatters == null)
+            {
+                throw new ArgumentNullException(nameof(formatters));
+            }
+
             // Go through each formatter to compute how well it matches.
             var matches = ComputeFormatterMatches(type, request, formatters);
 
@@ -96,10 +111,25 @@ namespace System.Net.Http.Formatting
         /// <param name="formatters">The set of <see cref="MediaTypeFormatter"/> objects from which to choose.</param>
         /// <returns>A collection containing all the matches.</returns>
         protected virtual Collection<MediaTypeFormatterMatch> ComputeFormatterMatches(
-            [NotNull] Type type,
-            [NotNull] HttpRequestMessage request,
-            [NotNull] IEnumerable<MediaTypeFormatter> formatters)
+            Type type,
+            HttpRequestMessage request,
+            IEnumerable<MediaTypeFormatter> formatters)
         {
+            if (type == null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            if (formatters == null)
+            {
+                throw new ArgumentNullException(nameof(formatters));
+            }
+
             IEnumerable<MediaTypeWithQualityHeaderValue> sortedAcceptValues = null;
 
             // Go through each formatter to find how well it matches.
@@ -159,8 +189,13 @@ namespace System.Net.Http.Formatting
         /// <param name="matches">The collection of matches.</param>
         /// <returns>The <see cref="MediaTypeFormatterMatch"/> determined to be the best match.</returns>
         protected virtual MediaTypeFormatterMatch SelectResponseMediaTypeFormatter(
-            [NotNull] ICollection<MediaTypeFormatterMatch> matches)
+            ICollection<MediaTypeFormatterMatch> matches)
         {
+            if (matches == null)
+            {
+                throw new ArgumentNullException(nameof(matches));
+            }
+
             // Performance-sensitive
 
             var matchList = matches.AsList();
@@ -269,9 +304,19 @@ namespace System.Net.Http.Formatting
         /// </summary>
         /// <returns>The <see cref="Encoding"/> determined to be the best match.</returns>
         protected virtual Encoding SelectResponseCharacterEncoding(
-            [NotNull] HttpRequestMessage request,
-            [NotNull] MediaTypeFormatter formatter)
+            HttpRequestMessage request,
+            MediaTypeFormatter formatter)
         {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            if (formatter == null)
+            {
+                throw new ArgumentNullException(nameof(formatter));
+            }
+
             // If there are any SupportedEncodings then we pick an encoding
             var supportedEncodings = formatter.SupportedEncodings.ToList();
             if (supportedEncodings.Count > 0)
@@ -311,9 +356,19 @@ namespace System.Net.Http.Formatting
         /// A <see cref="MediaTypeFormatterMatch"/> indicating the quality of the match or null is no match.
         /// </returns>
         protected virtual MediaTypeFormatterMatch MatchAcceptHeader(
-            [NotNull] IEnumerable<MediaTypeWithQualityHeaderValue> sortedAcceptValues,
-            [NotNull] MediaTypeFormatter formatter)
+            IEnumerable<MediaTypeWithQualityHeaderValue> sortedAcceptValues,
+            MediaTypeFormatter formatter)
         {
+            if (sortedAcceptValues == null)
+            {
+                throw new ArgumentNullException(nameof(sortedAcceptValues));
+            }
+
+            if (formatter == null)
+            {
+                throw new ArgumentNullException(nameof(formatter));
+            }
+
             foreach (MediaTypeWithQualityHeaderValue acceptMediaTypeValue in sortedAcceptValues)
             {
                 var supportedMediaTypes = formatter.SupportedMediaTypes.ToList();
@@ -347,9 +402,19 @@ namespace System.Net.Http.Formatting
         /// A <see cref="MediaTypeFormatterMatch"/> indicating the quality of the match or null is no match.
         /// </returns>
         protected virtual MediaTypeFormatterMatch MatchRequestMediaType(
-            [NotNull] HttpRequestMessage request,
-            [NotNull] MediaTypeFormatter formatter)
+            HttpRequestMessage request,
+            MediaTypeFormatter formatter)
         {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            if (formatter == null)
+            {
+                throw new ArgumentNullException(nameof(formatter));
+            }
+
             if (request.Content != null)
             {
                 var requestMediaType = request.Content.Headers.ContentType;
@@ -385,8 +450,13 @@ namespace System.Net.Http.Formatting
         /// True if not ExcludeMatchOnTypeOnly and accept headers with a q-factor bigger than 0.0 are present.
         /// </returns>
         protected virtual bool ShouldMatchOnType(
-            [NotNull] IEnumerable<MediaTypeWithQualityHeaderValue> sortedAcceptValues)
+            IEnumerable<MediaTypeWithQualityHeaderValue> sortedAcceptValues)
         {
+            if (sortedAcceptValues == null)
+            {
+                throw new ArgumentNullException(nameof(sortedAcceptValues));
+            }
+
             return !(ExcludeMatchOnTypeOnly && sortedAcceptValues.Any());
         }
 
@@ -399,9 +469,19 @@ namespace System.Net.Http.Formatting
         /// A <see cref="MediaTypeFormatterMatch"/> indicating the quality of the match or null is no match.
         /// </returns>
         protected virtual MediaTypeFormatterMatch MatchType(
-            [NotNull] Type type,
-            [NotNull]  MediaTypeFormatter formatter)
+            Type type,
+            MediaTypeFormatter formatter)
         {
+            if (type == null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
+            if (formatter == null)
+            {
+                throw new ArgumentNullException(nameof(formatter));
+            }
+
             // We already know that we do match on type -- otherwise we wouldn't even be called --
             // so this is just a matter of determining how we match.
             MediaTypeHeaderValue mediaType = null;
@@ -447,8 +527,13 @@ namespace System.Net.Http.Formatting
         /// <param name="headerValues">The header values to sort.</param>
         /// <returns>The sorted header values.</returns>
         protected virtual IEnumerable<StringWithQualityHeaderValue> SortStringWithQualityHeaderValuesByQFactor(
-            [NotNull] ICollection<StringWithQualityHeaderValue> headerValues)
+            ICollection<StringWithQualityHeaderValue> headerValues)
         {
+            if (headerValues == null)
+            {
+                throw new ArgumentNullException(nameof(headerValues));
+            }
+
             if (headerValues.Count > 1)
             {
                 // Use OrderBy() instead of Array.Sort() as it performs fewer comparisons. In this case the comparisons

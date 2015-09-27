@@ -6,9 +6,7 @@ using System.Linq;
 using System.Xml;
 using System.Xml.Schema;
 using System.Xml.Serialization;
-using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.Framework.Internal;
 using ShimResources = Microsoft.AspNet.Mvc.WebApiCompatShim.Resources;
 
 namespace System.Web.Http
@@ -34,9 +32,14 @@ namespace System.Web.Http
         /// <paramref name="message"/>.
         /// </summary>
         /// <param name="message">The error message to associate with this instance.</param>
-        public HttpError([NotNull] string message)
+        public HttpError(string message)
             : this()
         {
+            if (message == null)
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
+
             Message = message;
         }
 
@@ -47,9 +50,14 @@ namespace System.Web.Http
         /// <param name="includeErrorDetail">
         /// <c>true</c> to include the exception information in the error;<c>false</c> otherwise.
         /// </param>
-        public HttpError([NotNull] Exception exception, bool includeErrorDetail)
+        public HttpError(Exception exception, bool includeErrorDetail)
             : this()
         {
+            if (exception == null)
+            {
+                throw new ArgumentNullException(nameof(exception));
+            }
+
             Message = ShimResources.HttpError_GenericError;
 
             if (includeErrorDetail)
@@ -71,9 +79,14 @@ namespace System.Web.Http
         /// <param name="includeErrorDetail">
         /// <c>true</c> to include exception messages in the error; <c>false</c> otherwise.
         /// </param>
-        public HttpError([NotNull] ModelStateDictionary modelState, bool includeErrorDetail)
+        public HttpError(ModelStateDictionary modelState, bool includeErrorDetail)
             : this()
         {
+            if (modelState == null)
+            {
+                throw new ArgumentNullException(nameof(modelState));
+            }
+
             if (modelState.IsValid)
             {
                 throw new ArgumentException(ShimResources.HttpError_ValidModelState, nameof(modelState));

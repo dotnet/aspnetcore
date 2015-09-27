@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.Framework.Internal;
 
 namespace System.Web.Http
 {
@@ -20,9 +19,14 @@ namespace System.Web.Http
         /// <param name="includeErrorDetail">
         /// <see langword="true"/> if the error should include exception messages; otherwise, <see langword="false"/>.
         /// </param>
-        public InvalidModelStateResult([NotNull] ModelStateDictionary modelState, bool includeErrorDetail)
+        public InvalidModelStateResult(ModelStateDictionary modelState, bool includeErrorDetail)
             : base(new HttpError(modelState, includeErrorDetail))
         {
+            if (modelState == null)
+            {
+                throw new ArgumentNullException(nameof(modelState));
+            }
+
             ModelState = modelState;
             IncludeErrorDetail = includeErrorDetail;
         }

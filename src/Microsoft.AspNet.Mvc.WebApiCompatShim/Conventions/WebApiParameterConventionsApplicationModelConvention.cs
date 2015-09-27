@@ -16,6 +16,11 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
     {
         public void Apply(ActionModel action)
         {
+            if (action == null)
+            {
+                throw new ArgumentNullException(nameof(action));
+            }
+
             if (IsConventionApplicable(action.Controller))
             {
                 var optionalParameters = new HashSet<string>();

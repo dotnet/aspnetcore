@@ -1,11 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.Http;
 using Microsoft.AspNet.Http;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.WebApiCompatShim
 {
@@ -14,8 +14,13 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
         private readonly HttpContext _httpContext;
         private HttpRequestMessage _httpRequestMessage;
 
-        public HttpRequestMessageFeature([NotNull] HttpContext httpContext)
+        public HttpRequestMessageFeature(HttpContext httpContext)
         {
+            if (httpContext == null)
+            {
+                throw new ArgumentNullException(nameof(httpContext));
+            }
+
             _httpContext = httpContext;
         }
 

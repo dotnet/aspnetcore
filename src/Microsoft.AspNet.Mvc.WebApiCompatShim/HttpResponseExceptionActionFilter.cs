@@ -1,10 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Net.Http;
 using System.Web.Http;
 using Microsoft.AspNet.Mvc.Filters;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.WebApiCompatShim
 {
@@ -18,12 +18,17 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
         // Return a high number by default so that it runs closest to the action.
         public int Order { get; set; } = int.MaxValue - 10;
 
-        public void OnActionExecuting([NotNull] ActionExecutingContext context)
+        public void OnActionExecuting(ActionExecutingContext context)
         {
         }
 
-        public void OnActionExecuted([NotNull] ActionExecutedContext context)
+        public void OnActionExecuted(ActionExecutedContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var httpResponseException = context.Exception as HttpResponseException;
             if (httpResponseException != null)
             {
