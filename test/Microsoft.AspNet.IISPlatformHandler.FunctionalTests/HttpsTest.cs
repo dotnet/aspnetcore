@@ -1,0 +1,186 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.IO;
+using System.Net.Http;
+using System.Security.Cryptography.X509Certificates;
+using System.Threading.Tasks;
+using Microsoft.AspNet.Server.Testing;
+using Microsoft.AspNet.Testing.xunit;
+using Microsoft.Framework.Logging;
+using Xunit;
+using Xunit.Sdk;
+
+namespace Microsoft.AspNet.IISPlatformHandler.FunctionalTests
+{
+    // IisExpress preregisteres 44300-44399 ports.
+    public class HttpsTest
+    {
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux)]
+        [InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "https://localhost:44399/")]
+        [InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x64, "https://localhost:44398/")]
+        public Task Https_HelloWorld(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
+        {
+            return HttpsHelloWorld(ServerType.IISExpress, runtimeFlavor, architecture, applicationBaseUrl);
+        }
+
+        public async Task HttpsHelloWorld(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
+        {
+            var logger = new LoggerFactory()
+                            .AddConsole()
+                            .CreateLogger($"HttpsHelloWorld:{serverType}:{runtimeFlavor}:{architecture}");
+
+            using (logger.BeginScope("HttpsHelloWorldTest"))
+            {
+                var deploymentParameters = new DeploymentParameters(Helpers.GetTestSitesPath(), serverType, runtimeFlavor, architecture)
+                {
+                    ApplicationBaseUriHint = applicationBaseUrl,
+                    EnvironmentName = "HttpsHelloWorld", // Will pick the Start class named 'StartupHttpsHelloWorld',
+                    ApplicationHostConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("Https.config") : null,
+                    SiteName = "HttpsTestSite", // This is configured in the Https.config
+                };
+
+                using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, logger))
+                {
+                    var deploymentResult = deployer.Deploy();
+                    var handler = new WebRequestHandler();
+                    handler.ServerCertificateValidationCallback = (a, b, c, d) => true;
+                    var httpClient = new HttpClient(handler) { BaseAddress = new Uri(deploymentResult.ApplicationBaseUri) };
+
+                    // Request to base address and check if various parts of the body are rendered & measure the cold startup time.
+                    var response = await RetryHelper.RetryRequest(() =>
+                    {
+                        return httpClient.GetAsync(string.Empty);
+                    }, logger, deploymentResult.HostShutdownToken);
+
+                    var responseText = await response.Content.ReadAsStringAsync();
+                    try
+                    {
+                        Assert.Equal("https Hello World", responseText);
+                    }
+                    catch (XunitException)
+                    {
+                        logger.LogWarning(response.ToString());
+                        logger.LogWarning(responseText);
+                        throw;
+                    }
+                }
+            }
+        }
+
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux)]
+        [InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "https://localhost:44397/")]
+        [InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x86, "https://localhost:44396/")]
+        public Task Https_HelloWorld_NoClientCert(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
+        {
+            return HttpsHelloWorldCerts(ServerType.IISExpress, runtimeFlavor, architecture, applicationBaseUrl, sendClientCert: false);
+        }
+
+        [ConditionalTheory(Skip = "Manual test only, selecting a client cert is non-determanistic on different machines.")]
+        [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux)]
+        [InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "https://localhost:44395/")]
+        [InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x64, "https://localhost:44394/")]
+        public Task Https_HelloWorld_ClientCert(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
+        {
+            return HttpsHelloWorldCerts(ServerType.IISExpress, runtimeFlavor, architecture, applicationBaseUrl, sendClientCert: true);
+        }
+
+        public async Task HttpsHelloWorldCerts(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, bool sendClientCert)
+        {
+            var logger = new LoggerFactory()
+                            .AddConsole()
+                            .CreateLogger($"HttpsHelloWorldCerts:{serverType}:{runtimeFlavor}:{architecture}");
+
+            using (logger.BeginScope("HttpsHelloWorldTest"))
+            {
+                var deploymentParameters = new DeploymentParameters(Helpers.GetTestSitesPath(), serverType, runtimeFlavor, architecture)
+                {
+                    ApplicationBaseUriHint = applicationBaseUrl,
+                    EnvironmentName = "HttpsHelloWorld", // Will pick the Start class named 'StartupHttpsHelloWorld',
+                    ApplicationHostConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("Https.config") : null,
+                    SiteName = "HttpsTestSite", // This is configured in the Https.config
+                };
+
+                using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, logger))
+                {
+                    var deploymentResult = deployer.Deploy();
+                    var handler = new WebRequestHandler();
+                    handler.ServerCertificateValidationCallback = (a, b, c, d) => true;
+                    handler.ClientCertificateOptions = ClientCertificateOption.Manual;
+                    if (sendClientCert)
+                    {
+                        X509Certificate2 clientCert = FindClientCert();
+                        Assert.NotNull(clientCert);
+                        handler.ClientCertificates.Add(clientCert);
+                    }
+                    var httpClient = new HttpClient(handler) { BaseAddress = new Uri(deploymentResult.ApplicationBaseUri) };
+
+                    // Request to base address and check if various parts of the body are rendered & measure the cold startup time.
+                    var response = await RetryHelper.RetryRequest(() =>
+                    {
+                        return httpClient.GetAsync("checkclientcert");
+                    }, logger, deploymentResult.HostShutdownToken);
+
+                    var responseText = await response.Content.ReadAsStringAsync();
+                    try
+                    {
+                        if (sendClientCert)
+                        {
+                            Assert.Equal("https Hello World, has cert? True", responseText);
+                        }
+                        else
+                        {
+                            Assert.Equal("https Hello World, has cert? False", responseText);
+                        }
+                    }
+                    catch (XunitException)
+                    {
+                        logger.LogWarning(response.ToString());
+                        logger.LogWarning(responseText);
+                        throw;
+                    }
+                }
+            }
+        }
+
+        private X509Certificate2 FindClientCert()
+        {
+            var store = new X509Store();
+            store.Open(OpenFlags.ReadOnly);
+
+            foreach (var cert in store.Certificates)
+            {
+                bool isClientAuth = false;
+                bool isSmartCard = false;
+                foreach (var extension in cert.Extensions)
+                {
+                    var eku = extension as X509EnhancedKeyUsageExtension;
+                    if (eku != null)
+                    {
+                        foreach (var oid in eku.EnhancedKeyUsages)
+                        {
+                            if (oid.FriendlyName == "Client Authentication")
+                            {
+                                isClientAuth = true;
+                            }
+                            else if (oid.FriendlyName == "Smart Card Logon")
+                            {
+                                isSmartCard = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (isClientAuth && !isSmartCard)
+                {
+                    return cert;
+                }
+            }
+            return null;
+        }
+    }
+}
