@@ -10,10 +10,12 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Http.Features.Internal
 {
-    public class RequestCookiesFeature : IRequestCookiesFeature
+    public class RequestCookiesFeature : IRequestCookiesFeature, IFeatureCache
     {
         private readonly IFeatureCollection _features;
-        private readonly FeatureReference<IHttpRequestFeature> _request = FeatureReference<IHttpRequestFeature>.Default;
+        private int _cachedFeaturesRevision = -1;
+
+        private IHttpRequestFeature _request;
 
         private StringValues _original;
         private IReadableStringCollection _parsedValues;
@@ -43,6 +45,20 @@ namespace Microsoft.AspNet.Http.Features.Internal
             _features = features;
         }
 
+        void IFeatureCache.CheckFeaturesRevision()
+        {
+            if (_cachedFeaturesRevision != _features.Revision)
+            {
+                _request = null;
+                _cachedFeaturesRevision = _features.Revision;
+            }
+        }
+
+        private IHttpRequestFeature HttpRequestFeature
+        {
+            get { return FeatureHelpers.GetAndCache(this, _features, ref _request); }
+        }
+
         public IReadableStringCollection Cookies
         {
             get
@@ -52,7 +68,7 @@ namespace Microsoft.AspNet.Http.Features.Internal
                     return _parsedValues ?? ReadableStringCollection.Empty;
                 }
 
-                var headers = _request.Fetch(_features).Headers;
+                var headers = HttpRequestFeature.Headers;
                 StringValues current;
                 if (!headers.TryGetValue(HeaderNames.Cookie, out current))
                 {
@@ -81,7 +97,7 @@ namespace Microsoft.AspNet.Http.Features.Internal
                 {
                     if (_parsedValues == null || _parsedValues.Count == 0)
                     {
-                        _request.Fetch(_features).Headers.Remove(HeaderNames.Cookie);
+                        HttpRequestFeature.Headers.Remove(HeaderNames.Cookie);
                     }
                     else
                     {
@@ -94,7 +110,7 @@ namespace Microsoft.AspNet.Http.Features.Internal
                             }
                         }
                         _original = headers.ToArray();
-                        _request.Fetch(_features).Headers[HeaderNames.Cookie] = _original;
+                        HttpRequestFeature.Headers[HeaderNames.Cookie] = _original;
                     }
                 }
             }

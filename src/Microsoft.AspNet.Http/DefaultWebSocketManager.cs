@@ -10,25 +10,37 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Http.Internal
 {
-    public class DefaultWebSocketManager : WebSocketManager
+    public class DefaultWebSocketManager : WebSocketManager, IFeatureCache
     {
         private IFeatureCollection _features;
-        private FeatureReference<IHttpRequestFeature> _request = FeatureReference<IHttpRequestFeature>.Default;
-        private FeatureReference<IHttpWebSocketFeature> _webSockets = FeatureReference<IHttpWebSocketFeature>.Default;
+        private int _cachedFeaturesRevision = -1;
+
+        private IHttpRequestFeature _request;
+        private IHttpWebSocketFeature _webSockets;
 
         public DefaultWebSocketManager(IFeatureCollection features)
         {
             _features = features;
         }
 
+        void IFeatureCache.CheckFeaturesRevision()
+        {
+            if (_cachedFeaturesRevision != _features.Revision)
+            {
+                _request = null;
+                _webSockets = null;
+                _cachedFeaturesRevision = _features.Revision;
+            }
+        }
+
         private IHttpRequestFeature HttpRequestFeature
         {
-            get { return _request.Fetch(_features); }
+            get { return FeatureHelpers.GetAndCache(this, _features, ref _request); }
         }
 
         private IHttpWebSocketFeature WebSocketFeature
         {
-            get { return _webSockets.Fetch(_features); }
+            get { return FeatureHelpers.GetAndCache(this, _features, ref _webSockets); }
         }
 
         public override bool IsWebSocketRequest

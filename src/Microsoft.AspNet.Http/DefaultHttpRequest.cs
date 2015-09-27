@@ -11,15 +11,16 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Http.Internal
 {
-    public class DefaultHttpRequest : HttpRequest
+    public class DefaultHttpRequest : HttpRequest, IFeatureCache
     {
         private readonly DefaultHttpContext _context;
         private readonly IFeatureCollection _features;
+        private int _cachedFeaturesRevision = -1;
 
-        private FeatureReference<IHttpRequestFeature> _request = FeatureReference<IHttpRequestFeature>.Default;
-        private FeatureReference<IQueryFeature> _query = FeatureReference<IQueryFeature>.Default;
-        private FeatureReference<IFormFeature> _form = FeatureReference<IFormFeature>.Default;
-        private FeatureReference<IRequestCookiesFeature> _cookies = FeatureReference<IRequestCookiesFeature>.Default;
+        private IHttpRequestFeature _request;
+        private IQueryFeature _query;
+        private IFormFeature _form;
+        private IRequestCookiesFeature _cookies;
 
         public DefaultHttpRequest(DefaultHttpContext context, IFeatureCollection features)
         {
@@ -27,24 +28,58 @@ namespace Microsoft.AspNet.Http.Internal
             _features = features;
         }
 
+        void IFeatureCache.CheckFeaturesRevision()
+        {
+            if (_cachedFeaturesRevision != _features.Revision)
+            {
+                _request = null;
+                _query = null;
+                _form = null;
+                _cookies = null;
+                _cachedFeaturesRevision = _features.Revision;
+            }
+        }
+
         private IHttpRequestFeature HttpRequestFeature
         {
-            get { return _request.Fetch(_features); }
+            get { return FeatureHelpers.GetAndCache(this, _features, ref _request); }
         }
 
         private IQueryFeature QueryFeature
         {
-            get { return _query.Fetch(_features) ?? _query.Update(_features, new QueryFeature(_features)); }
+            get
+            {
+                return FeatureHelpers.GetOrCreateAndCache(
+                    this, 
+                    _features, 
+                    (f) => new QueryFeature(f), 
+                    ref _query);
+            }
         }
 
         private IFormFeature FormFeature
         {
-            get { return _form.Fetch(_features) ?? _form.Update(_features, new FormFeature(this)); }
+            get
+            {
+                return FeatureHelpers.GetOrCreateAndCache(
+                    this,
+                    _features,
+                    this,
+                    (r) => new FormFeature(r),
+                    ref _form);
+            }
         }
 
         private IRequestCookiesFeature RequestCookiesFeature
         {
-            get { return _cookies.Fetch(_features) ?? _cookies.Update(_features, new RequestCookiesFeature(_features)); }
+            get
+            {
+                return FeatureHelpers.GetOrCreateAndCache(
+                    this, 
+                    _features, 
+                    (f) => new RequestCookiesFeature(f), 
+                    ref _cookies);
+            }
         }
 
         public override HttpContext HttpContext { get { return _context; } }

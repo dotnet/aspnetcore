@@ -12,25 +12,44 @@ using Microsoft.AspNet.Http.Features.Authentication.Internal;
 
 namespace Microsoft.AspNet.Http.Authentication.Internal
 {
-    public class DefaultAuthenticationManager : AuthenticationManager
+    public class DefaultAuthenticationManager : AuthenticationManager, IFeatureCache
     {
         private readonly IFeatureCollection _features;
-        private FeatureReference<IHttpAuthenticationFeature> _authentication = FeatureReference<IHttpAuthenticationFeature>.Default;
-        private FeatureReference<IHttpResponseFeature> _response = FeatureReference<IHttpResponseFeature>.Default;
+        private int _cachedFeaturesRevision = -1;
+
+        private IHttpAuthenticationFeature _authentication;
+        private IHttpResponseFeature _response;
 
         public DefaultAuthenticationManager(IFeatureCollection features)
         {
             _features = features;
         }
 
+        void IFeatureCache.CheckFeaturesRevision()
+        {
+            if (_cachedFeaturesRevision != _features.Revision)
+            {
+                _authentication = null;
+                _response = null;
+                _cachedFeaturesRevision = _features.Revision;
+            }
+        }
+
         private IHttpAuthenticationFeature HttpAuthenticationFeature
         {
-            get { return _authentication.Fetch(_features) ?? _authentication.Update(_features, new HttpAuthenticationFeature()); }
+            get
+            {
+                return FeatureHelpers.GetOrCreateAndCache(
+                    this, 
+                    _features, 
+                    () => new HttpAuthenticationFeature(), 
+                    ref _authentication);
+            }
         }
 
         private IHttpResponseFeature HttpResponseFeature
         {
-            get { return _response.Fetch(_features); }
+            get { return FeatureHelpers.GetAndCache(this, _features, ref _response); }
         }
 
         public override IEnumerable<AuthenticationDescription> GetAuthenticationSchemes()
