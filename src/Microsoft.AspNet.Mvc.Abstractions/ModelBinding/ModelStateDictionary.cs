@@ -209,9 +209,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 return false;
             }
 
-            if (exception is FormatException)
+            if (exception is FormatException || exception is OverflowException)
             {
-                // Convert FormatExceptions to Invalid value messages.
+                // Convert FormatExceptions and OverflowExceptions to Invalid value messages.
                 ModelState modelState;
                 TryGetValue(key, out modelState);
 

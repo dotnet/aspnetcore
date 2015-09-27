@@ -992,6 +992,94 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.True(modelState.IsValid);
         }
 
+        private class User
+        {
+            public int Id { get; set; }
+
+            public uint Zip { get; set; }
+
+        }
+
+        [Fact]
+        public async Task Validation_FormatException_ShowsInvalidValueMessage_OnSimpleTypeProperty()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(User)
+            };
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            {
+                request.QueryString = new QueryString("?Id=bill");
+            });
+
+            var modelState = new ModelStateDictionary();
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<User>(modelBindingResult.Model);
+            Assert.Equal(0, model.Id);
+            Assert.Equal(1, modelState.ErrorCount);
+            Assert.False(modelState.IsValid);
+
+            var state = Assert.Single(modelState);
+            Assert.Equal("Id", state.Key);
+            var entry = state.Value;
+            Assert.Equal("bill", entry.AttemptedValue);
+            Assert.Equal("bill", entry.RawValue);
+            Assert.Single(entry.Errors);
+
+            var error = entry.Errors[0];
+            Assert.Equal("The value 'bill' is not valid for Id.", error.ErrorMessage);
+        }
+
+        [Fact]
+        public async Task Validation_OverflowException_ShowsInvalidValueMessage_OnSimpleTypeProperty()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(User)
+            };
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            {
+                request.QueryString = new QueryString("?Zip=-123");
+            });
+
+            var modelState = new ModelStateDictionary();
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<User>(modelBindingResult.Model);
+            Assert.Equal<uint>(0, model.Zip);
+            Assert.Equal(1, modelState.ErrorCount);
+            Assert.False(modelState.IsValid);
+
+            var state = Assert.Single(modelState);
+            Assert.Equal("Zip", state.Key);
+            var entry = state.Value;
+            Assert.Equal("-123", entry.AttemptedValue);
+            Assert.Equal("-123", entry.RawValue);
+            Assert.Single(entry.Errors);
+
+            var error = entry.Errors[0];
+            Assert.Equal("The value '-123' is not valid for Zip.", error.ErrorMessage);
+        }
+
         private class Order11
         {
             public IEnumerable<Address> ShippingAddresses { get; set; }

@@ -115,6 +115,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                     "<li>HtmlEncode[[This is an error for Property3.]]</li>" + Environment.NewLine +
                     "<li>HtmlEncode[[This is an error for Property2.]]</li>" + Environment.NewLine +
                     "<li>HtmlEncode[[This is another error for Property2.]]</li>" + Environment.NewLine +
+                    "<li>HtmlEncode[[The value '' is not valid for Property2.]]</li>" + Environment.NewLine +
                     "<li>HtmlEncode[[This is an error for the model root.]]</li>" + Environment.NewLine +
                     "<li>HtmlEncode[[This is another error for the model root.]]</li>" + Environment.NewLine +
                     "</ul></div>";
@@ -346,6 +347,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             modelState.AddModelError("Property2", "This is an error for Property2.");
             modelState.AddModelError("Property2", "This is another error for Property2.");
+            modelState.AddModelError("Property2", new OverflowException("Produces invalid value message"));
 
             modelState.AddModelError(string.Empty, "This is an error for the model root.");
             modelState.AddModelError(string.Empty, "This is another error for the model root.");
