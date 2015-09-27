@@ -4,10 +4,9 @@
 using System;
 using System.Linq;
 using System.Linq.Expressions;
-using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     /// <summary>
     /// Extensions methods for <see cref="ModelStateDictionary"/>.
@@ -22,7 +21,10 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="modelState">The <see cref="ModelStateDictionary"/> instance this method extends.</param>
         /// <param name="expression">An expression to be evaluated against an item in the current model.</param>
         /// <param name="errorMessage">The error message to add.</param>
-        public static void AddModelError<TModel>(this ModelStateDictionary modelState, Expression<Func<TModel, object>> expression, string errorMessage)
+        public static void AddModelError<TModel>(
+            this ModelStateDictionary modelState,
+            Expression<Func<TModel, object>> expression,
+            string errorMessage)
         {
             modelState.AddModelError(GetExpressionText(expression), errorMessage);
         }
@@ -35,7 +37,10 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="modelState">The <see cref="ModelStateDictionary"/> instance this method extends.</param>
         /// <param name="expression">An expression to be evaluated against an item in the current model.</param>
         /// <param name="exception">The <see cref="Exception"/> to add.</param>
-        public static void AddModelError<TModel>(this ModelStateDictionary modelState, Expression<Func<TModel, object>> expression, Exception exception)
+        public static void AddModelError<TModel>(
+            this ModelStateDictionary modelState,
+            Expression<Func<TModel, object>> expression,
+            Exception exception)
         {
             modelState.AddModelError(GetExpressionText(expression), exception);
         }
@@ -50,18 +55,23 @@ namespace Microsoft.AspNet.Mvc
         /// true if the element is successfully removed; otherwise, false.
         /// This method also returns false if <paramref name="expression"/> was not found in the model-state dictionary.
         /// </returns>
-        public static bool Remove<TModel>(this ModelStateDictionary modelState, Expression<Func<TModel, object>> expression)
+        public static bool Remove<TModel>(
+            this ModelStateDictionary modelState,
+            Expression<Func<TModel, object>> expression)
         {
             return modelState.Remove(GetExpressionText(expression));
         }
 
         /// <summary>
-        /// Removes all the entries for the specified <paramref name="expression"/> from the <see cref="ModelStateDictionary"/>.
+        /// Removes all the entries for the specified <paramref name="expression"/> from the
+        /// <see cref="ModelStateDictionary"/>.
         /// </summary>
         /// <typeparam name="TModel">The type of the model.</typeparam>
         /// <param name="modelState">The <see cref="ModelStateDictionary"/> instance this method extends.</param>
         /// <param name="expression">An expression to be evaluated against an item in the current model.</param>
-        public static void RemoveAll<TModel>(this ModelStateDictionary modelState, Expression<Func<TModel, object>> expression)
+        public static void RemoveAll<TModel>(
+            this ModelStateDictionary modelState,
+            Expression<Func<TModel, object>> expression)
         {
             string modelKey = GetExpressionText(expression);
             if (string.IsNullOrEmpty(modelKey))
@@ -98,7 +108,9 @@ namespace Microsoft.AspNet.Mvc
 
             if (IsConversionToObject(unaryExpression))
             {
-                return ExpressionHelper.GetExpressionText(Expression.Lambda(unaryExpression.Operand, expression.Parameters[0]));
+                return ExpressionHelper.GetExpressionText(Expression.Lambda(
+                    unaryExpression.Operand,
+                    expression.Parameters[0]));
             }
 
             return ExpressionHelper.GetExpressionText(expression);
