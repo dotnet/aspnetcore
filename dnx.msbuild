@@ -372,7 +372,8 @@
             <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders.Core\UnicodeRanges.generated.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders\CodePointFilters.cs;
                                     $(PoliCheckPath)**\Microsoft.Framework.WebEncoders.Core.dll;
-                                    $(PoliCheckPath)**\Microsoft.Framework.WebEncoders.Core.xml">
+                                    $(PoliCheckPath)**\Microsoft.Framework.WebEncoders.Core.xml;
+                                    $(PoliCheckPath)**\src\EntityFramework.SqlServer\Storage\Internal\SqlServerTypeMapper.cs;">
                 <term>Oriya</term>
                 <Justification>Font reference</Justification>
             </SrcExclusions>
