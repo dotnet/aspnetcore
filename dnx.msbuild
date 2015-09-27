@@ -372,8 +372,7 @@
             <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders.Core\UnicodeRanges.generated.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders\CodePointFilters.cs;
                                     $(PoliCheckPath)**\Microsoft.Framework.WebEncoders.Core.dll;
-                                    $(PoliCheckPath)**\Microsoft.Framework.WebEncoders.Core.xml;
-                                    $(PoliCheckPath)**\src\EntityFramework.SqlServer\Storage\Internal\SqlServerTypeMapper.cs;">
+                                    $(PoliCheckPath)**\Microsoft.Framework.WebEncoders.Core.xml">
                 <term>Oriya</term>
                 <Justification>Font reference</Justification>
             </SrcExclusions>
@@ -467,7 +466,7 @@
                 <term>wang</term>
                 <Justification>Data from Northwind database</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\EntityFramework.SqlServer\Storage\SqlServerTypeMapper.cs">
+            <SrcExclusions Include="$(PoliCheckPath)**\src\EntityFramework.SqlServer\Storage\Internal\SqlServerTypeMapper.cs;">
                 <term>national</term>
                 <Justification>Refers to SQL Server datatype</Justification>
             </SrcExclusions>
