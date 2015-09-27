@@ -734,8 +734,9 @@ functions
                 "SignalR-SQLServer",
                 "SignalR-Redis",
                 "BrowserLink",
+                "dnx-watch",
                 "Entropy",
-		        "MusicStore"
+                "MusicStore"
             };
 
             var repositoryInclude = Environment.GetEnvironmentVariable("KOREBUILD_REPOSITORY_INCLUDE");
