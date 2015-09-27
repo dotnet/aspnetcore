@@ -3,8 +3,8 @@
   "version": "1.0.0-*",
 
   "dependencies": {
+    "Microsoft.AspNet.PlatformHandler": "1.0.0-*",
     "Microsoft.AspNet.Server.Kestrel": "1.0.0-*",
-    "Microsoft.AspNet.Server.IIS": "1.0.0-*",
     "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
     "Microsoft.AspNet.WebUtilities": "1.0.0-*",
     "Microsoft.Framework.Configuration.Json": "1.0.0-*",
@@ -13,8 +13,8 @@
   },
 
   "commands": {
-      "web": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener",
-      "kestrel": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.Kestrel"
+      "web": "Microsoft.AspNet.Server.WebListener",
+      "kestrel": "Microsoft.AspNet.Server.Kestrel"
   },
 
   "frameworks": {

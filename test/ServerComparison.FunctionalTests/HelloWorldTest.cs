@@ -17,8 +17,8 @@ namespace ServerComparison.FunctionalTests
     {
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        // [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5061/")]
-        // [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5062/")]
+        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5061/")]
+        [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5062/")]
         [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5063/")]
         [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5064/")]
         public Task HelloWorld_Windows(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
@@ -50,27 +50,6 @@ namespace ServerComparison.FunctionalTests
         [InlineData(ServerType.IIS, RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5069/")]
         [InlineData(ServerType.IIS, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5070/")]
         public Task HelloWorld_IIS_X86(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
-        {
-            return HelloWorld(serverType, runtimeFlavor, architecture, applicationBaseUrl);
-        }
-
-        [ConditionalTheory]
-        [SkipIfIISNativeVariationsNotEnabled]
-        [OSSkipCondition(OperatingSystems.Win7And2008R2 | OperatingSystems.MacOSX | OperatingSystems.Linux)]
-        [SkipIfCurrentRuntimeIsCoreClr]
-        [InlineData(ServerType.IISNativeModule, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5071/")]
-        public Task HelloWorld_NativeModule_X86(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
-        {
-            return HelloWorld(serverType, runtimeFlavor, architecture, applicationBaseUrl);
-        }
-
-        [ConditionalTheory]
-        [SkipIfIISNativeVariationsNotEnabled]
-        [OSSkipCondition(OperatingSystems.Win7And2008R2 | OperatingSystems.MacOSX | OperatingSystems.Linux)]
-        [SkipOn32BitOS]
-        [SkipIfCurrentRuntimeIsCoreClr]
-        [InlineData(ServerType.IISNativeModule, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5072/")]
-        public Task HelloWorld_NativeModule_AMD64(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
             return HelloWorld(serverType, runtimeFlavor, architecture, applicationBaseUrl);
         }
