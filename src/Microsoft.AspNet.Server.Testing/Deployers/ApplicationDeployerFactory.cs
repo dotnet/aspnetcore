@@ -40,7 +40,6 @@ namespace Microsoft.AspNet.Server.Testing
                     return new IISExpressDeployer(deploymentParameters, logger);
 #if DNX451
                 case ServerType.IIS:
-                case ServerType.IISNativeModule:
                     return new IISDeployer(deploymentParameters, logger);
 #endif
                 case ServerType.WebListener:

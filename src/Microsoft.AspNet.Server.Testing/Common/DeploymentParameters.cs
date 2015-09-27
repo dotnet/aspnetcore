@@ -89,6 +89,9 @@ namespace Microsoft.AspNet.Server.Testing
         /// </summary>
         public Action<DeploymentParameters> UserAdditionalCleanup { get; set; }
 
+        // Which command in the test project to run.
+        public string Command { get; set; }
+
         public override string ToString()
         {
             return string.Format(

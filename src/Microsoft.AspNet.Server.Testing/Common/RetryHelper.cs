@@ -27,14 +27,14 @@ namespace Microsoft.AspNet.Server.Testing
         {
             for (int retry = 0; retry < retryCount; retry++)
             {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    logger.LogInformation("Failed to connect, retry canceled.");
+                    throw new OperationCanceledException("Failed to connect, retry canceled.", cancellationToken);
+                }
+
                 try
                 {
-                    if (cancellationToken.IsCancellationRequested)
-                    {
-                        logger.LogInformation("Stopping retry as cancellation token is triggered.");
-                        break;
-                    }
-
                     logger.LogWarning("Retry count {retryCount}..", retry + 1);
                     var response = await retryBlock();
 
@@ -45,12 +45,13 @@ namespace Microsoft.AspNet.Server.Testing
                         continue;
                     }
 
-                    return response; //Went through successfully
+                    return response; // Went through successfully
                 }
                 catch (Exception exception)
                 {
                     if (retry == retryCount - 1)
                     {
+                        logger.LogError("Failed to connect, retry limit exceeded.", exception);
                         throw;
                     }
                     else
@@ -68,7 +69,8 @@ namespace Microsoft.AspNet.Server.Testing
                 }
             }
 
-            return null;
+            logger.LogInformation("Failed to connect, retry limit exceeded.");
+            throw new OperationCanceledException("Failed to connect, retry limit exceeded.");
         }
     }
 }

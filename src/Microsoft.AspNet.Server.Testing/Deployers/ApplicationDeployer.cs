@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Server.Testing
         {
             var runtimePath = Process.GetCurrentProcess().MainModule.FileName;
             Logger.LogInformation(string.Empty);
-            Logger.LogInformation("Current runtime path is : {0}", runtimePath);
+            Logger.LogInformation($"Current runtime path is : {runtimePath}");
 
             var replaceStr = new StringBuilder().
                 Append("dnx").
@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.Server.Testing
 
             ChosenRuntimeName = runtimeDirectoryInfo.Parent.Name;
             Logger.LogInformation(string.Empty);
-            Logger.LogInformation("Changing to use runtime : {runtimeName}", ChosenRuntimeName);
+            Logger.LogInformation($"Changing to use runtime : {ChosenRuntimeName}");
             return ChosenRuntimeName;
         }
 
@@ -70,16 +70,13 @@ namespace Microsoft.AspNet.Server.Testing
         {
             DeploymentParameters.PublishedApplicationRootPath = Path.Combine(publishRoot ?? Path.GetTempPath(), Guid.NewGuid().ToString());
 
-            var parameters =
-                string.Format(
-                    "publish {0} -o {1} --runtime {2} {3}",
-                    DeploymentParameters.ApplicationPath,
-                    DeploymentParameters.PublishedApplicationRootPath,
-                    DeploymentParameters.DnxRuntime,
-                    DeploymentParameters.PublishWithNoSource ? "--no-source" : string.Empty);
+            var noSource = DeploymentParameters.PublishWithNoSource ? "--no-source" : string.Empty;
+            var command = DeploymentParameters.Command ?? "web";
+            var parameters = $"publish {DeploymentParameters.ApplicationPath} -o {DeploymentParameters.PublishedApplicationRootPath}"
+                + $" --runtime {DeploymentParameters.DnxRuntime} {noSource} --iis-command {command}";
 
             var dnuPath = Path.Combine(ChosenRuntimePath, "dnu.cmd");
-            Logger.LogInformation("Executing command {dnu} {args}", dnuPath, parameters);
+            Logger.LogInformation($"Executing command {dnuPath} {parameters}");
 
             var startInfo = new ProcessStartInfo
             {
@@ -106,13 +103,12 @@ namespace Microsoft.AspNet.Server.Testing
 
             DeploymentParameters.ApplicationPath =
                 (DeploymentParameters.ServerType == ServerType.IISExpress ||
-                DeploymentParameters.ServerType == ServerType.IISNativeModule ||
                 DeploymentParameters.ServerType == ServerType.IIS) ?
                 Path.Combine(DeploymentParameters.PublishedApplicationRootPath, "wwwroot") :
                 Path.Combine(DeploymentParameters.PublishedApplicationRootPath, "approot", "src",
                                 new DirectoryInfo(DeploymentParameters.ApplicationPath).Name);
 
-            Logger.LogInformation("dnu publish finished with exit code : {exitCode}", hostProcess.ExitCode);
+            Logger.LogInformation($"dnu publish finished with exit code : {hostProcess.ExitCode}");
         }
 
         protected void CleanPublishedOutput()
@@ -124,7 +120,7 @@ namespace Microsoft.AspNet.Server.Testing
             }
             catch (Exception exception)
             {
-                Logger.LogWarning("Failed to delete directory : {error}", exception.Message);
+                Logger.LogWarning($"Failed to delete directory : {exception.Message}");
             }
         }
 
@@ -225,7 +221,7 @@ namespace Microsoft.AspNet.Server.Testing
 
         protected void StartTimer()
         {
-            Logger.LogInformation("Deploying {VariationDetails}", DeploymentParameters.ToString());
+            Logger.LogInformation($"Deploying {DeploymentParameters.ToString()}");
             StopWatch.Start();
         }
 

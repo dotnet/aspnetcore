@@ -7,7 +7,6 @@ namespace Microsoft.AspNet.Server.Testing
     {
         IISExpress,
         IIS,
-        IISNativeModule,
         WebListener,
         Kestrel
     }

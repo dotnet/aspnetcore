@@ -41,14 +41,8 @@ namespace Microsoft.AspNet.Server.Testing
             // Publish to IIS root\application folder.
             DnuPublish(publishRoot: _application.WebSiteRootFolder);
 
-            // Drop an ini file instead of setting environment variable.
-            SetAspEnvironmentWithIni();
-
-            // Setup the IIS Application.
-            if (DeploymentParameters.ServerType == ServerType.IISNativeModule)
-            {
-                TurnRammFarOnNativeModule();
-            }
+            // Drop a json file instead of setting environment variable.
+            SetAspEnvironmentWithJson();
 
             lock (_syncObject)
             {
@@ -70,30 +64,12 @@ namespace Microsoft.AspNet.Server.Testing
             };
         }
 
-        private void SetAspEnvironmentWithIni()
+        private void SetAspEnvironmentWithJson()
         {
-            // Drop a Microsoft.AspNet.Hosting.ini with ASPNET_ENV information.
-            Logger.LogInformation("Creating Microsoft.AspNet.Hosting.ini file with ASPNET_ENV.");
-            var iniFile = Path.Combine(DeploymentParameters.ApplicationPath, "Microsoft.AspNet.Hosting.ini");
-            File.WriteAllText(iniFile, string.Format("ASPNET_ENV={0}", DeploymentParameters.EnvironmentName));
-        }
-
-        private void TurnRammFarOnNativeModule()
-        {
-            Logger.LogInformation("Turning runAllManagedModulesForAllRequests=true in web.config for native module.");
-            var webConfig = Path.Combine(DeploymentParameters.ApplicationPath, "web.config");
-            var configuration = new XmlDocument();
-            configuration.LoadXml(File.ReadAllText(webConfig));
-
-            // https://github.com/aspnet/Helios/issues/77
-            var rammfarAttribute = configuration.CreateAttribute("runAllManagedModulesForAllRequests");
-            rammfarAttribute.Value = "true";
-            var modulesNode = configuration.CreateElement("modules");
-            modulesNode.Attributes.Append(rammfarAttribute);
-            var systemWebServerNode = configuration.CreateElement("system.webServer");
-            systemWebServerNode.AppendChild(modulesNode);
-            configuration.SelectSingleNode("//configuration").AppendChild(systemWebServerNode);
-            configuration.Save(webConfig);
+            // Drop a Microsoft.AspNet.Hosting.json with Hosting:Environment information.
+            Logger.LogInformation("Creating Microsoft.AspNet.Hosting.json file with Hosting:Environment.");
+            var jsonFile = Path.Combine(DeploymentParameters.ApplicationPath, "Microsoft.AspNet.Hosting.json");
+            File.WriteAllText(jsonFile, string.Format("{ \"Hosting:Environment\":\"{0}\" }", DeploymentParameters.EnvironmentName));
         }
 
         public override void Dispose()
@@ -118,8 +94,6 @@ namespace Microsoft.AspNet.Server.Testing
         private class IISApplication
         {
             private const string WebSiteName = "ASPNETTESTRUNS";
-            private const string NativeModuleManagedRuntimeVersion = "vCoreFX";
-            private const string Dotnet45RuntimeVersion = "v4.0.30319";
 
             private readonly ServerManager _serverManager = new ServerManager();
             private readonly DeploymentParameters _deploymentParameters;
@@ -176,10 +150,7 @@ namespace Microsoft.AspNet.Server.Testing
             private ApplicationPool CreateAppPool(string appPoolName)
             {
                 var applicationPool = _serverManager.ApplicationPools.Add(appPoolName);
-                applicationPool.ManagedRuntimeVersion =
-                    _deploymentParameters.ServerType == ServerType.IISNativeModule ?
-                    NativeModuleManagedRuntimeVersion :
-                    Dotnet45RuntimeVersion;
+                applicationPool.ManagedRuntimeVersion = string.Empty;
 
                 applicationPool.Enable32BitAppOnWin64 = (_deploymentParameters.RuntimeArchitecture == RuntimeArchitecture.x86);
                 _logger.LogInformation("Created {bit} application pool '{name}' with runtime version {runtime}.",
