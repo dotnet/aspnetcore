@@ -95,7 +95,6 @@ namespace Microsoft.AspNet.Hosting.Internal
                 {
                     var httpContext = contextFactory.CreateHttpContext(features);
                     httpContext.ApplicationServices = _applicationServices;
-                    var requestIdentifier = GetRequestIdentifier(httpContext);
 
                     if (telemetrySource.IsEnabled("Microsoft.AspNet.Hosting.BeginRequest"))
                     {
@@ -110,7 +109,7 @@ namespace Microsoft.AspNet.Hosting.Internal
                                logger.IsEnabled(LogLevel.Information) ||
                                logger.IsEnabled(LogLevel.Verbose) ||
                                logger.IsEnabled(LogLevel.Debug)
-                            ? logger.BeginScope("Request Id: {RequestId}", requestIdentifier) 
+                            ? logger.BeginScope("Request Id: {RequestId}", GetRequestIdentifier(httpContext)) 
                             : null)
                         {
                             contextAccessor.HttpContext = httpContext;
