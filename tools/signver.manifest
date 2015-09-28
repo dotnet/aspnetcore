@@ -270,6 +270,7 @@
     <File Name="System.ServiceModel.Security.dll" Ignore="yes" />
     <File Name="System.ServiceProcess.ServiceController.dll" Ignore="yes" />
     <File Name="System.Text.Encoding.CodePages.dll" Ignore="yes" />
+    <File Name="System.Text.Encodings.Web.dll" Ignore="yes" />
     <File Name="System.Threading.AccessControl.dll" Ignore="yes" />
     <File Name="System.Threading.Tasks.Dataflow.dll" Ignore="yes" />
     <File Name="System.Xml.RW.XmlReaderLib.dll" Ignore="yes" />
