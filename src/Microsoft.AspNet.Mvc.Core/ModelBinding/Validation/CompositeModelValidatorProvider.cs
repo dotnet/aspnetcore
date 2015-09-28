@@ -27,11 +27,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         /// </summary>
         public IReadOnlyList<IModelValidatorProvider> ValidatorProviders { get; }
 
+        /// <inheritdoc />
         public void GetValidators(ModelValidatorProviderContext context)
         {
-            foreach (var validatorProvider in ValidatorProviders)
+            // Perf: Avoid allocations
+            for (var i = 0; i < ValidatorProviders.Count; i++)
             {
-                validatorProvider.GetValidators(context);
+                ValidatorProviders[i].GetValidators(context);
             }
         }
     }

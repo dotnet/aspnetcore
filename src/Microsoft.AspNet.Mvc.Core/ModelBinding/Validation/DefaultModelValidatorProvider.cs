@@ -15,9 +15,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         /// <inheritdoc />
         public void GetValidators(ModelValidatorProviderContext context)
         {
-            foreach (var metadata in context.ValidatorMetadata)
+            //Perf: Avoid allocations here
+            for (var i = 0; i < context.ValidatorMetadata.Count; i++)
             {
-                var validator = metadata as IModelValidator;
+                var validator = context.ValidatorMetadata[i] as IModelValidator;
                 if (validator != null)
                 {
                     context.Validators.Add(validator);

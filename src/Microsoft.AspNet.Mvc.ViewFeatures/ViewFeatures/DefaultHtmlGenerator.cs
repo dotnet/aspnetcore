@@ -800,8 +800,10 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             var htmlSummary = new TagBuilder("ul");
             foreach (var modelState in modelStates)
             {
-                foreach (var modelError in modelState.Errors)
+                // Perf: Avoid allocations
+                for (var i = 0; i < modelState.Errors.Count; i++)
                 {
+                    var modelError = modelState.Errors[i];
                     var errorText = ValidationHelpers.GetUserErrorMessageOrDefault(modelError, modelState: null);
 
                     if (!string.IsNullOrEmpty(errorText))

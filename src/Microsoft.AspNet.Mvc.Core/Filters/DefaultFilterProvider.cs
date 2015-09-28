@@ -20,9 +20,10 @@ namespace Microsoft.AspNet.Mvc.Filters
         {
             if (context.ActionContext.ActionDescriptor.FilterDescriptors != null)
             {
-                foreach (var item in context.Results)
+                // Perf: Avoid allocations
+                for (var i = 0; i < context.Results.Count; i++)
                 {
-                    ProvideFilter(context, item);
+                    ProvideFilter(context, context.Results[i]);
                 }
             }
         }

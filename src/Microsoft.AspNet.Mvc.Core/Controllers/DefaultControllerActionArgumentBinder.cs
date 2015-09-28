@@ -162,10 +162,12 @@ namespace Microsoft.AspNet.Mvc.Controllers
             OperationBindingContext operationContext,
             ModelStateDictionary modelState,
             IDictionary<string, object> arguments,
-            IEnumerable<ParameterDescriptor> parameterMetadata)
+            IList<ParameterDescriptor> parameterMetadata)
         {
-            foreach (var parameter in parameterMetadata)
+            // Perf: Avoid allocations
+            for (var i = 0; i < parameterMetadata.Count; i++)
             {
+                var parameter = parameterMetadata[i];
                 var modelBindingResult = await BindModelAsync(parameter, modelState, operationContext);
                 if (modelBindingResult.IsModelSet)
                 {

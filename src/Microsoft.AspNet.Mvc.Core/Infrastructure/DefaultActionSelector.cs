@@ -41,8 +41,11 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             var matchingRouteConstraints = tree.Select(context.RouteData.Values);
 
             var candidates = new List<ActionSelectorCandidate>();
-            foreach (var action in matchingRouteConstraints)
+
+            // Perf: Avoid allocations
+            for (var i = 0; i < matchingRouteConstraints.Count; i++)
             {
+                var action = matchingRouteConstraints[i];
                 var constraints = GetConstraints(context.HttpContext, action);
                 candidates.Add(new ActionSelectorCandidate(action, constraints));
             }
@@ -54,8 +57,10 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             if (matchingActionConstraints != null)
             {
                 matchingActions = new List<ActionDescriptor>(matchingActionConstraints.Count);
-                foreach (var candidate in matchingActionConstraints)
+                // Perf: Avoid allocations
+                for (var i = 0; i < matchingActionConstraints.Count; i++)
                 {
+                    var candidate = matchingActionConstraints[i];
                     matchingActions.Add(candidate.Action);
                 }
             }
@@ -107,12 +112,16 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             // Find the next group of constraints to process. This will be the lowest value of
             // order that is higher than startingOrder.
             int? order = null;
-            foreach (var candidate in candidates)
+
+            // Perf: Avoid allocations
+            for (var i = 0; i < candidates.Count; i++)
             {
+                var candidate = candidates[i];
                 if (candidate.Constraints != null)
                 {
-                    foreach (var constraint in candidate.Constraints)
+                    for (var j = 0; j < candidate.Constraints.Count; j++)
                     {
+                        var constraint = candidate.Constraints[j];
                         if ((startingOrder == null || constraint.Order > startingOrder) &&
                             (order == null || constraint.Order < order))
                         {
@@ -137,16 +146,19 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             constraintContext.Candidates = candidates;
             constraintContext.RouteContext = context;
 
-            foreach (var candidate in candidates)
+            // Perf: Avoid allocations
+            for (var i = 0; i < candidates.Count; i++)
             {
+                var candidate = candidates[i];
                 var isMatch = true;
                 var foundMatchingConstraint = false;
 
                 if (candidate.Constraints != null)
                 {
                     constraintContext.CurrentCandidate = candidate;
-                    foreach (var constraint in candidate.Constraints)
+                    for (var j = 0; j < candidate.Constraints.Count; j++)
                     {
+                        var constraint = candidate.Constraints[j];
                         if (constraint.Order == order)
                         {
                             foundMatchingConstraint = true;

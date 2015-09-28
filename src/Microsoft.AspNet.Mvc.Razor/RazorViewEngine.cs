@@ -198,17 +198,24 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
             else
             {
-                // For traditional routes, lookup the key in RouteConstraints if the key is RequireKey.
-                var match = actionDescriptor.RouteConstraints.FirstOrDefault(
-                    constraint => string.Equals(constraint.RouteKey, key, StringComparison.OrdinalIgnoreCase));
-                if (match != null && match.KeyHandling != RouteKeyHandling.CatchAll)
+                // Perf: Avoid allocations
+                for (var i = 0; i < actionDescriptor.RouteConstraints.Count; i++)
                 {
-                    if (match.KeyHandling == RouteKeyHandling.DenyKey)
+                    var constraint = actionDescriptor.RouteConstraints[i];
+                    if (string.Equals(constraint.RouteKey, key, StringComparison.Ordinal))
                     {
-                        return null;
-                    }
+                        if (constraint.KeyHandling == RouteKeyHandling.DenyKey)
+                        {
+                            return null;
+                        }
+                        else if (constraint.KeyHandling == RouteKeyHandling.RequireKey)
+                        {
+                            normalizedValue = constraint.RouteValue;
+                        }
 
-                    normalizedValue = match.RouteValue;
+                        // Duplicate keys in RouteConstraints are not allowed.
+                        break;
+                    }
                 }
             }
 
@@ -266,9 +273,10 @@ namespace Microsoft.AspNet.Mvc.Razor
                 expanderContext.Values = new Dictionary<string, string>(StringComparer.Ordinal);
 
                 // 1. Populate values from viewLocationExpanders.
-                foreach (var expander in _viewLocationExpanders)
+                // Perf: Avoid allocations
+                for( var i = 0; i < _viewLocationExpanders.Count; i++)
                 {
-                    expander.PopulateValues(expanderContext);
+                    _viewLocationExpanders[i].PopulateValues(expanderContext);
                 }
             }
 

@@ -30,9 +30,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         /// <inheritdoc />
         public void GetValidators(ClientValidatorProviderContext context)
         {
-            foreach (var validatorProvider in ValidatorProviders)
+            // Perf: Avoid allocations
+            for (var i = 0; i < ValidatorProviders.Count; i++)
             {
-                validatorProvider.GetValidators(context);
+                ValidatorProviders[i].GetValidators(context);
             }
         }
     }

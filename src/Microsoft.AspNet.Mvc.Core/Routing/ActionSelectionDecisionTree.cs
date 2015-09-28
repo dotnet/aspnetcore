@@ -47,13 +47,17 @@ namespace Microsoft.AspNet.Mvc.Routing
             // The common case for MVC has no catch-alls, so avoid allocating.
             List<ActionDescriptor> filtered = null;
 
-            foreach (var action in results)
+            // Perf: Avoid allocations
+            for (var i = 0;  i < results.Count; i++)
             {
+                var action = results[i];
+
                 var actionHasCatchAll = false;
                 if (action.RouteConstraints != null)
                 {
-                    foreach (var constraint in action.RouteConstraints)
+                    for (var j = 0; j < action.RouteConstraints.Count; j++)
                     {
+                        var constraint = action.RouteConstraints[j];
                         if (constraint.KeyHandling == RouteKeyHandling.CatchAll)
                         {
                             actionHasCatchAll = true;

@@ -49,8 +49,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             RuntimeHelpers.EnsureSufficientExecutionStack();
 
-            foreach (var binder in ModelBinders)
+            // Perf: Avoid allocations
+            for (var i = 0; i < ModelBinders.Count; i++)
             {
+                var binder = ModelBinders[i];
                 var result = await binder.BindModelAsync(bindingContext);
                 if (result != ModelBindingResult.NoResult)
                 {

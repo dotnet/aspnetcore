@@ -22,9 +22,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                 throw new ArgumentNullException(nameof(context));
             }
 
-            foreach (var metadata in context.ValidatorMetadata)
+            // Perf: Avoid allocations
+            for (var i = 0; i < context.ValidatorMetadata.Count; i++)
             {
-                var validator = metadata as IClientModelValidator;
+                var validator = context.ValidatorMetadata[i] as IClientModelValidator;
                 if (validator != null)
                 {
                     context.Validators.Add(validator);
