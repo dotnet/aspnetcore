@@ -59,17 +59,8 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (!IsSessionEnabled(context))
-            {
-                // Session middleware is not enabled. No-op
-                return null;
-            }
-
+            // Accessing Session property will throw if the session middleware is not enabled.
             var session = context.Session;
-            if (session == null)
-            {
-                return null;
-            }
 
             var tempDataDictionary = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             byte[] value;
@@ -162,6 +153,9 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(context));
             }
 
+            // Accessing Session property will throw if the session middleware is not enabled.
+            var session = context.Session;
+
             var hasValues = (values != null && values.Count > 0);
             if (hasValues)
             {
@@ -170,9 +164,6 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                     // We want to allow only simple types to be serialized in session.
                     EnsureObjectCanBeSerialized(item);
                 }
-
-                // Accessing Session property will throw if the session middleware is not enabled.
-                var session = context.Session;
 
                 using (var memoryStream = new MemoryStream())
                 {
@@ -183,16 +174,10 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                     }
                 }
             }
-            else if (IsSessionEnabled(context))
+            else
             {
-                var session = context.Session;
                 session.Remove(TempDataSessionStateKey);
             }
-        }
-
-        private static bool IsSessionEnabled(HttpContext context)
-        {
-            return context.Features.Get<ISessionFeature>() != null;
         }
 
         internal void EnsureObjectCanBeSerialized(object item)

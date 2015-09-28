@@ -1,8 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Internal;
 using Moq;
 using Xunit;
 
@@ -10,6 +12,29 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 {
     public class TempDataDictionaryTest
     {
+        [Fact]
+        public void ThrowscdException_OnSettingValue_AndWhenSessionIsNotEnabled()
+        {
+            // Arrange
+            var tempData = new TempDataDictionary(GetHttpContextAccessor(), new SessionStateTempDataProvider());
+
+            // Act & Assert
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                tempData["key1"] = "value1";
+            });
+        }
+
+        [Fact]
+        public void Keep_DoesNotThrowException_WhenDataIsNotLoaded()
+        {
+            // Arrange
+            var tempData = new TempDataDictionary(GetHttpContextAccessor(), new SessionStateTempDataProvider());
+
+            // Act & Assert
+            tempData.Keep();
+        }
+
         [Fact]
         public void TempData_Load_CreatesEmptyDictionaryIfProviderReturnsNull()
         {
@@ -214,10 +239,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
         private static IHttpContextAccessor GetHttpContextAccessor()
         {
-            var httpContext = new Mock<HttpContext>();
-            var httpContextAccessor = new Mock<IHttpContextAccessor>();
-            httpContextAccessor.Setup(h => h.HttpContext).Returns(httpContext.Object);
-            return httpContextAccessor.Object;
+            return new HttpContextAccessor() { HttpContext = new DefaultHttpContext() };
         }
     }
 }

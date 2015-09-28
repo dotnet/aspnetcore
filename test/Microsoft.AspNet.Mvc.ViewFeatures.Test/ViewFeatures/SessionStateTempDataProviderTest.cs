@@ -16,56 +16,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
     public class SessionStateTempDataProviderTest
     {
         [Fact]
-        public void Load_NullSession_ReturnsEmptyDictionary()
-        {
-            // Arrange
-            var testProvider = new SessionStateTempDataProvider();
-
-            // Act
-            var tempDataDictionary = testProvider.LoadTempData(
-                GetHttpContext(session: null, sessionEnabled: true));
-
-            // Assert
-            Assert.Null(tempDataDictionary);
-        }
-
-        [Fact]
-        public void Load_NonNullSession_NoSessionData_ReturnsEmptyDictionary()
-        {
-            // Arrange
-            var testProvider = new SessionStateTempDataProvider();
-
-            // Act
-            var tempDataDictionary = testProvider.LoadTempData(
-                GetHttpContext(Mock.Of<ISession>()));
-
-            // Assert
-            Assert.Empty(tempDataDictionary);
-        }
-
-        [Fact]
-        public void Save_NullSession_NullDictionary_DoesNotThrow()
-        {
-            // Arrange
-            var testProvider = new SessionStateTempDataProvider();
-
-            // Act & Assert (does not throw)
-            testProvider.SaveTempData(GetHttpContext(session: null, sessionEnabled: false), null);
-        }
-
-        [Fact]
-        public void Save_NullSession_EmptyDictionary_DoesNotThrow()
-        {
-            // Arrange
-            var testProvider = new SessionStateTempDataProvider();
-
-            // Act & Assert (does not throw)
-            testProvider.SaveTempData(
-                GetHttpContext(session: null, sessionEnabled: false), new Dictionary<string, object>());
-        }
-
-        [Fact]
-        public void Save_NullSession_NonEmptyDictionary_Throws()
+        public void Load_ThrowsException_WhenSessionIsNotEnabled()
         {
             // Arrange
             var testProvider = new SessionStateTempDataProvider();
@@ -73,11 +24,36 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             // Act & Assert
             Assert.Throws<InvalidOperationException>(() =>
             {
-                testProvider.SaveTempData(
-                    GetHttpContext(session: null, sessionEnabled: false),
-                    new Dictionary<string, object> { { "foo", "bar" } }
-                );
+                testProvider.LoadTempData(GetHttpContext(sessionEnabled: false));
             });
+        }
+
+        [Fact]
+        public void Save_ThrowsException_WhenSessionIsNotEnabled()
+        {
+            // Arrange
+            var testProvider = new SessionStateTempDataProvider();
+            var values = new Dictionary<string, object>();
+            values.Add("key1", "value1");
+
+            // Act & Assert
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                testProvider.SaveTempData(GetHttpContext(sessionEnabled: false), values);
+            });
+        }
+
+        [Fact]
+        public void Load_ReturnsEmptyDictionary_WhenNoSessionDataIsAvailable()
+        {
+            // Arrange
+            var testProvider = new SessionStateTempDataProvider();
+
+            // Act
+            var tempDataDictionary = testProvider.LoadTempData(GetHttpContext());
+
+            // Assert
+            Assert.Empty(tempDataDictionary);
         }
 
         public static TheoryData<object, Type> InvalidTypes
@@ -97,7 +73,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
         [Theory]
         [MemberData(nameof(InvalidTypes))]
-        public void EnsureObjectCanBeSerialized_InvalidType_Throws(object value, Type type)
+        public void EnsureObjectCanBeSerialized_ThrowsException_OnInvalidType(object value, Type type)
         {
             // Arrange
             var testProvider = new SessionStateTempDataProvider();
@@ -107,7 +83,8 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             {
                 testProvider.EnsureObjectCanBeSerialized(value);
             });
-            Assert.Equal($"The '{typeof(SessionStateTempDataProvider).FullName}' cannot serialize an object of type '{type}' to session state.",
+            Assert.Equal($"The '{typeof(SessionStateTempDataProvider).FullName}' cannot serialize " +
+                $"an object of type '{type}' to session state.",
                 exception.Message);
         }
 
@@ -127,7 +104,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
         [Theory]
         [MemberData(nameof(InvalidDictionaryTypes))]
-        public void EnsureObjectCanBeSerialized_InvalidDictionaryType_Throws(object value, Type type)
+        public void EnsureObjectCanBeSerialized_ThrowsException_OnInvalidDictionaryType(object value, Type type)
         {
             // Arrange
             var testProvider = new SessionStateTempDataProvider();
@@ -137,7 +114,8 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             {
                 testProvider.EnsureObjectCanBeSerialized(value);
             });
-            Assert.Equal($"The '{typeof(SessionStateTempDataProvider).FullName}' cannot serialize a dictionary with a key of type '{type}' to session state.",
+            Assert.Equal($"The '{typeof(SessionStateTempDataProvider).FullName}' cannot serialize a dictionary " +
+                $"with a key of type '{type}' to session state.",
                 exception.Message);
         }
 
@@ -163,7 +141,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
         [Theory]
         [MemberData(nameof(ValidTypes))]
-        public void EnsureObjectCanBeSerialized_ValidType_DoesNotThrow(object value)
+        public void EnsureObjectCanBeSerialized_DoesNotThrow_OnValidType(object value)
         {
             // Arrange
             var testProvider = new SessionStateTempDataProvider();
@@ -181,7 +159,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             {
                 { "string", "value" }
             };
-            var context = GetHttpContext(new TestSession(), true);
+            var context = GetHttpContext();
 
             // Act
             testProvider.SaveTempData(context, input);
@@ -201,7 +179,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             {
                 { "int", 10 }
             };
-            var context = GetHttpContext(new TestSession(), true);
+            var context = GetHttpContext();
 
             // Act
             testProvider.SaveTempData(context, input);
@@ -223,7 +201,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             {
                 { "bool", value }
             };
-            var context = GetHttpContext(new TestSession(), true);
+            var context = GetHttpContext();
 
             // Act
             testProvider.SaveTempData(context, input);
@@ -244,7 +222,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             {
                 { "DateTime", inputDatetime }
             };
-            var context = GetHttpContext(new TestSession(), true);
+            var context = GetHttpContext();
 
             // Act
             testProvider.SaveTempData(context, input);
@@ -265,7 +243,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             {
                 { "Guid", inputGuid }
             };
-            var context = GetHttpContext(new TestSession(), true);
+            var context = GetHttpContext();
 
             // Act
             testProvider.SaveTempData(context, input);
@@ -285,7 +263,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             {
                 { "List`string", new List<string> { "one", "two" } }
             };
-            var context = GetHttpContext(new TestSession(), true);
+            var context = GetHttpContext();
 
             // Act
             testProvider.SaveTempData(context, input);
@@ -311,7 +289,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             {
                 { "Dictionary", inputDictionary }
             };
-            var context = GetHttpContext(new TestSession(), true);
+            var context = GetHttpContext();
 
             // Act
             testProvider.SaveTempData(context, input);
@@ -331,7 +309,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             {
                 { "EmptyDictionary", new Dictionary<string, int>() }
             };
-            var context = GetHttpContext(new TestSession(), true);
+            var context = GetHttpContext();
 
             // Act
             testProvider.SaveTempData(context, input);
@@ -347,12 +325,12 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             public int DummyInt { get; set; }
         }
 
-        private HttpContext GetHttpContext(ISession session, bool sessionEnabled = true)
+        private HttpContext GetHttpContext(bool sessionEnabled = true)
         {
             var httpContext = new DefaultHttpContext();
-            if(sessionEnabled)
+            if (sessionEnabled)
             {
-                httpContext.Features.Set<ISessionFeature>(new SessionFeature() { Session = session });
+                httpContext.Features.Set<ISessionFeature>(new SessionFeature() { Session = new TestSession() });
             }
             return httpContext;
         }
