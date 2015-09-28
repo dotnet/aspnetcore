@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Server.Testing;
@@ -65,7 +66,10 @@ namespace ServerComparison.FunctionalTests
                 var deploymentParameters = new DeploymentParameters(Helpers.GetApplicationPath(), serverType, runtimeFlavor, architecture)
                 {
                     ApplicationBaseUriHint = applicationBaseUrl,
-                    EnvironmentName = "HelloWorld", // Will pick the Start class named 'StartupHelloWorld'
+                    Command = serverType == ServerType.WebListener ? "web" : "kestrel",
+                    EnvironmentName = "HelloWorld", // Will pick the Start class named 'StartupHelloWorld',
+                    ApplicationHostConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("Http.config") : null,
+                    SiteName = "HttpTestSite", // This is configured in the Http.config
                 };
 
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, logger))

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -110,6 +111,9 @@ namespace ServerComparison.FunctionalTests
                 {
                     ApplicationBaseUriHint = applicationBaseUrl,
                     EnvironmentName = "Responses",
+                    Command = serverType == ServerType.WebListener ? "web" : "kestrel",
+                    ApplicationHostConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("Http.config") : null,
+                    SiteName = "HttpTestSite", // This is configured in the Http.config
                 };
 
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, logger))
