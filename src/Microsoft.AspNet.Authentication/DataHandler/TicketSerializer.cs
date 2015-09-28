@@ -5,7 +5,6 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Authentication
 {
@@ -39,8 +38,18 @@ namespace Microsoft.AspNet.Authentication
             }
         }
 
-        public virtual void Write([NotNull] BinaryWriter writer, [NotNull] AuthenticationTicket ticket)
+        public virtual void Write(BinaryWriter writer, AuthenticationTicket ticket)
         {
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            if (ticket == null)
+            {
+                throw new ArgumentNullException(nameof(ticket));
+            }
+
             writer.Write(FormatVersion);
             writer.Write(ticket.AuthenticationScheme);
 
@@ -61,8 +70,18 @@ namespace Microsoft.AspNet.Authentication
             PropertiesSerializer.Default.Write(writer, ticket.Properties);
         }
 
-        protected virtual void WriteIdentity([NotNull] BinaryWriter writer, [NotNull] ClaimsIdentity identity)
+        protected virtual void WriteIdentity(BinaryWriter writer, ClaimsIdentity identity)
         {
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            if (identity == null)
+            {
+                throw new ArgumentNullException(nameof(identity));
+            }
+
             var authenticationType = identity.AuthenticationType ?? string.Empty;
 
             writer.Write(authenticationType);
@@ -99,8 +118,18 @@ namespace Microsoft.AspNet.Authentication
             }
         }
 
-        protected virtual void WriteClaim([NotNull] BinaryWriter writer, [NotNull] Claim claim)
+        protected virtual void WriteClaim(BinaryWriter writer, Claim claim)
         {
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            if (claim == null)
+            {
+                throw new ArgumentNullException(nameof(claim));
+            }
+
             WriteWithDefault(writer, claim.Type, claim.Subject?.NameClaimType ?? ClaimsIdentity.DefaultNameClaimType);
             writer.Write(claim.Value);
             WriteWithDefault(writer, claim.ValueType, ClaimValueTypes.String);
@@ -117,8 +146,13 @@ namespace Microsoft.AspNet.Authentication
             }
         }
 
-        public virtual AuthenticationTicket Read([NotNull] BinaryReader reader)
+        public virtual AuthenticationTicket Read(BinaryReader reader)
         {
+            if (reader == null)
+            {
+                throw new ArgumentNullException(nameof(reader));
+            }
+
             if (reader.ReadInt32() != FormatVersion)
             {
                 return null;
@@ -145,8 +179,13 @@ namespace Microsoft.AspNet.Authentication
             return new AuthenticationTicket(new ClaimsPrincipal(identities), properties, scheme);
         }
 
-        protected virtual ClaimsIdentity ReadIdentity([NotNull] BinaryReader reader)
+        protected virtual ClaimsIdentity ReadIdentity(BinaryReader reader)
         {
+            if (reader == null)
+            {
+                throw new ArgumentNullException(nameof(reader));
+            }
+
             var authenticationType = reader.ReadString();
             var nameClaimType = ReadWithDefault(reader, ClaimsIdentity.DefaultNameClaimType);
             var roleClaimType = ReadWithDefault(reader, ClaimsIdentity.DefaultRoleClaimType);
@@ -181,8 +220,18 @@ namespace Microsoft.AspNet.Authentication
             return identity;
         }
 
-        protected virtual Claim ReadClaim([NotNull] BinaryReader reader, [NotNull] ClaimsIdentity identity)
+        protected virtual Claim ReadClaim(BinaryReader reader, ClaimsIdentity identity)
         {
+            if (reader == null)
+            {
+                throw new ArgumentNullException(nameof(reader));
+            }
+
+            if (identity == null)
+            {
+                throw new ArgumentNullException(nameof(identity));
+            }
+
             var type = ReadWithDefault(reader, identity.NameClaimType);
             var value = reader.ReadString();
             var valueType = ReadWithDefault(reader, ClaimValueTypes.String);
@@ -193,7 +242,7 @@ namespace Microsoft.AspNet.Authentication
 
             // Read the number of properties stored in the claim.
             var count = reader.ReadInt32();
-            
+
             for (var index = 0; index != count; ++index)
             {
                 var key = reader.ReadString();

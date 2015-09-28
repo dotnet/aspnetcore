@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.Framework.Internal;
 using Newtonsoft.Json.Linq;
 
@@ -15,32 +16,80 @@ namespace Microsoft.AspNet.Authentication.Google
         /// <summary>
         /// Gets the Google user ID.
         /// </summary>
-        public static string GetId([NotNull] JObject user) => user.Value<string>("id");
+        public static string GetId(JObject user)
+        {
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
+            return user.Value<string>("id");
+        }
 
         /// <summary>
         /// Gets the user's name.
         /// </summary>
-        public static string GetName([NotNull] JObject user) => user.Value<string>("displayName");
+        public static string GetName(JObject user)
+        {
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
+            return user.Value<string>("displayName");
+        }
 
         /// <summary>
         /// Gets the user's given name.
         /// </summary>
-        public static string GetGivenName([NotNull] JObject user) => TryGetValue(user, "name", "givenName");
+        public static string GetGivenName(JObject user)
+        {
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
+            return TryGetValue(user, "name", "givenName");
+        }
 
         /// <summary>
         /// Gets the user's family name.
         /// </summary>
-        public static string GetFamilyName([NotNull] JObject user) => TryGetValue(user, "name", "familyName");
+        public static string GetFamilyName(JObject user)
+        {
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
+            return TryGetValue(user, "name", "familyName");
+        }
 
         /// <summary>
         /// Gets the user's profile link.
         /// </summary>
-        public static string GetProfile([NotNull] JObject user) => user.Value<string>("url");
+        public static string GetProfile(JObject user)
+        {
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
+            return user.Value<string>("url");
+        }
 
         /// <summary>
         /// Gets the user's email.
         /// </summary>
-        public static string GetEmail([NotNull] JObject user) => TryGetFirstValue(user, "emails", "value");
+        public static string GetEmail(JObject user)
+        {
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
+            return TryGetFirstValue(user, "emails", "value");
+        }
 
         // Get the given subProperty from a property.
         private static string TryGetValue(JObject user, string propertyName, string subProperty)

@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Http.Features.Authentication;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -402,8 +401,13 @@ namespace Microsoft.AspNet.Authentication.Cookies
             return true;
         }
 
-        protected override async Task<bool> HandleUnauthorizedAsync([NotNull] ChallengeContext context)
+        protected override async Task<bool> HandleUnauthorizedAsync(ChallengeContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var redirectUri = new AuthenticationProperties(context.Properties).RedirectUri;
             try
             {

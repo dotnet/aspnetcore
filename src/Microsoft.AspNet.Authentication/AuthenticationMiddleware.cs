@@ -5,7 +5,6 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.WebEncoders;
 
@@ -16,11 +15,31 @@ namespace Microsoft.AspNet.Authentication
         private readonly RequestDelegate _next;
 
         protected AuthenticationMiddleware(
-            [NotNull] RequestDelegate next, 
-            [NotNull] TOptions options, 
-            [NotNull] ILoggerFactory loggerFactory,
-            [NotNull] IUrlEncoder encoder)
+            RequestDelegate next,
+            TOptions options,
+            ILoggerFactory loggerFactory,
+            IUrlEncoder encoder)
         {
+            if (next == null)
+            {
+                throw new ArgumentNullException(nameof(next));
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            if (loggerFactory == null)
+            {
+                throw new ArgumentNullException(nameof(loggerFactory));
+            }
+
+            if (encoder == null)
+            {
+                throw new ArgumentNullException(nameof(encoder));
+            }
+
             Options = options;
             Logger = loggerFactory.CreateLogger(this.GetType().FullName);
             UrlEncoder = encoder;

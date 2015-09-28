@@ -4,7 +4,6 @@
 using System;
 using Microsoft.AspNet.Authentication.Cookies;
 using Microsoft.Framework.Configuration;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.DependencyInjection
 {
@@ -13,13 +12,33 @@ namespace Microsoft.Framework.DependencyInjection
     /// </summary>
     public static class CookieServiceCollectionExtensions
     {
-        public static IServiceCollection AddCookieAuthentication([NotNull] this IServiceCollection services, [NotNull] Action<CookieAuthenticationOptions> configure)
+        public static IServiceCollection AddCookieAuthentication(this IServiceCollection services, Action<CookieAuthenticationOptions> configure)
         {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            if (configure == null)
+            {
+                throw new ArgumentNullException(nameof(configure));
+            }
+
             return services.Configure(configure);
         }
 
-        public static IServiceCollection AddCookieAuthentication([NotNull] this IServiceCollection services, [NotNull] IConfiguration config)
+        public static IServiceCollection AddCookieAuthentication(this IServiceCollection services, IConfiguration config)
         {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            if (config == null)
+            {
+                throw new ArgumentNullException(nameof(config));
+            }
+
             return services.Configure<CookieAuthenticationOptions>(config);
         }
     }

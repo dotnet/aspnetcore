@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNet.Authentication.Twitter;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Builder
 {
@@ -12,8 +11,13 @@ namespace Microsoft.AspNet.Builder
     /// </summary>
     public static class TwitterAppBuilderExtensions
     {
-        public static IApplicationBuilder UseTwitterAuthentication([NotNull] this IApplicationBuilder app, Action<TwitterOptions> configureOptions = null)
+        public static IApplicationBuilder UseTwitterAuthentication(this IApplicationBuilder app, Action<TwitterOptions> configureOptions = null)
         {
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+
             var options = new TwitterOptions();
             if (configureOptions != null)
             {
@@ -22,8 +26,18 @@ namespace Microsoft.AspNet.Builder
             return app.UseTwitterAuthentication(options);
         }
 
-        public static IApplicationBuilder UseTwitterAuthentication([NotNull] this IApplicationBuilder app, [NotNull] TwitterOptions options)
+        public static IApplicationBuilder UseTwitterAuthentication(this IApplicationBuilder app, TwitterOptions options)
         {
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
             return app.UseMiddleware<TwitterMiddleware>(options);
         }
 

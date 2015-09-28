@@ -13,7 +13,6 @@ using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Http.Extensions;
 using Microsoft.AspNet.Http.Features.Authentication;
 using Microsoft.AspNet.WebUtilities;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.Primitives;
 using Newtonsoft.Json.Linq;
@@ -148,7 +147,7 @@ namespace Microsoft.AspNet.Authentication.OAuth
                                                     ClaimValueTypes.String, Options.ClaimsIssuer));
                     }
                 }
-                
+
                 return await CreateTicketAsync(identity, properties, tokens);
             }
             catch (Exception ex)
@@ -188,7 +187,7 @@ namespace Microsoft.AspNet.Authentication.OAuth
                 Principal = new ClaimsPrincipal(identity),
                 Properties = properties
             };
-            
+
             await Options.Events.CreatingTicket(context);
 
             if (context.Principal?.Identity == null)
@@ -199,8 +198,13 @@ namespace Microsoft.AspNet.Authentication.OAuth
             return new AuthenticationTicket(context.Principal, context.Properties, Options.AuthenticationScheme);
         }
 
-        protected override async Task<bool> HandleUnauthorizedAsync([NotNull] ChallengeContext context)
+        protected override async Task<bool> HandleUnauthorizedAsync(ChallengeContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var properties = new AuthenticationProperties(context.Properties);
             if (string.IsNullOrEmpty(properties.RedirectUri))
             {
@@ -257,8 +261,13 @@ namespace Microsoft.AspNet.Authentication.OAuth
             return string.Join(" ", Options.Scope);
         }
 
-        protected void GenerateCorrelationId([NotNull] AuthenticationProperties properties)
+        protected void GenerateCorrelationId(AuthenticationProperties properties)
         {
+            if (properties == null)
+            {
+                throw new ArgumentNullException(nameof(properties));
+            }
+
             var correlationKey = Constants.CorrelationPrefix + Options.AuthenticationScheme;
 
             var nonceBytes = new byte[32];
@@ -276,8 +285,13 @@ namespace Microsoft.AspNet.Authentication.OAuth
             Response.Cookies.Append(correlationKey, correlationId, cookieOptions);
         }
 
-        protected bool ValidateCorrelationId([NotNull] AuthenticationProperties properties)
+        protected bool ValidateCorrelationId(AuthenticationProperties properties)
         {
+            if (properties == null)
+            {
+                throw new ArgumentNullException(nameof(properties));
+            }
+
             var correlationKey = Constants.CorrelationPrefix + Options.AuthenticationScheme;
             var correlationCookie = Request.Cookies[correlationKey];
             if (string.IsNullOrEmpty(correlationCookie))

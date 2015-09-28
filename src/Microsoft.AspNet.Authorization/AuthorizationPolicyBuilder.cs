@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Authorization
 {
@@ -41,43 +40,78 @@ namespace Microsoft.AspNet.Authorization
             return this;
         }
 
-        public AuthorizationPolicyBuilder Combine([NotNull] AuthorizationPolicy policy)
+        public AuthorizationPolicyBuilder Combine(AuthorizationPolicy policy)
         {
+            if (policy == null)
+            {
+                throw new ArgumentNullException(nameof(policy));
+            }
+
             AddAuthenticationSchemes(policy.ActiveAuthenticationSchemes.ToArray());
             AddRequirements(policy.Requirements.ToArray());
             return this;
         }
 
-        public AuthorizationPolicyBuilder RequireClaim([NotNull] string claimType, params string[] requiredValues)
+        public AuthorizationPolicyBuilder RequireClaim(string claimType, params string[] requiredValues)
         {
+            if (claimType == null)
+            {
+                throw new ArgumentNullException(nameof(claimType));
+            }
+
             return RequireClaim(claimType, (IEnumerable<string>)requiredValues);
         }
 
-        public AuthorizationPolicyBuilder RequireClaim([NotNull] string claimType, IEnumerable<string> requiredValues)
+        public AuthorizationPolicyBuilder RequireClaim(string claimType, IEnumerable<string> requiredValues)
         {
+            if (claimType == null)
+            {
+                throw new ArgumentNullException(nameof(claimType));
+            }
+
             Requirements.Add(new ClaimsAuthorizationRequirement(claimType, requiredValues));
             return this;
         }
 
-        public AuthorizationPolicyBuilder RequireClaim([NotNull] string claimType)
+        public AuthorizationPolicyBuilder RequireClaim(string claimType)
         {
+            if (claimType == null)
+            {
+                throw new ArgumentNullException(nameof(claimType));
+            }
+
             Requirements.Add(new ClaimsAuthorizationRequirement(claimType, allowedValues: null));
             return this;
         }
 
-        public AuthorizationPolicyBuilder RequireRole([NotNull] params string[] roles)
+        public AuthorizationPolicyBuilder RequireRole(params string[] roles)
         {
+            if (roles == null)
+            {
+                throw new ArgumentNullException(nameof(roles));
+            }
+
             return RequireRole((IEnumerable<string>)roles);
         }
 
-        public AuthorizationPolicyBuilder RequireRole([NotNull] IEnumerable<string> roles)
+        public AuthorizationPolicyBuilder RequireRole(IEnumerable<string> roles)
         {
+            if (roles == null)
+            {
+                throw new ArgumentNullException(nameof(roles));
+            }
+
             Requirements.Add(new RolesAuthorizationRequirement(roles));
             return this;
         }
 
-        public AuthorizationPolicyBuilder RequireUserName([NotNull] string userName)
+        public AuthorizationPolicyBuilder RequireUserName(string userName)
         {
+            if (userName == null)
+            {
+                throw new ArgumentNullException(nameof(userName));
+            }
+
             Requirements.Add(new NameAuthorizationRequirement(userName));
             return this;
         }
@@ -88,8 +122,13 @@ namespace Microsoft.AspNet.Authorization
             return this;
         }
 
-        public AuthorizationPolicyBuilder RequireDelegate([NotNull] Action<AuthorizationContext, DelegateRequirement> handler)
+        public AuthorizationPolicyBuilder RequireDelegate(Action<AuthorizationContext, DelegateRequirement> handler)
         {
+            if (handler == null)
+            {
+                throw new ArgumentNullException(nameof(handler));
+            }
+
             Requirements.Add(new DelegateRequirement(handler));
             return this;
         }

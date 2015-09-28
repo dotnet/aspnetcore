@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Authorization
 {
@@ -16,21 +15,46 @@ namespace Microsoft.AspNet.Authorization
         /// </summary>
         public AuthorizationPolicy DefaultPolicy { get; set; } = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
 
-        public void AddPolicy([NotNull] string name, [NotNull] AuthorizationPolicy policy)
+        public void AddPolicy(string name, AuthorizationPolicy policy)
         {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            if (policy == null)
+            {
+                throw new ArgumentNullException(nameof(policy));
+            }
+
             PolicyMap[name] = policy;
         }
 
-        public void AddPolicy([NotNull] string name, [NotNull] Action<AuthorizationPolicyBuilder> configurePolicy)
+        public void AddPolicy(string name, Action<AuthorizationPolicyBuilder> configurePolicy)
         {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            if (configurePolicy == null)
+            {
+                throw new ArgumentNullException(nameof(configurePolicy));
+            }
+
             var policyBuilder = new AuthorizationPolicyBuilder();
             configurePolicy(policyBuilder);
             PolicyMap[name] = policyBuilder.Build();
         }
 
-        public AuthorizationPolicy GetPolicy([NotNull] string name)
+        public AuthorizationPolicy GetPolicy(string name)
         {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
             return PolicyMap.ContainsKey(name) ? PolicyMap[name] : null;
         }
-   }
+    }
 }

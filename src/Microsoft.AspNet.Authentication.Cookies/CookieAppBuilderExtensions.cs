@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNet.Authentication.Cookies;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Builder
 {
@@ -17,8 +16,13 @@ namespace Microsoft.AspNet.Builder
         /// </summary>
         /// <param name="app">The IApplicationBuilder passed to your configuration method</param>
         /// <returns>The original app parameter</returns>
-        public static IApplicationBuilder UseCookieAuthentication([NotNull] this IApplicationBuilder app)
+        public static IApplicationBuilder UseCookieAuthentication(this IApplicationBuilder app)
         {
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+
             return app.UseCookieAuthentication(new CookieAuthenticationOptions());
         }
 
@@ -28,8 +32,13 @@ namespace Microsoft.AspNet.Builder
         /// <param name="app">The IApplicationBuilder passed to your configuration method</param>
         /// <param name="configureOptions">Used to configure the options for the middleware</param>
         /// <returns>The original app parameter</returns>
-        public static IApplicationBuilder UseCookieAuthentication([NotNull] this IApplicationBuilder app, Action<CookieAuthenticationOptions> configureOptions)
+        public static IApplicationBuilder UseCookieAuthentication(this IApplicationBuilder app, Action<CookieAuthenticationOptions> configureOptions)
         {
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+
             var options = new CookieAuthenticationOptions();
             if (configureOptions != null)
             {
@@ -44,8 +53,18 @@ namespace Microsoft.AspNet.Builder
         /// <param name="app">The IApplicationBuilder passed to your configuration method</param>
         /// <param name="options">Used to configure the middleware</param>
         /// <returns>The original app parameter</returns>
-        public static IApplicationBuilder UseCookieAuthentication([NotNull] this IApplicationBuilder app, [NotNull] CookieAuthenticationOptions options)
+        public static IApplicationBuilder UseCookieAuthentication(this IApplicationBuilder app, CookieAuthenticationOptions options)
         {
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
             return app.UseMiddleware<CookieAuthenticationMiddleware>(options);
         }
     }

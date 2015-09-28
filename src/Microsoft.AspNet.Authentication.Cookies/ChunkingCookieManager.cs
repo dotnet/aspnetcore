@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Microsoft.AspNet.Http;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.Primitives;
 using Microsoft.Framework.WebEncoders;
 using Microsoft.Net.Http.Headers;
@@ -66,8 +65,18 @@ namespace Microsoft.AspNet.Authentication.Cookies
         /// <param name="context"></param>
         /// <param name="key"></param>
         /// <returns>The reassembled cookie, if any, or null.</returns>
-        public string GetRequestCookie([NotNull] HttpContext context, [NotNull] string key)
+        public string GetRequestCookie(HttpContext context, string key)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             var requestCookies = context.Request.Cookies;
             var value = requestCookies[key];
             var chunksCount = ParseChunksCount(value);
@@ -123,8 +132,23 @@ namespace Microsoft.AspNet.Authentication.Cookies
         /// <param name="key"></param>
         /// <param name="value"></param>
         /// <param name="options"></param>
-        public void AppendResponseCookie([NotNull] HttpContext context, [NotNull] string key, string value, [NotNull] CookieOptions options)
+        public void AppendResponseCookie(HttpContext context, string key, string value, CookieOptions options)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
             var escapedKey = Encoder.UrlEncode(key);
 
             var template = new SetCookieHeaderValue(escapedKey)
@@ -198,8 +222,23 @@ namespace Microsoft.AspNet.Authentication.Cookies
         /// <param name="context"></param>
         /// <param name="key"></param>
         /// <param name="options"></param>
-        public void DeleteCookie([NotNull] HttpContext context, [NotNull] string key, [NotNull] CookieOptions options)
+        public void DeleteCookie(HttpContext context, string key, CookieOptions options)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
             var escapedKey = Encoder.UrlEncode(key);
             var keys = new List<string>();
             keys.Add(escapedKey + "=");
@@ -266,18 +305,33 @@ namespace Microsoft.AspNet.Authentication.Cookies
             }
         }
 
-        private static bool IsQuoted([NotNull] string value)
+        private static bool IsQuoted(string value)
         {
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
             return value.Length >= 2 && value[0] == '"' && value[value.Length - 1] == '"';
         }
 
-        private static string RemoveQuotes([NotNull] string value)
+        private static string RemoveQuotes(string value)
         {
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
             return value.Substring(1, value.Length - 2);
         }
 
-        private static string Quote([NotNull] string value)
+        private static string Quote(string value)
         {
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
             return '"' + value + '"';
         }
     }

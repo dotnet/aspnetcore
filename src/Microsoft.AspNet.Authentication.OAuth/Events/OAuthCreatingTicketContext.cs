@@ -7,7 +7,6 @@ using System.Net.Http;
 using System.Security.Claims;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
-using Microsoft.Framework.Internal;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.Authentication.OAuth
@@ -25,10 +24,10 @@ namespace Microsoft.AspNet.Authentication.OAuth
         /// <param name="backchannel">The HTTP client used by the authentication middleware</param>
         /// <param name="tokens">The tokens returned from the token endpoint.</param>
         public OAuthCreatingTicketContext(
-            [NotNull] HttpContext context,
-            [NotNull] OAuthOptions options,
-            [NotNull] HttpClient backchannel,
-            [NotNull] OAuthTokenResponse tokens)
+            HttpContext context,
+            OAuthOptions options,
+            HttpClient backchannel,
+            OAuthTokenResponse tokens)
             : this(context, options, backchannel, tokens, user: new JObject())
         {
         }
@@ -42,13 +41,38 @@ namespace Microsoft.AspNet.Authentication.OAuth
         /// <param name="tokens">The tokens returned from the token endpoint.</param>
         /// <param name="user">The JSON-serialized user.</param>
         public OAuthCreatingTicketContext(
-            [NotNull] HttpContext context,
-            [NotNull] OAuthOptions options,
-            [NotNull] HttpClient backchannel,
-            [NotNull] OAuthTokenResponse tokens,
-            [NotNull] JObject user)
+            HttpContext context,
+            OAuthOptions options,
+            HttpClient backchannel,
+            OAuthTokenResponse tokens,
+            JObject user)
             : base(context, options)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            if (backchannel == null)
+            {
+                throw new ArgumentNullException(nameof(backchannel));
+            }
+
+            if (tokens == null)
+            {
+                throw new ArgumentNullException(nameof(tokens));
+            }
+
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
             TokenResponse = tokens;
             Backchannel = backchannel;
             User = user;
@@ -96,7 +120,7 @@ namespace Microsoft.AspNet.Authentication.OAuth
                 return null;
             }
         }
-        
+
         /// <summary>
         /// Gets the backchannel used to communicate with the provider.
         /// </summary>

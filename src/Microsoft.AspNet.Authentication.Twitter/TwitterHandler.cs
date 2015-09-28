@@ -14,7 +14,6 @@ using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Http.Features.Authentication;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.WebUtilities;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.Primitives;
 
@@ -91,7 +90,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
                 Response.Cookies.Delete(StateCookie, cookieOptions);
 
                 var accessToken = await ObtainAccessTokenAsync(Options.ConsumerKey, Options.ConsumerSecret, requestToken, oauthVerifier);
-                
+
                 var identity = new ClaimsIdentity(new[]
                 {
                     new Claim(ClaimTypes.NameIdentifier, accessToken.UserId, ClaimValueTypes.String, Options.ClaimsIssuer),
@@ -105,7 +104,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
                 {
                     identity.AddClaim(new Claim("access_token", accessToken.Token, ClaimValueTypes.String, Options.ClaimsIssuer));
                 }
-                
+
                 return await CreateTicketAsync(identity, properties, accessToken);
             }
             catch (Exception ex)
@@ -124,7 +123,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
             };
 
             await Options.Events.CreatingTicket(context);
-            
+
             if (context.Principal?.Identity == null)
             {
                 return null;
@@ -133,8 +132,13 @@ namespace Microsoft.AspNet.Authentication.Twitter
             return new AuthenticationTicket(context.Principal, context.Properties, Options.AuthenticationScheme);
         }
 
-        protected override async Task<bool> HandleUnauthorizedAsync([NotNull] ChallengeContext context)
+        protected override async Task<bool> HandleUnauthorizedAsync(ChallengeContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var properties = new AuthenticationProperties(context.Properties);
             if (string.IsNullOrEmpty(properties.RedirectUri))
             {

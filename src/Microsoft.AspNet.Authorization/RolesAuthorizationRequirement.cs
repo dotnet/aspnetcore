@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Authorization
 {
@@ -12,8 +11,13 @@ namespace Microsoft.AspNet.Authorization
     // If AllowedRoles is null or empty, that means any role is valid
     public class RolesAuthorizationRequirement : AuthorizationHandler<RolesAuthorizationRequirement>, IAuthorizationRequirement
     {
-        public RolesAuthorizationRequirement([NotNull] IEnumerable<string> allowedRoles)
+        public RolesAuthorizationRequirement(IEnumerable<string> allowedRoles)
         {
+            if (allowedRoles == null)
+            {
+                throw new ArgumentNullException(nameof(allowedRoles));
+            }
+
             if (allowedRoles.Count() == 0)
             {
                 throw new InvalidOperationException(Resources.Exception_RoleRequirementEmpty);

@@ -5,10 +5,12 @@
         "type": "git",
         "url": "git://github.com/aspnet/security"
     },
+    "compilationOptions": {
+        "warningsAsErrors": true
+    },
     "dependencies": {
         "Microsoft.AspNet.Http.Features": "1.0.0-*",
         "Microsoft.Framework.Logging.Abstractions": "1.0.0-*",
-        "Microsoft.Framework.NotNullAttribute.Sources": { "type": "build", "version": "1.0.0-*" },
         "Microsoft.Framework.OptionsModel": "1.0.0-*"
     },
     "frameworks": {

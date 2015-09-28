@@ -4,14 +4,23 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Authorization
 {
     public class AuthorizationPolicy
     {
-        public AuthorizationPolicy([NotNull] IEnumerable<IAuthorizationRequirement> requirements, [NotNull] IEnumerable<string> activeAuthenticationSchemes)
+        public AuthorizationPolicy(IEnumerable<IAuthorizationRequirement> requirements, IEnumerable<string> activeAuthenticationSchemes)
         {
+            if (requirements == null)
+            {
+                throw new ArgumentNullException(nameof(requirements));
+            }
+
+            if (activeAuthenticationSchemes == null)
+            {
+                throw new ArgumentNullException(nameof(activeAuthenticationSchemes));
+            }
+
             if (requirements.Count() == 0)
             {
                 throw new InvalidOperationException(Resources.Exception_AuthorizationPolicyEmpty);
@@ -23,13 +32,23 @@ namespace Microsoft.AspNet.Authorization
         public IReadOnlyList<IAuthorizationRequirement> Requirements { get; }
         public IReadOnlyList<string> ActiveAuthenticationSchemes { get; }
 
-        public static AuthorizationPolicy Combine([NotNull] params AuthorizationPolicy[] policies)
+        public static AuthorizationPolicy Combine(params AuthorizationPolicy[] policies)
         {
+            if (policies == null)
+            {
+                throw new ArgumentNullException(nameof(policies));
+            }
+
             return Combine((IEnumerable<AuthorizationPolicy>)policies);
         }
 
-        public static AuthorizationPolicy Combine([NotNull] IEnumerable<AuthorizationPolicy> policies)
+        public static AuthorizationPolicy Combine(IEnumerable<AuthorizationPolicy> policies)
         {
+            if (policies == null)
+            {
+                throw new ArgumentNullException(nameof(policies));
+            }
+
             var builder = new AuthorizationPolicyBuilder();
             foreach (var policy in policies)
             {
@@ -38,8 +57,18 @@ namespace Microsoft.AspNet.Authorization
             return builder.Build();
         }
 
-        public static AuthorizationPolicy Combine([NotNull] AuthorizationOptions options, [NotNull] IEnumerable<AuthorizeAttribute> attributes)
+        public static AuthorizationPolicy Combine(AuthorizationOptions options, IEnumerable<AuthorizeAttribute> attributes)
         {
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            if (attributes == null)
+            {
+                throw new ArgumentNullException(nameof(attributes));
+            }
+
             var policyBuilder = new AuthorizationPolicyBuilder();
             var any = false;
             foreach (var authorizeAttribute in attributes.OfType<AuthorizeAttribute>())

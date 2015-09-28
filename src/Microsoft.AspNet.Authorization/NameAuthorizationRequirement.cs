@@ -2,9 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Authorization
 {
@@ -13,8 +11,13 @@ namespace Microsoft.AspNet.Authorization
     /// </summary>
     public class NameAuthorizationRequirement : AuthorizationHandler<NameAuthorizationRequirement>, IAuthorizationRequirement
     {
-        public NameAuthorizationRequirement([NotNull] string requiredName)
+        public NameAuthorizationRequirement(string requiredName)
         {
+            if (requiredName == null)
+            {
+                throw new ArgumentNullException(nameof(requiredName));
+            }
+
             RequiredName = requiredName;
         }
 

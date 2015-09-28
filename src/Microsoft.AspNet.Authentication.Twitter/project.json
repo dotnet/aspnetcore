@@ -5,9 +5,11 @@
         "type": "git",
         "url": "git://github.com/aspnet/security"
     },
+    "compilationOptions": {
+        "warningsAsErrors": true
+    },
     "dependencies": {
-        "Microsoft.AspNet.Authentication": "1.0.0-*",
-        "Microsoft.Framework.NotNullAttribute.Sources": { "type": "build", "version": "1.0.0-*" }
+        "Microsoft.AspNet.Authentication": "1.0.0-*"
     },
     "frameworks": {
         "dnx451": {

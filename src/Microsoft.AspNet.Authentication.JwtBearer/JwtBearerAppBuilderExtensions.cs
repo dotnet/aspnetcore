@@ -3,8 +3,6 @@
 
 using System;
 using Microsoft.AspNet.Authentication.JwtBearer;
-using Microsoft.Framework.Internal;
-using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Builder
 {
@@ -24,8 +22,18 @@ namespace Microsoft.AspNet.Builder
         /// <param name="app">The application builder</param>
         /// <param name="options">Options which control the processing of the bearer header.</param>
         /// <returns>The application builder</returns>
-        public static IApplicationBuilder UseJwtBearerAuthentication([NotNull] this IApplicationBuilder app, [NotNull] JwtBearerOptions options)
+        public static IApplicationBuilder UseJwtBearerAuthentication(this IApplicationBuilder app, JwtBearerOptions options)
         {
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
             return app.UseMiddleware<JwtBearerMiddleware>(options);
         }
 
@@ -40,8 +48,13 @@ namespace Microsoft.AspNet.Builder
         /// <param name="app">The application builder</param>
         /// <param name="configureOptions">Used to configure Middleware options.</param>
         /// <returns>The application builder</returns>
-        public static IApplicationBuilder UseJwtBearerAuthentication([NotNull] this IApplicationBuilder app, Action<JwtBearerOptions> configureOptions)
+        public static IApplicationBuilder UseJwtBearerAuthentication(this IApplicationBuilder app, Action<JwtBearerOptions> configureOptions)
         {
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+
             var options = new JwtBearerOptions();
             if (configureOptions != null)
             {

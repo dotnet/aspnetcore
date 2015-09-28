@@ -1,10 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Authorization
 {
@@ -18,10 +18,15 @@ namespace Microsoft.AspNet.Authorization
         private bool _succeedCalled;
 
         public AuthorizationContext(
-            [NotNull] IEnumerable<IAuthorizationRequirement> requirements, 
+            IEnumerable<IAuthorizationRequirement> requirements,
             ClaimsPrincipal user,
             object resource)
         {
+            if (requirements == null)
+            {
+                throw new ArgumentNullException(nameof(requirements));
+            }
+
             Requirements = requirements;
             User = user;
             Resource = resource;
@@ -36,7 +41,8 @@ namespace Microsoft.AspNet.Authorization
 
         public bool HasFailed { get { return _failCalled; } }
 
-        public bool HasSucceeded {
+        public bool HasSucceeded
+        {
             get
             {
                 return !_failCalled && _succeedCalled && !PendingRequirements.Any();

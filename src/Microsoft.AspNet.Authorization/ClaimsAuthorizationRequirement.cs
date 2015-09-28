@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Authorization
 {
@@ -12,8 +11,13 @@ namespace Microsoft.AspNet.Authorization
     // If AllowedValues is null or empty, that means any claim is valid
     public class ClaimsAuthorizationRequirement : AuthorizationHandler<ClaimsAuthorizationRequirement>, IAuthorizationRequirement
     {
-        public ClaimsAuthorizationRequirement([NotNull] string claimType, IEnumerable<string> allowedValues)
+        public ClaimsAuthorizationRequirement(string claimType, IEnumerable<string> allowedValues)
         {
+            if (claimType == null)
+            {
+                throw new ArgumentNullException(nameof(claimType));
+            }
+
             ClaimType = claimType;
             AllowedValues = allowedValues;
         }
