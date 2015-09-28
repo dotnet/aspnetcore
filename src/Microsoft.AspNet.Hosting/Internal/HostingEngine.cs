@@ -96,6 +96,7 @@ namespace Microsoft.AspNet.Hosting.Internal
                     var httpContext = contextFactory.CreateHttpContext(features);
                     httpContext.ApplicationServices = _applicationServices;
                     var requestIdentifier = GetRequestIdentifier(httpContext);
+                    contextAccessor.HttpContext = httpContext;
 
                     if (telemetrySource.IsEnabled("Microsoft.AspNet.Hosting.BeginRequest"))
                     {
@@ -106,7 +107,6 @@ namespace Microsoft.AspNet.Hosting.Internal
                     {
                         using (logger.BeginScope("Request Id: {RequestId}", requestIdentifier))
                         {
-                            contextAccessor.HttpContext = httpContext;
                             await application(httpContext);
                         }
                     }
