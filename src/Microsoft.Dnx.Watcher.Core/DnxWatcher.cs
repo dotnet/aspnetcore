@@ -182,41 +182,36 @@ namespace Microsoft.Dnx.Watcher.Core
 
             foreach (var projFile in project.ProjectDependencies)
             {
-                //var fullProjectFilePath = Path.Combine(Path.GetDirectoryName(project.ProjectFile), projFile);
-
                 AddProjectAndDependeciesToWatcher(projFile, fileWatcher);
             }
         }
 
-        private Task<string> WatchForFileChangeAsync(IFileWatcher fileWatcher, CancellationToken cancellationToken)
+        private async Task<string> WatchForFileChangeAsync(IFileWatcher fileWatcher, CancellationToken cancellationToken)
         {
-            return Task.Run(() =>
+            var tcs = new TaskCompletionSource<string>();
+
+            cancellationToken.Register(() => tcs.TrySetResult(null));
+
+            Action<string> callback = path => 
             {
-                using (var fileChangeEvent = new ManualResetEvent(false))
-                {
-                    string changedFile = null;
+                tcs.TrySetResult(path);
+            };
 
-                    fileWatcher.OnChanged += path =>
-                    {
-                        changedFile = path;
-                        fileChangeEvent.Set();
-                    };
+            fileWatcher.OnChanged += callback;
 
-                    while (!cancellationToken.IsCancellationRequested &&
-                           !fileChangeEvent.WaitOne(500))
-                    {
-                    }
+            var changedPath = await tcs.Task;
 
-                    return changedFile;
-                }
-            });
+            // Don't need to listen anymore
+            fileWatcher.OnChanged -= callback;
+
+            return changedPath;
         }
 
         public static DnxWatcher CreateDefault(ILoggerFactory loggerFactory)
         {
             return new DnxWatcher(
-                fileWatcherFactory: root => { return new FileWatcher(root); },
-                processWatcherFactory: () => { return new ProcessWatcher(); },
+                fileWatcherFactory: root => new FileWatcher(root),
+                processWatcherFactory: () => new ProcessWatcher(),
                 projectProvider: new ProjectProvider(),
                 loggerFactory: loggerFactory);
         }

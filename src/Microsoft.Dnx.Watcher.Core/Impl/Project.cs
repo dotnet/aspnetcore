@@ -14,6 +14,7 @@ namespace Microsoft.Dnx.Watcher.Core
         public Project(Runtime.Project runtimeProject)
         {
             ProjectFile = runtimeProject.ProjectFilePath;
+            ProjectDirectory = runtimeProject.ProjectDirectory;
 
             Files = runtimeProject.Files.SourceFiles.Concat(
                     runtimeProject.Files.ResourceFiles.Values.Concat(
@@ -28,7 +29,7 @@ namespace Microsoft.Dnx.Watcher.Core
             if (File.Exists(projectLockJsonPath))
             {
                 var lockFile = lockFileReader.Read(projectLockJsonPath);
-                ProjectDependencies = lockFile.ProjectLibraries.Select(dep => dep.Path).ToList();
+                ProjectDependencies = lockFile.ProjectLibraries.Select(dep => GetProjectRelativeFullPath(dep.Path)).ToList();
             }
             else
             {
@@ -41,5 +42,12 @@ namespace Microsoft.Dnx.Watcher.Core
         public IEnumerable<string> Files { get; private set; }
 
         public string ProjectFile { get; private set; }
+
+        public string ProjectDirectory { get; private set; }
+
+        private string GetProjectRelativeFullPath(string path)
+        {
+            return Path.GetFullPath(Path.Combine(ProjectDirectory, path));
+        }
     }
 }
