@@ -145,7 +145,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         /// <exception cref="ArgumentNullException">if 'value' is null.</exception>
         public OpenIdConnectProtocolValidator ProtocolValidator { get; set; } = new OpenIdConnectProtocolValidator()
         {
-            RequireState = false,
+            RequireStateValidation = false,
             NonceLifetime = TimeSpan.FromMinutes(15)
         };
 

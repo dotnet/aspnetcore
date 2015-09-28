@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Authentication.OpenIdConnect;
@@ -33,7 +34,7 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             return Task.FromResult(new OpenIdConnectTokenEndpointResponse(jsonResponse));
         }
 
-        protected override Task<AuthenticationTicket> GetUserInformationAsync(OpenIdConnectMessage message, AuthenticationTicket ticket)
+        protected override Task<AuthenticationTicket> GetUserInformationAsync(OpenIdConnectMessage message, JwtSecurityToken jwt, AuthenticationTicket ticket)
         {
             var claimsIdentity = (ClaimsIdentity)ticket.Principal.Identity;
             if (claimsIdentity == null)

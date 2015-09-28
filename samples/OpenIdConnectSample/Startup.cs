@@ -6,6 +6,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace OpenIdConnectSample
 {
@@ -28,8 +29,10 @@ namespace OpenIdConnectSample
             app.UseOpenIdConnectAuthentication(options =>
             {
                 options.ClientId = "63a87a83-64b9-4ac1-b2c5-092126f8474f";
+                options.ClientSecret = "Yse2iP7tO1Azq0iDajNisMaTSnIDv+FXmAsFuXr+Cy8="; // for code flow
                 options.Authority = "https://login.windows.net/tratcheroutlook.onmicrosoft.com";
                 options.RedirectUri = "http://localhost:42023";
+                options.ResponseType = OpenIdConnectResponseTypes.Code;
             });
 
             app.Run(async context =>
