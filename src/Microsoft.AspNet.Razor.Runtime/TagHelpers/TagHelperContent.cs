@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
     /// <summary>
     /// Abstract class used to buffer content returned by <see cref="ITagHelper"/>s.
     /// </summary>
-    public abstract class TagHelperContent : IHtmlContent
+    public abstract class TagHelperContent : IHtmlContentBuilder
     {
         /// <summary>
         /// Gets a value indicating whether the content was modifed.
@@ -31,24 +31,39 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <summary>
         /// Sets the content.
         /// </summary>
-        /// <param name="value">The <see cref="string"/> that replaces the content.</param>
+        /// <param name="htmlContent">The <see cref="IHtmlContent"/> that replaces the content.</param>
         /// <returns>A reference to this instance after the set operation has completed.</returns>
-        public TagHelperContent SetContent(string value)
+        public TagHelperContent SetContent(IHtmlContent htmlContent)
         {
-            Clear();
-            Append(value);
+            HtmlContentBuilderExtensions.SetContent(this, htmlContent);
             return this;
         }
 
         /// <summary>
         /// Sets the content.
         /// </summary>
-        /// <param name="htmlContent">The <see cref="IHtmlContent"/> that replaces the content.</param>
+        /// <param name="unencoded">
+        /// The <see cref="string"/> that replaces the content. The value is assume to be unencoded
+        /// as-provided and will be HTML encoded before being written.
+        /// </param>
         /// <returns>A reference to this instance after the set operation has completed.</returns>
-        public TagHelperContent SetContent(IHtmlContent htmlContent)
+        public TagHelperContent SetContent(string unencoded)
         {
-            Clear();
-            Append(htmlContent);
+            HtmlContentBuilderExtensions.SetContent(this, unencoded);
+            return this;
+        }
+
+        /// <summary>
+        /// Sets the content.
+        /// </summary>
+        /// <param name="encoded">
+        /// The <see cref="string"/> that replaces the content. The value is assume to be HTML encoded
+        /// as-provided and no further encoding will be performed.
+        /// </param>
+        /// <returns>A reference to this instance after the set operation has completed.</returns>
+        public TagHelperContent SetContentEncoded(string encoded)
+        {
+            HtmlContentBuilderExtensions.SetContentEncoded(this, encoded);
             return this;
         }
 
@@ -60,6 +75,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         public abstract TagHelperContent Append(string value);
 
         /// <summary>
+        /// Appends <paramref name="htmlContent"/> to the existing content.
+        /// </summary>
+        /// <param name="htmlContent">The <see cref="IHtmlContent"/> to be appended.</param>
+        /// <returns>A reference to this instance after the append operation has completed.</returns>
+        public abstract TagHelperContent Append(IHtmlContent htmlContent);
+
+        /// <summary>
         /// Appends <paramref name="value"/> to the existing content. <paramref name="value"/> is assumed
         /// to be an HTML encoded <see cref="string"/> and no further encoding will be performed.
         /// </summary>
@@ -69,46 +91,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
         /// <summary>
         /// Appends the specified <paramref name="format"/> to the existing content after
-        /// replacing the format item with the <see cref="string"/> representation of the
-        /// <paramref name="arg0"/>.
-        /// </summary>
-        /// <param name="format">
-        /// The composite format <see cref="string"/> (see http://msdn.microsoft.com/en-us/library/txafckwd.aspx).
-        /// </param>
-        /// <param name="arg0">The object to format.</param>
-        /// <returns>A reference to this instance after the append operation has completed.</returns>
-        public abstract TagHelperContent AppendFormat(string format, object arg0);
-
-        /// <summary>
-        /// Appends the specified <paramref name="format"/> to the existing content after
-        /// replacing each format item with the <see cref="string"/> representation of the
-        /// <paramref name="arg0"/> and <paramref name="arg1"/>.
-        /// </summary>
-        /// <param name="format">
-        /// The composite format <see cref="string"/> (see http://msdn.microsoft.com/en-us/library/txafckwd.aspx).
-        /// </param>
-        /// <param name="arg0">The object to format.</param>
-        /// <param name="arg1">The object to format.</param>
-        /// <returns>A reference to this instance after the append operation has completed.</returns>
-        public abstract TagHelperContent AppendFormat(string format, object arg0, object arg1);
-
-        /// <summary>
-        /// Appends the specified <paramref name="format"/> to the existing content after
-        /// replacing each format item with the <see cref="string"/> representation of the
-        /// <paramref name="arg0"/>, <paramref name="arg1"/> and <paramref name="arg2"/>.
-        /// </summary>
-        /// <param name="format">
-        /// The composite format <see cref="string"/> (see http://msdn.microsoft.com/en-us/library/txafckwd.aspx).
-        /// </param>
-        /// <param name="arg0">The object to format.</param>
-        /// <param name="arg1">The object to format.</param>
-        /// <param name="arg2">The object to format.</param>
-        /// <returns>A reference to this instance after the append operation has completed.</returns>
-        public abstract TagHelperContent AppendFormat(string format, object arg0, object arg1, object arg2);
-
-        /// <summary>
-        /// Appends the specified <paramref name="format"/> to the existing content after
-        /// replacing each format item with the <see cref="string"/> representation of the
+        /// replacing each format item with the HTML encoded <see cref="string"/> representation of the
         /// corresponding item in the <paramref name="args"/> array.
         /// </summary>
         /// <param name="format">
@@ -116,63 +99,15 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// </param>
         /// <param name="args">The object array to format.</param>
         /// <returns>A reference to this instance after the append operation has completed.</returns>
-        public abstract TagHelperContent AppendFormat(string format, params object[] args);
+        public TagHelperContent AppendFormat(string format, params object[] args)
+        {
+            HtmlContentBuilderExtensions.AppendFormat(this, null, format, args);
+            return this;
+        }
 
         /// <summary>
         /// Appends the specified <paramref name="format"/> to the existing content with information from the
-        /// <paramref name="provider"/> after replacing the format item with the <see cref="string"/>
-        /// representation of the corresponding item in <paramref name="arg0"/>.
-        /// </summary>
-        /// <param name="provider">An object that supplies culture-specific formatting information.</param>
-        /// <param name="format">
-        /// The composite format <see cref="string"/> (see http://msdn.microsoft.com/en-us/library/txafckwd.aspx).
-        /// </param>
-        /// <param name="arg0">The object to format.</param>
-        /// <returns>A reference to this instance after the append operation has completed.</returns>
-        public abstract TagHelperContent AppendFormat(IFormatProvider provider, string format, object arg0);
-
-        /// <summary>
-        /// Appends the specified <paramref name="format"/> to the existing content with information from the
-        /// <paramref name="provider"/> after replacing each format item with the <see cref="string"/>
-        /// representation of the corresponding item in <paramref name="arg0"/> and <paramref name="arg1"/>.
-        /// </summary>
-        /// <param name="provider">An object that supplies culture-specific formatting information.</param>
-        /// <param name="format">
-        /// The composite format <see cref="string"/> (see http://msdn.microsoft.com/en-us/library/txafckwd.aspx).
-        /// </param>
-        /// <param name="arg0">The object to format.</param>
-        /// <param name="arg1">The object to format.</param>
-        /// <returns>A reference to this instance after the append operation has completed.</returns>
-        public abstract TagHelperContent AppendFormat(
-            IFormatProvider provider,
-            string format,
-            object arg0,
-            object arg1);
-
-        /// <summary>
-        /// Appends the specified <paramref name="format"/> to the existing content with information from the
-        /// <paramref name="provider"/> after replacing each format item with the <see cref="string"/>
-        /// representation of the corresponding item in <paramref name="arg0"/>, <paramref name="arg1"/>
-        /// and <paramref name="arg2"/>.
-        /// </summary>
-        /// <param name="provider">An object that supplies culture-specific formatting information.</param>
-        /// <param name="format">
-        /// The composite format <see cref="string"/> (see http://msdn.microsoft.com/en-us/library/txafckwd.aspx).
-        /// </param>
-        /// <param name="arg0">The object to format.</param>
-        /// <param name="arg1">The object to format.</param>
-        /// <param name="arg2">The object to format.</param>
-        /// <returns>A reference to this instance after the append operation has completed.</returns>
-        public abstract TagHelperContent AppendFormat(
-            IFormatProvider provider,
-            string format,
-            object arg0,
-            object arg1,
-            object arg2);
-
-        /// <summary>
-        /// Appends the specified <paramref name="format"/> to the existing content with information from the
-        /// <paramref name="provider"/> after replacing each format item with the <see cref="string"/>
+        /// <paramref name="provider"/> after replacing each format item with the HTML encoded <see cref="string"/>
         /// representation of the corresponding item in the <paramref name="args"/> array.
         /// </summary>
         /// <param name="provider">An object that supplies culture-specific formatting information.</param>
@@ -181,14 +116,11 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// </param>
         /// <param name="args">The object array to format.</param>
         /// <returns>A reference to this instance after the append operation has completed.</returns>
-        public abstract TagHelperContent AppendFormat(IFormatProvider provider, string format, params object[] args);
-
-        /// <summary>
-        /// Appends <paramref name="htmlContent"/> to the existing content.
-        /// </summary>
-        /// <param name="htmlContent">The <see cref="IHtmlContent"/> to be appended.</param>
-        /// <returns>A reference to this instance after the append operation has completed.</returns>
-        public abstract TagHelperContent Append(IHtmlContent htmlContent);
+        public TagHelperContent AppendFormat(IFormatProvider provider, string format, params object[] args)
+        {
+            HtmlContentBuilderExtensions.AppendFormat(this, provider, format, args);
+            return this;
+        }
 
         /// <summary>
         /// Clears the content.
@@ -211,5 +143,29 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
         /// <inheritdoc />
         public abstract void WriteTo(TextWriter writer, IHtmlEncoder encoder);
+
+        /// <inheritdoc />
+        IHtmlContentBuilder IHtmlContentBuilder.Append(IHtmlContent content)
+        {
+            return Append(content);
+        }
+
+        /// <inheritdoc />
+        IHtmlContentBuilder IHtmlContentBuilder.Append(string unencoded)
+        {
+            return Append(unencoded);
+        }
+
+        /// <inheritdoc />
+        IHtmlContentBuilder IHtmlContentBuilder.AppendEncoded(string encoded)
+        {
+            return AppendEncoded(encoded);
+        }
+
+        /// <inheritdoc />
+        IHtmlContentBuilder IHtmlContentBuilder.Clear()
+        {
+            return Clear();
+        }
     }
 }

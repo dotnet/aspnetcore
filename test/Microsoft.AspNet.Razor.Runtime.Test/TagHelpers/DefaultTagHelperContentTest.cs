@@ -88,7 +88,6 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             Assert.Equal(expected, tagHelperContent.GetContent(new CommonTestEncoder()));
         }
 
-        // Overload with args array is called.
         [Fact]
         public void CanAppendFormatContent()
         {
@@ -100,84 +99,10 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // Assert
             Assert.Equal(
-                "HtmlEncode[[First Second Third Fourth!]]",
+                "HtmlEncode[[First]] HtmlEncode[[Second]] HtmlEncode[[Third]] HtmlEncode[[Fourth]]!",
                 tagHelperContent.GetContent(new CommonTestEncoder()));
         }
-
-        [Fact]
-        public void CanAppendFormatContent_With1Argument()
-        {
-            // Arrange
-            var tagHelperContent = new DefaultTagHelperContent();
-
-            // Act
-            tagHelperContent.AppendFormat("0x{0, -5:X} - hex equivalent for 50.", 50);
-
-            // Assert
-            Assert.Equal(
-                "HtmlEncode[[0x32    - hex equivalent for 50.]]",
-                tagHelperContent.GetContent(new CommonTestEncoder()));
-        }
-
-        [Fact]
-        public void CanAppendFormatContent_With2Arguments()
-        {
-            // Arrange
-            var tagHelperContent = new DefaultTagHelperContent();
-
-            // Act
-            tagHelperContent.AppendFormat("0x{0, -5:X} - hex equivalent for {1}.", 50, 50);
-
-            // Assert
-            Assert.Equal(
-                "HtmlEncode[[0x32    - hex equivalent for 50.]]",
-                tagHelperContent.GetContent(new CommonTestEncoder()));
-        }
-
-        [Fact]
-        public void CanAppendFormatContent_With3Arguments()
-        {
-            // Arrange
-            var tagHelperContent = new DefaultTagHelperContent();
-
-            // Act
-            tagHelperContent.AppendFormat("0x{0, -5:X} - {1} equivalent for {2}.", 50, "hex", 50);
-
-            // Assert
-            Assert.Equal(
-                "HtmlEncode[[0x32    - hex equivalent for 50.]]",
-                tagHelperContent.GetContent(new CommonTestEncoder()));
-        }
-
-        [Fact]
-        public void CanAppendFormat_WithAlignmentComponent()
-        {
-            // Arrange
-            var tagHelperContent = new DefaultTagHelperContent();
-
-            // Act
-            tagHelperContent.AppendFormat("{0, -10} World!", "Hello");
-
-            // Assert
-            Assert.Equal(
-                "HtmlEncode[[Hello      World!]]",
-                tagHelperContent.GetContent(new CommonTestEncoder()));
-        }
-
-        [Fact]
-        public void CanAppendFormat_WithFormatStringComponent()
-        {
-            // Arrange
-            var tagHelperContent = new DefaultTagHelperContent();
-
-            // Act
-            tagHelperContent.AppendFormat("0x{0:X}", 50);
-
-            // Assert
-            Assert.Equal("HtmlEncode[[0x32]]", tagHelperContent.GetContent(new CommonTestEncoder()));
-        }
-
-        // Overload with args array is called.
+        
         [Fact]
         public void CanAppendFormat_WithCulture()
         {
@@ -187,7 +112,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             tagHelperContent.AppendFormat(
                 CultureInfo.InvariantCulture,
-                "Numbers in InvariantCulture - {0, -5:N} {1} {2} {3}!",
+                "Numbers in InvariantCulture - {0:N} {1} {2} {3}!",
                 1.1,
                 2.98,
                 145.82,
@@ -195,107 +120,19 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // Assert
             Assert.Equal(
-                "HtmlEncode[[Numbers in InvariantCulture - 1.10  2.98 145.82 32.86!]]",
+                "Numbers in InvariantCulture - HtmlEncode[[1.10]] HtmlEncode[[2.98]] " +
+                    "HtmlEncode[[145.82]] HtmlEncode[[32.86]]!",
                 tagHelperContent.GetContent(new CommonTestEncoder()));
         }
 
         [Fact]
-        public void CanAppendFormat_WithCulture_1Argument()
-        {
-            // Arrange
-            var tagHelperContent = new DefaultTagHelperContent();
-
-            // Act
-            tagHelperContent.AppendFormat(
-                CultureInfo.InvariantCulture,
-                "Numbers in InvariantCulture - {0, -5:N}!",
-                1.1);
-
-            // Assert
-            Assert.Equal(
-                "HtmlEncode[[Numbers in InvariantCulture - 1.10 !]]",
-                tagHelperContent.GetContent(new CommonTestEncoder()));
-        }
-
-        [Fact]
-        public void CanAppendFormat_WithCulture_2Arguments()
-        {
-            // Arrange
-            var tagHelperContent = new DefaultTagHelperContent();
-
-            // Act
-            tagHelperContent.AppendFormat(
-                CultureInfo.InvariantCulture,
-                "Numbers in InvariantCulture - {0, -5:N} {1}!",
-                1.1,
-                2.98);
-
-            // Assert
-            Assert.Equal(
-                "HtmlEncode[[Numbers in InvariantCulture - 1.10  2.98!]]",
-                tagHelperContent.GetContent(new CommonTestEncoder()));
-        }
-
-        [Fact]
-        public void CanAppendFormat_WithCulture_3Arguments()
-        {
-            // Arrange
-            var tagHelperContent = new DefaultTagHelperContent();
-
-            // Act
-            tagHelperContent.AppendFormat(
-                CultureInfo.InvariantCulture,
-                "Numbers in InvariantCulture - {0, -5:N} {1} {2}!",
-                1.1,
-                2.98,
-                3.12);
-
-            // Assert
-            Assert.Equal(
-                "HtmlEncode[[Numbers in InvariantCulture - 1.10  2.98 3.12!]]",
-                tagHelperContent.GetContent(new CommonTestEncoder()));
-        }
-
-        [Fact]
-        public void CanAppendFormat_WithDifferentCulture()
-        {
-            // Arrange
-            var tagHelperContent = new DefaultTagHelperContent();
-            var culture = new CultureInfo("fr-FR");
-
-            // Act
-            tagHelperContent.AppendFormat(culture, "{0} in french!", 1.21);
-
-            // Assert
-            Assert.Equal(
-                "HtmlEncode[[1,21 in french!]]",
-                tagHelperContent.GetContent(new CommonTestEncoder()));
-        }
-
-        [Fact]
-        [ReplaceCulture]
-        public void CanAppendFormat_WithDifferentCurrentCulture()
-        {
-            // Arrange
-            var tagHelperContent = new DefaultTagHelperContent();
-
-            // Act
-            tagHelperContent.AppendFormat(CultureInfo.CurrentCulture, "{0:D}", DateTime.Parse("01/02/2015"));
-
-            // Assert
-            Assert.Equal(
-                "HtmlEncode[[01 February 2015]]",
-                tagHelperContent.GetContent(new CommonTestEncoder()));
-        }
-
-        [Fact(Skip = "Blocked by #526")]
         public void CanAppendDefaultTagHelperContent()
         {
             // Arrange
             var tagHelperContent = new DefaultTagHelperContent();
             var helloWorldContent = new DefaultTagHelperContent();
             helloWorldContent.SetContent("HelloWorld");
-            var expected = "HtmlEncode[[Content was HelloWorld]]";
+            var expected = "Content was HtmlEncode[[HelloWorld]]";
 
             // Act
             tagHelperContent.AppendFormat("Content was {0}", helloWorldContent);
@@ -549,7 +386,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             // Arrange
             var tagHelperContent = new DefaultTagHelperContent();
-            var expected = "HtmlEncode[[First ]]HtmlEncode[[Second Third]]";
+            var expected = "HtmlEncode[[First ]]HtmlEncode[[Second]] Third";
 
             // Act
             tagHelperContent.SetContent("First ").AppendFormat("{0} Third", "Second");
@@ -563,7 +400,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             // Arrange
             var tagHelperContent = new DefaultTagHelperContent();
-            var expected = "HtmlEncode[[First ]]HtmlEncode[[Second Third ]]HtmlEncode[[Fourth]]";
+            var expected = "HtmlEncode[[First ]]HtmlEncode[[Second]] Third HtmlEncode[[Fourth]]";
 
             // Act
             tagHelperContent
