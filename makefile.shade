@@ -715,6 +715,7 @@ functions
                 "EntityFramework",
                 "WebListener",
                 "KestrelHttpServer",
+                "IISIntegration",
                 "ServerTests",
                 "Diagnostics",
                 "Antiforgery",
