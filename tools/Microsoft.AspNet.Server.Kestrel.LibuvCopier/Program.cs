@@ -11,10 +11,17 @@ namespace Microsoft.AspNet.Server.Kestrel.LibuvCopier
         {
             try
             {
-                var dnxFolder = Environment.GetEnvironmentVariable("DNX_HOME");
-                if (string.IsNullOrEmpty(dnxFolder))
+                var packagesFolder = Environment.GetEnvironmentVariable("DNX_PACKAGES");
+
+                if (string.IsNullOrEmpty(packagesFolder))
                 {
-                    dnxFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".dnx");
+                    var dnxFolder = Environment.GetEnvironmentVariable("DNX_HOME");
+                    if (string.IsNullOrEmpty(dnxFolder))
+                    {
+                        dnxFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".dnx");
+                    }
+
+                    packagesFolder = Path.Combine(dnxFolder, "packages");
                 }
 
                 var lockJson = JObject.Parse(File.ReadAllText("project.lock.json"));
@@ -27,7 +34,7 @@ namespace Microsoft.AspNet.Server.Kestrel.LibuvCopier
                         if (filePath.ToString().StartsWith("runtimes/", StringComparison.Ordinal))
                         {
                             Directory.CreateDirectory(Path.GetDirectoryName(filePath));
-                            File.Copy(Path.Combine(dnxFolder, "packages", libuvLib.Name, filePath), filePath, overwrite: true);
+                            File.Copy(Path.Combine(packagesFolder, libuvLib.Name, filePath), filePath, overwrite: true);
                         }
                     }
                 }
