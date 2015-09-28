@@ -24,6 +24,8 @@ namespace Microsoft.AspNet.Server.Kestrel.LibuvCopier
                     packagesFolder = Path.Combine(dnxFolder, "packages");
                 }
 
+                packagesFolder = Environment.ExpandEnvironmentVariables(packagesFolder);
+
                 var lockJson = JObject.Parse(File.ReadAllText("project.lock.json"));
 
                 foreach (var libuvLib in lockJson["libraries"].OfType<JProperty>().Where(
