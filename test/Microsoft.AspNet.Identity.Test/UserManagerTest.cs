@@ -270,7 +270,7 @@ namespace Microsoft.AspNet.Identity.Test
             // Setup
             var store = new Mock<IUserRoleStore<TestUser>>();
             var user = new TestUser { UserName = "Foo" };
-            var roles = new string[] { "A", "B", "C" };
+            var roles = new string[] { "A", "B", "C", "C" };
             store.Setup(s => s.AddToRoleAsync(user, "A", CancellationToken.None))
                 .Returns(Task.FromResult(0))
                 .Verifiable();
@@ -280,8 +280,17 @@ namespace Microsoft.AspNet.Identity.Test
             store.Setup(s => s.AddToRoleAsync(user, "C", CancellationToken.None))
                 .Returns(Task.FromResult(0))
                 .Verifiable();
+
             store.Setup(s => s.UpdateAsync(user, CancellationToken.None)).ReturnsAsync(IdentityResult.Success).Verifiable();
-            store.Setup(s => s.GetRolesAsync(user, CancellationToken.None)).ReturnsAsync(new List<string>()).Verifiable();
+            store.Setup(s => s.IsInRoleAsync(user, "A", CancellationToken.None))
+                .Returns(Task.FromResult(false))
+                .Verifiable();
+            store.Setup(s => s.IsInRoleAsync(user, "B", CancellationToken.None))
+                .Returns(Task.FromResult(false))
+                .Verifiable();
+            store.Setup(s => s.IsInRoleAsync(user, "C", CancellationToken.None))
+                .Returns(Task.FromResult(false))
+                .Verifiable();
             var userManager = MockHelpers.TestUserManager<TestUser>(store.Object);
 
             // Act
@@ -290,6 +299,7 @@ namespace Microsoft.AspNet.Identity.Test
             // Assert
             Assert.True(result.Succeeded);
             store.VerifyAll();
+            store.Verify(s => s.AddToRoleAsync(user, "C", CancellationToken.None), Times.Once());
         }
 
         [Fact]
@@ -302,8 +312,10 @@ namespace Microsoft.AspNet.Identity.Test
             store.Setup(s => s.AddToRoleAsync(user, "A", CancellationToken.None))
                 .Returns(Task.FromResult(0))
                 .Verifiable();
-            store.Setup(s => s.GetRolesAsync(user, CancellationToken.None)).ReturnsAsync(new List<string> { "B" }).Verifiable();
-            var userManager = MockHelpers.TestUserManager<TestUser>(store.Object);
+            store.Setup(s => s.IsInRoleAsync(user, "B", CancellationToken.None))
+                .Returns(Task.FromResult(true))
+                .Verifiable();
+            var userManager = MockHelpers.TestUserManager(store.Object);
 
             // Act
             var result = await userManager.AddToRolesAsync(user, roles);
