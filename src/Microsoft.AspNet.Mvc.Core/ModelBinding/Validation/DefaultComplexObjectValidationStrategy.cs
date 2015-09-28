@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {
@@ -12,6 +13,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
     /// </summary>
     public class DefaultComplexObjectValidationStrategy : IValidationStrategy
     {
+        private static readonly bool IsMono = Type.GetType("Mono.Runtime") != null;
+
         /// <summary>
         /// Gets an instance of <see cref="DefaultComplexObjectValidationStrategy"/>.
         /// </summary>
@@ -78,7 +81,34 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                 var property = _properties[_index];
                 var propertyName = property.BinderModelName ?? property.PropertyName;
                 var key = ModelNames.CreatePropertyModelName(_key, propertyName);
-                var model = property.PropertyGetter(_model);
+
+                object model;
+
+                // Our property accessors don't work on Mono 4.0.4 - see https://github.com/aspnet/External/issues/44
+                // This is a workaround for what the PropertyGetter does in the background.
+                if (IsMono)
+                {
+                    if (_model == null)
+                    {
+                        model = null;
+                    }
+                    else
+                    {
+                        var propertyInfo = _model.GetType().GetRuntimeProperty(property.PropertyName);
+                        try
+                        {
+                            model = propertyInfo.GetValue(_model);
+                        }
+                        catch (TargetInvocationException ex)
+                        {
+                            throw ex.InnerException;
+                        }
+                    }
+                }
+                else
+                {
+                    model = property.PropertyGetter(_model);
+                }
 
                 _entry = new ValidationEntry(property, key, model);
 
