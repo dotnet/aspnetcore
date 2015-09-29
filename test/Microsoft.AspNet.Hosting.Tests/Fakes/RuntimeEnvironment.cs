@@ -16,5 +16,7 @@ namespace Microsoft.AspNet.Hosting.Fakes
         public string RuntimeType { get; } = "TestRuntime";
 
         public string RuntimeVersion { get; } = "TestRuntimeVersion";
+
+        public string RuntimePath { get; } = "TestRuntimePath";
     }
 }
