@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.Core.Rendering
 
         [Theory]
         [InlineData(false, "Hello", "World")]
-        [InlineData(true, "Hello", "something else")]
+        [InlineData(true, "hello", "something else")]
         public void MergeAttribute_IgnoresCase(bool replaceExisting, string expectedKey, string expectedValue)
         {
             // Arrange
@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.Mvc.Core.Rendering
 
             // Assert
             var attribute = Assert.Single(tagBuilder.Attributes);
-            Assert.Equal(new KeyValuePair<string, string>("ClaSs", "success btn"), attribute);
+            Assert.Equal(new KeyValuePair<string, string>("class", "success btn"), attribute);
         }
 
         [Fact]

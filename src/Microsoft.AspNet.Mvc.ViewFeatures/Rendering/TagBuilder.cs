@@ -17,6 +17,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
     [DebuggerDisplay("{DebuggerToString()}")]
     public class TagBuilder : IHtmlContent
     {
+        private AttributeDictionary _attributes;
+
         public TagBuilder(string tagName)
         {
             if (string.IsNullOrEmpty(tagName))
@@ -25,15 +27,25 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
 
             TagName = tagName;
-            Attributes = new SortedDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
             InnerHtml = new BufferedHtmlContent();
         }
 
         /// <summary>
         /// Gets the set of attributes that will be written to the tag.
         /// </summary>
-        public IDictionary<string, string> Attributes { get; }
+        public AttributeDictionary Attributes
+        {
+            get
+            {
+                // Perf: Avoid allocating `_attributes` if possible
+                if (_attributes == null)
+                {
+                    _attributes = new AttributeDictionary();
+                }
+
+                return _attributes;
+            }
+        }
 
         public IHtmlContentBuilder InnerHtml { get; }
 
@@ -151,20 +163,24 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         private void AppendAttributes(TextWriter writer, IHtmlEncoder encoder)
         {
-            foreach (var attribute in Attributes)
+            // Perf: Avoid allocating enumerator for `_attributes` if possible
+            if (_attributes != null && _attributes.Count > 0)
             {
-                var key = attribute.Key;
-                if (string.Equals(key, "id", StringComparison.OrdinalIgnoreCase) &&
-                    string.IsNullOrEmpty(attribute.Value))
+                foreach (var attribute in Attributes)
                 {
-                    continue;
-                }
+                    var key = attribute.Key;
+                    if (string.Equals(key, "id", StringComparison.OrdinalIgnoreCase) &&
+                        string.IsNullOrEmpty(attribute.Value))
+                    {
+                        continue;
+                    }
 
-                writer.Write(" ");
-                writer.Write(key);
-                writer.Write("=\"");
-                encoder.HtmlEncode(attribute.Value, writer);
-                writer.Write("\"");
+                    writer.Write(" ");
+                    writer.Write(key);
+                    writer.Write("=\"");
+                    encoder.HtmlEncode(attribute.Value, writer);
+                    writer.Write("\"");
+                }
             }
         }
 
@@ -193,7 +209,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         public void MergeAttributes<TKey, TValue>(IDictionary<TKey, TValue> attributes, bool replaceExisting)
         {
-            if (attributes != null)
+            // Perf: Avoid allocating enumerator for `attributes` if possible
+            if (attributes != null && attributes.Count > 0)
             {
                 foreach (var entry in attributes)
                 {

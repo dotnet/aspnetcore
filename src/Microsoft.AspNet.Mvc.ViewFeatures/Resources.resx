@@ -274,4 +274,7 @@
   <data name="TempData_CannotSerializeToSession" xml:space="preserve">
     <value>The '{0}' cannot serialize an object of type '{1}' to session state.</value>
   </data>
+  <data name="Dictionary_DuplicateKey" xml:space="preserve">
+    <value>The collection already contains an entry with key '{0}'.</value>
+  </data>
 </root>

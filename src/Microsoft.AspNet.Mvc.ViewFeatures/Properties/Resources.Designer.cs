@@ -842,6 +842,22 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             return string.Format(CultureInfo.CurrentCulture, GetString("TempData_CannotSerializeToSession"), p0, p1);
         }
 
+        /// <summary>
+        /// The collection already contains an entry with key '{0}'.
+        /// </summary>
+        internal static string Dictionary_DuplicateKey
+        {
+            get { return GetString("Dictionary_DuplicateKey"); }
+        }
+
+        /// <summary>
+        /// The collection already contains an entry with key '{0}'.
+        /// </summary>
+        internal static string FormatDictionary_DuplicateKey(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Dictionary_DuplicateKey"), p0);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
