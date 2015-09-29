@@ -204,7 +204,9 @@ namespace Microsoft.AspNet.Routing.Template
                 }
                 else
                 {
-                    if (requestSegment.EndsWith(routeSegment.Parts[indexOfLastSegment - 1].Text))
+                    if (requestSegment.EndsWith(
+                        routeSegment.Parts[indexOfLastSegment - 1].Text,
+                        StringComparison.OrdinalIgnoreCase))
                     {
                         return false;
                     }
