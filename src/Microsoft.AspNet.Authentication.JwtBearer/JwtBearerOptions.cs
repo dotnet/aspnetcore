@@ -26,6 +26,12 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
         }
 
         /// <summary>
+        /// Gets or sets if HTTPS is required for the metadata address or authority.
+        /// The default is true. This should be disabled only in development environments.
+        /// </summary>
+        public bool RequireHttpsMetadata { get; set; } = true;
+
+        /// <summary>
         /// Gets or sets the discovery endpoint for obtaining metadata
         /// </summary>
         public string MetadataAddress { get; set; }

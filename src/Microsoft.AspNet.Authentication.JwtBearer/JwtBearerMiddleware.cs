@@ -79,11 +79,17 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
                         Options.MetadataAddress += ".well-known/openid-configuration";
                     }
 
+                    if (Options.RequireHttpsMetadata && !Options.MetadataAddress.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+                    {
+                        throw new InvalidOperationException("The MetadataAddress or Authority must use HTTPS unless disabled for development by setting RequireHttpsMetadata=false.");
+                    }
+
                     var httpClient = new HttpClient(Options.BackchannelHttpHandler ?? new HttpClientHandler());
                     httpClient.Timeout = Options.BackchannelTimeout;
                     httpClient.MaxResponseContentBufferSize = 1024 * 1024 * 10; // 10 MB
 
-                    Options.ConfigurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(Options.MetadataAddress, new OpenIdConnectConfigurationRetriever(), httpClient);
+                    Options.ConfigurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(Options.MetadataAddress, new OpenIdConnectConfigurationRetriever(),
+                        new HttpDocumentRetriever(httpClient) { RequireHttps = Options.RequireHttpsMetadata });
                 }
             }
         }
