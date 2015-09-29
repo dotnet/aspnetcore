@@ -81,44 +81,6 @@ namespace E2ETests
         }
     }
 
-    public class SmokeTests_OnIIS_NativeModule
-    {
-        [ConditionalTheory, Trait("E2Etests", "E2Etests")]
-        [SkipIfIISNativeVariationsNotEnabled]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [OSSkipCondition(OperatingSystems.Win7And2008R2 | OperatingSystems.MacOSX | OperatingSystems.Linux)]
-        [SkipIfCurrentRuntimeIsCoreClr]
-        [InlineData(
-            ServerType.IISNativeModule, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5011/")]
-        public async Task SmokeTestSuite_On_NativeModule_X86(
-            ServerType serverType,
-            RuntimeFlavor runtimeFlavor,
-            RuntimeArchitecture architecture,
-            string applicationBaseUrl)
-        {
-            var smokeTestRunner = new SmokeTests();
-            await smokeTestRunner.SmokeTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl);
-        }
-
-        [ConditionalTheory, Trait("E2Etests", "E2Etests")]
-        [SkipIfIISNativeVariationsNotEnabled]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [OSSkipCondition(OperatingSystems.Win7And2008R2 | OperatingSystems.MacOSX | OperatingSystems.Linux)]
-        [SkipOn32BitOS]
-        [SkipIfCurrentRuntimeIsCoreClr]
-        [InlineData(
-            ServerType.IISNativeModule, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5012/")]
-        public async Task SmokeTestSuite_On_NativeModule_AMD64(
-            ServerType serverType,
-            RuntimeFlavor runtimeFlavor,
-            RuntimeArchitecture architecture,
-            string applicationBaseUrl)
-        {
-            var smokeTestRunner = new SmokeTests();
-            await smokeTestRunner.SmokeTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl);
-        }
-    }
-
     public class SmokeTests_OnIIS
     {
         [ConditionalTheory, Trait("E2Etests", "E2Etests")]
@@ -166,8 +128,7 @@ namespace E2ETests
                     UserAdditionalCleanup = parameters =>
                     {
                         if (!Helpers.RunningOnMono
-                            && parameters.ServerType != ServerType.IIS
-                            && parameters.ServerType != ServerType.IISNativeModule)
+                            && parameters.ServerType != ServerType.IIS)
                         {
                             // Mono uses InMemoryStore
                             DbUtils.DropDatabase(musicStoreDbName, logger);

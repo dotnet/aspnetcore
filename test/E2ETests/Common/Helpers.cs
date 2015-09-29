@@ -23,8 +23,7 @@ namespace E2ETests
 
         public static void SetInMemoryStoreForIIS(DeploymentParameters deploymentParameters, ILogger logger)
         {
-            if (deploymentParameters.ServerType == ServerType.IIS
-                || deploymentParameters.ServerType == ServerType.IISNativeModule)
+            if (deploymentParameters.ServerType == ServerType.IIS)
             {
                 // Can't use localdb with IIS. Setting an override to use InMemoryStore.
                 logger.LogInformation("Creating configoverride.json file to override default config.");

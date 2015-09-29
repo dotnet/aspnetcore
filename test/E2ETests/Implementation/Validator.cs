@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Server.Testing;
 using Microsoft.Framework.Logging;
@@ -126,8 +125,7 @@ namespace E2ETests
         private string PrefixBaseAddress(string url)
         {
 #if DNX451
-            url = (_deploymentResult.DeploymentParameters.ServerType == ServerType.IISNativeModule ||
-                _deploymentResult.DeploymentParameters.ServerType == ServerType.IIS) ?
+            url = _deploymentResult.DeploymentParameters.ServerType == ServerType.IIS ?
                 string.Format(url, new Uri(_deploymentResult.ApplicationBaseUri).Segments[1].TrimEnd('/')) :
                 string.Format(url, string.Empty);
 #else
