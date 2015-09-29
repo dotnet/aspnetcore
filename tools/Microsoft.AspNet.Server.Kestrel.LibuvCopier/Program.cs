@@ -16,12 +16,24 @@ namespace Microsoft.AspNet.Server.Kestrel.LibuvCopier
                 if (string.IsNullOrEmpty(packagesFolder))
                 {
                     var dnxFolder = Environment.GetEnvironmentVariable("DNX_HOME");
+
+#if DNX451
+                    // DNXCore,Version=v5.0 error CS0117: 'Environment' does not contain a definition for 'SpecialFolder'
+                    // DNXCore,Version=v5.0 error CS0117: 'Environment' does not contain a definition for 'GetFolderPath'
                     if (string.IsNullOrEmpty(dnxFolder))
                     {
                         dnxFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".dnx");
                     }
+#endif
 
-                    packagesFolder = Path.Combine(dnxFolder, "packages");
+                    if (!string.IsNullOrEmpty(dnxFolder))
+                    {
+                        packagesFolder = Path.Combine(dnxFolder, "packages");
+                    }
+                    else
+                    {
+                        throw new Exception("DNX folder not found. Try setting the DNX_HOME and/or DNX_PACKAGES environment variables.");
+                    }
                 }
 
                 packagesFolder = Environment.ExpandEnvironmentVariables(packagesFolder);
