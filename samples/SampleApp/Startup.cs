@@ -5,7 +5,6 @@ using System;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.Logging;
-using Microsoft.AspNet.Server.Kestrel;
 
 namespace SampleApp
 {
@@ -13,9 +12,6 @@ namespace SampleApp
     {
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {
-            var ksi = app.ServerFeatures[typeof(IKestrelServerInformation)] as IKestrelServerInformation;
-            ksi.ThreadCount = 4;
-
             loggerFactory.MinimumLevel = LogLevel.Debug;
 
             loggerFactory.AddConsole(LogLevel.Debug);
