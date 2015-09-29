@@ -13,6 +13,8 @@ namespace IISSample
 
             var logger = loggerfactory.CreateLogger("Requests");
 
+            app.UseIISPlatformHandler();
+            
             app.Run(async (context) =>
             {
                 logger.LogVerbose("Received request: " + context.Request.Method + " " + context.Request.Path);
