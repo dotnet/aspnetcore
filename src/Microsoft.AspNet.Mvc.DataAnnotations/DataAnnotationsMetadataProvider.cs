@@ -129,7 +129,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
                     var groupName = GetDisplayGroup(field);
                     var value = ((Enum)field.GetValue(obj: null)).ToString("d");
 
-                    groupedDisplayNamesAndValues.Add(new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(groupName, displayName), value));
+                    groupedDisplayNamesAndValues.Add(new KeyValuePair<EnumGroupAndName, string>(
+                        new EnumGroupAndName(groupName, displayName),
+                        value));
                     namesAndValues.Add(name, value);
                 }
 
