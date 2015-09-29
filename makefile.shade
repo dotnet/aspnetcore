@@ -165,13 +165,13 @@ var buildTarget = "compile"
             {
                 var original = File.ReadAllText(nugetConfigPath);
                 var modified = original
-                    .Replace("https://www.myget.org/F/aspnetlitedev", "https://www.myget.org/F/aspnetliterelease")
+                    .Replace("https://www.myget.org/F/aspnetcidev", "https://www.myget.org/F/aspnetcirelease")
                     .Replace("https://www.myget.org/F/azureadwebstacknightly", "https://www.myget.org/F/azureadwebstackrelease");
 
                 if (!string.Equals(original, modified, StringComparison.Ordinal))
                 {
                     File.WriteAllText(nugetConfigPath, modified);
-                    GitCommand(repo, "add NuGet.Config");
+                    GitCommand(repo, "add NuGet.config");
                     GitCommand(repo, "commit -m \"Updating to release NuGet.config.\"");
                 }
             }
