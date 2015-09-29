@@ -85,7 +85,7 @@ Set-Variable -Option Constant "DefaultUserDirectoryName" ".dnx"
 Set-Variable -Option Constant "DefaultGlobalDirectoryName" "Microsoft DNX"
 Set-Variable -Option Constant "OldUserDirectoryNames" @(".kre", ".k")
 Set-Variable -Option Constant "RuntimePackageName" "dnx"
-Set-Variable -Option Constant "DefaultFeed" "https://www.myget.org/F/aspnetcirelease/api/v2"
+Set-Variable -Option Constant "DefaultFeed" "https://www.myget.org/F/aspnetcidev/api/v2"
 Set-Variable -Option Constant "DefaultFeedKey" "DNX_FEED"
 Set-Variable -Option Constant "DefaultUnstableFeed" "https://www.myget.org/F/aspnetcidev/api/v2"
 Set-Variable -Option Constant "DefaultUnstableFeedKey" "DNX_UNSTABLE_FEED"
