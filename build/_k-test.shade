@@ -1,5 +1,4 @@
-use namespace='System.Web.Script.Serialization'
-use assembly="System.Web.Extensions, Version=3.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35"
+use import="Json"
 use import="Environment"
 
 default NO_PARALLEL_TEST_PROJECTS='${E("NO_PARALLEL_TEST_PROJECTS")}'
@@ -15,16 +14,12 @@ projectFile=''
 */}
 
 @{
-    var serializer = new JavaScriptSerializer();
     var projectText = File.ReadAllText(projectFile);
-    var project = (Dictionary<string, object>)serializer.DeserializeObject(projectText);
+    var project = (JsonObject)Json.Deserialize(projectText);
 
-    object commandsObject;
-    var commands = project.TryGetValue("commands", out commandsObject)
-        ? (Dictionary<string, object>)commandsObject
-        : new Dictionary<string, object>();
+    var commands = project.ValueAsJsonObject("commands");
             
-    if (commands.Keys.Contains("test"))
+    if (commands != null && commands.Keys.Contains("test"))
     {
         var projectFolder = Path.GetDirectoryName(projectFile);
         var projectName = Path.GetFileName(projectFolder);
@@ -35,16 +30,20 @@ projectFile=''
             noParallelTestProjects.UnionWith(NO_PARALLEL_TEST_PROJECTS.Split((char)','));
         }
 
-        object configsObject;
-        var configs = project.TryGetValue("frameworks", out configsObject)
-            ? (Dictionary<string, object>)configsObject
-            : new Dictionary<string, object>
-                {
-                    { "dnx451", new Dictionary<string, object>() } // Assume dnx451 only if none specified
-                };
+        var configs = project.ValueAsJsonObject("frameworks");
+        IEnumerable<string> targetFrameworks;
+        if (configs == null)
+        {
+            // Assume dnx451 only if none specified
+            targetFrameworks = new[] { "dnx451" };
+        }
+        else
+        {
+            targetFrameworks = configs.Keys;
+        }
         
         // Currently only dnx* targets are supported. See aspnet/Universe#53
-        var targetFrameworks = configs.Keys.Where(k => k.StartsWith("dnx", StringComparison.OrdinalIgnoreCase));
+        targetFrameworks = targetFrameworks.Where(k => k.StartsWith("dnx", StringComparison.OrdinalIgnoreCase));
 
         foreach (var framework in targetFrameworks)
         {

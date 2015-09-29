@@ -1,7 +1,7 @@
 @{/*
 
 kpm-pack
-    Builds package from project. Downloads and executes k sdk tools.
+    Builds package from project.
 
 projectFile=''
     Required. Path to the project.json to build.
@@ -20,10 +20,9 @@ default pack_options='${E("NUGET3_pack_options")}'
     if (IsBuildV2)
     {
         var projectsToPack = new List<string>();
-    
         foreach(var arg in projectFile.Split((char)';'))
         {
-            if (!arg.Contains("*")) 
+            if (!arg.Contains("*"))
             {
                 projectsToPack.Add(Path.GetDirectoryName(arg));
             }
@@ -34,14 +33,14 @@ default pack_options='${E("NUGET3_pack_options")}'
             }
         }
 
-        foreach(var projFolder in projectsToPack) 
-        { 
+        foreach(var projFolder in projectsToPack)
+        {
             DeleteFolder(Path.Combine(projFolder, "bin", configuration));
         }
-        
+
         var projectsArg=projectFile.Replace(";", " ");
         var dnuArgs=string.Format("pack{0} {1} --configuration {2}", pack_options, projectsArg, configuration);
-        if (!IsMono) 
+        if (!IsMono)
         {
             Exec("cmd", "/C dnu " + dnuArgs);
         }
@@ -49,11 +48,11 @@ default pack_options='${E("NUGET3_pack_options")}'
         {
             Exec("dnu", dnuArgs);
         }
-        
-        foreach(var projFolder in projectsToPack) 
-        { 
+
+        foreach(var projFolder in projectsToPack)
+        {
             CopyFolder(
-                Path.Combine(projFolder, "bin", configuration), 
+                Path.Combine(projFolder, "bin", configuration),
                 Path.Combine(kpmPackOutputDir, Path.GetFileName(projFolder)),
                 true);
         }
@@ -63,11 +62,11 @@ default pack_options='${E("NUGET3_pack_options")}'
         var projectFolder=Path.GetDirectoryName(projectFile);
         var projectName=Path.GetFileName(projectFolder);
         var projectBin=Path.Combine(projectFolder, "bin", configuration);
-        
+
         DeleteFolder(projectBin);
-        
+
         var dnuArgs=string.Format("pack{0} {1} --configuration {2}", pack_options, projectFolder, configuration);
-        if (!IsMono) 
+        if (!IsMono)
         {
             Exec("cmd", "/C dnu " + dnuArgs);
         }

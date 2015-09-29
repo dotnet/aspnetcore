@@ -2,6 +2,7 @@
 var PROJECT='AspNet'
 var VERSION='0.2.1'
 
+use-teamcity
 use namespace='System'
 use namespace='System.IO'
 use namespace='System.Collections.Generic'
@@ -153,22 +154,24 @@ var buildTarget = "compile"
         }
 
         Log.Info("No conflicts in repos, continuing with creating release branch.");
-    
+
         foreach (var repo in GetAllRepos())
         {
             GitCommand(repo, "checkout origin/dev -B release");
-            
+
             // Update NuGet.Config
             var nugetConfigPath = Path.Combine(repo, "NuGet.config");
             if (File.Exists(nugetConfigPath))
             {
                 var original = File.ReadAllText(nugetConfigPath);
-                var modified = original.Replace("https://www.myget.org/F/aspnetvnext", "https://www.myget.org/F/aspnetrelease");
+                var modified = original
+                    .Replace("https://www.myget.org/F/aspnetcidev", "https://www.myget.org/F/aspnetcirelease")
+                    .Replace("https://www.myget.org/F/azureadwebstacknightly", "https://www.myget.org/F/azureadwebstackrelease");
 
                 if (!string.Equals(original, modified, StringComparison.Ordinal))
                 {
                     File.WriteAllText(nugetConfigPath, modified);
-                    GitCommand(repo, "add NuGet.Config");
+                    GitCommand(repo, "add NuGet.config");
                     GitCommand(repo, "commit -m \"Updating to release NuGet.config.\"");
                 }
             }
@@ -563,7 +566,6 @@ functions
             var nonDefaultRepos = new[]
             {
               "DNX",
-              "MusicStore",
               "Coherence",
               "Coherence-Signed",
               "dnvm",
@@ -711,9 +713,9 @@ functions
                 "RazorTooling",
                 "Hosting",
                 "EntityFramework",
-                "Helios",
                 "WebListener",
                 "KestrelHttpServer",
+                "IISIntegration",
                 "ServerTests",
                 "Diagnostics",
                 "Antiforgery",
@@ -724,13 +726,18 @@ functions
                 "WebSockets",
                 "Localization",
                 "Session",
+                "BasicMiddleware",
+                "Proxy",
                 "Mvc",
                 "Identity",
                 "Scaffolding",
                 "SignalR-Server",
                 "SignalR-SQLServer",
                 "SignalR-Redis",
+                "BrowserLink",
+                "dnx-watch",
                 "Entropy",
+                "MusicStore"
             };
 
             var repositoryInclude = Environment.GetEnvironmentVariable("KOREBUILD_REPOSITORY_INCLUDE");

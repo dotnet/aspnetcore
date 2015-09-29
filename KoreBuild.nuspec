@@ -4,8 +4,8 @@
     <id>KoreBuild</id>
     <title>The ProjectK build tools</title>
     <version>0.0</version>
-    <authors>Microsoft Open Technologies, Inc.</authors>
-    <owners>Microsoft Open Technologies, Inc.</owners>
+    <authors>.NET Foundation</authors>
+    <owners>.NET Foundation</owners>
     <description>ProjectK build tooling</description>
     <language>en-US</language>
   </metadata>

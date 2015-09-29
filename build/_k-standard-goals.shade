@@ -6,6 +6,7 @@ use namespace="System.Linq"
 use import="Files"
 use import="BuildEnv"
 use import="Environment"
+use-teamcity
 
 default BASE_DIR='${Directory.GetCurrentDirectory()}'
 default TARGET_DIR='${Path.Combine(BASE_DIR, "artifacts")}'
@@ -13,8 +14,9 @@ default BUILD_DIR='${Path.Combine(TARGET_DIR, "build")}'
 default TEST_DIR='${Path.Combine(TARGET_DIR, "test")}'
 default Configuration='${E("Configuration")}'
 default Quiet='${ false }'
-default PACKAGELIST_JSON_FILENAME = 'packages.json'
-default DNX_TOOLS_FEED = 'https://www.myget.org/F/dnxtools/api/v2'
+default PACKAGELIST_JSON_FILENAME = 'NuGetPackageVerifier.json'
+default DNX_TOOLS_FEED = 'https://www.myget.org/F/dnxtools/api/v3/index.json'
+default NUGET_FEED = 'https://api.nuget.org/v3/index.json'
 
 @{
   if (string.IsNullOrEmpty(E("DNX_BUILD_VERSION")))
@@ -34,7 +36,7 @@ default DNX_TOOLS_FEED = 'https://www.myget.org/F/dnxtools/api/v2'
     Configuration = "Debug";
     E("Configuration", Configuration);
   }
-  
+
   Log.Info("Build v2: " + IsBuildV2);
 }
 
@@ -103,7 +105,7 @@ default DNX_TOOLS_FEED = 'https://www.myget.org/F/dnxtools/api/v2'
     {
         projectFiles.ForEach(projectFile => DnuPack(projectFile, BUILD_DIR, Configuration));
     }
-    
+
     foreach (var nupkg in Files.Include(Path.Combine(BUILD_DIR, "*/*.nupkg")))
     {
         File.Copy(nupkg, Path.Combine(BUILD_DIR, Path.GetFileName(nupkg)), true);
@@ -113,31 +115,38 @@ default DNX_TOOLS_FEED = 'https://www.myget.org/F/dnxtools/api/v2'
 #build-compile target='compile' if='IsBuildV2'
   @{
       // If the src folder, build and create the packages
-      if (Directory.Exists("src")) 
+      if (Directory.Exists("src"))
       {
-          DnuPack("src/**", BUILD_DIR, Configuration);
-          
+          // Handle projects 1 to 3 levels down from src/, avoiding path too long errors.
+          DnuPack("src/*;src/*/*;src/*/*/*", BUILD_DIR, Configuration);
+
           foreach (var nupkg in Files.Include(Path.Combine(BUILD_DIR, "*/*.nupkg")))
           {
               File.Copy(nupkg, Path.Combine(BUILD_DIR, Path.GetFileName(nupkg)), true);
           }
       }
-      
+
       // For test and samples only check if they compile
       var projectsToBuild = new List<string>();
-      if (Directory.Exists("test")) 
+      if (Directory.Exists("test"))
       {
-          projectsToBuild.Add("test/**");
+          // Handle projects 1 to 3 levels down from test/, avoiding path too long errors.
+          projectsToBuild.Add("test/*");
+          projectsToBuild.Add("test/*/*");
+          projectsToBuild.Add("test/*/*/*");
       }
-      if (Directory.Exists("samples")) 
+      if (Directory.Exists("samples"))
       {
-          projectsToBuild.Add("samples/**");  
+          // Handle projects 1 to 3 levels down from samples/, avoiding path too long errors.
+          projectsToBuild.Add("samples/*");
+          projectsToBuild.Add("samples/*/*");
+          projectsToBuild.Add("samples/*/*/*");
       }
-      
-      if (projectsToBuild.Any()) 
+
+      if (projectsToBuild.Any())
       {
           DnuBuild(
-            string.Join(";", projectsToBuild), 
+            string.Join(";", projectsToBuild),
             Configuration);
       }
   }
@@ -182,6 +191,16 @@ default DNX_TOOLS_FEED = 'https://www.myget.org/F/dnxtools/api/v2'
 
   copy sourceDir='${Path.GetDirectoryName(project)}' include='bin/**/' outputDir='${Path.Combine(BUILD_DIR, Path.GetFileNameWithoutExtension(project))}' overwrite='${true}' each='var project in nativeProjects'
 
+#nuget-verify target='package' if='File.Exists(PACKAGELIST_JSON_FILENAME) && ShouldVerifyNupkgs' description='Verify if all the packages are generated properly'
+  var commandsDirectory = '${Path.Combine(BASE_DIR, "commands")}'
+  exec program='cmd' commandline='/C dnu commands install --source ${DNX_TOOLS_FEED} --source ${NUGET_FEED} NuGetPackageVerifier --packages "${commandsDirectory}"'
+  exec program='cmd' commandline='/C ${Path.Combine(commandsDirectory, "nugetverify")} "${BUILD_DIR}" "${Path.Combine(BASE_DIR, PACKAGELIST_JSON_FILENAME)}"'
+  @{
+    if (Directory.Exists(commandsDirectory))
+    {
+      Directory.Delete(commandsDirectory, recursive: true);
+    }
+  }
 
 #nuget-install target='install' description='Install NuGet packages to local repo'
   kpm-publish sourcePackagesDir='${BUILD_DIR}' targetPackagesDir='${E("PACKAGES_PUBLISH_DIR")}'
@@ -210,17 +229,6 @@ default DNX_TOOLS_FEED = 'https://www.myget.org/F/dnxtools/api/v2'
     else
     {
         projectFiles.ForEach(projectFile => DnuBuild(projectFile, Configuration));
-    }
-  }
-
-#nuget-verify target='test' if='File.Exists(PACKAGELIST_JSON_FILENAME) && ShouldVerifyNupkgs' description='Verify if all the packages are generated properly'
-  var commandsDirectory = '${Path.Combine(BASE_DIR, "commands")}'
-  exec program='cmd' commandline='/C dnu commands install --source ${DNX_TOOLS_FEED} NuGetPackageVerifier --packages "${commandsDirectory}"'
-  exec program='cmd' commandline='/C ${Path.Combine(commandsDirectory, "nugetverify")} "${BUILD_DIR}" "${Path.Combine(BASE_DIR, PACKAGELIST_JSON_FILENAME)}"'
-  @{
-    if (Directory.Exists(commandsDirectory))
-    {
-      Directory.Delete(commandsDirectory, recursive: true);
     }
   }
 
@@ -351,7 +359,7 @@ macro name="DnuBuild" projectFile='string' configuration='string'
 
 macro name="DnuPack" projectFile='string' kpmPackOutputDir='string' configuration='string'
     kpm-pack
-    
+
 macro name="DeleteFolder" delete='string'
     directory
 
