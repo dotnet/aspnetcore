@@ -709,6 +709,7 @@ functions
                 "HttpAbstractions",
                 "Testing",
                 "FileSystem",
+                "JsonPatch",
                 "Razor",
                 "RazorTooling",
                 "Hosting",
