@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.StaticFiles
         {
             TestServer server = TestServer.Create(app => app.UseFileServer());
 
-            HttpResponseMessage response = await server.CreateClient().GetAsync("http://localhost/SubFolder/Extra.xml");
+            HttpResponseMessage response = await server.CreateClient().GetAsync("http://localhost/SubFolder/extra.xml");
             Assert.NotNull(response.Headers.ETag);
             Assert.NotNull(response.Headers.ETag.Tag);
         }
@@ -28,8 +28,8 @@ namespace Microsoft.AspNet.StaticFiles
         {
             TestServer server = TestServer.Create(app => app.UseFileServer());
 
-            HttpResponseMessage response1 = await server.CreateClient().GetAsync("http://localhost/SubFolder/Extra.xml");
-            HttpResponseMessage response2 = await server.CreateClient().GetAsync("http://localhost/SubFolder/Extra.xml");
+            HttpResponseMessage response1 = await server.CreateClient().GetAsync("http://localhost/SubFolder/extra.xml");
+            HttpResponseMessage response2 = await server.CreateClient().GetAsync("http://localhost/SubFolder/extra.xml");
             Assert.Equal(response2.Headers.ETag, response1.Headers.ETag);
         }
 
@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.StaticFiles
         public async Task IfMatchShouldReturn412WhenNotListed()
         {
             TestServer server = TestServer.Create(app => app.UseFileServer());
-            var req = new HttpRequestMessage(HttpMethod.Get, "http://localhost/SubFolder/Extra.xml");
+            var req = new HttpRequestMessage(HttpMethod.Get, "http://localhost/SubFolder/extra.xml");
             req.Headers.Add("If-Match", "\"fake\"");
             HttpResponseMessage resp = await server.CreateClient().SendAsync(req);
             Assert.Equal(HttpStatusCode.PreconditionFailed, resp.StatusCode);
@@ -55,9 +55,9 @@ namespace Microsoft.AspNet.StaticFiles
         public async Task IfMatchShouldBeServedWhenListed()
         {
             TestServer server = TestServer.Create(app => app.UseFileServer());
-            HttpResponseMessage original = await server.CreateClient().GetAsync("http://localhost/SubFolder/Extra.xml");
+            HttpResponseMessage original = await server.CreateClient().GetAsync("http://localhost/SubFolder/extra.xml");
 
-            var req = new HttpRequestMessage(HttpMethod.Get, "http://localhost/SubFolder/Extra.xml");
+            var req = new HttpRequestMessage(HttpMethod.Get, "http://localhost/SubFolder/extra.xml");
             req.Headers.Add("If-Match", original.Headers.ETag.ToString());
             HttpResponseMessage resp = await server.CreateClient().SendAsync(req);
             Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.StaticFiles
         public async Task IfMatchShouldBeServedForAstrisk()
         {
             TestServer server = TestServer.Create(app => app.UseFileServer());
-            var req = new HttpRequestMessage(HttpMethod.Get, "http://localhost/SubFolder/Extra.xml");
+            var req = new HttpRequestMessage(HttpMethod.Get, "http://localhost/SubFolder/extra.xml");
             req.Headers.Add("If-Match", "*");
             HttpResponseMessage resp = await server.CreateClient().SendAsync(req);
             Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
@@ -91,14 +91,14 @@ namespace Microsoft.AspNet.StaticFiles
         public async Task IfNoneMatchShouldReturn304ForMatchingOnGetAndHeadMethod()
         {
             TestServer server = TestServer.Create(app => app.UseFileServer());
-            HttpResponseMessage resp1 = await server.CreateClient().GetAsync("http://localhost/SubFolder/Extra.xml");
+            HttpResponseMessage resp1 = await server.CreateClient().GetAsync("http://localhost/SubFolder/extra.xml");
 
-            var req2 = new HttpRequestMessage(HttpMethod.Get, "http://localhost/SubFolder/Extra.xml");
+            var req2 = new HttpRequestMessage(HttpMethod.Get, "http://localhost/SubFolder/extra.xml");
             req2.Headers.Add("If-None-Match", resp1.Headers.ETag.ToString());
             HttpResponseMessage resp2 = await server.CreateClient().SendAsync(req2);
             Assert.Equal(HttpStatusCode.NotModified, resp2.StatusCode);
 
-            var req3 = new HttpRequestMessage(HttpMethod.Head, "http://localhost/SubFolder/Extra.xml");
+            var req3 = new HttpRequestMessage(HttpMethod.Head, "http://localhost/SubFolder/extra.xml");
             req3.Headers.Add("If-None-Match", resp1.Headers.ETag.ToString());
             HttpResponseMessage resp3 = await server.CreateClient().SendAsync(req3);
             Assert.Equal(HttpStatusCode.NotModified, resp3.StatusCode);
@@ -108,14 +108,14 @@ namespace Microsoft.AspNet.StaticFiles
         public async Task IfNoneMatchShouldBeIgnoredForNonTwoHundredAnd304Responses()
         {
             TestServer server = TestServer.Create(app => app.UseFileServer());
-            HttpResponseMessage resp1 = await server.CreateClient().GetAsync("http://localhost/SubFolder/Extra.xml");
+            HttpResponseMessage resp1 = await server.CreateClient().GetAsync("http://localhost/SubFolder/extra.xml");
 
-            var req2 = new HttpRequestMessage(HttpMethod.Post, "http://localhost/SubFolder/Extra.xml");
+            var req2 = new HttpRequestMessage(HttpMethod.Post, "http://localhost/SubFolder/extra.xml");
             req2.Headers.Add("If-None-Match", resp1.Headers.ETag.ToString());
             HttpResponseMessage resp2 = await server.CreateClient().SendAsync(req2);
             Assert.Equal(HttpStatusCode.NotFound, resp2.StatusCode);
 
-            var req3 = new HttpRequestMessage(HttpMethod.Put, "http://localhost/SubFolder/Extra.xml");
+            var req3 = new HttpRequestMessage(HttpMethod.Put, "http://localhost/SubFolder/extra.xml");
             req3.Headers.Add("If-None-Match", resp1.Headers.ETag.ToString());
             HttpResponseMessage resp3 = await server.CreateClient().SendAsync(req3);
             Assert.Equal(HttpStatusCode.NotFound, resp3.StatusCode);
@@ -136,7 +136,7 @@ namespace Microsoft.AspNet.StaticFiles
         {
             TestServer server = TestServer.Create(app => app.UseFileServer());
 
-            HttpResponseMessage response = await server.CreateClient().GetAsync("http://localhost/SubFolder/Extra.xml");
+            HttpResponseMessage response = await server.CreateClient().GetAsync("http://localhost/SubFolder/extra.xml");
             Assert.NotNull(response.Content.Headers.LastModified);
         }
 
@@ -154,11 +154,11 @@ namespace Microsoft.AspNet.StaticFiles
         {
             TestServer server = TestServer.Create(app => app.UseFileServer());
             HttpResponseMessage resp1 = await server
-                .CreateRequest("/SubFolder/Extra.xml")
+                .CreateRequest("/SubFolder/extra.xml")
                 .GetAsync();
 
             HttpResponseMessage resp2 = await server
-                .CreateRequest("/SubFolder/Extra.xml")
+                .CreateRequest("/SubFolder/extra.xml")
                 .AddHeader("If-None-Match", resp1.Headers.ETag.ToString())
                 .And(req => req.Headers.IfModifiedSince = resp1.Content.Headers.LastModified)
                 .GetAsync();
@@ -171,7 +171,7 @@ namespace Microsoft.AspNet.StaticFiles
         {
             TestServer server = TestServer.Create(app => app.UseFileServer());
             HttpResponseMessage resp1 = await server
-                .CreateRequest("/SubFolder/Extra.xml")
+                .CreateRequest("/SubFolder/extra.xml")
                 .GetAsync();
 
             DateTimeOffset lastModified = resp1.Content.Headers.LastModified.Value;
@@ -179,19 +179,19 @@ namespace Microsoft.AspNet.StaticFiles
             DateTimeOffset furtureDate = lastModified.AddHours(1);
 
             HttpResponseMessage resp2 = await server
-                .CreateRequest("/SubFolder/Extra.xml")
+                .CreateRequest("/SubFolder/extra.xml")
                 .AddHeader("If-None-Match", "\"fake\"")
                 .And(req => req.Headers.IfModifiedSince = lastModified)
                 .GetAsync();
 
             HttpResponseMessage resp3 = await server
-                .CreateRequest("/SubFolder/Extra.xml")
+                .CreateRequest("/SubFolder/extra.xml")
                 .AddHeader("If-None-Match", resp1.Headers.ETag.ToString())
                 .And(req => req.Headers.IfModifiedSince = pastDate)
                 .GetAsync();
 
             HttpResponseMessage resp4 = await server
-                .CreateRequest("/SubFolder/Extra.xml")
+                .CreateRequest("/SubFolder/extra.xml")
                 .AddHeader("If-None-Match", "\"fake\"")
                 .And(req => req.Headers.IfModifiedSince = furtureDate)
                 .GetAsync();
@@ -219,7 +219,7 @@ namespace Microsoft.AspNet.StaticFiles
             TestServer server = TestServer.Create(app => app.UseFileServer());
 
             HttpResponseMessage res = await server
-                .CreateRequest("/SubFolder/Extra.xml")
+                .CreateRequest("/SubFolder/extra.xml")
                 .AddHeader("If-Modified-Since", "bad-date")
                 .GetAsync();
 
@@ -239,11 +239,11 @@ namespace Microsoft.AspNet.StaticFiles
             TestServer server = TestServer.Create(app => app.UseFileServer());
 
             HttpResponseMessage res1 = await server
-                .CreateRequest("/SubFolder/Extra.xml")
+                .CreateRequest("/SubFolder/extra.xml")
                 .GetAsync();
 
             HttpResponseMessage res2 = await server
-                .CreateRequest("/SubFolder/Extra.xml")
+                .CreateRequest("/SubFolder/extra.xml")
                 .And(req => req.Headers.IfModifiedSince = res1.Content.Headers.LastModified)
                 .GetAsync();
 

@@ -20,9 +20,9 @@ namespace Microsoft.AspNet.StaticFiles
         public async Task IfRangeWithCurrentEtagShouldServePartialContent()
         {
             TestServer server = TestServer.Create(app => app.UseFileServer());
-            HttpResponseMessage original = await server.CreateClient().GetAsync("http://localhost/SubFolder/Ranges.txt");
+            HttpResponseMessage original = await server.CreateClient().GetAsync("http://localhost/SubFolder/ranges.txt");
 
-            var req = new HttpRequestMessage(HttpMethod.Get, "http://localhost/SubFolder/Ranges.txt");
+            var req = new HttpRequestMessage(HttpMethod.Get, "http://localhost/SubFolder/ranges.txt");
             req.Headers.Add("If-Range", original.Headers.ETag.ToString());
             req.Headers.Add("Range", "bytes=0-10");
             HttpResponseMessage resp = await server.CreateClient().SendAsync(req);
@@ -40,9 +40,9 @@ namespace Microsoft.AspNet.StaticFiles
         public async Task HEADIfRangeWithCurrentEtagShouldReturn200Ok()
         {
             TestServer server = TestServer.Create(app => app.UseFileServer());
-            HttpResponseMessage original = await server.CreateClient().GetAsync("http://localhost/SubFolder/Ranges.txt");
+            HttpResponseMessage original = await server.CreateClient().GetAsync("http://localhost/SubFolder/ranges.txt");
 
-            var req = new HttpRequestMessage(HttpMethod.Head, "http://localhost/SubFolder/Ranges.txt");
+            var req = new HttpRequestMessage(HttpMethod.Head, "http://localhost/SubFolder/ranges.txt");
             req.Headers.Add("If-Range", original.Headers.ETag.ToString());
             req.Headers.Add("Range", "bytes=0-10");
             HttpResponseMessage resp = await server.CreateClient().SendAsync(req);
@@ -60,9 +60,9 @@ namespace Microsoft.AspNet.StaticFiles
         public async Task IfRangeWithCurrentDateShouldServePartialContent()
         {
             TestServer server = TestServer.Create(app => app.UseFileServer());
-            HttpResponseMessage original = await server.CreateClient().GetAsync("http://localhost/SubFolder/Ranges.txt");
+            HttpResponseMessage original = await server.CreateClient().GetAsync("http://localhost/SubFolder/ranges.txt");
 
-            var req = new HttpRequestMessage(HttpMethod.Get, "http://localhost/SubFolder/Ranges.txt");
+            var req = new HttpRequestMessage(HttpMethod.Get, "http://localhost/SubFolder/ranges.txt");
             req.Headers.Add("If-Range", original.Content.Headers.LastModified.Value.ToString("r"));
             req.Headers.Add("Range", "bytes=0-10");
             HttpResponseMessage resp = await server.CreateClient().SendAsync(req);
@@ -79,9 +79,9 @@ namespace Microsoft.AspNet.StaticFiles
         public async Task HEADIfRangeWithCurrentDateShouldReturn200Ok()
         {
             TestServer server = TestServer.Create(app => app.UseFileServer());
-            HttpResponseMessage original = await server.CreateClient().GetAsync("http://localhost/SubFolder/Ranges.txt");
+            HttpResponseMessage original = await server.CreateClient().GetAsync("http://localhost/SubFolder/ranges.txt");
 
-            var req = new HttpRequestMessage(HttpMethod.Head, "http://localhost/SubFolder/Ranges.txt");
+            var req = new HttpRequestMessage(HttpMethod.Head, "http://localhost/SubFolder/ranges.txt");
             req.Headers.Add("If-Range", original.Content.Headers.LastModified.Value.ToString("r"));
             req.Headers.Add("Range", "bytes=0-10");
             HttpResponseMessage resp = await server.CreateClient().SendAsync(req);
@@ -99,7 +99,7 @@ namespace Microsoft.AspNet.StaticFiles
         public async Task IfRangeWithOldEtagShouldServeFullContent()
         {
             TestServer server = TestServer.Create(app => app.UseFileServer());
-            var req = new HttpRequestMessage(HttpMethod.Get, "http://localhost/SubFolder/Ranges.txt");
+            var req = new HttpRequestMessage(HttpMethod.Get, "http://localhost/SubFolder/ranges.txt");
             req.Headers.Add("If-Range", "\"OldEtag\"");
             req.Headers.Add("Range", "bytes=0-10");
             HttpResponseMessage resp = await server.CreateClient().SendAsync(req);
@@ -115,7 +115,7 @@ namespace Microsoft.AspNet.StaticFiles
         public async Task HEADIfRangeWithOldEtagShouldServeFullContent()
         {
             TestServer server = TestServer.Create(app => app.UseFileServer());
-            var req = new HttpRequestMessage(HttpMethod.Head, "http://localhost/SubFolder/Ranges.txt");
+            var req = new HttpRequestMessage(HttpMethod.Head, "http://localhost/SubFolder/ranges.txt");
             req.Headers.Add("If-Range", "\"OldEtag\"");
             req.Headers.Add("Range", "bytes=0-10");
             HttpResponseMessage resp = await server.CreateClient().SendAsync(req);
@@ -131,9 +131,9 @@ namespace Microsoft.AspNet.StaticFiles
         public async Task IfRangeWithOldDateShouldServeFullContent()
         {
             TestServer server = TestServer.Create(app => app.UseFileServer());
-            HttpResponseMessage original = await server.CreateClient().GetAsync("http://localhost/SubFolder/Ranges.txt");
+            HttpResponseMessage original = await server.CreateClient().GetAsync("http://localhost/SubFolder/ranges.txt");
 
-            var req = new HttpRequestMessage(HttpMethod.Get, "http://localhost/SubFolder/Ranges.txt");
+            var req = new HttpRequestMessage(HttpMethod.Get, "http://localhost/SubFolder/ranges.txt");
             req.Headers.Add("If-Range", original.Content.Headers.LastModified.Value.Subtract(TimeSpan.FromDays(1)).ToString("r"));
             req.Headers.Add("Range", "bytes=0-10");
             HttpResponseMessage resp = await server.CreateClient().SendAsync(req);
@@ -149,9 +149,9 @@ namespace Microsoft.AspNet.StaticFiles
         public async Task HEADIfRangeWithOldDateShouldServeFullContent()
         {
             TestServer server = TestServer.Create(app => app.UseFileServer());
-            HttpResponseMessage original = await server.CreateClient().GetAsync("http://localhost/SubFolder/Ranges.txt");
+            HttpResponseMessage original = await server.CreateClient().GetAsync("http://localhost/SubFolder/ranges.txt");
 
-            var req = new HttpRequestMessage(HttpMethod.Head, "http://localhost/SubFolder/Ranges.txt");
+            var req = new HttpRequestMessage(HttpMethod.Head, "http://localhost/SubFolder/ranges.txt");
             req.Headers.Add("If-Range", original.Content.Headers.LastModified.Value.Subtract(TimeSpan.FromDays(1)).ToString("r"));
             req.Headers.Add("Range", "bytes=0-10");
             HttpResponseMessage resp = await server.CreateClient().SendAsync(req);
@@ -168,9 +168,9 @@ namespace Microsoft.AspNet.StaticFiles
         public async Task IfRangeWithoutRangeShouldServeFullContent()
         {
             TestServer server = TestServer.Create(app => app.UseFileServer());
-            HttpResponseMessage original = await server.CreateClient().GetAsync("http://localhost/SubFolder/Ranges.txt");
+            HttpResponseMessage original = await server.CreateClient().GetAsync("http://localhost/SubFolder/ranges.txt");
 
-            var req = new HttpRequestMessage(HttpMethod.Get, "http://localhost/SubFolder/Ranges.txt");
+            var req = new HttpRequestMessage(HttpMethod.Get, "http://localhost/SubFolder/ranges.txt");
             req.Headers.Add("If-Range", original.Headers.ETag.ToString());
             HttpResponseMessage resp = await server.CreateClient().SendAsync(req);
             Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
@@ -178,7 +178,7 @@ namespace Microsoft.AspNet.StaticFiles
             Assert.Equal(62, resp.Content.Headers.ContentLength);
             Assert.Equal("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", await resp.Content.ReadAsStringAsync());
 
-            req = new HttpRequestMessage(HttpMethod.Get, "http://localhost/SubFolder/Ranges.txt");
+            req = new HttpRequestMessage(HttpMethod.Get, "http://localhost/SubFolder/ranges.txt");
             req.Headers.Add("If-Range", original.Content.Headers.LastModified.Value.ToString("r"));
             resp = await server.CreateClient().SendAsync(req);
             Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
@@ -194,9 +194,9 @@ namespace Microsoft.AspNet.StaticFiles
         public async Task HEADIfRangeWithoutRangeShouldServeFullContent()
         {
             TestServer server = TestServer.Create(app => app.UseFileServer());
-            HttpResponseMessage original = await server.CreateClient().GetAsync("http://localhost/SubFolder/Ranges.txt");
+            HttpResponseMessage original = await server.CreateClient().GetAsync("http://localhost/SubFolder/ranges.txt");
 
-            var req = new HttpRequestMessage(HttpMethod.Head, "http://localhost/SubFolder/Ranges.txt");
+            var req = new HttpRequestMessage(HttpMethod.Head, "http://localhost/SubFolder/ranges.txt");
             req.Headers.Add("If-Range", original.Headers.ETag.ToString());
             HttpResponseMessage resp = await server.CreateClient().SendAsync(req);
             Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
@@ -204,7 +204,7 @@ namespace Microsoft.AspNet.StaticFiles
             Assert.Equal(62, resp.Content.Headers.ContentLength);
             Assert.Equal(string.Empty, await resp.Content.ReadAsStringAsync());
 
-            req = new HttpRequestMessage(HttpMethod.Head, "http://localhost/SubFolder/Ranges.txt");
+            req = new HttpRequestMessage(HttpMethod.Head, "http://localhost/SubFolder/ranges.txt");
             req.Headers.Add("If-Range", original.Content.Headers.LastModified.Value.ToString("r"));
             resp = await server.CreateClient().SendAsync(req);
             Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
@@ -226,7 +226,7 @@ namespace Microsoft.AspNet.StaticFiles
         public async Task SingleValidRangeShouldServePartialContent(string range, string expectedRange, int length, string expectedData)
         {
             TestServer server = TestServer.Create(app => app.UseFileServer());
-            var req = new HttpRequestMessage(HttpMethod.Get, "http://localhost/SubFolder/Ranges.txt");
+            var req = new HttpRequestMessage(HttpMethod.Get, "http://localhost/SubFolder/ranges.txt");
             req.Headers.Add("Range", "bytes=" + range);
             HttpResponseMessage resp = await server.CreateClient().SendAsync(req);
             Assert.Equal(HttpStatusCode.PartialContent, resp.StatusCode);
@@ -243,7 +243,7 @@ namespace Microsoft.AspNet.StaticFiles
         public async Task HEADSingleValidRangeShouldReturnOk(string range)
         {
             TestServer server = TestServer.Create(app => app.UseFileServer());
-            var req = new HttpRequestMessage(HttpMethod.Head, "http://localhost/SubFolder/Ranges.txt");
+            var req = new HttpRequestMessage(HttpMethod.Head, "http://localhost/SubFolder/ranges.txt");
             req.Headers.Add("Range", "bytes=" + range);
             HttpResponseMessage resp = await server.CreateClient().SendAsync(req);
             Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
@@ -260,7 +260,7 @@ namespace Microsoft.AspNet.StaticFiles
         public async Task SingleNotSatisfiableRange(string range)
         {
             TestServer server = TestServer.Create(app => app.UseFileServer());
-            var req = new HttpRequestMessage(HttpMethod.Get, "http://localhost/SubFolder/Ranges.txt");
+            var req = new HttpRequestMessage(HttpMethod.Get, "http://localhost/SubFolder/ranges.txt");
             req.Headers.TryAddWithoutValidation("Range", "bytes=" + range);
             HttpResponseMessage resp = await server.CreateClient().SendAsync(req);
             Assert.Equal(HttpStatusCode.RequestedRangeNotSatisfiable, resp.StatusCode);
@@ -274,7 +274,7 @@ namespace Microsoft.AspNet.StaticFiles
         public async Task HEADSingleNotSatisfiableRangeReturnsOk(string range)
         {
             TestServer server = TestServer.Create(app => app.UseFileServer());
-            var req = new HttpRequestMessage(HttpMethod.Head, "http://localhost/SubFolder/Ranges.txt");
+            var req = new HttpRequestMessage(HttpMethod.Head, "http://localhost/SubFolder/ranges.txt");
             req.Headers.TryAddWithoutValidation("Range", "bytes=" + range);
             HttpResponseMessage resp = await server.CreateClient().SendAsync(req);
             Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
@@ -290,7 +290,7 @@ namespace Microsoft.AspNet.StaticFiles
         public async Task SingleInvalidRangeIgnored(string range)
         {
             TestServer server = TestServer.Create(app => app.UseFileServer());
-            var req = new HttpRequestMessage(HttpMethod.Get, "http://localhost/SubFolder/Ranges.txt");
+            var req = new HttpRequestMessage(HttpMethod.Get, "http://localhost/SubFolder/ranges.txt");
             req.Headers.TryAddWithoutValidation("Range", "bytes=" + range);
             HttpResponseMessage resp = await server.CreateClient().SendAsync(req);
             Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
@@ -308,7 +308,7 @@ namespace Microsoft.AspNet.StaticFiles
         public async Task HEADSingleInvalidRangeIgnored(string range)
         {
             TestServer server = TestServer.Create(app => app.UseFileServer());
-            var req = new HttpRequestMessage(HttpMethod.Head, "http://localhost/SubFolder/Ranges.txt");
+            var req = new HttpRequestMessage(HttpMethod.Head, "http://localhost/SubFolder/ranges.txt");
             req.Headers.TryAddWithoutValidation("Range", "bytes=" + range);
             HttpResponseMessage resp = await server.CreateClient().SendAsync(req);
             Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
@@ -328,7 +328,7 @@ namespace Microsoft.AspNet.StaticFiles
         public async Task MultipleValidRangesShouldServeFullContent(string ranges)
         {
             TestServer server = TestServer.Create(app => app.UseFileServer());
-            var req = new HttpRequestMessage(HttpMethod.Get, "http://localhost/SubFolder/Ranges.txt");
+            var req = new HttpRequestMessage(HttpMethod.Get, "http://localhost/SubFolder/ranges.txt");
             req.Headers.Add("Range", "bytes=" + ranges);
             HttpResponseMessage resp = await server.CreateClient().SendAsync(req);
             Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
@@ -347,7 +347,7 @@ namespace Microsoft.AspNet.StaticFiles
         public async Task HEADMultipleValidRangesShouldServeFullContent(string range)
         {
             TestServer server = TestServer.Create(app => app.UseFileServer());
-            var req = new HttpRequestMessage(HttpMethod.Head, "http://localhost/SubFolder/Ranges.txt");
+            var req = new HttpRequestMessage(HttpMethod.Head, "http://localhost/SubFolder/ranges.txt");
             req.Headers.Add("Range", "bytes=" + range);
             HttpResponseMessage resp = await server.CreateClient().SendAsync(req);
             Assert.Equal(HttpStatusCode.OK, resp.StatusCode);

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -32,7 +33,7 @@ namespace Microsoft.AspNet.StaticFiles
         [InlineData("", @".", "/missing.dir/")]
         [InlineData("/subdir", @".", "/subdir/missing.dir")]
         [InlineData("/subdir", @".", "/subdir/missing.dir/")]
-        [InlineData("", @".\", "/missing.dir")]
+        [InlineData("", @"./", "/missing.dir")]
         public async Task NoMatch_PassesThrough(string baseUrl, string baseDir, string requestUrl)
         {
             TestServer server = TestServer.Create(app =>
@@ -52,8 +53,8 @@ namespace Microsoft.AspNet.StaticFiles
 
         [Theory]
         [InlineData("", @".", "/SubFolder/")]
-        [InlineData("", @".\", "/SubFolder/")]
-        [InlineData("", @".\SubFolder", "/")]
+        [InlineData("", @"./", "/SubFolder/")]
+        [InlineData("", @"./SubFolder", "/")]
         public async Task FoundDirectoryWithDefaultFile_PathModified(string baseUrl, string baseDir, string requestUrl)
         {
             TestServer server = TestServer.Create(app =>
@@ -73,8 +74,8 @@ namespace Microsoft.AspNet.StaticFiles
 
         [Theory]
         [InlineData("", @".", "/SubFolder", "")]
-        [InlineData("", @".\", "/SubFolder", "")]
-        [InlineData("", @".\", "/SubFolder", "?a=b")]
+        [InlineData("", @"./", "/SubFolder", "")]
+        [InlineData("", @"./", "/SubFolder", "?a=b")]
         public async Task NearMatch_RedirectAddSlash(string baseUrl, string baseDir, string requestUrl, string queryString)
         {
             TestServer server = TestServer.Create(app => app.UseDefaultFiles(new DefaultFilesOptions()
@@ -85,15 +86,15 @@ namespace Microsoft.AspNet.StaticFiles
             HttpResponseMessage response = await server.CreateRequest(requestUrl + queryString).GetAsync();
 
             Assert.Equal(HttpStatusCode.Moved, response.StatusCode);
-            Assert.Equal(requestUrl + "/" + queryString, response.Headers.Location.ToString());
+            Assert.Equal(requestUrl + "/" + queryString, response.Headers.GetValues("Location").FirstOrDefault());
             Assert.Equal(0, (await response.Content.ReadAsByteArrayAsync()).Length);
         }
 
         [Theory]
-        [InlineData("/SubFolder", @".\", "/SubFolder/")]
+        [InlineData("/SubFolder", @"./", "/SubFolder/")]
         [InlineData("/SubFolder", @".", "/somedir/")]
-        [InlineData("", @".\SubFolder", "/")]
-        [InlineData("", @".\SubFolder\", "/")]
+        [InlineData("", @"./SubFolder", "/")]
+        [InlineData("", @"./SubFolder/", "/")]
         public async Task PostDirectory_PassesThrough(string baseUrl, string baseDir, string requestUrl)
         {
             TestServer server = TestServer.Create(app => app.UseDefaultFiles(new DefaultFilesOptions()

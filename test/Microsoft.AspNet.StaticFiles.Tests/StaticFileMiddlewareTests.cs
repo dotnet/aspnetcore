@@ -33,8 +33,8 @@ namespace Microsoft.AspNet.StaticFiles
         [Theory]
         [InlineData("", @".", "/missing.file")]
         [InlineData("/subdir", @".", "/subdir/missing.file")]
-        [InlineData("/missing.file", @".\", "/missing.file")]
-        [InlineData("", @".\", "/xunit.xml")]
+        [InlineData("/missing.file", @"./", "/missing.file")]
+        [InlineData("", @"./", "/xunit.xml")]
         public async Task NoMatch_PassesThrough(string baseUrl, string baseDir, string requestUrl)
         {
             TestServer server = TestServer.Create(app => app.UseStaticFiles(new StaticFileOptions()
@@ -48,11 +48,10 @@ namespace Microsoft.AspNet.StaticFiles
 
         [Theory]
         [InlineData("", @".", "/TestDocument.txt")]
-        [InlineData("", @".", "/testDocument.Txt")]
-        [InlineData("/somedir", @".", "/somedir/Testdocument.TXT")]
-        [InlineData("/SomeDir", @".", "/soMediR/testdocument.txT")]
+        [InlineData("/somedir", @".", "/somedir/TestDocument.txt")]
+        [InlineData("/SomeDir", @".", "/soMediR/TestDocument.txt")]
         [InlineData("", @"SubFolder", "/ranges.txt")]
-        [InlineData("/somedir", @"SubFolder", "/somedir/Ranges.tXt")]
+        [InlineData("/somedir", @"SubFolder", "/somedir/ranges.txt")]
         public async Task FoundFile_Served(string baseUrl, string baseDir, string requestUrl)
         {
             TestServer server = TestServer.Create(app => app.UseStaticFiles(new StaticFileOptions()
@@ -70,11 +69,10 @@ namespace Microsoft.AspNet.StaticFiles
 
         [Theory]
         [InlineData("", @".", "/TestDocument.txt")]
-        [InlineData("", @".", "/testDocument.Txt")]
-        [InlineData("/somedir", @".", "/somedir/Testdocument.TXT")]
-        [InlineData("/SomeDir", @".", "/soMediR/testdocument.txT")]
+        [InlineData("/somedir", @".", "/somedir/TestDocument.txt")]
+        [InlineData("/SomeDir", @".", "/soMediR/TestDocument.txt")]
         [InlineData("", @"SubFolder", "/ranges.txt")]
-        [InlineData("/somedir", @"SubFolder", "/somedir/Ranges.tXt")]
+        [InlineData("/somedir", @"SubFolder", "/somedir/ranges.txt")]
         public async Task PostFile_PassesThrough(string baseUrl, string baseDir, string requestUrl)
         {
             TestServer server = TestServer.Create(app => app.UseStaticFiles(new StaticFileOptions()
@@ -88,11 +86,10 @@ namespace Microsoft.AspNet.StaticFiles
 
         [Theory]
         [InlineData("", @".", "/TestDocument.txt")]
-        [InlineData("", @".", "/testDocument.Txt")]
-        [InlineData("/somedir", @".", "/somedir/Testdocument.TXT")]
-        [InlineData("/SomeDir", @".", "/soMediR/testdocument.txT")]
+        [InlineData("/somedir", @".", "/somedir/TestDocument.txt")]
+        [InlineData("/SomeDir", @".", "/soMediR/TestDocument.txt")]
         [InlineData("", @"SubFolder", "/ranges.txt")]
-        [InlineData("/somedir", @"SubFolder", "/somedir/Ranges.tXt")]
+        [InlineData("/somedir", @"SubFolder", "/somedir/ranges.txt")]
         public async Task HeadFile_HeadersButNotBodyServed(string baseUrl, string baseDir, string requestUrl)
         {
             TestServer server = TestServer.Create(app => app.UseStaticFiles(new StaticFileOptions()

@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -43,7 +44,7 @@ namespace Microsoft.AspNet.StaticFiles
         [InlineData("", @".", "/missing.dir/")]
         [InlineData("/subdir", @".", "/subdir/missing.dir")]
         [InlineData("/subdir", @".", "/subdir/missing.dir/")]
-        [InlineData("", @".\", "/missing.dir")]
+        [InlineData("", @"./", "/missing.dir")]
         public async Task NoMatch_PassesThrough(string baseUrl, string baseDir, string requestUrl)
         {
             TestServer server = TestServer.Create(
@@ -61,8 +62,8 @@ namespace Microsoft.AspNet.StaticFiles
         [InlineData("", @".", "/")]
         [InlineData("", @".", "/SubFolder/")]
         [InlineData("/somedir", @".", "/somedir/")]
-        [InlineData("/somedir", @".\", "/somedir/")]
-        [InlineData("/somedir", @".", "/somedir/subfolder/")]
+        [InlineData("/somedir", @"./", "/somedir/")]
+        [InlineData("/somedir", @".", "/somedir/SubFolder/")]
         public async Task FoundDirectory_Served(string baseUrl, string baseDir, string requestUrl)
         {
             TestServer server = TestServer.Create(
@@ -83,10 +84,10 @@ namespace Microsoft.AspNet.StaticFiles
         [Theory]
         [InlineData("", @".", "/SubFolder", "")]
         [InlineData("/somedir", @".", "/somedir", "")]
-        [InlineData("/somedir", @".", "/somedir/subfolder", "")]
+        [InlineData("/somedir", @".", "/somedir/SubFolder", "")]
         [InlineData("", @".", "/SubFolder", "?a=b")]
         [InlineData("/somedir", @".", "/somedir", "?a=b")]
-        [InlineData("/somedir", @".", "/somedir/subfolder", "?a=b")]
+        [InlineData("/somedir", @".", "/somedir/SubFolder", "?a=b")]
         public async Task NearMatch_RedirectAddSlash(string baseUrl, string baseDir, string requestUrl, string queryString)
         {
             TestServer server = TestServer.Create(
@@ -100,7 +101,7 @@ namespace Microsoft.AspNet.StaticFiles
             HttpResponseMessage response = await server.CreateRequest(requestUrl + queryString).GetAsync();
 
             Assert.Equal(HttpStatusCode.Moved, response.StatusCode);
-            Assert.Equal(requestUrl + "/" + queryString, response.Headers.Location.ToString());
+            Assert.Equal(requestUrl + "/" + queryString, response.Headers.GetValues("Location").FirstOrDefault());
             Assert.Equal(0, (await response.Content.ReadAsByteArrayAsync()).Length);
         }
 
@@ -108,7 +109,7 @@ namespace Microsoft.AspNet.StaticFiles
         [InlineData("", @".", "/")]
         [InlineData("", @".", "/SubFolder/")]
         [InlineData("/somedir", @".", "/somedir/")]
-        [InlineData("/somedir", @".", "/somedir/subfolder/")]
+        [InlineData("/somedir", @".", "/somedir/SubFolder/")]
         public async Task PostDirectory_PassesThrough(string baseUrl, string baseDir, string requestUrl)
         {
             TestServer server = TestServer.Create(
@@ -127,7 +128,7 @@ namespace Microsoft.AspNet.StaticFiles
         [InlineData("", @".", "/")]
         [InlineData("", @".", "/SubFolder/")]
         [InlineData("/somedir", @".", "/somedir/")]
-        [InlineData("/somedir", @".", "/somedir/subfolder/")]
+        [InlineData("/somedir", @".", "/somedir/SubFolder/")]
         public async Task HeadDirectory_HeadersButNotBodyServed(string baseUrl, string baseDir, string requestUrl)
         {
             TestServer server = TestServer.Create(
