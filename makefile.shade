@@ -716,6 +716,7 @@ functions
                 "Hosting",
                 "EntityFramework",
                 "WebListener",
+                "libuv-build",
                 "KestrelHttpServer",
                 "IISIntegration",
                 "ServerTests",
