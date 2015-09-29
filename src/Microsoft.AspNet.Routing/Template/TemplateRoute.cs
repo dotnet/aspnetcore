@@ -133,7 +133,14 @@ namespace Microsoft.AspNet.Routing.Template
             var oldRouteData = context.RouteData;
 
             var newRouteData = new RouteData(oldRouteData);
-            MergeValues(newRouteData.DataTokens, _dataTokens);
+
+            // Perf: Avoid accessing data tokens if you don't need to write to it, these dictionaries are all
+            // created lazily.
+            if (_dataTokens.Count > 0)
+            {
+                MergeValues(newRouteData.DataTokens, _dataTokens);
+            }
+
             newRouteData.Routers.Add(_target);
             MergeValues(newRouteData.Values, values);
 
