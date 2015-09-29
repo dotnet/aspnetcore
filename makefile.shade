@@ -708,6 +708,7 @@ functions
                 "Caching",
                 "HttpAbstractions",
                 "Testing",
+                "aspnet.xunit",
                 "FileSystem",
                 "JsonPatch",
                 "Razor",
