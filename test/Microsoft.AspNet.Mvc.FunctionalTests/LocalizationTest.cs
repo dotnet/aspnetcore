@@ -92,15 +92,11 @@ Hi John      ! You are in 2015 year and today is Thursday";
 
                 yield return new[] {"en-GB", expected1 };
 
-                if (!TestPlatformHelper.IsMono)
-                {
-                    // https://github.com/aspnet/Mvc/issues/3172
-                    var expected2 =
+                var expected2 =
 @"Bonjour!
 apprendre Encore Plus
 Salut John      ! Vous êtes en 2015 an aujourd'hui est Thursday";
-                    yield return new[] { "fr", expected2 };
-                }
+                yield return new[] { "fr", expected2 };
             }
         }
 
