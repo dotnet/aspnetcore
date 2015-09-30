@@ -2,13 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics.Tracing;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ViewEngines;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Logging;
-using Microsoft.Framework.OptionsModel;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc
@@ -62,60 +59,15 @@ namespace Microsoft.AspNet.Mvc
             }
 
             var services = context.HttpContext.RequestServices;
-            var viewEngine = ViewEngine ?? services.GetRequiredService<ICompositeViewEngine>();
+            var executor = services.GetRequiredService<ViewResultExecutor>();
 
-            var logger = services.GetRequiredService<ILogger<ViewResult>>();
-            var telemetry = services.GetRequiredService<TelemetrySource>();
+            var result = executor.FindView(context, this);
+            result.EnsureSuccessful();
 
-            var options = services.GetRequiredService<IOptions<MvcViewOptions>>();
-
-            var viewName = ViewName ?? context.ActionDescriptor.Name;
-            var viewEngineResult = viewEngine.FindView(context, viewName);
-            if (!viewEngineResult.Success)
-            {
-                if (telemetry.IsEnabled("Microsoft.AspNet.Mvc.ViewResultViewNotFound"))
-                {
-                    telemetry.WriteTelemetry(
-                        "Microsoft.AspNet.Mvc.ViewResultViewNotFound",
-                        new
-                        {
-                            actionContext = context,
-                            result = this,
-                            viewName = viewName,
-                            searchedLocations = viewEngineResult.SearchedLocations
-                        });
-                }
-
-                logger.LogError(
-                    "The view '{ViewName}' was not found. Searched locations: {SearchedViewLocations}",
-                    viewName,
-                    viewEngineResult.SearchedLocations);
-            }
-
-            var view = viewEngineResult.EnsureSuccessful().View;
-            if (telemetry.IsEnabled("Microsoft.AspNet.Mvc.ViewResultViewFound"))
-            {
-                telemetry.WriteTelemetry(
-                    "Microsoft.AspNet.Mvc.ViewResultViewFound",
-                    new { actionContext = context, result = this, viewName, view = view });
-            }
-
-            logger.LogVerbose("The view '{ViewName}' was found.", viewName);
-
-            if (StatusCode != null)
-            {
-                context.HttpContext.Response.StatusCode = StatusCode.Value;
-            }
-
+            var view = result.View;
             using (view as IDisposable)
             {
-                await ViewExecutor.ExecuteAsync(
-                    view,
-                    context,
-                    ViewData,
-                    TempData,
-                    options.Value.HtmlHelperOptions,
-                    ContentType);
+                await executor.ExecuteAsync(context, view, this);
             }
         }
     }

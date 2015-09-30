@@ -88,6 +88,8 @@ namespace Microsoft.Framework.DependencyInjection
             // View Engine and related infrastructure
             //
             services.TryAddSingleton<ICompositeViewEngine, CompositeViewEngine>();
+            services.TryAddSingleton<ViewResultExecutor>();
+            services.TryAddSingleton<PartialViewResultExecutor>();
 
             // Support for activating ViewDataDictionary
             services.TryAddEnumerable(

@@ -3,12 +3,10 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Logging;
-using Microsoft.Net.Http.Headers;
-using Microsoft.Framework.OptionsModel;
 using Microsoft.AspNet.Mvc.ViewEngines;
 using Microsoft.AspNet.Mvc.ViewFeatures;
+using Microsoft.Framework.DependencyInjection;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -60,41 +58,16 @@ namespace Microsoft.AspNet.Mvc
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var viewEngine = ViewEngine ??
-                             context.HttpContext.RequestServices.GetRequiredService<ICompositeViewEngine>();
+            var services = context.HttpContext.RequestServices;
+            var executor = services.GetRequiredService<PartialViewResultExecutor>();
 
-            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<PartialViewResult>>();
+            var result = executor.FindView(context, this);
+            result.EnsureSuccessful();
 
-            var options = context.HttpContext.RequestServices.GetRequiredService<IOptions<MvcViewOptions>>();
-
-            var viewName = ViewName ?? context.ActionDescriptor.Name;
-            var viewEngineResult = viewEngine.FindPartialView(context, viewName);
-            if (!viewEngineResult.Success)
-            {
-                logger.LogError(
-                    "The partial view '{PartialViewName}' was not found. Searched locations: {SearchedViewLocations}",
-                    viewName,
-                    viewEngineResult.SearchedLocations);
-            }
-
-            var view = viewEngineResult.EnsureSuccessful().View;
-
-            logger.LogVerbose("The partial view '{PartialViewName}' was found.", viewName);
-
-            if (StatusCode != null)
-            {
-                context.HttpContext.Response.StatusCode = StatusCode.Value;
-            }
-
+            var view = result.View;
             using (view as IDisposable)
             {
-                await ViewExecutor.ExecuteAsync(
-                    view,
-                    context,
-                    ViewData,
-                    TempData,
-                    options.Value.HtmlHelperOptions,
-                    ContentType);
+                await executor.ExecuteAsync(context, view, this);
             }
         }
     }

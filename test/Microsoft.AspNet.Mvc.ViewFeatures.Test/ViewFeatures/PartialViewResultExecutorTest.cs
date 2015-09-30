@@ -1,0 +1,227 @@
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Diagnostics.Tracing;
+using System.Threading.Tasks;
+using Microsoft.AspNet.Http.Internal;
+using Microsoft.AspNet.Mvc.Abstractions;
+using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.ViewEngines;
+using Microsoft.AspNet.Routing;
+using Microsoft.Framework.Logging;
+using Microsoft.Framework.Logging.Testing;
+using Microsoft.Net.Http.Headers;
+using Moq;
+using Xunit;
+
+namespace Microsoft.AspNet.Mvc.ViewFeatures
+{
+    public class PartialViewResultExecutorTest
+    {
+        [Fact]
+        public void FindView_UsesViewEngine_FromPartialViewResult()
+        {
+            // Arrange
+            var context = GetActionContext();
+            var executor = GetViewExecutor();
+
+            var viewName = "my-view";
+            var viewEngine = new Mock<ICompositeViewEngine>();
+            viewEngine
+                .Setup(e => e.FindPartialView(context, viewName))
+                .Returns(ViewEngineResult.Found(viewName, Mock.Of<IView>()))
+                .Verifiable();
+
+            var viewResult = new PartialViewResult
+            {
+                ViewEngine = viewEngine.Object,
+                ViewName = viewName,
+                ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider()),
+                TempData = Mock.Of<ITempDataDictionary>(),
+            };
+
+            // Act
+            var viewEngineResult = executor.FindView(context, viewResult);
+
+            // Assert
+            Assert.Equal(viewName, viewEngineResult.ViewName);
+            viewEngine.Verify();
+        }
+
+        [Fact]
+        public void FindView_UsesActionDescriptorName_IfViewNameIsNull()
+        {
+            // Arrange
+            var context = GetActionContext();
+            var executor = GetViewExecutor();
+
+            var viewName = "some-view-name";
+            context.ActionDescriptor.Name = viewName;
+
+            var viewResult = new PartialViewResult
+            {
+                ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider()),
+                TempData = Mock.Of<ITempDataDictionary>(),
+            };
+
+            // Act
+            var viewEngineResult = executor.FindView(context, viewResult);
+
+            // Assert
+            Assert.Equal(viewName, viewEngineResult.ViewName);
+        }
+
+        [Fact]
+        public void FindView_Notifies_ViewFound()
+        {
+            // Arrange
+            var telemetry = new TelemetryListener("Test");
+            var listener = new TestTelemetryListener();
+            telemetry.SubscribeWithAdapter(listener);
+
+            var context = GetActionContext();
+            var executor = GetViewExecutor(telemetry);
+
+            var viewName = "myview";
+            var viewResult = new PartialViewResult
+            {
+                ViewName = viewName,
+                ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider()),
+                TempData = Mock.Of<ITempDataDictionary>(),
+            };
+
+            // Act
+            var viewEngineResult = executor.FindView(context, viewResult);
+
+            // Assert
+            Assert.Equal(viewName, viewEngineResult.ViewName);
+
+            Assert.NotNull(listener.ViewFound);
+            Assert.NotNull(listener.ViewFound.ActionContext);
+            Assert.NotNull(listener.ViewFound.Result);
+            Assert.NotNull(listener.ViewFound.View);
+            Assert.True(listener.ViewFound.IsPartial);
+            Assert.Equal("myview", listener.ViewFound.ViewName);
+        }
+
+        [Fact]
+        public void FindView_Notifies_ViewNotFound()
+        {
+            // Arrange
+            var telemetry = new TelemetryListener("Test");
+            var listener = new TestTelemetryListener();
+            telemetry.SubscribeWithAdapter(listener);
+
+            var context = GetActionContext();
+            var executor = GetViewExecutor(telemetry);
+
+            var viewName = "myview";
+            var viewEngine = new Mock<IViewEngine>(MockBehavior.Strict);
+            viewEngine
+                .Setup(e => e.FindPartialView(context, "myview"))
+                .Returns(ViewEngineResult.NotFound("myview", new string[] { "location/myview" }));
+
+            var viewResult = new PartialViewResult
+            {
+                ViewName = viewName,
+                ViewEngine = viewEngine.Object,
+                ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider()),
+                TempData = Mock.Of<ITempDataDictionary>(),
+            };
+
+            // Act
+            var viewEngineResult = executor.FindView(context, viewResult);
+
+            // Assert
+            Assert.False(viewEngineResult.Success);
+
+            Assert.NotNull(listener.ViewNotFound);
+            Assert.NotNull(listener.ViewNotFound.ActionContext);
+            Assert.NotNull(listener.ViewNotFound.Result);
+            Assert.Equal(new string[] { "location/myview" }, listener.ViewNotFound.SearchedLocations);
+            Assert.Equal("myview", listener.ViewNotFound.ViewName);
+        }
+
+        [Fact]
+        public async Task ExecuteAsync_UsesContentType_FromPartialViewResult()
+        {
+            // Arrange
+            var context = GetActionContext();
+            var executor = GetViewExecutor();
+
+            var contentType = MediaTypeHeaderValue.Parse("application/x-my-content-type");
+
+            var viewResult = new PartialViewResult
+            {
+                ViewName = "my-view",
+                ContentType = contentType,
+                ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider()),
+                TempData = Mock.Of<ITempDataDictionary>(),
+            };
+
+            // Act
+            await executor.ExecuteAsync(context, Mock.Of<IView>(), viewResult);
+
+            // Assert
+            Assert.Equal("application/x-my-content-type; charset=utf-8", context.HttpContext.Response.ContentType);
+
+            // Check if the original instance provided by the user has not changed.
+            // Since we do not have access to the new instance created within the view executor,
+            // check if at least the content is the same.
+            Assert.Null(contentType.Encoding);
+        }
+
+        [Fact]
+        public async Task ExecuteAsync_UsesStatusCode_FromPartialViewResult()
+        {
+            // Arrange
+            var context = GetActionContext();
+            var executor = GetViewExecutor();
+
+            var contentType = MediaTypeHeaderValue.Parse("application/x-my-content-type");
+
+            var viewResult = new PartialViewResult
+            {
+                ViewName = "my-view",
+                StatusCode = 404,
+                ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider()),
+                TempData = Mock.Of<ITempDataDictionary>(),
+            };
+
+            // Act
+            await executor.ExecuteAsync(context, Mock.Of<IView>(), viewResult);
+
+            // Assert
+            Assert.Equal(404, context.HttpContext.Response.StatusCode);
+        }
+
+        private ActionContext GetActionContext()
+        {
+            return new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
+        }
+
+        private PartialViewResultExecutor GetViewExecutor(TelemetrySource telemetry = null)
+        {
+            if (telemetry == null)
+            {
+                telemetry = new TelemetryListener("Test");
+            }
+
+            var viewEngine = new Mock<IViewEngine>(MockBehavior.Strict);
+            viewEngine
+                .Setup(e => e.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
+                .Returns<ActionContext, string>((_, name) => ViewEngineResult.Found(name, Mock.Of<IView>()));
+
+            var options = new TestOptionsManager<MvcViewOptions>();
+            options.Value.ViewEngines.Add(viewEngine.Object);
+
+            var viewExecutor = new PartialViewResultExecutor(
+                options,
+                new CompositeViewEngine(options),
+                telemetry,
+                NullLoggerFactory.Instance);
+
+            return viewExecutor;
+        }
+    }
+}

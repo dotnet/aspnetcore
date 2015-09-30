@@ -51,55 +51,173 @@ namespace Microsoft.AspNet.Mvc
             };
         }
 
-        public class OnViewResultViewFoundEventData
+        public class OnBeforeActionMethodEventData
         {
             public IProxyActionContext ActionContext { get; set; }
+            public IReadOnlyDictionary<string, object> Arguments { get; set; }
+        }
+
+        public OnBeforeActionMethodEventData BeforeActionMethod { get; set; }
+
+        [TelemetryName("Microsoft.AspNet.Mvc.BeforeActionMethod")]
+        public virtual void OnBeforeActionMethod(
+            IProxyActionContext actionContext,
+            IReadOnlyDictionary<string, object> arguments)
+        {
+            BeforeActionMethod = new OnBeforeActionMethodEventData()
+            {
+                ActionContext = actionContext,
+                Arguments = arguments,
+            };
+        }
+
+        public class OnAfterActionMethodEventData
+        {
+            public IProxyActionContext ActionContext { get; set; }
+            public IProxyActionResult Result { get; set; }
+        }
+
+        public OnAfterActionMethodEventData AfterActionMethod { get; set; }
+
+        [TelemetryName("Microsoft.AspNet.Mvc.AfterActionMethod")]
+        public virtual void OnAfterActionMethod(
+            IProxyActionContext actionContext,
+            IProxyActionResult result)
+        {
+            AfterActionMethod = new OnAfterActionMethodEventData()
+            {
+                ActionContext = actionContext,
+                Result = result,
+            };
+        }
+
+        public class OnBeforeActionResultEventData
+        {
+            public IProxyActionContext ActionContext { get; set; }
+            public IProxyActionResult Result { get; set; }
+        }
+
+        public OnBeforeActionResultEventData BeforeActionResult { get; set; }
+
+        [TelemetryName("Microsoft.AspNet.Mvc.BeforeActionResult")]
+        public virtual void OnBeforeActionResult(IProxyActionContext actionContext, IProxyActionResult result)
+        {
+            BeforeActionResult = new OnBeforeActionResultEventData()
+            {
+                ActionContext = actionContext,
+                Result = result,
+            };
+        }
+
+        public class OnAfterActionResultEventData
+        {
+            public IProxyActionContext ActionContext { get; set; }
+            public IProxyActionResult Result { get; set; }
+        }
+
+        public OnAfterActionResultEventData AfterActionResult { get; set; }
+
+        [TelemetryName("Microsoft.AspNet.Mvc.AfterActionResult")]
+        public virtual void OnAfterActionResult(IProxyActionContext actionContext, IProxyActionResult result)
+        {
+            AfterActionResult = new OnAfterActionResultEventData()
+            {
+                ActionContext = actionContext,
+                Result = result,
+            };
+        }
+
+        public class OnViewFoundEventData
+        {
+            public IProxyActionContext ActionContext { get; set; }
+            public bool IsPartial { get; set; }
             public IProxyActionResult Result { get; set; }
             public string ViewName { get; set; }
             public IProxyView View { get; set; }
         }
 
-        public OnViewResultViewFoundEventData ViewResultViewFound { get; set; }
+        public OnViewFoundEventData ViewFound { get; set; }
 
-        [TelemetryName("Microsoft.AspNet.Mvc.ViewResultViewFound")]
-        public virtual void OnViewResultViewFound(
+        [TelemetryName("Microsoft.AspNet.Mvc.ViewFound")]
+        public virtual void OnViewFound(
             IProxyActionContext actionContext,
+            bool isPartial,
             IProxyActionResult result,
             string viewName,
             IProxyView view)
         {
-            ViewResultViewFound = new OnViewResultViewFoundEventData()
+           ViewFound = new OnViewFoundEventData()
             {
                 ActionContext = actionContext,
+                IsPartial = isPartial,
                 Result = result,
                 ViewName = viewName,
                 View = view,
             };
         }
 
-        public class OnViewResultViewNotFoundEventData
+        public class OnViewNotFoundEventData
         {
             public IProxyActionContext ActionContext { get; set; }
+            public bool IsPartial { get; set; }
             public IProxyActionResult Result { get; set; }
             public string ViewName { get; set; }
             public IEnumerable<string> SearchedLocations { get; set; }
         }
 
-        public OnViewResultViewNotFoundEventData ViewResultViewNotFound { get; set; }
+        public OnViewNotFoundEventData ViewNotFound { get; set; }
 
-        [TelemetryName("Microsoft.AspNet.Mvc.ViewResultViewNotFound")]
-        public virtual void OnViewResultViewNotFound(
+        [TelemetryName("Microsoft.AspNet.Mvc.ViewNotFound")]
+        public virtual void OnViewNotFound(
             IProxyActionContext actionContext,
+            bool isPartial,
             IProxyActionResult result,
             string viewName,
             IEnumerable<string> searchedLocations)
         {
-            ViewResultViewNotFound = new OnViewResultViewNotFoundEventData()
+            ViewNotFound = new OnViewNotFoundEventData()
             {
                 ActionContext = actionContext,
+                IsPartial = isPartial,
                 Result = result,
                 ViewName = viewName,
                 SearchedLocations = searchedLocations,
+            };
+        }
+
+        public class OnBeforeViewEventData
+        {
+            public IProxyView View { get; set; }
+            public IProxyViewContext ViewContext { get; set; }
+        }
+
+        public OnBeforeViewEventData BeforeView { get; set; }
+
+        [TelemetryName("Microsoft.AspNet.Mvc.BeforeView")]
+        public virtual void OnBeforeView(IProxyView view, IProxyViewContext viewContext)
+        {
+            BeforeView = new OnBeforeViewEventData()
+            {
+                View = view,
+                ViewContext = viewContext,
+            };
+        }
+
+        public class OnAfterViewEventData
+        {
+            public IProxyView View { get; set; }
+            public IProxyViewContext ViewContext { get; set; }
+        }
+
+        public OnAfterViewEventData AfterView { get; set; }
+
+        [TelemetryName("Microsoft.AspNet.Mvc.AfterView")]
+        public virtual void OnAfterView(IProxyView view, IProxyViewContext viewContext)
+        {
+            AfterView = new OnAfterViewEventData()
+            {
+                View = view,
+                ViewContext = viewContext,
             };
         }
     }

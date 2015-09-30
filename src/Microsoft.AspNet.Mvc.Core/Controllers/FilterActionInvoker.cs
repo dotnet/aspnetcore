@@ -636,7 +636,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
                         {
                             _telemetry.WriteTelemetry(
                                 "Microsoft.AspNet.Mvc.AfterActionMethod",
-                                new { actionContext = ActionContext, result });
+                                new { actionContext = ActionContext, result = result });
                         }
                     }
 
@@ -789,7 +789,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
             {
                 _telemetry.WriteTelemetry(
                     "Microsoft.AspNet.Mvc.BeforeActionResult",
-                    new { actionContext = ActionContext, result });
+                    new { actionContext = ActionContext, result = result });
             }
 
             try
@@ -802,7 +802,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
                 {
                     _telemetry.WriteTelemetry(
                         "Microsoft.AspNet.Mvc.AfterActionResult",
-                        new { actionContext = ActionContext, result });
+                        new { actionContext = ActionContext, result = result });
                 }
             }
         }
