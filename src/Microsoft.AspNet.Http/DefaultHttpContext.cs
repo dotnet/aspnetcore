@@ -165,11 +165,5 @@ namespace Microsoft.AspNet.Http.Internal
         {
             LifetimeFeature.Abort();
         }
-
-        public override void Dispose()
-        {
-            // REVIEW: is this necessary? is the environment "owned" by the context?
-            _features.Dispose();
-        }
     }
 }

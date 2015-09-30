@@ -10,7 +10,7 @@ using Microsoft.AspNet.Http.Features;
 
 namespace Microsoft.AspNet.Http
 {
-    public abstract class HttpContext : IDisposable
+    public abstract class HttpContext
     {
         public abstract IFeatureCollection Features { get; }
 
@@ -37,7 +37,5 @@ namespace Microsoft.AspNet.Http
         public abstract ISession Session { get; set; }
 
         public abstract void Abort();
-
-        public abstract void Dispose();
     }
 }

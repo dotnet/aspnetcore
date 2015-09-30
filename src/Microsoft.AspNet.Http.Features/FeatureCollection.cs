@@ -93,11 +93,6 @@ namespace Microsoft.AspNet.Http.Features
             }
         }
 
-        public virtual void Dispose()
-        {
-            _defaults?.Dispose();
-        }
-
         private class KeyComparer : IEqualityComparer<KeyValuePair<Type, object>>
         {
             public bool Equals(KeyValuePair<Type, object> x, KeyValuePair<Type, object> y)

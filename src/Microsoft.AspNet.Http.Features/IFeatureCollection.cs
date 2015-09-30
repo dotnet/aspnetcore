@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNet.Http.Features
 {
-    public interface IFeatureCollection : IEnumerable<KeyValuePair<Type, object>>, IDisposable
+    public interface IFeatureCollection : IEnumerable<KeyValuePair<Type, object>>
     {
         /// <summary>
         /// Indicates if the collection can be modified.
