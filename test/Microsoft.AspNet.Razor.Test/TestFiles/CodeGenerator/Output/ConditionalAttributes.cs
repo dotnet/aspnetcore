@@ -25,33 +25,41 @@ namespace TestOutput
             Instrumentation.BeginContext(46, 28, true);
             WriteLiteral("    <a href=\"Foo\" />\r\n    <p");
             Instrumentation.EndContext();
-            WriteAttribute("class", Tuple.Create(" class=\"", 74), Tuple.Create("\"", 86), 
-            Tuple.Create(Tuple.Create("", 82), Tuple.Create<System.Object, System.Int32>(cls, 82), false));
+            BeginWriteAttribute("class", " class=\"", 74, "\"", 86, 1);
+            WriteAttributeValue("", 82, cls, 82, 4, false);
+            EndWriteAttribute();
             Instrumentation.BeginContext(87, 11, true);
             WriteLiteral(" />\r\n    <p");
             Instrumentation.EndContext();
-            WriteAttribute("class", Tuple.Create(" class=\"", 98), Tuple.Create("\"", 114), Tuple.Create(Tuple.Create("", 106), Tuple.Create("foo", 106), true), 
-            Tuple.Create(Tuple.Create(" ", 109), Tuple.Create<System.Object, System.Int32>(cls, 110), false));
+            BeginWriteAttribute("class", " class=\"", 98, "\"", 114, 2);
+            WriteAttributeValue("", 106, "foo", 106, 3, true);
+            WriteAttributeValue(" ", 109, cls, 110, 5, false);
+            EndWriteAttribute();
             Instrumentation.BeginContext(115, 11, true);
             WriteLiteral(" />\r\n    <p");
             Instrumentation.EndContext();
-            WriteAttribute("class", Tuple.Create(" class=\"", 126), Tuple.Create("\"", 142), 
-            Tuple.Create(Tuple.Create("", 134), Tuple.Create<System.Object, System.Int32>(cls, 134), false), Tuple.Create(Tuple.Create(" ", 138), Tuple.Create("foo", 139), true));
+            BeginWriteAttribute("class", " class=\"", 126, "\"", 142, 2);
+            WriteAttributeValue("", 134, cls, 134, 4, false);
+            WriteAttributeValue(" ", 138, "foo", 139, 4, true);
+            EndWriteAttribute();
             Instrumentation.BeginContext(143, 31, true);
             WriteLiteral(" />\r\n    <input type=\"checkbox\"");
             Instrumentation.EndContext();
-            WriteAttribute("checked", Tuple.Create(" checked=\"", 174), Tuple.Create("\"", 187), 
-            Tuple.Create(Tuple.Create("", 184), Tuple.Create<System.Object, System.Int32>(ch, 184), false));
+            BeginWriteAttribute("checked", " checked=\"", 174, "\"", 187, 1);
+            WriteAttributeValue("", 184, ch, 184, 3, false);
+            EndWriteAttribute();
             Instrumentation.BeginContext(188, 31, true);
             WriteLiteral(" />\r\n    <input type=\"checkbox\"");
             Instrumentation.EndContext();
-            WriteAttribute("checked", Tuple.Create(" checked=\"", 219), Tuple.Create("\"", 236), Tuple.Create(Tuple.Create("", 229), Tuple.Create("foo", 229), true), 
-            Tuple.Create(Tuple.Create(" ", 232), Tuple.Create<System.Object, System.Int32>(ch, 233), false));
+            BeginWriteAttribute("checked", " checked=\"", 219, "\"", 236, 2);
+            WriteAttributeValue("", 229, "foo", 229, 3, true);
+            WriteAttributeValue(" ", 232, ch, 233, 4, false);
+            EndWriteAttribute();
             Instrumentation.BeginContext(237, 11, true);
             WriteLiteral(" />\r\n    <p");
             Instrumentation.EndContext();
-            WriteAttribute("class", Tuple.Create(" class=\"", 248), Tuple.Create("\"", 281), 
-            Tuple.Create(Tuple.Create("", 256), Tuple.Create<System.Object, System.Int32>(new Template((__razor_attribute_value_writer) => {
+            BeginWriteAttribute("class", " class=\"", 248, "\"", 281, 1);
+            WriteAttributeValue("", 256, new Template((__razor_attribute_value_writer) => {
 #line 10 "ConditionalAttributes.cshtml"
                if(cls != null) { 
 
@@ -72,17 +80,20 @@ WriteTo(__razor_attribute_value_writer, cls);
 #line hidden
 
             }
-            ), 256), false));
+            ), 256, 25, false);
+            EndWriteAttribute();
             Instrumentation.BeginContext(282, 40, true);
             WriteLiteral(" />\r\n    <a href=\"~/Foo\" />\r\n    <script");
             Instrumentation.EndContext();
-            WriteAttribute("src", Tuple.Create(" src=\"", 322), Tuple.Create("\"", 373), 
-            Tuple.Create(Tuple.Create("", 328), Tuple.Create<System.Object, System.Int32>(Url.Content("~/Scripts/jquery-1.6.2.min.js"), 328), false));
+            BeginWriteAttribute("src", " src=\"", 322, "\"", 373, 1);
+            WriteAttributeValue("", 328, Url.Content("~/Scripts/jquery-1.6.2.min.js"), 328, 45, false);
+            EndWriteAttribute();
             Instrumentation.BeginContext(374, 46, true);
             WriteLiteral(" type=\"text/javascript\"></script>\r\n    <script");
             Instrumentation.EndContext();
-            WriteAttribute("src", Tuple.Create(" src=\"", 420), Tuple.Create("\"", 487), 
-            Tuple.Create(Tuple.Create("", 426), Tuple.Create<System.Object, System.Int32>(Url.Content("~/Scripts/modernizr-2.0.6-development-only.js"), 426), false));
+            BeginWriteAttribute("src", " src=\"", 420, "\"", 487, 1);
+            WriteAttributeValue("", 426, Url.Content("~/Scripts/modernizr-2.0.6-development-only.js"), 426, 61, false);
+            EndWriteAttribute();
             Instrumentation.BeginContext(488, 152, true);
             WriteLiteral(" type=\"text/javascript\"></script>\r\n    <script src=\"http://ajax.aspnetcdn.com/aja" +
 "x/jquery.ui/1.8.16/jquery-ui.min.js\" type=\"text/javascript\"></script>\r\n");

@@ -43,10 +43,11 @@ namespace TestOutput
             , StartTagHelperWritingScope, EndTagHelperWritingScope);
             __PTagHelper = CreateTagHelper<PTagHelper>();
             __tagHelperExecutionContext.Add(__PTagHelper);
-            AddHtmlAttributeValues("class", __tagHelperExecutionContext, 
-            Tuple.Create(Tuple.Create("", 109), Tuple.Create<System.Object, System.Int32>(new Template((__razor_attribute_value_writer) => {
+            BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "class", 1);
+            AddHtmlAttributeValue("", 109, new Template((__razor_attribute_value_writer) => {
             }
-            ), 109), false));
+            ), 109, 6, false);
+            EndAddHtmlAttributeValues(__tagHelperExecutionContext);
 #line 7 "TransitionsInTagHelperAttributes.cshtml"
     __PTagHelper.Age = 1337;
 
@@ -66,8 +67,9 @@ namespace TestOutput
             , StartTagHelperWritingScope, EndTagHelperWritingScope);
             __PTagHelper = CreateTagHelper<PTagHelper>();
             __tagHelperExecutionContext.Add(__PTagHelper);
-            AddHtmlAttributeValues("class", __tagHelperExecutionContext, 
-            Tuple.Create(Tuple.Create("", 155), Tuple.Create<System.Object, System.Int32>(@class, 155), false));
+            BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "class", 1);
+            AddHtmlAttributeValue("", 155, @class, 155, 9, false);
+            EndAddHtmlAttributeValues(__tagHelperExecutionContext);
 #line 8 "TransitionsInTagHelperAttributes.cshtml"
        __PTagHelper.Age = 42;
 
@@ -147,8 +149,10 @@ namespace TestOutput
             , StartTagHelperWritingScope, EndTagHelperWritingScope);
             __PTagHelper = CreateTagHelper<PTagHelper>();
             __tagHelperExecutionContext.Add(__PTagHelper);
-            AddHtmlAttributeValues("class", __tagHelperExecutionContext, Tuple.Create(Tuple.Create("", 298), Tuple.Create("custom-", 298), true), 
-            Tuple.Create(Tuple.Create("", 305), Tuple.Create<System.Object, System.Int32>(@class, 305), false));
+            BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "class", 2);
+            AddHtmlAttributeValue("", 298, "custom-", 298, 7, true);
+            AddHtmlAttributeValue("", 305, @class, 305, 9, false);
+            EndAddHtmlAttributeValues(__tagHelperExecutionContext);
 #line 12 "TransitionsInTagHelperAttributes.cshtml"
               __PTagHelper.Age = 4 * @(@int + 2);
 

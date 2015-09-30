@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using Microsoft.AspNet.Razor.Chunks;
@@ -26,6 +27,7 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
         private readonly CodeGeneratorContext _context;
         private readonly IChunkVisitor _bodyVisitor;
         private readonly IChunkVisitor _literalBodyVisitor;
+        private readonly TagHelperAttributeCodeVisitor _attributeCodeVisitor;
         private readonly GeneratedTagHelperContext _tagHelperContext;
         private readonly bool _designTimeMode;
 
@@ -63,6 +65,7 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
             _designTimeMode = context.Host.DesignTimeMode;
 
             _literalBodyVisitor = new CSharpLiteralCodeVisitor(this, writer, context);
+            _attributeCodeVisitor = new TagHelperAttributeCodeVisitor(writer, context);
             AttributeValueCodeRenderer = new TagHelperAttributeValueCodeRenderer();
         }
 
@@ -467,15 +470,32 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
                     // Dynamic attribute value should be run through the conditional attribute removal system. It's
                     // unbound and contains C#.
 
+                    // TagHelper attribute rendering is buffered by default. We do not want to write to the current
+                    // writer.
+                    var currentTargetWriter = _context.TargetWriterName;
+                    var currentWriteAttributeMethodName = _context.Host.GeneratedClassContext.WriteAttributeValueMethodName;
+                    _context.TargetWriterName = null;
+
+                    Debug.Assert(attributeValueChunk is ParentChunk);
+                    var children = ((ParentChunk)attributeValueChunk).Children;
+                    var attributeCount = children.Count(c => c is DynamicCodeAttributeChunk || c is LiteralCodeAttributeChunk);
+
                     _writer
-                        .WriteStartMethodInvocation(_tagHelperContext.AddHtmlAttributeValuesMethodName)
+                        .WriteStartMethodInvocation(_tagHelperContext.BeginAddHtmlAttributeValuesMethodName)
+                        .Write(ExecutionContextVariableName)
+                        .WriteParameterSeparator()
                         .WriteStringLiteral(attributeName)
                         .WriteParameterSeparator()
-                        .Write(ExecutionContextVariableName);
+                        .Write(attributeCount.ToString(CultureInfo.InvariantCulture))
+                        .WriteEndMethodInvocation();
 
-                    _bodyVisitor.Accept(attributeValueChunk);
+                    _attributeCodeVisitor.Accept(attributeValueChunk);
 
-                    _writer.WriteEndMethodInvocation();
+                    _writer.WriteMethodInvocation(
+                        _tagHelperContext.EndAddHtmlAttributeValuesMethodName,
+                        ExecutionContextVariableName);
+
+                    _context.TargetWriterName = currentTargetWriter;
                 }
                 else
                 {
@@ -721,6 +741,19 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
                     return Context.Host.GeneratedClassContext.WriteLiteralToMethodName;
                 }
             }
+        }
+
+        private class TagHelperAttributeCodeVisitor : CSharpCodeVisitor
+        {
+            public TagHelperAttributeCodeVisitor(
+                CSharpCodeWriter writer,
+                CodeGeneratorContext context)
+                : base(writer, context)
+            {
+            }
+
+            protected override string WriteAttributeValueMethodName =>
+                Context.Host.GeneratedClassContext.GeneratedTagHelperContext.AddHtmlAttributeValueMethodName;
         }
     }
 }

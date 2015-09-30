@@ -13,7 +13,9 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
         /// </summary>
         public GeneratedTagHelperContext()
         {
-            AddHtmlAttributeValuesMethodName = "AddHtmlAttributeValues";
+            BeginAddHtmlAttributeValuesMethodName = "BeginAddHtmlAttributeValues";
+            EndAddHtmlAttributeValuesMethodName = "EndAddHtmlAttributeValues";
+            AddHtmlAttributeValueMethodName = "AddHtmlAttributeValue";
             CreateTagHelperMethodName = "CreateTagHelper";
             RunnerRunAsyncMethodName = "RunAsync";
             ScopeManagerBeginMethodName = "Begin";
@@ -38,18 +40,48 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
         }
 
         /// <summary>
-        /// The name of the method used to add unbound, complex tag helper attributes to TagHelperExecutionContexts.
+        /// The name of the method used to begin the addition of unbound, complex tag helper attributes to
+        /// TagHelperExecutionContexts.
         /// </summary>
         /// <remarks>
         /// Method signature should be
         /// <code>
-        /// public void AddHtmlAttributeValues(
-        ///     string attributeName,
+        /// public void BeginAddHtmlAttributeValues(
         ///     TagHelperExecutionContext executionContext,
-        ///     params Microsoft.AspNet.Mvc.Razor.AttributeValue[] values)
+        ///     string attributeName)
         /// </code>
         /// </remarks>
-        public string AddHtmlAttributeValuesMethodName { get; set; }
+        public string BeginAddHtmlAttributeValuesMethodName { get; set; }
+
+        /// <summary>
+        /// Method name used to end addition of unbound, complex tag helper attributes to TagHelperExecutionContexts.
+        /// </summary>
+        /// <remarks>
+        /// Method signature should be
+        /// <code>
+        /// public void EndAddHtmlAttributeValues(
+        ///     TagHelperExecutionContext executionContext)
+        /// </code>
+        /// </remarks>
+        public string EndAddHtmlAttributeValuesMethodName { get; set; }
+
+        /// <summary>
+        /// Method name used to add individual components of an unbound, complex tag helper attribute to
+        /// TagHelperExecutionContexts.
+        /// </summary>
+        /// <remarks>
+        /// Method signature:
+        /// <code>
+        /// public void AddHtmlAttributeValues(
+        ///     string prefix,
+        ///     int prefixOffset,
+        ///     string value,
+        ///     int valueOffset,
+        ///     int valueLength,
+        ///     bool isLiteral)
+        /// </code>
+        /// </remarks>
+        public string AddHtmlAttributeValueMethodName { get; set; }
 
         /// <summary>
         /// The name of the method used to create a tag helper.

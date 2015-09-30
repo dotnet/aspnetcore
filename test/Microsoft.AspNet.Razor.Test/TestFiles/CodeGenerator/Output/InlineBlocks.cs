@@ -20,8 +20,8 @@ namespace TestOutput
             Instrumentation.BeginContext(13, 23, true);
             WriteLiteral("(string link) {\r\n    <a");
             Instrumentation.EndContext();
-            WriteAttribute("href", Tuple.Create(" href=\"", 36), Tuple.Create("\"", 94), 
-            Tuple.Create(Tuple.Create("", 43), Tuple.Create<System.Object, System.Int32>(new Template((__razor_attribute_value_writer) => {
+            BeginWriteAttribute("href", " href=\"", 36, "\"", 94, 1);
+            WriteAttributeValue("", 43, new Template((__razor_attribute_value_writer) => {
 #line 2 "InlineBlocks.cshtml"
               if(link != null) { 
 
@@ -57,7 +57,8 @@ WriteTo(__razor_attribute_value_writer, link);
 #line hidden
 
             }
-            ), 43), false));
+            ), 43, 50, false);
+            EndWriteAttribute();
             Instrumentation.BeginContext(95, 6, true);
             WriteLiteral(" />\r\n}");
             Instrumentation.EndContext();

@@ -83,8 +83,11 @@ WriteLiteral(DateTime.Now);
                 __tagHelperStringValueBuffer = EndTagHelperWritingScope();
                 __MyTagHelper.BoundProperty = __tagHelperStringValueBuffer.GetContent(HtmlEncoder);
                 __tagHelperExecutionContext.AddTagHelperAttribute("boundproperty", __MyTagHelper.BoundProperty);
-                AddHtmlAttributeValues("unboundproperty", __tagHelperExecutionContext, Tuple.Create(Tuple.Create("", 188), Tuple.Create("Current", 188), true), Tuple.Create(Tuple.Create(" ", 195), Tuple.Create("Time:", 196), true), 
-                Tuple.Create(Tuple.Create(" ", 201), Tuple.Create<System.Object, System.Int32>(DateTime.Now, 202), false));
+                BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "unboundproperty", 3);
+                AddHtmlAttributeValue("", 188, "Current", 188, 7, true);
+                AddHtmlAttributeValue(" ", 195, "Time:", 196, 6, true);
+                AddHtmlAttributeValue(" ", 201, DateTime.Now, 202, 14, false);
+                EndAddHtmlAttributeValues(__tagHelperExecutionContext);
                 __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
                 Instrumentation.BeginContext(114, 245, false);
                 await WriteTagHelperToAsync(__razor_template_writer, __tagHelperExecutionContext);

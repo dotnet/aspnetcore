@@ -11,19 +11,25 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
         public static readonly string DefaultWriteMethodName = "Write";
         public static readonly string DefaultWriteLiteralMethodName = "WriteLiteral";
         public static readonly string DefaultExecuteMethodName = "ExecuteAsync";
-        public static readonly string DefaultWriteAttributeMethodName = "WriteAttribute";
-        public static readonly string DefaultWriteAttributeToMethodName = "WriteAttributeTo";
+        public static readonly string DefaultBeginWriteAttributeMethodName = "BeginWriteAttribute";
+        public static readonly string DefaultBeginWriteAttributeToMethodName = "BeginWriteAttributeTo";
+        public static readonly string DefaultEndWriteAttributeMethodName = "EndWriteAttribute";
+        public static readonly string DefaultEndWriteAttributeToMethodName = "EndWriteAttributeTo";
+        public static readonly string DefaultWriteAttributeValueMethodName = "WriteAttributeValue";
+        public static readonly string DefaultWriteAttributeValueToMethodName = "WriteAttributeValueTo";
 
         public static readonly GeneratedClassContext Default =
-            new GeneratedClassContext(DefaultExecuteMethodName,
-                                      DefaultWriteMethodName,
-                                      DefaultWriteLiteralMethodName,
-                                      new GeneratedTagHelperContext());
+            new GeneratedClassContext(
+                DefaultExecuteMethodName,
+                DefaultWriteMethodName,
+                DefaultWriteLiteralMethodName,
+                new GeneratedTagHelperContext());
 
-        public GeneratedClassContext(string executeMethodName,
-                                     string writeMethodName,
-                                     string writeLiteralMethodName,
-                                     GeneratedTagHelperContext generatedTagHelperContext)
+        public GeneratedClassContext(
+            string executeMethodName,
+            string writeMethodName,
+            string writeLiteralMethodName,
+            GeneratedTagHelperContext generatedTagHelperContext)
             : this()
         {
             if (generatedTagHelperContext == null)
@@ -61,17 +67,22 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
             TemplateTypeName = null;
             DefineSectionMethodName = null;
 
-            WriteAttributeMethodName = DefaultWriteAttributeMethodName;
-            WriteAttributeToMethodName = DefaultWriteAttributeToMethodName;
+            BeginWriteAttributeMethodName = DefaultBeginWriteAttributeMethodName;
+            BeginWriteAttributeToMethodName = DefaultBeginWriteAttributeToMethodName;
+            EndWriteAttributeMethodName = DefaultEndWriteAttributeMethodName;
+            EndWriteAttributeToMethodName = DefaultEndWriteAttributeToMethodName;
+            WriteAttributeValueMethodName = DefaultWriteAttributeValueMethodName;
+            WriteAttributeValueToMethodName = DefaultWriteAttributeValueToMethodName;
         }
 
-        public GeneratedClassContext(string executeMethodName,
-                                     string writeMethodName,
-                                     string writeLiteralMethodName,
-                                     string writeToMethodName,
-                                     string writeLiteralToMethodName,
-                                     string templateTypeName,
-                                     GeneratedTagHelperContext generatedTagHelperContext)
+        public GeneratedClassContext(
+            string executeMethodName,
+            string writeMethodName,
+            string writeLiteralMethodName,
+            string writeToMethodName,
+            string writeLiteralToMethodName,
+            string templateTypeName,
+            GeneratedTagHelperContext generatedTagHelperContext)
             : this(executeMethodName,
                    writeMethodName,
                    writeLiteralMethodName,
@@ -82,14 +93,15 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
             TemplateTypeName = templateTypeName;
         }
 
-        public GeneratedClassContext(string executeMethodName,
-                                     string writeMethodName,
-                                     string writeLiteralMethodName,
-                                     string writeToMethodName,
-                                     string writeLiteralToMethodName,
-                                     string templateTypeName,
-                                     string defineSectionMethodName,
-                                     GeneratedTagHelperContext generatedTagHelperContext)
+        public GeneratedClassContext(
+            string executeMethodName,
+            string writeMethodName,
+            string writeLiteralMethodName,
+            string writeToMethodName,
+            string writeLiteralToMethodName,
+            string templateTypeName,
+            string defineSectionMethodName,
+            GeneratedTagHelperContext generatedTagHelperContext)
             : this(executeMethodName,
                    writeMethodName,
                    writeLiteralMethodName,
@@ -101,16 +113,17 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
             DefineSectionMethodName = defineSectionMethodName;
         }
 
-        public GeneratedClassContext(string executeMethodName,
-                                     string writeMethodName,
-                                     string writeLiteralMethodName,
-                                     string writeToMethodName,
-                                     string writeLiteralToMethodName,
-                                     string templateTypeName,
-                                     string defineSectionMethodName,
-                                     string beginContextMethodName,
-                                     string endContextMethodName,
-                                     GeneratedTagHelperContext generatedTagHelperContext)
+        public GeneratedClassContext(
+            string executeMethodName,
+            string writeMethodName,
+            string writeLiteralMethodName,
+            string writeToMethodName,
+            string writeLiteralToMethodName,
+            string templateTypeName,
+            string defineSectionMethodName,
+            string beginContextMethodName,
+            string endContextMethodName,
+            GeneratedTagHelperContext generatedTagHelperContext)
             : this(executeMethodName,
                    writeMethodName,
                    writeLiteralMethodName,
@@ -137,8 +150,13 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
         public string EndContextMethodName { get; set; }
         public string DefineSectionMethodName { get; set; }
         public string TemplateTypeName { get; set; }
-        public string WriteAttributeMethodName { get; set; }
-        public string WriteAttributeToMethodName { get; set; }
+
+        public string BeginWriteAttributeMethodName { get; set; }
+        public string BeginWriteAttributeToMethodName { get; set; }
+        public string EndWriteAttributeMethodName { get; set; }
+        public string EndWriteAttributeToMethodName { get; set; }
+        public string WriteAttributeValueMethodName { get; set; }
+        public string WriteAttributeValueToMethodName { get; set; }
 
         public bool AllowSections
         {

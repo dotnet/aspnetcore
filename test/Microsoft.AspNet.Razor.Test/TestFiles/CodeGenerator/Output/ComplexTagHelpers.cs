@@ -239,8 +239,11 @@ if(true) {
             , StartTagHelperWritingScope, EndTagHelperWritingScope);
             __PTagHelper = CreateTagHelper<PTagHelper>();
             __tagHelperExecutionContext.Add(__PTagHelper);
-            AddHtmlAttributeValues("time", __tagHelperExecutionContext, Tuple.Create(Tuple.Create("", 148), Tuple.Create("Current", 148), true), Tuple.Create(Tuple.Create(" ", 155), Tuple.Create("Time:", 156), true), 
-            Tuple.Create(Tuple.Create(" ", 161), Tuple.Create<System.Object, System.Int32>(DateTime.Now, 162), false));
+            BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "time", 3);
+            AddHtmlAttributeValue("", 148, "Current", 148, 7, true);
+            AddHtmlAttributeValue(" ", 155, "Time:", 156, 6, true);
+            AddHtmlAttributeValue(" ", 161, DateTime.Now, 162, 14, false);
+            EndAddHtmlAttributeValues(__tagHelperExecutionContext);
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             Instrumentation.BeginContext(139, 529, false);
             await WriteTagHelperAsync(__tagHelperExecutionContext);
