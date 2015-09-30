@@ -115,9 +115,11 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
 
             // Call into the tag helper scope manager to start a new tag helper scope.
             // Also capture the value as the current execution context.
-            _writer.WriteStartAssignment(ExecutionContextVariableName)
-                   .WriteStartInstanceMethodInvocation(ScopeManagerVariableName,
-                                                       _tagHelperContext.ScopeManagerBeginMethodName);
+            _writer
+                .WriteStartAssignment(ExecutionContextVariableName)
+                .WriteStartInstanceMethodInvocation(
+                    ScopeManagerVariableName,
+                    _tagHelperContext.ScopeManagerBeginMethodName);
 
             // Assign a unique ID for this instance of the source HTML tag. This must be unique
             // per call site, e.g. if the tag is on the view twice, there should be two IDs.

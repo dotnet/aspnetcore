@@ -108,7 +108,7 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
         {
             WriteStringLiteral(value.Value);
             WriteParameterSeparator();
-            Write(value.Location.AbsoluteIndex.ToString(CultureInfo.InvariantCulture));
+            Write(value.Location.AbsoluteIndex.ToString(CultureInfo.CurrentCulture));
 
             return this;
         }
