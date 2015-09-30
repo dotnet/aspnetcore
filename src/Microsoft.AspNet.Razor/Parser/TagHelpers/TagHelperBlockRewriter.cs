@@ -215,34 +215,29 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
 
                     // The coming symbols will either be a quote or value (in the case that the value is unquoted).
 
-                    // TODO: Handle malformed tags, if there's an '=' then there MUST be a value.
-                    // https://github.com/aspnet/Razor/issues/104
-
                     SourceLocation symbolStartLocation;
 
                     // Skip the whitespace preceding the start of the attribute value.
-                    var valueStartIndex = i + 1; // Start from the symbol after '='.
-                    while (valueStartIndex < htmlSymbols.Length &&
-                        (htmlSymbols[valueStartIndex].Type == HtmlSymbolType.WhiteSpace ||
-                        htmlSymbols[valueStartIndex].Type == HtmlSymbolType.NewLine))
+                    do
                     {
-                        valueStartIndex++;
-                    }
+                        i++; // Start from the symbol after '='.
+                    } while (i < htmlSymbols.Length &&
+                        (htmlSymbols[i].Type == HtmlSymbolType.WhiteSpace ||
+                        htmlSymbols[i].Type == HtmlSymbolType.NewLine));
 
                     // Check for attribute start values, aka single or double quote
-                    if (valueStartIndex < htmlSymbols.Length && IsQuote(htmlSymbols[valueStartIndex]))
+                    if (i < htmlSymbols.Length && IsQuote(htmlSymbols[i]))
                     {
-                        // Move past the attribute start so we can accept the true value.
-                        valueStartIndex++;
-                        symbolStartLocation = htmlSymbols[valueStartIndex].Start;
+                        symbolStartLocation = htmlSymbols[i].Start;
 
                         // If there's a start quote then there must be an end quote to be valid, skip it.
                         symbolOffset = 1;
-
-                        i = valueStartIndex - 1;
                     }
                     else
                     {
+                        // We are at the symbol after equals. Go back to equals to ensure we don't skip past that symbol.
+                        i--;
+
                         symbolStartLocation = symbol.Start;
                     }
 

@@ -920,9 +920,9 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                                 characterOffsetIndex: 14,
                                 contentLength: 11),
                             BuildLineMapping(
-                                documentAbsoluteIndex: 63,
+                                documentAbsoluteIndex: 62,
                                 documentLineIndex: 3,
-                                documentCharacterOffsetIndex: 27,
+                                documentCharacterOffsetIndex: 26,
                                 generatedAbsoluteIndex: 1289,
                                 generatedLineIndex: 39,
                                 generatedCharacterOffsetIndex: 28,
@@ -935,9 +935,9 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                                 characterOffsetIndex: 30,
                                 contentLength: 0),
                             BuildLineMapping(
-                                documentAbsoluteIndex: 89,
+                                documentAbsoluteIndex: 88,
                                 documentLineIndex: 4,
-                                documentCharacterOffsetIndex: 13,
+                                documentCharacterOffsetIndex: 12,
                                 generatedAbsoluteIndex: 1789,
                                 generatedLineIndex: 54,
                                 generatedCharacterOffsetIndex: 19,
@@ -1650,6 +1650,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                 // Note: The baseline resource name is equivalent to the test resource name.
                 return new TheoryData<string, string, IEnumerable<TagHelperDescriptor>>
                 {
+                    { "IncompleteTagHelper", null, DefaultPAndInputTagHelperDescriptors },
                     { "SingleTagHelper", null, DefaultPAndInputTagHelperDescriptors },
                     { "SingleTagHelperWithNewlineBeforeAttributes", null, DefaultPAndInputTagHelperDescriptors },
                     { "TagHelpersWithWeirdlySpacedAttributes", null, DefaultPAndInputTagHelperDescriptors },
