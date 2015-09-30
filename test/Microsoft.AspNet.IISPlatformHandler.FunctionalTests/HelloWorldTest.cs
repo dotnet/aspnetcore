@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.IISPlatformHandler.FunctionalTests
                 var deploymentParameters = new DeploymentParameters(Helpers.GetTestSitesPath(), serverType, runtimeFlavor, architecture)
                 {
                     ApplicationBaseUriHint = applicationBaseUrl,
-                    Command = delegateServer == ServerType.WebListener ? "web" : "kestrel",
+                    Command = delegateServer == ServerType.WebListener ? "weblistener" : "web",
                     PublishWithNoSource = noSource,
                     EnvironmentName = "HelloWorld", // Will pick the Start class named 'StartupHelloWorld',
                     ApplicationHostConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("Http.config") : null,
