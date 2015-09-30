@@ -17,9 +17,8 @@
         }
     },
     "commands": {
-        "web": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.Kestrel",
-        "run": "Microsoft.AspNet.Server.Kestrel",
-        "run-socket": "Microsoft.AspNet.Server.Kestrel --server.urls http://unix:/tmp/kestrel-test.sock",
-        "kestrel": "Microsoft.AspNet.Server.Kestrel --server.urls http://localhost:5000;https://localhost:5001"
+        "web": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.Kestrel --server.urls http://localhost:5000;https://localhost:5001",
+        "kestrel": "Microsoft.AspNet.Server.Kestrel --server.urls http://localhost:5000;https://localhost:5001",
+        "run-socket": "Microsoft.AspNet.Server.Kestrel --server.urls http://unix:/tmp/kestrel-test.sock"
     }
 }

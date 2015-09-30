@@ -19,8 +19,17 @@ namespace Microsoft.AspNet.Server.KestrelTests
         private IDisposable _server;
 
         public TestServer(Func<Frame, Task> app)
+            : this(app, new TestServiceContext())
         {
-            Create(app);
+        }
+
+        public TestServer(Func<Frame, Task> app, ServiceContext context)
+            : this(app, context, "http://localhost:54321/")
+        {
+        }
+        public TestServer(Func<Frame, Task> app, ServiceContext context, string serverAddress)
+        {
+            Create(app, context, serverAddress);
         }
 
         ILibraryManager LibraryManager
@@ -45,14 +54,14 @@ namespace Microsoft.AspNet.Server.KestrelTests
             }
         }
 
-        public void Create(Func<Frame, Task> app)
+        public void Create(Func<Frame, Task> app, ServiceContext context, string serverAddress)
         {
             _engine = new KestrelEngine(
                 LibraryManager, 
-                new TestServiceContext());
+                context);
             _engine.Start(1);
             _server = _engine.CreateServer(
-                ServerAddress.FromUrl("http://localhost:54321/"),
+                ServerAddress.FromUrl(serverAddress),
                 app);
         }
 

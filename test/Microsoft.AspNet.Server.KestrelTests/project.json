@@ -2,10 +2,16 @@
     "version": "1.0.0-*",
     "dependencies": {
         "xunit.runner.aspnet": "2.0.0-aspnet-*",
-        "Microsoft.AspNet.Server.Kestrel": "1.0.0-*"
+        "Microsoft.AspNet.Server.Kestrel": "1.0.0-*",
+        "Microsoft.AspNet.Testing": "1.0.0-*"
     },
     "frameworks": {
-        "dnx451": { },
+        "dnx451": {
+            "dependencies": {
+                "System.Net.Http": "4.0.1-beta-*",
+                "Microsoft.AspNet.Server.Kestrel.Https": "1.0.0-*"
+            }
+        },
         "dnxcore50": {
             "dependencies": {
                 "System.Diagnostics.TraceSource": "4.0.0-beta-*",

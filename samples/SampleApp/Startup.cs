@@ -6,6 +6,12 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.Extensions.Logging;
 
+#if DNX451
+using System.IO;
+using System.Security.Cryptography.X509Certificates;
+using Microsoft.AspNet.Server.Kestrel.Https;
+#endif
+
 namespace SampleApp
 {
     public class Startup
@@ -15,6 +21,21 @@ namespace SampleApp
             loggerFactory.MinimumLevel = LogLevel.Debug;
 
             loggerFactory.AddConsole(LogLevel.Debug);
+
+#if DNX451
+            var testCertPath = Path.Combine(
+                Environment.CurrentDirectory,
+                @"../../test/Microsoft.AspNet.Server.KestrelTests/TestResources/testCert.cer");
+
+            if (File.Exists(testCertPath))
+            {
+                app.UseKestrelHttps(new X509Certificate2(testCertPath));
+            }
+            else
+            {
+                Console.WriteLine("Could not find certificate at '{0}'. HTTPS is not enabled.", testCertPath);
+            }
+#endif
 
             app.Run(async context =>
             {
