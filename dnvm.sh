@@ -2,7 +2,7 @@
 # Source this file from your .bash-profile or script to use
 
 # "Constants"
-_DNVM_BUILDNUMBER="rc1-15520"
+_DNVM_BUILDNUMBER="rc1-15522"
 _DNVM_AUTHORS="Microsoft Open Technologies, Inc."
 _DNVM_RUNTIME_PACKAGE_NAME="dnx"
 _DNVM_RUNTIME_FRIENDLY_NAME=".NET Execution Environment"
@@ -483,7 +483,7 @@ __dnvm_help() {
     echo "  <alias>                      the name of the alias to set"
     echo "  <semver>|<alias>|<package>   the $_DNVM_RUNTIME_SHORT_NAME version to set the alias to. Alternatively use the version of the specified alias"
     echo ""
-   printf "%b\n" "${Yel}$_DNVM_COMMAND_NAME unalias <alias> ${RCol}"
+   printf "%b\n" "${Yel}$_DNVM_COMMAND_NAME alias [-d|-delete] <alias> ${RCol}"
     echo "  remove the specified alias"
     echo ""
    printf "%b\n" "${Yel}$_DNVM_COMMAND_NAME [help|-h|-help|--help] ${RCol}"
@@ -876,6 +876,16 @@ dnvm()
                 return
             fi
             shift
+
+            if [[ $1 == "-d" || $1 == "-delete" ]]; then
+                local name=$2
+                local aliasPath="$_DNVM_ALIAS_DIR/$name.alias"
+                [[ ! -e  "$aliasPath" ]] && echo "Cannot remove alias, '$name' is not a valid alias name" && return 1
+                echo "Removing alias $name"
+                rm "$aliasPath" >> /dev/null 2>&1
+                return
+            fi
+
             local name="$1"
 
             if [[ $# == 1 ]]; then
@@ -917,10 +927,9 @@ dnvm()
             [[ $# -ne 2 ]] && __dnvm_help && return
 
             local name=$2
-            local aliasPath="$_DNVM_ALIAS_DIR/$name.alias"
-            [[ ! -e  "$aliasPath" ]] && echo "Cannot remove alias, '$name' is not a valid alias name" && return 1
-            echo "Removing alias $name"
-            rm "$aliasPath" >> /dev/null 2>&1
+            echo "This command has been deprecated. Use '$_DNVM_COMMAND_NAME alias -d' instead"
+            $_DNVM_COMMAND_NAME alias -d $name
+            return $?
         ;;
 
         "list" )
