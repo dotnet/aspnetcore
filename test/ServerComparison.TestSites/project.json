@@ -13,8 +13,8 @@
   },
 
   "commands": {
-      "web": "Microsoft.AspNet.Server.WebListener",
-      "kestrel": "Microsoft.AspNet.Server.Kestrel"
+      "weblistener": "Microsoft.AspNet.Server.WebListener",
+      "web": "Microsoft.AspNet.Server.Kestrel"
   },
 
   "frameworks": {
