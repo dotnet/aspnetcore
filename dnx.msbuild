@@ -242,7 +242,7 @@
             <CommandsPath>$(DNXToolsPath)commands</CommandsPath>
         </PropertyGroup>
         <Exec Command="dnu commands install --source $(DnxToolsFeed) --source $(NuGetFeed) NuGetPackageVerifier --packages &quot;$(CommandsPath)&quot;"/>
-        <Exec Command="$(CommandsPath)\nugetverify &quot;$(PackagesOutputPath)&quot; &quot;$(DNXToolsPath)NuGetPackageVerifier.json&quot;"/>
+        <Exec Command="$(CommandsPath)\nugetverify &quot;$(PackagesOutputPath) &quot; &quot;$(DNXToolsPath)NuGetPackageVerifier.json&quot;"/>
         <RemoveDir Directories="$(CommandsPath)"/>
     </Target>
 
