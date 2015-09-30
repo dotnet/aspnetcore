@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 kestrelEngine.Start(count: 1);
 
                 var kestrelThread = kestrelEngine.Threads[0];
-                var socket = new MockSocket(kestrelThread.Loop.ThreadId, new KestrelTrace(new TestKestrelTrace()));
+                var socket = new MockSocket(kestrelThread.Loop.ThreadId, new TestKestrelTrace());
                 var trace = new KestrelTrace(new TestKestrelTrace());
                 var socketOutput = new SocketOutput(kestrelThread, socket, 0, trace);
 
@@ -82,7 +82,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 kestrelEngine.Start(count: 1);
 
                 var kestrelThread = kestrelEngine.Threads[0];
-                var socket = new MockSocket(kestrelThread.Loop.ThreadId, new KestrelTrace(new TestKestrelTrace()));
+                var socket = new MockSocket(kestrelThread.Loop.ThreadId, new TestKestrelTrace());
                 var trace = new KestrelTrace(new TestKestrelTrace());
                 var socketOutput = new SocketOutput(kestrelThread, socket, 0, trace);
 

@@ -52,9 +52,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 new TestServiceContext());
             _engine.Start(1);
             _server = _engine.CreateServer(
-                "http",
-                "localhost",
-                54321,
+                ServerAddress.FromUrl("http://localhost:54321/"),
                 app);
         }
 

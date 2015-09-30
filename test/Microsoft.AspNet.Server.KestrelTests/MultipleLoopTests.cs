@@ -166,7 +166,8 @@ namespace Microsoft.AspNet.Server.KestrelTests
 
             var serverListenTcp = new UvTcpHandle(_logger);
             serverListenTcp.Init(loop);
-            serverListenTcp.Bind("0.0.0.0", 54321);
+            var address = ServerAddress.FromUrl("http://localhost:54321/");
+            serverListenTcp.Bind(address);
             serverListenTcp.Listen(128, (_1, status, error, _2) =>
             {
                 var serverConnectionTcp = new UvTcpHandle(_logger);

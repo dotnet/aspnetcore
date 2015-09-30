@@ -59,7 +59,8 @@ namespace Microsoft.AspNet.Server.Kestrel
                 {
                     AppShutdown = _appShutdownService,
                     Log = new KestrelTrace(_logger),
-                    DateHeaderValueManager = dateHeaderValueManager
+                    DateHeaderValueManager = dateHeaderValueManager,
+                    ConnectionFilter = information.ConnectionFilter
                 });
 
                 disposables.Push(engine);
@@ -86,9 +87,7 @@ namespace Microsoft.AspNet.Server.Kestrel
                     {
                         atLeastOneListener = true;
                         disposables.Push(engine.CreateServer(
-                            parsedAddress.Scheme,
-                            parsedAddress.Host,
-                            parsedAddress.Port,
+                            parsedAddress,
                             async frame =>
                             {
                                 var request = new ServerRequest(frame);

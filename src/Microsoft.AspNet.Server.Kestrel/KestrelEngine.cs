@@ -98,15 +98,11 @@ namespace Microsoft.AspNet.Server.Kestrel
             Threads.Clear();
         }
 
-        public IDisposable CreateServer(string scheme, string host, int port, Func<Frame, Task> application)
+        public IDisposable CreateServer(ServerAddress address, Func<Frame, Task> application)
         {
             var listeners = new List<IDisposable>();
-            var usingPipes = host.StartsWith(Constants.UnixPipeHostPrefix);
-            if (usingPipes)
-            {
-                // Subtract one because we want to include the '/' character that starts the path.
-                host = host.Substring(Constants.UnixPipeHostPrefix.Length - 1);
-            }
+
+            var usingPipes = address.IsUnixPipe;
 
             try
             {
@@ -123,7 +119,7 @@ namespace Microsoft.AspNet.Server.Kestrel
                             (Listener) new PipeListener(this) : 
                             new TcpListener(this);
                         listeners.Add(listener);
-                        listener.StartAsync(scheme, host, port, thread, application).Wait();
+                        listener.StartAsync(address, thread, application).Wait();
                     }
                     else if (first)
                     {
@@ -132,7 +128,7 @@ namespace Microsoft.AspNet.Server.Kestrel
                             : new TcpListenerPrimary(this);
 
                         listeners.Add(listener);
-                        listener.StartAsync(pipeName, scheme, host, port, thread, application).Wait();
+                        listener.StartAsync(pipeName, address, thread, application).Wait();
                     }
                     else
                     {
@@ -140,7 +136,7 @@ namespace Microsoft.AspNet.Server.Kestrel
                             ? (ListenerSecondary) new PipeListenerSecondary(this)
                             : new TcpListenerSecondary(this);
                         listeners.Add(listener);
-                        listener.StartAsync(pipeName, thread, application).Wait();
+                        listener.StartAsync(pipeName, address, thread, application).Wait();
                     }
 
                     first = false;

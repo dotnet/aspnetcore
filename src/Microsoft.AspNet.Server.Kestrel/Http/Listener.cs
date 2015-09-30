@@ -21,12 +21,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         protected UvStreamHandle ListenSocket { get; private set; }
 
         public Task StartAsync(
-            string scheme,
-            string host,
-            int port,
+            ServerAddress address,
             KestrelThread thread,
             Func<Frame, Task> application)
         {
+            ServerAddress = address;
             Thread = thread;
             Application = application;
 
@@ -35,7 +34,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {
                 try
                 {
-                    ListenSocket = CreateListenSocket(host, port);
+                    ListenSocket = CreateListenSocket();
                     tcs.SetResult(0);
                 }
                 catch (Exception ex)
@@ -49,7 +48,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         /// <summary>
         /// Creates the socket used to listen for incoming connections
         /// </summary>
-        protected abstract UvStreamHandle CreateListenSocket(string host, int port);
+        protected abstract UvStreamHandle CreateListenSocket();
 
         protected static void ConnectionCallback(UvStreamHandle stream, int status, Exception error, object state)
         {

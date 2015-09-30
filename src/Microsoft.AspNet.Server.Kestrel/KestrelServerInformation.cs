@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Server.Features;
+using Microsoft.AspNet.Server.Kestrel.Filter;
 using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.AspNet.Server.Kestrel
@@ -13,6 +14,8 @@ namespace Microsoft.AspNet.Server.Kestrel
         public ICollection<string> Addresses { get; } = new List<string>();
 
         public int ThreadCount { get; set; }
+
+        public IConnectionFilter ConnectionFilter { get; set; }
 
         public void Initialize(IConfiguration configuration)
         {

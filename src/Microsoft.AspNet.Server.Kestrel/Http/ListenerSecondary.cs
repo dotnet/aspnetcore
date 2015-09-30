@@ -24,9 +24,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         public Task StartAsync(
             string pipeName,
+            ServerAddress address,
             KestrelThread thread,
             Func<Frame, Task> application)
         {
+            ServerAddress = address;
             Thread = thread;
             Application = application;
 

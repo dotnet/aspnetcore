@@ -1,0 +1,14 @@
+﻿{
+    "version": "1.0.0-*",
+    "description": "Adds HTTPS support to Kestrel",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/aspnet/kestrelhttpserver"
+    },
+    "dependencies": {
+        "Microsoft.AspNet.Server.Kestrel": "1.0.0-*"
+    },
+    "frameworks": {
+        "dnx451": { }
+    }
+}

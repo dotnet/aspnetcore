@@ -106,27 +106,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {
             }
 
-            public override async Task<int> ReadAsyncImplementation(ArraySegment<byte> buffer, CancellationToken cancellationToken)
+            public override Task<int> ReadAsyncImplementation(ArraySegment<byte> buffer, CancellationToken cancellationToken)
             {
-                var input = _context.SocketInput;
-                while (true)
-                {
-                    await input;
-
-                    var begin = input.ConsumingStart();
-                    int actual;
-                    var end = begin.CopyTo(buffer.Array, buffer.Offset, buffer.Count, out actual);
-                    input.ConsumingComplete(end, end);
-
-                    if (actual != 0)
-                    {
-                        return actual;
-                    }
-                    if (input.RemoteIntakeFin)
-                    {
-                        return 0;
-                    }
-                }
+                return _context.SocketInput.ReadAsync(buffer);
             }
         }
 
@@ -147,30 +129,22 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {
                 var input = _context.SocketInput;
 
-                while (true)
+                var limit = Math.Min(buffer.Count, _inputLength);
+                if (limit == 0)
                 {
-                    var limit = Math.Min(buffer.Count, _inputLength);
-                    if (limit == 0)
-                    {
-                        return 0;
-                    }
-
-                    await input;
-
-                    var begin = input.ConsumingStart();
-                    int actual;
-                    var end = begin.CopyTo(buffer.Array, buffer.Offset, limit, out actual);
-                    _inputLength -= actual;
-                    input.ConsumingComplete(end, end);
-                    if (actual != 0)
-                    {
-                        return actual;
-                    }
-                    if (input.RemoteIntakeFin)
-                    {
-                        throw new InvalidDataException("Unexpected end of request content");
-                    }
+                    return 0;
                 }
+
+                var limitedBuffer = new ArraySegment<byte>(buffer.Array, buffer.Offset, limit);
+                var actual = await _context.SocketInput.ReadAsync(limitedBuffer);
+                _inputLength -= actual;
+
+                if (actual == 0)
+                {
+                    throw new InvalidDataException("Unexpected end of request content");
+                }
+
+                return actual;
             }
         }
 

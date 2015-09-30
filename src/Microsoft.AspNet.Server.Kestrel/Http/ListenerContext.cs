@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Server.Kestrel.Filter;
 using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 
 namespace Microsoft.AspNet.Server.Kestrel.Http
@@ -23,12 +24,14 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         public ListenerContext(ListenerContext listenerContext)
             : base(listenerContext)
         {
+            ServerAddress = listenerContext.ServerAddress;
             Thread = listenerContext.Thread;
             Application = listenerContext.Application;
-            Memory = listenerContext.Memory;
             Memory2 = listenerContext.Memory2;
             Log = listenerContext.Log;
         }
+
+        public ServerAddress ServerAddress { get; set; }
 
         public KestrelThread Thread { get; set; }
 

@@ -31,13 +31,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         public async Task StartAsync(
             string pipeName,
-            string scheme,
-            string host,
-            int port,
+            ServerAddress address,
             KestrelThread thread,
             Func<Frame, Task> application)
         {
-            await StartAsync(scheme, host, port, thread, application).ConfigureAwait(false);
+            await StartAsync(address, thread, application).ConfigureAwait(false);
 
             await Thread.PostAsync(_ =>
             {

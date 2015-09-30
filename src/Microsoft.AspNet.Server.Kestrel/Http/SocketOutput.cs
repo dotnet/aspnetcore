@@ -114,6 +114,25 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
         }
 
+        public void End(ProduceEndType endType)
+        {
+            switch (endType)
+            {
+                case ProduceEndType.SocketShutdownSend:
+                    Write(default(ArraySegment<byte>), (error, state, calledInline) => { }, null,
+                        immediate: true,
+                        socketShutdownSend: true,
+                        socketDisconnect: false);
+                    break;
+                case ProduceEndType.SocketDisconnect:
+                    Write(default(ArraySegment<byte>), (error, state, calledInline) => { }, null,
+                        immediate: true,
+                        socketShutdownSend: false,
+                        socketDisconnect: true);
+                    break;
+            }
+        }
+
         private void ScheduleWrite()
         {
             _thread.Post(_this => _this.WriteAllPending(), this);
@@ -293,25 +312,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 immediate: true);
 
             return tcs.Task;
-        }
-
-        void ISocketOutput.End(ProduceEndType endType)
-        {
-            switch (endType)
-            {
-                case ProduceEndType.SocketShutdownSend:
-                    Write(default(ArraySegment<byte>), (error, state, calledInline) => { }, null,
-                        immediate: true,
-                        socketShutdownSend: true,
-                        socketDisconnect: false);
-                    break;
-                case ProduceEndType.SocketDisconnect:
-                    Write(default(ArraySegment<byte>), (error, state, calledInline) => { }, null,
-                        immediate: true,
-                        socketShutdownSend: false,
-                        socketDisconnect: true);
-                    break;
-            }
         }
 
         private class CallbackContext

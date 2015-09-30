@@ -81,7 +81,8 @@ namespace Microsoft.AspNet.Server.KestrelTests
             loop.Init(_uv);
             var tcp = new UvTcpHandle(_logger);
             tcp.Init(loop);
-            tcp.Bind("localhost", 0);
+            var address = ServerAddress.FromUrl("http://localhost:0/");
+            tcp.Bind(address);
             tcp.Dispose();
             loop.Run();
             loop.Dispose();
@@ -95,7 +96,8 @@ namespace Microsoft.AspNet.Server.KestrelTests
             loop.Init(_uv);
             var tcp = new UvTcpHandle(_logger);
             tcp.Init(loop);
-            tcp.Bind("localhost", 54321);
+            var address = ServerAddress.FromUrl("http://localhost:54321/");
+            tcp.Bind(address);
             tcp.Listen(10, (stream, status, error, state) =>
             {
                 var tcp2 = new UvTcpHandle(_logger);
@@ -132,7 +134,8 @@ namespace Microsoft.AspNet.Server.KestrelTests
             loop.Init(_uv);
             var tcp = new UvTcpHandle(_logger);
             tcp.Init(loop);
-            tcp.Bind("localhost", 54321);
+            var address = ServerAddress.FromUrl("http://localhost:54321/");
+            tcp.Bind(address);
             tcp.Listen(10, (_, status, error, state) =>
             {
                 Console.WriteLine("Connected");
@@ -188,7 +191,8 @@ namespace Microsoft.AspNet.Server.KestrelTests
             loop.Init(_uv);
             var tcp = new UvTcpHandle(_logger);
             tcp.Init(loop);
-            tcp.Bind("localhost", 54321);
+            var address = ServerAddress.FromUrl("http://localhost:54321/");
+            tcp.Bind(address);
             tcp.Listen(10, (_, status, error, state) =>
             {
                 Console.WriteLine("Connected");

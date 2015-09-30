@@ -21,11 +21,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         /// <summary>
         /// Creates the socket used to listen for incoming connections
         /// </summary>
-        protected override UvStreamHandle CreateListenSocket(string host, int port)
+        protected override UvStreamHandle CreateListenSocket()
         {
             var socket = new UvTcpHandle(Log);
             socket.Init(Thread.Loop, Thread.QueueCloseHandle);
-            socket.Bind(host, port);
+            socket.Bind(ServerAddress);
             socket.Listen(Constants.ListenBacklog, ConnectionCallback, this);
             return socket;
         }

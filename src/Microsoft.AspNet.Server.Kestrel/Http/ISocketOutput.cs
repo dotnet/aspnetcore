@@ -14,6 +14,5 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     {
         void Write(ArraySegment<byte> buffer, bool immediate = true);
         Task WriteAsync(ArraySegment<byte> buffer, bool immediate = true, CancellationToken cancellationToken = default(CancellationToken));
-        void End(ProduceEndType endType);
     }
 }

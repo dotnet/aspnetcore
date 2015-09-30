@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Net;
+using Microsoft.AspNet.Server.Kestrel;
 using Microsoft.AspNet.Server.Kestrel.Networking;
 using Xunit;
 
@@ -16,7 +17,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
         public void CorrectIPEndpointsAreCreated(string host, string expectedAddress)
         {
             // "0.0.0.0" is IPAddress.Any
-            var endpoint = UvTcpHandle.CreateIPEndpoint(host, 5000);
+            var endpoint = UvTcpHandle.CreateIPEndpoint(ServerAddress.FromUrl($"http://{host}:5000/"));
             Assert.NotNull(endpoint);
             Assert.Equal(IPAddress.Parse(expectedAddress), endpoint.Address);
             Assert.Equal(5000, endpoint.Port);
