@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -34,6 +35,9 @@ namespace Microsoft.AspNet.Mvc.Razor
         private ITagHelperActivator _tagHelperActivator;
         private ITypeActivatorCache _typeActivatorCache;
         private bool _renderedBody;
+        private AttributeInfo _attributeInfo;
+        private TagHelperAttributeInfo _tagHelperAttributeInfo;
+        private StringCollectionTextWriter _valueBuffer;
 
         public RazorPage()
         {
@@ -571,31 +575,25 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
         }
 
-        public virtual void WriteAttribute(
+        public virtual void BeginWriteAttribute(
             string name,
-            PositionTagged<string> prefix,
-            PositionTagged<string> suffix,
-            params AttributeValue[] values)
+            string prefix,
+            int prefixOffset,
+            string suffix,
+            int suffixOffset,
+            int attributeValuesCount)
         {
-            if (prefix == null)
-            {
-                throw new ArgumentNullException(nameof(prefix));
-            }
-
-            if (suffix == null)
-            {
-                throw new ArgumentNullException(nameof(suffix));
-            }
-
-            WriteAttributeTo(Output, name, prefix, suffix, values);
+            BeginWriteAttributeTo(Output, name, prefix, prefixOffset, suffix, suffixOffset, attributeValuesCount);
         }
 
-        public virtual void WriteAttributeTo(
+        public virtual void BeginWriteAttributeTo(
             TextWriter writer,
             string name,
-            PositionTagged<string> prefix,
-            PositionTagged<string> suffix,
-            params AttributeValue[] values)
+            string prefix,
+            int prefixOffset,
+            string suffix,
+            int suffixOffset,
+            int attributeValuesCount)
         {
             if (writer == null)
             {
@@ -612,111 +610,169 @@ namespace Microsoft.AspNet.Mvc.Razor
                 throw new ArgumentNullException(nameof(suffix));
             }
 
-            if (values.Length == 0)
+            _attributeInfo = new AttributeInfo(name, prefix, prefixOffset, suffix, suffixOffset, attributeValuesCount);
+
+            // Single valued attributes might be omitted in entirety if it the attribute value strictly evaluates to
+            // null  or false. Consequently defer the prefix generation until we encounter the attribute value.
+            if (attributeValuesCount != 1)
             {
-                // Explicitly empty attribute, so write the prefix
-                WritePositionTaggedLiteral(writer, prefix);
+               WritePositionTaggedLiteral(writer, prefix, prefixOffset);
             }
-            else if (IsSingleBoolFalseOrNullValue(values))
-            {
-                // Value is either null or the bool 'false' with no prefix; don't render the attribute.
-                return;
-            }
-            else if (UseAttributeNameAsValue(values))
-            {
-                var attributeValue = values[0];
-                var positionTaggedAttributeValue = attributeValue.Value;
-
-                WritePositionTaggedLiteral(writer, prefix);
-
-                var sourceLength = suffix.Position - positionTaggedAttributeValue.Position;
-                var nameAttributeValue = new AttributeValue(
-                    attributeValue.Prefix,
-                    new PositionTagged<object>(name, attributeValue.Value.Position),
-                    literal: attributeValue.Literal);
-
-                // The value is just the bool 'true', write the attribute name instead of the string 'True'.
-                WriteAttributeValue(writer, nameAttributeValue, sourceLength);
-            }
-            else
-            {
-                // This block handles two cases.
-                // 1. Single value with prefix.
-                // 2. Multiple values with or without prefix.
-                WritePositionTaggedLiteral(writer, prefix);
-                for (var i = 0; i < values.Length; i++)
-                {
-                    var attributeValue = values[i];
-                    var positionTaggedAttributeValue = attributeValue.Value;
-
-                    if (positionTaggedAttributeValue.Value == null)
-                    {
-                        // Nothing to write
-                        continue;
-                    }
-
-                    var next = i == values.Length - 1 ?
-                        suffix : // End of the list, grab the suffix
-                        values[i + 1].Prefix; // Still in the list, grab the next prefix
-
-                    // Calculate length of the source span by the position of the next value (or suffix)
-                    var sourceLength = next.Position - attributeValue.Value.Position;
-
-                    WriteAttributeValue(writer, attributeValue, sourceLength);
-                }
-            }
-
-            WritePositionTaggedLiteral(writer, suffix);
         }
 
-        public void AddHtmlAttributeValues(
-            string attributeName,
-            TagHelperExecutionContext executionContext,
-            params AttributeValue[] values)
+        public void WriteAttributeValue(
+            string prefix,
+            int prefixOffset,
+            object value,
+            int valueOffset,
+            int valueLength,
+            bool isLiteral)
         {
-            if (IsSingleBoolFalseOrNullValue(values))
-            {
-                // The first value was 'null' or 'false' indicating that we shouldn't render the attribute. The
-                // attribute is treated as a TagHelper attribute so it's only available in
-                // TagHelperContext.AllAttributes for TagHelper authors to see (if they want to see why the attribute
-                // was removed from TagHelperOutput.Attributes).
-                executionContext.AddTagHelperAttribute(
-                    attributeName,
-                    values[0].Value.Value?.ToString() ?? string.Empty);
+            WriteAttributeValueTo(Output, prefix, prefixOffset, value, valueOffset, valueLength, isLiteral);
+        }
 
-                return;
-            }
-            else if (UseAttributeNameAsValue(values))
+        public void WriteAttributeValueTo(
+            TextWriter writer,
+            string prefix,
+            int prefixOffset,
+            object value,
+            int valueOffset,
+            int valueLength,
+            bool isLiteral)
+        {
+            if (_attributeInfo.AttributeValuesCount == 1)
             {
-                executionContext.AddHtmlAttribute(attributeName, attributeName);
-            }
-            else
-            {
-                var valueBuffer = new StringCollectionTextWriter(Output.Encoding);
-
-                foreach (var value in values)
+                if (IsBoolFalseOrNullValue(prefix, value))
                 {
-                    if (value.Value.Value == null)
-                    {
-                        // Skip null values
-                        continue;
-                    }
-
-                    if (!string.IsNullOrEmpty(value.Prefix))
-                    {
-                        WriteLiteralTo(valueBuffer, value.Prefix);
-                    }
-
-                    WriteUnprefixedAttributeValueTo(valueBuffer, value);
+                    // Value is either null or the bool 'false' with no prefix; don't render the attribute.
+                    _attributeInfo.Suppressed = true;
+                    return;
                 }
 
-                using (var stringWriter = new StringWriter())
-                {
-                    valueBuffer.Content.WriteTo(stringWriter, HtmlEncoder);
+                // We are not omitting the attribute. Write the prefix.
+                WritePositionTaggedLiteral(writer, _attributeInfo.Prefix, _attributeInfo.PrefixOffset);
 
-                    var htmlString = new HtmlString(stringWriter.ToString());
-                    executionContext.AddHtmlAttribute(attributeName, htmlString);
+                if (IsBoolTrueWithEmptyPrefixValue(prefix, value))
+                {
+                    // The value is just the bool 'true', write the attribute name instead of the string 'True'.
+                    value = _attributeInfo.Name;
                 }
+            }
+
+            // This block handles two cases.
+            // 1. Single value with prefix.
+            // 2. Multiple values with or without prefix.
+            if (value != null)
+            {
+                if (!string.IsNullOrEmpty(prefix))
+                {
+                    WritePositionTaggedLiteral(writer, prefix, prefixOffset);
+                }
+
+                BeginContext(valueOffset, valueLength, isLiteral);
+
+                WriteUnprefixedAttributeValueTo(writer, value, isLiteral);
+
+                EndContext();
+            }
+        }
+
+        public virtual void EndWriteAttribute()
+        {
+            EndWriteAttributeTo(Output);
+        }
+
+        public virtual void EndWriteAttributeTo(TextWriter writer)
+        {
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            if (!_attributeInfo.Suppressed)
+            {
+                WritePositionTaggedLiteral(writer, _attributeInfo.Suffix, _attributeInfo.SuffixOffset);
+            }
+        }
+
+        public void BeginAddHtmlAttributeValues(
+            TagHelperExecutionContext executionContext,
+            string attributeName,
+            int attributeValuesCount)
+        {
+            _tagHelperAttributeInfo = new TagHelperAttributeInfo(executionContext, attributeName, attributeValuesCount);
+            _valueBuffer = null;
+        }
+
+        public void AddHtmlAttributeValue(
+            string prefix,
+            int prefixOffset,
+            object value,
+            int valueOffset,
+            int valueLength,
+            bool isLiteral)
+        {
+            Debug.Assert(_tagHelperAttributeInfo.ExecutionContext != null);
+            if (_tagHelperAttributeInfo.AttributeValuesCount == 1)
+            {
+                if (IsBoolFalseOrNullValue(prefix, value))
+                {
+                    // The first value was 'null' or 'false' indicating that we shouldn't render the attribute. The
+                    // attribute is treated as a TagHelper attribute so it's only available in
+                    // TagHelperContext.AllAttributes for TagHelper authors to see (if they want to see why the
+                    // attribute was removed from TagHelperOutput.Attributes).
+                    _tagHelperAttributeInfo.ExecutionContext.AddTagHelperAttribute(
+                        _tagHelperAttributeInfo.Name,
+                        value?.ToString() ?? string.Empty);
+                    _tagHelperAttributeInfo.Suppressed = true;
+                    return;
+                }
+                else if (IsBoolTrueWithEmptyPrefixValue(prefix, value))
+                {
+                    _tagHelperAttributeInfo.ExecutionContext.AddHtmlAttribute(
+                        _tagHelperAttributeInfo.Name,
+                        _tagHelperAttributeInfo.Name);
+                    _tagHelperAttributeInfo.Suppressed = true;
+                    return;
+                }
+            }
+
+            if (value != null)
+            {
+                if (_valueBuffer == null)
+                {
+                    _valueBuffer = new StringCollectionTextWriter(Output.Encoding);
+                }
+
+                if (!string.IsNullOrEmpty(prefix))
+                {
+                    WriteLiteralTo(_valueBuffer, prefix);
+                }
+
+                WriteUnprefixedAttributeValueTo(_valueBuffer, value, isLiteral);
+            }
+        }
+
+        public void EndAddHtmlAttributeValues(TagHelperExecutionContext executionContext)
+        {
+            if (!_tagHelperAttributeInfo.Suppressed)
+            {
+                HtmlString htmlString;
+
+                if (_valueBuffer != null)
+                {
+                    using (var stringWriter = new StringWriter())
+                    {
+                        _valueBuffer.Content.WriteTo(stringWriter, HtmlEncoder);
+                        htmlString = new HtmlString(stringWriter.ToString());
+                    }
+                }
+                else
+                {
+                    htmlString = HtmlString.Empty;
+                }
+
+                executionContext.AddHtmlAttribute(_tagHelperAttributeInfo.Name, htmlString);
             }
         }
 
@@ -735,33 +791,18 @@ namespace Microsoft.AspNet.Mvc.Razor
             return _urlHelper.Content(contentPath);
         }
 
-        private void WriteAttributeValue(TextWriter writer, AttributeValue attributeValue, int sourceLength)
+        private void WriteUnprefixedAttributeValueTo(TextWriter writer, object value, bool isLiteral)
         {
-            if (!string.IsNullOrEmpty(attributeValue.Prefix))
-            {
-                WritePositionTaggedLiteral(writer, attributeValue.Prefix);
-            }
-
-            BeginContext(attributeValue.Value.Position, sourceLength, isLiteral: attributeValue.Literal);
-
-            WriteUnprefixedAttributeValueTo(writer, attributeValue);
-
-            EndContext();
-        }
-
-        private void WriteUnprefixedAttributeValueTo(TextWriter writer, AttributeValue attributeValue)
-        {
-            var positionTaggedAttributeValue = attributeValue.Value;
-            var stringValue = positionTaggedAttributeValue.Value as string;
+            var stringValue = value as string;
 
             // The extra branching here is to ensure that we call the Write*To(string) overload where possible.
-            if (attributeValue.Literal && stringValue != null)
+            if (isLiteral && stringValue != null)
             {
                 WriteLiteralTo(writer, stringValue);
             }
-            else if (attributeValue.Literal)
+            else if (isLiteral)
             {
-                WriteLiteralTo(writer, positionTaggedAttributeValue.Value);
+                WriteLiteralTo(writer, value);
             }
             else if (stringValue != null)
             {
@@ -769,7 +810,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
             else
             {
-                WriteTo(writer, positionTaggedAttributeValue.Value);
+                WriteTo(writer, value);
             }
         }
 
@@ -778,11 +819,6 @@ namespace Microsoft.AspNet.Mvc.Razor
             BeginContext(position, value.Length, isLiteral: true);
             WriteLiteralTo(writer, value);
             EndContext();
-        }
-
-        private void WritePositionTaggedLiteral(TextWriter writer, PositionTagged<string> value)
-        {
-            WritePositionTaggedLiteral(writer, value.Value, value.Position);
         }
 
         protected virtual HelperResult RenderBody()
@@ -1030,30 +1066,18 @@ namespace Microsoft.AspNet.Mvc.Razor
             return HtmlString.Empty;
         }
 
-        private bool IsSingleBoolFalseOrNullValue(AttributeValue[] values)
+        private bool IsBoolFalseOrNullValue(string prefix, object value)
         {
-            if (values.Length == 1 && string.IsNullOrEmpty(values[0].Prefix) &&
-                (values[0].Value.Value is bool || values[0].Value.Value == null))
-            {
-                var attributeValue = values[0];
-                var positionTaggedAttributeValue = attributeValue.Value;
-
-                if (positionTaggedAttributeValue.Value == null || !(bool)positionTaggedAttributeValue.Value)
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return string.IsNullOrEmpty(prefix) &&
+                (value == null ||
+                (value is bool && !(bool)value));
         }
 
-        private bool UseAttributeNameAsValue(AttributeValue[] values)
+        private bool IsBoolTrueWithEmptyPrefixValue(string prefix, object value)
         {
             // If the value is just the bool 'true', use the attribute name as the value.
-            return values.Length == 1 &&
-                string.IsNullOrEmpty(values[0].Prefix) &&
-                values[0].Value.Value is bool &&
-                (bool)values[0].Value.Value;
+            return string.IsNullOrEmpty(prefix) &&
+                (value is bool && (bool)value);
         }
 
         private void EnsureMethodCanBeInvoked(string methodName)
@@ -1062,6 +1086,64 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
                 throw new InvalidOperationException(Resources.FormatRazorPage_MethodCannotBeCalled(methodName, Path));
             }
+        }
+
+        private struct AttributeInfo
+        {
+            public AttributeInfo(
+                string name,
+                string prefix,
+                int prefixOffset,
+                string suffix,
+                int suffixOffset,
+                int attributeValuesCount)
+            {
+                Name = name;
+                Prefix = prefix;
+                PrefixOffset = prefixOffset;
+                Suffix = suffix;
+                SuffixOffset = suffixOffset;
+                AttributeValuesCount = attributeValuesCount;
+
+                Suppressed = false;
+            }
+
+            public int AttributeValuesCount { get; }
+
+            public string Name { get; }
+
+            public string Prefix { get; }
+
+            public int PrefixOffset { get; }
+
+            public string Suffix { get; }
+
+            public int SuffixOffset { get; }
+
+            public bool Suppressed { get; set; }
+        }
+
+        private struct TagHelperAttributeInfo
+        {
+            public TagHelperAttributeInfo(
+                TagHelperExecutionContext tagHelperExecutionContext,
+                string name,
+                int attributeValuesCount)
+            {
+                ExecutionContext = tagHelperExecutionContext;
+                Name = name;
+                AttributeValuesCount = attributeValuesCount;
+
+                Suppressed = false;
+            }
+
+            public string Name { get; }
+
+            public TagHelperExecutionContext ExecutionContext { get; }
+
+            public int AttributeValuesCount { get; }
+
+            public bool Suppressed { get; set; }
         }
     }
 }

@@ -107,7 +107,9 @@ namespace Microsoft.AspNet.Mvc.Razor
 
                     // Can't use nameof because IHtmlHelper is (also) not accessible here.
                     MarkAsHtmlEncodedMethodName = HtmlHelperPropertyName + ".Raw",
-                    AddHtmlAttributeValuesMethodName = "AddHtmlAttributeValues",
+                    BeginAddHtmlAttributeValuesMethodName = "BeginAddHtmlAttributeValues",
+                    EndAddHtmlAttributeValuesMethodName = "EndAddHtmlAttributeValues",
+                    AddHtmlAttributeValueMethodName = "AddHtmlAttributeValue",
                     HtmlEncoderPropertyName = "HtmlEncoder",
                     TagHelperContentGetContentMethodName = nameof(TagHelperContent.GetContent),
                 })

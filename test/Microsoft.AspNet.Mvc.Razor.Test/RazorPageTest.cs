@@ -664,15 +664,10 @@ namespace Microsoft.AspNet.Mvc.Razor
             var page = CreatePage(p =>
             {
                 p.HtmlEncoder = new CommonTestEncoder();
-                p.WriteAttribute("href",
-                                 new PositionTagged<string>("prefix", 0),
-                                 new PositionTagged<string>("suffix", 34),
-                                 new AttributeValue(new PositionTagged<string>("prefix", 0),
-                                                    new PositionTagged<object>("attr1-value", 8),
-                                                    literal: true),
-                                 new AttributeValue(new PositionTagged<string>("prefix2", 22),
-                                                    new PositionTagged<object>("attr2", 29),
-                                                    literal: false));
+                p.BeginWriteAttribute("href", "prefix", 0, "suffix", 34, 2);
+                p.WriteAttributeValue("prefix", 0, "attr1-value", 8, 14, true);
+                p.WriteAttributeValue("prefix2", 22, "attr2", 29, 5, false);
+                p.EndWriteAttribute();
             });
             var context = new Mock<IPageExecutionContext>(MockBehavior.Strict);
             var sequence = new MockSequence();
@@ -704,12 +699,9 @@ namespace Microsoft.AspNet.Mvc.Razor
             var page = CreatePage(p =>
             {
                 p.HtmlEncoder = new CommonTestEncoder();
-                p.WriteAttribute("href",
-                                 new PositionTagged<string>("prefix", 0),
-                                 new PositionTagged<string>("suffix", 10),
-                                 new AttributeValue(new PositionTagged<string>(string.Empty, 6),
-                                                    new PositionTagged<object>("true", 6),
-                                                    literal: false));
+                p.BeginWriteAttribute("href", "prefix", 0, "suffix", 10, 1);
+                p.WriteAttributeValue("", 6, "true", 6, 4, false);
+                p.EndWriteAttribute();
             });
             var context = new Mock<IPageExecutionContext>(MockBehavior.Strict);
             var sequence = new MockSequence();
@@ -734,9 +726,8 @@ namespace Microsoft.AspNet.Mvc.Razor
             // Arrange
             var page = CreatePage(p =>
             {
-                p.WriteAttribute("href",
-                                 new PositionTagged<string>("prefix", 0),
-                                 new PositionTagged<string>("tail", 7));
+                p.BeginWriteAttribute("href", "prefix", 0, "tail", 7, 0);
+                p.EndWriteAttribute();
             });
             var context = new Mock<IPageExecutionContext>(MockBehavior.Strict);
             var sequence = new MockSequence();
@@ -758,72 +749,51 @@ namespace Microsoft.AspNet.Mvc.Razor
             get
             {
                 // attributeValues, expectedValue
-                return new TheoryData<AttributeValue[], string>
+                return new TheoryData<Tuple<string, int, object, int, bool>[], string>
                 {
                     {
-                        new AttributeValue[] {
-                            new AttributeValue(
-                                new PositionTagged<string>(string.Empty, 9),
-                                new PositionTagged<object>("Hello", 9),
-                                literal: true)
+                        new []
+                        {
+                            Tuple.Create(string.Empty, 9, (object)"Hello", 9, true),
                         },
                         "Hello"
                     },
                     {
-                        new AttributeValue[] {
-                            new AttributeValue(
-                                new PositionTagged<string>(" ", 9),
-                                new PositionTagged<object>("Hello", 10),
-                                literal: true)
+                        new []
+                        {
+                            Tuple.Create(" ", 9, (object)"Hello", 10, true)
                         },
                         " Hello"
                     },
                     {
-                        new AttributeValue[] {
-                            new AttributeValue(
-                                new PositionTagged<string>(" ", 9),
-                                new PositionTagged<object>(null, 10),
-                                literal: false)
+
+                        new []
+                        {
+                            Tuple.Create(" ", 9, (object)null, 10, false)
                         },
                         string.Empty
                     },
                     {
-                        new AttributeValue[] {
-                            new AttributeValue(
-                                new PositionTagged<string>(" ", 9),
-                                new PositionTagged<object>(false, 10),
-                                literal: false)
+                        new []
+                        {
+                            Tuple.Create(" ", 9, (object)false, 10, false)
                         },
                         " HtmlEncode[[False]]"
                     },
                     {
-                        new AttributeValue[] {
-                            new AttributeValue(
-                                new PositionTagged<string>("  ", 9),
-                                new PositionTagged<object>(true, 11),
-                                literal: false),
-                            new AttributeValue(
-                                new PositionTagged<string>("  ", 15),
-                                new PositionTagged<object>("abcd", 17),
-                                literal: true),
+                        new []
+                        {
+                            Tuple.Create("  ", 9, (object)true, 11, false),
+                            Tuple.Create("  ", 9, (object)"abcd", 17, true)
                         },
                         "  HtmlEncode[[True]]  abcd"
                     },
-
                     {
-                        new AttributeValue[] {
-                            new AttributeValue(
-                                new PositionTagged<string>(string.Empty, 9),
-                                new PositionTagged<object>("prefix", 9),
-                                literal: true),
-                            new AttributeValue(
-                                new PositionTagged<string>("  ", 15),
-                                new PositionTagged<object>(null, 17),
-                                literal: false),
-                            new AttributeValue(
-                                new PositionTagged<string>(" ", 21),
-                                new PositionTagged<object>("suffix", 22),
-                                literal: false),
+                        new []
+                        {
+                            Tuple.Create(string.Empty, 9, (object)"prefix", 9, true),
+                            Tuple.Create("  ", 15, (object)null, 17, false),
+                            Tuple.Create(" ", 21, (object)"suffix", 22, false),
                         },
                         "prefix HtmlEncode[[suffix]]"
                     },
@@ -834,7 +804,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         [Theory]
         [MemberData(nameof(AddHtmlAttributeValues_ValueData))]
         public void AddHtmlAttributeValues_AddsToHtmlAttributesAsExpected(
-            AttributeValue[] attributeValues,
+            Tuple<string, int, object, int, bool>[] attributeValues,
             string expectedValue)
         {
             // Arrange
@@ -850,7 +820,12 @@ namespace Microsoft.AspNet.Mvc.Razor
                 endTagHelperWritingScope: () => new DefaultTagHelperContent());
 
             // Act
-            page.AddHtmlAttributeValues("someattr", executionContext, attributeValues);
+            page.BeginAddHtmlAttributeValues(executionContext, "someattr", attributeValues.Length);
+            foreach (var value in attributeValues)
+            {
+                page.AddHtmlAttributeValue(value.Item1, value.Item2, value.Item3, value.Item4, 0, value.Item5);
+            }
+            page.EndAddHtmlAttributeValues(executionContext);
 
             // Assert
             var htmlAttribute = Assert.Single(executionContext.HTMLAttributes);
@@ -885,13 +860,9 @@ namespace Microsoft.AspNet.Mvc.Razor
                 endTagHelperWritingScope: () => new DefaultTagHelperContent());
 
             // Act
-            page.AddHtmlAttributeValues(
-                "someattr",
-                executionContext,
-                new AttributeValue(
-                    prefix: new PositionTagged<string>(string.Empty, 9),
-                    value: new PositionTagged<object>(attributeValue, 9),
-                    literal: false));
+            page.BeginAddHtmlAttributeValues(executionContext, "someattr", 1);
+            page.AddHtmlAttributeValue(string.Empty, 9, attributeValue, 9, valueLength: 0, isLiteral: false);
+            page.EndAddHtmlAttributeValues(executionContext);
 
             // Assert
             Assert.Empty(executionContext.HTMLAttributes);
@@ -917,13 +888,9 @@ namespace Microsoft.AspNet.Mvc.Razor
                 endTagHelperWritingScope: () => new DefaultTagHelperContent());
 
             // Act
-            page.AddHtmlAttributeValues(
-                "someattr",
-                executionContext,
-                new AttributeValue(
-                    prefix: new PositionTagged<string>(string.Empty, 9),
-                    value: new PositionTagged<object>(true, 9),
-                    literal: false));
+            page.BeginAddHtmlAttributeValues(executionContext, "someattr", 1);
+            page.AddHtmlAttributeValue(string.Empty, 9, true, 9, valueLength: 0, isLiteral: false);
+            page.EndAddHtmlAttributeValues(executionContext);
 
             // Assert
             var htmlAttribute = Assert.Single(executionContext.HTMLAttributes);
@@ -936,68 +903,53 @@ namespace Microsoft.AspNet.Mvc.Razor
             Assert.False(allAttribute.Minimized);
         }
 
-        public static TheoryData<AttributeValue[], string> WriteAttributeData
+        public static TheoryData WriteAttributeData
         {
             get
             {
                 // AttributeValues, ExpectedOutput
-                return new TheoryData<AttributeValue[], string>
+                return new TheoryData<Tuple<string, int, object, int, bool>[], string>
                 {
                     {
-                        new AttributeValue[] {
-                            new AttributeValue(
-                                new PositionTagged<string>(string.Empty, 9),
-                                new PositionTagged<object>(true, 9),
-                                literal: false)
+                        new[]
+                        {
+                            Tuple.Create(string.Empty, 9, (object)true, 9, false),
                         },
                         "someattr=HtmlEncode[[someattr]]"
                     },
                     {
-                        new AttributeValue[] {
-                            new AttributeValue(
-                                new PositionTagged<string>(string.Empty, 9),
-                                new PositionTagged<object>(false, 9),
-                                literal: false)
+                        new[]
+                        {
+                            Tuple.Create(string.Empty, 9, (object)false, 9, false),
                         },
                         string.Empty
                     },
                     {
-                        new AttributeValue[] {
-                            new AttributeValue(
-                                new PositionTagged<string>(string.Empty, 9),
-                                new PositionTagged<object>(null, 9),
-                                literal: false)
+                        new[]
+                        {
+                            Tuple.Create(string.Empty, 9, (object)null, 9, false),
                         },
                         string.Empty
                     },
                     {
-                        new AttributeValue[] {
-                            new AttributeValue(
-                                new PositionTagged<string>("  ", 9),
-                                new PositionTagged<object>(false, 11),
-                                literal: false)
+                        new[]
+                        {
+                            Tuple.Create("  ", 9, (object)false, 11, false),
                         },
                         "someattr=  HtmlEncode[[False]]"
                     },
                     {
-                        new AttributeValue[] {
-                            new AttributeValue(
-                                new PositionTagged<string>("  ", 9),
-                                new PositionTagged<object>(null, 11),
-                                literal: false)
+                        new[]
+                        {
+                            Tuple.Create("  ", 9, (object)null, 11, false),
                         },
                         "someattr="
                     },
                     {
-                        new AttributeValue[] {
-                            new AttributeValue(
-                                new PositionTagged<string>("  ", 9),
-                                new PositionTagged<object>(true, 11),
-                                literal: false),
-                            new AttributeValue(
-                                new PositionTagged<string>("  ", 15),
-                                new PositionTagged<object>("abcd", 17),
-                                literal: true),
+                        new[]
+                        {
+                            Tuple.Create("  ", 9, (object)true, 11, false),
+                            Tuple.Create("  ", 15, (object)"abcd", 17, true),
                         },
                         "someattr=  HtmlEncode[[True]]  abcd"
                     },
@@ -1007,17 +959,31 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         [Theory]
         [MemberData(nameof(WriteAttributeData))]
-        public void WriteAttributeTo_WritesAsExpected(AttributeValue[] attributeValues, string expectedOutput)
+        public void WriteAttributeTo_WritesAsExpected(
+            Tuple<string, int, object, int, bool>[] attributeValues,
+            string expectedOutput)
         {
             // Arrange
             var page = CreatePage(p => { });
             page.HtmlEncoder = new CommonTestEncoder();
             var writer = new StringWriter();
-            var prefix = new PositionTagged<string>("someattr=", 0);
-            var suffix = new PositionTagged<string>(string.Empty, 0);
+            var prefix = "someattr=";
+            var suffix = string.Empty;
 
             // Act
-            page.WriteAttributeTo(writer, "someattr", prefix, suffix, attributeValues);
+            page.BeginWriteAttributeTo(writer, "someattr", prefix, 0, suffix, 0, attributeValues.Length);
+            foreach (var value in attributeValues)
+            {
+                page.WriteAttributeValueTo(
+                    writer,
+                    value.Item1,
+                    value.Item2,
+                    value.Item3,
+                    value.Item4,
+                    value.Item3?.ToString().Length ?? 0,
+                    value.Item5);
+            }
+            page.EndWriteAttributeTo(writer);
 
             // Assert
             Assert.Equal(expectedOutput, writer.ToString());

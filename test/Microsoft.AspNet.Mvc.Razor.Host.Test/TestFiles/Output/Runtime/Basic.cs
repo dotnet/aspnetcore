@@ -32,8 +32,9 @@ namespace Asp
             BeginContext(0, 4, true);
             WriteLiteral("<div");
             EndContext();
-            WriteAttribute("class", Tuple.Create(" class=\"", 4), Tuple.Create("\"", 17), 
-            Tuple.Create(Tuple.Create("", 12), Tuple.Create<System.Object, System.Int32>(logo, 12), false));
+            BeginWriteAttribute("class", " class=\"", 4, "\"", 17, 1);
+            WriteAttributeValue("", 12, logo, 12, 5, false);
+            EndWriteAttribute();
             BeginContext(18, 24, true);
             WriteLiteral(">\r\n    Hello world\r\n    ");
             EndContext();
