@@ -377,12 +377,21 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 return new TheoryData<string, MarkupBlock, RazorError[]>
                 {
                     {
-                        "<p =\"false\"\" ></p>",
+                        "<p class='",
                         new MarkupBlock(
                             new MarkupTagHelperBlock("p",
-                                new List<KeyValuePair<string, SyntaxTreeNode>>())),
+                                new List<KeyValuePair<string, SyntaxTreeNode>>
+                                {
+                                    new KeyValuePair<string, SyntaxTreeNode>(
+                                        "class",
+                                        factory.Markup(string.Empty).With(SpanChunkGenerator.Null))
+                                })),
                         new []
                         {
+                            new RazorError(
+                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
+                                new SourceLocation(1, 0, 1),
+                                length: 1),
                             new RazorError(
                                 string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
                                 new SourceLocation(1, 0, 1),
