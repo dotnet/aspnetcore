@@ -96,10 +96,5 @@ namespace Microsoft.AspNet.Server.WebListener
                 }
             }
         }
-
-        void IDisposable.Dispose()
-        {
-            // nothing to dispose of
-        }
     }
 }
