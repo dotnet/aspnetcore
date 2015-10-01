@@ -19,18 +19,18 @@ namespace Microsoft.AspNet.Mvc
     /// A <see cref="FileResult" /> that on execution writes the file specified using a virtual path to the response
     /// using mechanisms provided by the host.
     /// </summary>
-    public class VirtualFileProviderResult : FileResult
+    public class VirtualFileResult : FileResult
     {
         private const int DefaultBufferSize = 0x1000;
         private string _fileName;
 
         /// <summary>
-        /// Creates a new <see cref="VirtualFileProviderResult"/> instance with the provided <paramref name="fileName"/>
+        /// Creates a new <see cref="VirtualFileResult"/> instance with the provided <paramref name="fileName"/>
         /// and the provided <paramref name="contentType"/>.
         /// </summary>
         /// <param name="fileName">The path to the file. The path must be relative/virtual.</param>
         /// <param name="contentType">The Content-Type header of the response.</param>
-        public VirtualFileProviderResult(string fileName, string contentType)
+        public VirtualFileResult(string fileName, string contentType)
             : this(fileName, new MediaTypeHeaderValue(contentType))
         {
             if (fileName == null)
@@ -44,13 +44,13 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
-        /// Creates a new <see cref="VirtualFileProviderResult"/> instance with
+        /// Creates a new <see cref="VirtualFileResult"/> instance with
         /// the provided <paramref name="fileName"/> and the
         /// provided <paramref name="contentType"/>.
         /// </summary>
         /// <param name="fileName">The path to the file. The path must be relative/virtual.</param>
         /// <param name="contentType">The Content-Type header of the response.</param>
-        public VirtualFileProviderResult(string fileName, MediaTypeHeaderValue contentType)
+        public VirtualFileResult(string fileName, MediaTypeHeaderValue contentType)
             : base(contentType)
         {
             if (fileName == null)

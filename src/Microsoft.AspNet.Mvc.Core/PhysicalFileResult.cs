@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -16,18 +16,18 @@ namespace Microsoft.AspNet.Mvc
     /// A <see cref="FileResult"/> on execution will write a file from disk to the response
     /// using mechanisms provided by the host.
     /// </summary>
-    public class PhysicalFileProviderResult : FileResult
+    public class PhysicalFileResult : FileResult
     {
         private const int DefaultBufferSize = 0x1000;
         private string _fileName;
 
         /// <summary>
-        /// Creates a new <see cref="PhysicalFileProviderResult"/> instance with
+        /// Creates a new <see cref="PhysicalFileResult"/> instance with
         /// the provided <paramref name="fileName"/> and the provided <paramref name="contentType"/>.
         /// </summary>
         /// <param name="fileName">The path to the file. The path must be an absolute path.</param>
         /// <param name="contentType">The Content-Type header of the response.</param>
-        public PhysicalFileProviderResult(string fileName, string contentType)
+        public PhysicalFileResult(string fileName, string contentType)
             : this(fileName, new MediaTypeHeaderValue(contentType))
         {
             if (fileName == null)
@@ -41,12 +41,12 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
-        /// Creates a new <see cref="PhysicalFileProviderResult"/> instance with
+        /// Creates a new <see cref="PhysicalFileResult"/> instance with
         /// the provided <paramref name="fileName"/> and the provided <paramref name="contentType"/>.
         /// </summary>
         /// <param name="fileName">The path to the file. The path must be an absolute path.</param>
         /// <param name="contentType">The Content-Type header of the response.</param>
-        public PhysicalFileProviderResult(string fileName, MediaTypeHeaderValue contentType)
+        public PhysicalFileResult(string fileName, MediaTypeHeaderValue contentType)
             : base(contentType)
         {
             if (fileName == null)

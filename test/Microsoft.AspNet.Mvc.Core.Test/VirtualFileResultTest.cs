@@ -18,7 +18,7 @@ using Xunit;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class VirtualFileProviderResultTest
+    public class VirtualFileResultTest
     {
         [Fact]
         public void Constructor_SetsFileName()
@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc
             var path = Path.GetFullPath("helllo.txt");
 
             // Act
-            var result = new VirtualFileProviderResult(path, "text/plain");
+            var result = new VirtualFileResult(path, "text/plain");
 
             // Assert
             Assert.Equal(path, result.FileName);
@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var path = Path.Combine("TestFiles", "FilePathResultTestFile.txt");
-            var result = new TestVirtualFileProviderResult(path, "text/plain");
+            var result = new TestVirtualFileResult(path, "text/plain");
 
             var appEnvironment = new Mock<IHostingEnvironment>();
             appEnvironment.Setup(app => app.WebRootFileProvider)
@@ -66,7 +66,7 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var path = Path.Combine("TestFiles", "FilePathResultTestFile.txt");
-            var result = new TestVirtualFileProviderResult(path, "text/plain")
+            var result = new TestVirtualFileResult(path, "text/plain")
             {
                 FileProvider = GetFileProvider(path),
             };
@@ -90,7 +90,7 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var path = Path.Combine("TestFiles", "FilePathResultTestFile.txt");
-            var result = new TestVirtualFileProviderResult(path, "text/plain")
+            var result = new TestVirtualFileResult(path, "text/plain")
             {
                 FileProvider = GetFileProvider(path),
             };
@@ -116,7 +116,7 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var expectedContentType = "text/foo; charset=us-ascii";
-            var result = new TestVirtualFileProviderResult(
+            var result = new TestVirtualFileResult(
                 "FilePathResultTestFile_ASCII.txt", MediaTypeHeaderValue.Parse(expectedContentType))
             {
                 FileProvider = GetFileProvider("FilePathResultTestFile_ASCII.txt"),
@@ -142,7 +142,7 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var path = Path.Combine("TestFiles", "FilePathResultTestFile.txt");
-            var result = new TestVirtualFileProviderResult(path, "text/plain")
+            var result = new TestVirtualFileResult(path, "text/plain")
             {
                 FileProvider = GetFileProvider(path),
             };
@@ -171,7 +171,7 @@ namespace Microsoft.AspNet.Mvc
         public async Task ExecuteResultAsync_ReturnsFiles_ForDifferentPaths(string path)
         {
             // Arrange
-            var result = new TestVirtualFileProviderResult(path, "text/plain")
+            var result = new TestVirtualFileResult(path, "text/plain")
             {
                 FileProvider = GetFileProvider(path),
             };
@@ -207,7 +207,7 @@ namespace Microsoft.AspNet.Mvc
             var nonDiskFileProvider = new Mock<IFileProvider>();
             nonDiskFileProvider.Setup(fp => fp.GetFileInfo(It.IsAny<string>())).Returns(nonDiskFileInfo.Object);
 
-            var filePathResult = new VirtualFileProviderResult("/SampleEmbeddedFile.txt", "text/plain")
+            var filePathResult = new VirtualFileResult("/SampleEmbeddedFile.txt", "text/plain")
             {
                 FileProvider = nonDiskFileProvider.Object
             };
@@ -243,7 +243,7 @@ namespace Microsoft.AspNet.Mvc
             // Arrange
             // Point the IFileProvider root to a different subfolder
             var fileProvider = new PhysicalFileProvider(Path.GetFullPath("./Properties"));
-            var filePathResult = new VirtualFileProviderResult(path, "text/plain")
+            var filePathResult = new VirtualFileResult(path, "text/plain")
             {
                 FileProvider = fileProvider,
             };
@@ -275,7 +275,7 @@ namespace Microsoft.AspNet.Mvc
             // Arrange
             // Point the IFileProvider root to a different subfolder
             var fileProvider = new PhysicalFileProvider(Path.GetFullPath("./Properties"));
-            var filePathResult = new VirtualFileProviderResult(path, "text/plain")
+            var filePathResult = new VirtualFileResult(path, "text/plain")
             {
                 FileProvider = fileProvider,
             };
@@ -297,14 +297,14 @@ namespace Microsoft.AspNet.Mvc
             return fileProvider.Object;
         }
 
-        private class TestVirtualFileProviderResult : VirtualFileProviderResult
+        private class TestVirtualFileResult : VirtualFileResult
         {
-            public TestVirtualFileProviderResult(string filePath, string contentType)
+            public TestVirtualFileResult(string filePath, string contentType)
                 : base(filePath, contentType)
             {
             }
 
-            public TestVirtualFileProviderResult(string filePath, MediaTypeHeaderValue contentType)
+            public TestVirtualFileResult(string filePath, MediaTypeHeaderValue contentType)
                 : base(filePath, contentType)
             {
             }

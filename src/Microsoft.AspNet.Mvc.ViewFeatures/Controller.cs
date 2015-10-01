@@ -878,9 +878,9 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         /// <param name="virtualPath">The virtual path of the file to be returned.</param>
         /// <param name="contentType">The Content-Type of the file.</param>
-        /// <returns>The created <see cref="VirtualFileProviderResult"/> for the response.</returns>
+        /// <returns>The created <see cref="VirtualFileResult"/> for the response.</returns>
         [NonAction]
-        public virtual VirtualFileProviderResult File(string virtualPath, string contentType)
+        public virtual VirtualFileResult File(string virtualPath, string contentType)
         {
             return File(virtualPath, contentType, fileDownloadName: null);
         }
@@ -893,11 +893,11 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="virtualPath">The virtual path of the file to be returned.</param>
         /// <param name="contentType">The Content-Type of the file.</param>
         /// <param name="fileDownloadName">The suggested file name.</param>
-        /// <returns>The created <see cref="VirtualFileProviderResult"/> for the response.</returns>
+        /// <returns>The created <see cref="VirtualFileResult"/> for the response.</returns>
         [NonAction]
-        public virtual VirtualFileProviderResult File(string virtualPath, string contentType, string fileDownloadName)
+        public virtual VirtualFileResult File(string virtualPath, string contentType, string fileDownloadName)
         {
-            return new VirtualFileProviderResult(virtualPath, contentType) { FileDownloadName = fileDownloadName };
+            return new VirtualFileResult(virtualPath, contentType) { FileDownloadName = fileDownloadName };
         }
 
         /// <summary>
@@ -906,9 +906,9 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         /// <param name="physicalPath">The physical path of the file to be returned.</param>
         /// <param name="contentType">The Content-Type of the file.</param>
-        /// <returns>The created <see cref="PhysicalFileProviderResult"/> for the response.</returns>
+        /// <returns>The created <see cref="PhysicalFileResult"/> for the response.</returns>
         [NonAction]
-        public virtual PhysicalFileProviderResult PhysicalFile(string physicalPath, string contentType)
+        public virtual PhysicalFileResult PhysicalFile(string physicalPath, string contentType)
         {
             return PhysicalFile(physicalPath, contentType, fileDownloadName: null);
         }
@@ -921,14 +921,14 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="physicalPath">The physical path of the file to be returned.</param>
         /// <param name="contentType">The Content-Type of the file.</param>
         /// <param name="fileDownloadName">The suggested file name.</param>
-        /// <returns>The created <see cref="PhysicalFileProviderResult"/> for the response.</returns>
+        /// <returns>The created <see cref="PhysicalFileResult"/> for the response.</returns>
         [NonAction]
-        public virtual PhysicalFileProviderResult PhysicalFile(
+        public virtual PhysicalFileResult PhysicalFile(
             string physicalPath,
             string contentType,
             string fileDownloadName)
         {
-            return new PhysicalFileProviderResult(physicalPath, contentType) { FileDownloadName = fileDownloadName };
+            return new PhysicalFileResult(physicalPath, contentType) { FileDownloadName = fileDownloadName };
         }
 
         /// <summary>

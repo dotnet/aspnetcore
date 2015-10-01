@@ -11,7 +11,7 @@ namespace FilesWebSite
     {
         public IActionResult DownloadFileWithFileName()
         {
-            return new VirtualFileProviderResult("/Greetings.txt", "text/plain")
+            return new VirtualFileResult("/Greetings.txt", "text/plain")
             {
                 FileProvider = new EmbeddedFileProvider(GetType().GetTypeInfo().Assembly, "FilesWebSite.EmbeddedResources"),
                 FileDownloadName = "downloadName.txt"
