@@ -151,7 +151,7 @@ default NUGET_FEED = 'https://api.nuget.org/v3/index.json'
       }
   }
 
-#native-compile target='compile' if='!IsLinux && Directory.Exists(Path.Combine(BASE_DIR, "src"))'
+#native-compile target='compile' if='!IsMono && Directory.Exists(Path.Combine(BASE_DIR, "src"))'
   var programFilesX86 = '${Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86)}'
   var nativeProjects ='${Files.Include(Path.Combine(BASE_DIR, "src", "**", "*.vcxproj"))}'
 

@@ -37,7 +37,7 @@ default build_options='${E("NUGET3_build_options")}'
 
         var projectsArg=projectFile.Replace(";", " ");
         var dnuArgs=string.Format("build{0} {1} --configuration {2}", build_options, projectsArg, configuration);
-        if (!IsLinux)
+        if (!IsMono)
         {
             Exec("cmd", "/C dnu " + dnuArgs);
         }
@@ -54,7 +54,7 @@ default build_options='${E("NUGET3_build_options")}'
         DeleteFolder(projectBin);
 
         var dnuArgs=string.Format("build{0} {1} --configuration {2}", build_options, projectFolder, configuration);
-        if (!IsLinux)
+        if (!IsMono)
         {
             Exec("cmd", "/C dnu " + dnuArgs);
         }

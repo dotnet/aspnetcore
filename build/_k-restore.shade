@@ -12,5 +12,5 @@ default restoreDir = '${ currentDir }'
 
 default restore_options='${ E("NUGET3_restore_options") }'
 
-exec program='cmd' commandline='/C dnu restore --parallel ${ restore_options }' workingdir='${ restoreDir }' if='!IsLinux'
-exec program='dnu' commandline='restore ${ restore_options }' workingdir='${ restoreDir }' if='IsLinux'
+exec program='cmd' commandline='/C dnu restore --parallel ${ restore_options }' workingdir='${ restoreDir }' if='!IsMono'
+exec program='dnu' commandline='restore ${ restore_options }' workingdir='${ restoreDir }' if='IsMono'
