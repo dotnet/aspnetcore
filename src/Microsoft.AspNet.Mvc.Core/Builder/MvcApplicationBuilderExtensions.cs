@@ -6,7 +6,6 @@ using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Routing;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Builder
 {
@@ -22,8 +21,13 @@ namespace Microsoft.AspNet.Builder
         /// <returns>The <paramref name="app"/>.</returns>
         /// <remarks>This method only supports attribute routing. To add conventional routes use
         /// <see cref="UseMvc(IApplicationBuilder, Action{IRouteBuilder})"/>.</remarks>
-        public static IApplicationBuilder UseMvc([NotNull] this IApplicationBuilder app)
+        public static IApplicationBuilder UseMvc(this IApplicationBuilder app)
         {
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+
             return app.UseMvc(routes =>
             {
             });
@@ -36,8 +40,13 @@ namespace Microsoft.AspNet.Builder
         /// </summary>
         /// <param name="app">The <see cref="IApplicationBuilder"/>.</param>
         /// <returns>The <paramref name="app"/>.</returns>
-        public static IApplicationBuilder UseMvcWithDefaultRoute([NotNull] this IApplicationBuilder app)
+        public static IApplicationBuilder UseMvcWithDefaultRoute(this IApplicationBuilder app)
         {
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+
             return app.UseMvc(routes =>
             {
                 routes.MapRoute(
@@ -53,9 +62,19 @@ namespace Microsoft.AspNet.Builder
         /// <param name="configureRoutes">A callback to configure MVC routes.</param>
         /// <returns>The <paramref name="app"/>.</returns>
         public static IApplicationBuilder UseMvc(
-            [NotNull] this IApplicationBuilder app,
-            [NotNull] Action<IRouteBuilder> configureRoutes)
+            this IApplicationBuilder app,
+            Action<IRouteBuilder> configureRoutes)
         {
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+
+            if (configureRoutes == null)
+            {
+                throw new ArgumentNullException(nameof(configureRoutes));
+            }
+
             // Verify if AddMvc was done before calling UseMvc
             // We use the MvcMarkerService to make sure if all the services were added.
             MvcServicesHelper.ThrowIfMvcNotRegistered(app.ApplicationServices);

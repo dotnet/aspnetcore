@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -28,14 +27,19 @@ namespace Microsoft.AspNet.Mvc
         /// Creates a new instance of <see cref="SerializableError"/>.
         /// </summary>
         /// <param name="modelState"><see cref="ModelState"/> containing the validation errors.</param>
-        public SerializableError([NotNull] ModelStateDictionary modelState)
+        public SerializableError(ModelStateDictionary modelState)
             : this()
         {
+            if (modelState == null)
+            {
+                throw new ArgumentNullException(nameof(modelState));
+            }
+
             if (modelState.IsValid)
             {
                 return;
             }
-            
+
             foreach (var keyModelStatePair in modelState)
             {
                 var key = keyModelStatePair.Key;

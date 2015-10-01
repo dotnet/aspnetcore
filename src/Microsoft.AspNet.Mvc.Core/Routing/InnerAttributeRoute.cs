@@ -9,7 +9,6 @@ using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Internal.Routing;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Routing.Template;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Mvc.Routing
@@ -33,13 +32,38 @@ namespace Microsoft.AspNet.Mvc.Routing
         /// <param name="next">The next router. Invoked when a route entry matches.</param>
         /// <param name="entries">The set of route entries.</param>
         public InnerAttributeRoute(
-            [NotNull] IRouter next,
-            [NotNull] IEnumerable<AttributeRouteMatchingEntry> matchingEntries,
-            [NotNull] IEnumerable<AttributeRouteLinkGenerationEntry> linkGenerationEntries,
-            [NotNull] ILogger logger,
-            [NotNull] ILogger constraintLogger,
+            IRouter next,
+            IEnumerable<AttributeRouteMatchingEntry> matchingEntries,
+            IEnumerable<AttributeRouteLinkGenerationEntry> linkGenerationEntries,
+            ILogger logger,
+            ILogger constraintLogger,
             int version)
         {
+            if (next == null)
+            {
+                throw new ArgumentNullException(nameof(next));
+            }
+
+            if (matchingEntries == null)
+            {
+                throw new ArgumentNullException(nameof(matchingEntries));
+            }
+
+            if (linkGenerationEntries == null)
+            {
+                throw new ArgumentNullException(nameof(linkGenerationEntries));
+            }
+
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
+            if (constraintLogger == null)
+            {
+                throw new ArgumentNullException(nameof(constraintLogger));
+            }
+
             _next = next;
             _logger = logger;
             _constraintLogger = constraintLogger;
@@ -98,9 +122,14 @@ namespace Microsoft.AspNet.Mvc.Routing
         public int Version { get; }
 
         /// <inheritdoc />
-        public async Task RouteAsync([NotNull] RouteContext context)
+        public async Task RouteAsync(RouteContext context)
         {
-            foreach(var matchingEntry in _matchingEntries)
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            foreach (var matchingEntry in _matchingEntries)
             {
                 var requestPath = context.HttpContext.Request.Path.Value;
 
@@ -161,8 +190,13 @@ namespace Microsoft.AspNet.Mvc.Routing
         }
 
         /// <inheritdoc />
-        public VirtualPathData GetVirtualPath([NotNull] VirtualPathContext context)
+        public VirtualPathData GetVirtualPath(VirtualPathContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             // If it's a named route we will try to generate a link directly and
             // if we can't, we will not try to generate it using an unnamed route.
             if (context.RouteName != null)

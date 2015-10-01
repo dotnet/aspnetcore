@@ -1,13 +1,13 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Mvc.Core;
-using Microsoft.Framework.Internal;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc
@@ -27,9 +27,17 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         /// <param name="fileName">The path to the file. The path must be an absolute path.</param>
         /// <param name="contentType">The Content-Type header of the response.</param>
-        public PhysicalFileProviderResult([NotNull] string fileName, [NotNull] string contentType)
+        public PhysicalFileProviderResult(string fileName, string contentType)
             : this(fileName, new MediaTypeHeaderValue(contentType))
         {
+            if (fileName == null)
+            {
+                throw new ArgumentNullException(nameof(fileName));
+            }
+            if (contentType == null)
+            {
+                throw new ArgumentNullException(nameof(contentType));
+            }
         }
 
         /// <summary>
@@ -38,9 +46,19 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         /// <param name="fileName">The path to the file. The path must be an absolute path.</param>
         /// <param name="contentType">The Content-Type header of the response.</param>
-        public PhysicalFileProviderResult([NotNull] string fileName, [NotNull] MediaTypeHeaderValue contentType)
+        public PhysicalFileProviderResult(string fileName, MediaTypeHeaderValue contentType)
             : base(contentType)
         {
+            if (fileName == null)
+            {
+                throw new ArgumentNullException(nameof(fileName));
+            }
+
+            if (contentType == null)
+            {
+                throw new ArgumentNullException(nameof(contentType));
+            }
+
             FileName = fileName;
         }
 
@@ -53,10 +71,13 @@ namespace Microsoft.AspNet.Mvc
             {
                 return _fileName;
             }
-
-            [param: NotNull]
             set
             {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
                 _fileName = value;
             }
         }
@@ -98,8 +119,13 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         /// <param name="path">The path for which the <see cref="FileStream"/> is needed.</param>
         /// <returns><see cref="FileStream"/> for the specified <paramref name="path"/>.</returns>
-        protected virtual Stream GetFileStream([NotNull]string path)
+        protected virtual Stream GetFileStream(string path)
         {
+            if (path == null)
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
             return new FileStream(
                     path,
                     FileMode.Open,

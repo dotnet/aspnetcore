@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -18,15 +17,25 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private readonly ICollection<string> _originalValues;
         private readonly string[] _sortedValues;
 
-        public PrefixContainer([NotNull] ICollection<string> values)
+        public PrefixContainer(ICollection<string> values)
         {
+            if (values == null)
+            {
+                throw new ArgumentNullException(nameof(values));
+            }
+
             _originalValues = values;
             _sortedValues = ToArrayWithoutNulls(_originalValues);
             Array.Sort(_sortedValues, StringComparer.OrdinalIgnoreCase);
         }
 
-        public bool ContainsPrefix([NotNull] string prefix)
+        public bool ContainsPrefix(string prefix)
         {
+            if (prefix == null)
+            {
+                throw new ArgumentNullException(nameof(prefix));
+            }
+
             if (prefix.Length == 0)
             {
                 return _sortedValues.Length > 0; // only match empty string when we have some value

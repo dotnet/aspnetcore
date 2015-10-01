@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -10,7 +10,6 @@ using Microsoft.AspNet.Mvc.ApplicationModels;
 using Microsoft.AspNet.Mvc.Formatters;
 using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.Framework.DependencyInjection.Extensions;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.DependencyInjection
 {
@@ -23,9 +22,19 @@ namespace Microsoft.Framework.DependencyInjection
         /// <param name="setupAction">An <see cref="Action{MvcOptions}"/>.</param>
         /// <returns>The <see cref="IMvcCoreBuilder"/>.</returns>
         public static IMvcCoreBuilder AddMvcOptions(
-            [NotNull] this IMvcCoreBuilder builder,
-            [NotNull] Action<MvcOptions> setupAction)
+            this IMvcCoreBuilder builder,
+            Action<MvcOptions> setupAction)
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (setupAction == null)
+            {
+                throw new ArgumentNullException(nameof(setupAction));
+            }
+
             builder.Services.Configure<MvcOptions>(setupAction);
             return builder;
         }
@@ -94,9 +103,19 @@ namespace Microsoft.Framework.DependencyInjection
         /// <paramref name="services"/> and used for controller discovery.</param>
         /// <returns>The <see cref="IMvcCoreBuilder"/>.</returns>
         public static IMvcCoreBuilder AddControllersAsServices(
-           [NotNull] this IMvcCoreBuilder builder,
-           [NotNull] IEnumerable<Type> controllerTypes)
+           this IMvcCoreBuilder builder,
+           IEnumerable<Type> controllerTypes)
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (controllerTypes == null)
+            {
+                throw new ArgumentNullException(nameof(controllerTypes));
+            }
+
             ControllersAsServices.AddControllersAsServices(builder.Services, controllerTypes);
             return builder;
         }
@@ -109,9 +128,19 @@ namespace Microsoft.Framework.DependencyInjection
         /// <param name="controllerAssemblies">Assemblies to scan.</param>
         /// <returns>The <see cref="IMvcCoreBuilder"/>.</returns>
         public static IMvcCoreBuilder AddControllersAsServices(
-            [NotNull] this IMvcCoreBuilder builder,
-            [NotNull] IEnumerable<Assembly> controllerAssemblies)
+            this IMvcCoreBuilder builder,
+            IEnumerable<Assembly> controllerAssemblies)
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (controllerAssemblies == null)
+            {
+                throw new ArgumentNullException(nameof(controllerAssemblies));
+            }
+
             ControllersAsServices.AddControllersAsServices(builder.Services, controllerAssemblies);
             return builder;
         }

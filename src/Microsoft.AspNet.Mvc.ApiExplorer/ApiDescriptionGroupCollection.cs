@@ -1,8 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ApiExplorer
 {
@@ -16,8 +16,13 @@ namespace Microsoft.AspNet.Mvc.ApiExplorer
         /// </summary>
         /// <param name="items">The list of <see cref="ApiDescriptionGroup"/>.</param>
         /// <param name="version">The unique version of discovered groups.</param>
-        public ApiDescriptionGroupCollection([NotNull] IReadOnlyList<ApiDescriptionGroup> items, int version)
+        public ApiDescriptionGroupCollection(IReadOnlyList<ApiDescriptionGroup> items, int version)
         {
+            if (items == null)
+            {
+                throw new ArgumentNullException(nameof(items));
+            }
+
             Items = items;
             Version = version;
         }

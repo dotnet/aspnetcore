@@ -30,6 +30,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                     { "someName", "dummyValue" }
                 },
                 ValidationState = new ValidationStateDictionary(),
+                FieldName = "someName",
             };
 
             var mockIntBinder = new Mock<IModelBinder>();
@@ -72,6 +73,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                     { "someName", "dummyValue" }
                 },
                 ValidationState = new ValidationStateDictionary(),
+                FieldName = "someName",
             };
 
             var mockIntBinder = new Mock<IModelBinder>();
@@ -118,6 +120,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                     { "someName", "dummyValue" }
                 },
                 ValidationState = new ValidationStateDictionary(),
+                FieldName = "someName",
             };
 
             var mockIntBinder = new Mock<IModelBinder>();
@@ -164,6 +167,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                     { "someOtherName", "dummyValue" }
                 },
                 ValidationState = new ValidationStateDictionary(),
+                FieldName = "someName",
             };
 
             var mockIntBinder = new Mock<IModelBinder>();
@@ -211,6 +215,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 {
                     { "someOtherName", "dummyValue" }
                 },
+                FieldName = "someName",
             };
 
             var modelBinder = new Mock<IModelBinder>();
@@ -242,6 +247,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 {
                     { "someOtherName", "dummyValue" }
                 },
+                FieldName = "someName",
             };
 
             var modelBinder = new Mock<IModelBinder>();
@@ -276,6 +282,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 {
                     { "someOtherName", "dummyValue" }
                 },
+                FieldName = "someName",
             };
 
             var modelBinder = new Mock<IModelBinder>();
@@ -311,6 +318,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 {
                     { "someOtherName", "dummyValue" }
                 },
+                FieldName = "someName",
             };
 
             var modelBinder = new Mock<IModelBinder>();

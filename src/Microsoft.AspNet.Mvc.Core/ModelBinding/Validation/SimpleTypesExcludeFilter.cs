@@ -17,6 +17,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         /// </summary>
         public bool IsTypeExcluded(Type type)
         {
+            if (type == null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
             Type[] actualTypes;
 
             if (type.GetTypeInfo().IsGenericType &&

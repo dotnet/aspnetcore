@@ -1,9 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.ObjectModel;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {
@@ -14,8 +13,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         /// the <see cref="Type"/> specified and its derived types from validaton.
         /// </summary>
         /// <param name="type"><see cref="Type"/> which should be excluded from validation.</param>
-        public void Add([NotNull] Type type)
+        public void Add(Type type)
         {
+            if (type == null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
             var typeBasedExcludeFilter = new DefaultTypeBasedExcludeFilter(type);
             Add(typeBasedExcludeFilter);
         }
@@ -25,8 +29,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         /// the <see cref="Type"/> specified and its derived types from validaton.
         /// </summary>
         /// <param name="typeFullName">Full name of the type which should be excluded from validation.</param>
-        public void Add([NotNull] string typeFullName)
+        public void Add(string typeFullName)
         {
+            if (typeFullName == null)
+            {
+                throw new ArgumentNullException(nameof(typeFullName));
+            }
+
             var filter = new DefaultTypeNameBasedExcludeFilter(typeFullName);
             Add(filter);
         }

@@ -4,7 +4,6 @@
 using System;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Routing;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Infrastructure
 {
@@ -30,9 +29,14 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
         /// or <see cref="RouteKeyHandling.DenyKey"/>.
         /// </param>
         protected RouteConstraintAttribute(
-            [NotNull] string routeKey,
+            string routeKey,
             RouteKeyHandling keyHandling)
         {
+            if (routeKey == null)
+            {
+                throw new ArgumentNullException(nameof(routeKey));
+            }
+
             RouteKey = routeKey;
             RouteKeyHandling = keyHandling;
 
@@ -56,10 +60,20 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
         /// Set to true to negate this constraint on all actions that do not define a behavior for this route key.
         /// </param>
         protected RouteConstraintAttribute(
-            [NotNull]string routeKey,
-            [NotNull]string routeValue,
+            string routeKey,
+            string routeValue,
             bool blockNonAttributedActions)
         {
+            if (routeKey == null)
+            {
+                throw new ArgumentNullException(nameof(routeKey));
+            }
+
+            if (routeValue == null)
+            {
+                throw new ArgumentNullException(nameof(routeValue));
+            }
+
             RouteKey = routeKey;
             RouteValue = routeValue;
             BlockNonAttributedActions = blockNonAttributedActions;

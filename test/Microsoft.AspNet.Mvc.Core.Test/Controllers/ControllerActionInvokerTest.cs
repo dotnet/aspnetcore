@@ -18,7 +18,6 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.Logging.Testing;
 using Microsoft.Framework.OptionsModel;
@@ -1975,7 +1974,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
             {
                 actionDescriptor.MethodInfo = typeof(ControllerActionInvokerTest).GetMethod("ActionMethod");
             }
-            
+
             var httpContext = new Mock<HttpContext>(MockBehavior.Loose);
             var httpRequest = new DefaultHttpContext().Request;
             var httpResponse = new DefaultHttpContext().Response;
@@ -2021,17 +2020,27 @@ namespace Microsoft.AspNet.Mvc.Controllers
                 .Setup(fp => fp.OnProvidersExecuting(It.IsAny<FilterProviderContext>()))
                 .Callback<FilterProviderContext>(context =>
                     {
-                        foreach (var filter in filters.Select(f => new FilterItem(null, f)))
+                        foreach (var filterMetadata in filters)
                         {
+                            var filter = new FilterItem(
+                                new FilterDescriptor(filterMetadata, FilterScope.Action),
+                                filterMetadata);
                             context.Results.Add(filter);
                         }
                     });
 
-            filterProvider.Setup(fp => fp.OnProvidersExecuted(It.IsAny<FilterProviderContext>()))
-                          .Verifiable();
+            filterProvider
+                .Setup(fp => fp.OnProvidersExecuted(It.IsAny<FilterProviderContext>()))
+                .Verifiable();
 
-            filterProvider.SetupGet(fp => fp.Order)
-                          .Returns(-1000);
+            var actionArgumentsBinder = new Mock<IControllerActionArgumentBinder>();
+            actionArgumentsBinder.Setup(
+                    b => b.BindActionArgumentsAsync(actionContext, It.IsAny<ActionBindingContext>(), It.IsAny<object>()))
+                .Returns(Task.FromResult<IDictionary<string, object>>(new Dictionary<string, object>()));
+
+            filterProvider
+                .SetupGet(fp => fp.Order)
+                .Returns(-1000);
 
             var invoker = new TestControllerActionInvoker(
                 actionContext,
@@ -2040,7 +2049,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
                 actionDescriptor,
                 new IInputFormatter[0],
                 new IOutputFormatter[0],
-                Mock.Of<IControllerActionArgumentBinder>(),
+                actionArgumentsBinder.Object,
                 new IModelBinder[0],
                 new IModelValidatorProvider[0],
                 new IValueProviderFactory[0],
@@ -2249,7 +2258,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
                 _expectedMaxAllowedErrors = maxAllowedErrors;
             }
 
-            public void OnAuthorization([NotNull]AuthorizationContext context)
+            public void OnAuthorization(AuthorizationContext context)
             {
                 Assert.NotNull(context.ModelState.MaxAllowedErrors);
                 Assert.Equal(_expectedMaxAllowedErrors, context.ModelState.MaxAllowedErrors);

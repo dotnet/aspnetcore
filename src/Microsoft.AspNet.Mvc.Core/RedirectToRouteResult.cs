@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Mvc.Core;
-using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
@@ -43,8 +42,13 @@ namespace Microsoft.AspNet.Mvc
 
         public bool Permanent { get; set; }
 
-        public override void ExecuteResult([NotNull] ActionContext context)
+        public override void ExecuteResult(ActionContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var urlHelper = GetUrlHelper(context);
 
             var destinationUrl = urlHelper.RouteUrl(RouteName, RouteValues);

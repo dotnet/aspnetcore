@@ -1,17 +1,15 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.ActionConstraints;
 using Microsoft.AspNet.Mvc.ApiExplorer;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 
@@ -36,8 +34,13 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         }
 
         /// <inheritdoc />
-        public virtual void OnProvidersExecuting([NotNull] ApplicationModelProviderContext context)
+        public virtual void OnProvidersExecuting(ApplicationModelProviderContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             foreach (var filter in _globalFilters)
             {
                 context.Result.Filters.Add(filter);
@@ -92,7 +95,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         }
 
         /// <inheritdoc />
-        public virtual void OnProvidersExecuted([NotNull] ApplicationModelProviderContext context)
+        public virtual void OnProvidersExecuted(ApplicationModelProviderContext context)
         {
             // Intentionally empty.
         }
@@ -105,8 +108,13 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         /// A set of <see cref="ControllerModel"/> instances for the given controller <see cref="TypeInfo"/> or
         /// <c>null</c> if the <paramref name="typeInfo"/> does not represent a controller.
         /// </returns>
-        protected virtual IEnumerable<ControllerModel> BuildControllerModels([NotNull] TypeInfo typeInfo)
+        protected virtual IEnumerable<ControllerModel> BuildControllerModels(TypeInfo typeInfo)
         {
+            if (typeInfo == null)
+            {
+                throw new ArgumentNullException(nameof(typeInfo));
+            }
+
             var controllerModel = CreateControllerModel(typeInfo);
             yield return controllerModel;
         }
@@ -116,8 +124,13 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         /// </summary>
         /// <param name="typeInfo">The <see cref="TypeInfo"/>.</param>
         /// <returns>A <see cref="ControllerModel"/> for the given <see cref="TypeInfo"/>.</returns>
-        protected virtual ControllerModel CreateControllerModel([NotNull] TypeInfo typeInfo)
+        protected virtual ControllerModel CreateControllerModel(TypeInfo typeInfo)
         {
+            if (typeInfo == null)
+            {
+                throw new ArgumentNullException(nameof(typeInfo));
+            }
+
             // For attribute routes on a controller, we want want to support 'overriding' routes on a derived
             // class. So we need to walk up the hierarchy looking for the first class to define routes.
             //
@@ -214,8 +227,13 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         /// </summary>
         /// <param name="propertyInfo">The <see cref="PropertyInfo"/>.</param>
         /// <returns>A <see cref="PropertyModel"/> for the given <see cref="PropertyInfo"/>.</returns>
-        protected virtual PropertyModel CreatePropertyModel([NotNull] PropertyInfo propertyInfo)
+        protected virtual PropertyModel CreatePropertyModel(PropertyInfo propertyInfo)
         {
+            if (propertyInfo == null)
+            {
+                throw new ArgumentNullException(nameof(propertyInfo));
+            }
+
             // CoreCLR returns IEnumerable<Attribute> from GetCustomAttributes - the OfType<object>
             // is needed to so that the result of ToArray() is object
             var attributes = propertyInfo.GetCustomAttributes(inherit: true).OfType<object>().ToArray();
@@ -239,9 +257,19 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         /// <c>null</c> if the <paramref name="methodInfo"/> does not represent an action.
         /// </returns>
         protected virtual IEnumerable<ActionModel> BuildActionModels(
-            [NotNull] TypeInfo typeInfo,
-            [NotNull] MethodInfo methodInfo)
+            TypeInfo typeInfo,
+            MethodInfo methodInfo)
         {
+            if (typeInfo == null)
+            {
+                throw new ArgumentNullException(nameof(typeInfo));
+            }
+
+            if (methodInfo == null)
+            {
+                throw new ArgumentNullException(nameof(methodInfo));
+            }
+
             if (!IsAction(typeInfo, methodInfo))
             {
                 return Enumerable.Empty<ActionModel>();
@@ -436,8 +464,18 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         /// <remarks>
         /// Override this method to provide custom logic to determine which methods are considered actions.
         /// </remarks>
-        protected virtual bool IsAction([NotNull] TypeInfo typeInfo, [NotNull] MethodInfo methodInfo)
+        protected virtual bool IsAction(TypeInfo typeInfo, MethodInfo methodInfo)
         {
+            if (typeInfo == null)
+            {
+                throw new ArgumentNullException(nameof(typeInfo));
+            }
+
+            if (methodInfo == null)
+            {
+                throw new ArgumentNullException(nameof(methodInfo));
+            }
+
             // The SpecialName bit is set to flag members that are treated in a special way by some compilers
             // (such as property accessors and operator overloading methods).
             if (methodInfo.IsSpecialName)
@@ -500,9 +538,19 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         /// the action being created.
         /// </remarks>
         protected virtual ActionModel CreateActionModel(
-            [NotNull] MethodInfo methodInfo,
-            [NotNull] IReadOnlyList<object> attributes)
+            MethodInfo methodInfo,
+            IReadOnlyList<object> attributes)
         {
+            if (methodInfo == null)
+            {
+                throw new ArgumentNullException(nameof(methodInfo));
+            }
+
+            if (attributes == null)
+            {
+                throw new ArgumentNullException(nameof(attributes));
+            }
+
             var actionModel = new ActionModel(methodInfo, attributes);
 
             AddRange(actionModel.ActionConstraints, attributes.OfType<IActionConstraintMetadata>());
@@ -558,8 +606,13 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         /// </summary>
         /// <param name="parameterInfo">The <see cref="ParameterInfo"/>.</param>
         /// <returns>A <see cref="ParameterModel"/> for the given <see cref="ParameterInfo"/>.</returns>
-        protected virtual ParameterModel CreateParameterModel([NotNull] ParameterInfo parameterInfo)
+        protected virtual ParameterModel CreateParameterModel(ParameterInfo parameterInfo)
         {
+            if (parameterInfo == null)
+            {
+                throw new ArgumentNullException(nameof(parameterInfo));
+            }
+
             // CoreCLR returns IEnumerable<Attribute> from GetCustomAttributes - the OfType<object>
             // is needed to so that the result of ToArray() is object
             var attributes = parameterInfo.GetCustomAttributes(inherit: true).OfType<object>().ToArray();

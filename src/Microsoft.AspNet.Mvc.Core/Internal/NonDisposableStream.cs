@@ -1,13 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if DNX451
 using System;
-#endif
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Internal
 {
@@ -24,8 +21,13 @@ namespace Microsoft.AspNet.Mvc.Internal
         /// Initializes a new <see cref="NonDisposableStream"/>.
         /// </summary>
         /// <param name="innerStream">The stream which should not be closed or flushed.</param>
-        public NonDisposableStream([NotNull] Stream innerStream)
+        public NonDisposableStream(Stream innerStream)
         {
+            if (innerStream == null)
+            {
+                throw new ArgumentNullException(nameof(innerStream));
+            }
+
             _innerStream = innerStream;
         }
 

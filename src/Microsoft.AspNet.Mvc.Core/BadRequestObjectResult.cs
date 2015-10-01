@@ -1,9 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -26,9 +26,14 @@ namespace Microsoft.AspNet.Mvc
         /// Creates a new <see cref="BadRequestObjectResult"/> instance.
         /// </summary>
         /// <param name="modelState"><see cref="ModelStateDictionary"/> containing the validation errors.</param>
-        public BadRequestObjectResult([NotNull] ModelStateDictionary modelState)
+        public BadRequestObjectResult(ModelStateDictionary modelState)
             : base(new SerializableError(modelState))
         {
+            if (modelState == null)
+            {
+                throw new ArgumentNullException(nameof(modelState));
+            }
+
             StatusCode = StatusCodes.Status400BadRequest;
         }
     }

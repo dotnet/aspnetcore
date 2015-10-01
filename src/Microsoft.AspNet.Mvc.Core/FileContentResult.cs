@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
-using Microsoft.Framework.Internal;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc
@@ -26,9 +25,17 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         /// <param name="fileContents">The bytes that represent the file contents.</param>
         /// <param name="contentType">The Content-Type header of the response.</param>
-        public FileContentResult([NotNull] byte[] fileContents, [NotNull] string contentType)
+        public FileContentResult(byte[] fileContents, string contentType)
             : this(fileContents, new MediaTypeHeaderValue(contentType))
         {
+            if (fileContents == null)
+            {
+                throw new ArgumentNullException(nameof(fileContents));
+            }
+            if (contentType == null)
+            {
+                throw new ArgumentNullException(nameof(contentType));
+            }
         }
 
         /// <summary>
@@ -38,9 +45,19 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         /// <param name="fileContents">The bytes that represent the file contents.</param>
         /// <param name="contentType">The Content-Type header of the response.</param>
-        public FileContentResult([NotNull] byte[] fileContents, [NotNull] MediaTypeHeaderValue contentType)
+        public FileContentResult(byte[] fileContents, MediaTypeHeaderValue contentType)
             : base(contentType)
         {
+            if (fileContents == null)
+            {
+                throw new ArgumentNullException(nameof(fileContents));
+            }
+
+            if (contentType == null)
+            {
+                throw new ArgumentNullException(nameof(contentType));
+            }
+
             FileContents = fileContents;
         }
 

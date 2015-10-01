@@ -8,6 +8,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
+using Microsoft.AspNet.Mvc.Abstractions;
+using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing;
 using Microsoft.Net.Http.Headers;
 using Moq;
@@ -114,10 +116,10 @@ namespace Microsoft.AspNet.Mvc.Formatters
             var before = new JValue(beforeMessage);
             var memStream = new MemoryStream();
             var outputFormatterContext = GetOutputFormatterContext(
-                                                        beforeMessage,
-                                                        typeof(string),
-                                                        "application/json; charset=utf-8",
-                                                        memStream);
+                beforeMessage,
+                typeof(string),
+                "application/json; charset=utf-8",
+                memStream);
 
             // Act
             await formatter.WriteResponseBodyAsync(outputFormatterContext);
@@ -238,7 +240,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
             var httpContext = new Mock<HttpContext>();
             httpContext.SetupGet(c => c.Request).Returns(request.Object);
             httpContext.SetupGet(c => c.Response).Returns(response.Object);
-            return new ActionContext(httpContext.Object, routeData: null, actionDescriptor: null);
+            return new ActionContext(httpContext.Object, new RouteData(), new ActionDescriptor());
         }
 
         private sealed class User

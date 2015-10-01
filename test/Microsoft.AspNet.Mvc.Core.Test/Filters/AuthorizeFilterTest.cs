@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
+using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
 using Moq;
@@ -324,8 +325,7 @@ namespace Microsoft.AspNet.Mvc.Filters
             var actionContext = new ActionContext(
                 httpContext: httpContext.Object,
                 routeData: new RouteData(),
-                actionDescriptor: null
-                );
+                actionDescriptor: new ActionDescriptor());
 
             var authorizationContext = new AuthorizationContext(
                 actionContext,

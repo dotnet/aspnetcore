@@ -1,12 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.Mvc.ApiExplorer;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.Infrastructure;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 using Microsoft.Net.Http.Headers;
 
@@ -58,8 +58,13 @@ namespace Microsoft.AspNet.Mvc.Formatters
         /// 2. If there is a conflicting producesFilter.
         /// </summary>
         /// <param name="context">The <see cref="ResourceExecutingContext"/>.</param>
-        public void OnResourceExecuting([NotNull] ResourceExecutingContext context)
+        public void OnResourceExecuting(ResourceExecutingContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             if (!IsActive)
             {
                 return; // no format specified by user, so the filter is muted
@@ -92,7 +97,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
         }
 
         /// <inheritdoc />
-        public void OnResourceExecuted([NotNull] ResourceExecutedContext context)
+        public void OnResourceExecuted(ResourceExecutedContext context)
         {
         }
 
@@ -100,8 +105,13 @@ namespace Microsoft.AspNet.Mvc.Formatters
         /// Sets a Content Type on an  <see cref="ObjectResult" />  using a format value from the request.
         /// </summary>
         /// <param name="context">The <see cref="ResultExecutingContext"/>.</param>
-        public void OnResultExecuting([NotNull] ResultExecutingContext context)
+        public void OnResultExecuting(ResultExecutingContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             if (!IsActive)
             {
                 return; // no format specified by user, so the filter is muted
@@ -116,8 +126,12 @@ namespace Microsoft.AspNet.Mvc.Formatters
         }
 
         /// <inheritdoc />
-        public void OnResultExecuted([NotNull] ResultExecutedContext context)
+        public void OnResultExecuted(ResultExecutedContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
         }
 
         private string GetFormat(ActionContext context)

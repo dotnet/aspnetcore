@@ -1,10 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.AspNet.Http;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -24,11 +24,21 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <param name="values">The key value pairs to wrap.</param>
         /// <param name="culture">The culture to return with ValueProviderResult instances.</param>
         public ReadableStringCollectionValueProvider(
-            [NotNull] BindingSource bindingSource,
-            [NotNull] IReadableStringCollection values, 
+            BindingSource bindingSource,
+            IReadableStringCollection values,
             CultureInfo culture)
             : base(bindingSource)
         {
+            if (bindingSource == null)
+            {
+                throw new ArgumentNullException(nameof(bindingSource));
+            }
+
+            if (values == null)
+            {
+                throw new ArgumentNullException(nameof(values));
+            }
+
             _values = values;
             _culture = culture;
         }
@@ -61,14 +71,24 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <inheritdoc />
-        public virtual IDictionary<string, string> GetKeysFromPrefix([NotNull] string prefix)
+        public virtual IDictionary<string, string> GetKeysFromPrefix(string prefix)
         {
+            if (prefix == null)
+            {
+                throw new ArgumentNullException(nameof(prefix));
+            }
+
             return PrefixContainer.GetKeysFromPrefix(prefix);
         }
 
         /// <inheritdoc />
-        public override ValueProviderResult GetValue([NotNull] string key)
+        public override ValueProviderResult GetValue(string key)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             var values = _values[key];
             if (values.Count == 0)
             {

@@ -39,11 +39,26 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         /// <param name="detailsProvider">The <see cref="ICompositeMetadataDetailsProvider"/>.</param>
         /// <param name="details">The <see cref="DefaultMetadataDetails"/>.</param>
         public DefaultModelMetadata(
-            [NotNull] IModelMetadataProvider provider,
-            [NotNull] ICompositeMetadataDetailsProvider detailsProvider,
-            [NotNull] DefaultMetadataDetails details)
+            IModelMetadataProvider provider,
+            ICompositeMetadataDetailsProvider detailsProvider,
+            DefaultMetadataDetails details)
             : base(details.Key)
         {
+            if (provider == null)
+            {
+                throw new ArgumentNullException(nameof(provider));
+            }
+
+            if (detailsProvider == null)
+            {
+                throw new ArgumentNullException(nameof(detailsProvider));
+            }
+
+            if (details == null)
+            {
+                throw new ArgumentNullException(nameof(details));
+            }
+
             _provider = provider;
             _detailsProvider = detailsProvider;
             _details = details;

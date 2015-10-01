@@ -4,7 +4,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Filters
 {
@@ -19,9 +18,19 @@ namespace Microsoft.AspNet.Mvc.Filters
 
         /// <inheritdoc />
         public async Task OnActionExecutionAsync(
-            [NotNull] ActionExecutingContext context,
-            [NotNull] ActionExecutionDelegate next)
+            ActionExecutingContext context,
+            ActionExecutionDelegate next)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (next == null)
+            {
+                throw new ArgumentNullException(nameof(next));
+            }
+
             var controller = context.Controller;
             if (controller == null)
             {

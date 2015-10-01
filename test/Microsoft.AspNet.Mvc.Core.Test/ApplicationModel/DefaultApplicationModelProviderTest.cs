@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 using Xunit;
 
@@ -728,10 +727,10 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
 
             // OrderBy is used because the order of the results may very depending on the platform / client.
             var action = Assert.Single(actions, a => a.AttributeRouteModel.Template == "Products");
-            Assert.Equal(new [] { "GET", "POST" }, action.HttpMethods.OrderBy(key => key, StringComparer.Ordinal));
+            Assert.Equal(new[] { "GET", "POST" }, action.HttpMethods.OrderBy(key => key, StringComparer.Ordinal));
 
             action = Assert.Single(actions, a => a.AttributeRouteModel.Template == "v2/Products");
-            Assert.Equal(new [] { "GET", "POST" }, action.HttpMethods.OrderBy(key => key, StringComparer.Ordinal));
+            Assert.Equal(new[] { "GET", "POST" }, action.HttpMethods.OrderBy(key => key, StringComparer.Ordinal));
         }
 
         [Fact]
@@ -1173,34 +1172,34 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         public class SomeFiltersController : IAsyncActionFilter, IResultFilter
         {
             public Task OnActionExecutionAsync(
-                [NotNull] ActionExecutingContext context,
-                [NotNull] ActionExecutionDelegate next)
+                ActionExecutingContext context,
+                ActionExecutionDelegate next)
             {
                 return null;
             }
 
-            public void OnResultExecuted([NotNull] ResultExecutedContext context)
+            public void OnResultExecuted(ResultExecutedContext context)
             {
             }
 
-            public void OnResultExecuting([NotNull]ResultExecutingContext context)
+            public void OnResultExecuting(ResultExecutingContext context)
             {
             }
         }
 
         private class UnsupportedFiltersController : IExceptionFilter, IAuthorizationFilter, IAsyncResourceFilter
         {
-            public void OnAuthorization([NotNull]AuthorizationContext context)
+            public void OnAuthorization(AuthorizationContext context)
             {
                 throw new NotImplementedException();
             }
 
-            public void OnException([NotNull]ExceptionContext context)
+            public void OnException(ExceptionContext context)
             {
                 throw new NotImplementedException();
             }
 
-            public Task OnResourceExecutionAsync([NotNull]ResourceExecutingContext context, [NotNull]ResourceExecutionDelegate next)
+            public Task OnResourceExecutionAsync(ResourceExecutingContext context, ResourceExecutionDelegate next)
             {
                 throw new NotImplementedException();
             }

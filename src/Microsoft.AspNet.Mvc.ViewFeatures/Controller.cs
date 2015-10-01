@@ -1153,10 +1153,6 @@ namespace Microsoft.AspNet.Mvc
         [NonAction]
         public virtual void OnActionExecuting(ActionExecutingContext context)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
         }
 
         /// <summary>
@@ -1166,10 +1162,6 @@ namespace Microsoft.AspNet.Mvc
         [NonAction]
         public virtual void OnActionExecuted(ActionExecutedContext context)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
         }
 
         /// <summary>

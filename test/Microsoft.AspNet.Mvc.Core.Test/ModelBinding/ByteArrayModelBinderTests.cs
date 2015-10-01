@@ -1,10 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if DNX451
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Testing;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Test
@@ -112,7 +110,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public async Task BindModel_ReturnsNull_ForOtherTypes()
         {
             // Arrange
-            var bindingContext = GetBindingContext(null, typeof(int[]));
+            var bindingContext = GetBindingContext(new SimpleValueProvider(), typeof(int[]));
             var binder = new ByteArrayModelBinder();
 
             // Act
@@ -140,4 +138,3 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         }
     }
 }
-#endif

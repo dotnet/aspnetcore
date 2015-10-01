@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
-using Microsoft.Framework.Internal;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc
@@ -30,7 +29,7 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         /// <param name="fileStream">The stream with the file.</param>
         /// <param name="contentType">The Content-Type header of the response.</param>
-        public FileStreamResult([NotNull] Stream fileStream, [NotNull] string contentType)
+        public FileStreamResult(Stream fileStream, string contentType)
             : this(fileStream, new MediaTypeHeaderValue(contentType))
         {
         }
@@ -42,9 +41,19 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         /// <param name="fileStream">The stream with the file.</param>
         /// <param name="contentType">The Content-Type header of the response.</param>
-        public FileStreamResult([NotNull] Stream fileStream, [NotNull] MediaTypeHeaderValue contentType)
+        public FileStreamResult(Stream fileStream, MediaTypeHeaderValue contentType)
             : base(contentType)
         {
+            if (fileStream == null)
+            {
+                throw new ArgumentNullException(nameof(fileStream));
+            }
+
+            if (contentType == null)
+            {
+                throw new ArgumentNullException(nameof(contentType));
+            }
+
             FileStream = fileStream;
         }
 

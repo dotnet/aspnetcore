@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -18,8 +17,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// Creates a new <see cref="ModelAttributes"/> for a <see cref="Type"/>.
         /// </summary>
         /// <param name="typeAttributes">The set of attributes for the <see cref="Type"/>.</param>
-        public ModelAttributes([NotNull] IEnumerable<object> typeAttributes)
+        public ModelAttributes(IEnumerable<object> typeAttributes)
         {
+            if (typeAttributes == null)
+            {
+                throw new ArgumentNullException(nameof(typeAttributes));
+            }
+
             Attributes = typeAttributes.ToArray();
             TypeAttributes = Attributes;
         }
@@ -31,8 +35,18 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <param name="typeAttributes">
         /// The set of attributes for the property's <see cref="Type"/>. See <see cref="PropertyInfo.PropertyType"/>.
         /// </param>
-        public ModelAttributes([NotNull] IEnumerable<object> propertyAttributes, [NotNull] IEnumerable<object> typeAttributes)
+        public ModelAttributes(IEnumerable<object> propertyAttributes, IEnumerable<object> typeAttributes)
         {
+            if (propertyAttributes == null)
+            {
+                throw new ArgumentNullException(nameof(propertyAttributes));
+            }
+
+            if (typeAttributes == null)
+            {
+                throw new ArgumentNullException(nameof(typeAttributes));
+            }
+
             PropertyAttributes = propertyAttributes.ToArray();
             TypeAttributes = typeAttributes.ToArray();
             Attributes = PropertyAttributes.Concat(TypeAttributes).ToArray();
@@ -65,8 +79,18 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <param name="property">A <see cref="PropertyInfo"/> for which attributes need to be resolved.
         /// </param>
         /// <returns>A <see cref="ModelAttributes"/> instance with the attributes of the property.</returns>
-        public static ModelAttributes GetAttributesForProperty([NotNull] Type type, [NotNull] PropertyInfo property)
+        public static ModelAttributes GetAttributesForProperty(Type type, PropertyInfo property)
         {
+            if (type == null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
+            if (property == null)
+            {
+                throw new ArgumentNullException(nameof(property));
+            }
+
             var propertyAttributes = property.GetCustomAttributes();
             var typeAttributes = property.PropertyType.GetTypeInfo().GetCustomAttributes();
 
@@ -89,8 +113,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <param name="type">The <see cref="Type"/> for which attributes need to be resolved.
         /// </param>
         /// <returns>A <see cref="ModelAttributes"/> instance with the attributes of the <see cref="Type"/>.</returns>
-        public static ModelAttributes GetAttributesForType([NotNull] Type type)
+        public static ModelAttributes GetAttributesForType(Type type)
         {
+            if (type == null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
             var attributes = type.GetTypeInfo().GetCustomAttributes();
 
             var metadataType = GetMetadataType(type);

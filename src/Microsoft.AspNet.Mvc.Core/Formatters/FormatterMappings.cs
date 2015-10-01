@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Mvc.Core;
-using Microsoft.Framework.Internal;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc.Formatters
@@ -23,8 +22,18 @@ namespace Microsoft.AspNet.Mvc.Formatters
         /// </summary>
         /// <param name="format">The format value.</param>
         /// <param name="contentType">The <see cref="MediaTypeHeaderValue"/> for the format value.</param>
-        public void SetMediaTypeMappingForFormat([NotNull] string format, [NotNull] MediaTypeHeaderValue contentType)
+        public void SetMediaTypeMappingForFormat(string format, MediaTypeHeaderValue contentType)
         {
+            if (format == null)
+            {
+                throw new ArgumentNullException(nameof(format));
+            }
+
+            if (contentType == null)
+            {
+                throw new ArgumentNullException(nameof(contentType));
+            }
+
             ValidateContentType(contentType);
             format = RemovePeriodIfPresent(format);
             _map[format] = contentType.CopyAsReadOnly();
@@ -35,8 +44,13 @@ namespace Microsoft.AspNet.Mvc.Formatters
         /// </summary>
         /// <param name="format">The format value.</param>
         /// <returns>The <see cref="MediaTypeHeaderValue"/> for input format.</returns>
-        public MediaTypeHeaderValue GetMediaTypeMappingForFormat([NotNull] string format)
+        public MediaTypeHeaderValue GetMediaTypeMappingForFormat(string format)
         {
+            if (format == null)
+            {
+                throw new ArgumentNullException(nameof(format));
+            }
+
             format = RemovePeriodIfPresent(format);
 
             MediaTypeHeaderValue value = null;
@@ -50,8 +64,13 @@ namespace Microsoft.AspNet.Mvc.Formatters
         /// </summary>
         /// <param name="format">The format value.</param>
         /// <returns><c>true</c> if the format is successfully found and cleared; otherwise, <c>false</c>.</returns>
-        public bool ClearMediaTypeMappingForFormat([NotNull] string format)
+        public bool ClearMediaTypeMappingForFormat(string format)
         {
+            if (format == null)
+            {
+                throw new ArgumentNullException(nameof(format));
+            }
+
             format = RemovePeriodIfPresent(format);
             return _map.Remove(format);
         }

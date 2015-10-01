@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.Routing;
@@ -32,7 +31,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             // Arrange
             var values = new Dictionary<string, object>();
             var httpContext = GetHttpContext(new ActionDescriptor());
-            var route = (new Mock<IRouter>()).Object;
+            var route = Mock.Of<IRouter>();
 
             // Act
             var match = _constraint.Match(httpContext, route, keyName, values, direction);
@@ -58,7 +57,7 @@ namespace Microsoft.AspNet.Mvc.Routing
                                                           "testAction");
             actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint("randomKey", "testRandom"));
             var httpContext = GetHttpContext(actionDescriptor);
-            var route = (new Mock<IRouter>()).Object;
+            var route = Mock.Of<IRouter>();
             var values = new Dictionary<string, object>()
                          {
                             { "area", "testArea" },
@@ -91,7 +90,7 @@ namespace Microsoft.AspNet.Mvc.Routing
                                                           "testAction");
             actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint("randomKey", "testRandom"));
             var httpContext = GetHttpContext(actionDescriptor);
-            var route = (new Mock<IRouter>()).Object;
+            var route = Mock.Of<IRouter>();
             var values = new Dictionary<string, object>()
                          {
                             { "area", "invalidTestArea" },
@@ -116,7 +115,7 @@ namespace Microsoft.AspNet.Mvc.Routing
                                                           controller: null,
                                                           action: null);
             var httpContext = GetHttpContext(actionDescriptor);
-            var route = (new Mock<IRouter>()).Object;
+            var route = Mock.Of<IRouter>();
             var values = new Dictionary<string, object>()
                          {
                             { "area", 12 },
@@ -135,20 +134,24 @@ namespace Microsoft.AspNet.Mvc.Routing
         public void ActionDescriptorsCollection_SettingNullValue_Throws(RouteDirection direction)
         {
             // Arrange
+            var actionDescriptorCollectionProvider = Mock.Of<IActionDescriptorsCollectionProvider>();
             var httpContext = new Mock<HttpContext>();
-            httpContext.Setup(o => o.RequestServices
-                                  .GetService(typeof(IActionDescriptorsCollectionProvider)))
-                       .Returns(new Mock<IActionDescriptorsCollectionProvider>().Object);
+            httpContext
+                .Setup(o => o.RequestServices.GetService(typeof(IActionDescriptorsCollectionProvider)))
+                .Returns(actionDescriptorCollectionProvider);
+
             // Act & Assert
             var ex = Assert.Throws<InvalidOperationException>(
-                                    () => _constraint.Match(httpContext.Object,
-                                                            null,
-                                                            "area",
-                                                            new Dictionary<string, object> { { "area", "area" } },
-                                                            direction));
-            Assert.Equal("The 'ActionDescriptors' property of " +
-                         "'Castle.Proxies.IActionDescriptorsCollectionProviderProxy' must not be null.",
-                         ex.Message);
+                () => _constraint.Match(
+                    httpContext.Object,
+                    Mock.Of<IRouter>(),
+                    "area",
+                    new Dictionary<string, object> { { "area", "area" } },
+                    direction));
+            var providerName = actionDescriptorCollectionProvider.GetType().FullName;
+            Assert.Equal(
+                $"The 'ActionDescriptors' property of '{providerName}' must not be null.",
+                ex.Message);
         }
 
         private static HttpContext GetHttpContext(ActionDescriptor actionDescriptor)

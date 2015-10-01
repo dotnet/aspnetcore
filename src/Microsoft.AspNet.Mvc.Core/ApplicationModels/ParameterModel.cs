@@ -1,11 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ApplicationModels
 {
@@ -13,16 +13,31 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
     public class ParameterModel : ICommonModel, IBindingModel
     {
         public ParameterModel(
-            [NotNull] ParameterInfo parameterInfo,
-            [NotNull] IReadOnlyList<object> attributes)
+            ParameterInfo parameterInfo,
+            IReadOnlyList<object> attributes)
         {
+            if (parameterInfo == null)
+            {
+                throw new ArgumentNullException(nameof(parameterInfo));
+            }
+
+            if (attributes == null)
+            {
+                throw new ArgumentNullException(nameof(attributes));
+            }
+
             ParameterInfo = parameterInfo;
             Properties = new Dictionary<object, object>();
             Attributes = new List<object>(attributes);
         }
 
-        public ParameterModel([NotNull] ParameterModel other)
+        public ParameterModel(ParameterModel other)
         {
+            if (other == null)
+            {
+                throw new ArgumentNullException(nameof(other));
+            }
+
             Action = other.Action;
             Attributes = new List<object>(other.Attributes);
             BindingInfo = other.BindingInfo == null ? null : new BindingInfo(other.BindingInfo);

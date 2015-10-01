@@ -10,7 +10,6 @@ using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Routing.Template;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Mvc.Routing
@@ -28,11 +27,31 @@ namespace Microsoft.AspNet.Mvc.Routing
         private InnerAttributeRoute _inner;
 
         public AttributeRoute(
-            [NotNull] IRouter target,
-            [NotNull] IActionDescriptorsCollectionProvider actionDescriptorsCollectionProvider,
-            [NotNull] IInlineConstraintResolver constraintResolver,
-            [NotNull] ILoggerFactory loggerFactory)
+            IRouter target,
+            IActionDescriptorsCollectionProvider actionDescriptorsCollectionProvider,
+            IInlineConstraintResolver constraintResolver,
+            ILoggerFactory loggerFactory)
         {
+            if (target == null)
+            {
+                throw new ArgumentNullException(nameof(target));
+            }
+
+            if (actionDescriptorsCollectionProvider == null)
+            {
+                throw new ArgumentNullException(nameof(actionDescriptorsCollectionProvider));
+            }
+
+            if (constraintResolver == null)
+            {
+                throw new ArgumentNullException(nameof(constraintResolver));
+            }
+
+            if (loggerFactory == null)
+            {
+                throw new ArgumentNullException(nameof(loggerFactory));
+            }
+
             _target = target;
             _actionDescriptorsCollectionProvider = actionDescriptorsCollectionProvider;
             _constraintResolver = constraintResolver;

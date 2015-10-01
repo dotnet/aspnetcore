@@ -5,7 +5,6 @@ using System;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc
@@ -87,8 +86,13 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         public int Order { get; set; }
 
-        public IFilterMetadata CreateInstance([NotNull] IServiceProvider serviceProvider)
+        public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
         {
+            if (serviceProvider == null)
+            {
+                throw new ArgumentNullException(nameof(serviceProvider));
+            }
+
             var optionsAccessor = serviceProvider.GetRequiredService<IOptions<MvcOptions>>();
 
             CacheProfile selectedProfile = null;
@@ -110,7 +114,7 @@ namespace Microsoft.AspNet.Mvc
             _noStore = _noStore ?? selectedProfile?.NoStore;
             _location = _location ?? selectedProfile?.Location;
             VaryByHeader = VaryByHeader ?? selectedProfile?.VaryByHeader;
-            
+
             // ResponseCacheFilter cannot take any null values. Hence, if there are any null values,
             // the properties convert them to their defaults and are passed on.
             return new ResponseCacheFilter(

@@ -17,10 +17,6 @@ namespace Microsoft.AspNet.Mvc
         /// <inheritdoc />
         public void OnResourceExecuted(ResourceExecutedContext context)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
         }
 
         /// <inheritdoc />

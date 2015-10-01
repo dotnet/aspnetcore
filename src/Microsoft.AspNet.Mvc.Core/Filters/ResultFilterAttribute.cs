@@ -3,7 +3,6 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Filters
 {
@@ -12,18 +11,28 @@ namespace Microsoft.AspNet.Mvc.Filters
     {
         public int Order { get; set; }
 
-        public virtual void OnResultExecuting([NotNull] ResultExecutingContext context)
+        public virtual void OnResultExecuting(ResultExecutingContext context)
         {
         }
 
-        public virtual void OnResultExecuted([NotNull] ResultExecutedContext context)
+        public virtual void OnResultExecuted(ResultExecutedContext context)
         {
         }
 
         public virtual async Task OnResultExecutionAsync(
-            [NotNull] ResultExecutingContext context,
-            [NotNull] ResultExecutionDelegate next)
+            ResultExecutingContext context,
+            ResultExecutionDelegate next)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (next == null)
+            {
+                throw new ArgumentNullException(nameof(next));
+            }
+
             OnResultExecuting(context);
             if (!context.Cancel)
             {

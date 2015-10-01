@@ -7,7 +7,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
-using Microsoft.Framework.Internal;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
@@ -338,7 +337,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
                 SupportedEncodings.Add(Encoding.UTF8);
             }
 
-            public override Task WriteResponseBodyAsync([NotNull] OutputFormatterContext context)
+            public override Task WriteResponseBodyAsync(OutputFormatterContext context)
             {
                 return Task.FromResult(true);
             }

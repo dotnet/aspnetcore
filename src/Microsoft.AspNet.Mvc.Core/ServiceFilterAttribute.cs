@@ -6,7 +6,6 @@ using System.Diagnostics;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -14,8 +13,13 @@ namespace Microsoft.AspNet.Mvc
     [DebuggerDisplay("ServiceFilter: Type={ServiceType} Order={Order}")]
     public class ServiceFilterAttribute : Attribute, IFilterFactory, IOrderedFilter
     {
-        public ServiceFilterAttribute([NotNull] Type type)
+        public ServiceFilterAttribute(Type type)
         {
+            if (type == null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
             ServiceType = type;
         }
 
@@ -23,8 +27,13 @@ namespace Microsoft.AspNet.Mvc
 
         public int Order { get; set; }
 
-        public IFilterMetadata CreateInstance([NotNull] IServiceProvider serviceProvider)
+        public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
         {
+            if (serviceProvider == null)
+            {
+                throw new ArgumentNullException(nameof(serviceProvider));
+            }
+
             var service = serviceProvider.GetRequiredService(ServiceType);
 
             var filter = service as IFilterMetadata;

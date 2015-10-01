@@ -4,7 +4,6 @@
 using System;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Cors
 {
@@ -33,8 +32,23 @@ namespace Microsoft.AspNet.Mvc.Cors
             }
         }
 
-        public IFilterMetadata CreateInstance([NotNull] IServiceProvider serviceProvider)
+        public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
         {
+            if (serviceProvider == null)
+            {
+                throw new ArgumentNullException(nameof(serviceProvider));
+            }
+
+            if (serviceProvider == null)
+            {
+                throw new ArgumentNullException(nameof(serviceProvider));
+            }
+
+            if (serviceProvider == null)
+            {
+                throw new ArgumentNullException(nameof(serviceProvider));
+            }
+
             var filter = serviceProvider.GetRequiredService<CorsAuthorizationFilter>();
             filter.PolicyName = _policyName;
             return filter;

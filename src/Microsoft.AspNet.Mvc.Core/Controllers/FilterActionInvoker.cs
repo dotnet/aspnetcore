@@ -16,7 +16,6 @@ using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Mvc.Controllers
@@ -62,18 +61,68 @@ namespace Microsoft.AspNet.Mvc.Controllers
             "Request was short circuited at result filter '{ResultFilter}'.";
 
         public FilterActionInvoker(
-            [NotNull] ActionContext actionContext,
-            [NotNull] IReadOnlyList<IFilterProvider> filterProviders,
-            [NotNull] IReadOnlyList<IInputFormatter> inputFormatters,
-            [NotNull] IReadOnlyList<IOutputFormatter> outputFormatters,
-            [NotNull] IReadOnlyList<IModelBinder> modelBinders,
-            [NotNull] IReadOnlyList<IModelValidatorProvider> modelValidatorProviders,
-            [NotNull] IReadOnlyList<IValueProviderFactory> valueProviderFactories,
-            [NotNull] IActionBindingContextAccessor actionBindingContextAccessor,
-            [NotNull] ILogger logger,
-            [NotNull] TelemetrySource telemetry,
+            ActionContext actionContext,
+            IReadOnlyList<IFilterProvider> filterProviders,
+            IReadOnlyList<IInputFormatter> inputFormatters,
+            IReadOnlyList<IOutputFormatter> outputFormatters,
+            IReadOnlyList<IModelBinder> modelBinders,
+            IReadOnlyList<IModelValidatorProvider> modelValidatorProviders,
+            IReadOnlyList<IValueProviderFactory> valueProviderFactories,
+            IActionBindingContextAccessor actionBindingContextAccessor,
+            ILogger logger,
+            TelemetrySource telemetry,
             int maxModelValidationErrors)
         {
+            if (actionContext == null)
+            {
+                throw new ArgumentNullException(nameof(actionContext));
+            }
+
+            if (filterProviders == null)
+            {
+                throw new ArgumentNullException(nameof(filterProviders));
+            }
+
+            if (inputFormatters == null)
+            {
+                throw new ArgumentNullException(nameof(inputFormatters));
+            }
+
+            if (outputFormatters == null)
+            {
+                throw new ArgumentNullException(nameof(outputFormatters));
+            }
+
+            if (modelBinders == null)
+            {
+                throw new ArgumentNullException(nameof(modelBinders));
+            }
+
+            if (modelValidatorProviders == null)
+            {
+                throw new ArgumentNullException(nameof(modelValidatorProviders));
+            }
+
+            if (valueProviderFactories == null)
+            {
+                throw new ArgumentNullException(nameof(valueProviderFactories));
+            }
+
+            if (actionBindingContextAccessor == null)
+            {
+                throw new ArgumentNullException(nameof(actionBindingContextAccessor));
+            }
+
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
+            if (telemetry == null)
+            {
+                throw new ArgumentNullException(nameof(telemetry));
+            }
+
             ActionContext = actionContext;
 
             _filterProviders = filterProviders;
@@ -120,8 +169,8 @@ namespace Microsoft.AspNet.Mvc.Controllers
         protected abstract Task<IActionResult> InvokeActionAsync(ActionExecutingContext actionExecutingContext);
 
         protected abstract Task<IDictionary<string, object>> BindActionArgumentsAsync(
-            [NotNull] ActionContext context,
-            [NotNull] ActionBindingContext bindingContext);
+            ActionContext context,
+            ActionBindingContext bindingContext);
 
         public virtual async Task InvokeAsync()
         {

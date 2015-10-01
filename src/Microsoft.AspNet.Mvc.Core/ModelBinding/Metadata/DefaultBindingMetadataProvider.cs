@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 {
@@ -27,8 +26,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         }
 
         /// <inheritdoc />
-        public void GetBindingMetadata([NotNull] BindingMetadataProviderContext context)
+        public void GetBindingMetadata(BindingMetadataProviderContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             // BinderModelName
             foreach (var binderModelNameAttribute in context.Attributes.OfType<IModelNameProvider>())
             {

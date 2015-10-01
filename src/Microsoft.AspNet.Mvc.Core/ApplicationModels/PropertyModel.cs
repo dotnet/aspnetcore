@@ -1,11 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ApplicationModels
 {
@@ -21,9 +21,19 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         /// <param name="propertyInfo">The <see cref="PropertyInfo"/> for the underlying property.</param>
         /// <param name="attributes">Any attributes which are annotated on the property.</param>
         public PropertyModel(
-            [NotNull] PropertyInfo propertyInfo,
-            [NotNull] IReadOnlyList<object> attributes)
+            PropertyInfo propertyInfo,
+            IReadOnlyList<object> attributes)
         {
+            if (propertyInfo == null)
+            {
+                throw new ArgumentNullException(nameof(propertyInfo));
+            }
+
+            if (attributes == null)
+            {
+                throw new ArgumentNullException(nameof(attributes));
+            }
+
             PropertyInfo = propertyInfo;
             Properties = new Dictionary<object, object>();
             Attributes = new List<object>(attributes);
@@ -33,8 +43,13 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         /// Creats a new instance of <see cref="PropertyModel"/> from a given <see cref="PropertyModel"/>.
         /// </summary>
         /// <param name="other">The <see cref="PropertyModel"/> which needs to be copied.</param>
-        public PropertyModel([NotNull] PropertyModel other)
+        public PropertyModel(PropertyModel other)
         {
+            if (other == null)
+            {
+                throw new ArgumentNullException(nameof(other));
+            }
+
             Controller = other.Controller;
             Attributes = new List<object>(other.Attributes);
             BindingInfo = BindingInfo == null ? null : new BindingInfo(other.BindingInfo);

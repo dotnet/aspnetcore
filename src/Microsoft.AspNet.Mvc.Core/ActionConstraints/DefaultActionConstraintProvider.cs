@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ActionConstraints
 {
@@ -23,8 +22,13 @@ namespace Microsoft.AspNet.Mvc.ActionConstraints
         }
 
         /// <inheritdoc />
-        public void OnProvidersExecuting([NotNull] ActionConstraintProviderContext context)
+        public void OnProvidersExecuting(ActionConstraintProviderContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             foreach (var item in context.Results)
             {
                 ProvideConstraint(item, context.HttpContext.RequestServices);
@@ -32,7 +36,7 @@ namespace Microsoft.AspNet.Mvc.ActionConstraints
         }
 
         /// <inheritdoc />
-        public void OnProvidersExecuted([NotNull] ActionConstraintProviderContext context)
+        public void OnProvidersExecuted(ActionConstraintProviderContext context)
         {
         }
 

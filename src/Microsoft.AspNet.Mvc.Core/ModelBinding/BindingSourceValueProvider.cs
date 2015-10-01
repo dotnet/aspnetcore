@@ -2,9 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -33,8 +31,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// The <see cref="ModelBinding.BindingSource"/>. Must be a single-source (non-composite) with
         /// <see cref="ModelBinding.BindingSource.IsGreedy"/> equal to <c>false</c>.
         /// </param>
-        public BindingSourceValueProvider([NotNull] BindingSource bindingSource)
+        public BindingSourceValueProvider(BindingSource bindingSource)
         {
+            if (bindingSource == null)
+            {
+                throw new ArgumentNullException(nameof(bindingSource));
+            }
+
             if (bindingSource.IsGreedy)
             {
                 var message = Resources.FormatBindingSource_CannotBeGreedy(
@@ -68,6 +71,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <inheritdoc />
         public virtual IValueProvider Filter(BindingSource bindingSource)
         {
+            if (bindingSource == null)
+            {
+                throw new ArgumentNullException(nameof(bindingSource));
+            }
+
             if (bindingSource.CanAcceptDataFrom(BindingSource))
             {
                 return this;

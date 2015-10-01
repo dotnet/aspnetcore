@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,22 +6,36 @@ using Microsoft.AspNet.Cors.Core;
 using Microsoft.AspNet.Mvc.ApplicationModels;
 using Microsoft.AspNet.Mvc.Cors;
 using Microsoft.Framework.DependencyInjection.Extensions;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.DependencyInjection
 {
     public static class MvcCorsMvcCoreBuilderExtensions
     {
-        public static IMvcCoreBuilder AddCors([NotNull] this IMvcCoreBuilder builder)
+        public static IMvcCoreBuilder AddCors(this IMvcCoreBuilder builder)
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
             AddCorsServices(builder.Services);
             return builder;
         }
 
         public static IMvcCoreBuilder AddCors(
-            [NotNull] this IMvcCoreBuilder builder,
-            [NotNull] Action<CorsOptions> setupAction)
+            this IMvcCoreBuilder builder,
+            Action<CorsOptions> setupAction)
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (setupAction == null)
+            {
+                throw new ArgumentNullException(nameof(setupAction));
+            }
+
             AddCorsServices(builder.Services);
 
             if (setupAction != null)
@@ -33,9 +47,19 @@ namespace Microsoft.Framework.DependencyInjection
         }
 
         public static IMvcCoreBuilder ConfigureCors(
-            [NotNull] this IMvcCoreBuilder builder,
-            [NotNull] Action<CorsOptions> setupAction)
+            this IMvcCoreBuilder builder,
+            Action<CorsOptions> setupAction)
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (setupAction == null)
+            {
+                throw new ArgumentNullException(nameof(setupAction));
+            }
+
             builder.Services.Configure(setupAction);
             return builder;
         }

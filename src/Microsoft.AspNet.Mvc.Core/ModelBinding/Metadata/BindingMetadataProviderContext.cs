@@ -1,8 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 {
@@ -17,9 +17,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         /// <param name="key">The <see cref="ModelMetadataIdentity"/> for the <see cref="ModelMetadata"/>.</param>
         /// <param name="attributes">The attributes for the <see cref="ModelMetadata"/>.</param>
         public BindingMetadataProviderContext(
-            [NotNull] ModelMetadataIdentity key, 
-            [NotNull] ModelAttributes attributes)
+            ModelMetadataIdentity key,
+            ModelAttributes attributes)
         {
+            if (attributes == null)
+            {
+                throw new ArgumentNullException(nameof(attributes));
+            }
+
             Key = key;
             Attributes = attributes.Attributes;
             PropertyAttributes = attributes.PropertyAttributes;

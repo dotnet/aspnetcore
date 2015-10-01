@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Formatters;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -42,8 +41,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <returns>
         /// A <see cref="Task{ModelBindingResult}"/> which when completed returns a <see cref="ModelBindingResult"/>.
         /// </returns>
-        private async Task<ModelBindingResult> BindModelCoreAsync([NotNull] ModelBindingContext bindingContext)
+        private async Task<ModelBindingResult> BindModelCoreAsync(ModelBindingContext bindingContext)
         {
+            if (bindingContext == null)
+            {
+                throw new ArgumentNullException(nameof(bindingContext));
+            }
+
             // For compatibility with MVC 5.0 for top level object we want to consider an empty key instead of
             // the parameter name/a custom name. In all other cases (like when binding body to a property) we
             // consider the entire ModelName as a prefix.

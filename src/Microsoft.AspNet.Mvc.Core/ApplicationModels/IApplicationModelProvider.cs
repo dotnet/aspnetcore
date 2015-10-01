@@ -1,7 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ApplicationModels
 {
@@ -35,12 +33,12 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         /// Executed for the first pass of <see cref="ApplicationModel"/> building. See <see cref="Order"/>.
         /// </summary>
         /// <param name="context">The <see cref="ApplicationModelProviderContext"/>.</param>
-        void OnProvidersExecuting([NotNull] ApplicationModelProviderContext context);
+        void OnProvidersExecuting(ApplicationModelProviderContext context);
 
         /// <summary>
         /// Executed for the second pass of <see cref="ApplicationModel"/> building. See <see cref="Order"/>.
         /// </summary>
         /// <param name="context">The <see cref="ApplicationModelProviderContext"/>.</param>
-        void OnProvidersExecuted([NotNull] ApplicationModelProviderContext context);
+        void OnProvidersExecuted(ApplicationModelProviderContext context);
     }
 }

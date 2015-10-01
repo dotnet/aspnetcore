@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
@@ -23,6 +24,11 @@ namespace Microsoft.AspNet.Mvc.Formatters
 
         public override bool CanWriteResult(OutputFormatterContext context, MediaTypeHeaderValue contentType)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             // Ignore the passed in content type, if the object is string
             // always return it as a text/plain format.
             if (context.DeclaredType == typeof(string))
@@ -40,6 +46,11 @@ namespace Microsoft.AspNet.Mvc.Formatters
 
         public override Task WriteResponseBodyAsync(OutputFormatterContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var valueAsString = (string)context.Object;
             if (string.IsNullOrEmpty(valueAsString))
             {

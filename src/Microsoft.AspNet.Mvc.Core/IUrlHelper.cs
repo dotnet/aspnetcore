@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNet.Mvc.Routing;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -17,7 +16,7 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         /// <param name="actionContext">The context object for the generated URLs for an action method.</param>
         /// <returns>The fully qualified or absolute URL to an action method.</returns>
-        string Action([NotNull] UrlActionContext actionContext);
+        string Action(UrlActionContext actionContext);
 
         /// <summary>
         /// Converts a virtual (relative) path to an application absolute path.
@@ -57,7 +56,7 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         /// <param name="routeContext">The context object for the generated URLs for a route.</param>
         /// <returns>The fully qualified or absolute URL.</returns>
-        string RouteUrl([NotNull] UrlRouteContext routeContext);
+        string RouteUrl(UrlRouteContext routeContext);
 
         /// <summary>
         /// Generates an absolute URL using the specified route name and values.

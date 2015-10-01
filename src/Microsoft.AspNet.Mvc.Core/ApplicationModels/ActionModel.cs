@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -8,7 +9,6 @@ using System.Reflection;
 using Microsoft.AspNet.Mvc.ActionConstraints;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.Infrastructure;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ApplicationModels
 {
@@ -17,9 +17,19 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
     public class ActionModel : ICommonModel, IFilterModel, IApiExplorerModel
     {
         public ActionModel(
-            [NotNull] MethodInfo actionMethod,
-            [NotNull] IReadOnlyList<object> attributes)
+            MethodInfo actionMethod,
+            IReadOnlyList<object> attributes)
         {
+            if (actionMethod == null)
+            {
+                throw new ArgumentNullException(nameof(actionMethod));
+            }
+
+            if (attributes == null)
+            {
+                throw new ArgumentNullException(nameof(attributes));
+            }
+
             ActionMethod = actionMethod;
 
             ApiExplorer = new ApiExplorerModel();
@@ -32,8 +42,13 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             Properties = new Dictionary<object, object>();
         }
 
-        public ActionModel([NotNull] ActionModel other)
+        public ActionModel(ActionModel other)
         {
+            if (other == null)
+            {
+                throw new ArgumentNullException(nameof(other));
+            }
+
             ActionMethod = other.ActionMethod;
             ActionName = other.ActionName;
 

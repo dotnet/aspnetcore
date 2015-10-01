@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Concurrent;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Infrastructure
 {
@@ -21,9 +20,19 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
 
         /// <inheritdoc/>
         public TInstance CreateInstance<TInstance>(
-            [NotNull] IServiceProvider serviceProvider,
-            [NotNull] Type implementationType)
+            IServiceProvider serviceProvider,
+            Type implementationType)
         {
+            if (serviceProvider == null)
+            {
+                throw new ArgumentNullException(nameof(serviceProvider));
+            }
+
+            if (implementationType == null)
+            {
+                throw new ArgumentNullException(nameof(implementationType));
+            }
+
             var createFactory = _typeActivatorCache.GetOrAdd(implementationType, _createFactory);
             return (TInstance)createFactory(serviceProvider, arguments: null);
         }

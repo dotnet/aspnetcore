@@ -1,11 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.ObjectModel;
 using System.Reflection;
 using Microsoft.AspNet.Mvc.Core;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Filters
 {
@@ -21,8 +20,13 @@ namespace Microsoft.AspNet.Mvc.Filters
         /// <see cref="Microsoft.Framework.DependencyInjection.ActivatorUtilities"/>.
         /// Use <see cref="AddService(Type)"/> to register a service as a filter.
         /// </remarks>
-        public IFilterMetadata Add([NotNull] Type filterType)
+        public IFilterMetadata Add(Type filterType)
         {
+            if (filterType == null)
+            {
+                throw new ArgumentNullException(nameof(filterType));
+            }
+
             return Add(filterType, order: 0);
         }
 
@@ -37,8 +41,13 @@ namespace Microsoft.AspNet.Mvc.Filters
         /// <see cref="Microsoft.Framework.DependencyInjection.ActivatorUtilities"/>.
         /// Use <see cref="AddService(Type)"/> to register a service as a filter.
         /// </remarks>
-        public IFilterMetadata Add([NotNull] Type filterType, int order)
+        public IFilterMetadata Add(Type filterType, int order)
         {
+            if (filterType == null)
+            {
+                throw new ArgumentNullException(nameof(filterType));
+            }
+
             if (!typeof(IFilterMetadata).IsAssignableFrom(filterType))
             {
                 var message = Resources.FormatTypeMustDeriveFromType(
@@ -62,8 +71,13 @@ namespace Microsoft.AspNet.Mvc.Filters
         /// <see cref="Add(Type)"/> to register a service that will be created via
         /// type activation.
         /// </remarks>
-        public IFilterMetadata AddService([NotNull] Type filterType)
+        public IFilterMetadata AddService(Type filterType)
         {
+            if (filterType == null)
+            {
+                throw new ArgumentNullException(nameof(filterType));
+            }
+
             return AddService(filterType, order: 0);
         }
 
@@ -78,8 +92,13 @@ namespace Microsoft.AspNet.Mvc.Filters
         /// <see cref="Add(Type)"/> to register a service that will be created via
         /// type activation.
         /// </remarks>
-        public IFilterMetadata AddService([NotNull] Type filterType, int order)
+        public IFilterMetadata AddService(Type filterType, int order)
         {
+            if (filterType == null)
+            {
+                throw new ArgumentNullException(nameof(filterType));
+            }
+
             if (!typeof(IFilterMetadata).GetTypeInfo().IsAssignableFrom(filterType.GetTypeInfo()))
             {
                 var message = Resources.FormatTypeMustDeriveFromType(

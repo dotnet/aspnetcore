@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Core;
-using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
 using Microsoft.Net.Http.Headers;
@@ -59,16 +58,21 @@ namespace Microsoft.AspNet.Mvc
         public IDictionary<string, object> RouteValues { get; set; }
 
         /// <inheritdoc />
-        protected override void OnFormatting([NotNull] ActionContext context)
+        protected override void OnFormatting(ActionContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var request = context.HttpContext.Request;
             var urlHelper = UrlHelper ?? context.HttpContext.RequestServices.GetRequiredService<IUrlHelper>();
 
             var url = urlHelper.Action(
-                ActionName, 
-                ControllerName, 
-                RouteValues, 
-                request.Scheme, 
+                ActionName,
+                ControllerName,
+                RouteValues,
+                request.Scheme,
                 request.Host.ToUriComponent());
 
             if (string.IsNullOrEmpty(url))

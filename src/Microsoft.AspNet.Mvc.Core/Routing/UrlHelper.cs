@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.Internal;
@@ -47,12 +46,17 @@ namespace Microsoft.AspNet.Mvc.Routing
         /// <inheritdoc />
         public virtual string Action(UrlActionContext actionContext)
         {
+            if (actionContext == null)
+            {
+                throw new ArgumentNullException(nameof(actionContext));
+            }
+
             var valuesDictionary = PropertyHelper.ObjectToDictionary(actionContext.Values);
 
             if (actionContext.Action == null)
             {
                 object action;
-                if (!valuesDictionary.ContainsKey("action") && 
+                if (!valuesDictionary.ContainsKey("action") &&
                     AmbientValues.TryGetValue("action", out action))
                 {
                     valuesDictionary["action"] = action;
@@ -66,7 +70,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             if (actionContext.Controller == null)
             {
                 object controller;
-                if (!valuesDictionary.ContainsKey("controller") && 
+                if (!valuesDictionary.ContainsKey("controller") &&
                     AmbientValues.TryGetValue("controller", out controller))
                 {
                     valuesDictionary["controller"] = controller;
@@ -102,6 +106,11 @@ namespace Microsoft.AspNet.Mvc.Routing
         /// <inheritdoc />
         public virtual string RouteUrl(UrlRouteContext routeContext)
         {
+            if (routeContext == null)
+            {
+                throw new ArgumentNullException(nameof(routeContext));
+            }
+
             var valuesDictionary = PropertyHelper.ObjectToDictionary(routeContext.Values);
 
             var path = GeneratePathFromRoute(routeContext.RouteName, valuesDictionary);

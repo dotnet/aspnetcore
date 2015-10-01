@@ -1,11 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Threading.Tasks;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.Primitives;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
@@ -25,11 +23,21 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <param name="valuesFactory">A delegate which provides the values to wrap.</param>
         /// <param name="culture">The culture to return with ValueProviderResult instances.</param>
         public JQueryFormValueProvider(
-            [NotNull] BindingSource bindingSource,
-            [NotNull] IDictionary<string, StringValues> values,
+            BindingSource bindingSource,
+            IDictionary<string, StringValues> values,
             CultureInfo culture)
             : base(bindingSource)
         {
+            if (bindingSource == null)
+            {
+                throw new ArgumentNullException(nameof(bindingSource));
+            }
+
+            if (values == null)
+            {
+                throw new ArgumentNullException(nameof(values));
+            }
+
             _values = values;
             Culture = culture;
         }

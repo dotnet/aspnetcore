@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,7 +7,6 @@ using System.Reflection;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Formatters;
 using Microsoft.AspNet.Mvc.Internal;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.DependencyInjection
 {
@@ -23,17 +22,37 @@ namespace Microsoft.Framework.DependencyInjection
         /// <param name="setupAction">An <see cref="Action{MvcOptions}"/>.</param>
         /// <returns>The <see cref="IMvcBuilder"/>.</returns>
         public static IMvcBuilder AddMvcOptions(
-            [NotNull] this IMvcBuilder builder,
-            [NotNull] Action<MvcOptions> setupAction)
+            this IMvcBuilder builder,
+            Action<MvcOptions> setupAction)
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (setupAction == null)
+            {
+                throw new ArgumentNullException(nameof(setupAction));
+            }
+
             builder.Services.Configure<MvcOptions>(setupAction);
             return builder;
         }
 
         public static IMvcBuilder AddFormatterMappings(
-            [NotNull] this IMvcBuilder builder,
-            [NotNull] Action<FormatterMappings> setupAction)
+            this IMvcBuilder builder,
+            Action<FormatterMappings> setupAction)
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (setupAction == null)
+            {
+                throw new ArgumentNullException(nameof(setupAction));
+            }
+
             builder.Services.Configure<MvcOptions>((options) => setupAction(options.FormatterMappings));
             return builder;
         }
@@ -47,9 +66,19 @@ namespace Microsoft.Framework.DependencyInjection
         /// <paramref name="services"/> and used for controller discovery.</param>
         /// <returns>The <see cref="IMvcBuilder"/>.</returns>
         public static IMvcBuilder AddControllersAsServices(
-           [NotNull] this IMvcBuilder builder,
-           [NotNull] IEnumerable<Type> controllerTypes)
+           this IMvcBuilder builder,
+           IEnumerable<Type> controllerTypes)
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (controllerTypes == null)
+            {
+                throw new ArgumentNullException(nameof(controllerTypes));
+            }
+
             ControllersAsServices.AddControllersAsServices(builder.Services, controllerTypes);
             return builder;
         }
@@ -62,9 +91,19 @@ namespace Microsoft.Framework.DependencyInjection
         /// <param name="controllerAssemblies">Assemblies to scan.</param>
         /// <returns>The <see cref="IMvcBuilder"/>.</returns>
         public static IMvcBuilder AddControllersAsServices(
-            [NotNull] this IMvcBuilder builder,
-            [NotNull] IEnumerable<Assembly> controllerAssemblies)
+            this IMvcBuilder builder,
+            IEnumerable<Assembly> controllerAssemblies)
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (controllerAssemblies == null)
+            {
+                throw new ArgumentNullException(nameof(controllerAssemblies));
+            }
+
             ControllersAsServices.AddControllersAsServices(builder.Services, controllerAssemblies);
             return builder;
         }

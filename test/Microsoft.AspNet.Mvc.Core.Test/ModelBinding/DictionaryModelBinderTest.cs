@@ -129,6 +129,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             context.OperationBindingContext.ModelBinder = CreateCompositeBinder();
             context.OperationBindingContext.ValueProvider = CreateEnumerableValueProvider(keyFormat, dictionary);
             context.ValueProvider = context.OperationBindingContext.ValueProvider;
+            context.FieldName = modelName;
 
             var metadataProvider = context.OperationBindingContext.MetadataProvider;
             context.ModelMetadata = metadataProvider.GetMetadataForProperty(
@@ -165,6 +166,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             context.OperationBindingContext.ModelBinder = CreateCompositeBinder();
             context.OperationBindingContext.ValueProvider = CreateTestValueProvider("prefix[{0}]", dictionary);
             context.ValueProvider = context.OperationBindingContext.ValueProvider;
+            context.FieldName = context.ModelName;
 
             var metadataProvider = context.OperationBindingContext.MetadataProvider;
             context.ModelMetadata = metadataProvider.GetMetadataForProperty(
@@ -215,6 +217,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             context.OperationBindingContext.ValueProvider =
                 CreateEnumerableValueProvider("prefix[{0}]", stringDictionary);
             context.ValueProvider = context.OperationBindingContext.ValueProvider;
+            context.FieldName = context.ModelName;
 
             var metadataProvider = context.OperationBindingContext.MetadataProvider;
             context.ModelMetadata = metadataProvider.GetMetadataForProperty(
@@ -255,6 +258,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             context.OperationBindingContext.ModelBinder = CreateCompositeBinder();
             context.OperationBindingContext.ValueProvider = CreateEnumerableValueProvider("{0}", stringDictionary);
             context.ValueProvider = context.OperationBindingContext.ValueProvider;
+            context.FieldName = context.ModelName;
 
             var metadataProvider = context.OperationBindingContext.MetadataProvider;
             context.ModelMetadata = metadataProvider.GetMetadataForProperty(
@@ -300,6 +304,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             context.OperationBindingContext.ModelBinder = CreateCompositeBinder();
             context.OperationBindingContext.ValueProvider = CreateEnumerableValueProvider(keyFormat, dictionary);
             context.ValueProvider = context.OperationBindingContext.ValueProvider;
+            context.FieldName = context.ModelName;
 
             var metadataProvider = context.OperationBindingContext.MetadataProvider;
             context.ModelMetadata = metadataProvider.GetMetadataForProperty(

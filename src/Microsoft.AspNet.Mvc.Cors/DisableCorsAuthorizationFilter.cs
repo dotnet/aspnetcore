@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Cors.Core;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Filters;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.Primitives;
 
 namespace Microsoft.AspNet.Mvc.Cors
@@ -26,9 +25,24 @@ namespace Microsoft.AspNet.Mvc.Cors
         }
 
         /// <inheritdoc />
-        public Task OnAuthorizationAsync([NotNull] AuthorizationContext context)
+        public Task OnAuthorizationAsync(AuthorizationContext context)
         {
-            var accessControlRequestMethod = 
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            var accessControlRequestMethod =
                         context.HttpContext.Request.Headers[CorsConstants.AccessControlRequestMethod];
             if (string.Equals(
                     context.HttpContext.Request.Method,

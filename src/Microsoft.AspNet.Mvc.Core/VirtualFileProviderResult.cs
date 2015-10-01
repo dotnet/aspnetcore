@@ -11,7 +11,6 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Internal;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc
@@ -31,9 +30,17 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         /// <param name="fileName">The path to the file. The path must be relative/virtual.</param>
         /// <param name="contentType">The Content-Type header of the response.</param>
-        public VirtualFileProviderResult([NotNull] string fileName, [NotNull] string contentType)
+        public VirtualFileProviderResult(string fileName, string contentType)
             : this(fileName, new MediaTypeHeaderValue(contentType))
         {
+            if (fileName == null)
+            {
+                throw new ArgumentNullException(nameof(fileName));
+            }
+            if (contentType == null)
+            {
+                throw new ArgumentNullException(nameof(contentType));
+            }
         }
 
         /// <summary>
@@ -43,9 +50,19 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         /// <param name="fileName">The path to the file. The path must be relative/virtual.</param>
         /// <param name="contentType">The Content-Type header of the response.</param>
-        public VirtualFileProviderResult([NotNull] string fileName, [NotNull] MediaTypeHeaderValue contentType)
+        public VirtualFileProviderResult(string fileName, MediaTypeHeaderValue contentType)
             : base(contentType)
         {
+            if (fileName == null)
+            {
+                throw new ArgumentNullException(nameof(fileName));
+            }
+
+            if (contentType == null)
+            {
+                throw new ArgumentNullException(nameof(contentType));
+            }
+
             FileName = fileName;
         }
 
@@ -58,10 +75,13 @@ namespace Microsoft.AspNet.Mvc
             {
                 return _fileName;
             }
-
-            [param: NotNull]
             set
             {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
                 _fileName = value;
             }
         }
@@ -118,8 +138,13 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         /// <param name="fileInfo">The <see cref="IFileInfo"/> for which the stream is needed.</param>
         /// <returns><see cref="Stream"/> for the specified <paramref name="fileInfo"/>.</returns>
-        protected virtual Stream GetFileStream([NotNull]IFileInfo fileInfo)
+        protected virtual Stream GetFileStream(IFileInfo fileInfo)
         {
+            if (fileInfo == null)
+            {
+                throw new ArgumentNullException(nameof(fileInfo));
+            }
+
             return fileInfo.CreateReadStream();
         }
 

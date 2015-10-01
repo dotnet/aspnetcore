@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.Mvc.Infrastructure;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -22,9 +21,13 @@ namespace Microsoft.AspNet.Mvc
         /// Initializes a new instance of the <see cref="AcceptVerbsAttribute" /> class.
         /// </summary>
         /// <param name="method">The HTTP method the action supports.</param>
-        public AcceptVerbsAttribute([NotNull] string method)
+        public AcceptVerbsAttribute(string method)
             : this(new string[] { method })
         {
+            if (method == null)
+            {
+                throw new ArgumentNullException(nameof(method));
+            }
         }
 
         /// <summary>

@@ -47,6 +47,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                         MetadataProvider = metadataProvider,
                         ValidatorProvider = Mock.Of<IModelValidatorProvider>(),
                     },
+                    ModelState = new ModelStateDictionary(),
                 },
             };
 
@@ -79,7 +80,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     },
                     BindingSource = modelMetadata.BindingSource,
                     BinderModelName = modelMetadata.BinderModelName,
-                }
+                    ModelState = new ModelStateDictionary(),
+                },
             };
 
             var mutableBinder = new MutableObjectModelBinder();
@@ -105,7 +107,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     OperationBindingContext = new OperationBindingContext
                     {
                         ValidatorProvider = Mock.Of<IModelValidatorProvider>(),
-                    }
+                    },
+                    ModelState = new ModelStateDictionary(),
                 }
             };
 
@@ -141,6 +144,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
                     // Setting it to empty ensures that model does not get created because of no model name.
                     ModelName = "dummyModelName",
+                    ModelState = new ModelStateDictionary(),
                 },
             };
 
@@ -182,6 +186,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                         MetadataProvider = TestModelMetadataProvider.CreateDefaultProvider(),
                     },
                     ValueProvider = mockValueProvider.Object,
+                    ModelState = new ModelStateDictionary(),
                 },
                 PropertyMetadata = modelMetadata.Properties,
             };

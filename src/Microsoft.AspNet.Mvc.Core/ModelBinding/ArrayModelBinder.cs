@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -17,8 +16,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     public class ArrayModelBinder<TElement> : CollectionModelBinder<TElement>
     {
         /// <inheritdoc />
-        public override Task<ModelBindingResult> BindModelAsync([NotNull] ModelBindingContext bindingContext)
+        public override Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
         {
+            if (bindingContext == null)
+            {
+                throw new ArgumentNullException(nameof(bindingContext));
+            }
+
             if (bindingContext.ModelMetadata.IsReadOnly)
             {
                 return ModelBindingResult.NoResultAsync;
@@ -51,8 +55,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <inheritdoc />
-        protected override void CopyToModel([NotNull] object target, IEnumerable<TElement> sourceCollection)
+        protected override void CopyToModel(object target, IEnumerable<TElement> sourceCollection)
         {
+            if (target == null)
+            {
+                throw new ArgumentNullException(nameof(target));
+            }
             // Do not attempt to copy values into an array because an array's length is immutable. This choice is also
             // consistent with MutableObjectModelBinder's handling of a read-only array property.
         }

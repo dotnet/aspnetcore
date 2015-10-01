@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNet.Http;
-using Microsoft.Framework.Internal;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc
@@ -21,9 +20,14 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         /// <param name="location">The location at which the content has been created.</param>
         /// <param name="value">The value to format in the entity body.</param>
-        public CreatedResult([NotNull] string location, object value)
+        public CreatedResult(string location, object value)
             : base(value)
         {
+            if (location == null)
+            {
+                throw new ArgumentNullException(nameof(location));
+            }
+
             Location = location;
             StatusCode = StatusCodes.Status201Created;
         }
@@ -34,9 +38,14 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         /// <param name="location">The location at which the content has been created.</param>
         /// <param name="value">The value to format in the entity body.</param>
-        public CreatedResult([NotNull] Uri location, object value)
+        public CreatedResult(Uri location, object value)
             : base(value)
         {
+            if (location == null)
+            {
+                throw new ArgumentNullException(nameof(location));
+            }
+
             if (location.IsAbsoluteUri)
             {
                 Location = location.AbsoluteUri;
@@ -70,8 +79,13 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <inheritdoc />
-        protected override void OnFormatting([NotNull] ActionContext context)
+        protected override void OnFormatting(ActionContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             context.HttpContext.Response.Headers[HeaderNames.Location] = Location;
         }
     }

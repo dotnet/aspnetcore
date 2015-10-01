@@ -19,11 +19,10 @@ namespace Microsoft.AspNet.Mvc
         [Theory]
         [InlineData("application")]
         [InlineData("")]
-        [InlineData(null)]
         public void Constructor_ForInvalidContentType_Throws(string contentType)
         {
             // Arrange
-            var expectedMessage = string.Format("Invalid value '{0}'.", contentType ?? "<null>");
+            var expectedMessage = string.Format("Invalid value '{0}'.", contentType);
 
             // Act & Assert
             var exception = Assert.Throws<FormatException>(() => new ConsumesAttribute(contentType));
@@ -67,7 +66,7 @@ namespace Microsoft.AspNet.Mvc
                        () => new ConsumesAttribute(contentTypes[0], contentTypes.Skip(1).ToArray()));
 
             Assert.Equal(
-                string.Format("The argument '{0}' is invalid. "+
+                string.Format("The argument '{0}' is invalid. " +
                               "Media types which match all types or match all subtypes are not supported.",
                               invalidContentType),
                 ex.Message);

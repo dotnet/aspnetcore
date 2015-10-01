@@ -1,9 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Mvc.ApplicationModels;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.DependencyInjection
 {
@@ -20,9 +20,19 @@ namespace Microsoft.Framework.DependencyInjection
         /// <param name="controllerModelConvention">The <see cref="IControllerModelConvention"/> which needs to be
         /// added.</param>
         public static void Add(
-            [NotNull] this IList<IApplicationModelConvention> conventions,
-            [NotNull] IControllerModelConvention controllerModelConvention)
+            this IList<IApplicationModelConvention> conventions,
+            IControllerModelConvention controllerModelConvention)
         {
+            if (conventions == null)
+            {
+                throw new ArgumentNullException(nameof(conventions));
+            }
+
+            if (controllerModelConvention == null)
+            {
+                throw new ArgumentNullException(nameof(controllerModelConvention));
+            }
+
             conventions.Add(new ControllerApplicationModelConvention(controllerModelConvention));
         }
 
@@ -49,14 +59,24 @@ namespace Microsoft.Framework.DependencyInjection
             /// </summary>
             /// <param name="actionModelConvention">The action convention to be applied on all actions
             /// in the application.</param>
-            public ActionApplicationModelConvention([NotNull] IActionModelConvention actionModelConvention)
+            public ActionApplicationModelConvention(IActionModelConvention actionModelConvention)
             {
+                if (actionModelConvention == null)
+                {
+                    throw new ArgumentNullException(nameof(actionModelConvention));
+                }
+
                 _actionModelConvention = actionModelConvention;
             }
 
             /// <inheritdoc />
-            public void Apply([NotNull] ApplicationModel application)
+            public void Apply(ApplicationModel application)
             {
+                if (application == null)
+                {
+                    throw new ArgumentNullException(nameof(application));
+                }
+
                 foreach (var controller in application.Controllers)
                 {
                     foreach (var action in controller.Actions)
@@ -76,14 +96,24 @@ namespace Microsoft.Framework.DependencyInjection
             /// </summary>
             /// <param name="controllerConvention">The controller convention to be applied on all controllers
             /// in the application.</param>
-            public ControllerApplicationModelConvention([NotNull] IControllerModelConvention controllerConvention)
+            public ControllerApplicationModelConvention(IControllerModelConvention controllerConvention)
             {
+                if (controllerConvention == null)
+                {
+                    throw new ArgumentNullException(nameof(controllerConvention));
+                }
+
                 _controllerModelConvention = controllerConvention;
             }
 
             /// <inheritdoc />
-            public void Apply([NotNull] ApplicationModel application)
+            public void Apply(ApplicationModel application)
             {
+                if (application == null)
+                {
+                    throw new ArgumentNullException(nameof(application));
+                }
+
                 foreach (var controller in application.Controllers)
                 {
                     _controllerModelConvention.Apply(controller);

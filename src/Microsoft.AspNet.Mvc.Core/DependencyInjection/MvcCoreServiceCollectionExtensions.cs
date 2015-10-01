@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -16,22 +16,31 @@ using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection.Extensions;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.Framework.DependencyInjection
 {
     public static class MvcCoreServiceCollectionExtensions
     {
-        public static IMvcCoreBuilder AddMvcCore([NotNull] this IServiceCollection services)
+        public static IMvcCoreBuilder AddMvcCore(this IServiceCollection services)
         {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
             return AddMvcCore(services, setupAction: null);
         }
 
         public static IMvcCoreBuilder AddMvcCore(
-            [NotNull] this IServiceCollection services,
+            this IServiceCollection services,
             Action<MvcOptions> setupAction)
         {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
             ConfigureDefaultServices(services);
 
             AddMvcCoreServices(services);

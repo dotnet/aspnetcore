@@ -6,7 +6,6 @@ using System.Globalization;
 using System.Linq;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Core;
-using Microsoft.Framework.Internal;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc.Filters
@@ -74,8 +73,13 @@ namespace Microsoft.AspNet.Mvc.Filters
         }
 
         // <inheritdoc />
-        public void OnActionExecuting([NotNull] ActionExecutingContext context)
+        public void OnActionExecuting(ActionExecutingContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             // If there are more filters which can override the values written by this filter,
             // then skip execution of this filter.
             if (IsOverridden(context))
@@ -137,7 +141,7 @@ namespace Microsoft.AspNet.Mvc.Filters
                     CultureInfo.InvariantCulture,
                     "{0}{1}max-age={2}",
                     cacheControlValue,
-                    cacheControlValue != null? "," : null,
+                    cacheControlValue != null ? "," : null,
                     Duration);
 
                 if (cacheControlValue != null)
@@ -148,13 +152,18 @@ namespace Microsoft.AspNet.Mvc.Filters
         }
 
         // <inheritdoc />
-        public void OnActionExecuted([NotNull]ActionExecutedContext context)
+        public void OnActionExecuted(ActionExecutedContext context)
         {
         }
 
         // internal for Unit Testing purposes.
-        internal bool IsOverridden([NotNull] ActionExecutingContext context)
+        internal bool IsOverridden(ActionExecutingContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             // Return true if there are any filters which are after the current filter. In which case the current
             // filter should be skipped.
             return context.Filters.OfType<IResponseCacheFilter>().Last() != this;

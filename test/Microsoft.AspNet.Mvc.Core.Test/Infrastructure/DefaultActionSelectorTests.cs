@@ -813,7 +813,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
 
             public int Order { get; set; }
 
-            public bool Accept([NotNull]ActionConstraintContext context)
+            public bool Accept(ActionConstraintContext context)
             {
                 return Pass;
             }

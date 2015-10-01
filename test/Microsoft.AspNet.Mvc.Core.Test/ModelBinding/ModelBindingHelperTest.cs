@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Act
             var result = await ModelBindingHelper.TryUpdateModelAsync(
                 model,
-                null,
+                string.Empty,
                 Mock.Of<HttpContext>(),
                 new ModelStateDictionary(),
                 metadataProvider,
@@ -161,7 +161,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Act
             var result = await ModelBindingHelper.TryUpdateModelAsync(
                 model,
-                null,
+                string.Empty,
                 Mock.Of<HttpContext>(),
                 new ModelStateDictionary(),
                 metadataProvider,
@@ -207,10 +207,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 { "ExcludedProperty", "ExcludedPropertyValue" }
             };
 
-            Func<ModelBindingContext, string, bool> includePredicate =
-                (context, propertyName) =>
-                                string.Equals(propertyName, "IncludedProperty", StringComparison.OrdinalIgnoreCase) ||
-                                string.Equals(propertyName, "MyProperty", StringComparison.OrdinalIgnoreCase);
+            Func<ModelBindingContext, string, bool> includePredicate = (context, propertyName) =>
+                string.Equals(propertyName, "IncludedProperty", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(propertyName, "MyProperty", StringComparison.OrdinalIgnoreCase);
 
             var valueProvider = new TestValueProvider(values);
             var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
@@ -252,7 +251,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Act
             var result = await ModelBindingHelper.TryUpdateModelAsync(
                 model,
-                null,
+                string.Empty,
                 Mock.Of<HttpContext>(),
                 new ModelStateDictionary(),
                 metadataProvider,
@@ -437,12 +436,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             // Arrange Act & Assert
             var ex = Assert.Throws<InvalidOperationException>(() =>
-                        ModelBindingHelper.GetPropertyName(expression.Body));
+                ModelBindingHelper.GetPropertyName(expression.Body));
 
-            Assert.Equal(string.Format("The passed expression of expression node type '{0}' is invalid."+
-                                       " Only simple member access expressions for model properties are supported.",
-                                        expression.Body.NodeType),
-                         ex.Message);
+            Assert.Equal(
+                $"The passed expression of expression node type '{expression.Body.NodeType}' is invalid." +
+                " Only simple member access expressions for model properties are supported.",
+                ex.Message);
         }
 
         [Fact]
@@ -456,12 +455,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Act & Assert
             var ex = Assert.Throws<InvalidOperationException>(() =>
-                        ModelBindingHelper.GetPropertyName(expression.Body));
+                ModelBindingHelper.GetPropertyName(expression.Body));
 
-            Assert.Equal(string.Format("The passed expression of expression node type '{0}' is invalid." +
-                                       " Only simple member access expressions for model properties are supported.",
-                                        expression.Body.NodeType),
-                        ex.Message);
+            Assert.Equal(
+                $"The passed expression of expression node type '{expression.Body.NodeType}' is invalid." +
+                " Only simple member access expressions for model properties are supported.",
+                ex.Message);
         }
 
         [Fact]
@@ -472,12 +471,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Act & Assert
             var ex = Assert.Throws<InvalidOperationException>(() =>
-                        ModelBindingHelper.GetPropertyName(expression.Body));
+                ModelBindingHelper.GetPropertyName(expression.Body));
 
-            Assert.Equal(string.Format("The passed expression of expression node type '{0}' is invalid." +
-                                       " Only simple member access expressions for model properties are supported.",
-                                        expression.Body.NodeType),
-                         ex.Message);
+            Assert.Equal(
+                $"The passed expression of expression node type '{expression.Body.NodeType}' is invalid." +
+                " Only simple member access expressions for model properties are supported.",
+                ex.Message);
         }
 
         [Fact]
@@ -488,12 +487,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Act & Assert
             var ex = Assert.Throws<InvalidOperationException>(() =>
-                        ModelBindingHelper.GetPropertyName(expression.Body));
+                ModelBindingHelper.GetPropertyName(expression.Body));
 
-            Assert.Equal(string.Format("The passed expression of expression node type '{0}' is invalid." +
-                                       " Only simple member access expressions for model properties are supported.",
-                                        expression.Body.NodeType),
-                         ex.Message);
+            Assert.Equal(
+                $"The passed expression of expression node type '{expression.Body.NodeType}' is invalid." +
+                " Only simple member access expressions for model properties are supported.",
+                ex.Message);
         }
 
         [Theory]
@@ -514,7 +513,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var result = await ModelBindingHelper.TryUpdateModelAsync(
                 model,
                 model.GetType(),
-                prefix: null,
+                prefix: "",
                 httpContext: Mock.Of<HttpContext>(),
                 modelState: new ModelStateDictionary(),
                 metadataProvider: metadataProvider,
@@ -610,7 +609,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var result = await ModelBindingHelper.TryUpdateModelAsync(
                 model,
                 modelType: model.GetType(),
-                prefix: null,
+                prefix: "",
                 httpContext: Mock.Of<HttpContext>(),
                 modelState: new ModelStateDictionary(),
                 metadataProvider: metadataProvider,
@@ -685,20 +684,20 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Act & Assert
             var exception = await Assert.ThrowsAsync<ArgumentException>(
                 () => ModelBindingHelper.TryUpdateModelAsync(
-                                                    model,
-                                                    typeof(User),
-                                                    null,
-                                                    Mock.Of<HttpContext>(),
-                                                    new ModelStateDictionary(),
-                                                    metadataProvider,
-                                                    GetCompositeBinder(binder.Object),
-                                                    Mock.Of<IValueProvider>(),
-                                                    new List<IInputFormatter>(),
-                                                    new DefaultObjectValidator(
-                                                        new IExcludeTypeValidationFilter[0],
-                                                        metadataProvider),
-                                                    Mock.Of<IModelValidatorProvider>(),
-                                                    includePredicate));
+                    model,
+                    typeof(User),
+                    "",
+                    Mock.Of<HttpContext>(),
+                    new ModelStateDictionary(),
+                    metadataProvider,
+                    GetCompositeBinder(binder.Object),
+                    Mock.Of<IValueProvider>(),
+                    new List<IInputFormatter>(),
+                    new DefaultObjectValidator(
+                        new IExcludeTypeValidationFilter[0],
+                        metadataProvider),
+                    Mock.Of<IModelValidatorProvider>(),
+                    includePredicate));
 
             var expectedMessage = string.Format("The model's runtime type '{0}' is not assignable to the type '{1}'." +
                 Environment.NewLine +

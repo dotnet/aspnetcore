@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.Primitives;
 
 namespace Microsoft.AspNet.Mvc.ActionConstraints
@@ -21,8 +20,13 @@ namespace Microsoft.AspNet.Mvc.ActionConstraints
         private readonly string PreflightHttpMethod = "OPTIONS";
 
         // Empty collection means any method will be accepted.
-        public HttpMethodConstraint([NotNull] IEnumerable<string> httpMethods)
+        public HttpMethodConstraint(IEnumerable<string> httpMethods)
         {
+            if (httpMethods == null)
+            {
+                throw new ArgumentNullException(nameof(httpMethods));
+            }
+
             var methods = new List<string>();
 
             foreach (var method in httpMethods)
@@ -51,8 +55,13 @@ namespace Microsoft.AspNet.Mvc.ActionConstraints
             get { return HttpMethodConstraintOrder; }
         }
 
-        public bool Accept([NotNull] ActionConstraintContext context)
+        public bool Accept(ActionConstraintContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             if (_methods.Count == 0)
             {
                 return true;

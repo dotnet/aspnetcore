@@ -5,7 +5,6 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Internal;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Filters
 {
@@ -15,23 +14,38 @@ namespace Microsoft.AspNet.Mvc.Filters
     {
         public int Order { get; set; }
 
-        public virtual Task OnAuthorizationAsync([NotNull] AuthorizationContext context)
+        public virtual Task OnAuthorizationAsync(AuthorizationContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             OnAuthorization(context);
             return TaskCache.CompletedTask;
         }
 
-        public virtual void OnAuthorization([NotNull] AuthorizationContext context)
+        public virtual void OnAuthorization(AuthorizationContext context)
         {
         }
 
-        protected virtual bool HasAllowAnonymous([NotNull] AuthorizationContext context)
+        protected virtual bool HasAllowAnonymous(AuthorizationContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             return context.Filters.Any(item => item is IAllowAnonymous);
         }
 
-        protected virtual void Fail([NotNull] AuthorizationContext context)
+        protected virtual void Fail(AuthorizationContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             context.Result = new HttpUnauthorizedResult();
         }
     }

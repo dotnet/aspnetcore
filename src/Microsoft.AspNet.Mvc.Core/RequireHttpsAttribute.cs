@@ -4,7 +4,6 @@
 using System;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Filters;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -13,8 +12,13 @@ namespace Microsoft.AspNet.Mvc
     {
         public int Order { get; set; }
 
-        public virtual void OnAuthorization([NotNull]AuthorizationContext filterContext)
+        public virtual void OnAuthorization(AuthorizationContext filterContext)
         {
+            if (filterContext == null)
+            {
+                throw new ArgumentNullException(nameof(filterContext));
+            }
+
             if (!filterContext.HttpContext.Request.IsHttps)
             {
                 HandleNonHttpsRequest(filterContext);

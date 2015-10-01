@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Controllers
 {
@@ -14,8 +13,18 @@ namespace Microsoft.AspNet.Mvc.Controllers
     public class ServiceBasedControllerActivator : IControllerActivator
     {
         /// <inheritdoc />
-        public object Create([NotNull] ActionContext actionContext, [NotNull] Type controllerType)
+        public object Create(ActionContext actionContext, Type controllerType)
         {
+            if (actionContext == null)
+            {
+                throw new ArgumentNullException(nameof(actionContext));
+            }
+
+            if (controllerType == null)
+            {
+                throw new ArgumentNullException(nameof(controllerType));
+            }
+
             return actionContext.HttpContext.RequestServices.GetRequiredService(controllerType);
         }
     }

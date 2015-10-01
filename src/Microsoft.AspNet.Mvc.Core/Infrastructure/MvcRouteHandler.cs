@@ -10,7 +10,6 @@ using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Mvc.Infrastructure
@@ -23,8 +22,13 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
         private ILogger _logger;
         private TelemetrySource _telemetry;
 
-        public VirtualPathData GetVirtualPath([NotNull] VirtualPathContext context)
+        public VirtualPathData GetVirtualPath(VirtualPathContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             EnsureServices(context.Context);
 
             // The contract of this method is to check that the values coming in from the route are valid;
@@ -35,8 +39,13 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             return null;
         }
 
-        public async Task RouteAsync([NotNull] RouteContext context)
+        public async Task RouteAsync(RouteContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var services = context.HttpContext.RequestServices;
 
             // Verify if AddMvc was done before calling UseMvc
@@ -75,7 +84,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 {
                     _telemetry.WriteTelemetry(
                         "Microsoft.AspNet.Mvc.BeforeAction",
-                        new { actionDescriptor, httpContext = context.HttpContext, routeData = context.RouteData});
+                        new { actionDescriptor, httpContext = context.HttpContext, routeData = context.RouteData });
                 }
 
                 using (_logger.BeginScope("ActionId: {ActionId}", actionDescriptor.Id))
@@ -106,7 +115,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
         {
             var actionContext = new ActionContext(context.HttpContext, context.RouteData, actionDescriptor);
             _actionContextAccessor.ActionContext = actionContext;
-            
+
             var invoker = _actionInvokerFactory.CreateInvoker(actionContext);
             if (invoker == null)
             {

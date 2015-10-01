@@ -8,7 +8,6 @@ using System.Reflection;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -46,8 +45,13 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="predicateProviderType">The type which implements
         /// <see cref="IPropertyBindingPredicateProvider"/>.
         /// </param>
-        public BindAttribute([NotNull] Type predicateProviderType)
+        public BindAttribute(Type predicateProviderType)
         {
+            if (predicateProviderType == null)
+            {
+                throw new ArgumentNullException(nameof(predicateProviderType));
+            }
+
             if (!typeof(IPropertyBindingPredicateProvider).GetTypeInfo()
                     .IsAssignableFrom(predicateProviderType.GetTypeInfo()))
             {

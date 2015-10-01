@@ -2,16 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
+using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Routing;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc
 {
-
     public class RequireHttpsAttributeTests
     {
         [Fact]
@@ -152,9 +151,8 @@ namespace Microsoft.AspNet.Mvc
 
         private static AuthorizationContext CreateAuthorizationContext(HttpContext ctx)
         {
-            var actionContext = new ActionContext(ctx, new RouteData(), actionDescriptor: null);
-
-            return new AuthorizationContext(actionContext, Enumerable.Empty<IFilterMetadata>().ToList());
+            var actionContext = new ActionContext(ctx, new RouteData(), new ActionDescriptor());
+            return new AuthorizationContext(actionContext, new IFilterMetadata[0]);
         }
     }
 }

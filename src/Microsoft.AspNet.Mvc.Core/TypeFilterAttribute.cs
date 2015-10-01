@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -16,8 +15,13 @@ namespace Microsoft.AspNet.Mvc
     {
         private ObjectFactory _factory;
 
-        public TypeFilterAttribute([NotNull] Type type)
+        public TypeFilterAttribute(Type type)
         {
+            if (type == null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
             ImplementationType = type;
         }
 
@@ -27,8 +31,13 @@ namespace Microsoft.AspNet.Mvc
 
         public int Order { get; set; }
 
-        public IFilterMetadata CreateInstance([NotNull] IServiceProvider serviceProvider)
+        public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
         {
+            if (serviceProvider == null)
+            {
+                throw new ArgumentNullException(nameof(serviceProvider));
+            }
+
             if (_factory == null)
             {
                 var argumentTypes = Arguments?.Select(a => a.GetType())?.ToArray();

@@ -1,10 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Threading.Tasks;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -12,7 +11,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     /// An <see cref="IValueProvider"/> adapter for data stored in an
     /// <see cref="IDictionary{string, object}"/>.
     /// </summary>
-    public class DictionaryBasedValueProvider: BindingSourceValueProvider
+    public class DictionaryBasedValueProvider : BindingSourceValueProvider
     {
         private readonly IDictionary<string, object> _values;
         private PrefixContainer _prefixContainer;
@@ -23,10 +22,20 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <param name="bindingSource">The <see cref="BindingSource"/> of the data.</param>
         /// <param name="values">The values.</param>
         public DictionaryBasedValueProvider(
-            [NotNull] BindingSource bindingSource,
-            [NotNull] IDictionary<string, object> values)
+            BindingSource bindingSource,
+            IDictionary<string, object> values)
             : base(bindingSource)
         {
+            if (bindingSource == null)
+            {
+                throw new ArgumentNullException(nameof(bindingSource));
+            }
+
+            if (values == null)
+            {
+                throw new ArgumentNullException(nameof(values));
+            }
+
             _values = values;
         }
 
@@ -50,8 +59,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <inheritdoc />
-        public override ValueProviderResult GetValue([NotNull] string key)
+        public override ValueProviderResult GetValue(string key)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             object value;
             if (_values.TryGetValue(key, out value))
             {

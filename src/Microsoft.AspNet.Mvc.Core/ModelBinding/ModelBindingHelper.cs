@@ -15,7 +15,6 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Formatters;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -45,18 +44,68 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// on the model instance.</param>
         /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful</returns>
         public static Task<bool> TryUpdateModelAsync<TModel>(
-                [NotNull] TModel model,
-                [NotNull] string prefix,
-                [NotNull] HttpContext httpContext,
-                [NotNull] ModelStateDictionary modelState,
-                [NotNull] IModelMetadataProvider metadataProvider,
-                [NotNull] IModelBinder modelBinder,
-                [NotNull] IValueProvider valueProvider,
-                [NotNull] IList<IInputFormatter> inputFormatters,
-                [NotNull] IObjectModelValidator objectModelValidator,
-                [NotNull] IModelValidatorProvider validatorProvider)
+                TModel model,
+                string prefix,
+                HttpContext httpContext,
+                ModelStateDictionary modelState,
+                IModelMetadataProvider metadataProvider,
+                IModelBinder modelBinder,
+                IValueProvider valueProvider,
+                IList<IInputFormatter> inputFormatters,
+                IObjectModelValidator objectModelValidator,
+                IModelValidatorProvider validatorProvider)
             where TModel : class
         {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            if (prefix == null)
+            {
+                throw new ArgumentNullException(nameof(prefix));
+            }
+
+            if (httpContext == null)
+            {
+                throw new ArgumentNullException(nameof(httpContext));
+            }
+
+            if (modelState == null)
+            {
+                throw new ArgumentNullException(nameof(modelState));
+            }
+
+            if (metadataProvider == null)
+            {
+                throw new ArgumentNullException(nameof(metadataProvider));
+            }
+
+            if (modelBinder == null)
+            {
+                throw new ArgumentNullException(nameof(modelBinder));
+            }
+
+            if (valueProvider == null)
+            {
+                throw new ArgumentNullException(nameof(valueProvider));
+            }
+
+            if (inputFormatters == null)
+            {
+                throw new ArgumentNullException(nameof(inputFormatters));
+            }
+
+            if (objectModelValidator == null)
+            {
+                throw new ArgumentNullException(nameof(objectModelValidator));
+            }
+
+            if (validatorProvider == null)
+            {
+                throw new ArgumentNullException(nameof(validatorProvider));
+            }
+
             // Includes everything by default.
             return TryUpdateModelAsync(
                 model,
@@ -99,19 +148,74 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// which need to be included for the current model.</param>
         /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful</returns>
         public static Task<bool> TryUpdateModelAsync<TModel>(
-               [NotNull] TModel model,
-               [NotNull] string prefix,
-               [NotNull] HttpContext httpContext,
-               [NotNull] ModelStateDictionary modelState,
-               [NotNull] IModelMetadataProvider metadataProvider,
-               [NotNull] IModelBinder modelBinder,
-               [NotNull] IValueProvider valueProvider,
-               [NotNull] IList<IInputFormatter> inputFormatters,
-               [NotNull] IObjectModelValidator objectModelValidator,
-               [NotNull] IModelValidatorProvider validatorProvider,
-               [NotNull] params Expression<Func<TModel, object>>[] includeExpressions)
+               TModel model,
+               string prefix,
+               HttpContext httpContext,
+               ModelStateDictionary modelState,
+               IModelMetadataProvider metadataProvider,
+               IModelBinder modelBinder,
+               IValueProvider valueProvider,
+               IList<IInputFormatter> inputFormatters,
+               IObjectModelValidator objectModelValidator,
+               IModelValidatorProvider validatorProvider,
+               params Expression<Func<TModel, object>>[] includeExpressions)
            where TModel : class
         {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            if (prefix == null)
+            {
+                throw new ArgumentNullException(nameof(prefix));
+            }
+
+            if (httpContext == null)
+            {
+                throw new ArgumentNullException(nameof(httpContext));
+            }
+
+            if (modelState == null)
+            {
+                throw new ArgumentNullException(nameof(modelState));
+            }
+
+            if (metadataProvider == null)
+            {
+                throw new ArgumentNullException(nameof(metadataProvider));
+            }
+
+            if (modelBinder == null)
+            {
+                throw new ArgumentNullException(nameof(modelBinder));
+            }
+
+            if (valueProvider == null)
+            {
+                throw new ArgumentNullException(nameof(valueProvider));
+            }
+
+            if (inputFormatters == null)
+            {
+                throw new ArgumentNullException(nameof(inputFormatters));
+            }
+
+            if (objectModelValidator == null)
+            {
+                throw new ArgumentNullException(nameof(objectModelValidator));
+            }
+
+            if (validatorProvider == null)
+            {
+                throw new ArgumentNullException(nameof(validatorProvider));
+            }
+
+            if (includeExpressions == null)
+            {
+                throw new ArgumentNullException(nameof(includeExpressions));
+            }
+
             var includeExpression = GetIncludePredicateExpression(prefix, includeExpressions);
             var predicate = includeExpression.Compile();
 
@@ -155,19 +259,74 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// filter properties(for inclusion/exclusion) at runtime.</param>
         /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful</returns>
         public static Task<bool> TryUpdateModelAsync<TModel>(
-               [NotNull] TModel model,
-               [NotNull] string prefix,
-               [NotNull] HttpContext httpContext,
-               [NotNull] ModelStateDictionary modelState,
-               [NotNull] IModelMetadataProvider metadataProvider,
-               [NotNull] IModelBinder modelBinder,
-               [NotNull] IValueProvider valueProvider,
-               [NotNull] IList<IInputFormatter> inputFormatters,
-               [NotNull] IObjectModelValidator objectModelValidator,
-               [NotNull] IModelValidatorProvider validatorProvider,
-               [NotNull] Func<ModelBindingContext, string, bool> predicate)
+               TModel model,
+               string prefix,
+               HttpContext httpContext,
+               ModelStateDictionary modelState,
+               IModelMetadataProvider metadataProvider,
+               IModelBinder modelBinder,
+               IValueProvider valueProvider,
+               IList<IInputFormatter> inputFormatters,
+               IObjectModelValidator objectModelValidator,
+               IModelValidatorProvider validatorProvider,
+               Func<ModelBindingContext, string, bool> predicate)
            where TModel : class
         {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            if (prefix == null)
+            {
+                throw new ArgumentNullException(nameof(prefix));
+            }
+
+            if (httpContext == null)
+            {
+                throw new ArgumentNullException(nameof(httpContext));
+            }
+
+            if (modelState == null)
+            {
+                throw new ArgumentNullException(nameof(modelState));
+            }
+
+            if (metadataProvider == null)
+            {
+                throw new ArgumentNullException(nameof(metadataProvider));
+            }
+
+            if (modelBinder == null)
+            {
+                throw new ArgumentNullException(nameof(modelBinder));
+            }
+
+            if (valueProvider == null)
+            {
+                throw new ArgumentNullException(nameof(valueProvider));
+            }
+
+            if (inputFormatters == null)
+            {
+                throw new ArgumentNullException(nameof(inputFormatters));
+            }
+
+            if (objectModelValidator == null)
+            {
+                throw new ArgumentNullException(nameof(objectModelValidator));
+            }
+
+            if (validatorProvider == null)
+            {
+                throw new ArgumentNullException(nameof(validatorProvider));
+            }
+
+            if (predicate == null)
+            {
+                throw new ArgumentNullException(nameof(predicate));
+            }
+
             return TryUpdateModelAsync(
                model,
                typeof(TModel),
@@ -207,18 +366,73 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// on the model instance.</param>
         /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful</returns>
         public static Task<bool> TryUpdateModelAsync(
-                [NotNull] object model,
-                [NotNull] Type modelType,
-                [NotNull] string prefix,
-                [NotNull] HttpContext httpContext,
-                [NotNull] ModelStateDictionary modelState,
-                [NotNull] IModelMetadataProvider metadataProvider,
-                [NotNull] IModelBinder modelBinder,
-                [NotNull] IValueProvider valueProvider,
-                [NotNull] IList<IInputFormatter> inputFormatters,
-                [NotNull] IObjectModelValidator objectModelValidator,
-                [NotNull] IModelValidatorProvider validatorProvider)
+                object model,
+                Type modelType,
+                string prefix,
+                HttpContext httpContext,
+                ModelStateDictionary modelState,
+                IModelMetadataProvider metadataProvider,
+                IModelBinder modelBinder,
+                IValueProvider valueProvider,
+                IList<IInputFormatter> inputFormatters,
+                IObjectModelValidator objectModelValidator,
+                IModelValidatorProvider validatorProvider)
         {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            if (modelType == null)
+            {
+                throw new ArgumentNullException(nameof(modelType));
+            }
+
+            if (prefix == null)
+            {
+                throw new ArgumentNullException(nameof(prefix));
+            }
+
+            if (httpContext == null)
+            {
+                throw new ArgumentNullException(nameof(httpContext));
+            }
+
+            if (modelState == null)
+            {
+                throw new ArgumentNullException(nameof(modelState));
+            }
+
+            if (metadataProvider == null)
+            {
+                throw new ArgumentNullException(nameof(metadataProvider));
+            }
+
+            if (modelBinder == null)
+            {
+                throw new ArgumentNullException(nameof(modelBinder));
+            }
+
+            if (valueProvider == null)
+            {
+                throw new ArgumentNullException(nameof(valueProvider));
+            }
+
+            if (inputFormatters == null)
+            {
+                throw new ArgumentNullException(nameof(inputFormatters));
+            }
+
+            if (objectModelValidator == null)
+            {
+                throw new ArgumentNullException(nameof(objectModelValidator));
+            }
+
+            if (validatorProvider == null)
+            {
+                throw new ArgumentNullException(nameof(validatorProvider));
+            }
+
             // Includes everything by default.
             return TryUpdateModelAsync(
                 model,
@@ -261,19 +475,79 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// filter properties(for inclusion/exclusion) at runtime.</param>
         /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful</returns>
         public static async Task<bool> TryUpdateModelAsync(
-               [NotNull] object model,
-               [NotNull] Type modelType,
-               [NotNull] string prefix,
-               [NotNull] HttpContext httpContext,
-               [NotNull] ModelStateDictionary modelState,
-               [NotNull] IModelMetadataProvider metadataProvider,
-               [NotNull] IModelBinder modelBinder,
-               [NotNull] IValueProvider valueProvider,
-               [NotNull] IList<IInputFormatter> inputFormatters,
-               [NotNull] IObjectModelValidator objectModelValidator,
-               [NotNull] IModelValidatorProvider validatorProvider,
-               [NotNull] Func<ModelBindingContext, string, bool> predicate)
+               object model,
+               Type modelType,
+               string prefix,
+               HttpContext httpContext,
+               ModelStateDictionary modelState,
+               IModelMetadataProvider metadataProvider,
+               IModelBinder modelBinder,
+               IValueProvider valueProvider,
+               IList<IInputFormatter> inputFormatters,
+               IObjectModelValidator objectModelValidator,
+               IModelValidatorProvider validatorProvider,
+               Func<ModelBindingContext, string, bool> predicate)
         {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            if (modelType == null)
+            {
+                throw new ArgumentNullException(nameof(modelType));
+            }
+
+            if (prefix == null)
+            {
+                throw new ArgumentNullException(nameof(prefix));
+            }
+
+            if (httpContext == null)
+            {
+                throw new ArgumentNullException(nameof(httpContext));
+            }
+
+            if (modelState == null)
+            {
+                throw new ArgumentNullException(nameof(modelState));
+            }
+
+            if (metadataProvider == null)
+            {
+                throw new ArgumentNullException(nameof(metadataProvider));
+            }
+
+            if (modelBinder == null)
+            {
+                throw new ArgumentNullException(nameof(modelBinder));
+            }
+
+            if (valueProvider == null)
+            {
+                throw new ArgumentNullException(nameof(valueProvider));
+            }
+
+            if (inputFormatters == null)
+            {
+                throw new ArgumentNullException(nameof(inputFormatters));
+            }
+
+            if (objectModelValidator == null)
+            {
+                throw new ArgumentNullException(nameof(objectModelValidator));
+            }
+
+            if (validatorProvider == null)
+            {
+                throw new ArgumentNullException(nameof(validatorProvider));
+            }
+
+            if (predicate == null)
+            {
+                throw new ArgumentNullException(nameof(predicate));
+            }
+
             if (!modelType.IsAssignableFrom(model.GetType()))
             {
                 var message = Resources.FormatModelType_WrongType(
@@ -310,7 +584,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             if (modelBindingResult.IsModelSet)
             {
                 objectModelValidator.Validate(
-                    operationBindingContext.ValidatorProvider, 
+                    operationBindingContext.ValidatorProvider,
                     modelState,
                     modelBindingContext.ValidationState,
                     modelBindingResult.Key,
@@ -408,11 +682,26 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <param name="modelKey">The entry to clear. </param>
         /// <param name="modelMetadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
         public static void ClearValidationStateForModel(
-            [NotNull] Type modelType,
-            [NotNull] ModelStateDictionary modelstate,
-            [NotNull] IModelMetadataProvider metadataProvider,
+            Type modelType,
+            ModelStateDictionary modelstate,
+            IModelMetadataProvider metadataProvider,
             string modelKey)
         {
+            if (modelType == null)
+            {
+                throw new ArgumentNullException(nameof(modelType));
+            }
+
+            if (modelstate == null)
+            {
+                throw new ArgumentNullException(nameof(modelstate));
+            }
+
+            if (metadataProvider == null)
+            {
+                throw new ArgumentNullException(nameof(metadataProvider));
+            }
+
             // If modelkey is empty, we need to iterate through properties (obtained from ModelMetadata) and
             // clear validation state for all entries in ModelStateDictionary that start with each property name.
             // If modelkey is non-empty, clear validation state for all entries in ModelStateDictionary
@@ -438,8 +727,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
         }
 
-        internal static void ValidateBindingContext([NotNull] ModelBindingContext bindingContext)
+        internal static void ValidateBindingContext(ModelBindingContext bindingContext)
         {
+            if (bindingContext == null)
+            {
+                throw new ArgumentNullException(nameof(bindingContext));
+            }
+
             if (bindingContext.ModelMetadata == null)
             {
                 throw new ArgumentException(Resources.ModelBinderUtil_ModelMetadataCannotBeNull, nameof(bindingContext));
@@ -560,8 +854,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <returns>
         /// The converted value or <c>null</c> if the value could not be converted.
         /// </returns>
-        public static object ConvertTo(object value, [NotNull] Type type)
+        public static object ConvertTo(object value, Type type)
         {
+            if (type == null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
             return ConvertTo(value, type, culture: null);
         }
 
@@ -574,8 +873,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <returns>
         /// The converted value or <c>null</c> if the value could not be converted.
         /// </returns>
-        public static object ConvertTo(object value, [NotNull] Type type, CultureInfo culture)
+        public static object ConvertTo(object value, Type type, CultureInfo culture)
         {
+            if (type == null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
             if (value == null)
             {
                 // For value types, treat null values as though they were the default value for the type.

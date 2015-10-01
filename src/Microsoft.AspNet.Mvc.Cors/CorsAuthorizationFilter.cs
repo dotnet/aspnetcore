@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Cors.Core;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Filters;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.Primitives;
 
 namespace Microsoft.AspNet.Mvc.Cors
@@ -48,8 +47,23 @@ namespace Microsoft.AspNet.Mvc.Cors
 
 
         /// <inheritdoc />
-        public async Task OnAuthorizationAsync([NotNull] Filters.AuthorizationContext context)
+        public async Task OnAuthorizationAsync(Filters.AuthorizationContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             // If this filter is not closest to the action, it is not applicable.
             if (!IsClosestToAction(context.Filters))
             {
@@ -64,7 +78,7 @@ namespace Microsoft.AspNet.Mvc.Cors
                 var result = _corsService.EvaluatePolicy(context.HttpContext, policy);
                 _corsService.ApplyResult(result, context.HttpContext.Response);
 
-                var accessControlRequestMethod = 
+                var accessControlRequestMethod =
                         httpContext.Request.Headers[CorsConstants.AccessControlRequestMethod];
                 if (string.Equals(
                         request.Method,

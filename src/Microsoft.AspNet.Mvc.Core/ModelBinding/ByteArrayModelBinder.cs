@@ -3,7 +3,6 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -13,8 +12,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     public class ByteArrayModelBinder : IModelBinder
     {
         /// <inheritdoc />
-        public Task<ModelBindingResult> BindModelAsync([NotNull] ModelBindingContext bindingContext)
+        public Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
         {
+            if (bindingContext == null)
+            {
+                throw new ArgumentNullException(nameof(bindingContext));
+            }
+
             // This method is optimized to use cached tasks when possible and avoid allocating
             // using Task.FromResult. If you need to make changes of this nature, profile
             // allocations afterwards and look for Task<ModelBindingResult>.

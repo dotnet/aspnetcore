@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -47,9 +46,19 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// created.
         /// </returns>
         public static async Task<CompositeValueProvider> CreateAsync(
-            [NotNull] IEnumerable<IValueProviderFactory> factories,
-            [NotNull] ValueProviderFactoryContext context)
+            IEnumerable<IValueProviderFactory> factories,
+            ValueProviderFactoryContext context)
         {
+            if (factories == null)
+            {
+                throw new ArgumentNullException(nameof(factories));
+            }
+
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var composite = new CompositeValueProvider();
             foreach (var valueProvidersFactory in factories)
             {
@@ -114,20 +123,35 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <inheritdoc />
-        protected override void InsertItem(int index, [NotNull] IValueProvider item)
+        protected override void InsertItem(int index, IValueProvider item)
         {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
             base.InsertItem(index, item);
         }
 
         /// <inheritdoc />
-        protected override void SetItem(int index, [NotNull] IValueProvider item)
+        protected override void SetItem(int index, IValueProvider item)
         {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
             base.SetItem(index, item);
         }
 
         /// <inheritdoc />
         public IValueProvider Filter(BindingSource bindingSource)
         {
+            if (bindingSource == null)
+            {
+                throw new ArgumentNullException(nameof(bindingSource));
+            }
+
             var filteredValueProviders = new List<IValueProvider>();
             foreach (var valueProvider in this.OfType<IBindingSourceValueProvider>())
             {

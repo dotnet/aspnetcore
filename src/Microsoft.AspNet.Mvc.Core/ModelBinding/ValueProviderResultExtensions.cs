@@ -1,8 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -41,8 +40,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <returns>
         /// The converted value, or the default value of <paramref name="type"/> if the value could not be converted.
         /// </returns>
-        public static object ConvertTo(this ValueProviderResult result, [NotNull] Type type)
+        public static object ConvertTo(this ValueProviderResult result, Type type)
         {
+            if (type == null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
             object valueToConvert = null;
             if (result.Values.Count == 1)
             {

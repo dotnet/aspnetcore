@@ -40,6 +40,21 @@ namespace Microsoft.AspNet.Mvc.Controllers
             ActionBindingContext actionBindingContext,
             object controller)
         {
+            if (actionContext == null)
+            {
+                throw new ArgumentNullException(nameof(actionContext));
+            }
+
+            if (actionBindingContext == null)
+            {
+                throw new ArgumentNullException(nameof(actionBindingContext));
+            }
+
+            if (controller == null)
+            {
+                throw new ArgumentNullException(nameof(controller));
+            }
+
             var actionDescriptor = actionContext.ActionDescriptor as ControllerActionDescriptor;
             if (actionDescriptor == null)
             {
@@ -69,10 +84,25 @@ namespace Microsoft.AspNet.Mvc.Controllers
         }
 
         public async Task<ModelBindingResult> BindModelAsync(
-            [NotNull] ParameterDescriptor parameter,
-            [NotNull] ModelStateDictionary modelState,
-            [NotNull] OperationBindingContext operationContext)
+            ParameterDescriptor parameter,
+            ModelStateDictionary modelState,
+            OperationBindingContext operationContext)
         {
+            if (parameter == null)
+            {
+                throw new ArgumentNullException(nameof(parameter));
+            }
+
+            if (modelState == null)
+            {
+                throw new ArgumentNullException(nameof(modelState));
+            }
+
+            if (operationContext == null)
+            {
+                throw new ArgumentNullException(nameof(operationContext));
+            }
+
             var metadata = _modelMetadataProvider.GetMetadataForType(parameter.ParameterType);
             var modelBindingContext = ModelBindingContext.CreateBindingContext(
                 operationContext,

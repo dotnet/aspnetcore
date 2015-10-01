@@ -4,7 +4,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Internal;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Filters
 {
@@ -13,13 +12,18 @@ namespace Microsoft.AspNet.Mvc.Filters
     {
         public int Order { get; set; }
 
-        public virtual Task OnExceptionAsync([NotNull] ExceptionContext context)
+        public virtual Task OnExceptionAsync(ExceptionContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             OnException(context);
             return TaskCache.CompletedTask;
         }
 
-        public virtual void OnException([NotNull] ExceptionContext context)
+        public virtual void OnException(ExceptionContext context)
         {
         }
     }

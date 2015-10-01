@@ -212,14 +212,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         {
             // Arrange
             var binder = new CollectionModelBinder<int>();
-
-            var context = new ModelBindingContext()
-            {
-                OperationBindingContext = new OperationBindingContext()
-                {
-                    MetadataProvider = TestModelMetadataProvider.CreateDefaultProvider(),
-                },
-            };
+            var context = GetModelBindingContext(new SimpleValueProvider());
 
             // Act
             var boundCollection = await binder.BindSimpleCollection(context, new ValueProviderResult(new string[0]));
@@ -357,7 +350,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var culture = new CultureInfo("fr-FR");
             var bindingContext = GetModelBindingContext(new SimpleValueProvider());
 
-            Mock.Get<IModelBinder>(bindingContext.OperationBindingContext.ModelBinder)
+            Mock.Get(bindingContext.OperationBindingContext.ModelBinder)
                 .Setup(o => o.BindModelAsync(It.IsAny<ModelBindingContext>()))
                 .Returns((ModelBindingContext mbc) =>
                 {
@@ -394,6 +387,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                     MetadataProvider = metadataProvider
                 },
                 ValidationState = new ValidationStateDictionary(),
+                FieldName = "testfieldname",
             };
 
             return bindingContext;

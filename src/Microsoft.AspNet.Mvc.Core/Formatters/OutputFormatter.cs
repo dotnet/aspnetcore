@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ApiExplorer;
 using Microsoft.AspNet.Mvc.Core;
-using Microsoft.Framework.Internal;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc.Formatters
@@ -102,8 +101,13 @@ namespace Microsoft.AspNet.Mvc.Formatters
         /// <param name="context">The formatter context associated with the call.
         /// </param>
         /// <returns>The <see cref="Encoding"/> to use when reading the request or writing the response.</returns>
-        public virtual Encoding SelectCharacterEncoding([NotNull] OutputFormatterContext context)
+        public virtual Encoding SelectCharacterEncoding(OutputFormatterContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var request = context.HttpContext.Request;
             var encoding = MatchAcceptCharacterEncoding(request.GetTypedHeaders().AcceptCharset);
             if (encoding == null)
@@ -125,8 +129,13 @@ namespace Microsoft.AspNet.Mvc.Formatters
         }
 
         /// <inheritdoc />
-        public virtual bool CanWriteResult([NotNull] OutputFormatterContext context, MediaTypeHeaderValue contentType)
+        public virtual bool CanWriteResult(OutputFormatterContext context, MediaTypeHeaderValue contentType)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var runtimeType = context.Object == null ? null : context.Object.GetType();
             if (!CanWriteType(context.DeclaredType, runtimeType))
             {
@@ -158,8 +167,13 @@ namespace Microsoft.AspNet.Mvc.Formatters
         }
 
         /// <inheritdoc />
-        public Task WriteAsync([NotNull] OutputFormatterContext context)
+        public Task WriteAsync(OutputFormatterContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             WriteResponseHeaders(context);
             return WriteResponseBodyAsync(context);
         }
@@ -168,8 +182,13 @@ namespace Microsoft.AspNet.Mvc.Formatters
         /// Sets the headers on <see cref="Microsoft.AspNet.Http.HttpResponse"/> object.
         /// </summary>
         /// <param name="context">The formatter context associated with the call.</param>
-        public virtual void WriteResponseHeaders([NotNull] OutputFormatterContext context)
+        public virtual void WriteResponseHeaders(OutputFormatterContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var selectedMediaType = context.SelectedContentType;
 
             // If content type is not set then set it based on supported media types.
@@ -211,7 +230,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
         /// </summary>
         /// <param name="context">The formatter context associated with the call.</param>
         /// <returns>A task which can write the response body.</returns>
-        public abstract Task WriteResponseBodyAsync([NotNull] OutputFormatterContext context);
+        public abstract Task WriteResponseBodyAsync(OutputFormatterContext context);
 
         private Encoding MatchAcceptCharacterEncoding(IList<StringWithQualityHeaderValue> acceptCharsetHeaders)
         {

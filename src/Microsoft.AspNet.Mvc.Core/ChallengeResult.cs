@@ -1,10 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Authentication;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -45,8 +45,13 @@ namespace Microsoft.AspNet.Mvc
 
         public AuthenticationProperties Properties { get; set; }
 
-        public override async Task ExecuteResultAsync([NotNull] ActionContext context)
+        public override async Task ExecuteResultAsync(ActionContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var auth = context.HttpContext.Authentication;
             if (AuthenticationSchemes.Count > 0)
             {

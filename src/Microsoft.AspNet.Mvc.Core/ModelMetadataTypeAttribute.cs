@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -16,8 +15,13 @@ namespace Microsoft.AspNet.Mvc
         /// Initializes a new instance of the <see cref="ModelMetadataTypeAttribute" /> class.
         /// </summary>
         /// <param name="type">The type of metadata class that is associated with a data model class.</param>
-        public ModelMetadataTypeAttribute([NotNull] Type type)
+        public ModelMetadataTypeAttribute(Type type)
         {
+            if (type == null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
             MetadataType = type;
         }
 

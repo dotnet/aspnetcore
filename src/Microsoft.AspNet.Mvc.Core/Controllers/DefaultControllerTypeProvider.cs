@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Mvc.Infrastructure;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Controllers
 {
@@ -48,9 +47,19 @@ namespace Microsoft.AspNet.Mvc.Controllers
         /// <param name="candidateAssemblies">The set of candidate assemblies.</param>
         /// <returns><c>true</c> if the <paramref name="typeInfo"/> is a controller. Otherwise <c>false</c>.</returns>
         protected internal virtual bool IsController(
-            [NotNull] TypeInfo typeInfo,
-            [NotNull] ISet<Assembly> candidateAssemblies)
+            TypeInfo typeInfo,
+            ISet<Assembly> candidateAssemblies)
         {
+            if (typeInfo == null)
+            {
+                throw new ArgumentNullException(nameof(typeInfo));
+            }
+
+            if (candidateAssemblies == null)
+            {
+                throw new ArgumentNullException(nameof(candidateAssemblies));
+            }
+
             if (!typeInfo.IsClass)
             {
                 return false;

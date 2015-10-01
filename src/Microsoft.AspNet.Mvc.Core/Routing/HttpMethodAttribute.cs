@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Mvc.Infrastructure;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Routing
 {
@@ -22,9 +21,13 @@ namespace Microsoft.AspNet.Mvc.Routing
         /// set of HTTP methods.
         /// <param name="httpMethods">The set of supported HTTP methods.</param>
         /// </summary>
-        public HttpMethodAttribute([NotNull] IEnumerable<string> httpMethods)
+        public HttpMethodAttribute(IEnumerable<string> httpMethods)
             : this(httpMethods, null)
         {
+            if (httpMethods == null)
+            {
+                throw new ArgumentNullException(nameof(httpMethods));
+            }
         }
 
         /// <summary>
@@ -33,8 +36,13 @@ namespace Microsoft.AspNet.Mvc.Routing
         /// </summary>
         /// <param name="httpMethods">The set of supported methods.</param>
         /// <param name="template">The route template. May not be null.</param>
-        public HttpMethodAttribute([NotNull] IEnumerable<string> httpMethods, string template)
+        public HttpMethodAttribute(IEnumerable<string> httpMethods, string template)
         {
+            if (httpMethods == null)
+            {
+                throw new ArgumentNullException(nameof(httpMethods));
+            }
+
             _httpMethods = httpMethods;
             Template = template;
         }

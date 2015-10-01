@@ -1,10 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Linq;
 using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Mvc.Filters;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc.ApplicationModels
@@ -18,15 +18,20 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             _authorizationOptions = authorizationOptionsAccessor.Value;
         }
 
-        public int Order {  get { return -1000 + 10; } }
+        public int Order { get { return -1000 + 10; } }
 
-        public void OnProvidersExecuted([NotNull]ApplicationModelProviderContext context)
+        public void OnProvidersExecuted(ApplicationModelProviderContext context)
         {
             // Intentionally empty.
         }
 
-        public void OnProvidersExecuting([NotNull]ApplicationModelProviderContext context)
+        public void OnProvidersExecuting(ApplicationModelProviderContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             AuthorizationPolicy policy;
 
             foreach (var controllerModel in context.Result.Controllers)

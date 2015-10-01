@@ -13,7 +13,6 @@ using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Routing;
-using Microsoft.Framework.Internal;
 using Moq;
 using Xunit;
 
@@ -2043,7 +2042,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
                 _isVisible = isVisible;
             }
 
-            public void Apply([NotNull] ApplicationModel application)
+            public void Apply(ApplicationModel application)
             {
                 application.ApiExplorer.IsVisible = _isVisible;
             }

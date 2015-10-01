@@ -3,8 +3,6 @@
 
 using System;
 using Microsoft.AspNet.Mvc.Infrastructure;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Controllers
 {
@@ -24,8 +22,18 @@ namespace Microsoft.AspNet.Mvc.Controllers
             _typeActivatorCache = typeActivatorCache;
         }
         /// <inheritdoc />
-        public virtual object Create([NotNull] ActionContext actionContext, [NotNull] Type controllerType)
+        public virtual object Create(ActionContext actionContext, Type controllerType)
         {
+            if (actionContext == null)
+            {
+                throw new ArgumentNullException(nameof(actionContext));
+            }
+
+            if (controllerType == null)
+            {
+                throw new ArgumentNullException(nameof(controllerType));
+            }
+
             var serviceProvider = actionContext.HttpContext.RequestServices;
             return _typeActivatorCache.CreateInstance<object>(serviceProvider, controllerType);
         }

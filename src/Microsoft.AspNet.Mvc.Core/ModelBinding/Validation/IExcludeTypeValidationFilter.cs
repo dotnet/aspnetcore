@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {
@@ -16,6 +15,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         /// </summary>
         /// <param name="type">The <see cref="Type"/> for which the check is to be performed.</param>
         /// <returns>True if the type is to be excluded. False otherwise.</returns>
-        bool IsTypeExcluded([NotNull] Type type);
+        bool IsTypeExcluded(Type type);
     }
 }

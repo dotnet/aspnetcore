@@ -19,7 +19,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 ModelMetadata = new TestModelMetadataProvider().GetMetadataForType(typeof(object)),
                 ModelName = "theName",
                 OperationBindingContext = new OperationBindingContext(),
-                ValueProvider = new SimpleValueProvider()
+                ValueProvider = new SimpleValueProvider(),
+                ModelState = new ModelStateDictionary(),
             };
 
             var metadataProvider = new TestModelMetadataProvider();

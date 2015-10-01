@@ -1,8 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 {
@@ -12,8 +12,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
     public class DefaultValidationMetadataProvider : IValidationMetadataProvider
     {
         /// <inheritdoc />
-        public void GetValidationMetadata([NotNull] ValidationMetadataProviderContext context)
+        public void GetValidationMetadata(ValidationMetadataProviderContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             foreach (var attribute in context.Attributes)
             {
                 if (attribute is IModelValidator || attribute is IClientModelValidator)

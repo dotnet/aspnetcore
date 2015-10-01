@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -8,7 +9,6 @@ using System.Reflection;
 using Microsoft.AspNet.Mvc.ActionConstraints;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.Infrastructure;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ApplicationModels
 {
@@ -17,9 +17,19 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
     public class ControllerModel : ICommonModel, IFilterModel, IApiExplorerModel
     {
         public ControllerModel(
-            [NotNull] TypeInfo controllerType,
-            [NotNull] IReadOnlyList<object> attributes)
+            TypeInfo controllerType,
+            IReadOnlyList<object> attributes)
         {
+            if (controllerType == null)
+            {
+                throw new ArgumentNullException(nameof(controllerType));
+            }
+
+            if (attributes == null)
+            {
+                throw new ArgumentNullException(nameof(attributes));
+            }
+
             ControllerType = controllerType;
 
             Actions = new List<ActionModel>();
@@ -33,8 +43,13 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             ControllerProperties = new List<PropertyModel>();
         }
 
-        public ControllerModel([NotNull] ControllerModel other)
+        public ControllerModel(ControllerModel other)
         {
+            if (other == null)
+            {
+                throw new ArgumentNullException(nameof(other));
+            }
+
             ControllerName = other.ControllerName;
             ControllerType = other.ControllerType;
 

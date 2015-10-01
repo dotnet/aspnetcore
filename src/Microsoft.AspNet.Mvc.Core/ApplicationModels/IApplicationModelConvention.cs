@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Framework.Internal;
-
 namespace Microsoft.AspNet.Mvc.ApplicationModels
 {
     /// <summary>
@@ -21,6 +19,6 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         /// Called to apply the convention to the <see cref="ApplicationModel"/>.
         /// </summary>
         /// <param name="application">The <see cref="ApplicationModel"/>.</param>
-        void Apply([NotNull] ApplicationModel application);
+        void Apply(ApplicationModel application);
     }
 }

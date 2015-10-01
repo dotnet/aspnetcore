@@ -4,7 +4,6 @@
 using System;
 using System.Diagnostics;
 using Microsoft.AspNet.Mvc.Core;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Filters
 {
@@ -16,8 +15,13 @@ namespace Microsoft.AspNet.Mvc.Filters
         }
 
         /// <inheritdoc />
-        public void OnProvidersExecuting([NotNull] FilterProviderContext context)
+        public void OnProvidersExecuting(FilterProviderContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             if (context.ActionContext.ActionDescriptor.FilterDescriptors != null)
             {
                 // Perf: Avoid allocations
@@ -29,7 +33,7 @@ namespace Microsoft.AspNet.Mvc.Filters
         }
 
         /// <inheritdoc />
-        public void OnProvidersExecuted([NotNull] FilterProviderContext context)
+        public void OnProvidersExecuted(FilterProviderContext context)
         {
         }
 

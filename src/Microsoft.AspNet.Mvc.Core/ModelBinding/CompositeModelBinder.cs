@@ -5,9 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -25,16 +23,26 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// Initializes a new instance of the CompositeModelBinder class.
         /// </summary>
         /// <param name="modelBinders">A collection of <see cref="IModelBinder"/> instances.</param>
-        public CompositeModelBinder([NotNull] IEnumerable<IModelBinder> modelBinders)
+        public CompositeModelBinder(IEnumerable<IModelBinder> modelBinders)
         {
+            if (modelBinders == null)
+            {
+                throw new ArgumentNullException(nameof(modelBinders));
+            }
+
             ModelBinders = new List<IModelBinder>(modelBinders);
         }
 
         /// <inheritdoc />
         public IReadOnlyList<IModelBinder> ModelBinders { get; }
 
-        public virtual Task<ModelBindingResult> BindModelAsync([NotNull] ModelBindingContext bindingContext)
+        public virtual Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
         {
+            if (bindingContext == null)
+            {
+                throw new ArgumentNullException(nameof(bindingContext));
+            }
+
             var newBindingContext = CreateNewBindingContext(bindingContext);
             if (newBindingContext == null)
             {

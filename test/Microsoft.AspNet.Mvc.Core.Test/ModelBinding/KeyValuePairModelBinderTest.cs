@@ -203,7 +203,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                     HttpContext = new DefaultHttpContext(),
                     MetadataProvider = new TestModelMetadataProvider(),
                     ModelBinder = new SimpleTypeModelBinder(),
-                }
+                },
+                ModelState = new ModelStateDictionary(),
             };
 
             return modelBindingContext;
@@ -217,7 +218,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var metataProvider = new EmptyModelMetadataProvider();
             var bindingContext = new ModelBindingContext
             {
-                ModelMetadata = metataProvider.GetMetadataForType(keyValuePairType ?? typeof(KeyValuePair<int, string>)),
+                ModelMetadata = metataProvider.GetMetadataForType(
+                    keyValuePairType ?? typeof(KeyValuePair<int, string>)),
                 ModelName = "someName",
                 ModelState = new ModelStateDictionary(),
                 ValueProvider = valueProvider,

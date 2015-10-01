@@ -1,9 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Globalization;
 using System.Threading.Tasks;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -14,8 +14,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     public class QueryStringValueProviderFactory : IValueProviderFactory
     {
         /// <inheritdoc />
-        public Task<IValueProvider> GetValueProviderAsync([NotNull] ValueProviderFactoryContext context)
+        public Task<IValueProvider> GetValueProviderAsync(ValueProviderFactoryContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             return Task.FromResult<IValueProvider>(new ReadableStringCollectionValueProvider(
                 BindingSource.Query,
                 context.HttpContext.Request.Query,

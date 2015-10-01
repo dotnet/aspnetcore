@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 {
@@ -19,8 +18,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         /// </summary>
         /// <param name="key">The <see cref="ModelMetadataIdentity"/>.</param>
         /// <param name="attributes">The set of model attributes.</param>
-        public DefaultMetadataDetails(ModelMetadataIdentity key, [NotNull] ModelAttributes attributes)
+        public DefaultMetadataDetails(ModelMetadataIdentity key, ModelAttributes attributes)
         {
+            if (attributes == null)
+            {
+                throw new ArgumentNullException(nameof(attributes));
+            }
+
             Key = key;
             ModelAttributes = attributes;
         }

@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Framework.Internal;
+using System;
 
 namespace Microsoft.AspNet.Mvc.ApplicationModels
 {
@@ -21,8 +21,13 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         /// Creates a new <see cref="ApiExplorerModel"/> with properties copied from <paramref name="other"/>.
         /// </summary>
         /// <param name="other">The <see cref="ApiExplorerModel"/> to copy.</param>
-        public ApiExplorerModel([NotNull] ApiExplorerModel other)
+        public ApiExplorerModel(ApiExplorerModel other)
         {
+            if (other == null)
+            {
+                throw new ArgumentNullException(nameof(other));
+            }
+
             GroupName = other.GroupName;
             IsVisible = other.IsVisible;
         }

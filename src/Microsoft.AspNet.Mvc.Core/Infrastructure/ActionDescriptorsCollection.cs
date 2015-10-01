@@ -1,9 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Mvc.Abstractions;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Infrastructure
 {
@@ -17,8 +17,13 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
         /// </summary>
         /// <param name="items">The result of action discovery</param>
         /// <param name="version">The unique version of discovered actions.</param>
-        public ActionDescriptorsCollection([NotNull] IReadOnlyList<ActionDescriptor> items, int version)
+        public ActionDescriptorsCollection(IReadOnlyList<ActionDescriptor> items, int version)
         {
+            if (items == null)
+            {
+                throw new ArgumentNullException(nameof(items));
+            }
+
             Items = items;
             Version = version;
         }

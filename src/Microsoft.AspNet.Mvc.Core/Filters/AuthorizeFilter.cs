@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -19,8 +20,13 @@ namespace Microsoft.AspNet.Mvc.Filters
         /// Authorize filter for a specific policy.
         /// </summary>
         /// <param name="policy">Authorization policy to be used.</param>
-        public AuthorizeFilter([NotNull] AuthorizationPolicy policy)
+        public AuthorizeFilter(AuthorizationPolicy policy)
         {
+            if (policy == null)
+            {
+                throw new ArgumentNullException(nameof(policy));
+            }
+
             Policy = policy;
         }
 
@@ -30,8 +36,13 @@ namespace Microsoft.AspNet.Mvc.Filters
         public AuthorizationPolicy Policy { get; private set; }
 
         /// <inheritdoc />
-        public virtual async Task OnAuthorizationAsync([NotNull] Filters.AuthorizationContext context)
+        public virtual async Task OnAuthorizationAsync(Filters.AuthorizationContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             // Build a ClaimsPrincipal with the Policy's required authentication types
             if (Policy.ActiveAuthenticationSchemes != null && Policy.ActiveAuthenticationSchemes.Any())
             {

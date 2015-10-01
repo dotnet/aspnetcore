@@ -34,8 +34,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         protected ICompositeMetadataDetailsProvider DetailsProvider { get; }
 
         /// <inheritdoc />
-        public virtual IEnumerable<ModelMetadata> GetMetadataForProperties([NotNull]Type modelType)
+        public virtual IEnumerable<ModelMetadata> GetMetadataForProperties(Type modelType)
         {
+            if (modelType == null)
+            {
+                throw new ArgumentNullException(nameof(modelType));
+            }
+
             var key = ModelMetadataIdentity.ForType(modelType);
 
             var cacheEntry = _typeCache.GetOrAdd(key, _cacheEntryFactory);
@@ -59,8 +64,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         }
 
         /// <inheritdoc />
-        public virtual ModelMetadata GetMetadataForType([NotNull] Type modelType)
+        public virtual ModelMetadata GetMetadataForType(Type modelType)
         {
+            if (modelType == null)
+            {
+                throw new ArgumentNullException(nameof(modelType));
+            }
+
             var key = ModelMetadataIdentity.ForType(modelType);
 
             var cacheEntry = _typeCache.GetOrAdd(key, _cacheEntryFactory);
@@ -102,7 +112,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         /// <see cref="GetMetadataForProperties(Type)"/>. Override this method to provide a different
         /// set of property data.
         /// </remarks>
-        protected virtual DefaultMetadataDetails[] CreatePropertyDetails([NotNull] ModelMetadataIdentity key)
+        protected virtual DefaultMetadataDetails[] CreatePropertyDetails(ModelMetadataIdentity key)
         {
             var propertyHelpers = PropertyHelper.GetVisibleProperties(key.ModelType);
 
@@ -151,7 +161,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         /// <see cref="GetMetadataForType(Type)"/>. Override this method to provide a different
         /// set of attributes.
         /// </remarks>
-        protected virtual DefaultMetadataDetails CreateTypeDetails([NotNull] ModelMetadataIdentity key)
+        protected virtual DefaultMetadataDetails CreateTypeDetails(ModelMetadataIdentity key)
         {
             return new DefaultMetadataDetails(key, ModelAttributes.GetAttributesForType(key.ModelType));
         }
