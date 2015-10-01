@@ -62,13 +62,13 @@ namespace Microsoft.AspNet.Session
             if (encodedKey.KeyBytes.Length > KeyLengthLimit)
             {
                 throw new ArgumentOutOfRangeException(nameof(key),
-                    string.Format("The key cannot be longer than '{0}' when encoded with UTF-8.", KeyLengthLimit));
+                    Resources.FormatException_KeyLengthIsExceeded(KeyLengthLimit));
             }
 
             Load();
             if (!_tryEstablishSession())
             {
-                throw new InvalidOperationException("The session cannot be established after the response has started.");
+                throw new InvalidOperationException(Resources.Exception_InvalidSessionEstablishment);
             }
             _isModified = true;
             byte[] copy = new byte[value.Length];
@@ -187,7 +187,7 @@ namespace Microsoft.AspNet.Session
         {
             if (num < 0 || ushort.MaxValue < num)
             {
-                throw new ArgumentOutOfRangeException(nameof(num), "The value cannot be serialized in two bytes.");
+                throw new ArgumentOutOfRangeException(nameof(num), Resources.Exception_InvalidToSerializeIn2Bytes);
             }
             output.WriteByte((byte)(num >> 8));
             output.WriteByte((byte)(0xFF & num));
@@ -202,7 +202,7 @@ namespace Microsoft.AspNet.Session
         {
             if (num < 0 || 0xFFFFFF < num)
             {
-                throw new ArgumentOutOfRangeException(nameof(num), "The value cannot be serialized in three bytes.");
+                throw new ArgumentOutOfRangeException(nameof(num), Resources.Exception_InvalidToSerializeIn3Bytes);
             }
             output.WriteByte((byte)(num >> 16));
             output.WriteByte((byte)(0xFF & (num >> 8)));
@@ -218,7 +218,7 @@ namespace Microsoft.AspNet.Session
         {
             if (num < 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(num), "The value cannot be negative.");
+                throw new ArgumentOutOfRangeException(nameof(num), Resources.Exception_NumberShouldNotBeNegative);
             }
             output.WriteByte((byte)(num >> 24));
             output.WriteByte((byte)(0xFF & (num >> 16)));
