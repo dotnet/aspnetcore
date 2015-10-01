@@ -3,8 +3,8 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Authorization;
+using Microsoft.AspNet.Mvc;
 using Microsoft.Data.Entity;
 using MusicStore.Models;
 
