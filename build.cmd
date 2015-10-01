@@ -30,7 +30,7 @@ IF "%SKIP_DNX_INSTALL%"=="1" goto run
 IF %BUILDCMD_DNX_VERSION%=="" (
 	CALL packages\KoreBuild\build\dnvm upgrade -runtime CLR -arch x86
 ) ELSE (
-	CALL packages\KoreBuild\build\dnvm install %BUILDCMD_DNX_VERSION% -runtime CLR -arch x86 -a default
+	CALL packages\KoreBuild\build\dnvm install %BUILDCMD_DNX_VERSION% -runtime CLR -arch x86 -alias default
 )
 CALL packages\KoreBuild\build\dnvm install default -runtime CoreCLR -arch x86
 
