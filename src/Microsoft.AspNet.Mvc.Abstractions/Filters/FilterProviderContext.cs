@@ -1,15 +1,25 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Filters
 {
     public class FilterProviderContext
     {
-        public FilterProviderContext([NotNull] ActionContext actionContext, [NotNull] IList<FilterItem> items)
+        public FilterProviderContext(ActionContext actionContext, IList<FilterItem> items)
         {
+            if (actionContext == null)
+            {
+                throw new ArgumentNullException(nameof(actionContext));
+            }
+
+            if (items == null)
+            {
+                throw new ArgumentNullException(nameof(items));
+            }
+
             ActionContext = actionContext;
             Results = items;
         }

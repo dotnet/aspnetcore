@@ -210,6 +210,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
             var actionBindingContext = new ActionBindingContext()
             {
                 ModelBinder = binder.Object,
+                ValueProvider = new SimpleValueProvider(),
             };
 
             var mockValidator = new Mock<IObjectModelValidator>(MockBehavior.Strict);
@@ -305,6 +306,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
             var actionBindingContext = new ActionBindingContext()
             {
                 ModelBinder = binder.Object,
+                ValueProvider = new SimpleValueProvider(),
             };
 
             var mockValidator = new Mock<IObjectModelValidator>(MockBehavior.Strict);
@@ -413,6 +415,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
             var actionBindingContext = new ActionBindingContext()
             {
                 ModelBinder = binder.Object,
+                ValueProvider = new SimpleValueProvider(),
             };
 
             var argumentBinder = GetArgumentBinder();
@@ -451,6 +454,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
             var actionBindingContext = new ActionBindingContext()
             {
                 ModelBinder = binder.Object,
+                ValueProvider = new SimpleValueProvider(),
             };
 
             var argumentBinder = GetArgumentBinder();
@@ -600,6 +604,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
             var actionBindingContext = new ActionBindingContext
             {
                 ModelBinder = binder.Object,
+                ValueProvider = new SimpleValueProvider(),
             };
 
             // Act

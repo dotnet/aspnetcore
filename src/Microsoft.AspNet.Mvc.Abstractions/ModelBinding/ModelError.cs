@@ -2,20 +2,28 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public class ModelError
     {
-        public ModelError([NotNull]Exception exception)
+        public ModelError(Exception exception)
             : this(exception, errorMessage: null)
         {
+            if (exception == null)
+            {
+                throw new ArgumentNullException(nameof(exception));
+            }
         }
 
-        public ModelError([NotNull]Exception exception, string errorMessage)
+        public ModelError(Exception exception, string errorMessage)
             : this(errorMessage)
         {
+            if (exception == null)
+            {
+                throw new ArgumentNullException(nameof(exception));
+            }
+
             Exception = exception;
         }
 

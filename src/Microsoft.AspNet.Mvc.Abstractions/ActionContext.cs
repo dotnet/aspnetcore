@@ -1,11 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Routing;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -29,13 +29,17 @@ namespace Microsoft.AspNet.Mvc
         /// Creates a new <see cref="ActionContext"/>.
         /// </summary>
         /// <param name="actionContext">The <see cref="ActionContext"/> to copy.</param>
-        public ActionContext([NotNull] ActionContext actionContext)
+        public ActionContext(ActionContext actionContext)
             : this(
-                actionContext.HttpContext, 
-                actionContext.RouteData, 
-                actionContext.ActionDescriptor, 
+                actionContext.HttpContext,
+                actionContext.RouteData,
+                actionContext.ActionDescriptor,
                 actionContext.ModelState)
         {
+            if (actionContext == null)
+            {
+                throw new ArgumentNullException(nameof(actionContext));
+            }
         }
 
         /// <summary>
@@ -45,9 +49,9 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="routeData">The <see cref="AspNet.Routing.RouteData"/> for the current request.</param>
         /// <param name="actionDescriptor">The <see cref="Abstractions.ActionDescriptor"/> for the selected action.</param>
         public ActionContext(
-            [NotNull] HttpContext httpContext,
-            [NotNull] RouteData routeData,
-            [NotNull] ActionDescriptor actionDescriptor)
+            HttpContext httpContext,
+            RouteData routeData,
+            ActionDescriptor actionDescriptor)
             : this(httpContext, routeData, actionDescriptor, new ModelStateDictionary())
         {
         }
@@ -60,11 +64,31 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="actionDescriptor">The <see cref="Abstractions.ActionDescriptor"/> for the selected action.</param>
         /// <param name="modelState">The <see cref="ModelStateDictionary"/>.</param>
         public ActionContext(
-            [NotNull] HttpContext httpContext,
-            [NotNull] RouteData routeData,
-            [NotNull] ActionDescriptor actionDescriptor,
-            [NotNull] ModelStateDictionary modelState)
+            HttpContext httpContext,
+            RouteData routeData,
+            ActionDescriptor actionDescriptor,
+            ModelStateDictionary modelState)
         {
+            if (httpContext == null)
+            {
+                throw new ArgumentNullException(nameof(httpContext));
+            }
+
+            if (routeData == null)
+            {
+                throw new ArgumentNullException(nameof(routeData));
+            }
+
+            if (actionDescriptor == null)
+            {
+                throw new ArgumentNullException(nameof(actionDescriptor));
+            }
+
+            if (modelState == null)
+            {
+                throw new ArgumentNullException(nameof(modelState));
+            }
+
             HttpContext = httpContext;
             RouteData = routeData;
             ActionDescriptor = actionDescriptor;

@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Framework.Internal;
-
 namespace Microsoft.AspNet.Mvc.Abstractions
 {
     public interface IActionDescriptorProvider
@@ -28,8 +26,8 @@ namespace Microsoft.AspNet.Mvc.Abstractions
         /// </remarks>
         int Order { get; }
 
-        void OnProvidersExecuting([NotNull] ActionDescriptorProviderContext context);
+        void OnProvidersExecuting(ActionDescriptorProviderContext context);
 
-        void OnProvidersExecuted([NotNull] ActionDescriptorProviderContext context);
+        void OnProvidersExecuted(ActionDescriptorProviderContext context);
     }
 }

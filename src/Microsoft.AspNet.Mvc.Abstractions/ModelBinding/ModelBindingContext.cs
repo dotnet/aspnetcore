@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Framework.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
@@ -12,6 +11,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     /// </summary>
     public class ModelBindingContext
     {
+        private string _fieldName;
+        private ModelMetadata _modelMetadata;
+        private string _modelName;
+        private ModelStateDictionary _modelState;
+        private OperationBindingContext _operationBindingContext;
+        private IValueProvider _valueProvider;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ModelBindingContext"/> class.
         /// </summary>
@@ -30,12 +36,32 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <param name="modelName">The name of the property or parameter being bound.</param>
         /// <returns>A new instance of <see cref="ModelBindingContext"/>.</returns>
         public static ModelBindingContext CreateBindingContext(
-            [NotNull] OperationBindingContext operationBindingContext,
-            [NotNull] ModelStateDictionary modelState,
-            [NotNull] ModelMetadata metadata,
+            OperationBindingContext operationBindingContext,
+            ModelStateDictionary modelState,
+            ModelMetadata metadata,
             BindingInfo bindingInfo,
-            [NotNull] string modelName)
+            string modelName)
         {
+            if (operationBindingContext == null)
+            {
+                throw new ArgumentNullException(nameof(operationBindingContext));
+            }
+
+            if (modelState == null)
+            {
+                throw new ArgumentNullException(nameof(modelState));
+            }
+
+            if (metadata == null)
+            {
+                throw new ArgumentNullException(nameof(metadata));
+            }
+
+            if (modelName == null)
+            {
+                throw new ArgumentNullException(nameof(modelName));
+            }
+
             var binderModelName = bindingInfo?.BinderModelName ?? metadata.BinderModelName;
             var propertyPredicateProvider =
                 bindingInfo?.PropertyBindingPredicateProvider ?? metadata.PropertyBindingPredicateProvider;
@@ -66,12 +92,32 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         public static ModelBindingContext CreateChildBindingContext(
-            [NotNull] ModelBindingContext parent,
-            [NotNull] ModelMetadata modelMetadata,
-            [NotNull] string fieldName,
-            [NotNull] string modelName,
+            ModelBindingContext parent,
+            ModelMetadata modelMetadata,
+            string fieldName,
+            string modelName,
             object model)
         {
+            if (parent == null)
+            {
+                throw new ArgumentNullException(nameof(parent));
+            }
+
+            if (modelMetadata == null)
+            {
+                throw new ArgumentNullException(nameof(modelMetadata));
+            }
+
+            if (fieldName == null)
+            {
+                throw new ArgumentNullException(nameof(fieldName));
+            }
+
+            if (modelName == null)
+            {
+                throw new ArgumentNullException(nameof(modelName));
+            }
+
             return new ModelBindingContext()
             {
                 ModelState = parent.ModelState,
@@ -93,12 +139,36 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <summary>
         /// Represents the <see cref="OperationBindingContext"/> associated with this context.
         /// </summary>
-        public OperationBindingContext OperationBindingContext { get; [param:NotNull] set; }
+        public OperationBindingContext OperationBindingContext
+        {
+            get { return _operationBindingContext; }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                _operationBindingContext = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the name of the current field being bound.
         /// </summary>
-        public string FieldName { get; [param: NotNull] set; }
+        public string FieldName
+        {
+            get { return _fieldName; }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                _fieldName = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the model value for the current operation.
@@ -112,19 +182,55 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <summary>
         /// Gets or sets the metadata for the model associated with this context.
         /// </summary>
-        public ModelMetadata ModelMetadata { get; [param: NotNull] set; }
+        public ModelMetadata ModelMetadata
+        {
+            get { return _modelMetadata; }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                _modelMetadata = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the name of the model. This property is used as a key for looking up values in
         /// <see cref="IValueProvider"/> during model binding.
         /// </summary>
-        public string ModelName { get; [param: NotNull] set; }
+        public string ModelName
+        {
+            get { return _modelName; }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                _modelName = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the <see cref="ModelStateDictionary"/> used to capture <see cref="ModelState"/> values
         /// for properties in the object graph of the model when binding.
         /// </summary>
-        public ModelStateDictionary ModelState { get; [param: NotNull] set; }
+        public ModelStateDictionary ModelState
+        {
+            get { return _modelState; }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                _modelState = value;
+            }
+        }
 
         /// <summary>
         /// Gets the type of the model.
@@ -171,7 +277,19 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <summary>
         /// Gets or sets the <see cref="IValueProvider"/> associated with this context.
         /// </summary>
-        public IValueProvider ValueProvider { get; [param: NotNull] set; }
+        public IValueProvider ValueProvider
+        {
+            get { return _valueProvider; }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                _valueProvider = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets a predicate which will be evaluated for each property to determine if the property

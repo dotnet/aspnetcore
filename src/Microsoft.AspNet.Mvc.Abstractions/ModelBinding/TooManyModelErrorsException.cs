@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -16,9 +15,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// exception <paramref name="message"/>.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
-        public TooManyModelErrorsException([NotNull] string message)
+        public TooManyModelErrorsException(string message)
             : base(message)
         {
+            if (message == null)
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
         }
     }
 }

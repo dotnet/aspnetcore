@@ -3,15 +3,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Reflection;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public interface IModelMetadataProvider
     {
-        ModelMetadata GetMetadataForType([NotNull] Type modelType);
+        ModelMetadata GetMetadataForType(Type modelType);
 
-        IEnumerable<ModelMetadata> GetMetadataForProperties([NotNull] Type modelType);
+        IEnumerable<ModelMetadata> GetMetadataForProperties(Type modelType);
     }
 }

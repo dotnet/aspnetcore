@@ -4,7 +4,6 @@
 using System;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Formatters
 {
@@ -27,11 +26,31 @@ namespace Microsoft.AspNet.Mvc.Formatters
         /// The <see cref="Type"/> of the model to deserialize.
         /// </param>
         public InputFormatterContext(
-            [NotNull] HttpContext httpContext,
-            [NotNull] string modelName,
-            [NotNull] ModelStateDictionary modelState,
-            [NotNull] Type modelType)
+            HttpContext httpContext,
+            string modelName,
+            ModelStateDictionary modelState,
+            Type modelType)
         {
+            if (httpContext == null)
+            {
+                throw new ArgumentNullException(nameof(httpContext));
+            }
+
+            if (modelName == null)
+            {
+                throw new ArgumentNullException(nameof(modelName));
+            }
+
+            if (modelState == null)
+            {
+                throw new ArgumentNullException(nameof(modelState));
+            }
+
+            if (modelType == null)
+            {
+                throw new ArgumentNullException(nameof(modelType));
+            }
+
             HttpContext = httpContext;
             ModelName = modelName;
             ModelState = modelState;

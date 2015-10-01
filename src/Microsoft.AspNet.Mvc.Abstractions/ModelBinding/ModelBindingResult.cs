@@ -29,8 +29,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// </summary>
         /// <param name="key">The key of the current model binding operation.</param>
         /// <returns>A <see cref="ModelBindingResult"/> representing a failed model binding operation.</returns>
-        public static ModelBindingResult Failed([NotNull] string key)
+        public static ModelBindingResult Failed(string key)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             return new ModelBindingResult(key, model: null, isModelSet: false);
         }
 
@@ -39,8 +44,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// </summary>
         /// <param name="key">The key of the current model binding operation.</param>
         /// <returns>A completed <see cref="Task{ModelBindingResult}"/> representing a failed model binding operation.</returns>
-        public static Task<ModelBindingResult> FailedAsync([NotNull] string key)
+        public static Task<ModelBindingResult> FailedAsync(string key)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             return Task.FromResult(Failed(key));
         }
 
@@ -51,9 +61,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <param name="model">The model value. May be <c>null.</c></param>
         /// <returns>A <see cref="ModelBindingResult"/> representing a successful model bind.</returns>
         public static ModelBindingResult Success(
-            [NotNull] string key,
+            string key,
             object model)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             return new ModelBindingResult(key, model, isModelSet: true);
         }
 
@@ -65,9 +80,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <param name="model">The model value. May be <c>null.</c></param>
         /// <returns>A completed <see cref="Task{ModelBindingResult}"/> representing a successful model bind.</returns>
         public static Task<ModelBindingResult> SuccessAsync(
-            [NotNull] string key,
+            string key,
             object model)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             return Task.FromResult(Success(key, model));
         }
 

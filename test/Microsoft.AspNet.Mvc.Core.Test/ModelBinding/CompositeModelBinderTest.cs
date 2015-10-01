@@ -379,6 +379,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 ModelState = new ModelStateDictionary(),
                 OperationBindingContext = new OperationBindingContext(),
                 ValueProvider = new SimpleValueProvider(),
+                FieldName = "test-field",
             };
 
             // Act
@@ -528,6 +529,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 IsTopLevelObject = true,
                 ModelMetadata = metadataProvider.GetMetadataForType(type),
                 ModelName = "parameter",
+                FieldName = "parameter",
                 ModelState = new ModelStateDictionary(),
                 ValueProvider = valueProvider,
                 OperationBindingContext = new OperationBindingContext

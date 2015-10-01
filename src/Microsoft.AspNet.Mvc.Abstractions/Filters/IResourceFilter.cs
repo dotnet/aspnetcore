@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Framework.Internal;
-
 namespace Microsoft.AspNet.Mvc.Filters
 {
     /// <summary>
@@ -15,12 +13,12 @@ namespace Microsoft.AspNet.Mvc.Filters
         /// Executes the resource filter. Called before execution of the remainder of the pipeline.
         /// </summary>
         /// <param name="context">The <see cref="ResourceExecutingContext"/>.</param>
-        void OnResourceExecuting([NotNull] ResourceExecutingContext context);
+        void OnResourceExecuting(ResourceExecutingContext context);
 
         /// <summary>
         /// Executes the resource filter. Called after execution of the remainder of the pipeline.
         /// </summary>
         /// <param name="context">The <see cref="ResourceExecutedContext"/>.</param>
-        void OnResourceExecuted([NotNull] ResourceExecutedContext context);
+        void OnResourceExecuted(ResourceExecutedContext context);
     }
 }

@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.Mvc.Abstractions;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -24,9 +23,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <param name="displayName">The display name for the composite source.</param>
         /// <returns>A <see cref="CompositeBindingSource"/>.</returns>
         public static CompositeBindingSource Create(
-            [NotNull] IEnumerable<BindingSource> bindingSources,
+            IEnumerable<BindingSource> bindingSources,
             string displayName)
         {
+            if (bindingSources == null)
+            {
+                throw new ArgumentNullException(nameof(bindingSources));
+            }
+
             foreach (var bindingSource in bindingSources)
             {
                 if (bindingSource.IsGreedy)
@@ -59,11 +63,21 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         private CompositeBindingSource(
-            [NotNull] string id, 
-            string displayName, 
-            [NotNull] IEnumerable<BindingSource> bindingSources)
+            string id,
+            string displayName,
+            IEnumerable<BindingSource> bindingSources)
             : base(id, displayName, isGreedy: false, isFromRequest: true)
         {
+            if (id == null)
+            {
+                throw new ArgumentNullException(nameof(id));
+            }
+
+            if (bindingSources == null)
+            {
+                throw new ArgumentNullException(nameof(bindingSources));
+            }
+
             BindingSources = bindingSources;
         }
 
@@ -73,8 +87,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public IEnumerable<BindingSource> BindingSources { get; }
 
         /// <inheritdoc />
-        public override bool CanAcceptDataFrom([NotNull] BindingSource bindingSource)
+        public override bool CanAcceptDataFrom(BindingSource bindingSource)
         {
+            if (bindingSource == null)
+            {
+                throw new ArgumentNullException(nameof(bindingSource));
+            }
+
             if (bindingSource is CompositeBindingSource)
             {
                 var message = Resources.FormatBindingSource_CannotBeComposite(

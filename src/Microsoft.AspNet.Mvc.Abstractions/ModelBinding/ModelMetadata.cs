@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// Creates a new <see cref="ModelMetadata"/>.
         /// </summary>
         /// <param name="identity">The <see cref="ModelMetadataIdentity"/>.</param>
-        protected ModelMetadata([NotNull] ModelMetadataIdentity identity)
+        protected ModelMetadata(ModelMetadataIdentity identity)
         {
             Identity = identity;
         }

@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.ExceptionServices;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Filters
 {
@@ -14,12 +13,17 @@ namespace Microsoft.AspNet.Mvc.Filters
         private ExceptionDispatchInfo _exceptionDispatchInfo;
 
         public ResultExecutedContext(
-            [NotNull] ActionContext actionContext,
-            [NotNull] IList<IFilterMetadata> filters,
-            [NotNull] IActionResult result,
+            ActionContext actionContext,
+            IList<IFilterMetadata> filters,
+            IActionResult result,
             object controller)
             : base(actionContext, filters)
         {
+            if (result == null)
+            {
+                throw new ArgumentNullException(nameof(result));
+            }
+
             Result = result;
             Controller = controller;
         }

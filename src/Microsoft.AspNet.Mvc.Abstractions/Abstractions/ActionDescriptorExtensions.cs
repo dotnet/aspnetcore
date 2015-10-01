@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Framework.Internal;
+using System;
 
 namespace Microsoft.AspNet.Mvc.Abstractions
 {
@@ -17,8 +17,13 @@ namespace Microsoft.AspNet.Mvc.Abstractions
         /// <typeparam name="T">The type of the property.</typeparam>
         /// <param name="actionDescriptor">The action descriptor.</param>
         /// <returns>The property or the default value of <typeparamref name="T"/>.</returns>
-        public static T GetProperty<T>([NotNull] this ActionDescriptor actionDescriptor)
+        public static T GetProperty<T>(this ActionDescriptor actionDescriptor)
         {
+            if (actionDescriptor == null)
+            {
+                throw new ArgumentNullException(nameof(actionDescriptor));
+            }
+
             object value;
             if (actionDescriptor.Properties.TryGetValue(typeof(T), out value))
             {
@@ -37,8 +42,18 @@ namespace Microsoft.AspNet.Mvc.Abstractions
         /// <typeparam name="T">The type of the property.</typeparam>
         /// <param name="actionDescriptor">The action descriptor.</param>
         /// <param name="value">The value of the property.</param>
-        public static void SetProperty<T>([NotNull] this ActionDescriptor actionDescriptor, [NotNull] T value)
+        public static void SetProperty<T>(this ActionDescriptor actionDescriptor, T value)
         {
+            if (actionDescriptor == null)
+            {
+                throw new ArgumentNullException(nameof(actionDescriptor));
+            }
+
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
             actionDescriptor.Properties[typeof(T)] = value;
         }
     }

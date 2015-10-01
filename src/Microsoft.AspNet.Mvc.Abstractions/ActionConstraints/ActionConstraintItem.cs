@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Framework.Internal;
+using System;
 
 namespace Microsoft.AspNet.Mvc.ActionConstraints
 {
@@ -15,8 +15,13 @@ namespace Microsoft.AspNet.Mvc.ActionConstraints
         /// Creates a new <see cref="ActionConstraintItem"/>.
         /// </summary>
         /// <param name="metadata">The <see cref="IActionConstraintMetadata"/> instance.</param>
-        public ActionConstraintItem([NotNull] IActionConstraintMetadata metadata)
+        public ActionConstraintItem(IActionConstraintMetadata metadata)
         {
+            if (metadata == null)
+            {
+                throw new ArgumentNullException(nameof(metadata));
+            }
+
             Metadata = metadata;
         }
 

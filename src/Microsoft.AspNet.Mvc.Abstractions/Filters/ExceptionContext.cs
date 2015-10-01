@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.ExceptionServices;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.Filters
 {
@@ -13,7 +12,7 @@ namespace Microsoft.AspNet.Mvc.Filters
         private Exception _exception;
         private ExceptionDispatchInfo _exceptionDispatchInfo;
 
-        public ExceptionContext([NotNull] ActionContext actionContext, [NotNull] IList<IFilterMetadata> filters)
+        public ExceptionContext(ActionContext actionContext, IList<IFilterMetadata> filters)
             : base(actionContext, filters)
         {
         }

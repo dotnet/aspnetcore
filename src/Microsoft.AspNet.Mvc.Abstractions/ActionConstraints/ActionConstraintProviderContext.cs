@@ -1,10 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Abstractions;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ActionConstraints
 {
@@ -19,10 +19,25 @@ namespace Microsoft.AspNet.Mvc.ActionConstraints
         /// <param name="action">The <see cref="ActionDescriptor"/> for which constraints are being created.</param>
         /// <param name="items">The list of <see cref="ActionConstraintItem"/> objects.</param>
         public ActionConstraintProviderContext(
-            [NotNull] HttpContext context,
-            [NotNull] ActionDescriptor action,
-            [NotNull] IList<ActionConstraintItem> items)
+            HttpContext context,
+            ActionDescriptor action,
+            IList<ActionConstraintItem> items)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (action == null)
+            {
+                throw new ArgumentNullException(nameof(action));
+            }
+
+            if (items == null)
+            {
+                throw new ArgumentNullException(nameof(items));
+            }
+
             HttpContext = context;
             Action = action;
             Results = items;

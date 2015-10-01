@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNet.Mvc.Abstractions;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 {
@@ -17,8 +16,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         /// </summary>
         /// <param name="modelType">The model <see cref="Type"/>.</param>
         /// <returns>A <see cref="ModelMetadataIdentity"/>.</returns>
-        public static ModelMetadataIdentity ForType([NotNull] Type modelType)
+        public static ModelMetadataIdentity ForType(Type modelType)
         {
+            if (modelType == null)
+            {
+                throw new ArgumentNullException(nameof(modelType));
+            }
+
             return new ModelMetadataIdentity()
             {
                 ModelType = modelType,
@@ -33,10 +37,20 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         /// <param name="containerType">The container type of the model property.</param>
         /// <returns>A <see cref="ModelMetadataIdentity"/>.</returns>
         public static ModelMetadataIdentity ForProperty(
-            [NotNull] Type modelType,
+            Type modelType,
             string name,
-            [NotNull] Type containerType)
+            Type containerType)
         {
+            if (modelType == null)
+            {
+                throw new ArgumentNullException(nameof(modelType));
+            }
+
+            if (containerType == null)
+            {
+                throw new ArgumentNullException(nameof(containerType));
+            }
+
             if (string.IsNullOrEmpty(name))
             {
                 throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(name));

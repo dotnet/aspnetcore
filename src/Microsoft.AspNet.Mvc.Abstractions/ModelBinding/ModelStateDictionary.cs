@@ -4,7 +4,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.Framework.Internal;
@@ -49,10 +48,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// from the specified <paramref name="dictionary"/>.
         /// </summary>
         /// <param name="dictionary">The <see cref="ModelStateDictionary"/> to copy values from.</param>
-        public ModelStateDictionary([NotNull] ModelStateDictionary dictionary)
+        public ModelStateDictionary(ModelStateDictionary dictionary)
         {
-            _innerDictionary = new CopyOnWriteDictionary<string, ModelState>(dictionary,
-                                                                             StringComparer.OrdinalIgnoreCase);
+            if (dictionary == null)
+            {
+                throw new ArgumentNullException(nameof(dictionary));
+            }
+
+            _innerDictionary = new CopyOnWriteDictionary<string, ModelState>(
+                dictionary,
+                StringComparer.OrdinalIgnoreCase);
 
             MaxAllowedErrors = dictionary.MaxAllowedErrors;
             ErrorCount = dictionary.ErrorCount;
@@ -152,16 +157,26 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <inheritdoc />
-        public ModelState this[[NotNull] string key]
+        public ModelState this[string key]
         {
             get
             {
+                if (key == null)
+                {
+                    throw new ArgumentNullException(nameof(key));
+                }
+
                 ModelState value;
                 _innerDictionary.TryGetValue(key, out value);
                 return value;
             }
             set
             {
+                if (key == null)
+                {
+                    throw new ArgumentNullException(nameof(key));
+                }
+
                 if (value == null)
                 {
                     throw new ArgumentNullException(nameof(value));
@@ -185,8 +200,18 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// </summary>
         /// <param name="key">The key of the <see cref="ModelState"/> to add errors to.</param>
         /// <param name="exception">The <see cref="Exception"/> to add.</param>
-        public void AddModelError([NotNull] string key, [NotNull] Exception exception)
+        public void AddModelError(string key, Exception exception)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            if (exception == null)
+            {
+                throw new ArgumentNullException(nameof(exception));
+            }
+
             TryAddModelError(key, exception);
         }
 
@@ -201,8 +226,18 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <c>True</c> if the given error was added, <c>false</c> if the error was ignored.
         /// See <see cref="MaxAllowedErrors"/>.
         /// </returns>
-        public bool TryAddModelError([NotNull] string key, [NotNull] Exception exception)
+        public bool TryAddModelError(string key, Exception exception)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            if (exception == null)
+            {
+                throw new ArgumentNullException(nameof(exception));
+            }
+
             if (ErrorCount >= MaxAllowedErrors - 1)
             {
                 EnsureMaxErrorsReachedRecorded();
@@ -241,8 +276,18 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// </summary>
         /// <param name="key">The key of the <see cref="ModelState"/> to add errors to.</param>
         /// <param name="errorMessage">The error message to add.</param>
-        public void AddModelError([NotNull] string key, [NotNull] string errorMessage)
+        public void AddModelError(string key, string errorMessage)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            if (errorMessage == null)
+            {
+                throw new ArgumentNullException(nameof(errorMessage));
+            }
+
             TryAddModelError(key, errorMessage);
         }
 
@@ -257,8 +302,18 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <c>True</c> if the given error was added, <c>false</c> if the error was ignored.
         /// See <see cref="MaxAllowedErrors"/>.
         /// </returns>
-        public bool TryAddModelError([NotNull] string key, [NotNull] string errorMessage)
+        public bool TryAddModelError(string key, string errorMessage)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            if (errorMessage == null)
+            {
+                throw new ArgumentNullException(nameof(errorMessage));
+            }
+
             if (ErrorCount >= MaxAllowedErrors - 1)
             {
                 EnsureMaxErrorsReachedRecorded();
@@ -281,8 +336,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <returns>Returns <see cref="ModelValidationState.Unvalidated"/> if no entries are found for the specified
         /// key, <see cref="ModelValidationState.Invalid"/> if at least one instance is found with one or more model
         /// state errors; <see cref="ModelValidationState.Valid"/> otherwise.</returns>
-        public ModelValidationState GetFieldValidationState([NotNull] string key)
+        public ModelValidationState GetFieldValidationState(string key)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             var entries = FindKeysWithPrefix(key);
             if (!entries.Any())
             {
@@ -299,8 +359,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <returns>Returns <see cref="ModelValidationState.Unvalidated"/> if no entry is found for the specified
         /// key, <see cref="ModelValidationState.Invalid"/> if an instance is found with one or more model
         /// state errors; <see cref="ModelValidationState.Valid"/> otherwise.</returns>
-        public ModelValidationState GetValidationState([NotNull] string key)
+        public ModelValidationState GetValidationState(string key)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             ModelState validationState;
             if (TryGetValue(key, out validationState))
             {
@@ -315,8 +380,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// as <see cref="ModelValidationState.Valid"/>.
         /// </summary>
         /// <param name="key">The key of the <see cref="ModelState"/> to mark as valid.</param>
-        public void MarkFieldValid([NotNull] string key)
+        public void MarkFieldValid(string key)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             var modelState = GetModelStateForKey(key);
             if (modelState.ValidationState == ModelValidationState.Invalid)
             {
@@ -331,8 +401,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// as <see cref="ModelValidationState.Skipped"/>.
         /// </summary>
         /// <param name="key">The key of the <see cref="ModelState"/> to mark as skipped.</param>
-        public void MarkFieldSkipped([NotNull] string key)
+        public void MarkFieldSkipped(string key)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             var modelState = GetModelStateForKey(key);
             if (modelState.ValidationState == ModelValidationState.Invalid)
             {
@@ -369,8 +444,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <param name="attemptedValue">
         /// The values of <param name="rawValue"/> in a comma-separated <see cref="string"/>.
         /// </param>
-        public void SetModelValue([NotNull] string key, object rawValue, string attemptedValue)
+        public void SetModelValue(string key, object rawValue, string attemptedValue)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             var modelState = GetModelStateForKey(key);
             modelState.RawValue = rawValue;
             modelState.AttemptedValue = attemptedValue;
@@ -383,8 +463,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <param name="valueProviderResult">
         /// A <see cref="ValueProviderResult"/> with data for the <see cref="ModelState"/> entry.
         /// </param>
-        public void SetModelValue([NotNull] string key, ValueProviderResult valueProviderResult)
+        public void SetModelValue(string key, ValueProviderResult valueProviderResult)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             // Avoid creating a new array for rawValue if there's only one value.
             object rawValue;
             if (valueProviderResult == ValueProviderResult.None)
@@ -411,7 +496,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             // If key is null or empty, clear all entries in the dictionary
             // else just clear the ones that have key as prefix
-            var entries  = (string.IsNullOrEmpty(key)) ?
+            var entries = (string.IsNullOrEmpty(key)) ?
                 _innerDictionary : FindKeysWithPrefix(key);
 
             foreach (var entry in entries)
@@ -421,8 +506,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
         }
 
-        private ModelState GetModelStateForKey([NotNull] string key)
+        private ModelState GetModelStateForKey(string key)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             ModelState modelState;
             if (!TryGetValue(key, out modelState))
             {
@@ -477,8 +567,18 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <inheritdoc />
-        public void Add([NotNull] string key, [NotNull] ModelState value)
+        public void Add(string key, ModelState value)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
             _innerDictionary.Add(key, value);
         }
 
@@ -495,14 +595,24 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <inheritdoc />
-        public bool ContainsKey([NotNull] string key)
+        public bool ContainsKey(string key)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             return _innerDictionary.ContainsKey(key);
         }
 
         /// <inheritdoc />
-        public void CopyTo([NotNull] KeyValuePair<string, ModelState>[] array, int arrayIndex)
+        public void CopyTo(KeyValuePair<string, ModelState>[] array, int arrayIndex)
         {
+            if (array == null)
+            {
+                throw new ArgumentNullException(nameof(array));
+            }
+
             _innerDictionary.CopyTo(array, arrayIndex);
         }
 
@@ -513,14 +623,24 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <inheritdoc />
-        public bool Remove([NotNull] string key)
+        public bool Remove(string key)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             return _innerDictionary.Remove(key);
         }
 
         /// <inheritdoc />
-        public bool TryGetValue([NotNull] string key, out ModelState value)
+        public bool TryGetValue(string key, out ModelState value)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             return _innerDictionary.TryGetValue(key, out value);
         }
 
@@ -536,8 +656,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return GetEnumerator();
         }
 
-        public IEnumerable<KeyValuePair<string, ModelState>> FindKeysWithPrefix([NotNull] string prefix)
+        public IEnumerable<KeyValuePair<string, ModelState>> FindKeysWithPrefix(string prefix)
         {
+            if (prefix == null)
+            {
+                throw new ArgumentNullException(nameof(prefix));
+            }
+
             ModelState exactMatchValue;
             if (_innerDictionary.TryGetValue(prefix, out exactMatchValue))
             {

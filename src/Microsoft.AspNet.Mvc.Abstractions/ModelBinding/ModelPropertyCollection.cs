@@ -4,7 +4,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -19,8 +18,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// Creates a new <see cref="ModelPropertyCollection"/>.
         /// </summary>
         /// <param name="properties">The properties.</param>
-        public ModelPropertyCollection([NotNull] IEnumerable<ModelMetadata> properties)
+        public ModelPropertyCollection(IEnumerable<ModelMetadata> properties)
         {
+            if (properties == null)
+            {
+                throw new ArgumentNullException(nameof(properties));
+            }
+
             _properties = new List<ModelMetadata>(properties);
         }
 
@@ -43,11 +47,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// The <see cref="ModelMetadata"/> instance for the property specified by <paramref name="propertyName"/>, or null
         /// if no match can be found.
         /// </returns>
-        public ModelMetadata this[[NotNull] string propertyName]
+        public ModelMetadata this[string propertyName]
         {
-
             get
             {
+                if (propertyName == null)
+                {
+                    throw new ArgumentNullException(nameof(propertyName));
+                }
+
                 foreach (var property in _properties)
                 {
                     if (string.Equals(property.PropertyName, propertyName, StringComparison.Ordinal))

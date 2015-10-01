@@ -278,7 +278,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                         MetadataProvider = TestModelMetadataProvider.CreateDefaultProvider(),
                     },
                     // Setting it to empty ensures that model does not get created becasue of no model name.
-                    ModelName = "dummyName"
+                    ModelName = "dummyName",
+                    ModelState = new ModelStateDictionary(),
                 }
             };
 
@@ -339,7 +340,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     // Setting it to empty ensures that model does not get created becasue of no model name.
                     ModelName = "dummyName",
                     BindingSource = modelMetadata.BindingSource,
-                    BinderModelName = modelMetadata.BinderModelName
+                    BinderModelName = modelMetadata.BinderModelName,
+                    ModelState = new ModelStateDictionary(),
                 }
             };
 
@@ -384,7 +386,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                         MetadataProvider = TestModelMetadataProvider.CreateDefaultProvider(),
                     },
                     // Setting it to empty ensures that model does not get created becasue of no model name.
-                    ModelName = "dummyName"
+                    ModelName = "dummyName",
+                    ModelState = new ModelStateDictionary(),
                 }
             };
 
@@ -424,7 +427,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     ModelBinder = mockBinder.Object,
                     MetadataProvider = TestModelMetadataProvider.CreateDefaultProvider(),
                     ValidatorProvider = Mock.Of<IModelValidatorProvider>()
-                }
+                },
+                ModelState = new ModelStateDictionary(),
             };
 
             var model = new Person();
@@ -475,7 +479,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     ModelBinder = mockBinder.Object,
                     MetadataProvider = TestModelMetadataProvider.CreateDefaultProvider(),
                     ValidatorProvider = Mock.Of<IModelValidatorProvider>()
-                }
+                },
+                ModelState = new ModelStateDictionary(),
             };
 
             var model = new Person();

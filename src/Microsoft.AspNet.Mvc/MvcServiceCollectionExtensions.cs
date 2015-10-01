@@ -4,19 +4,28 @@
 using System;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Internal;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.DependencyInjection
 {
     public static class MvcServiceCollectionExtensions
     {
-        public static IMvcBuilder AddMvc([NotNull] this IServiceCollection services)
+        public static IMvcBuilder AddMvc(this IServiceCollection services)
         {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
             return AddMvc(services, setupAction: null);
         }
 
-        public static IMvcBuilder AddMvc([NotNull] this IServiceCollection services, Action<MvcOptions> setupAction)
+        public static IMvcBuilder AddMvc(this IServiceCollection services, Action<MvcOptions> setupAction)
         {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
             var builder = services.AddMvcCore();
 
             builder.AddApiExplorer();

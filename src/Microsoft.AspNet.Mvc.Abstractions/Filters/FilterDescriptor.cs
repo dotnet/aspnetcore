@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Framework.Internal;
+using System;
 
 namespace Microsoft.AspNet.Mvc.Filters
 {
@@ -33,8 +33,13 @@ namespace Microsoft.AspNet.Mvc.Filters
         /// <see cref="Order"/> will be taken from <see cref="IOrderedFilter.Order"/>. Otherwise the value
         /// of <see cref="Order"/> will default to <c>0</c>.
         /// </remarks>
-        public FilterDescriptor([NotNull] IFilterMetadata filter, int filterScope)
+        public FilterDescriptor(IFilterMetadata filter, int filterScope)
         {
+            if (filter == null)
+            {
+                throw new ArgumentNullException(nameof(filter));
+            }
+
             Filter = filter;
             Scope = filterScope;
 

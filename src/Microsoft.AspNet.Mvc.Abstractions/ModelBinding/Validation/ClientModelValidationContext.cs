@@ -2,17 +2,31 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {
     public class ClientModelValidationContext
     {
         public ClientModelValidationContext(
-            [NotNull] ModelMetadata metadata,
-            [NotNull] IModelMetadataProvider metadataProvider,
-            [NotNull] IServiceProvider requestServices)
+            ModelMetadata metadata,
+            IModelMetadataProvider metadataProvider,
+            IServiceProvider requestServices)
         {
+            if (metadata == null)
+            {
+                throw new ArgumentNullException(nameof(metadata));
+            }
+
+            if (metadataProvider == null)
+            {
+                throw new ArgumentNullException(nameof(metadataProvider));
+            }
+
+            if (requestServices == null)
+            {
+                throw new ArgumentNullException(nameof(requestServices));
+            }
+
             ModelMetadata = metadata;
             MetadataProvider = metadataProvider;
             RequestServices = requestServices;
