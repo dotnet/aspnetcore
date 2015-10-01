@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.Server.Testing
                 throw new InvalidOperationException("kestrel is the only valid ServerType for Mono");
             }
 
-            var dnxArgs = $"--appbase \"{DeploymentParameters.ApplicationPath}\" Microsoft.Dnx.ApplicationHost kestrel --server.urls {DeploymentParameters.ApplicationBaseUriHint}";
+            var dnxArgs = $"-p \"{DeploymentParameters.ApplicationPath}\" kestrel --server.urls {DeploymentParameters.ApplicationBaseUriHint}";
 
             Logger.LogInformation("Executing command: dnx {dnxArgs}", dnxArgs);
 
