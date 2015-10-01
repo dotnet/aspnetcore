@@ -285,7 +285,8 @@ functions @{
       // Don't include directories that are children of a node_modules or bower_components directory
       return Directory.GetFiles(path, searchPattern, SearchOption.AllDirectories)
                       .Where(p => p.IndexOf(sep + "node_modules" + sep) < 0 &&
-                                  p.IndexOf(sep + "bower_components" + sep) < 0)
+                                  p.IndexOf(sep + "bower_components" + sep) < 0 &&
+                                  p.IndexOf(sep + "wwwroot" + sep + "lib" + sep) < 0)
                       .Select(p => Path.GetDirectoryName(p))
                       .Distinct();
     }
