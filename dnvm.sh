@@ -2,7 +2,7 @@
 # Source this file from your .bash-profile or script to use
 
 # "Constants"
-_DNVM_BUILDNUMBER="rc1-15522"
+_DNVM_BUILDNUMBER="rc1-15523"
 _DNVM_AUTHORS="Microsoft Open Technologies, Inc."
 _DNVM_RUNTIME_PACKAGE_NAME="dnx"
 _DNVM_RUNTIME_FRIENDLY_NAME=".NET Execution Environment"
@@ -419,40 +419,41 @@ __dnvm_help() {
     echo "  install latest $_DNVM_RUNTIME_SHORT_NAME from feed"
     echo "  adds $_DNVM_RUNTIME_SHORT_NAME bin to path of current command line"
     echo "  set installed version as default"
-    echo "  -f|forces         force upgrade. Overwrite existing version of $_DNVM_RUNTIME_SHORT_NAME if already installed"
-    echo "  -u|unstable       use unstable feed. Installs the $_DNVM_RUNTIME_SHORT_NAME from the unstable feed"
-    echo "  -r|runtime        The runtime flavor to install [clr or coreclr] (default: clr)"
-    echo "  -g|global         Installs the latest $_DNVM_RUNTIME_SHORT_NAME in the configured global $_DNVM_RUNTIME_SHORT_NAME  file location (default: /usr/local/lib/dnx current: $DNX_GLOBAL_HOME)"
-    echo "  -y                Assume Yes to all queries and do not prompt"
+    echo "  -f|-force                   force upgrade. Overwrite existing version of $_DNVM_RUNTIME_SHORT_NAME if already installed"
+    echo "  -u|-unstable                use unstable feed. Installs the $_DNVM_RUNTIME_SHORT_NAME from the unstable feed"
+    echo "  -r|-runtime <runtime>       runtime flavor to install [mono or coreclr] (default: mono)"
+    echo "  -g|-global                  Installs the latest $_DNVM_RUNTIME_SHORT_NAME in the configured global $_DNVM_RUNTIME_SHORT_NAME  file location (default: /usr/local/lib/dnx current: $DNX_GLOBAL_HOME)"
+    echo "  -y                          Assume Yes to all queries and do not prompt"
     echo ""
-   printf "%b\n" "${Yel}$_DNVM_COMMAND_NAME install <semver>|<alias>|<nupkg>|latest [-r <runtime>] [-OS <OS>] [-a|-alias <alias>] [-p|-persistent] [-f|-force] [-u|-unstable] [-g|-global] [-y]${RCol}"
-    echo "  <semver>|<alias>  install requested $_DNVM_RUNTIME_SHORT_NAME from feed"
-    echo "  <nupkg>           install requested $_DNVM_RUNTIME_SHORT_NAME from local package on filesystem"
-    echo "  latest            install latest version of $_DNVM_RUNTIME_SHORT_NAME from feed"
-    echo "  -OS               the operating system that the runtime targets (default:$(__dnvm_current_os)"
-    echo "  -a|-alias <alias> set alias <alias> for requested $_DNVM_RUNTIME_SHORT_NAME on install"
-    echo "  -p|-persistent    set installed version as default"
-    echo "  -f|force          force install. Overwrite existing version of $_DNVM_RUNTIME_SHORT_NAME if already installed"
-    echo "  -u|unstable       use unstable feed. Installs the $_DNVM_RUNTIME_SHORT_NAME from the unstable feed"
-    echo "  -r|runtime        The runtime flavor to install [mono or coreclr] (default: mono)"
-    echo "  -g|global         Installs to the configured global $_DNVM_RUNTIME_SHORT_NAME file location (default: /usr/local/lib/dnx current: $DNX_GLOBAL_HOME)"
-    echo "  -y                Assume Yes to all queries and do not prompt"
+   printf "%b\n" "${Yel}$_DNVM_COMMAND_NAME install <semver>|<alias>|<nupkg>|latest [-r <runtime>] [-OS <OS>] [-alias <alias>] [-a|-arch <architecture>] [-p|-persistent] [-f|-force] [-u|-unstable] [-g|-global] [-y]${RCol}"
+    echo "  <semver>|<alias>            install requested $_DNVM_RUNTIME_SHORT_NAME from feed"
+    echo "  <nupkg>                     install requested $_DNVM_RUNTIME_SHORT_NAME from local package on filesystem"
+    echo "  latest                      install latest version of $_DNVM_RUNTIME_SHORT_NAME from feed"
+    echo "  -OS <operating system>      the operating system that the runtime targets (default:$(__dnvm_current_os))"
+    echo "  -alias <alias>              set alias <alias> for requested $_DNVM_RUNTIME_SHORT_NAME on install"
+    echo "  -a|-arch <architecture>     architecture to use (x64)"
+    echo "  -p|-persistent              set installed version as default"
+    echo "  -f|-force                   force install. Overwrite existing version of $_DNVM_RUNTIME_SHORT_NAME if already installed"
+    echo "  -u|-unstable                use unstable feed. Installs the $_DNVM_RUNTIME_SHORT_NAME from the unstable feed"
+    echo "  -r|-runtime <runtime>       runtime flavor to install [mono or coreclr] (default: mono)"
+    echo "  -g|-global                  Installs to the configured global $_DNVM_RUNTIME_SHORT_NAME file location (default: /usr/local/lib/dnx current: $DNX_GLOBAL_HOME)"
+    echo "  -y                          Assume Yes to all queries and do not prompt"
     echo ""
     echo "  adds $_DNVM_RUNTIME_SHORT_NAME bin to path of current command line"
     echo ""
    printf "%b\n" "${Yel}$_DNVM_COMMAND_NAME uninstall <semver> [-r|-runtime <runtime>] [-a|-arch <architecture>] [-OS <OS>]${RCol}"
-    echo "  <semver>          the version to uninstall"
-    echo "  -r|-runtime       runtime to use (mono, coreclr)"
-    echo "  -a|-arch          architecture to use (x64)"
-    echo "  -OS               the operating system that the runtime targets (default:$(__dnvm_current_os)"
-    echo "  -y                Assume Yes to all queries and do not prompt"
+    echo "  <semver>                    the version to uninstall"
+    echo "  -r|-runtime <runtime>       runtime flavor to uninstall [mono or coreclr] (default: mono)"
+    echo "  -a|-arch <architecture>     architecture to use (x64)"
+    echo "  -OS <operating system>      the operating system that the runtime targets (default:$(__dnvm_current_os))"
+    echo "  -y                          Assume Yes to all queries and do not prompt"
     echo ""
    printf "%b\n" "${Yel}$_DNVM_COMMAND_NAME use <semver>|<alias>|<package>|none [-p|-persistent] [-r|-runtime <runtime>] [-a|-arch <architecture>] ${RCol}"
     echo "  <semver>|<alias>|<package>  add $_DNVM_RUNTIME_SHORT_NAME bin to path of current command line   "
     echo "  none                        remove $_DNVM_RUNTIME_SHORT_NAME bin from path of current command line"
     echo "  -p|-persistent              set selected version as default"
-    echo "  -r|-runtime                 runtime to use (mono, coreclr)"
-    echo "  -a|-arch                    architecture to use (x64)"
+    echo "  -r|-runtime <runtime>       runtime flavor to use [mono or coreclr] (default: mono)"
+    echo "  -a|-arch <architecture>     architecture to use (x64)"
     echo ""
    printf "%b\n" "${Yel}$_DNVM_COMMAND_NAME run <semver>|<alias> <args...> ${RCol}"
     echo "  <semver>|<alias>            the version or alias to run"
@@ -480,8 +481,8 @@ __dnvm_help() {
     echo "  display value of the specified alias"
     echo ""
    printf "%b\n" "${Yel}$_DNVM_COMMAND_NAME alias <alias> <semver>|<alias>|<package> ${RCol}"
-    echo "  <alias>                      the name of the alias to set"
-    echo "  <semver>|<alias>|<package>   the $_DNVM_RUNTIME_SHORT_NAME version to set the alias to. Alternatively use the version of the specified alias"
+    echo "  <alias>                     the name of the alias to set"
+    echo "  <semver>|<alias>|<package>  the $_DNVM_RUNTIME_SHORT_NAME version to set the alias to. Alternatively use the version of the specified alias"
     echo ""
    printf "%b\n" "${Yel}$_DNVM_COMMAND_NAME alias [-d|-delete] <alias> ${RCol}"
     echo "  remove the specified alias"
@@ -541,7 +542,7 @@ dnvm()
             do
                 if [[ $1 == "-p" || $1 == "-persistent" ]]; then
                     local persistent="-p"
-                elif [[ $1 == "-a" || $1 == "-alias" ]]; then
+                elif [[ $1 == "-alias" ]]; then
                     local alias=$2
                     shift
                 elif [[ $1 == "-f" || $1 == "-force" ]]; then
@@ -554,9 +555,9 @@ dnvm()
                 elif [[ $1 == "-OS" ]]; then
                     local os=$2
                     shift
-		elif [[ $1 == "-y" ]]; then
+                elif [[ $1 == "-y" ]]; then
                     local acceptSudo=1
-                elif [[ $1 == "-arch" ]]; then
+                elif [[ $1 == "-a" || $1 == "-arch" ]]; then
                     local arch=$2
                     shift
 
