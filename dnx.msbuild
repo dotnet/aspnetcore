@@ -4,10 +4,14 @@
     <UsingTask AssemblyFile="tools\Microsoft.Web.MsBuildTasks2.dll" TaskName="Microsoft.Web.MsBuildTasks.PoliCheck" />
     <UsingTask AssemblyFile="tools\Microsoft.Web.MsBuildTasks.dll" TaskName="Microsoft.Web.MsBuildTasks.RegexReplace" />
 
+    <PropertyGroup>
+        <NuGetV3Feed>https://api.nuget.org/v3/index.json</NuGetV3Feed>
+    </PropertyGroup>
+
     <Import Project="tools\dnx.settings.targets" />
     <Import Project="tools\QERM.targets" />
 
-    <Target Name="Build" DependsOnTargets="CopyUnsignedPackages;BinScope;NuGetVerify" />
+    <Target Name="Build" DependsOnTargets="CopyUnsignedPackages;BinScope;NuGetVerify;BuildServiceFabricMetaPackage" />
 
     <Target Name="Clean">
         <RemoveDir Directories="$(KBinPath);$(IntermediateOutputPath);$(UnsignedBinariesPath)" />
@@ -103,8 +107,8 @@
                          $(UnsignedPackagesPath)**\Kestrel*.dll;
                          $(UnsignedPackagesPath)**\dnx*.dll;
                          $(UnsignedPackagesPath)**\Microsoft.AspNet*.dll;
-                         $(UnsignedPackagesPath)**\Microsoft.Dnx*.dll;         
-                         $(UnsignedPackagesPath)**\Microsoft.Framework*.dll;                   
+                         $(UnsignedPackagesPath)**\Microsoft.Dnx*.dll;
+                         $(UnsignedPackagesPath)**\Microsoft.Framework*.dll;
                          $(UnsignedPackagesPath)**\Microsoft.Net*.dll;
                          $(UnsignedPackagesPath)**\NuGet.*.dll;
                          $(UnsignedPackagesPath)**\signalrclient.dll;
@@ -238,12 +242,35 @@
     <Target Name="NuGetVerify" DependsOnTargets="RebuildPackages" Condition="'$(VerifySignatures)' == 'true'">
         <PropertyGroup>
             <DnxToolsFeed>https://www.myget.org/F/dnxtools/api/v3/index.json</DnxToolsFeed>
-            <NuGetFeed>https://api.nuget.org/v3/index.json</NuGetFeed>
             <CommandsPath>$(DNXToolsPath)commands</CommandsPath>
         </PropertyGroup>
-        <Exec Command="dnu commands install --source $(DnxToolsFeed) --source $(NuGetFeed) NuGetPackageVerifier --packages &quot;$(CommandsPath)&quot;"/>
+        <Exec Command="dnu commands install --source $(DnxToolsFeed) --source $(NuGetV3Feed) NuGetPackageVerifier --packages &quot;$(CommandsPath)&quot;"/>
         <Exec Command="$(CommandsPath)\nugetverify &quot;$(PackagesOutputPath) &quot; &quot;$(DNXToolsPath)NuGetPackageVerifier.json&quot;"/>
         <RemoveDir Directories="$(CommandsPath)"/>
+    </Target>
+
+    <Target Name="BuildServiceFabricMetaPackage">
+        <PropertyGroup>
+            <SourcePackagesDirectory>$(SignedOutputPath)Packages-NoTimeStamp\</SourcePackagesDirectory>
+            <TargetDirectory>$(DNXRootPath)ServiceFabric\output\</TargetDirectory>
+            <TargetRuntimeDirectory>$(TargetDirectory)runtime\</TargetRuntimeDirectory>
+            <TargetPackagesDirectory>$(TargetDirectory)packages\</TargetPackagesDirectory>
+            <ServiceFabricNuspec>$(DNXRootPath)ServiceFabric\ServiceFabric.nuspec</ServiceFabricNuspec>
+            <BUILD_NUMBER Condition=" '$(BUILD_NUMBER)' == '' ">0</BUILD_NUMBER>
+            <ServiceFabricPackageVersion>1.0.$(BUILD_NUMBER)</ServiceFabricPackageVersion>
+            <ServiceFabricPackageOutDir>$(SignedBinariesPath)ServiceFabric\</ServiceFabricPackageOutDir>
+        </PropertyGroup>
+
+        <Exec Command="dnu restore ServiceFabric/project.json --source &quot;$(SourcePackagesDirectory) &quot; --source $(NuGetV3Feed) --packages &quot;$(TargetPackagesDirectory) &quot;" />
+        <Exec Command="$(DNXRootPath)tools/nuget.exe install dnx-clr-win-x86 -source &quot;$(SourcePackagesDirectory) &quot; -excludeversion -pre -output &quot;$(TargetRuntimeDirectory) &quot;" />
+        <Exec Command="$(DNXRootPath)tools/nuget.exe pack -BasePath &quot;$(TargetDirectory) &quot; -nopackageanalysis &quot;$(ServiceFabricNuspec)&quot; -Version $(ServiceFabricPackageVersion) -Out &quot;$(TargetDirectory) &quot; " />
+
+        <ItemGroup>
+            <FilesToCopy Include="$(TargetDirectory)*.nupkg" />
+        </ItemGroup>
+
+        <MakeDir Directories="$(ServiceFabricPackageOutDir)" Condition=" !Exists('$(ServiceFabricPackageOutDir)') " />
+        <Copy SourceFiles="@(FilesToCopy)" DestinationFolder="$(ServiceFabricPackageOutDir)" />
     </Target>
 
     <Target Name="PoliCheck" DependsOnTargets="FindLatestDropShare">
@@ -563,7 +590,7 @@
             try
             {
                 Log.LogMessage(MessageImportance.Normal, RootDirectory);
-                
+
                 foreach (var directory in Directory.EnumerateDirectories(RootDirectory, "*", SearchOption.AllDirectories))
                 {
                     string unescapedDirectory = Uri.UnescapeDataString(directory);
@@ -578,7 +605,7 @@
             {
                 Log.LogErrorFromException(ex);
             }
-            
+
             return !Log.HasLoggedErrors;
         ]]>
             </Code>
@@ -758,7 +785,7 @@
             {
                 Log.LogErrorFromException(ex);
             }
-            
+
             return !Log.HasLoggedErrors;
         ]]>
             </Code>
@@ -793,7 +820,7 @@
             {
                 Log.LogErrorFromException(ex);
             }
-            
+
             return !Log.HasLoggedErrors;
         ]]>
             </Code>
