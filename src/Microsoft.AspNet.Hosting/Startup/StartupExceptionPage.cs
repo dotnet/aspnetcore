@@ -509,9 +509,10 @@ namespace Microsoft.AspNet.Hosting.Startup
         private static IEnumerable<Exception> FlattenAndReverseExceptionTree(Exception ex)
         {
             var list = new List<Exception>();
-            for (; ex != null; ex = ex.InnerException)
+            while (ex != null)
             {
                 list.Add(ex);
+                ex = ex.InnerException;
             }
             list.Reverse();
             return list;

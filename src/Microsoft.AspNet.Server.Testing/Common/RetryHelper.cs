@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Server.Testing
             CancellationToken cancellationToken = default(CancellationToken),
             int retryCount = 60)
         {
-            for (int retry = 0; retry < retryCount; retry++)
+            for (var retry = 0; retry < retryCount; retry++)
             {
                 if (cancellationToken.IsCancellationRequested)
                 {

@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Hosting.Startup
             var serviceProvider = builder.ApplicationServices;
             var parameterInfos = MethodInfo.GetParameters();
             var parameters = new object[parameterInfos.Length];
-            for (var index = 0; index != parameterInfos.Length; ++index)
+            for (var index = 0; index < parameterInfos.Length; index++)
             {
                 var parameterInfo = parameterInfos[index];
                 if (parameterInfo.ParameterType == typeof(IApplicationBuilder))
