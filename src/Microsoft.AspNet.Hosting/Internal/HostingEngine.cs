@@ -12,7 +12,6 @@ using Microsoft.AspNet.Hosting.Server;
 using Microsoft.AspNet.Hosting.Startup;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
-using Microsoft.AspNet.Http.Features.Internal;
 using Microsoft.AspNet.Server.Features;
 using Microsoft.Dnx.Runtime;
 using Microsoft.Extensions.Configuration;
@@ -278,10 +277,7 @@ namespace Microsoft.AspNet.Hosting.Internal
             var requestIdentifierFeature = httpContext.Features.Get<IHttpRequestIdentifierFeature>();
             if (requestIdentifierFeature == null)
             {
-                requestIdentifierFeature = new HttpRequestIdentifierFeature()
-                {
-                    TraceIdentifier = Guid.NewGuid().ToString()
-                };
+                requestIdentifierFeature = new FastHttpRequestIdentifierFeature();
                 httpContext.Features.Set(requestIdentifierFeature);
             }
 
