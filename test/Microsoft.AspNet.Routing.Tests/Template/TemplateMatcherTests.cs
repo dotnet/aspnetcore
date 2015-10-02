@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using Microsoft.AspNet.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.OptionsModel;
 using Xunit;
@@ -19,7 +20,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var matcher = CreateMatcher("{controller}/{action}/{id}");
 
             // Act
-            var match = matcher.Match("Bank/DoAction/123");
+            var match = matcher.Match("/Bank/DoAction/123");
 
             // Assert
             Assert.NotNull(match);
@@ -35,7 +36,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var matcher = CreateMatcher("{controller}/{action}/{id}");
 
             // Act
-            var match = matcher.Match("Bank/DoAction");
+            var match = matcher.Match("/Bank/DoAction");
 
             // Assert
             Assert.Null(match);
@@ -48,7 +49,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var matcher = CreateMatcher("{controller}/{action}/{id}", new { id = "default id" });
 
             // Act
-            var rd = matcher.Match("Bank/DoAction");
+            var rd = matcher.Match("/Bank/DoAction");
 
             // Assert
             Assert.Equal("Bank", rd["controller"]);
@@ -63,7 +64,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var matcher = CreateMatcher("{controller}/{action}/{id}", new { id = "default id" });
 
             // Act
-            var rd = matcher.Match("Bank");
+            var rd = matcher.Match("/Bank");
 
             // Assert
             Assert.Null(rd);
@@ -76,7 +77,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var matcher = CreateMatcher("moo/{p1}/bar/{p2}", new { p2 = "default p2" });
 
             // Act
-            var rd = matcher.Match("moo/111/bar/222");
+            var rd = matcher.Match("/moo/111/bar/222");
 
             // Assert
             Assert.Equal("111", rd["p1"]);
@@ -90,7 +91,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var matcher = CreateMatcher("moo/{p1}/bar/{p2}", new { p2 = "default p2" });
 
             // Act
-            var rd = matcher.Match("moo/111/bar/");
+            var rd = matcher.Match("/moo/111/bar/");
 
             // Assert
             Assert.Equal("111", rd["p1"]);
@@ -98,10 +99,10 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         }
 
         [Theory]
-        [InlineData(@"{p1:regex(^\d{{3}}-\d{{3}}-\d{{4}}$)}", "123-456-7890")] // ssn
-        [InlineData(@"{p1:regex(^\w+\@\w+\.\w+)}", "asd@assds.com")] // email
-        [InlineData(@"{p1:regex(([}}])\w+)}", "}sda")] // Not balanced }
-        [InlineData(@"{p1:regex(([{{)])\w+)}", "})sda")] // Not balanced {
+        [InlineData(@"{p1:regex(^\d{{3}}-\d{{3}}-\d{{4}}$)}", "/123-456-7890")] // ssn
+        [InlineData(@"{p1:regex(^\w+\@\w+\.\w+)}", "/asd@assds.com")] // email
+        [InlineData(@"{p1:regex(([}}])\w+)}", "/}sda")] // Not balanced }
+        [InlineData(@"{p1:regex(([{{)])\w+)}", "/})sda")] // Not balanced {
         public void MatchRoute_RegularExpression_Valid(
             string template,
             string path)
@@ -117,19 +118,19 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         }
 
         [Theory]
-        [InlineData("moo/{p1}.{p2?}", "moo/foo.bar", "foo", "bar")]
-        [InlineData("moo/{p1?}", "moo/foo", "foo", null)]
-        [InlineData("moo/{p1?}", "moo", null, null)]
-        [InlineData("moo/{p1}.{p2?}", "moo/foo", "foo", null)]
-        [InlineData("moo/{p1}.{p2?}", "moo/foo..bar", "foo.", "bar")]
-        [InlineData("moo/{p1}.{p2?}", "moo/foo.moo.bar", "foo.moo", "bar")]
-        [InlineData("moo/{p1}.{p2}", "moo/foo.bar", "foo", "bar")]
-        [InlineData("moo/foo.{p1}.{p2?}", "moo/foo.moo.bar", "moo", "bar")]
-        [InlineData("moo/foo.{p1}.{p2?}", "moo/foo.moo", "moo", null)]
-        [InlineData("moo/.{p2?}", "moo/.foo", null, "foo")]
-        [InlineData("moo/.{p2?}", "moo", null, null)]
-        [InlineData("moo/{p1}.{p2?}", "moo/....", "..", ".")]
-        [InlineData("moo/{p1}.{p2?}", "moo/.bar", ".bar", null)]
+        [InlineData("moo/{p1}.{p2?}", "/moo/foo.bar", "foo", "bar")]
+        [InlineData("moo/{p1?}", "/moo/foo", "foo", null)]
+        [InlineData("moo/{p1?}", "/moo", null, null)]
+        [InlineData("moo/{p1}.{p2?}", "/moo/foo", "foo", null)]
+        [InlineData("moo/{p1}.{p2?}", "/moo/foo..bar", "foo.", "bar")]
+        [InlineData("moo/{p1}.{p2?}", "/moo/foo.moo.bar", "foo.moo", "bar")]
+        [InlineData("moo/{p1}.{p2}", "/moo/foo.bar", "foo", "bar")]
+        [InlineData("moo/foo.{p1}.{p2?}", "/moo/foo.moo.bar", "moo", "bar")]
+        [InlineData("moo/foo.{p1}.{p2?}", "/moo/foo.moo", "moo", null)]
+        [InlineData("moo/.{p2?}", "/moo/.foo", null, "foo")]
+        [InlineData("moo/.{p2?}", "/moo", null, null)]
+        [InlineData("moo/{p1}.{p2?}", "/moo/....", "..", ".")]
+        [InlineData("moo/{p1}.{p2?}", "/moo/.bar", ".bar", null)]
         public void MatchRoute_OptionalParameter_FollowedByPeriod_Valid(
             string template,
             string path,
@@ -154,13 +155,13 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         }
 
         [Theory]
-        [InlineData("moo/{p1}.{p2}.{p3?}", "moo/foo.moo.bar", "foo", "moo", "bar")]
-        [InlineData("moo/{p1}.{p2}.{p3?}", "moo/foo.moo", "foo", "moo", null)]
-        [InlineData("moo/{p1}.{p2}.{p3}.{p4?}", "moo/foo.moo.bar", "foo", "moo", "bar")]
-        [InlineData("{p1}.{p2?}/{p3}", "foo.moo/bar", "foo", "moo", "bar")]
-        [InlineData("{p1}.{p2?}/{p3}", "foo/bar", "foo", null, "bar")]
-        [InlineData("{p1}.{p2?}/{p3}", ".foo/bar", ".foo", null, "bar")]
-        [InlineData("{p1}/{p2}/{p3?}", "foo/bar/baz", "foo", "bar", "baz")]
+        [InlineData("moo/{p1}.{p2}.{p3?}", "/moo/foo.moo.bar", "foo", "moo", "bar")]
+        [InlineData("moo/{p1}.{p2}.{p3?}", "/moo/foo.moo", "foo", "moo", null)]
+        [InlineData("moo/{p1}.{p2}.{p3}.{p4?}", "/moo/foo.moo.bar", "foo", "moo", "bar")]
+        [InlineData("{p1}.{p2?}/{p3}", "/foo.moo/bar", "foo", "moo", "bar")]
+        [InlineData("{p1}.{p2?}/{p3}", "/foo/bar", "foo", null, "bar")]
+        [InlineData("{p1}.{p2?}/{p3}", "/.foo/bar", ".foo", null, "bar")]
+        [InlineData("{p1}/{p2}/{p3?}", "/foo/bar/baz", "foo", "bar", "baz")]
         public void MatchRoute_OptionalParameter_FollowedByPeriod_3Parameters_Valid(
             string template,
             string path,
@@ -189,18 +190,18 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         }
 
         [Theory]
-        [InlineData("moo/{p1}.{p2?}", "moo/foo.")]
-        [InlineData("moo/{p1}.{p2?}", "moo/.")]
-        [InlineData("moo/{p1}.{p2}", "foo.")]
-        [InlineData("moo/{p1}.{p2}", "foo")]
-        [InlineData("moo/{p1}.{p2}.{p3?}", "moo/foo.moo.")]
-        [InlineData("moo/foo.{p2}.{p3?}", "moo/bar.foo.moo")]
-        [InlineData("moo/foo.{p2}.{p3?}", "moo/kungfoo.moo.bar")]
-        [InlineData("moo/foo.{p2}.{p3?}", "moo/kungfoo.moo")]
-        [InlineData("moo/{p1}.{p2}.{p3?}", "moo/foo")]
-        [InlineData("{p1}.{p2?}/{p3}", "foo./bar")]
-        [InlineData("moo/.{p2?}", "moo/.")]
-        [InlineData("{p1}.{p2}/{p3}", ".foo/bar")]
+        [InlineData("moo/{p1}.{p2?}", "/moo/foo.")]
+        [InlineData("moo/{p1}.{p2?}", "/moo/.")]
+        [InlineData("moo/{p1}.{p2}", "/foo.")]
+        [InlineData("moo/{p1}.{p2}", "/foo")]
+        [InlineData("moo/{p1}.{p2}.{p3?}", "/moo/foo.moo.")]
+        [InlineData("moo/foo.{p2}.{p3?}", "/moo/bar.foo.moo")]
+        [InlineData("moo/foo.{p2}.{p3?}", "/moo/kungfoo.moo.bar")]
+        [InlineData("moo/foo.{p2}.{p3?}", "/moo/kungfoo.moo")]
+        [InlineData("moo/{p1}.{p2}.{p3?}", "/moo/foo")]
+        [InlineData("{p1}.{p2?}/{p3}", "/foo./bar")]
+        [InlineData("moo/.{p2?}", "/moo/.")]
+        [InlineData("{p1}.{p2}/{p3}", "/.foo/bar")]
         public void MatchRoute_OptionalParameter_FollowedByPeriod_Invalid(string template, string path)
         {
             // Arrange
@@ -220,7 +221,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var matcher = CreateMatcher("moo/bar");
 
             // Act
-            var rd = matcher.Match("moo/bar");
+            var rd = matcher.Match("/moo/bar");
 
             // Assert
             Assert.NotNull(rd);
@@ -234,7 +235,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var matcher = CreateMatcher("moo/bars");
 
             // Act
-            var rd = matcher.Match("moo/bar");
+            var rd = matcher.Match("/moo/bar");
 
             // Assert
             Assert.Null(rd);
@@ -247,7 +248,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var matcher = CreateMatcher("moo/bar");
 
             // Act
-            var rd = matcher.Match("moo/bar/");
+            var rd = matcher.Match("/moo/bar/");
 
             // Assert
             Assert.NotNull(rd);
@@ -261,7 +262,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var matcher = CreateMatcher("moo/bar/");
 
             // Act
-            var rd = matcher.Match("moo/bar");
+            var rd = matcher.Match("/moo/bar");
 
             // Assert
             Assert.NotNull(rd);
@@ -275,7 +276,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var matcher = CreateMatcher("{p1}/{p2}/");
 
             // Act
-            var rd = matcher.Match("moo/bar");
+            var rd = matcher.Match("/moo/bar");
 
             // Assert
             Assert.NotNull(rd);
@@ -290,7 +291,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var matcher = CreateMatcher("{p1}/{p2}/baz");
 
             // Act
-            var rd = matcher.Match("moo/bar/boo");
+            var rd = matcher.Match("/moo/bar/boo");
 
             // Assert
             Assert.Null(rd);
@@ -303,7 +304,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var matcher = CreateMatcher("{p1}");
 
             // Act
-            var rd = matcher.Match("moo/bar");
+            var rd = matcher.Match("/moo/bar");
 
             // Assert
             Assert.Null(rd);
@@ -316,21 +317,21 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var matcher = CreateMatcher("DEFAULT.ASPX");
 
             // Act
-            var rd = matcher.Match("default.aspx");
+            var rd = matcher.Match("/default.aspx");
 
             // Assert
             Assert.NotNull(rd);
         }
 
         [Theory]
-        [InlineData("{prefix}x{suffix}", "xxxxxxxxxx")]
-        [InlineData("{prefix}xyz{suffix}", "xxxxyzxyzxxxxxxyz")]
-        [InlineData("{prefix}xyz{suffix}", "abcxxxxyzxyzxxxxxxyzxx")]
-        [InlineData("{prefix}xyz{suffix}", "xyzxyzxyzxyzxyz")]
-        [InlineData("{prefix}xyz{suffix}", "xyzxyzxyzxyzxyz1")]
-        [InlineData("{prefix}xyz{suffix}", "xyzxyzxyz")]
-        [InlineData("{prefix}aa{suffix}", "aaaaa")]
-        [InlineData("{prefix}aaa{suffix}", "aaaaa")]
+        [InlineData("{prefix}x{suffix}", "/xxxxxxxxxx")]
+        [InlineData("{prefix}xyz{suffix}", "/xxxxyzxyzxxxxxxyz")]
+        [InlineData("{prefix}xyz{suffix}", "/abcxxxxyzxyzxxxxxxyzxx")]
+        [InlineData("{prefix}xyz{suffix}", "/xyzxyzxyzxyzxyz")]
+        [InlineData("{prefix}xyz{suffix}", "/xyzxyzxyzxyzxyz1")]
+        [InlineData("{prefix}xyz{suffix}", "/xyzxyzxyz")]
+        [InlineData("{prefix}aa{suffix}", "/aaaaa")]
+        [InlineData("{prefix}aaa{suffix}", "/aaaaa")]
         public void VerifyRouteMatchesWithContext(string template, string path)
         {
             var matcher = CreateMatcher(template);
@@ -349,7 +350,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var matcher = CreateMatcher("{p1}/{p2}", new { p2 = (string)null, foo = "bar" });
 
             // Act
-            var rd = matcher.Match("v1");
+            var rd = matcher.Match("/v1");
 
             // Assert
             Assert.NotNull(rd);
@@ -368,7 +369,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
                 new { controller = "blog", action = "showpost", m = (string)null, d = (string)null });
 
             // Act
-            var rd = matcher.Match("date/2007/08");
+            var rd = matcher.Match("/date/2007/08");
 
             // Assert
             Assert.NotNull(rd);
@@ -385,7 +386,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             RunTest(
                 "language/{lang}-{region}",
-                "language/en-US",
+                "/language/en-US",
                 null,
                 new RouteValueDictionary(new { lang = "en", region = "US" }));
         }
@@ -395,7 +396,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             RunTest(
                 "language/{lang}-{region}a",
-                "language/en-USa",
+                "/language/en-USa",
                 null,
                 new RouteValueDictionary(new { lang = "en", region = "US" }));
         }
@@ -405,7 +406,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             RunTest(
                 "language/a{lang}-{region}",
-                "language/aen-US",
+                "/language/aen-US",
                 null,
                 new RouteValueDictionary(new { lang = "en", region = "US" }));
         }
@@ -415,7 +416,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             RunTest(
                 "language/a{lang}-{region}a",
-                "language/aen-USa",
+                "/language/aen-USa",
                 null,
                 new RouteValueDictionary(new { lang = "en", region = "US" }));
         }
@@ -425,7 +426,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             RunTest(
                 "language/a{lang}-{region}a",
-                "language/a-USa",
+                "/language/a-USa",
                 null,
                 null);
         }
@@ -435,7 +436,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             RunTest(
                 "language/a{lang}-{region}a",
-                "language/aen-a",
+                "/language/aen-a",
                 null,
                 null);
         }
@@ -445,7 +446,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             RunTest(
                 "language/{lang}",
-                "language/en",
+                "/language/en",
                 null,
                 new RouteValueDictionary(new { lang = "en" }));
         }
@@ -455,7 +456,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             RunTest(
                 "language/{lang}",
-                "language/",
+                "/language/",
                 null,
                 null);
         }
@@ -465,7 +466,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             RunTest(
                 "language/{lang}",
-                "language",
+                "/language",
                 null,
                 null);
         }
@@ -475,7 +476,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             RunTest(
                 "language/{lang}-",
-                "language/en-",
+                "/language/en-",
                 null,
                 new RouteValueDictionary(new { lang = "en" }));
         }
@@ -485,7 +486,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             RunTest(
                 "language/a{lang}",
-                "language/aen",
+                "/language/aen",
                 null,
                 new RouteValueDictionary(new { lang = "en" }));
         }
@@ -495,7 +496,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             RunTest(
                 "language/a{lang}a",
-                "language/aena",
+                "/language/aena",
                 null,
                 new RouteValueDictionary(new { lang = "en" }));
         }
@@ -505,7 +506,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             RunTest(
                 "{controller}.mvc/{action}/{id}",
-                "home.mvc/index",
+                "/home.mvc/index",
                 new RouteValueDictionary(new { action = "Index", id = (string)null }),
                 new RouteValueDictionary(new { controller = "home", action = "index", id = (string)null }));
         }
@@ -515,7 +516,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             RunTest(
                 "language/{lang}-{region}",
-                "language/-",
+                "/language/-",
                 new RouteValueDictionary(new { lang = "xx", region = "yy" }),
                 null);
         }
@@ -525,7 +526,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             RunTest(
                 "{Controller}..mvc/{id}/{Param1}",
-                "Home..mvc/123/p1",
+                "/Home..mvc/123/p1",
                 null,
                 new RouteValueDictionary(new { Controller = "Home", id = "123", Param1 = "p1" }));
         }
@@ -535,7 +536,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             RunTest(
                 "{Controller}.mvc/../{action}",
-                "Home.mvc/../index",
+                "/Home.mvc/../index",
                 null,
                 new RouteValueDictionary(new { Controller = "Home", action = "index" }));
         }
@@ -545,7 +546,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             RunTest(
                 "{Controller}.mvc/.../{action}",
-                "Home.mvc/.../index",
+                "/Home.mvc/.../index",
                 null,
                 new RouteValueDictionary(new { Controller = "Home", action = "index" }));
         }
@@ -555,7 +556,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             RunTest(
                 "{Controller}.mvc/../../../{action}",
-                "Home.mvc/../../../index",
+                "/Home.mvc/../../../index",
                 null,
                 new RouteValueDictionary(new { Controller = "Home", action = "index" }));
         }
@@ -565,7 +566,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             RunTest(
                 "{Controller}.mvc!/{action}",
-                "Home.mvc!/index",
+                "/Home.mvc!/index",
                 null,
                 new RouteValueDictionary(new { Controller = "Home", action = "index" }));
         }
@@ -575,7 +576,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             RunTest(
                 "../{Controller}.mvc",
-                "../Home.mvc",
+                "/../Home.mvc",
                 null,
                 new RouteValueDictionary(new { Controller = "Home" }));
         }
@@ -585,7 +586,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             RunTest(
                 @"\{Controller}.mvc",
-                @"\Home.mvc",
+                @"/\Home.mvc",
                 null,
                 new RouteValueDictionary(new { Controller = "Home" }));
         }
@@ -595,7 +596,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             RunTest(
                 @"{Controller}.mvc\{id}\{Param1}",
-                @"Home.mvc\123\p1",
+                @"/Home.mvc\123\p1",
                 null,
                 new RouteValueDictionary(new { Controller = "Home", id = "123", Param1 = "p1" }));
         }
@@ -605,7 +606,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             RunTest(
                 @"(Controller).mvc",
-                @"(Controller).mvc",
+                @"/(Controller).mvc",
                 null,
                 new RouteValueDictionary());
         }
@@ -615,7 +616,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             RunTest(
                 @"Controller.mvc/ ",
-                @"Controller.mvc/ ",
+                @"/Controller.mvc/ ",
                 null,
                 new RouteValueDictionary());
         }
@@ -625,7 +626,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             RunTest(
                 @"Controller.mvc ",
-                @"Controller.mvc ",
+                @"/Controller.mvc ",
                 null,
                 new RouteValueDictionary());
         }
@@ -636,7 +637,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             // DevDiv Bugs 189892: UrlRouting: Catch all parameter cannot capture url segments that contain the "."
             RunTest(
                 "Home/ShowPilot/{missionId}/{*name}",
-                "Home/ShowPilot/777/12345./foobar",
+                "/Home/ShowPilot/777/12345./foobar",
                 new RouteValueDictionary(new
                 {
                     controller = "Home",
@@ -654,7 +655,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var matcher = CreateMatcher("{p1}/{*p2}");
 
             // Act
-            var rd = matcher.Match("v1/v2/v3");
+            var rd = matcher.Match("/v1/v2/v3");
 
             // Assert
             Assert.NotNull(rd);
@@ -670,7 +671,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var matcher = CreateMatcher("{p1}/{*p2}");
 
             // Act
-            var rd = matcher.Match("v1/");
+            var rd = matcher.Match("/v1/");
 
             // Assert
             Assert.NotNull(rd);
@@ -686,7 +687,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var matcher = CreateMatcher("{p1}/{*p2}");
 
             // Act
-            var rd = matcher.Match("v1");
+            var rd = matcher.Match("/v1");
 
             // Assert
             Assert.NotNull(rd);
@@ -702,7 +703,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var matcher = CreateMatcher("{p1}/{*p2}", new { p2 = "catchall" });
 
             // Act
-            var rd = matcher.Match("v1");
+            var rd = matcher.Match("/v1");
 
             // Assert
             Assert.NotNull(rd);
@@ -718,7 +719,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var matcher = CreateMatcher("{p1}/{*p2}", new { p2 = "catchall" });
 
             // Act
-            var rd = matcher.Match("v1/hello/whatever");
+            var rd = matcher.Match("/v1/hello/whatever");
 
             // Assert
             Assert.NotNull(rd);
@@ -733,7 +734,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             // DevDiv Bugs 191180: UrlRouting: Wrong template getting matched if a url segment is a substring of the requested url
             RunTest(
                 "foo",
-                "fooBAR",
+                "/fooBAR",
                 null,
                 null);
         }
@@ -744,7 +745,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             // DevDiv Bugs 191180: UrlRouting: Wrong template getting matched if a url segment is a substring of the requested url
             RunTest(
                 "foo",
-                "BARfoo",
+                "/BARfoo",
                 null,
                 null);
         }
@@ -755,7 +756,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             // DevDiv Bugs 191180: UrlRouting: Wrong template getting matched if a url segment is a substring of the requested url
             RunTest(
                 "foo",
-                "BARfooBAR",
+                "/BARfooBAR",
                 null,
                 null);
         }
@@ -766,7 +767,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             // DevDiv Bugs 191180: UrlRouting: Wrong template getting matched if a url segment is a substring of the requested url
             RunTest(
                 "foo",
-                "foo",
+                "/foo",
                 null,
                 new RouteValueDictionary());
         }
@@ -776,7 +777,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             RunTest(
                 "foo/{ }/{.!$%}/{dynamic.data}/{op.tional}",
-                "foo/space/weird/orderid",
+                "/foo/space/weird/orderid",
                 new RouteValueDictionary() { { " ", "not a space" }, { "op.tional", "default value" }, { "ran!dom", "va@lue" } },
                 new RouteValueDictionary() { { " ", "space" }, { ".!$%", "weird" }, { "dynamic.data", "orderid" }, { "op.tional", "default value" }, { "ran!dom", "va@lue" } });
         }
@@ -786,7 +787,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             RunTest(
                 "{controller}/{language}-{locale}",
-                "foo",
+                "/foo",
                 new RouteValueDictionary(new { language = "en", locale = "US" }),
                 null);
         }
@@ -796,7 +797,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             RunTest(
                 "{controller}/{language}-{locale}",
-                "foo/xx-",
+                "/foo/xx-",
                 new RouteValueDictionary(new { language = "en", locale = "US" }),
                 null);
         }
@@ -806,7 +807,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             RunTest(
                 "{controller}/{language}-{locale}",
-                "foo/-yy",
+                "/foo/-yy",
                 new RouteValueDictionary(new { language = "en", locale = "US" }),
                 null);
         }
@@ -816,7 +817,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             RunTest(
                 "{controller}/{language}-{locale}",
-                "foo/xx-yy",
+                "/foo/xx-yy",
                 new RouteValueDictionary(new { language = "en", locale = "US" }),
                 new RouteValueDictionary { { "language", "xx" }, { "locale", "yy" }, { "controller", "foo" } });
         }
@@ -826,7 +827,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             // Arrange
             var route = CreateMatcher("{controller}/{action?}");
-            var url = "Home/Index";
+            var url = "/Home/Index";
 
             // Act
             var match = route.Match(url);
@@ -843,7 +844,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             // Arrange
             var route = CreateMatcher("{controller}/{action?}");
-            var url = "Home";
+            var url = "/Home";
 
             // Act
             var match = route.Match(url);
@@ -891,7 +892,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             // Arrange
             var route = CreateMatcher("{controller}/{action?}/{id?}");
-            var url = "Home/Index";
+            var url = "/Home/Index";
 
             // Act
             var match = route.Match(url);
@@ -923,7 +924,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
                 defaults ?? new Dictionary<string, object>());
 
             // Act
-            var match = matcher.Match(path);
+            var match = matcher.Match(new PathString(path));
 
             // Assert
             if (expected == null)

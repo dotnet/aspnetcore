@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Routing.Internal;
 
 namespace Microsoft.AspNet.Routing.Template
 {
@@ -36,18 +38,12 @@ namespace Microsoft.AspNet.Routing.Template
 
         public RouteTemplate Template { get; private set; }
 
-        public IDictionary<string, object> Match(string requestPath)
+        public IDictionary<string, object> Match(PathString path)
         {
-            if (requestPath == null)
-            {
-                throw new ArgumentNullException(nameof(requestPath));
-            }
-
-            var requestSegments = requestPath.Split(Delimiters);
-
             var values = new RouteValueDictionary();
 
-            for (var i = 0; i < requestSegments.Length; i++)
+            var requestSegments = new PathTokenizer(path);
+            for (var i = 0; i < requestSegments.Count; i++)
             {
                 var routeSegment = Template.Segments.Count > i ? Template.Segments[i] : null;
                 var requestSegment = requestSegments[i];
@@ -67,7 +63,7 @@ namespace Microsoft.AspNet.Routing.Template
                     var part = routeSegment.Parts[0];
                     if (part.IsLiteral)
                     {
-                        if (!string.Equals(part.Text, requestSegment, StringComparison.OrdinalIgnoreCase))
+                        if (!requestSegment.Equals(part.Text))
                         {
                             return null;
                         }
@@ -78,7 +74,7 @@ namespace Microsoft.AspNet.Routing.Template
 
                         if (part.IsCatchAll)
                         {
-                            var captured = string.Join(SeparatorString, requestSegments, i, requestSegments.Length - i);
+                            var captured = requestSegment.GetRemainingPath();
                             if (captured.Length > 0)
                             {
                                 values.Add(part.Name, captured);
@@ -99,7 +95,7 @@ namespace Microsoft.AspNet.Routing.Template
                         {
                             if (requestSegment.Length > 0)
                             {
-                                values.Add(part.Name, requestSegment);
+                                values.Add(part.Name, requestSegment.ToString());
                             }
                             else
                             {
@@ -124,14 +120,14 @@ namespace Microsoft.AspNet.Routing.Template
                 }
                 else
                 {
-                    if (!MatchComplexSegment(routeSegment, requestSegment, Defaults, values))
+                    if (!MatchComplexSegment(routeSegment, requestSegment.ToString(), Defaults, values))
                     {
                         return null;
                     }
                 }
             }
 
-            for (var i = requestSegments.Length; i < Template.Segments.Count; i++)
+            for (var i = requestSegments.Count; i < Template.Segments.Count; i++)
             {
                 // We've matched the request path so far, but still have remaining route segments. These need
                 // to be all single-part parameter segments with default values or else they won't match.
@@ -179,10 +175,11 @@ namespace Microsoft.AspNet.Routing.Template
             return values;
         }
 
-        private bool MatchComplexSegment(TemplateSegment routeSegment,
-                                         string requestSegment,
-                                         IReadOnlyDictionary<string, object> defaults,
-                                         RouteValueDictionary values)
+        private bool MatchComplexSegment(
+            TemplateSegment routeSegment,
+            string requestSegment,
+            IReadOnlyDictionary<string, object> defaults,
+            RouteValueDictionary values)
         {
             var indexOfLastSegment = routeSegment.Parts.Count - 1;
 
@@ -225,11 +222,12 @@ namespace Microsoft.AspNet.Routing.Template
             }
         }
 
-        private bool MatchComplexSegmentCore(TemplateSegment routeSegment,
-                                         string requestSegment,
-                                         IReadOnlyDictionary<string, object> defaults,
-                                         RouteValueDictionary values,
-                                         int indexOfLastSegmentUsed)
+        private bool MatchComplexSegmentCore(
+            TemplateSegment routeSegment,
+            string requestSegment,
+            IReadOnlyDictionary<string, object> defaults,
+            RouteValueDictionary values,
+            int indexOfLastSegmentUsed)
         {
             Debug.Assert(routeSegment != null);
             Debug.Assert(routeSegment.Parts.Count > 1);
@@ -269,9 +267,10 @@ namespace Microsoft.AspNet.Routing.Template
                         return false;
                     }
 
-                    var indexOfLiteral = requestSegment.LastIndexOf(part.Text,
-                                                                    startIndex,
-                                                                    StringComparison.OrdinalIgnoreCase);
+                    var indexOfLiteral = requestSegment.LastIndexOf(
+                        part.Text,
+                        startIndex,
+                        StringComparison.OrdinalIgnoreCase);
                     if (indexOfLiteral == -1)
                     {
                         // If we couldn't find this literal index, this segment cannot match

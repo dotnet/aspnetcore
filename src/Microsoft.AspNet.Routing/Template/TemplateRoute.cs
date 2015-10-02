@@ -115,13 +115,7 @@ namespace Microsoft.AspNet.Routing.Template
 
             EnsureLoggers(context.HttpContext);
 
-            var requestPath = context.HttpContext.Request.Path.Value;
-
-            if (!string.IsNullOrEmpty(requestPath) && requestPath[0] == '/')
-            {
-                requestPath = requestPath.Substring(1);
-            }
-
+            var requestPath = context.HttpContext.Request.Path;
             var values = _matcher.Match(requestPath);
 
             if (values == null)
