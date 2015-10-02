@@ -3,16 +3,20 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Tracing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Versioning;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics.Views;
 using Microsoft.AspNet.FileProviders;
+using Microsoft.AspNet.TestHost;
 using Microsoft.AspNet.Testing;
 using Microsoft.Dnx.Runtime;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Xunit;
@@ -298,7 +302,8 @@ namespace Microsoft.AspNet.Diagnostics
                 (httpContext) => { return Task.FromResult(0); },
                 errorPageOptions,
                 new LoggerFactory(),
-                new TestApplicationEnvironment());
+                new TestApplicationEnvironment(),
+                new TelemetryListener("Microsoft.Aspnet"));
 
             return middleware;
         }
@@ -470,6 +475,36 @@ namespace Microsoft.AspNet.Diagnostics
             public IEnumerable<string> ExpectedPreErrorCode { get; set; }
             public IEnumerable<string> ExpectedErrorCode { get; set; }
             public IEnumerable<string> ExpectedPostErrorCode { get; set; }
+        }
+
+        [Fact]
+        public async Task UnhandledErrorsWriteToDiagnosticTelemetryWhenUsingExceptionPage()
+        {
+            // Arrange
+            TelemetryListener telemetryListener = null;
+            var server = TestServer.Create(app =>
+            {
+                telemetryListener = app.ApplicationServices.GetRequiredService<TelemetryListener>();
+                app.UseDeveloperExceptionPage();
+                app.Run(context =>
+                {
+                    throw new Exception("Test exception");
+                });
+            });
+            var listener = new TestTelemetryListener();
+            telemetryListener.SubscribeWithAdapter(listener);
+
+            // Act
+            await server.CreateClient().GetAsync("/path");
+
+            // Assert
+            Assert.NotNull(listener.EndRequest?.HttpContext);
+            Assert.Null(listener.HostingUnhandledException?.HttpContext);
+            Assert.Null(listener.HostingUnhandledException?.Exception);
+            Assert.NotNull(listener.DiagnosticUnhandledException?.HttpContext);
+            Assert.NotNull(listener.DiagnosticUnhandledException?.Exception);
+            Assert.Null(listener.DiagnosticHandledException?.HttpContext);
+            Assert.Null(listener.DiagnosticHandledException?.Exception);
         }
     }
 }

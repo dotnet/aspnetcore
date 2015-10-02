@@ -13,10 +13,15 @@
         "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*",
         "Microsoft.Extensions.OptionsModel": "1.0.0-*",
         "Microsoft.Dnx.Compilation.Abstractions": "1.0.0-*",
-        "Microsoft.Extensions.WebEncoders.Core": "1.0.0-*"
+        "Microsoft.Extensions.WebEncoders.Core": "1.0.0-*",
+        "System.Diagnostics.Tracing.Telemetry": "4.0.0-beta-*"
     },
     "frameworks": {
-        "dnx451": {},
+        "dnx451": {
+            "frameworkAssemblies": {
+                "System.Runtime": ""
+            }
+        },
         "dnxcore50": {
             "dependencies": {
                 "System.Reflection.Extensions": "4.0.1-beta-*"

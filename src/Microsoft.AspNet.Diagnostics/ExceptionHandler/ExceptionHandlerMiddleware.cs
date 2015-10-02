@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.Tracing;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
@@ -17,8 +18,13 @@ namespace Microsoft.AspNet.Diagnostics
         private readonly ExceptionHandlerOptions _options;
         private readonly ILogger _logger;
         private readonly Func<object, Task> _clearCacheHeadersDelegate;
+        private readonly TelemetrySource _telemetrySource;
 
-        public ExceptionHandlerMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, ExceptionHandlerOptions options)
+        public ExceptionHandlerMiddleware(
+            RequestDelegate next, 
+            ILoggerFactory loggerFactory, 
+            ExceptionHandlerOptions options,
+            TelemetrySource telemetrySource)
         {
             _next = next;
             _options = options;
@@ -28,6 +34,7 @@ namespace Microsoft.AspNet.Diagnostics
                 _options.ExceptionHandler = _next;
             }
             _clearCacheHeadersDelegate = ClearCacheHeaders;
+            _telemetrySource = telemetrySource;
         }
 
         public async Task Invoke(HttpContext context)
@@ -63,6 +70,9 @@ namespace Microsoft.AspNet.Diagnostics
                     context.Response.OnStarting(_clearCacheHeadersDelegate, context.Response);
 
                     await _options.ExceptionHandler(context);
+                    
+                    _telemetrySource.WriteTelemetry("Microsoft.AspNet.Diagnostics.HandledException", new { httpContext = context, exception = ex });
+
                     // TODO: Optional re-throw? We'll re-throw the original exception by default if the error handler throws.
                     return;
                 }

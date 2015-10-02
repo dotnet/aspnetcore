@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Tracing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -29,6 +30,7 @@ namespace Microsoft.AspNet.Diagnostics
         private static readonly bool IsMono = Type.GetType("Mono.Runtime") != null;
         private readonly ILogger _logger;
         private readonly IFileProvider _fileProvider;
+        private readonly TelemetrySource _telemetrySource;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeveloperExceptionPageMiddleware"/> class
@@ -39,7 +41,8 @@ namespace Microsoft.AspNet.Diagnostics
             RequestDelegate next,
             ErrorPageOptions options,
             ILoggerFactory loggerFactory,
-            IApplicationEnvironment appEnvironment)
+            IApplicationEnvironment appEnvironment,
+            TelemetrySource telemetrySource)
         {
             if (next == null)
             {
@@ -55,6 +58,7 @@ namespace Microsoft.AspNet.Diagnostics
             _options = options;
             _logger = loggerFactory.CreateLogger<DeveloperExceptionPageMiddleware>();
             _fileProvider = options.FileProvider ?? new PhysicalFileProvider(appEnvironment.ApplicationBasePath);
+            _telemetrySource = telemetrySource;
         }
 
         /// <summary>
@@ -72,6 +76,7 @@ namespace Microsoft.AspNet.Diagnostics
             catch (Exception ex)
             {
                 _logger.LogError("An unhandled exception has occurred while executing the request", ex);
+
                 if (context.Response.HasStarted)
                 {
                     _logger.LogWarning("The response has already started, the error page middleware will not be executed.");
@@ -84,6 +89,9 @@ namespace Microsoft.AspNet.Diagnostics
                     context.Response.StatusCode = 500;
 
                     await DisplayException(context, ex);
+
+                    _telemetrySource.WriteTelemetry("Microsoft.AspNet.Diagnostics.UnhandledException", new { httpContext = context, exception = ex });
+
                     return;
                 }
                 catch (Exception ex2)

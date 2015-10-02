@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Tracing;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -10,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.TestHost;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Diagnostics
@@ -320,6 +322,46 @@ namespace Microsoft.AspNet.Diagnostics
                 Assert.Single(values);
                 Assert.Equal("abcdef", values.First());
             }
+        }
+
+        [Fact]
+        public async Task HandledErrorsWriteToDiagnosticTelemetryWhenUsingExceptionHandler()
+        {
+            // Arrange
+            TelemetryListener telemetryListener = null;
+
+            var server = TestServer.Create(app =>
+            {
+                telemetryListener = app.ApplicationServices.GetRequiredService<TelemetryListener>();
+
+                app.UseExceptionHandler("/handle-errors");
+                app.Map("/handle-errors", (innerAppBuilder) =>
+                {
+                    innerAppBuilder.Run(async (httpContext) =>
+                    {
+                        await httpContext.Response.WriteAsync("Handled error in a custom way.");
+                    });
+                });
+                app.Run(context =>
+                {
+                    throw new Exception("Test exception");
+                });
+            });
+
+            var listener = new TestTelemetryListener();
+            telemetryListener.SubscribeWithAdapter(listener);
+
+            // Act
+            await server.CreateClient().GetAsync(string.Empty);
+
+            // Assert
+            Assert.NotNull(listener.EndRequest?.HttpContext);
+            Assert.Null(listener.HostingUnhandledException?.HttpContext);
+            Assert.Null(listener.HostingUnhandledException?.Exception);
+            Assert.Null(listener.DiagnosticUnhandledException?.HttpContext);
+            Assert.Null(listener.DiagnosticUnhandledException?.Exception);
+            Assert.NotNull(listener.DiagnosticHandledException?.HttpContext);
+            Assert.NotNull(listener.DiagnosticHandledException?.Exception);
         }
     }
 }
