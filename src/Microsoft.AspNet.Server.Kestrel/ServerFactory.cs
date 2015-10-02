@@ -88,11 +88,7 @@ namespace Microsoft.AspNet.Server.Kestrel
                         atLeastOneListener = true;
                         disposables.Push(engine.CreateServer(
                             parsedAddress,
-                            async frame =>
-                            {
-                                var request = new ServerRequest(frame);
-                                await application.Invoke(request.Features).ConfigureAwait(false);
-                            }));
+                            application));
                     }
                 }
 

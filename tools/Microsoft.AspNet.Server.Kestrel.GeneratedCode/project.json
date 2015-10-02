@@ -1,8 +1,10 @@
-﻿{
+{
     "version": "1.0.0-*",
 
     "dependencies": {
-        "Microsoft.Dnx.Compilation.CSharp.Abstractions": "1.0.0-*"
+        "Microsoft.Dnx.Compilation.CSharp.Abstractions": "1.0.0-*",
+        "Microsoft.AspNet.Http.Features": "1.0.0-*",
+        "Microsoft.AspNet.Hosting": "1.0.0-*"
     },
 
     "commands": {

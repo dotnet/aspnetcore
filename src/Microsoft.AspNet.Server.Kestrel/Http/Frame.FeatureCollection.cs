@@ -2,45 +2,44 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Server.Kestrel.Http;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNet.Server.Kestrel
+namespace Microsoft.AspNet.Server.Kestrel.Http
 {
-    public class ServerRequest : IHttpRequestFeature, IHttpResponseFeature, IHttpUpgradeFeature
+    public partial class Frame : IFeatureCollection, IHttpRequestFeature, IHttpResponseFeature, IHttpUpgradeFeature
     {
-        private Frame _frame;
         private string _scheme;
         private string _pathBase;
-        private FeatureCollection _features;
+        private int _featureRevision;
 
-        public ServerRequest(Frame frame)
-        {
-            _frame = frame;
-            _features = new FeatureCollection();
-            PopulateFeatures();
-        }
+        private Dictionary<Type, object> Extra => MaybeExtra ?? Interlocked.CompareExchange(ref MaybeExtra, new Dictionary<Type, object>(), null);
+        private Dictionary<Type, object> MaybeExtra;
 
-        internal IFeatureCollection Features
+        public void ResetFeatureCollection()
         {
-            get { return _features; }
+            FastReset();
+            MaybeExtra?.Clear();
+            Interlocked.Increment(ref _featureRevision);
         }
 
         string IHttpRequestFeature.Protocol
         {
             get
             {
-                return _frame.HttpVersion;
+                return HttpVersion;
             }
 
             set
             {
-                _frame.HttpVersion = value;
+                HttpVersion = value;
             }
         }
 
@@ -61,12 +60,12 @@ namespace Microsoft.AspNet.Server.Kestrel
         {
             get
             {
-                return _frame.Method;
+                return Method;
             }
 
             set
             {
-                _frame.Method = value;
+                Method = value;
             }
         }
 
@@ -87,12 +86,12 @@ namespace Microsoft.AspNet.Server.Kestrel
         {
             get
             {
-                return _frame.Path;
+                return Path;
             }
 
             set
             {
-                _frame.Path = value;
+                Path = value;
             }
         }
 
@@ -100,12 +99,12 @@ namespace Microsoft.AspNet.Server.Kestrel
         {
             get
             {
-                return _frame.QueryString;
+                return QueryString;
             }
 
             set
             {
-                _frame.QueryString = value;
+                QueryString = value;
             }
         }
 
@@ -113,12 +112,12 @@ namespace Microsoft.AspNet.Server.Kestrel
         {
             get
             {
-                return _frame.RequestHeaders;
+                return RequestHeaders;
             }
 
             set
             {
-                _frame.RequestHeaders = value;
+                RequestHeaders = value;
             }
         }
 
@@ -126,12 +125,12 @@ namespace Microsoft.AspNet.Server.Kestrel
         {
             get
             {
-                return _frame.RequestBody;
+                return RequestBody;
             }
 
             set
             {
-                _frame.RequestBody = value;
+                RequestBody = value;
             }
         }
 
@@ -139,12 +138,12 @@ namespace Microsoft.AspNet.Server.Kestrel
         {
             get
             {
-                return _frame.StatusCode;
+                return StatusCode;
             }
 
             set
             {
-                _frame.StatusCode = value;
+                StatusCode = value;
             }
         }
 
@@ -152,12 +151,12 @@ namespace Microsoft.AspNet.Server.Kestrel
         {
             get
             {
-                return _frame.ReasonPhrase;
+                return ReasonPhrase;
             }
 
             set
             {
-                _frame.ReasonPhrase = value;
+                ReasonPhrase = value;
             }
         }
 
@@ -165,12 +164,12 @@ namespace Microsoft.AspNet.Server.Kestrel
         {
             get
             {
-                return _frame.ResponseHeaders;
+                return ResponseHeaders;
             }
 
             set
             {
-                _frame.ResponseHeaders = value;
+                ResponseHeaders = value;
             }
         }
 
@@ -178,18 +177,18 @@ namespace Microsoft.AspNet.Server.Kestrel
         {
             get
             {
-                return _frame.ResponseBody;
+                return ResponseBody;
             }
 
             set
             {
-                _frame.ResponseBody = value;
+                ResponseBody = value;
             }
         }
 
         bool IHttpResponseFeature.HasStarted
         {
-            get { return _frame.HasResponseStarted; }
+            get { return HasResponseStarted; }
         }
 
         bool IHttpUpgradeFeature.IsUpgradableRequest
@@ -197,7 +196,7 @@ namespace Microsoft.AspNet.Server.Kestrel
             get
             {
                 StringValues values;
-                if (_frame.RequestHeaders.TryGetValue("Connection", out values))
+                if (RequestHeaders.TryGetValue("Connection", out values))
                 {
                     return values.Any(value => value.IndexOf("upgrade", StringComparison.OrdinalIgnoreCase) != -1);
                 }
@@ -205,38 +204,45 @@ namespace Microsoft.AspNet.Server.Kestrel
             }
         }
 
-        private void PopulateFeatures()
+        bool IFeatureCollection.IsReadOnly => false;
+
+        int IFeatureCollection.Revision => _featureRevision;
+
+        object IFeatureCollection.this[Type key]
         {
-            _features[typeof(IHttpRequestFeature)] = this;
-            _features[typeof(IHttpResponseFeature)] = this;
-            _features[typeof(IHttpUpgradeFeature)] = this;
+            get { return FastFeatureGet(key); }
+            set { FastFeatureSet(key, value); }
         }
 
         void IHttpResponseFeature.OnStarting(Func<object, Task> callback, object state)
         {
-            _frame.OnStarting(callback, state);
+            OnStarting(callback, state);
         }
 
         void IHttpResponseFeature.OnCompleted(Func<object, Task> callback, object state)
         {
-            _frame.OnCompleted(callback, state);
+            OnCompleted(callback, state);
         }
 
         Task<Stream> IHttpUpgradeFeature.UpgradeAsync()
         {
-            _frame.StatusCode = 101;
-            _frame.ReasonPhrase = "Switching Protocols";
-            _frame.ResponseHeaders["Connection"] = "Upgrade";
-            if (!_frame.ResponseHeaders.ContainsKey("Upgrade"))
+            StatusCode = 101;
+            ReasonPhrase = "Switching Protocols";
+            ResponseHeaders["Connection"] = "Upgrade";
+            if (!ResponseHeaders.ContainsKey("Upgrade"))
             {
                 StringValues values;
-                if (_frame.RequestHeaders.TryGetValue("Upgrade", out values))
+                if (RequestHeaders.TryGetValue("Upgrade", out values))
                 {
-                    _frame.ResponseHeaders["Upgrade"] = values;
+                    ResponseHeaders["Upgrade"] = values;
                 }
             }
-            _frame.ProduceStart();
-            return Task.FromResult(_frame.DuplexStream);
+            ProduceStart();
+            return Task.FromResult(DuplexStream);
         }
+
+        IEnumerator<KeyValuePair<Type, object>> IEnumerable<KeyValuePair<Type, object>>.GetEnumerator() => FastEnumerable().GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => FastEnumerable().GetEnumerator();
     }
 }

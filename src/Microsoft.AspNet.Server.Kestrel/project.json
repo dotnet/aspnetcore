@@ -52,7 +52,7 @@
   "scripts": {
     "prepare": [
       "dnu restore ../../tools/Microsoft.AspNet.Server.Kestrel.GeneratedCode",
-      "dnx -p ../../tools/Microsoft.AspNet.Server.Kestrel.GeneratedCode run Http/FrameHeaders.Generated.cs"
+      "dnx -p ../../tools/Microsoft.AspNet.Server.Kestrel.GeneratedCode run Http/FrameHeaders.Generated.cs Http/Frame.Generated.cs"
     ],
     "postrestore": [
       "dnu restore ../../tools/Microsoft.AspNet.Server.Kestrel.LibuvCopier",
@@ -65,6 +65,5 @@
     "runtimes/win7-x86/native/": "runtimes/win7-x86/native/*",
     "runtimes/win10-arm/native/": "runtimes/win10-arm/native/*",
     "runtimes/osx/native/":  "runtimes/osx/native/*"
-
   }
 }

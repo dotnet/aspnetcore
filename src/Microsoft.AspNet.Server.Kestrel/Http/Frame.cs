@@ -2,12 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
@@ -16,7 +18,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNet.Server.Kestrel.Http
 {
-    public class Frame : FrameContext, IFrameControl
+    public partial class Frame : FrameContext, IFrameControl
     {
         private static readonly Encoding _ascii = Encoding.ASCII;
         private static readonly ArraySegment<byte> _endChunkBytes = CreateAsciiByteArraySegment("\r\n");
@@ -80,6 +82,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
             _requestHeaders.Reset();
             ResetResponseHeaders();
+            ResetFeatureCollection();
 
             Method = null;
             RequestUri = null;
@@ -725,5 +728,5 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                    statusCode != 205 &&
                    statusCode != 304;
         }
-    }
+            }
 }
