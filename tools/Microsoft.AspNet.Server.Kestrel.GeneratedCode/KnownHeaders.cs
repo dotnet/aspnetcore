@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.Server.Kestrel.GeneratedCode
             {
                 ulong mask = 0;
                 ulong comp = 0;
-                for (var scan = 0; scan != count; ++scan)
+                for (var scan = 0; scan < count; scan++)
                 {
                     var ch = (byte)name[offset + count - scan - 1];
                     var isAlpha = (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z');

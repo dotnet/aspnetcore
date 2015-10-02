@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
         {
             var text = String.Join("\r\n", lines);
             var writer = new StreamWriter(_stream, Encoding.ASCII);
-            for (var index = 0; index != text.Length; ++index)
+            for (var index = 0; index < text.Length; index++)
             {
                 var ch = text[index];
                 await writer.WriteAsync(ch);

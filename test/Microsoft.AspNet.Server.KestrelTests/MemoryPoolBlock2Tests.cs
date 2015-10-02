@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 pool.Return(block);
                 block = null;
 
-                for (var fragment = 0; fragment != 256; fragment += 4)
+                for (var fragment = 0; fragment < 256; fragment += 4)
                 {
                     var next = block;
                     block = pool.Lease(4);

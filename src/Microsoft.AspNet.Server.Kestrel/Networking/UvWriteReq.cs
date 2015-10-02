@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
                     pBuffers = (Libuv.uv_buf_t*)gcHandle.AddrOfPinnedObject();
                 }
 
-                for (var index = 0; index != nBuffers; ++index)
+                for (var index = 0; index < nBuffers; index++)
                 {
                     // create and pin each segment being written
                     var buf = bufs.Array[bufs.Offset + index];
@@ -109,7 +109,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
                     pBuffers = (Libuv.uv_buf_t*)gcHandle.AddrOfPinnedObject();
                 }
 
-                for (var index = 0; index != nBuffers; ++index)
+                for (var index = 0; index < nBuffers; index++)
                 {
                     // create and pin each segment being written
                     var buf = bufs.Array[bufs.Offset + index];

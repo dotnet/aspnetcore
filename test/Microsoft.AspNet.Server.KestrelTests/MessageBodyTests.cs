@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
             var encoding = Encoding.ASCII;
             var bytes = encoding.GetBytes(expected);
             Assert.Equal(bytes.Length, actual.Count);
-            for (var index = 0; index != bytes.Length; ++index)
+            for (var index = 0; index < bytes.Length; index++)
             {
                 Assert.Equal(bytes[index], actual.Array[actual.Offset + index]);
             }
