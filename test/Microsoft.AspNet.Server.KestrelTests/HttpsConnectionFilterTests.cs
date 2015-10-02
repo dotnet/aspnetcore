@@ -49,7 +49,9 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 var sereverAddress = "https://localhost:54321/";
                 var serviceContext = new TestServiceContext()
                 {
-                    ConnectionFilter = new HttpsConnectionFilter(new X509Certificate2(@"TestResources/testCert.cer"), new NoOpConnectionFilter())
+                    ConnectionFilter = new HttpsConnectionFilter(
+                        new X509Certificate2(@"TestResources/testCert.pfx", "testPassword"),
+                        new NoOpConnectionFilter())
                 };
 
                 using (var server = new TestServer(App, serviceContext, sereverAddress))

@@ -5,6 +5,7 @@ using System;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Dnx.Runtime;
 
 #if DNX451
 using System.IO;
@@ -16,7 +17,7 @@ namespace SampleApp
 {
     public class Startup
     {
-        public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory, IApplicationEnvironment env)
         {
             loggerFactory.MinimumLevel = LogLevel.Debug;
 
@@ -24,12 +25,12 @@ namespace SampleApp
 
 #if DNX451
             var testCertPath = Path.Combine(
-                Environment.CurrentDirectory,
-                @"../../test/Microsoft.AspNet.Server.KestrelTests/TestResources/testCert.cer");
+                env.ApplicationBasePath,
+                @"../../test/Microsoft.AspNet.Server.KestrelTests/TestResources/testCert.pfx");
 
             if (File.Exists(testCertPath))
             {
-                app.UseKestrelHttps(new X509Certificate2(testCertPath));
+                app.UseKestrelHttps(new X509Certificate2(testCertPath, "testPassword"));
             }
             else
             {
