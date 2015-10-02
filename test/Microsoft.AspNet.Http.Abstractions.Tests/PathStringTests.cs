@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNet.Testing;
 using Xunit;
 
@@ -69,6 +70,82 @@ namespace Microsoft.AspNet.Http
 
             result = path + "text";
             Assert.Equal("/pathtext", result);
+        }
+
+        [Theory]
+        [InlineData("/test/path", "/TEST", true)]
+        [InlineData("/test/path", "/TEST/pa", false)]
+        [InlineData("/TEST/PATH", "/test", true)]
+        [InlineData("/TEST/path", "/test/pa", false)]
+        [InlineData("/test/PATH/path/TEST", "/TEST/path/PATH", true)]
+        public void StartsWithSegments_DoesACaseInsensitiveMatch(string sourcePath, string testPath, bool expectedResult)
+        {
+            var source = new PathString(sourcePath);
+            var test = new PathString(testPath);
+
+            var result = source.StartsWithSegments(test);
+
+            Assert.Equal(expectedResult, result);
+        }
+
+        [Theory]
+        [InlineData("/test/path", "/TEST", true)]
+        [InlineData("/test/path", "/TEST/pa", false)]
+        [InlineData("/TEST/PATH", "/test", true)]
+        [InlineData("/TEST/path", "/test/pa", false)]
+        [InlineData("/test/PATH/path/TEST", "/TEST/path/PATH", true)]
+        public void StartsWithSegmentsWithRemainder_DoesACaseInsensitiveMatch(string sourcePath, string testPath, bool expectedResult)
+        {
+            var source = new PathString(sourcePath);
+            var test = new PathString(testPath);
+
+            PathString remaining;
+            var result = source.StartsWithSegments(test, out remaining);
+
+            Assert.Equal(expectedResult, result);
+        }
+
+        [Theory]
+        [InlineData("/test/path", "/TEST", StringComparison.OrdinalIgnoreCase, true)]
+        [InlineData("/test/path", "/TEST", StringComparison.Ordinal, false)]
+        [InlineData("/test/path", "/TEST/pa", StringComparison.OrdinalIgnoreCase, false)]
+        [InlineData("/test/path", "/TEST/pa", StringComparison.Ordinal, false)]
+        [InlineData("/TEST/PATH", "/test", StringComparison.OrdinalIgnoreCase, true)]
+        [InlineData("/TEST/PATH", "/test", StringComparison.Ordinal, false)]
+        [InlineData("/TEST/path", "/test/pa", StringComparison.OrdinalIgnoreCase, false)]
+        [InlineData("/TEST/path", "/test/pa", StringComparison.Ordinal, false)]
+        [InlineData("/test/PATH/path/TEST", "/TEST/path/PATH", StringComparison.OrdinalIgnoreCase, true)]
+        [InlineData("/test/PATH/path/TEST", "/TEST/path/PATH", StringComparison.Ordinal, false)]
+        public void StartsWithSegments_DoesMatchUsingSpecifiedComparison(string sourcePath, string testPath, StringComparison comparison, bool expectedResult)
+        {
+            var source = new PathString(sourcePath);
+            var test = new PathString(testPath);
+
+            var result = source.StartsWithSegments(test, comparison);
+
+            Assert.Equal(expectedResult, result);
+        }
+
+        [Theory]
+        [InlineData("/test/path", "/TEST", StringComparison.OrdinalIgnoreCase, true)]
+        [InlineData("/test/path", "/TEST", StringComparison.Ordinal, false)]
+        [InlineData("/test/path", "/TEST/pa", StringComparison.OrdinalIgnoreCase, false)]
+        [InlineData("/test/path", "/TEST/pa", StringComparison.Ordinal, false)]
+        [InlineData("/TEST/PATH", "/test", StringComparison.OrdinalIgnoreCase, true)]
+        [InlineData("/TEST/PATH", "/test", StringComparison.Ordinal, false)]
+        [InlineData("/TEST/path", "/test/pa", StringComparison.OrdinalIgnoreCase, false)]
+        [InlineData("/TEST/path", "/test/pa", StringComparison.Ordinal, false)]
+        [InlineData("/test/PATH/path/TEST", "/TEST/path/PATH", StringComparison.OrdinalIgnoreCase, true)]
+        [InlineData("/test/PATH/path/TEST", "/TEST/path/PATH", StringComparison.Ordinal, false)]
+        public void StartsWithSegmentsWithRemainder_DoesMatchUsingSpecifiedComparison(string sourcePath, string testPath, StringComparison comparison, bool expectedResult)
+        {
+            var source = new PathString(sourcePath);
+            var test = new PathString(testPath);
+
+            PathString remaining;
+            var result = source.StartsWithSegments(test, comparison, out remaining);
+
+            Assert.Equal(expectedResult, result);
         }
     }
 }

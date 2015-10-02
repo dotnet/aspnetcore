@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Http
         /// <param name="value">The unescaped path to be assigned to the Value property.</param>
         public PathString(string value)
         {
-            if (!String.IsNullOrEmpty(value) && value[0] != '/')
+            if (!string.IsNullOrEmpty(value) && value[0] != '/')
             {
                 throw new ArgumentException(""/*Resources.Exception_PathMustStartWithSlash*/, nameof(value));
             }
@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.Http
         /// </summary>
         public bool HasValue
         {
-            get { return !String.IsNullOrEmpty(_value); }
+            get { return !string.IsNullOrEmpty(_value); }
         }
 
         /// <summary>
@@ -98,23 +98,61 @@ namespace Microsoft.AspNet.Http
             return new PathString("/" + uri.GetComponents(UriComponents.Path, UriFormat.Unescaped));
         }
 
+        /// <summary>
+        /// Determines whether the beginning of this <see cref="PathString"/> instance matches the specified <see cref="PathString"/>.
+        /// </summary>
+        /// <param name="other">The <see cref="PathString"/> to compare.</param>
+        /// <returns>true if value matches the beginning of this string; otherwise, false.</returns>
         public bool StartsWithSegments(PathString other)
         {
-            string value1 = Value ?? String.Empty;
-            string value2 = other.Value ?? String.Empty;
-            if (value1.StartsWith(value2, StringComparison.OrdinalIgnoreCase))
+            return StartsWithSegments(other, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Determines whether the beginning of this <see cref="PathString"/> instance matches the specified <see cref="PathString"/> when compared
+        /// using the specified comparison option.
+        /// </summary>
+        /// <param name="other">The <see cref="PathString"/> to compare.</param>
+        /// <param name="comparisonType">One of the enumeration values that determines how this <see cref="PathString"/> and value are compared.</param>
+        /// <returns>true if value matches the beginning of this string; otherwise, false.</returns>
+        public bool StartsWithSegments(PathString other, StringComparison comparisonType)
+        {
+            var value1 = Value ?? string.Empty;
+            var value2 = other.Value ?? string.Empty;
+            if (value1.StartsWith(value2, comparisonType))
             {
                 return value1.Length == value2.Length || value1[value2.Length] == '/';
             }
             return false;
         }
 
+        /// <summary>
+        /// Determines whether the beginning of this PathString instance matches the specified <see cref="PathString"/> when compared
+        /// using the specified comparison option and returns the remaining segments.
+        /// </summary>
+        /// <param name="other">The <see cref="PathString"/> to compare.</param>
+        /// <param name="remaining">The remaining segments after the match.</param>
+        /// <returns>true if value matches the beginning of this string; otherwise, false.</returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1021:AvoidOutParameters", MessageId = "1#", Justification = "Secondary information needed after boolean result obtained")]
         public bool StartsWithSegments(PathString other, out PathString remaining)
         {
-            string value1 = Value ?? String.Empty;
-            string value2 = other.Value ?? String.Empty;
-            if (value1.StartsWith(value2, StringComparison.OrdinalIgnoreCase))
+            return StartsWithSegments(other, StringComparison.OrdinalIgnoreCase, out remaining);
+        }
+
+        /// <summary>
+        /// Determines whether the beginning of this <see cref="PathString"/> instance matches the specified <see cref="PathString"/> and returns
+        /// the remaining segments.
+        /// </summary>
+        /// <param name="other">The <see cref="PathString"/> to compare.</param>
+        /// <param name="comparisonType">One of the enumeration values that determines how this <see cref="PathString"/> and value are compared.</param>
+        /// <param name="remaining">The remaining segments after the match.</param>
+        /// <returns>true if value matches the beginning of this string; otherwise, false.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1021:AvoidOutParameters", MessageId = "1#", Justification = "Secondary information needed after boolean result obtained")]
+        public bool StartsWithSegments(PathString other, StringComparison comparisonType, out PathString remaining)
+        {
+            var value1 = Value ?? string.Empty;
+            var value2 = other.Value ?? string.Empty;
+            if (value1.StartsWith(value2, comparisonType))
             {
                 if (value1.Length == value2.Length || value1[value2.Length] == '/')
                 {
@@ -278,7 +316,7 @@ namespace Microsoft.AspNet.Http
         /// Implicitly calls ToString().
         /// </summary>
         /// <param name="path"></param>
-        public static implicit operator string(PathString path)
+        public static implicit operator string (PathString path)
         {
             return path.ToString();
         }
