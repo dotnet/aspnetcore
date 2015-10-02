@@ -1,5 +1,4 @@
-﻿@using Microsoft.AspNet.Http.Authentication;
-@model ManageLoginsViewModel
+﻿@model ManageLoginsViewModel
 @{
     ViewBag.Title = "Manage your external logins";
 }
@@ -37,14 +36,14 @@
         </tbody>
     </table>
 }
-@if (Model.OtherLogins.Count > 0)
+@if (Model.OtherLogins.Any())
 {
     <h4>Add another service to log in.</h4>
     <hr />
     <form asp-controller="Manage" asp-action="LinkLogin" method="post" class="form-horizontal" role="form">
         <div id="socialLoginList">
             <p>
-                @foreach (AuthenticationDescription p in Model.OtherLogins)
+                @foreach (var p in Model.OtherLogins)
                 {
                     <button type="submit" class="btn btn-default" id="@p.AuthenticationScheme" name="provider" value="@p.AuthenticationScheme" title="Log in using your @p.DisplayName account">@p.AuthenticationScheme</button>
                 }

@@ -1,11 +1,10 @@
-﻿@using Microsoft.AspNet.Http.Authentication;
-@model ExternalLoginListViewModel
+﻿@model ExternalLoginListViewModel
 @inject SignInManager<ApplicationUser> SignInManager
 <h4>Use another service to log in.</h4>
 <hr />
 @{
     var loginProviders = SignInManager.GetExternalAuthenticationSchemes();
-    if (loginProviders.Count() == 0)
+    if (!loginProviders.Any())
     {
         <div>
             <p>
@@ -19,7 +18,7 @@
         <form asp-controller="Account" asp-action="ExternalLogin" asp-route-returnurl="@ViewBag.ReturnUrl" method="post" class="form-horizontal" role="form">
             <div id="socialLoginList">
                 <p>
-                    @foreach (AuthenticationDescription p in loginProviders)
+                    @foreach (var p in loginProviders)
                     {
                         <button type="submit" class="btn btn-default" id="@p.AuthenticationScheme" name="provider" value="@p.AuthenticationScheme" title="Log in using your @p.DisplayName account">@p.AuthenticationScheme</button>
                     }

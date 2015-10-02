@@ -1,13 +1,10 @@
 using System;
 using System.Security.Claims;
-using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Cors.Core;
 using Microsoft.AspNet.Diagnostics.Entity;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.Data.Entity;
 using Microsoft.Dnx.Runtime;
-using Microsoft.Framework.Caching.Memory;
 using Microsoft.Framework.Configuration;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
@@ -61,7 +58,7 @@ namespace MusicStore
                     .AddDbContext<MusicStoreContext>(options =>
                             options.UseSqlServer(Configuration["Data:DefaultConnection:ConnectionString"]));
 
-            services.Configure<CorsOptions>(options =>
+            services.AddCors(options =>
             {
                 options.AddPolicy("CorsPolicy", builder =>
                 {
@@ -72,21 +69,23 @@ namespace MusicStore
             // Add MVC services to the services container
             services.AddMvc();
 
-            //Add InMemoryCache
-            services.AddSingleton<IMemoryCache, MemoryCache>();
+            // Add memory cache services
+            services.AddCaching();
 
             // Add session related services.
-            services.AddCaching();
             services.AddSession();
 
             // Add the system clock service
             services.AddSingleton<ISystemClock, SystemClock>();
 
             // Configure Auth
-            services.Configure<AuthorizationOptions>(options =>
+            services.AddAuthorization(options =>
             {
                 options.AddPolicy(
-                    "ManageStore", new AuthorizationPolicyBuilder().RequireClaim("ManageStore", "Allowed").Build());
+                    "ManageStore",
+                    authBuilder => {
+                        authBuilder.RequireClaim("ManageStore", "Allowed");
+                    });
             });
         }
 

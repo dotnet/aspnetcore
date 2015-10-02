@@ -1,12 +1,8 @@
-using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Cors.Core;
 using Microsoft.AspNet.Diagnostics.Entity;
-using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.Data.Entity;
 using Microsoft.Dnx.Runtime;
-using Microsoft.Framework.Caching.Memory;
 using Microsoft.Framework.Configuration;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
@@ -63,13 +59,13 @@ namespace MusicStore
             // Add Identity services to the services container
             services.AddIdentity<ApplicationUser, IdentityRole>(options =>
                     {
-                        options.Cookies.ApplicationCookie.AccessDeniedPath = new PathString("/Home/AccessDenied");
+                        options.Cookies.ApplicationCookie.AccessDeniedPath = "/Home/AccessDenied";
                     })
                     .AddEntityFrameworkStores<MusicStoreContext>()
                     .AddDefaultTokenProviders();
 
 
-            services.Configure<CorsOptions>(options =>
+            services.AddCors(options =>
             {
                 options.AddPolicy("CorsPolicy", builder =>
                 {
@@ -80,11 +76,10 @@ namespace MusicStore
             // Add MVC services to the services container
             services.AddMvc();
 
-            //Add InMemoryCache
-            services.AddSingleton<IMemoryCache, MemoryCache>();
+            // Add memory cache services
+            services.AddCaching();
 
             // Add session related services.
-            services.AddCaching();
             services.AddSession();
 
             // Add the system clock service
@@ -94,7 +89,10 @@ namespace MusicStore
             services.AddAuthorization(options =>
             {
                 options.AddPolicy(
-                    "ManageStore", new AuthorizationPolicyBuilder().RequireClaim("ManageStore", "Allowed").Build());
+                    "ManageStore",
+                    authBuilder => {
+                        authBuilder.RequireClaim("ManageStore", "Allowed");
+                    });
             });
         }
 

@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Cors.Core;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Rendering;
@@ -13,7 +14,7 @@ using MusicStore.ViewModels;
 namespace MusicStore.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Microsoft.AspNet.Authorization.Authorize("ManageStore")]
+    [Authorize("ManageStore")]
     public class StoreManagerController : Controller
     {
         [FromServices]
