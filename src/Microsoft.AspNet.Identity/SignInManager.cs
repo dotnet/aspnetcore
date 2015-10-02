@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.Identity
         /// The <see cref="ILogger"/> used to log messages from the manager.
         /// </value>
         protected internal virtual ILogger Logger { get; set; }
-        internal UserManager<TUser> UserManager { get; set; }
+        protected internal UserManager<TUser> UserManager { get; set; }
         internal HttpContext Context { get; set; }
         internal IUserClaimsPrincipalFactory<TUser> ClaimsFactory { get; set; }
         internal IdentityOptions Options { get; set; }
