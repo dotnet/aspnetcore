@@ -235,7 +235,7 @@ namespace Microsoft.AspNet.TestHost
 
             // Assert
             var buffer = new byte[1];
-            for (int i = 0; i < hello.Length; i++)
+            for (var i = 0; i < hello.Length; i++)
             {
                 bool last = i == (hello.Length - 1);
                 var result = await clientSocket.ReceiveAsync(new System.ArraySegment<byte>(buffer), CancellationToken.None);
