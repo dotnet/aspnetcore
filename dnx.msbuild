@@ -11,7 +11,7 @@
     <Import Project="tools\dnx.settings.targets" />
     <Import Project="tools\QERM.targets" />
 
-    <Target Name="Build" DependsOnTargets="CopyUnsignedPackages;BinScope;NuGetVerify;BuildServiceFabricMetaPackage" />
+    <Target Name="Build" DependsOnTargets="CopyUnsignedPackages;BinScope;NuGetVerify;" />
 
     <Target Name="Clean">
         <RemoveDir Directories="$(KBinPath);$(IntermediateOutputPath);$(UnsignedBinariesPath)" />
