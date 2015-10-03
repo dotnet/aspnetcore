@@ -3,9 +3,9 @@
 
 using System;
 using System.Runtime.CompilerServices;
-using Microsoft.Framework.Logging.Internal;
+using Microsoft.Extensions.Logging.Internal;
 
-namespace Microsoft.Framework.Logging
+namespace Microsoft.Extensions.Logging
 {
     /// <summary>
     /// Helpful extension methods on <see cref="ILogger"/>.

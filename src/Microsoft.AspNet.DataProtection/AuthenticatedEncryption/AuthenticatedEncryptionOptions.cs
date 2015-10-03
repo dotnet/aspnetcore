@@ -6,7 +6,7 @@ using System.Security.Cryptography;
 using Microsoft.AspNet.Cryptography;
 using Microsoft.AspNet.Cryptography.Cng;
 using Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationModel;
-using Microsoft.Framework.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption
 {

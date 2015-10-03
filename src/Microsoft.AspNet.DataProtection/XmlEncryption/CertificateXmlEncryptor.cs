@@ -9,9 +9,9 @@ using System.Security.Cryptography.Xml;
 using System.Xml;
 using System.Xml.Linq;
 using Microsoft.AspNet.Cryptography;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Internal;
-using Microsoft.Framework.Logging;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.DataProtection.XmlEncryption
 {

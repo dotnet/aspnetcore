@@ -8,7 +8,7 @@ using System.Diagnostics;
 using System.Security.Cryptography;
 using Microsoft.AspNet.DataProtection.Infrastructure;
 using Microsoft.AspNet.DataProtection.Abstractions;
-using Microsoft.Framework.Internal;
+using Microsoft.Extensions.Internal;
 
 #if DNX451 || DNXCORE50 // [[ISSUE1400]] Replace with DNX_ANY when it becomes available
 using Microsoft.Dnx.Runtime;

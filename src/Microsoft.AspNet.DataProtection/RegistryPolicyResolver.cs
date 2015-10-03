@@ -9,7 +9,7 @@ using System.Reflection;
 using Microsoft.AspNet.Cryptography;
 using Microsoft.AspNet.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNet.DataProtection.KeyManagement;
-using Microsoft.Framework.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
 
 namespace Microsoft.AspNet.DataProtection

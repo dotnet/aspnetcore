@@ -10,14 +10,14 @@ using Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationModel
 using Microsoft.AspNet.DataProtection.KeyManagement;
 using Microsoft.AspNet.DataProtection.Repositories;
 using Microsoft.AspNet.DataProtection.XmlEncryption;
-using Microsoft.Framework.OptionsModel;
+using Microsoft.Extensions.OptionsModel;
 using Microsoft.Win32;
 
 #if !DNXCORE50 // [[ISSUE60]] Remove this #ifdef when Core CLR gets support for EncryptedXml
 using System.Security.Cryptography.X509Certificates;
 #endif
 
-namespace Microsoft.Framework.DependencyInjection
+namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
     /// Default <see cref="ServiceDescriptor"/> instances for the Data Protection system.

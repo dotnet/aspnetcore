@@ -7,8 +7,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
-using Microsoft.Framework.Internal;
-using Microsoft.Framework.Logging;
+using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.DataProtection.Repositories
 {

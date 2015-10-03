@@ -6,7 +6,7 @@
         "url": "git://github.com/aspnet/dataprotection"
     },
     "dependencies": {
-        "Microsoft.Framework.NotNullAttribute.Sources": { "type": "build", "version": "1.0.0-*" },
+        "Microsoft.Extensions.NotNullAttribute.Sources": { "type": "build", "version": "1.0.0-*" },
         "Microsoft.AspNet.DataProtection.Sources": { "type": "build", "version": "" }
     },
     "frameworks": {

@@ -7,8 +7,8 @@ using System;
 using System.Security.Cryptography.Xml;
 using System.Xml;
 using System.Xml.Linq;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Internal;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.DataProtection.XmlEncryption
 {

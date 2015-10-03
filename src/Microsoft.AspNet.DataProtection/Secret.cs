@@ -6,7 +6,7 @@ using Microsoft.AspNet.Cryptography;
 using Microsoft.AspNet.Cryptography.Cng;
 using Microsoft.AspNet.Cryptography.SafeHandles;
 using Microsoft.AspNet.DataProtection.Managed;
-using Microsoft.Framework.Internal;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.DataProtection
 {

@@ -3,7 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Cryptography.KeyDerivation.PBKDF2;
-using Microsoft.Framework.Internal;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.Cryptography.KeyDerivation
 {

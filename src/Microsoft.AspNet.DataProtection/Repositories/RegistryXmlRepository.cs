@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Principal;
 using System.Xml.Linq;
-using Microsoft.Framework.Internal;
-using Microsoft.Framework.Logging;
+using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
 
 using static System.FormattableString;

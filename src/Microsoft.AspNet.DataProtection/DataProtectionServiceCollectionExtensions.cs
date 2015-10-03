@@ -3,10 +3,10 @@
 
 using System;
 using Microsoft.AspNet.DataProtection;
-using Microsoft.Framework.DependencyInjection.Extensions;
-using Microsoft.Framework.Internal;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Internal;
 
-namespace Microsoft.Framework.DependencyInjection
+namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
     /// Allows registering and configuring Data Protection in the application.

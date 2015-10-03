@@ -3,7 +3,7 @@
 
 using System;
 using System.Security.Cryptography;
-using Microsoft.Framework.Internal;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.DataProtection
 {

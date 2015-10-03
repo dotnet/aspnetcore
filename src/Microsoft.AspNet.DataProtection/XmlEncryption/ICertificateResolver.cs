@@ -5,7 +5,7 @@
 
 using System;
 using System.Security.Cryptography.X509Certificates;
-using Microsoft.Framework.Internal;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.DataProtection.XmlEncryption
 {

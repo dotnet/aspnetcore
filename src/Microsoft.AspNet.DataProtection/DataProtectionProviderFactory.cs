@@ -3,9 +3,9 @@
 
 using System;
 using Microsoft.AspNet.DataProtection.KeyManagement;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Internal;
-using Microsoft.Framework.OptionsModel;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.OptionsModel;
 
 namespace Microsoft.AspNet.DataProtection
 {

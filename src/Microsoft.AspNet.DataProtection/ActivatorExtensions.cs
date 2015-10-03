@@ -4,8 +4,8 @@
 using System;
 using System.Reflection;
 using Microsoft.AspNet.Cryptography;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Internal;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.DataProtection
 {

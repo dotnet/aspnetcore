@@ -9,10 +9,10 @@ using Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationModel
 using Microsoft.AspNet.DataProtection.Cng;
 using Microsoft.AspNet.DataProtection.KeyManagement;
 using Microsoft.AspNet.DataProtection.Repositories;
-using Microsoft.Framework.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
 
-namespace Microsoft.Framework.DependencyInjection
+namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
     /// Provides access to default Data Protection <see cref="ServiceDescriptor"/> instances.

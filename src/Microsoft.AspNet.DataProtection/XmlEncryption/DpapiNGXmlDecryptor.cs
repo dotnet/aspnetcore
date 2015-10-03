@@ -5,8 +5,8 @@ using System;
 using System.Xml.Linq;
 using Microsoft.AspNet.Cryptography;
 using Microsoft.AspNet.DataProtection.Cng;
-using Microsoft.Framework.Internal;
-using Microsoft.Framework.Logging;
+using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.DataProtection.XmlEncryption
 {

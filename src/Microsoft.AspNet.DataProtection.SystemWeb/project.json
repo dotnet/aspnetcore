@@ -9,7 +9,7 @@
         "net451": {
             "dependencies": {
                 "Microsoft.AspNet.DataProtection": "1.0.0-*",
-                "Microsoft.Framework.DependencyInjection": "1.0.0-*"
+                "Microsoft.Extensions.DependencyInjection": "1.0.0-*"
             },
             "frameworkAssemblies": {
                 "System.Configuration": "4.0.0.0",

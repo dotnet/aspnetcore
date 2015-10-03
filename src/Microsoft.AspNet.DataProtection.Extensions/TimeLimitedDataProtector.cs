@@ -5,7 +5,7 @@ using System;
 using System.Security.Cryptography;
 using System.Threading;
 using Microsoft.AspNet.DataProtection.Extensions;
-using Microsoft.Framework.Internal;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.DataProtection
 {

@@ -4,7 +4,7 @@
 using System;
 using System.Reflection;
 using System.Xml.Linq;
-using Microsoft.Framework.Internal;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.DataProtection.XmlEncryption
 {

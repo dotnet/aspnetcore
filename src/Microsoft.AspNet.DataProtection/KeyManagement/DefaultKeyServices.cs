@@ -5,7 +5,7 @@ using System;
 using Microsoft.AspNet.Cryptography;
 using Microsoft.AspNet.DataProtection.Repositories;
 using Microsoft.AspNet.DataProtection.XmlEncryption;
-using Microsoft.Framework.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNet.DataProtection.KeyManagement
 {

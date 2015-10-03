@@ -3,7 +3,7 @@
         "Microsoft.AspNet.DataProtection": "1.0.0-*",
         "Microsoft.AspNet.DataProtection.Test.Shared": { "type": "build", "version": "" },
         "Microsoft.AspNet.Testing": "1.0.0-*",
-        "Microsoft.Framework.DependencyInjection": "1.0.0-*",
+        "Microsoft.Extensions.DependencyInjection": "1.0.0-*",
         "Moq": "4.2.1312.1622",
         "xunit.runner.aspnet": "2.0.0-aspnet-*"
     },
