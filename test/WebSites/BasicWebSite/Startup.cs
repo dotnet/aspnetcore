@@ -3,7 +3,7 @@
 
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc.Abstractions;
-using Microsoft.Framework.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace BasicWebSite
 {

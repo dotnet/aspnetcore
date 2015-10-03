@@ -4,7 +4,7 @@
 using System;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.ViewFeatures;
-using Microsoft.Framework.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc
 {

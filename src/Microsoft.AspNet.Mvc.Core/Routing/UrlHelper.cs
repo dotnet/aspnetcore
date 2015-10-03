@@ -7,7 +7,7 @@ using System.Diagnostics;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.Routing;
-using Microsoft.Framework.Internal;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.Mvc.Routing
 {

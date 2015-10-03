@@ -6,10 +6,10 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Http;
-using Microsoft.Framework.Caching.Memory;
-using Microsoft.Framework.FileSystemGlobbing;
-using Microsoft.Framework.FileSystemGlobbing.Abstractions;
-using Microsoft.Framework.Primitives;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.FileSystemGlobbing;
+using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
+using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
 

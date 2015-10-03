@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
-using Microsoft.Framework.Primitives;
+using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
 

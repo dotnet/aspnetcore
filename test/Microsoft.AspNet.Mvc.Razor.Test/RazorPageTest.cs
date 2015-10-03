@@ -18,7 +18,7 @@ using Microsoft.AspNet.PageExecutionInstrumentation;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing;
-using Microsoft.Framework.WebEncoders.Testing;
+using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
 using Xunit;
 

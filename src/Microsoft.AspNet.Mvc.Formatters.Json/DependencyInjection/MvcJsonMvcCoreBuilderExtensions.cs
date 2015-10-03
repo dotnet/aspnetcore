@@ -4,11 +4,11 @@
 using System;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Formatters.Json.Internal;
-using Microsoft.Framework.DependencyInjection.Extensions;
-using Microsoft.Framework.OptionsModel;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.OptionsModel;
 using Newtonsoft.Json;
 
-namespace Microsoft.Framework.DependencyInjection
+namespace Microsoft.Extensions.DependencyInjection
 {
     public static class MvcJsonMvcCoreBuilderExtensions
     {

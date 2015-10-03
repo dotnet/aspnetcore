@@ -5,7 +5,7 @@ using System;
 using System.Reflection;
 using ControllersFromServicesClassLibrary;
 using Microsoft.AspNet.Builder;
-using Microsoft.Framework.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace ControllersFromServicesWebSite
 {

@@ -8,7 +8,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.WebApiCompatShim;
 using Microsoft.AspNet.Testing;
-using Microsoft.Framework.OptionsModel;
+using Microsoft.Extensions.OptionsModel;
 #if !DNXCORE50
 using Moq;
 #endif

@@ -14,7 +14,7 @@ using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.PageExecutionInstrumentation;
 using Microsoft.AspNet.Routing;
-using Microsoft.Framework.WebEncoders.Testing;
+using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
 using Xunit;
 

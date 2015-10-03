@@ -1,4 +1,4 @@
-﻿{
+{
     "description": "Features that enable globalization & localization of MVC applications.",
     "version": "6.0.0-*",
     "compilationOptions": {
@@ -7,9 +7,9 @@
     "dependencies": {
         "Microsoft.AspNet.Localization": "1.0.0-*",
         "Microsoft.AspNet.Mvc.Razor": "6.0.0-*",
-        "Microsoft.Framework.DependencyInjection": "1.0.0-*",
-        "Microsoft.Framework.Localization": "1.0.0-*",
-        "Microsoft.Framework.PropertyHelper.Sources": {
+        "Microsoft.Extensions.DependencyInjection": "1.0.0-*",
+        "Microsoft.Extensions.Localization": "1.0.0-*",
+        "Microsoft.Extensions.PropertyHelper.Sources": {
             "version": "1.0.0-*",
             "type": "build"
         }

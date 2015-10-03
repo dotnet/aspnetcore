@@ -6,7 +6,7 @@ using System.Security.Cryptography;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.WebUtilities;
-using Microsoft.Framework.Caching.Memory;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
 {

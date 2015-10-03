@@ -15,8 +15,8 @@ using Microsoft.AspNet.Mvc.TagHelpers;
 #if DNXCORE50
 using Microsoft.AspNet.Testing;
 #endif
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Extensions;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests

@@ -3,8 +3,8 @@
 
 using Microsoft.AspNet.Authentication;
 using Microsoft.AspNet.Builder;
-using Microsoft.Framework.WebEncoders;
-using Microsoft.Framework.Logging;
+using Microsoft.Extensions.WebEncoders;
+using Microsoft.Extensions.Logging;
 
 namespace FiltersWebSite
 {

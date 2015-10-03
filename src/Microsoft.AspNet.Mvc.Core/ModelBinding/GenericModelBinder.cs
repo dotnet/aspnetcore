@@ -8,7 +8,7 @@ using System.Diagnostics;
 using System.Reflection;
 #endif
 using System.Threading.Tasks;
-using Microsoft.Framework.Internal;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {

@@ -3,7 +3,7 @@
 
 using System.IO;
 
-namespace Microsoft.Framework.WebEncoders
+namespace Microsoft.Extensions.WebEncoders
 {
     internal class TestUrlEncoder : IUrlEncoder
     {

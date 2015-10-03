@@ -5,8 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using Microsoft.Framework.Localization;
-using Microsoft.Framework.OptionsModel;
+using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {

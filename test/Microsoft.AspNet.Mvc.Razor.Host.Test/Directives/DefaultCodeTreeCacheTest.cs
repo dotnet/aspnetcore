@@ -4,8 +4,8 @@
 using System;
 using Microsoft.AspNet.Mvc.Razor.Directives;
 using Microsoft.AspNet.Razor.Chunks;
-using Microsoft.Framework.Caching.Memory;
-using Microsoft.Framework.Internal;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Internal;
 using Moq;
 using Xunit;
 

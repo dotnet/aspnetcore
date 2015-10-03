@@ -4,7 +4,7 @@
 using InlineConstraintsWebSite.Constraints;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Routing.Constraints;
-using Microsoft.Framework.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace InlineConstraints
 {

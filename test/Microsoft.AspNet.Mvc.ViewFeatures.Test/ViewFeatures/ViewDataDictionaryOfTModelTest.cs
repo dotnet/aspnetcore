@@ -3,7 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.Framework.Internal;
+using Microsoft.Extensions.Internal;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ViewFeatures

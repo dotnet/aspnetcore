@@ -10,7 +10,7 @@ using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
-using Microsoft.Framework.WebEncoders.Testing;
+using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
 using Xunit;
 

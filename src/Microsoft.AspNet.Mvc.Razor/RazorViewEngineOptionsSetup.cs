@@ -3,7 +3,7 @@
 
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Mvc.Razor;
-using Microsoft.Framework.OptionsModel;
+using Microsoft.Extensions.OptionsModel;
 using Microsoft.Dnx.Runtime;
 
 namespace Microsoft.AspNet.Mvc

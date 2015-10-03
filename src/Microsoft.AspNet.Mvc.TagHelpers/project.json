@@ -10,10 +10,10 @@
   },
   "dependencies": {
     "Microsoft.AspNet.Mvc.Razor": "6.0.0-*",
-    "Microsoft.Framework.Caching.Memory": "1.0.0-*",
-    "Microsoft.Framework.FileSystemGlobbing": "1.0.0-*",
-    "Microsoft.Framework.Logging.Abstractions": { "version": "1.0.0-*", "type": "build" },
-    "Microsoft.Framework.PropertyHelper.Sources": { "version": "1.0.0-*", "type": "build" }
+    "Microsoft.Extensions.Caching.Memory": "1.0.0-*",
+    "Microsoft.Extensions.FileSystemGlobbing": "1.0.0-*",
+    "Microsoft.Extensions.Logging.Abstractions": { "version": "1.0.0-*", "type": "build" },
+    "Microsoft.Extensions.PropertyHelper.Sources": { "version": "1.0.0-*", "type": "build" }
   },
   "frameworks": {
     "dnx451": { },

@@ -4,9 +4,9 @@
 using System;
 using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Localization;
-using Microsoft.Framework.OptionsModel;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc.DataAnnotations.Internal
 {

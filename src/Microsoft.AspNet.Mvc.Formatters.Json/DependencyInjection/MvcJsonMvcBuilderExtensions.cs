@@ -4,7 +4,7 @@
 using System;
 using Microsoft.AspNet.Mvc;
 
-namespace Microsoft.Framework.DependencyInjection
+namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
     /// Extensions methods for configuring MVC via an <see cref="IMvcBuilder"/>.

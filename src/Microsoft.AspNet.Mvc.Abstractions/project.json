@@ -10,19 +10,19 @@
   },
   "dependencies": {
     "Microsoft.AspNet.Routing": "1.0.0-*",
-    "Microsoft.Framework.ClosedGenericMatcher.Sources": {
+    "Microsoft.Extensions.ClosedGenericMatcher.Sources": {
       "version": "1.0.0-*",
       "type": "build"
     },
-    "Microsoft.Framework.CopyOnWriteDictionary.Sources": {
+    "Microsoft.Extensions.CopyOnWriteDictionary.Sources": {
       "version": "1.0.0-*",
       "type": "build"
     },
-    "Microsoft.Framework.HashCodeCombiner.Sources": {
+    "Microsoft.Extensions.HashCodeCombiner.Sources": {
       "version": "1.0.0-*",
       "type": "build"
     },
-    "Microsoft.Framework.PropertyHelper.Sources": {
+    "Microsoft.Extensions.PropertyHelper.Sources": {
       "version": "1.0.0-*",
       "type": "build"
     }

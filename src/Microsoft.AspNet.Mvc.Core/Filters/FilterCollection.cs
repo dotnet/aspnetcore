@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Mvc.Filters
         /// <returns>An <see cref="IFilterMetadata"/> representing the added type.</returns>
         /// <remarks>
         /// Filter instances will be created using
-        /// <see cref="Microsoft.Framework.DependencyInjection.ActivatorUtilities"/>.
+        /// <see cref="Microsoft.Extensions.DependencyInjection.ActivatorUtilities"/>.
         /// Use <see cref="AddService(Type)"/> to register a service as a filter.
         /// </remarks>
         public IFilterMetadata Add(Type filterType)
@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Mvc.Filters
         /// <returns>An <see cref="IFilterMetadata"/> representing the added type.</returns>
         /// <remarks>
         /// Filter instances will be created using
-        /// <see cref="Microsoft.Framework.DependencyInjection.ActivatorUtilities"/>.
+        /// <see cref="Microsoft.Extensions.DependencyInjection.ActivatorUtilities"/>.
         /// Use <see cref="AddService(Type)"/> to register a service as a filter.
         /// </remarks>
         public IFilterMetadata Add(Type filterType, int order)

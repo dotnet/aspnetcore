@@ -12,7 +12,7 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc.Razor.Precompilation;
 using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Dnx.Runtime;
-using Microsoft.Framework.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using PrecompilationWebSite;
 using Xunit;
 

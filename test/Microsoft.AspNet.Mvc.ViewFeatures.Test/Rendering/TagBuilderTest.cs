@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.Framework.WebEncoders.Testing;
+using Microsoft.Extensions.WebEncoders.Testing;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Core.Rendering
@@ -94,8 +94,8 @@ namespace Microsoft.AspNet.Mvc.Core.Rendering
 
         [Theory]
         [InlineData("HelloWorld", "HelloWorld")]
-        [InlineData("¡HelloWorld", "zHelloWorld")]
-        [InlineData("Hello¡World", "Hello-World")]
+        [InlineData("ï¿½HelloWorld", "zHelloWorld")]
+        [InlineData("Helloï¿½World", "Hello-World")]
         public void CreateSanitizedIdCreatesId(string input, string output)
         {
             // Arrange

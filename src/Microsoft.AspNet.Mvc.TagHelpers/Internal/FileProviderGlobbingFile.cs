@@ -3,7 +3,7 @@
 
 using System;
 using Microsoft.AspNet.FileProviders;
-using Microsoft.Framework.FileSystemGlobbing.Abstractions;
+using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
 {

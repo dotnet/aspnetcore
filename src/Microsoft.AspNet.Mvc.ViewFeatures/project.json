@@ -15,11 +15,11 @@
         "Microsoft.AspNet.Mvc.Core": "6.0.0-*",
         "Microsoft.AspNet.Mvc.DataAnnotations": "6.0.0-*",
         "Microsoft.AspNet.Mvc.Formatters.Json": "6.0.0-*",
-        "Microsoft.Framework.BufferedHtmlContent.Sources": { "version": "1.0.0-*", "type": "build" },
-        "Microsoft.Framework.ClosedGenericMatcher.Sources": { "version": "1.0.0-*", "type": "build" },
-        "Microsoft.Framework.CopyOnWriteDictionary.Sources": { "version": "1.0.0-*", "type": "build" },
-        "Microsoft.Framework.PropertyActivator.Sources": { "version": "1.0.0-*", "type": "build" },
-        "Microsoft.Framework.PropertyHelper.Sources": { "version": "1.0.0-*", "type": "build" }
+        "Microsoft.Extensions.BufferedHtmlContent.Sources": { "version": "1.0.0-*", "type": "build" },
+        "Microsoft.Extensions.ClosedGenericMatcher.Sources": { "version": "1.0.0-*", "type": "build" },
+        "Microsoft.Extensions.CopyOnWriteDictionary.Sources": { "version": "1.0.0-*", "type": "build" },
+        "Microsoft.Extensions.PropertyActivator.Sources": { "version": "1.0.0-*", "type": "build" },
+        "Microsoft.Extensions.PropertyHelper.Sources": { "version": "1.0.0-*", "type": "build" }
     },
 
     "frameworks": {

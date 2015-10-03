@@ -4,7 +4,7 @@
 #if DNX451
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Routing.Template;
-using Microsoft.Framework.OptionsModel;
+using Microsoft.Extensions.OptionsModel;
 using Moq;
 using Xunit;
 

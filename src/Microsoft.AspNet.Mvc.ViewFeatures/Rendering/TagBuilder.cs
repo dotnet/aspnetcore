@@ -9,8 +9,8 @@ using System.IO;
 using System.Text;
 using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.AspNet.Mvc.ViewFeatures;
-using Microsoft.Framework.Internal;
-using Microsoft.Framework.WebEncoders;
+using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.WebEncoders;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {

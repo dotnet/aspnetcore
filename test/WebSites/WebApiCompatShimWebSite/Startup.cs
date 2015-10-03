@@ -3,7 +3,7 @@
 
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Routing;
-using Microsoft.Framework.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace WebApiCompatShimWebSite
 {

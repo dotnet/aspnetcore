@@ -10,7 +10,7 @@ using System.Linq;
 #if DNXCORE50
 using System.Reflection;
 #endif
-using Microsoft.Framework.Internal;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 {

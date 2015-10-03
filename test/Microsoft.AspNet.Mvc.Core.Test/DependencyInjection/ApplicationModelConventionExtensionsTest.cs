@@ -5,10 +5,10 @@ using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.ApplicationModels;
-using Microsoft.Framework.Internal;
+using Microsoft.Extensions.Internal;
 using Xunit;
 
-namespace Microsoft.Framework.DependencyInjection
+namespace Microsoft.Extensions.DependencyInjection
 {
     public class ApplicationModelConventionExtensionsTest
     {

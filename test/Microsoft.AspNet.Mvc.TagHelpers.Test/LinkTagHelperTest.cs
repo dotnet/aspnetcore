@@ -19,10 +19,10 @@ using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Routing;
 using Microsoft.Dnx.Runtime;
-using Microsoft.Framework.Caching.Memory;
-using Microsoft.Framework.Logging;
-using Microsoft.Framework.Primitives;
-using Microsoft.Framework.WebEncoders.Testing;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
+using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
 using Xunit;
 

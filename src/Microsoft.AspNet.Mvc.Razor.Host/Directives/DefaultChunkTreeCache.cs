@@ -4,7 +4,7 @@
 using System;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Razor.Chunks;
-using Microsoft.Framework.Caching.Memory;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Microsoft.AspNet.Mvc.Razor.Directives
 {

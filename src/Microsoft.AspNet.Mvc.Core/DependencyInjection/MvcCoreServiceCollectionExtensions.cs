@@ -15,11 +15,11 @@ using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Routing;
-using Microsoft.Framework.DependencyInjection.Extensions;
-using Microsoft.Framework.MemoryPool;
-using Microsoft.Framework.OptionsModel;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.MemoryPool;
+using Microsoft.Extensions.OptionsModel;
 
-namespace Microsoft.Framework.DependencyInjection
+namespace Microsoft.Extensions.DependencyInjection
 {
     public static class MvcCoreServiceCollectionExtensions
     {

@@ -15,9 +15,9 @@ using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Mvc.ViewEngines;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Routing;
-using Microsoft.Framework.OptionsModel;
-using Microsoft.Framework.WebEncoders;
-using Microsoft.Framework.WebEncoders.Testing;
+using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.WebEncoders;
+using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
 
 namespace Microsoft.AspNet.Mvc.Rendering

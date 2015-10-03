@@ -13,7 +13,7 @@
     "Microsoft.AspNet.Mvc.Core": "6.0.0-*",
     "Microsoft.AspNet.Mvc.Formatters.Json": "6.0.0-*",
     "Microsoft.AspNet.WebApi.Client": "5.2.2",
-    "Microsoft.Framework.PropertyHelper.Sources": {
+    "Microsoft.Extensions.PropertyHelper.Sources": {
       "version": "1.0.0-*",
       "type": "build"
     }

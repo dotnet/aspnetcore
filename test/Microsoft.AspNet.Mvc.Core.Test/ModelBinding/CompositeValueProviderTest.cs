@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Globalization;
 #if DNX451
 using System.Threading.Tasks;
-using Microsoft.Framework.Primitives;
+using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
 #endif

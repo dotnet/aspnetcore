@@ -3,13 +3,13 @@
 
 using System;
 using System.Collections.Concurrent;
-using Microsoft.Framework.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc.Infrastructure
 {
     /// <summary>
     /// Caches <see cref="ObjectFactory"/> instances produced by 
-    /// <see cref="Microsoft.Framework.DependencyInjection.ActivatorUtilities.CreateFactory(Type, Type[])"/>.
+    /// <see cref="Microsoft.Extensions.DependencyInjection.ActivatorUtilities.CreateFactory(Type, Type[])"/>.
     /// </summary>
     public class DefaultTypeActivatorCache : ITypeActivatorCache
     {

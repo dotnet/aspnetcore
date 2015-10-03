@@ -10,7 +10,7 @@ using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing;
-using Microsoft.Framework.Internal;
+using Microsoft.Extensions.Internal;
 using Moq;
 using Xunit;
 

@@ -5,8 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
-using Microsoft.Framework.Localization;
-using Microsoft.Framework.WebEncoders;
+using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.WebEncoders;
 
 
 namespace Microsoft.AspNet.Mvc.Localization

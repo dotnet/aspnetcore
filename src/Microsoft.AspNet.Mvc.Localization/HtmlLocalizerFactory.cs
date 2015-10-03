@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Framework.Localization;
-using Microsoft.Framework.WebEncoders;
+using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.WebEncoders;
 
 namespace Microsoft.AspNet.Mvc.Localization
 {

@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Mvc.ApplicationModels;
 
-namespace Microsoft.Framework.DependencyInjection
+namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
     /// Contains the extension methods for <see cref="AspNet.Mvc.MvcOptions.Conventions"/>.

@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using System.Runtime.Versioning;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.Dnx.Compilation.CSharp;
-using Microsoft.Framework.Caching.Memory;
-using Microsoft.Framework.Internal;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.Mvc.Razor.Precompilation
 {

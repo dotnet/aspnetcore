@@ -3,7 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Mvc.ViewEngines;
-using Microsoft.Framework.WebEncoders;
+using Microsoft.Extensions.WebEncoders;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {

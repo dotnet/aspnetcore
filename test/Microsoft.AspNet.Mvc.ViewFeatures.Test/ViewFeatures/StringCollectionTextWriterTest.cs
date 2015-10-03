@@ -8,8 +8,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Testing;
-using Microsoft.Framework.Internal;
-using Microsoft.Framework.WebEncoders.Testing;
+using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.WebEncoders.Testing;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ViewFeatures

@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.Framework.Primitives
+namespace Microsoft.Extensions.Primitives
 {
     internal class TestFileChangeToken : IChangeToken
     {

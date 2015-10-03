@@ -14,21 +14,21 @@
     "Microsoft.AspNet.Hosting.Abstractions": "1.0.0-*",
     "Microsoft.AspNet.Mvc.Abstractions": "6.0.0-*",
     "Microsoft.Dnx.Runtime.Abstractions": "1.0.0-*",
-    "Microsoft.Framework.ClosedGenericMatcher.Sources": {
+    "Microsoft.Extensions.ClosedGenericMatcher.Sources": {
       "version": "1.0.0-*",
       "type": "build"
     },
-    "Microsoft.Framework.Logging.Abstractions": "1.0.0-*",
-    "Microsoft.Framework.MemoryPool": "1.0.0-*",
-    "Microsoft.Framework.PropertyActivator.Sources": {
+    "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*",
+    "Microsoft.Extensions.MemoryPool": "1.0.0-*",
+    "Microsoft.Extensions.PropertyActivator.Sources": {
       "version": "1.0.0-*",
       "type": "build"
     },
-    "Microsoft.Framework.PropertyHelper.Sources": {
+    "Microsoft.Extensions.PropertyHelper.Sources": {
       "version": "1.0.0-*",
       "type": "build"
     },
-    "Microsoft.Framework.SecurityHelper.Sources": {
+    "Microsoft.Extensions.SecurityHelper.Sources": {
       "version": "1.0.0-*",
       "type": "build"
     },

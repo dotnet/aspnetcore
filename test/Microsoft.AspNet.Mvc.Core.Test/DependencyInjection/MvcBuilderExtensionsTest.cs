@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Mvc.Controllers;
 using Microsoft.AspNet.Mvc.MvcServiceCollectionExtensionsTestControllers;
-using Microsoft.Framework.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
 

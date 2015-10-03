@@ -3,7 +3,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
-using Microsoft.Framework.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {

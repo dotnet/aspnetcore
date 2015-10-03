@@ -10,8 +10,8 @@
     },
     "dependencies": {
         "Microsoft.AspNet.Mvc.Core": "6.0.0-*",
-        "Microsoft.Framework.ClosedGenericMatcher.Sources": { "version": "1.0.0-*", "type": "build" },
-        "Microsoft.Framework.PropertyHelper.Sources": { "version": "1.0.0-*", "type": "build" }
+        "Microsoft.Extensions.ClosedGenericMatcher.Sources": { "version": "1.0.0-*", "type": "build" },
+        "Microsoft.Extensions.PropertyHelper.Sources": { "version": "1.0.0-*", "type": "build" }
     },
     "frameworks": {
         "dnx451": {

@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Reflection;
-using Microsoft.Framework.Internal;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.Mvc.ViewComponents
 {

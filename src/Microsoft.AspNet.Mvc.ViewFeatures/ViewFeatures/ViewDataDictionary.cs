@@ -9,7 +9,7 @@ using System.Globalization;
 using System.Reflection;
 #endif
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.Framework.Internal;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.Mvc.ViewFeatures
 {

@@ -6,8 +6,8 @@ using System;
 namespace Microsoft.AspNet.Mvc.Infrastructure
 {
     /// <summary>
-    /// Caches <see cref="Microsoft.Framework.DependencyInjection.ObjectFactory"/> instances produced by 
-    /// <see cref="Microsoft.Framework.DependencyInjection.ActivatorUtilities.CreateFactory(Type, Type[])"/>.
+    /// Caches <see cref="Microsoft.Extensions.DependencyInjection.ObjectFactory"/> instances produced by 
+    /// <see cref="Microsoft.Extensions.DependencyInjection.ActivatorUtilities.CreateFactory(Type, Type[])"/>.
     /// </summary>
     public interface ITypeActivatorCache
     {

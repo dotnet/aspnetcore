@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations;
 #if DNX451
 using System.Linq;
 #endif
-using Microsoft.Framework.Localization;
+using Microsoft.Extensions.Localization;
 #if DNX451
 using Moq;
 using Moq.Protected;

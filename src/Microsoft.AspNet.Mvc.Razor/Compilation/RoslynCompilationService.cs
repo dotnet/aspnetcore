@@ -17,7 +17,7 @@ using Microsoft.CodeAnalysis.Emit;
 using Microsoft.Dnx.Compilation;
 using Microsoft.Dnx.Compilation.CSharp;
 using Microsoft.Dnx.Runtime;
-using Microsoft.Framework.OptionsModel;
+using Microsoft.Extensions.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc.Razor.Compilation
 {
@@ -215,9 +215,9 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             foreach (var metadataReference in export.MetadataReferences)
             {
                 // Taken from https://github.com/aspnet/KRuntime/blob/757ba9bfdf80bd6277e715d6375969a7f44370ee/src/...
-                // Microsoft.Framework.Runtime.Roslyn/RoslynCompiler.cs#L164
+                // Microsoft.Extensions.Runtime.Roslyn/RoslynCompiler.cs#L164
                 // We don't want to take a dependency on the Roslyn bit directly since it pulls in more dependencies
-                // than the view engine needs (Microsoft.Framework.Runtime) for example
+                // than the view engine needs (Microsoft.Extensions.Runtime) for example
                 references.Add(ConvertMetadataReference(metadataReference));
             }
 

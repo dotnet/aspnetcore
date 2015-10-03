@@ -10,7 +10,7 @@ using System.Linq;
 using System.Net.Http.Headers;
 using System.Text;
 using Microsoft.AspNet.Mvc;
-using Microsoft.Framework.Internal;
+using Microsoft.Extensions.Internal;
 
 namespace System.Net.Http.Formatting
 {

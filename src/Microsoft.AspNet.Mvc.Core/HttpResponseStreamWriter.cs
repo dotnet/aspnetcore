@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Framework.MemoryPool;
+using Microsoft.Extensions.MemoryPool;
 
 namespace Microsoft.AspNet.Mvc
 {

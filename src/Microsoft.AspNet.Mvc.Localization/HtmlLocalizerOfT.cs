@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using Microsoft.Framework.Localization;
+using Microsoft.Extensions.Localization;
 
 namespace Microsoft.AspNet.Mvc.Localization
 {

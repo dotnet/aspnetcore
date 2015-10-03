@@ -3,8 +3,8 @@
 
 using System.Collections.Generic;
 using Microsoft.AspNet.Mvc;
-using Microsoft.Framework.Caching.Memory;
-using Microsoft.Framework.Primitives;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Primitives;
 using TagHelperSample.Web.Models;
 using TagHelperSample.Web.Services;
 

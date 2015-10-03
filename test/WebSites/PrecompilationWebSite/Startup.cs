@@ -3,7 +3,7 @@
 
 using System.Reflection;
 using Microsoft.AspNet.Builder;
-using Microsoft.Framework.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace PrecompilationWebSite
 {

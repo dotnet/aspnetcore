@@ -11,8 +11,8 @@
   "dependencies": {
     "Microsoft.AspNet.FileProviders.Physical": "1.0.0-*",
     "Microsoft.AspNet.Razor.Runtime": "4.0.0-*",
-    "Microsoft.Framework.Caching.Memory": "1.0.0-*",
-    "Microsoft.Framework.PropertyHelper.Sources": { "version": "1.0.0-*", "type": "build" }
+    "Microsoft.Extensions.Caching.Memory": "1.0.0-*",
+    "Microsoft.Extensions.PropertyHelper.Sources": { "version": "1.0.0-*", "type": "build" }
   },
   "frameworks": {
     "net45": { },
