@@ -1,4 +1,4 @@
-﻿{
+{
     "version": "1.0.0-*",
     "description": "ASP.NET 5 Hosting server abstractions.",
     "repository": {
@@ -7,7 +7,7 @@
     },
     "dependencies": {
         "Microsoft.AspNet.Http.Features": "1.0.0-*",
-        "Microsoft.Framework.Configuration.Abstractions": "1.0.0-*"
+        "Microsoft.Extensions.Configuration.Abstractions": "1.0.0-*"
     },
 
     "frameworks": {

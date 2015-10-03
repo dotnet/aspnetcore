@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -11,7 +11,7 @@ using Microsoft.AspNet.Hosting.Server;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.Dnx.Runtime.Infrastructure;
-using Microsoft.Framework.Configuration;
+using Microsoft.Extensions.Configuration;
 using Xunit;
 
 namespace Microsoft.AspNet.Hosting

@@ -5,8 +5,8 @@ using System;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Server.Features;
 using Microsoft.Dnx.Runtime;
-using Microsoft.Framework.Configuration;
-using Microsoft.Framework.DependencyInjection;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNet.Hosting
 {

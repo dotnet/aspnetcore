@@ -8,8 +8,8 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Builder.Internal;
 using Microsoft.AspNet.Hosting.Fakes;
 using Microsoft.AspNet.Hosting.Startup;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.OptionsModel;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.OptionsModel;
 using Xunit;
 
 namespace Microsoft.AspNet.Hosting.Tests

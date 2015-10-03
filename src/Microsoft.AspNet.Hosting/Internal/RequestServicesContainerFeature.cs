@@ -3,7 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Http.Features.Internal;
-using Microsoft.Framework.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNet.Hosting.Internal
 {

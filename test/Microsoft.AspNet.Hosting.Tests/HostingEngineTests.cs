@@ -18,10 +18,10 @@ using Microsoft.AspNet.Http.Features.Internal;
 using Microsoft.AspNet.Server.Features;
 using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Dnx.Runtime.Infrastructure;
-using Microsoft.Framework.Configuration;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Internal;
-using Microsoft.Framework.OptionsModel;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.OptionsModel;
 using Moq;
 using Xunit;
 

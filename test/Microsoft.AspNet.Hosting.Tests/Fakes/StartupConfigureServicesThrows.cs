@@ -3,7 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Builder;
-using Microsoft.Framework.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNet.Hosting.Fakes
 {

@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using Microsoft.Framework.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.Server.Testing
 {
