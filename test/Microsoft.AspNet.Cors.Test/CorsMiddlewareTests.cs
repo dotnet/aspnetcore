@@ -9,7 +9,7 @@ using Microsoft.AspNet.Cors.Core;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.TestHost;
-using Microsoft.Framework.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
 

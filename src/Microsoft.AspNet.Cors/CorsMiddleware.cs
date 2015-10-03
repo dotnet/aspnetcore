@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Cors.Core;
 using Microsoft.AspNet.Http;
-using Microsoft.Framework.Primitives;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNet.Cors
 {

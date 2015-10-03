@@ -4,11 +4,11 @@
 using System;
 using Microsoft.AspNet.Cors;
 using Microsoft.AspNet.Cors.Core;
-using Microsoft.Framework.Configuration;
-using Microsoft.Framework.DependencyInjection.Extensions;
-using Microsoft.Framework.Internal;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Internal;
 
-namespace Microsoft.Framework.DependencyInjection
+namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
     /// The <see cref="IServiceCollection"/> extensions for enabling CORS support.

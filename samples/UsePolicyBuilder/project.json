@@ -1,4 +1,4 @@
-﻿{
+{
     "webroot": "wwwroot",
     "version": "1.0.0-*",
     "dependencies": {
@@ -6,7 +6,7 @@
         "Microsoft.AspNet.Diagnostics": "1.0.0-*",
         "Microsoft.AspNet.Server.IIS": "1.0.0-*",
         "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
-        "Microsoft.Framework.Logging.Console": "1.0.0-*"
+        "Microsoft.Extensions.Logging.Console": "1.0.0-*"
     },
     "commands": {
         "web": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls http://localhost:5000"

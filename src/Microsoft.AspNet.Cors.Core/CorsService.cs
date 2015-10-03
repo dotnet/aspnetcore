@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Microsoft.AspNet.Http;
-using Microsoft.Framework.OptionsModel;
-using Microsoft.Framework.Primitives;
+using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNet.Cors.Core
 {
