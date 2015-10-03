@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Microsoft.Framework.FileSystemGlobbing;
+using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.Dnx.Runtime.Json;
 
 namespace Microsoft.Dnx.Runtime

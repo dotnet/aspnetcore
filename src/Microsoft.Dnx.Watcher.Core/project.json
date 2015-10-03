@@ -9,8 +9,8 @@
       "type": "build",
       "version": "1.0.0-*"
     },
-    "Microsoft.Framework.Logging.Abstractions": "1.0.0-*",
-    "Microsoft.Framework.FileSystemGlobbing": "1.0.0-*"
+    "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*",
+    "Microsoft.Extensions.FileSystemGlobbing": "1.0.0-*"
   },
   "frameworks": {
     "dnx451": {
