@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
-using Microsoft.Framework.Internal;
-using Microsoft.Framework.Logging;
-using Microsoft.Framework.OptionsModel;
+using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.OptionsModel;
 
 namespace Microsoft.AspNet.Session
 {

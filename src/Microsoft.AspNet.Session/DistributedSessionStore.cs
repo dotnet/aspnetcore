@@ -3,9 +3,9 @@
 
 using System;
 using Microsoft.AspNet.Http.Features;
-using Microsoft.Framework.Caching.Distributed;
-using Microsoft.Framework.Internal;
-using Microsoft.Framework.Logging;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.Session
 {

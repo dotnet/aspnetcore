@@ -3,9 +3,9 @@
 
 using System;
 using Microsoft.AspNet.Session;
-using Microsoft.Framework.Internal;
+using Microsoft.Extensions.Internal;
 
-namespace Microsoft.Framework.DependencyInjection
+namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
     /// Extension methods for adding session services to the DI container.

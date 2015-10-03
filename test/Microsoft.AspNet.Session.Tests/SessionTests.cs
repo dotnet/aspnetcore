@@ -11,12 +11,12 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.TestHost;
-using Microsoft.Framework.Caching.Distributed;
-using Microsoft.Framework.Caching.Memory;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Internal;
-using Microsoft.Framework.Logging;
-using Microsoft.Framework.Logging.Testing;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 

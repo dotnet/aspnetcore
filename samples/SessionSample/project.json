@@ -6,10 +6,10 @@
         "Microsoft.AspNet.Server.IIS": "1.0.0-*",
         "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
         "Microsoft.AspNet.Session": "1.0.0-*",
-        "Microsoft.Framework.Caching.Memory": "1.0.0-*",
-        "Microsoft.Framework.Caching.Redis": "1.0.0-*",
-        "Microsoft.Framework.Caching.SqlServer": "1.0.0-*",
-        "Microsoft.Framework.Logging.Console": "1.0.0-*"
+        "Microsoft.Extensions.Caching.Memory": "1.0.0-*",
+        "Microsoft.Extensions.Caching.Redis": "1.0.0-*",
+        "Microsoft.Extensions.Caching.SqlServer": "1.0.0-*",
+        "Microsoft.Extensions.Logging.Console": "1.0.0-*"
     },
     "exclude": "wwwroot/**/*.*",
     "frameworks": {
