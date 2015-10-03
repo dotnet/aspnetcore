@@ -196,6 +196,10 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             Extra[key] = feature;
 
+            // Altering only an individual bit of the long
+            // so need to make sure other concurrent changes are not overridden
+            // in a lock-free manner
+
             long currentFeatureFlags;
             long updatedFeatureFlags;
             do
