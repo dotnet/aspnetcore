@@ -178,7 +178,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
             _cursor = new FilterCursor(_filters);
 
             ActionContext.ModelState.MaxAllowedErrors = _maxModelValidationErrors;
-
+            
             await InvokeAllAuthorizationFiltersAsync();
 
             // If Authorization Filters return a result, it's a short circuit because
@@ -242,7 +242,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
 
         private Task InvokeAllAuthorizationFiltersAsync()
         {
-            _cursor.SetStage(FilterStage.AuthorizationFilters);
+            _cursor.Reset();
 
             _authorizationContext = new AuthorizationContext(ActionContext, _filters);
             return InvokeAuthorizationFilterAsync();
@@ -292,7 +292,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
 
         private Task InvokeAllResourceFiltersAsync()
         {
-            _cursor.SetStage(FilterStage.ResourceFilters);
+            _cursor.Reset();
 
             var context = new ResourceExecutingContext(ActionContext, _filters);
 
@@ -453,7 +453,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
 
         private Task InvokeAllExceptionFiltersAsync()
         {
-            _cursor.SetStage(FilterStage.ExceptionFilters);
+            _cursor.Reset();
 
             return InvokeExceptionFilterAsync();
         }
@@ -537,7 +537,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
 
         private async Task InvokeAllActionFiltersAsync()
         {
-            _cursor.SetStage(FilterStage.ActionFilters);
+            _cursor.Reset();
 
             Instance = CreateInstance();
 
@@ -676,7 +676,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
 
         private async Task InvokeAllResultFiltersAsync(IActionResult result)
         {
-            _cursor.SetStage(FilterStage.ResultFilters);
+            _cursor.Reset();
 
             _resultExecutingContext = new ResultExecutingContext(ActionContext, _filters, result, Instance);
             await InvokeResultFilterAsync();
@@ -761,7 +761,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
                 }
                 else
                 {
-                    _cursor.SetStage(FilterStage.ActionResult);
+                    _cursor.Reset();
 
                     // The empty result is always flowed back as the 'executed' result
                     if (_resultExecutingContext.Result == null)
@@ -818,18 +818,6 @@ namespace Microsoft.AspNet.Mvc.Controllers
             }
         }
 
-        private enum FilterStage
-        {
-            Undefined,
-            AuthorizationFilters,
-            ResourceFilters,
-            ExceptionFilters,
-            ActionFilters,
-            ActionMethod,
-            ResultFilters,
-            ActionResult
-        }
-
         /// <summary>
         /// A one-way cursor for filters.
         /// </summary>
@@ -852,27 +840,23 @@ namespace Microsoft.AspNet.Mvc.Controllers
         /// </remarks>
         private struct FilterCursor
         {
-            private FilterStage _stage;
             private int _index;
             private readonly IFilterMetadata[] _filters;
 
-            public FilterCursor(FilterStage stage, int index, IFilterMetadata[] filters)
+            public FilterCursor(int index, IFilterMetadata[] filters)
             {
-                _stage = stage;
                 _index = index;
                 _filters = filters;
             }
 
             public FilterCursor(IFilterMetadata[] filters)
             {
-                _stage = FilterStage.Undefined;
                 _index = 0;
                 _filters = filters;
             }
 
-            public void SetStage(FilterStage stage)
+            public void Reset()
             {
-                _stage = stage;
                 _index = 0;
             }
 
@@ -889,29 +873,22 @@ namespace Microsoft.AspNet.Mvc.Controllers
 
                     if (filter != null || filterAsync != null)
                     {
-                        return new FilterCursorItem<TFilter, TFilterAsync>(_stage, _index, filter, filterAsync);
+                        return new FilterCursorItem<TFilter, TFilterAsync>(_index, filter, filterAsync);
                     }
                 }
 
                 return default(FilterCursorItem<TFilter, TFilterAsync>);
             }
-
-            public bool StillAt<TFilter, TFilterAsync>(FilterCursorItem<TFilter, TFilterAsync> current)
-            {
-                return current.Stage == _stage && current.Index == _index;
-            }
         }
 
         private struct FilterCursorItem<TFilter, TFilterAsync>
         {
-            public readonly FilterStage Stage;
             public readonly int Index;
             public readonly TFilter Filter;
             public readonly TFilterAsync FilterAsync;
 
-            public FilterCursorItem(FilterStage stage, int index, TFilter filter, TFilterAsync filterAsync)
+            public FilterCursorItem(int index, TFilter filter, TFilterAsync filterAsync)
             {
-                Stage = stage;
                 Index = index;
                 Filter = filter;
                 FilterAsync = filterAsync;
