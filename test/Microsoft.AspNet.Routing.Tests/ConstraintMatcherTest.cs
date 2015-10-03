@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Microsoft.AspNet.Http;
 #if DNX451
 using Microsoft.AspNet.Routing.Logging;
-using Microsoft.Framework.Logging.Testing;
+using Microsoft.Extensions.Logging.Testing;
 using Moq;
 #endif
 using Xunit;

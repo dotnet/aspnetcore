@@ -11,9 +11,9 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Routing.Constraints;
 using Microsoft.AspNet.Routing.Logging;
 using Microsoft.AspNet.Testing;
-using Microsoft.Framework.Logging.Internal;
-using Microsoft.Framework.Logging.Testing;
-using Microsoft.Framework.Logging;
+using Microsoft.Extensions.Logging.Internal;
+using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 

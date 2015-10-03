@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.Routing.Logging.Internal
     public static class LogFormatter
     {
         /// <summary>
-        /// A formatter for use with <see cref="Microsoft.Framework.Logging.ILogger.Log"/>.
+        /// A formatter for use with <see cref="Microsoft.Extensions.Logging.ILogger.Log"/>.
         /// </summary>
         public static string Formatter(object o, Exception e)
         {

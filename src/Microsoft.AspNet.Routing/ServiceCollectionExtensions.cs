@@ -4,7 +4,7 @@
 using System;
 using Microsoft.AspNet.Routing;
 
-namespace Microsoft.Framework.DependencyInjection
+namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
     /// Contains extension methods to <see cref="IServiceCollection"/>.
