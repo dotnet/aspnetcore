@@ -5,9 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Text;
-using Microsoft.Framework.Logging;
+using Microsoft.Extensions.Logging;
 using Moq;
-using Microsoft.Framework.OptionsModel;
+using Microsoft.Extensions.OptionsModel;
 
 namespace Microsoft.AspNet.Identity.Test
 {

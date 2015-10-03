@@ -11,7 +11,7 @@ using Microsoft.AspNet.Identity.Test;
 using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Storage;
-using Microsoft.Framework.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.EntityFramework.Test

@@ -3,9 +3,9 @@
 
 using System;
 using Microsoft.AspNet.Identity;
-using Microsoft.Framework.DependencyInjection.Extensions;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace Microsoft.Framework.DependencyInjection
+namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
     /// Contains extension methods to <see cref="IServiceCollection"/> for configuring identity services.

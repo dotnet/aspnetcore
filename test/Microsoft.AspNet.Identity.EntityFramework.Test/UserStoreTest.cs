@@ -7,7 +7,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Identity.Test;
 using Microsoft.AspNet.Testing.xunit;
-using Microsoft.Framework.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.EntityFramework.Test

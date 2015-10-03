@@ -4,9 +4,9 @@
 using System;
 using Microsoft.AspNet.Identity;
 using Microsoft.Data.Entity;
-using Microsoft.Framework.DependencyInjection.Extensions;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace Microsoft.Framework.DependencyInjection
+namespace Microsoft.Extensions.DependencyInjection
 {
     public static class IdentityEntityFrameworkBuilderExtensions
     {

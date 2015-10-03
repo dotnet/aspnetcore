@@ -4,10 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
-using Microsoft.Framework.Configuration;
-using Microsoft.Framework.Configuration.Memory;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.OptionsModel;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.Memory;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.OptionsModel;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.Test

@@ -3,7 +3,7 @@
 
 using System;
 using System.Reflection;
-using Microsoft.Framework.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNet.Identity
 {

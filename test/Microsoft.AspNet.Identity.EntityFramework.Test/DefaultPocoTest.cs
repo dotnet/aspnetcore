@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder.Internal;
 using Microsoft.AspNet.Identity.Test;
 using Microsoft.Data.Entity;
-using Microsoft.Framework.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Dnx.Runtime.Infrastructure;
 using Xunit;
 using Microsoft.AspNet.Testing.xunit;

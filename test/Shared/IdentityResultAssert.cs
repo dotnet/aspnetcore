@@ -3,7 +3,7 @@
 
 using System.Diagnostics;
 using System.Linq;
-using Microsoft.Framework.Logging;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.Test

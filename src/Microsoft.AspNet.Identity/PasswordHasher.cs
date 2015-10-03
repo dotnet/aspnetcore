@@ -5,7 +5,7 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using Microsoft.AspNet.Cryptography.KeyDerivation;
-using Microsoft.Framework.OptionsModel;
+using Microsoft.Extensions.OptionsModel;
 
 namespace Microsoft.AspNet.Identity
 {

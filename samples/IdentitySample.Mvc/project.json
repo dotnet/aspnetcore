@@ -18,10 +18,10 @@
         "Microsoft.AspNet.Authorization": "1.0.0-*",
         "Microsoft.AspNet.StaticFiles": "1.0.0-*",
         "EntityFramework.SqlServer": "7.0.0-*",
-        "Microsoft.Framework.Configuration.EnvironmentVariables": "1.0.0-*",
-        "Microsoft.Framework.Configuration.Json": "1.0.0-*",
-        "Microsoft.Framework.OptionsModel": "1.0.0-*",
-        "Microsoft.Framework.Logging.Console": "1.0.0-*"
+        "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.0.0-*",
+        "Microsoft.Extensions.Configuration.Json": "1.0.0-*",
+        "Microsoft.Extensions.OptionsModel": "1.0.0-*",
+        "Microsoft.Extensions.Logging.Console": "1.0.0-*"
     },
     "commands": {
         "web": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls http://localhost:41532",
@@ -31,7 +31,7 @@
     "frameworks": {
         "dnx451": {
             "dependencies": {
-                "Microsoft.Framework.Logging.NLog": "1.0.0-*"
+                "Microsoft.Extensions.Logging.NLog": "1.0.0-*"
             }
         },
         "dnxcore50": {
