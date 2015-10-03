@@ -7,7 +7,6 @@ using System.Globalization;
 using System.IO;
 using Microsoft.AspNet.Testing;
 using Microsoft.Framework.WebEncoders;
-using Microsoft.Framework.WebEncoders.Testing;
 using Xunit;
 
 namespace Microsoft.AspNet.Html.Abstractions.Test
@@ -230,7 +229,7 @@ namespace Microsoft.AspNet.Html.Abstractions.Test
             // Assert
             Assert.Equal("0xHtmlEncode[[32]]", HtmlContentToString(builder));
         }
-        
+
         [Fact]
         public void Builder_AppendFormat_WithCulture()
         {
@@ -248,7 +247,7 @@ namespace Microsoft.AspNet.Html.Abstractions.Test
 
             // Assert
             Assert.Equal(
-                "Numbers in InvariantCulture - HtmlEncode[[1.10]] HtmlEncode[[2.98]] " + 
+                "Numbers in InvariantCulture - HtmlEncode[[1.10]] HtmlEncode[[2.98]] " +
                     "HtmlEncode[[145.82]] HtmlEncode[[32.86]]!",
                 HtmlContentToString(builder));
         }

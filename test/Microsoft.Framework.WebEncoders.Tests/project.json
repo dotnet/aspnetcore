@@ -2,7 +2,6 @@
   "dependencies": {
     "Microsoft.Framework.DependencyInjection": "1.0.0-*",
     "Microsoft.Framework.WebEncoders": "1.0.0-*",
-    "Microsoft.Framework.WebEncoders.Testing": "1.0.0-*",
     "Newtonsoft.Json": "6.0.6",
     "xunit.runner.aspnet": "2.0.0-aspnet-*"
   },

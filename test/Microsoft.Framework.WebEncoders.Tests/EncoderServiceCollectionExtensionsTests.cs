@@ -1,10 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using Xunit;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.WebEncoders.Testing;
+using Xunit;
 
 namespace Microsoft.Framework.WebEncoders
 {

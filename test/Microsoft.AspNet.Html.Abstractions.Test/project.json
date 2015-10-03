@@ -2,9 +2,9 @@
   "dependencies": {
     "Microsoft.AspNet.Html.Abstractions": "1.0.0-*",
     "Microsoft.AspNet.Testing": "1.0.0-*",
-    "Microsoft.Framework.WebEncoders.Testing": "1.0.0-*",
     "xunit.runner.aspnet": "2.0.0-aspnet-*"
   },
+  "compile": [ "../Microsoft.Framework.WebEncoders.Tests/CommonTestEncoder.cs" ],
   "commands": {
     "test": "xunit.runner.aspnet"
   },

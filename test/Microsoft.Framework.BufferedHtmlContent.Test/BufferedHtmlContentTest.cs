@@ -1,11 +1,9 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.IO;
 using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.Framework.WebEncoders;
-using Microsoft.Framework.WebEncoders.Testing;
 using Xunit;
 
 namespace Microsoft.Framework.Internal
