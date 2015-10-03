@@ -14,8 +14,8 @@ using Microsoft.AspNet.DataProtection;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.TestHost;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.WebEncoders;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.WebEncoders;
 using Newtonsoft.Json;
 using Xunit;
 

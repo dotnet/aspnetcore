@@ -10,7 +10,7 @@
     },
     "dependencies": {
         "Microsoft.AspNet.Authentication": "1.0.0-*",
-        "Microsoft.Framework.WebEncoders": "1.0.0-*",
+        "Microsoft.Extensions.WebEncoders": "1.0.0-*",
         "Newtonsoft.Json": "6.0.6"
     },
     "frameworks": {

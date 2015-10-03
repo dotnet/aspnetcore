@@ -3,9 +3,9 @@
 
 using System;
 using Microsoft.AspNet.Authentication.Cookies;
-using Microsoft.Framework.Configuration;
+using Microsoft.Extensions.Configuration;
 
-namespace Microsoft.Framework.DependencyInjection
+namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
     /// Extension methods provided by the cookies authentication middleware

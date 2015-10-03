@@ -13,9 +13,9 @@ using Microsoft.AspNet.Authentication.OpenIdConnect;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.TestHost;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Logging;
-using Microsoft.Framework.WebEncoders;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.WebEncoders;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Xunit;
 

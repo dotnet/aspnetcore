@@ -4,7 +4,7 @@
 using System;
 using Microsoft.AspNet.Authentication;
 
-namespace Microsoft.Framework.DependencyInjection
+namespace Microsoft.Extensions.DependencyInjection
 {
     public static class AuthenticationServiceCollectionExtensions
     {
