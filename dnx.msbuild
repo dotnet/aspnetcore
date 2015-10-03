@@ -1,4 +1,4 @@
-﻿<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <UsingTask AssemblyFile="tools\Microsoft.Web.MsBuildTasks2.dll" TaskName="Microsoft.Web.MsBuildTasks.SubmitCodeSignJob" />
     <UsingTask AssemblyFile="tools\Microsoft.Web.MsBuildTasks2.dll" TaskName="Microsoft.Web.MsBuildTasks.WaitForCodeSignJobs" />
     <UsingTask AssemblyFile="tools\Microsoft.Web.MsBuildTasks2.dll" TaskName="Microsoft.Web.MsBuildTasks.PoliCheck" />
@@ -58,7 +58,7 @@
                          $(DropSource)**\KoreBuild*.nupkg;
                          $(DropSource)**\Microsoft.AspNet*.nupkg;
                          $(DropSource)**\Microsoft.Dnx*.nupkg;
-                         $(DropSource)**\Microsoft.Framework*.nupkg;
+                         $(DropSource)**\Microsoft.Extensions*.nupkg;
                          $(DropSource)**\Microsoft.Net*.nupkg;
                          $(DropSource)**\NuGet.*.nupkg;
                          $(DropSource)**\StyleCop.KRules*.nupkg"
@@ -73,7 +73,7 @@
                          $(SymbolPackagePath)**\dnx*.nupkg;
                          $(SymbolPackagePath)**\Microsoft.AspNet*.nupkg;
                          $(SymbolPackagePath)**\Microsoft.Dnx*.nupkg;
-                         $(SymbolPackagePath)**\Microsoft.Framework*.nupkg;
+                         $(SymbolPackagePath)**\Microsoft.Extensions*.nupkg;
                          $(SymbolPackagePath)**\Microsoft.Net*.nupkg;
                          $(DropSource)**\NuGet.*.nupkg"
             />
@@ -108,7 +108,7 @@
                          $(UnsignedPackagesPath)**\dnx*.dll;
                          $(UnsignedPackagesPath)**\Microsoft.AspNet*.dll;
                          $(UnsignedPackagesPath)**\Microsoft.Dnx*.dll;
-                         $(UnsignedPackagesPath)**\Microsoft.Framework*.dll;
+                         $(UnsignedPackagesPath)**\Microsoft.Extensions*.dll;
                          $(UnsignedPackagesPath)**\Microsoft.Net*.dll;
                          $(UnsignedPackagesPath)**\NuGet.*.dll;
                          $(UnsignedPackagesPath)**\signalrclient.dll;
@@ -186,7 +186,7 @@
                                  $(UnsignedPackagesPath)**\dnx*.nuspec;
                                  $(UnsignedPackagesPath)**\Microsoft.AspNet*.nuspec;
                                  $(UnsignedPackagesPath)**\Microsoft.Dnx.*.nuspec;
-                                 $(UnsignedPackagesPath)**\Microsoft.Framework.*.nuspec;
+                                 $(UnsignedPackagesPath)**\Microsoft.Extensions.*.nuspec;
                                  $(UnsignedPackagesPath)**\Microsoft.Net.*.nuspec;
                                  $(UnsignedPackagesPath)**\NuGet.*.nuspec;
                                  $(UnsignedPackagesPath)**\StyleCop.KRules*.nuspec"/>
@@ -282,7 +282,7 @@
                                         $(SymbolPackagePath)dnx*.symbols.nupkg;
                                         $(SymbolPackagePath)Microsoft.AspNet*.symbols.nupkg;
                                         $(SymbolPackagePath)Microsoft.Dnx*.symbols.nupkg;
-                                        $(SymbolPackagePath)Microsoft.Framework*.symbols.nupkg;
+                                        $(SymbolPackagePath)Microsoft.Extensions*.symbols.nupkg;
                                         $(SymbolPackagePath)Microsoft.Net*.symbols.nupkg;
                                         $(SymbolPackagePath)Microsoft.VisualStudio*.symbols.nupkg;
                                         $(SymbolPackagePath)NuGet.*.symbols.nupkg;
@@ -310,19 +310,19 @@
                 <term>420</term>
                 <Justification>HTTP response code</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders\UnicodeEncoderBase.cs">
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Extensions.WebEncoders\UnicodeEncoderBase.cs">
                 <term>a hole</term>
                 <Justification>valid context</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders.Core\UnicodeRanges.generated.cs;
-								    $(PoliCheckPath)**\Microsoft.Framework.WebEncoders.Core.dll;
-									$(PoliCheckPath)**\Microsoft.Framework.WebEncoders.Core.xml">
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Extensions.WebEncoders.Core\UnicodeRanges.generated.cs;
+								    $(PoliCheckPath)**\Microsoft.Extensions.WebEncoders.Core.dll;
+									$(PoliCheckPath)**\Microsoft.Extensions.WebEncoders.Core.xml">
                 <term>Bengali</term>
                 <Justification>Font reference</Justification>
             </SrcExclusions>
             <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNet.Localization\Internal\CultureInfoList.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Dnx.Compilation.CSharp.Common\CultureInfoCache.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Framework.Globalization.CultureInfoCache\CultureInfoList.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Extensions.Globalization.CultureInfoCache\CultureInfoList.cs;
                                     $(PoliCheckPath)**\src\EntityFramework.Core.FunctionalTests\TestModels\Northwind\NorthwindData.cs">
                 <term>BS</term>
                 <Justification>Culture info</Justification>
@@ -371,7 +371,7 @@
             </SrcExclusions>
             <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNet.Localization\Internal\CultureInfoList.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Dnx.Compilation.CSharp.Common\CultureInfoCache.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Framework.Globalization.CultureInfoCache\CultureInfoList.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Extensions.Globalization.CultureInfoCache\CultureInfoList.cs;
                                     $(PoliCheckPath)**\src\EntityFramework.Core.FunctionalTests\TestModels\Northwind\NorthwindData.cs">
                 <term>FY</term>
                 <Justification>Culture info</Justification>
@@ -396,10 +396,10 @@
                 <term>National</term>
                 <Justification>SQL term for nchar/nvarchar</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders.Core\UnicodeRanges.generated.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders\CodePointFilters.cs;
-                                    $(PoliCheckPath)**\Microsoft.Framework.WebEncoders.Core.dll;
-                                    $(PoliCheckPath)**\Microsoft.Framework.WebEncoders.Core.xml">
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Extensions.WebEncoders.Core\UnicodeRanges.generated.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Extensions.WebEncoders\CodePointFilters.cs;
+                                    $(PoliCheckPath)**\Microsoft.Extensions.WebEncoders.Core.dll;
+                                    $(PoliCheckPath)**\Microsoft.Extensions.WebEncoders.Core.xml">
                 <term>Oriya</term>
                 <Justification>Font reference</Justification>
             </SrcExclusions>
@@ -466,10 +466,10 @@
                 <term>sucks</term>
                 <Justification>expression of sadness</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders.Core\UnicodeRanges.generated.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Framework.WebEncoders\CodePointFilters.cs;
-                                    $(PoliCheckPath)**\Microsoft.Framework.WebEncoders.Core.dll;
-                                    $(PoliCheckPath)**\Microsoft.Framework.WebEncoders.Core.xml">
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Extensions.WebEncoders.Core\UnicodeRanges.generated.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Extensions.WebEncoders\CodePointFilters.cs;
+                                    $(PoliCheckPath)**\Microsoft.Extensions.WebEncoders.Core.dll;
+                                    $(PoliCheckPath)**\Microsoft.Extensions.WebEncoders.Core.xml">
                 <term>Tibetan</term>
                 <Justification>Font reference</Justification>
             </SrcExclusions>
@@ -485,7 +485,7 @@
                                     $(PoliCheckPath)**\src\Microsoft.AspNet.Diagnostics\WelcomePage\Views\WelcomePage.cs;
                                     $(PoliCheckPath)**\src\Microsoft.AspNet.Localization\Internal\CultureInfoList.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Dnx.Compilation.CSharp.Common\CultureInfoCache.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Framework.Globalization.CultureInfoCache\CultureInfoList.cs">
+                                    $(PoliCheckPath)**\src\Microsoft.Extensions.Globalization.CultureInfoCache\CultureInfoList.cs">
                 <term>UK</term>
                 <Justification>text appears in base64 encoded string of an image; Culture info;Northwind Database</Justification>
             </SrcExclusions>
