@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using Microsoft.AspNet.Server.Testing;
-using Microsoft.Framework.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace E2ETests
 {

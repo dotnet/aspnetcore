@@ -30,14 +30,14 @@
         "Microsoft.AspNet.Session": "1.0.0-*",
         "Microsoft.AspNet.StaticFiles": "1.0.0-*",
         "Microsoft.AspNet.Tooling.Razor": "1.0.0-*",
-        "Microsoft.Framework.CodeGenerators.Mvc": "1.0.0-*",
-        "Microsoft.Framework.Configuration.CommandLine": "1.0.0-*",
-        "Microsoft.Framework.Configuration.EnvironmentVariables": "1.0.0-*",
-        "Microsoft.Framework.Configuration.Json": "1.0.0-*",
-        "Microsoft.Framework.Logging.Console": "1.0.0-*"
+        "Microsoft.Extensions.CodeGenerators.Mvc": "1.0.0-*",
+        "Microsoft.Extensions.Configuration.CommandLine": "1.0.0-*",
+        "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.0.0-*",
+        "Microsoft.Extensions.Configuration.Json": "1.0.0-*",
+        "Microsoft.Extensions.Logging.Console": "1.0.0-*"
     },
     "commands": {
-        "gen": "Microsoft.Framework.CodeGeneration",
+        "gen": "Microsoft.Extensions.CodeGeneration",
         "kestrel": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.Kestrel --server.urls http://localhost:5004",
         "run": "run server.urls=http://localhost:5003",
         "web": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls http://localhost:5002"

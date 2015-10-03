@@ -1,4 +1,4 @@
-﻿#if TESTING
+#if TESTING
 using System;
 using Microsoft.AspNet.Authentication.OAuth;
 using Microsoft.AspNet.Authentication.Twitter;
@@ -9,10 +9,10 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.Data.Entity;
 using Microsoft.Dnx.Runtime;
-using Microsoft.Framework.Caching.Memory;
-using Microsoft.Framework.Configuration;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Logging;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using MusicStore.Components;
 using MusicStore.Mocks.Common;
 using MusicStore.Mocks.Facebook;

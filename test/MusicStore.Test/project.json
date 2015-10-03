@@ -3,7 +3,7 @@
     "warningsAsErrors": true
   },
   "dependencies": {
-    "Microsoft.Framework.Logging.Testing": "1.0.0-*",
+    "Microsoft.Extensions.Logging.Testing": "1.0.0-*",
     "MusicStore": "",
     "xunit.runner.aspnet": "2.0.0-aspnet-*"
   },

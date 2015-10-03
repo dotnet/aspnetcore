@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 using System.Data.SqlClient;
-using Microsoft.Framework.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace E2ETests
 {
