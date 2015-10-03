@@ -1,8 +1,8 @@
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.StaticFiles;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Logging;
-using Microsoft.Framework.Logging.Console;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 
 namespace StaticFilesSample
 {
