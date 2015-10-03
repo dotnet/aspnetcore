@@ -6,8 +6,8 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
-using Microsoft.Framework.OptionsModel;
-using Microsoft.Framework.WebEncoders.Testing;
+using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.WebEncoders.Testing;
 #if DNX451
 using Moq;
 #endif

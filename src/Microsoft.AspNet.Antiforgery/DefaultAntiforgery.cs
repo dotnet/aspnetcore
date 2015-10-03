@@ -5,8 +5,8 @@ using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
-using Microsoft.Framework.OptionsModel;
-using Microsoft.Framework.WebEncoders;
+using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.WebEncoders;
 
 namespace Microsoft.AspNet.Antiforgery
 {

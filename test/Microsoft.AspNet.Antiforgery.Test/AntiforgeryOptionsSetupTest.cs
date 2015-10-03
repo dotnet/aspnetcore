@@ -1,8 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.OptionsModel;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.OptionsModel;
 using Xunit;
 
 namespace Microsoft.AspNet.Antiforgery
