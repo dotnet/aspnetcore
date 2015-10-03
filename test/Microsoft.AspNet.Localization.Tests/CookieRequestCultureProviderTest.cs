@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved. 
+// Copyright (c) .NET Foundation. All rights reserved. 
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Globalization;
@@ -10,7 +10,7 @@ using Microsoft.AspNet.TestHost;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
-namespace Microsoft.Framework.Localization.Tests
+namespace Microsoft.Extensions.Localization.Tests
 {
     public class CookieRequestCultureProviderTest
     {

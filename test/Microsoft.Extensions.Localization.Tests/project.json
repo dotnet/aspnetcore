@@ -1,0 +1,19 @@
+{
+  "dependencies": {
+    "Microsoft.Extensions.DependencyInjection": "1.0.0-*",
+    "Microsoft.Extensions.Localization": "1.0.0-*",
+    "xunit": "2.1.0-*",
+    "xunit.runner.aspnet": "2.0.0-aspnet-*"
+  },
+  "frameworks": {
+    "dnx451": { },
+    "dnxcore50": {
+      "dependencies": {
+        "System.Reflection": "4.0.11-beta-*"
+      }
+    }
+  },
+  "commands": {
+    "test": "xunit.runner.aspnet"
+  }
+}

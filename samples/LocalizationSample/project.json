@@ -6,7 +6,7 @@
     "Microsoft.AspNet.Localization": "1.0.0-*",
     "Microsoft.AspNet.Server.IIS": "1.0.0-*",
     "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
-    "Microsoft.Framework.Localization": "1.0.0-*"
+    "Microsoft.Extensions.Localization": "1.0.0-*"
   },
 
   "commands": {

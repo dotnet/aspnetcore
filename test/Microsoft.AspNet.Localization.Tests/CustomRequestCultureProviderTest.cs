@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved. 
+// Copyright (c) .NET Foundation. All rights reserved. 
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,10 +9,10 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Localization;
 using Microsoft.AspNet.TestHost;
-using Microsoft.Framework.Globalization;
+using Microsoft.Extensions.Globalization;
 using Xunit;
 
-namespace Microsoft.Framework.Localization.Tests
+namespace Microsoft.Extensions.Localization.Tests
 {
     public class CustomRequestCultureProviderTest
     {

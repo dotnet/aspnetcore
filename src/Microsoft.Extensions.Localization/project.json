@@ -1,18 +1,19 @@
 {
     "version": "1.0.0-*",
-    "description": "Middleware for automatically applying culture information to HTTP requests.",
+    "description": "Application localization services.",
     "repository": {
         "type": "git",
         "url": "https://github.com/aspnet/localization"
     },
     "dependencies": {
-        "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
-        "Microsoft.Extensions.Globalization.CultureInfoCache": "1.0.0-*",
+        "Microsoft.Dnx.Runtime.Abstractions": "1.0.0-*",
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.0-*",
         "Microsoft.Extensions.Localization.Abstractions": "1.0.0-*",
         "Microsoft.Extensions.NotNullAttribute.Sources": {
             "type": "build",
             "version": "1.0.0-*"
-        }
+        },
+        "Microsoft.Extensions.OptionsModel": "1.0.0-*"
     },
     "frameworks": {
         "dnx451": { },
@@ -20,8 +21,11 @@
             "dependencies": {
                 "Microsoft.CSharp": "4.0.1-beta-*",
                 "System.Collections": "4.0.11-beta-*",
+                "System.Collections.Concurrent": "4.0.11-beta-*",
                 "System.Globalization": "4.0.11-beta-*",
                 "System.Linq": "4.0.1-beta-*",
+                "System.Resources.ReaderWriter": "4.0.0-beta-*",
+                "System.Resources.ResourceManager": "4.0.1-beta-*",
                 "System.Threading": "4.0.11-beta-*"
             }
         }

@@ -10,9 +10,9 @@
         ],
         "packages": {
             "Microsoft.AspNet.Localization": { },
-            "Microsoft.Framework.Globalization.CultureInfoCache": { },
-            "Microsoft.Framework.Localization": { },
-            "Microsoft.Framework.Localization.Abstractions": { }
+            "Microsoft.Extensions.Globalization.CultureInfoCache": { },
+            "Microsoft.Extensions.Localization": { },
+            "Microsoft.Extensions.Localization.Abstractions": { }
         }
     },
     "adx-nonshipping": {

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved. 
+// Copyright (c) .NET Foundation. All rights reserved. 
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -22,7 +22,7 @@ namespace CultureInfoGenerator
 
         public void Main(string[] args)
         {
-            var outputFilePath = Path.GetFullPath(args.Length > 0 ? args[0] : Path.Combine(_appPath, "../Microsoft.Framework.Globalization.CultureInfoCache/CultureInfoList.cs"));
+            var outputFilePath = Path.GetFullPath(args.Length > 0 ? args[0] : Path.Combine(_appPath, "../Microsoft.Extensions.Globalization.CultureInfoCache/CultureInfoList.cs"));
             var netFxVersion = Get45or451FromRegistry();
             var windowsVersion = Environment.OSVersion;
 
@@ -36,7 +36,7 @@ namespace CultureInfoGenerator
 
 using System.Collections.Generic;
 
-namespace Microsoft.Framework.Globalization
+namespace Microsoft.Extensions.Globalization
 {{
     /// <summary>
     /// Contains a list of known culture names that can be used to create a <see cref=""System.Globalization.CultureInfo""/>.
