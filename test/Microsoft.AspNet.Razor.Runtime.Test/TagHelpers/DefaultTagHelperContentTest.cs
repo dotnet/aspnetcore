@@ -5,7 +5,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using Microsoft.AspNet.Testing;
-using Microsoft.Framework.WebEncoders.Testing;
+using Microsoft.Extensions.WebEncoders.Testing;
 using Xunit;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers

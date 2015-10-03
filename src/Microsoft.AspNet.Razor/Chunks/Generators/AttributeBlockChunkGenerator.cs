@@ -5,7 +5,7 @@ using System;
 using System.Globalization;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Text;
-using Microsoft.Framework.Internal;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.Razor.Chunks.Generators
 {

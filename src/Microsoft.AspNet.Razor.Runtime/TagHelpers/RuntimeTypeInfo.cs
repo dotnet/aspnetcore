@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using Microsoft.Framework.Internal;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 {

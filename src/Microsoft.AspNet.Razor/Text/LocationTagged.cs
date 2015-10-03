@@ -4,7 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Globalization;
-using Microsoft.Framework.Internal;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.Razor.Text
 {

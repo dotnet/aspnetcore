@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Framework.Internal;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.Razor.TagHelpers
 {

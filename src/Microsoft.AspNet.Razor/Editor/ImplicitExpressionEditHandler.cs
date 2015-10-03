@@ -12,7 +12,7 @@ using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
-using Microsoft.Framework.Internal;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.Razor.Editor
 {

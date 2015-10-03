@@ -10,7 +10,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Microsoft.CodeAnalysis;
-using Microsoft.Framework.Internal;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.Razor.Runtime.Precompilation
 {

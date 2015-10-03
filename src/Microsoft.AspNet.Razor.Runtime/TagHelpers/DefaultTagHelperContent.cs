@@ -6,8 +6,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using Microsoft.AspNet.Html.Abstractions;
-using Microsoft.Framework.Internal;
-using Microsoft.Framework.WebEncoders;
+using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.WebEncoders;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 {

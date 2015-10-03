@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Razor.TagHelpers;
-using Microsoft.Framework.Internal;
+using Microsoft.Extensions.Internal;
 using Xunit;
 
 namespace Microsoft.AspNet.Razor.Test.Internal
