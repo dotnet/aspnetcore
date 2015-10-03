@@ -30,7 +30,7 @@ using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Framework.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.Net.WebSockets;
 
 namespace Microsoft.Net.Http.Server

@@ -41,8 +41,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Hosting.Server;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Server.Features;
-using Microsoft.Framework.Configuration;
-using Microsoft.Framework.Logging;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Server;
 
 namespace Microsoft.AspNet.Server.WebListener

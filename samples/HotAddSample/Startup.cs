@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Server.Features;
-using Microsoft.Framework.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace HotAddSample
 {

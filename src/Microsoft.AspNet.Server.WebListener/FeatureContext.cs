@@ -26,7 +26,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Features.Authentication;
-using Microsoft.Framework.Primitives;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Microsoft.Net.Http.Server;
 using Microsoft.Net.WebSockets;

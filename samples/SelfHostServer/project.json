@@ -1,7 +1,7 @@
 {
     "dependencies": {
         "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
-        "Microsoft.Framework.Logging.Console": "1.0.0-*"
+        "Microsoft.Extensions.Logging.Console": "1.0.0-*"
     },
     "commands": { "web": "Microsoft.AspNet.Server.WebListener --server.urls http://localhost:8080" },
     "frameworks": {

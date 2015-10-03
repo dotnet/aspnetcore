@@ -24,7 +24,7 @@
 using System;
 using System.Diagnostics;
 using System.Globalization;
-using Microsoft.Framework.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.Server.WebListener
 {

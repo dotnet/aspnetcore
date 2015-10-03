@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc.
+// Copyright (c) Microsoft Open Technologies, Inc.
 // All Rights Reserved
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,8 +32,8 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Framework.Logging;
-using Microsoft.Framework.Primitives;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 using static Microsoft.Net.Http.Server.UnsafeNclNativeMethods;
 
 namespace Microsoft.Net.Http.Server

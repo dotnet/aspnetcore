@@ -22,7 +22,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Internal;
-using Microsoft.Framework.Primitives;
+using Microsoft.Extensions.Primitives;
 using Xunit;
 
 namespace Microsoft.AspNet.Server.WebListener
