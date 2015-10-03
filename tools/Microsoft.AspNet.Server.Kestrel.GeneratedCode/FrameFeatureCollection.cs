@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {{
                 if ((_featureOverridenFlags & flag{feature.Name}) == 0L)
                 {{
-                    return this as global::{feature.FullName};
+                    return this;
                 }}
                 return SlowFeatureGet(key);
             }}")}

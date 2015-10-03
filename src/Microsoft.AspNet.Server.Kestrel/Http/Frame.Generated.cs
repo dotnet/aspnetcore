@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {
                 if ((_featureOverridenFlags & flagIHttpRequestFeature) == 0L)
                 {
-                    return this as global::Microsoft.AspNet.Http.Features.IHttpRequestFeature;
+                    return this;
                 }
                 return SlowFeatureGet(key);
             }
@@ -63,7 +63,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {
                 if ((_featureOverridenFlags & flagIHttpResponseFeature) == 0L)
                 {
-                    return this as global::Microsoft.AspNet.Http.Features.IHttpResponseFeature;
+                    return this;
                 }
                 return SlowFeatureGet(key);
             }
@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {
                 if ((_featureOverridenFlags & flagIHttpRequestIdentifierFeature) == 0L)
                 {
-                    return this as global::Microsoft.AspNet.Http.Features.IHttpRequestIdentifierFeature;
+                    return this;
                 }
                 return SlowFeatureGet(key);
             }
@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {
                 if ((_featureOverridenFlags & flagIHttpSendFileFeature) == 0L)
                 {
-                    return this as global::Microsoft.AspNet.Http.Features.IHttpSendFileFeature;
+                    return this;
                 }
                 return SlowFeatureGet(key);
             }
@@ -87,7 +87,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {
                 if ((_featureOverridenFlags & flagIServiceProvidersFeature) == 0L)
                 {
-                    return this as global::Microsoft.AspNet.Http.Features.Internal.IServiceProvidersFeature;
+                    return this;
                 }
                 return SlowFeatureGet(key);
             }
@@ -95,7 +95,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {
                 if ((_featureOverridenFlags & flagIHttpAuthenticationFeature) == 0L)
                 {
-                    return this as global::Microsoft.AspNet.Http.Features.Authentication.IHttpAuthenticationFeature;
+                    return this;
                 }
                 return SlowFeatureGet(key);
             }
@@ -103,7 +103,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {
                 if ((_featureOverridenFlags & flagIHttpRequestLifetimeFeature) == 0L)
                 {
-                    return this as global::Microsoft.AspNet.Http.Features.IHttpRequestLifetimeFeature;
+                    return this;
                 }
                 return SlowFeatureGet(key);
             }
@@ -111,7 +111,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {
                 if ((_featureOverridenFlags & flagIQueryFeature) == 0L)
                 {
-                    return this as global::Microsoft.AspNet.Http.Features.Internal.IQueryFeature;
+                    return this;
                 }
                 return SlowFeatureGet(key);
             }
@@ -119,7 +119,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {
                 if ((_featureOverridenFlags & flagIFormFeature) == 0L)
                 {
-                    return this as global::Microsoft.AspNet.Http.Features.Internal.IFormFeature;
+                    return this;
                 }
                 return SlowFeatureGet(key);
             }
@@ -127,7 +127,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {
                 if ((_featureOverridenFlags & flagIResponseCookiesFeature) == 0L)
                 {
-                    return this as global::Microsoft.AspNet.Http.Features.Internal.IResponseCookiesFeature;
+                    return this;
                 }
                 return SlowFeatureGet(key);
             }
@@ -135,7 +135,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {
                 if ((_featureOverridenFlags & flagIItemsFeature) == 0L)
                 {
-                    return this as global::Microsoft.AspNet.Http.Features.Internal.IItemsFeature;
+                    return this;
                 }
                 return SlowFeatureGet(key);
             }
@@ -143,7 +143,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {
                 if ((_featureOverridenFlags & flagIHttpConnectionFeature) == 0L)
                 {
-                    return this as global::Microsoft.AspNet.Http.Features.IHttpConnectionFeature;
+                    return this;
                 }
                 return SlowFeatureGet(key);
             }
@@ -151,7 +151,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {
                 if ((_featureOverridenFlags & flagITlsConnectionFeature) == 0L)
                 {
-                    return this as global::Microsoft.AspNet.Http.Features.ITlsConnectionFeature;
+                    return this;
                 }
                 return SlowFeatureGet(key);
             }
@@ -159,7 +159,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {
                 if ((_featureOverridenFlags & flagIHttpUpgradeFeature) == 0L)
                 {
-                    return this as global::Microsoft.AspNet.Http.Features.IHttpUpgradeFeature;
+                    return this;
                 }
                 return SlowFeatureGet(key);
             }
@@ -167,7 +167,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {
                 if ((_featureOverridenFlags & flagIHttpWebSocketFeature) == 0L)
                 {
-                    return this as global::Microsoft.AspNet.Http.Features.IHttpWebSocketFeature;
+                    return this;
                 }
                 return SlowFeatureGet(key);
             }
@@ -175,7 +175,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {
                 if ((_featureOverridenFlags & flagISessionFeature) == 0L)
                 {
-                    return this as global::Microsoft.AspNet.Http.Features.ISessionFeature;
+                    return this;
                 }
                 return SlowFeatureGet(key);
             }
