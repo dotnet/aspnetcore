@@ -7,7 +7,7 @@
   },
   "dependencies": {
     "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
-    "Microsoft.Framework.SecurityHelper.Sources": {
+    "Microsoft.Extensions.SecurityHelper.Sources": {
       "type": "build",
       "version": "1.0.0-*"
     }
