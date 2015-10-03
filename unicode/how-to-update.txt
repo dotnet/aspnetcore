@@ -18,7 +18,7 @@ the WebEncoders project.
    Running this will drop a file unicode-defined-chars.bin into the output
    folder. Move this file into the following directory, overwriting the
    existing file in that directory:
-   src\Microsoft.Framework.WebEncoders.Core\compiler\resources
+   src\Microsoft.Extensions.WebEncoders.Core\compiler\resources
 
 4) Open the Generators solution and run the UnicodeTablesGenerator project.
    Running this will drop two files UnicodeRanges.generated.txt and
@@ -33,12 +33,12 @@ the WebEncoders project.
    - Low Surrogates (U+DC00..U+DFFF)
    - Private Use Area (U+E000..U+F8FF)
 
-6) Open src\Microsoft.Framework.WebEncoders.Core\UnicodeRanges.generated.cs in
+6) Open src\Microsoft.Extensions.WebEncoders.Core\UnicodeRanges.generated.cs in
    your IDE. Delete everything within the partial class definition and replace
    it with the contents of UnicodeRanges.generated.txt. (Remember to remove
    the blocks mentioned in the previous step, otherwise unit tests will fail.)
 
-   Open src\Microsoft.Framework.WebEncoders.Core\UnicodeRanges.cs in your IDE.
+   Open src\Microsoft.Extensions.WebEncoders.Core\UnicodeRanges.cs in your IDE.
    Update the doc comment at the top of the class to reflect the appropriate
    version of the Unicode specification.
 
@@ -48,14 +48,14 @@ the WebEncoders project.
    See step (5) for the list of which blocks must be removed. Then re-save
    this file.
 
-8) Open test\Microsoft.Framework.WebEncoders.Tests\UnicodeRangesTests.cs in
+8) Open test\Microsoft.Extensions.WebEncoders.Tests\UnicodeRangesTests.cs in
    your IDE. Delete all of the [InlineData] attributes on the Range_Unicode
    test, then paste the contents of UnicodeRangesTests.generated.txt in
    to restore the new [InlineData] list.
 
    IMPORTANT: Don't delete the [Theory] attribute on this method!
 
-9) Open test\Microsoft.Framework.WebEncoders.Tests\UnicodeHelpersTests.cs in
+9) Open test\Microsoft.Extensions.WebEncoders.Tests\UnicodeHelpersTests.cs in
    your IDE. Scroll to the bottom of the ReadListOfDefinedCharacters method,
    and you'll see a section where the test special-cases CJK Ideographs and
    Hangul Syllables. As more characters are added to the Unicode specification
@@ -77,14 +77,14 @@ reflect the version you just submitted.
 
 To recap, the files you should check in are:
 
-src\Microsoft.Framework.WebEncoders.Core\compiler\resources\
+src\Microsoft.Extensions.WebEncoders.Core\compiler\resources\
   unicode-defined-chars.bin
 
-src\Microsoft.Framework.WebEncoders.Core\
+src\Microsoft.Extensions.WebEncoders.Core\
   UnicodeRanges.cs
   UnicodeRanges.generated.cs
 
-test\Microsoft.Framework.WebEncoders.Tests\
+test\Microsoft.Extensions.WebEncoders.Tests\
   UnicodeHelpersTests.cs (if necessary, see step 9)
   UnicodeRangesTests.cs
 

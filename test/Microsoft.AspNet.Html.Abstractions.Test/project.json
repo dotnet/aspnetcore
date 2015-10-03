@@ -4,7 +4,7 @@
     "Microsoft.AspNet.Testing": "1.0.0-*",
     "xunit.runner.aspnet": "2.0.0-aspnet-*"
   },
-  "compile": [ "../Microsoft.Framework.WebEncoders.Tests/CommonTestEncoder.cs" ],
+  "compile": [ "../Microsoft.Extensions.WebEncoders.Tests/CommonTestEncoder.cs" ],
   "commands": {
     "test": "xunit.runner.aspnet"
   },

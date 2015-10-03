@@ -4,7 +4,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
-using Microsoft.Framework.WebEncoders;
+using Microsoft.Extensions.WebEncoders;
 
 namespace Microsoft.AspNet.Http.Extensions
 {

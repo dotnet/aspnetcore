@@ -10,8 +10,8 @@
   },
   "dependencies": {
     "Microsoft.AspNet.Http.Features": "1.0.0-*",
-    "Microsoft.Framework.ActivatorUtilities.Sources": { "type": "build", "version": "1.0.0-*" },
-    "Microsoft.Framework.WebEncoders.Core": "1.0.0-*"
+    "Microsoft.Extensions.ActivatorUtilities.Sources": { "type": "build", "version": "1.0.0-*" },
+    "Microsoft.Extensions.WebEncoders.Core": "1.0.0-*"
   },
   "frameworks": {
     "dnx451": { },

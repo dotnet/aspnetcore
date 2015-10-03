@@ -4,8 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Microsoft.Framework.Primitives;
-using Microsoft.Framework.WebEncoders;
+using Microsoft.Extensions.Primitives;
+using Microsoft.Extensions.WebEncoders;
 
 namespace Microsoft.AspNet.WebUtilities
 {

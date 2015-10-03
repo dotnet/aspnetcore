@@ -3,8 +3,8 @@
 
 using System;
 using System.Linq;
-using Microsoft.Framework.Primitives;
-using Microsoft.Framework.WebEncoders;
+using Microsoft.Extensions.Primitives;
+using Microsoft.Extensions.WebEncoders;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Http.Internal

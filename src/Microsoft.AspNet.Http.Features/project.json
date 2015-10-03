@@ -9,7 +9,7 @@
         "warningsAsErrors": true
     },
     "dependencies": {
-        "Microsoft.Framework.Primitives": "1.0.0-*"
+        "Microsoft.Extensions.Primitives": "1.0.0-*"
     },
     "frameworks": {
         "dnx451": { },
