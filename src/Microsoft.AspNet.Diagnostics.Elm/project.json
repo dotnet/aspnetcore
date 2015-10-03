@@ -7,8 +7,8 @@
     },
     "dependencies": {
         "Microsoft.AspNet.Diagnostics": "1.0.0-*",
-        "Microsoft.Framework.Logging.Abstractions": "1.0.0-*",
-        "Microsoft.Framework.NotNullAttribute.Sources": { "type": "build", "version": "1.0.0-*" }
+        "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*",
+        "Microsoft.Extensions.NotNullAttribute.Sources": { "type": "build", "version": "1.0.0-*" }
     },
 
     "frameworks": {

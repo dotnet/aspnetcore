@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Diagnostics.Elm.Views;
-using Microsoft.Framework.Logging;
-using Microsoft.Framework.OptionsModel;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.OptionsModel;
 using System.Linq;
 
 namespace Microsoft.AspNet.Diagnostics.Elm

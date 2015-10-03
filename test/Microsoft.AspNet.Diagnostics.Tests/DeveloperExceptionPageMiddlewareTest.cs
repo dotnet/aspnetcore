@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -13,8 +13,8 @@ using Microsoft.AspNet.Diagnostics.Views;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Testing;
 using Microsoft.Dnx.Runtime;
-using Microsoft.Framework.Logging;
-using Microsoft.Framework.Primitives;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 using Xunit;
 
 namespace Microsoft.AspNet.Diagnostics

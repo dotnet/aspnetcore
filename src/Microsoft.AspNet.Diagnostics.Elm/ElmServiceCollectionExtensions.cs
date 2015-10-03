@@ -3,9 +3,9 @@
 
 using System;
 using Microsoft.AspNet.Diagnostics.Elm;
-using Microsoft.Framework.Internal;
+using Microsoft.Extensions.Internal;
 
-namespace Microsoft.Framework.DependencyInjection
+namespace Microsoft.Extensions.DependencyInjection
 {
     public static class ElmServiceCollectionExtensions
     {

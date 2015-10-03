@@ -37,7 +37,7 @@ using Microsoft.AspNet.Diagnostics.Elm.Views
 #line hidden
     ;
 #line 7 "DetailsPage.cshtml"
-using Microsoft.Framework.Logging
+using Microsoft.Extensions.Logging
 
 #line default
 #line hidden

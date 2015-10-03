@@ -43,7 +43,7 @@ using Microsoft.AspNet.Diagnostics.Views
 #line hidden
     ;
 #line 8 "LogPage.cshtml"
-using Microsoft.Framework.Logging
+using Microsoft.Extensions.Logging
 
 #line default
 #line hidden

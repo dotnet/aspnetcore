@@ -10,9 +10,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
-using Microsoft.Framework.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Dnx.Runtime;
-using Microsoft.Framework.WebEncoders;
+using Microsoft.Extensions.WebEncoders;
 #if DNX451
 using Moq;
 #endif

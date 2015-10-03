@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Microsoft.AspNet.Diagnostics.Elm;
-using Microsoft.Framework.Logging;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Microsoft.AspNet.Diagnostics.Tests

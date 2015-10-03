@@ -9,7 +9,7 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
-using Microsoft.Framework.WebEncoders;
+using Microsoft.Extensions.WebEncoders;
 
 namespace StatusCodePagesSample
 {

@@ -15,7 +15,7 @@ using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Http;
 using Microsoft.Dnx.Compilation;
 using Microsoft.Dnx.Runtime;
-using Microsoft.Framework.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.Diagnostics
 {

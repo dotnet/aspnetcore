@@ -15,8 +15,8 @@ using Microsoft.AspNet.TestHost;
 using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Infrastructure;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Logging;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Microsoft.AspNet.Diagnostics.Entity.Tests

@@ -3,10 +3,10 @@
 
 using System;
 using Microsoft.AspNet.Diagnostics.Elm;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Internal;
-using Microsoft.Framework.Logging;
-using Microsoft.Framework.OptionsModel;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.OptionsModel;
 
 namespace Microsoft.AspNet.Builder
 {

@@ -4,7 +4,7 @@
 using JetBrains.Annotations;
 using Microsoft.AspNet.Diagnostics.Entity.Utilities;
 using Microsoft.Data.Entity.Storage;
-using Microsoft.Framework.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 #if DNXCORE50
 using System.Threading;
