@@ -53,20 +53,34 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 {{
     public partial class Frame
     {{
+        {Each(commonFeatures.Select((feature, index) => new { feature, index }), entry => $@"
+        private const long flag{entry.feature.Name} = {1 << entry.index};")}
+
         {Each(commonFeatures, feature => $@"
-        private object _current{feature.Name};")}
+        private static readonly Type {feature.Name}Type = typeof(global::{feature.FullName});")}
+
+        private long _featureOverridenFlags = 0L;
 
         private void FastReset()
-        {{{Each(commonFeatures, feature => $@"
-            _current{feature.Name} = this as global::{feature.FullName};")}
+        {{
+            _featureOverridenFlags = 0L;
         }}
 
         private object FastFeatureGet(Type key)
         {{{Each(commonFeatures, feature => $@"
-            if (key == typeof(global::{feature.FullName}))
+            if (key == {feature.Name}Type)
             {{
-                return _current{feature.Name};
+                if ((_featureOverridenFlags & flag{feature.Name}) == 0L)
+                {{
+                    return this as global::{feature.FullName};
+                }}
+                return SlowFeatureGet(key);
             }}")}
+            return  SlowFeatureGet(key);
+        }}
+
+        private object SlowFeatureGet(Type key)
+        {{
             object feature = null;
             if (MaybeExtra?.TryGetValue(key, out feature) ?? false) 
             {{
@@ -75,12 +89,26 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             return null;
         }}
 
+        private void FastFeatureSetInner(long flag, Type key, object feature)
+        {{
+            Extra[key] = feature;
+
+            long currentFeatureFlags;
+            long updatedFeatureFlags;
+            do
+            {{
+                currentFeatureFlags = _featureOverridenFlags;
+                updatedFeatureFlags = currentFeatureFlags | flag;
+            }} while (System.Threading.Interlocked.CompareExchange(ref _featureOverridenFlags, updatedFeatureFlags, currentFeatureFlags) != currentFeatureFlags);
+
+            System.Threading.Interlocked.Increment(ref _featureRevision);
+        }}
+
         private void FastFeatureSet(Type key, object feature)
         {{{Each(commonFeatures, feature => $@"
-            if (key == typeof(global::{feature.FullName}))
+            if (key == {feature.Name}Type)
             {{
-                _current{feature.Name} = feature;
-                System.Threading.Interlocked.Increment(ref _featureRevision);
+                FastFeatureSetInner(flag{feature.Name}, key, feature);
                 return;
             }}")}
             Extra[key] = feature;
@@ -88,9 +116,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         private IEnumerable<KeyValuePair<Type, object>> FastEnumerable()
         {{{Each(commonFeatures, feature => $@"
-            if (_current{feature.Name} != null)
+            if ((_featureOverridenFlags & flag{feature.Name}) == 0L)
             {{
-                yield return new KeyValuePair<Type, object>(typeof(global::{feature.FullName}), _current{feature.Name});
+                yield return new KeyValuePair<Type, object>(typeof(global::{feature.FullName}), this as global::{feature.FullName});
             }}")}
             if (MaybeExtra != null)
             {{

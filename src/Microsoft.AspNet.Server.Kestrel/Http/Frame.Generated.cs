@@ -7,109 +7,183 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     public partial class Frame
     {
         
-        private object _currentIHttpRequestFeature;
-        private object _currentIHttpResponseFeature;
-        private object _currentIHttpUpgradeFeature;
-        private object _currentIHttpRequestIdentifierFeature;
-        private object _currentIHttpConnectionFeature;
-        private object _currentITlsConnectionFeature;
-        private object _currentIServiceProvidersFeature;
-        private object _currentIHttpSendFileFeature;
-        private object _currentIHttpWebSocketFeature;
-        private object _currentIQueryFeature;
-        private object _currentIFormFeature;
-        private object _currentIItemsFeature;
-        private object _currentIHttpAuthenticationFeature;
-        private object _currentIHttpRequestLifetimeFeature;
-        private object _currentISessionFeature;
-        private object _currentIResponseCookiesFeature;
+        private const long flagIHttpRequestFeature = 1;
+        private const long flagIHttpResponseFeature = 2;
+        private const long flagIHttpRequestIdentifierFeature = 4;
+        private const long flagIHttpSendFileFeature = 8;
+        private const long flagIServiceProvidersFeature = 16;
+        private const long flagIHttpAuthenticationFeature = 32;
+        private const long flagIHttpRequestLifetimeFeature = 64;
+        private const long flagIQueryFeature = 128;
+        private const long flagIFormFeature = 256;
+        private const long flagIResponseCookiesFeature = 512;
+        private const long flagIItemsFeature = 1024;
+        private const long flagIHttpConnectionFeature = 2048;
+        private const long flagITlsConnectionFeature = 4096;
+        private const long flagIHttpUpgradeFeature = 8192;
+        private const long flagIHttpWebSocketFeature = 16384;
+        private const long flagISessionFeature = 32768;
+
+        
+        private static readonly Type IHttpRequestFeatureType = typeof(global::Microsoft.AspNet.Http.Features.IHttpRequestFeature);
+        private static readonly Type IHttpResponseFeatureType = typeof(global::Microsoft.AspNet.Http.Features.IHttpResponseFeature);
+        private static readonly Type IHttpRequestIdentifierFeatureType = typeof(global::Microsoft.AspNet.Http.Features.IHttpRequestIdentifierFeature);
+        private static readonly Type IHttpSendFileFeatureType = typeof(global::Microsoft.AspNet.Http.Features.IHttpSendFileFeature);
+        private static readonly Type IServiceProvidersFeatureType = typeof(global::Microsoft.AspNet.Http.Features.Internal.IServiceProvidersFeature);
+        private static readonly Type IHttpAuthenticationFeatureType = typeof(global::Microsoft.AspNet.Http.Features.Authentication.IHttpAuthenticationFeature);
+        private static readonly Type IHttpRequestLifetimeFeatureType = typeof(global::Microsoft.AspNet.Http.Features.IHttpRequestLifetimeFeature);
+        private static readonly Type IQueryFeatureType = typeof(global::Microsoft.AspNet.Http.Features.Internal.IQueryFeature);
+        private static readonly Type IFormFeatureType = typeof(global::Microsoft.AspNet.Http.Features.Internal.IFormFeature);
+        private static readonly Type IResponseCookiesFeatureType = typeof(global::Microsoft.AspNet.Http.Features.Internal.IResponseCookiesFeature);
+        private static readonly Type IItemsFeatureType = typeof(global::Microsoft.AspNet.Http.Features.Internal.IItemsFeature);
+        private static readonly Type IHttpConnectionFeatureType = typeof(global::Microsoft.AspNet.Http.Features.IHttpConnectionFeature);
+        private static readonly Type ITlsConnectionFeatureType = typeof(global::Microsoft.AspNet.Http.Features.ITlsConnectionFeature);
+        private static readonly Type IHttpUpgradeFeatureType = typeof(global::Microsoft.AspNet.Http.Features.IHttpUpgradeFeature);
+        private static readonly Type IHttpWebSocketFeatureType = typeof(global::Microsoft.AspNet.Http.Features.IHttpWebSocketFeature);
+        private static readonly Type ISessionFeatureType = typeof(global::Microsoft.AspNet.Http.Features.ISessionFeature);
+
+        private long _featureOverridenFlags = 0L;
 
         private void FastReset()
         {
-            _currentIHttpRequestFeature = this as global::Microsoft.AspNet.Http.Features.IHttpRequestFeature;
-            _currentIHttpResponseFeature = this as global::Microsoft.AspNet.Http.Features.IHttpResponseFeature;
-            _currentIHttpUpgradeFeature = this as global::Microsoft.AspNet.Http.Features.IHttpUpgradeFeature;
-            _currentIHttpRequestIdentifierFeature = this as global::Microsoft.AspNet.Http.Features.IHttpRequestIdentifierFeature;
-            _currentIHttpConnectionFeature = this as global::Microsoft.AspNet.Http.Features.IHttpConnectionFeature;
-            _currentITlsConnectionFeature = this as global::Microsoft.AspNet.Http.Features.ITlsConnectionFeature;
-            _currentIServiceProvidersFeature = this as global::Microsoft.AspNet.Http.Features.Internal.IServiceProvidersFeature;
-            _currentIHttpSendFileFeature = this as global::Microsoft.AspNet.Http.Features.IHttpSendFileFeature;
-            _currentIHttpWebSocketFeature = this as global::Microsoft.AspNet.Http.Features.IHttpWebSocketFeature;
-            _currentIQueryFeature = this as global::Microsoft.AspNet.Http.Features.Internal.IQueryFeature;
-            _currentIFormFeature = this as global::Microsoft.AspNet.Http.Features.Internal.IFormFeature;
-            _currentIItemsFeature = this as global::Microsoft.AspNet.Http.Features.Internal.IItemsFeature;
-            _currentIHttpAuthenticationFeature = this as global::Microsoft.AspNet.Http.Features.Authentication.IHttpAuthenticationFeature;
-            _currentIHttpRequestLifetimeFeature = this as global::Microsoft.AspNet.Http.Features.IHttpRequestLifetimeFeature;
-            _currentISessionFeature = this as global::Microsoft.AspNet.Http.Features.ISessionFeature;
-            _currentIResponseCookiesFeature = this as global::Microsoft.AspNet.Http.Features.Internal.IResponseCookiesFeature;
+            _featureOverridenFlags = 0L;
         }
 
         private object FastFeatureGet(Type key)
         {
-            if (key == typeof(global::Microsoft.AspNet.Http.Features.IHttpRequestFeature))
+            if (key == IHttpRequestFeatureType)
             {
-                return _currentIHttpRequestFeature;
+                if ((_featureOverridenFlags & flagIHttpRequestFeature) == 0L)
+                {
+                    return this as global::Microsoft.AspNet.Http.Features.IHttpRequestFeature;
+                }
+                return SlowFeatureGet(key);
             }
-            if (key == typeof(global::Microsoft.AspNet.Http.Features.IHttpResponseFeature))
+            if (key == IHttpResponseFeatureType)
             {
-                return _currentIHttpResponseFeature;
+                if ((_featureOverridenFlags & flagIHttpResponseFeature) == 0L)
+                {
+                    return this as global::Microsoft.AspNet.Http.Features.IHttpResponseFeature;
+                }
+                return SlowFeatureGet(key);
             }
-            if (key == typeof(global::Microsoft.AspNet.Http.Features.IHttpUpgradeFeature))
+            if (key == IHttpRequestIdentifierFeatureType)
             {
-                return _currentIHttpUpgradeFeature;
+                if ((_featureOverridenFlags & flagIHttpRequestIdentifierFeature) == 0L)
+                {
+                    return this as global::Microsoft.AspNet.Http.Features.IHttpRequestIdentifierFeature;
+                }
+                return SlowFeatureGet(key);
             }
-            if (key == typeof(global::Microsoft.AspNet.Http.Features.IHttpRequestIdentifierFeature))
+            if (key == IHttpSendFileFeatureType)
             {
-                return _currentIHttpRequestIdentifierFeature;
+                if ((_featureOverridenFlags & flagIHttpSendFileFeature) == 0L)
+                {
+                    return this as global::Microsoft.AspNet.Http.Features.IHttpSendFileFeature;
+                }
+                return SlowFeatureGet(key);
             }
-            if (key == typeof(global::Microsoft.AspNet.Http.Features.IHttpConnectionFeature))
+            if (key == IServiceProvidersFeatureType)
             {
-                return _currentIHttpConnectionFeature;
+                if ((_featureOverridenFlags & flagIServiceProvidersFeature) == 0L)
+                {
+                    return this as global::Microsoft.AspNet.Http.Features.Internal.IServiceProvidersFeature;
+                }
+                return SlowFeatureGet(key);
             }
-            if (key == typeof(global::Microsoft.AspNet.Http.Features.ITlsConnectionFeature))
+            if (key == IHttpAuthenticationFeatureType)
             {
-                return _currentITlsConnectionFeature;
+                if ((_featureOverridenFlags & flagIHttpAuthenticationFeature) == 0L)
+                {
+                    return this as global::Microsoft.AspNet.Http.Features.Authentication.IHttpAuthenticationFeature;
+                }
+                return SlowFeatureGet(key);
             }
-            if (key == typeof(global::Microsoft.AspNet.Http.Features.Internal.IServiceProvidersFeature))
+            if (key == IHttpRequestLifetimeFeatureType)
             {
-                return _currentIServiceProvidersFeature;
+                if ((_featureOverridenFlags & flagIHttpRequestLifetimeFeature) == 0L)
+                {
+                    return this as global::Microsoft.AspNet.Http.Features.IHttpRequestLifetimeFeature;
+                }
+                return SlowFeatureGet(key);
             }
-            if (key == typeof(global::Microsoft.AspNet.Http.Features.IHttpSendFileFeature))
+            if (key == IQueryFeatureType)
             {
-                return _currentIHttpSendFileFeature;
+                if ((_featureOverridenFlags & flagIQueryFeature) == 0L)
+                {
+                    return this as global::Microsoft.AspNet.Http.Features.Internal.IQueryFeature;
+                }
+                return SlowFeatureGet(key);
             }
-            if (key == typeof(global::Microsoft.AspNet.Http.Features.IHttpWebSocketFeature))
+            if (key == IFormFeatureType)
             {
-                return _currentIHttpWebSocketFeature;
+                if ((_featureOverridenFlags & flagIFormFeature) == 0L)
+                {
+                    return this as global::Microsoft.AspNet.Http.Features.Internal.IFormFeature;
+                }
+                return SlowFeatureGet(key);
             }
-            if (key == typeof(global::Microsoft.AspNet.Http.Features.Internal.IQueryFeature))
+            if (key == IResponseCookiesFeatureType)
             {
-                return _currentIQueryFeature;
+                if ((_featureOverridenFlags & flagIResponseCookiesFeature) == 0L)
+                {
+                    return this as global::Microsoft.AspNet.Http.Features.Internal.IResponseCookiesFeature;
+                }
+                return SlowFeatureGet(key);
             }
-            if (key == typeof(global::Microsoft.AspNet.Http.Features.Internal.IFormFeature))
+            if (key == IItemsFeatureType)
             {
-                return _currentIFormFeature;
+                if ((_featureOverridenFlags & flagIItemsFeature) == 0L)
+                {
+                    return this as global::Microsoft.AspNet.Http.Features.Internal.IItemsFeature;
+                }
+                return SlowFeatureGet(key);
             }
-            if (key == typeof(global::Microsoft.AspNet.Http.Features.Internal.IItemsFeature))
+            if (key == IHttpConnectionFeatureType)
             {
-                return _currentIItemsFeature;
+                if ((_featureOverridenFlags & flagIHttpConnectionFeature) == 0L)
+                {
+                    return this as global::Microsoft.AspNet.Http.Features.IHttpConnectionFeature;
+                }
+                return SlowFeatureGet(key);
             }
-            if (key == typeof(global::Microsoft.AspNet.Http.Features.Authentication.IHttpAuthenticationFeature))
+            if (key == ITlsConnectionFeatureType)
             {
-                return _currentIHttpAuthenticationFeature;
+                if ((_featureOverridenFlags & flagITlsConnectionFeature) == 0L)
+                {
+                    return this as global::Microsoft.AspNet.Http.Features.ITlsConnectionFeature;
+                }
+                return SlowFeatureGet(key);
             }
-            if (key == typeof(global::Microsoft.AspNet.Http.Features.IHttpRequestLifetimeFeature))
+            if (key == IHttpUpgradeFeatureType)
             {
-                return _currentIHttpRequestLifetimeFeature;
+                if ((_featureOverridenFlags & flagIHttpUpgradeFeature) == 0L)
+                {
+                    return this as global::Microsoft.AspNet.Http.Features.IHttpUpgradeFeature;
+                }
+                return SlowFeatureGet(key);
             }
-            if (key == typeof(global::Microsoft.AspNet.Http.Features.ISessionFeature))
+            if (key == IHttpWebSocketFeatureType)
             {
-                return _currentISessionFeature;
+                if ((_featureOverridenFlags & flagIHttpWebSocketFeature) == 0L)
+                {
+                    return this as global::Microsoft.AspNet.Http.Features.IHttpWebSocketFeature;
+                }
+                return SlowFeatureGet(key);
             }
-            if (key == typeof(global::Microsoft.AspNet.Http.Features.Internal.IResponseCookiesFeature))
+            if (key == ISessionFeatureType)
             {
-                return _currentIResponseCookiesFeature;
+                if ((_featureOverridenFlags & flagISessionFeature) == 0L)
+                {
+                    return this as global::Microsoft.AspNet.Http.Features.ISessionFeature;
+                }
+                return SlowFeatureGet(key);
             }
+            return  SlowFeatureGet(key);
+        }
+
+        private object SlowFeatureGet(Type key)
+        {
             object feature = null;
             if (MaybeExtra?.TryGetValue(key, out feature) ?? false) 
             {
@@ -118,102 +192,101 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             return null;
         }
 
+        private void FastFeatureSetInner(long flag, Type key, object feature)
+        {
+            Extra[key] = feature;
+
+            long currentFeatureFlags;
+            long updatedFeatureFlags;
+            do
+            {
+                currentFeatureFlags = _featureOverridenFlags;
+                updatedFeatureFlags = currentFeatureFlags | flag;
+            } while (System.Threading.Interlocked.CompareExchange(ref _featureOverridenFlags, updatedFeatureFlags, currentFeatureFlags) != currentFeatureFlags);
+
+            System.Threading.Interlocked.Increment(ref _featureRevision);
+        }
+
         private void FastFeatureSet(Type key, object feature)
         {
-            if (key == typeof(global::Microsoft.AspNet.Http.Features.IHttpRequestFeature))
+            if (key == IHttpRequestFeatureType)
             {
-                _currentIHttpRequestFeature = feature;
-                System.Threading.Interlocked.Increment(ref _featureRevision);
+                FastFeatureSetInner(flagIHttpRequestFeature, key, feature);
                 return;
             }
-            if (key == typeof(global::Microsoft.AspNet.Http.Features.IHttpResponseFeature))
+            if (key == IHttpResponseFeatureType)
             {
-                _currentIHttpResponseFeature = feature;
-                System.Threading.Interlocked.Increment(ref _featureRevision);
+                FastFeatureSetInner(flagIHttpResponseFeature, key, feature);
                 return;
             }
-            if (key == typeof(global::Microsoft.AspNet.Http.Features.IHttpUpgradeFeature))
+            if (key == IHttpRequestIdentifierFeatureType)
             {
-                _currentIHttpUpgradeFeature = feature;
-                System.Threading.Interlocked.Increment(ref _featureRevision);
+                FastFeatureSetInner(flagIHttpRequestIdentifierFeature, key, feature);
                 return;
             }
-            if (key == typeof(global::Microsoft.AspNet.Http.Features.IHttpRequestIdentifierFeature))
+            if (key == IHttpSendFileFeatureType)
             {
-                _currentIHttpRequestIdentifierFeature = feature;
-                System.Threading.Interlocked.Increment(ref _featureRevision);
+                FastFeatureSetInner(flagIHttpSendFileFeature, key, feature);
                 return;
             }
-            if (key == typeof(global::Microsoft.AspNet.Http.Features.IHttpConnectionFeature))
+            if (key == IServiceProvidersFeatureType)
             {
-                _currentIHttpConnectionFeature = feature;
-                System.Threading.Interlocked.Increment(ref _featureRevision);
+                FastFeatureSetInner(flagIServiceProvidersFeature, key, feature);
                 return;
             }
-            if (key == typeof(global::Microsoft.AspNet.Http.Features.ITlsConnectionFeature))
+            if (key == IHttpAuthenticationFeatureType)
             {
-                _currentITlsConnectionFeature = feature;
-                System.Threading.Interlocked.Increment(ref _featureRevision);
+                FastFeatureSetInner(flagIHttpAuthenticationFeature, key, feature);
                 return;
             }
-            if (key == typeof(global::Microsoft.AspNet.Http.Features.Internal.IServiceProvidersFeature))
+            if (key == IHttpRequestLifetimeFeatureType)
             {
-                _currentIServiceProvidersFeature = feature;
-                System.Threading.Interlocked.Increment(ref _featureRevision);
+                FastFeatureSetInner(flagIHttpRequestLifetimeFeature, key, feature);
                 return;
             }
-            if (key == typeof(global::Microsoft.AspNet.Http.Features.IHttpSendFileFeature))
+            if (key == IQueryFeatureType)
             {
-                _currentIHttpSendFileFeature = feature;
-                System.Threading.Interlocked.Increment(ref _featureRevision);
+                FastFeatureSetInner(flagIQueryFeature, key, feature);
                 return;
             }
-            if (key == typeof(global::Microsoft.AspNet.Http.Features.IHttpWebSocketFeature))
+            if (key == IFormFeatureType)
             {
-                _currentIHttpWebSocketFeature = feature;
-                System.Threading.Interlocked.Increment(ref _featureRevision);
+                FastFeatureSetInner(flagIFormFeature, key, feature);
                 return;
             }
-            if (key == typeof(global::Microsoft.AspNet.Http.Features.Internal.IQueryFeature))
+            if (key == IResponseCookiesFeatureType)
             {
-                _currentIQueryFeature = feature;
-                System.Threading.Interlocked.Increment(ref _featureRevision);
+                FastFeatureSetInner(flagIResponseCookiesFeature, key, feature);
                 return;
             }
-            if (key == typeof(global::Microsoft.AspNet.Http.Features.Internal.IFormFeature))
+            if (key == IItemsFeatureType)
             {
-                _currentIFormFeature = feature;
-                System.Threading.Interlocked.Increment(ref _featureRevision);
+                FastFeatureSetInner(flagIItemsFeature, key, feature);
                 return;
             }
-            if (key == typeof(global::Microsoft.AspNet.Http.Features.Internal.IItemsFeature))
+            if (key == IHttpConnectionFeatureType)
             {
-                _currentIItemsFeature = feature;
-                System.Threading.Interlocked.Increment(ref _featureRevision);
+                FastFeatureSetInner(flagIHttpConnectionFeature, key, feature);
                 return;
             }
-            if (key == typeof(global::Microsoft.AspNet.Http.Features.Authentication.IHttpAuthenticationFeature))
+            if (key == ITlsConnectionFeatureType)
             {
-                _currentIHttpAuthenticationFeature = feature;
-                System.Threading.Interlocked.Increment(ref _featureRevision);
+                FastFeatureSetInner(flagITlsConnectionFeature, key, feature);
                 return;
             }
-            if (key == typeof(global::Microsoft.AspNet.Http.Features.IHttpRequestLifetimeFeature))
+            if (key == IHttpUpgradeFeatureType)
             {
-                _currentIHttpRequestLifetimeFeature = feature;
-                System.Threading.Interlocked.Increment(ref _featureRevision);
+                FastFeatureSetInner(flagIHttpUpgradeFeature, key, feature);
                 return;
             }
-            if (key == typeof(global::Microsoft.AspNet.Http.Features.ISessionFeature))
+            if (key == IHttpWebSocketFeatureType)
             {
-                _currentISessionFeature = feature;
-                System.Threading.Interlocked.Increment(ref _featureRevision);
+                FastFeatureSetInner(flagIHttpWebSocketFeature, key, feature);
                 return;
             }
-            if (key == typeof(global::Microsoft.AspNet.Http.Features.Internal.IResponseCookiesFeature))
+            if (key == ISessionFeatureType)
             {
-                _currentIResponseCookiesFeature = feature;
-                System.Threading.Interlocked.Increment(ref _featureRevision);
+                FastFeatureSetInner(flagISessionFeature, key, feature);
                 return;
             }
             Extra[key] = feature;
@@ -221,69 +294,69 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         private IEnumerable<KeyValuePair<Type, object>> FastEnumerable()
         {
-            if (_currentIHttpRequestFeature != null)
+            if ((_featureOverridenFlags & flagIHttpRequestFeature) == 0L)
             {
-                yield return new KeyValuePair<Type, object>(typeof(global::Microsoft.AspNet.Http.Features.IHttpRequestFeature), _currentIHttpRequestFeature);
+                yield return new KeyValuePair<Type, object>(typeof(global::Microsoft.AspNet.Http.Features.IHttpRequestFeature), this as global::Microsoft.AspNet.Http.Features.IHttpRequestFeature);
             }
-            if (_currentIHttpResponseFeature != null)
+            if ((_featureOverridenFlags & flagIHttpResponseFeature) == 0L)
             {
-                yield return new KeyValuePair<Type, object>(typeof(global::Microsoft.AspNet.Http.Features.IHttpResponseFeature), _currentIHttpResponseFeature);
+                yield return new KeyValuePair<Type, object>(typeof(global::Microsoft.AspNet.Http.Features.IHttpResponseFeature), this as global::Microsoft.AspNet.Http.Features.IHttpResponseFeature);
             }
-            if (_currentIHttpUpgradeFeature != null)
+            if ((_featureOverridenFlags & flagIHttpRequestIdentifierFeature) == 0L)
             {
-                yield return new KeyValuePair<Type, object>(typeof(global::Microsoft.AspNet.Http.Features.IHttpUpgradeFeature), _currentIHttpUpgradeFeature);
+                yield return new KeyValuePair<Type, object>(typeof(global::Microsoft.AspNet.Http.Features.IHttpRequestIdentifierFeature), this as global::Microsoft.AspNet.Http.Features.IHttpRequestIdentifierFeature);
             }
-            if (_currentIHttpRequestIdentifierFeature != null)
+            if ((_featureOverridenFlags & flagIHttpSendFileFeature) == 0L)
             {
-                yield return new KeyValuePair<Type, object>(typeof(global::Microsoft.AspNet.Http.Features.IHttpRequestIdentifierFeature), _currentIHttpRequestIdentifierFeature);
+                yield return new KeyValuePair<Type, object>(typeof(global::Microsoft.AspNet.Http.Features.IHttpSendFileFeature), this as global::Microsoft.AspNet.Http.Features.IHttpSendFileFeature);
             }
-            if (_currentIHttpConnectionFeature != null)
+            if ((_featureOverridenFlags & flagIServiceProvidersFeature) == 0L)
             {
-                yield return new KeyValuePair<Type, object>(typeof(global::Microsoft.AspNet.Http.Features.IHttpConnectionFeature), _currentIHttpConnectionFeature);
+                yield return new KeyValuePair<Type, object>(typeof(global::Microsoft.AspNet.Http.Features.Internal.IServiceProvidersFeature), this as global::Microsoft.AspNet.Http.Features.Internal.IServiceProvidersFeature);
             }
-            if (_currentITlsConnectionFeature != null)
+            if ((_featureOverridenFlags & flagIHttpAuthenticationFeature) == 0L)
             {
-                yield return new KeyValuePair<Type, object>(typeof(global::Microsoft.AspNet.Http.Features.ITlsConnectionFeature), _currentITlsConnectionFeature);
+                yield return new KeyValuePair<Type, object>(typeof(global::Microsoft.AspNet.Http.Features.Authentication.IHttpAuthenticationFeature), this as global::Microsoft.AspNet.Http.Features.Authentication.IHttpAuthenticationFeature);
             }
-            if (_currentIServiceProvidersFeature != null)
+            if ((_featureOverridenFlags & flagIHttpRequestLifetimeFeature) == 0L)
             {
-                yield return new KeyValuePair<Type, object>(typeof(global::Microsoft.AspNet.Http.Features.Internal.IServiceProvidersFeature), _currentIServiceProvidersFeature);
+                yield return new KeyValuePair<Type, object>(typeof(global::Microsoft.AspNet.Http.Features.IHttpRequestLifetimeFeature), this as global::Microsoft.AspNet.Http.Features.IHttpRequestLifetimeFeature);
             }
-            if (_currentIHttpSendFileFeature != null)
+            if ((_featureOverridenFlags & flagIQueryFeature) == 0L)
             {
-                yield return new KeyValuePair<Type, object>(typeof(global::Microsoft.AspNet.Http.Features.IHttpSendFileFeature), _currentIHttpSendFileFeature);
+                yield return new KeyValuePair<Type, object>(typeof(global::Microsoft.AspNet.Http.Features.Internal.IQueryFeature), this as global::Microsoft.AspNet.Http.Features.Internal.IQueryFeature);
             }
-            if (_currentIHttpWebSocketFeature != null)
+            if ((_featureOverridenFlags & flagIFormFeature) == 0L)
             {
-                yield return new KeyValuePair<Type, object>(typeof(global::Microsoft.AspNet.Http.Features.IHttpWebSocketFeature), _currentIHttpWebSocketFeature);
+                yield return new KeyValuePair<Type, object>(typeof(global::Microsoft.AspNet.Http.Features.Internal.IFormFeature), this as global::Microsoft.AspNet.Http.Features.Internal.IFormFeature);
             }
-            if (_currentIQueryFeature != null)
+            if ((_featureOverridenFlags & flagIResponseCookiesFeature) == 0L)
             {
-                yield return new KeyValuePair<Type, object>(typeof(global::Microsoft.AspNet.Http.Features.Internal.IQueryFeature), _currentIQueryFeature);
+                yield return new KeyValuePair<Type, object>(typeof(global::Microsoft.AspNet.Http.Features.Internal.IResponseCookiesFeature), this as global::Microsoft.AspNet.Http.Features.Internal.IResponseCookiesFeature);
             }
-            if (_currentIFormFeature != null)
+            if ((_featureOverridenFlags & flagIItemsFeature) == 0L)
             {
-                yield return new KeyValuePair<Type, object>(typeof(global::Microsoft.AspNet.Http.Features.Internal.IFormFeature), _currentIFormFeature);
+                yield return new KeyValuePair<Type, object>(typeof(global::Microsoft.AspNet.Http.Features.Internal.IItemsFeature), this as global::Microsoft.AspNet.Http.Features.Internal.IItemsFeature);
             }
-            if (_currentIItemsFeature != null)
+            if ((_featureOverridenFlags & flagIHttpConnectionFeature) == 0L)
             {
-                yield return new KeyValuePair<Type, object>(typeof(global::Microsoft.AspNet.Http.Features.Internal.IItemsFeature), _currentIItemsFeature);
+                yield return new KeyValuePair<Type, object>(typeof(global::Microsoft.AspNet.Http.Features.IHttpConnectionFeature), this as global::Microsoft.AspNet.Http.Features.IHttpConnectionFeature);
             }
-            if (_currentIHttpAuthenticationFeature != null)
+            if ((_featureOverridenFlags & flagITlsConnectionFeature) == 0L)
             {
-                yield return new KeyValuePair<Type, object>(typeof(global::Microsoft.AspNet.Http.Features.Authentication.IHttpAuthenticationFeature), _currentIHttpAuthenticationFeature);
+                yield return new KeyValuePair<Type, object>(typeof(global::Microsoft.AspNet.Http.Features.ITlsConnectionFeature), this as global::Microsoft.AspNet.Http.Features.ITlsConnectionFeature);
             }
-            if (_currentIHttpRequestLifetimeFeature != null)
+            if ((_featureOverridenFlags & flagIHttpUpgradeFeature) == 0L)
             {
-                yield return new KeyValuePair<Type, object>(typeof(global::Microsoft.AspNet.Http.Features.IHttpRequestLifetimeFeature), _currentIHttpRequestLifetimeFeature);
+                yield return new KeyValuePair<Type, object>(typeof(global::Microsoft.AspNet.Http.Features.IHttpUpgradeFeature), this as global::Microsoft.AspNet.Http.Features.IHttpUpgradeFeature);
             }
-            if (_currentISessionFeature != null)
+            if ((_featureOverridenFlags & flagIHttpWebSocketFeature) == 0L)
             {
-                yield return new KeyValuePair<Type, object>(typeof(global::Microsoft.AspNet.Http.Features.ISessionFeature), _currentISessionFeature);
+                yield return new KeyValuePair<Type, object>(typeof(global::Microsoft.AspNet.Http.Features.IHttpWebSocketFeature), this as global::Microsoft.AspNet.Http.Features.IHttpWebSocketFeature);
             }
-            if (_currentIResponseCookiesFeature != null)
+            if ((_featureOverridenFlags & flagISessionFeature) == 0L)
             {
-                yield return new KeyValuePair<Type, object>(typeof(global::Microsoft.AspNet.Http.Features.Internal.IResponseCookiesFeature), _currentIResponseCookiesFeature);
+                yield return new KeyValuePair<Type, object>(typeof(global::Microsoft.AspNet.Http.Features.ISessionFeature), this as global::Microsoft.AspNet.Http.Features.ISessionFeature);
             }
             if (MaybeExtra != null)
             {
