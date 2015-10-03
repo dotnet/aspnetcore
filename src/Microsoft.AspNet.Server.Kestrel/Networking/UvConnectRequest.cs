@@ -3,7 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Server.Kestrel.Infrastructure;
-using Microsoft.Framework.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.Server.Kestrel.Networking
 {

@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 using Microsoft.AspNet.Server.Kestrel;
-using Microsoft.Framework.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.Server.KestrelTests
 {

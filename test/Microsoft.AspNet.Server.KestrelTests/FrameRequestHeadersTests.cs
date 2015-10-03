@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Server.Kestrel.Http;
-using Microsoft.Framework.Primitives;
+using Microsoft.Extensions.Primitives;
 using Xunit;
 
 namespace Microsoft.AspNet.Server.KestrelTests

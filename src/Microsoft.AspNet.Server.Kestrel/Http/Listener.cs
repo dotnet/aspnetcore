@@ -4,7 +4,7 @@
 using Microsoft.AspNet.Server.Kestrel.Networking;
 using System;
 using System.Threading.Tasks;
-using Microsoft.Framework.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.Server.Kestrel.Http
 {
