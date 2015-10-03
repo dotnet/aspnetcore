@@ -118,7 +118,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {{{Each(commonFeatures, feature => $@"
             if ((_featureOverridenFlags & flag{feature.Name}) == 0L)
             {{
-                yield return new KeyValuePair<Type, object>(typeof(global::{feature.FullName}), this as global::{feature.FullName});
+                yield return new KeyValuePair<Type, object>({feature.Name}Type, this as global::{feature.FullName});
             }}")}
             if (MaybeExtra != null)
             {{

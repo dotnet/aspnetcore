@@ -296,67 +296,67 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             if ((_featureOverridenFlags & flagIHttpRequestFeature) == 0L)
             {
-                yield return new KeyValuePair<Type, object>(typeof(global::Microsoft.AspNet.Http.Features.IHttpRequestFeature), this as global::Microsoft.AspNet.Http.Features.IHttpRequestFeature);
+                yield return new KeyValuePair<Type, object>(IHttpRequestFeatureType, this as global::Microsoft.AspNet.Http.Features.IHttpRequestFeature);
             }
             if ((_featureOverridenFlags & flagIHttpResponseFeature) == 0L)
             {
-                yield return new KeyValuePair<Type, object>(typeof(global::Microsoft.AspNet.Http.Features.IHttpResponseFeature), this as global::Microsoft.AspNet.Http.Features.IHttpResponseFeature);
+                yield return new KeyValuePair<Type, object>(IHttpResponseFeatureType, this as global::Microsoft.AspNet.Http.Features.IHttpResponseFeature);
             }
             if ((_featureOverridenFlags & flagIHttpRequestIdentifierFeature) == 0L)
             {
-                yield return new KeyValuePair<Type, object>(typeof(global::Microsoft.AspNet.Http.Features.IHttpRequestIdentifierFeature), this as global::Microsoft.AspNet.Http.Features.IHttpRequestIdentifierFeature);
+                yield return new KeyValuePair<Type, object>(IHttpRequestIdentifierFeatureType, this as global::Microsoft.AspNet.Http.Features.IHttpRequestIdentifierFeature);
             }
             if ((_featureOverridenFlags & flagIHttpSendFileFeature) == 0L)
             {
-                yield return new KeyValuePair<Type, object>(typeof(global::Microsoft.AspNet.Http.Features.IHttpSendFileFeature), this as global::Microsoft.AspNet.Http.Features.IHttpSendFileFeature);
+                yield return new KeyValuePair<Type, object>(IHttpSendFileFeatureType, this as global::Microsoft.AspNet.Http.Features.IHttpSendFileFeature);
             }
             if ((_featureOverridenFlags & flagIServiceProvidersFeature) == 0L)
             {
-                yield return new KeyValuePair<Type, object>(typeof(global::Microsoft.AspNet.Http.Features.Internal.IServiceProvidersFeature), this as global::Microsoft.AspNet.Http.Features.Internal.IServiceProvidersFeature);
+                yield return new KeyValuePair<Type, object>(IServiceProvidersFeatureType, this as global::Microsoft.AspNet.Http.Features.Internal.IServiceProvidersFeature);
             }
             if ((_featureOverridenFlags & flagIHttpAuthenticationFeature) == 0L)
             {
-                yield return new KeyValuePair<Type, object>(typeof(global::Microsoft.AspNet.Http.Features.Authentication.IHttpAuthenticationFeature), this as global::Microsoft.AspNet.Http.Features.Authentication.IHttpAuthenticationFeature);
+                yield return new KeyValuePair<Type, object>(IHttpAuthenticationFeatureType, this as global::Microsoft.AspNet.Http.Features.Authentication.IHttpAuthenticationFeature);
             }
             if ((_featureOverridenFlags & flagIHttpRequestLifetimeFeature) == 0L)
             {
-                yield return new KeyValuePair<Type, object>(typeof(global::Microsoft.AspNet.Http.Features.IHttpRequestLifetimeFeature), this as global::Microsoft.AspNet.Http.Features.IHttpRequestLifetimeFeature);
+                yield return new KeyValuePair<Type, object>(IHttpRequestLifetimeFeatureType, this as global::Microsoft.AspNet.Http.Features.IHttpRequestLifetimeFeature);
             }
             if ((_featureOverridenFlags & flagIQueryFeature) == 0L)
             {
-                yield return new KeyValuePair<Type, object>(typeof(global::Microsoft.AspNet.Http.Features.Internal.IQueryFeature), this as global::Microsoft.AspNet.Http.Features.Internal.IQueryFeature);
+                yield return new KeyValuePair<Type, object>(IQueryFeatureType, this as global::Microsoft.AspNet.Http.Features.Internal.IQueryFeature);
             }
             if ((_featureOverridenFlags & flagIFormFeature) == 0L)
             {
-                yield return new KeyValuePair<Type, object>(typeof(global::Microsoft.AspNet.Http.Features.Internal.IFormFeature), this as global::Microsoft.AspNet.Http.Features.Internal.IFormFeature);
+                yield return new KeyValuePair<Type, object>(IFormFeatureType, this as global::Microsoft.AspNet.Http.Features.Internal.IFormFeature);
             }
             if ((_featureOverridenFlags & flagIResponseCookiesFeature) == 0L)
             {
-                yield return new KeyValuePair<Type, object>(typeof(global::Microsoft.AspNet.Http.Features.Internal.IResponseCookiesFeature), this as global::Microsoft.AspNet.Http.Features.Internal.IResponseCookiesFeature);
+                yield return new KeyValuePair<Type, object>(IResponseCookiesFeatureType, this as global::Microsoft.AspNet.Http.Features.Internal.IResponseCookiesFeature);
             }
             if ((_featureOverridenFlags & flagIItemsFeature) == 0L)
             {
-                yield return new KeyValuePair<Type, object>(typeof(global::Microsoft.AspNet.Http.Features.Internal.IItemsFeature), this as global::Microsoft.AspNet.Http.Features.Internal.IItemsFeature);
+                yield return new KeyValuePair<Type, object>(IItemsFeatureType, this as global::Microsoft.AspNet.Http.Features.Internal.IItemsFeature);
             }
             if ((_featureOverridenFlags & flagIHttpConnectionFeature) == 0L)
             {
-                yield return new KeyValuePair<Type, object>(typeof(global::Microsoft.AspNet.Http.Features.IHttpConnectionFeature), this as global::Microsoft.AspNet.Http.Features.IHttpConnectionFeature);
+                yield return new KeyValuePair<Type, object>(IHttpConnectionFeatureType, this as global::Microsoft.AspNet.Http.Features.IHttpConnectionFeature);
             }
             if ((_featureOverridenFlags & flagITlsConnectionFeature) == 0L)
             {
-                yield return new KeyValuePair<Type, object>(typeof(global::Microsoft.AspNet.Http.Features.ITlsConnectionFeature), this as global::Microsoft.AspNet.Http.Features.ITlsConnectionFeature);
+                yield return new KeyValuePair<Type, object>(ITlsConnectionFeatureType, this as global::Microsoft.AspNet.Http.Features.ITlsConnectionFeature);
             }
             if ((_featureOverridenFlags & flagIHttpUpgradeFeature) == 0L)
             {
-                yield return new KeyValuePair<Type, object>(typeof(global::Microsoft.AspNet.Http.Features.IHttpUpgradeFeature), this as global::Microsoft.AspNet.Http.Features.IHttpUpgradeFeature);
+                yield return new KeyValuePair<Type, object>(IHttpUpgradeFeatureType, this as global::Microsoft.AspNet.Http.Features.IHttpUpgradeFeature);
             }
             if ((_featureOverridenFlags & flagIHttpWebSocketFeature) == 0L)
             {
-                yield return new KeyValuePair<Type, object>(typeof(global::Microsoft.AspNet.Http.Features.IHttpWebSocketFeature), this as global::Microsoft.AspNet.Http.Features.IHttpWebSocketFeature);
+                yield return new KeyValuePair<Type, object>(IHttpWebSocketFeatureType, this as global::Microsoft.AspNet.Http.Features.IHttpWebSocketFeature);
             }
             if ((_featureOverridenFlags & flagISessionFeature) == 0L)
             {
-                yield return new KeyValuePair<Type, object>(typeof(global::Microsoft.AspNet.Http.Features.ISessionFeature), this as global::Microsoft.AspNet.Http.Features.ISessionFeature);
+                yield return new KeyValuePair<Type, object>(ISessionFeatureType, this as global::Microsoft.AspNet.Http.Features.ISessionFeature);
             }
             if (MaybeExtra != null)
             {
