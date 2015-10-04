@@ -96,7 +96,10 @@ namespace Microsoft.AspNet.Authentication
                 var handler = new CountHandler();
                 var context = new DefaultHttpContext();
                 context.Features.Set<IHttpResponseFeature>(new TestResponse());
-                await handler.InitializeAsync(new CountOptions(), context, new LoggerFactory().CreateLogger("CountHandler"), Framework.WebEncoders.UrlEncoder.Default);
+                await handler.InitializeAsync(
+                    new CountOptions(), context,
+                    new LoggerFactory().CreateLogger("CountHandler"),
+                    Extensions.WebEncoders.UrlEncoder.Default);
                 handler.Options.AuthenticationScheme = scheme;
                 handler.Options.AutomaticAuthentication = true;
                 return handler;
@@ -119,7 +122,10 @@ namespace Microsoft.AspNet.Authentication
                 var handler = new TestHandler();
                 var context = new DefaultHttpContext();
                 context.Features.Set<IHttpResponseFeature>(new TestResponse());
-                await handler.InitializeAsync(new TestOptions(), context, new LoggerFactory().CreateLogger("TestHandler"), Framework.WebEncoders.UrlEncoder.Default);
+                await handler.InitializeAsync(
+                    new TestOptions(), context,
+                    new LoggerFactory().CreateLogger("TestHandler"),
+                    Extensions.WebEncoders.UrlEncoder.Default);
                 handler.Options.AuthenticationScheme = scheme;
                 return handler;
             }
@@ -149,7 +155,10 @@ namespace Microsoft.AspNet.Authentication
                 var handler = new TestAutoHandler();
                 var context = new DefaultHttpContext();
                 context.Features.Set<IHttpResponseFeature>(new TestResponse());
-                await handler.InitializeAsync(new TestAutoOptions(), context, new LoggerFactory().CreateLogger("TestAutoHandler"), Framework.WebEncoders.UrlEncoder.Default);
+                await handler.InitializeAsync(
+                    new TestAutoOptions(), context,
+                    new LoggerFactory().CreateLogger("TestAutoHandler"),
+                    Extensions.WebEncoders.UrlEncoder.Default);
                 handler.Options.AuthenticationScheme = scheme;
                 handler.Options.AutomaticAuthentication = auto;
                 return handler;
