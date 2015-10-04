@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
             _validator = validator;
         }
 
-        public async Task<IDictionary<string, object>> BindActionArgumentsAsync(
+        public Task<IDictionary<string, object>> BindActionArgumentsAsync(
             ActionContext actionContext,
             ActionBindingContext actionBindingContext,
             object controller)
@@ -64,6 +64,29 @@ namespace Microsoft.AspNet.Mvc.Controllers
                         nameof(actionContext));
             }
 
+            // Perf: Avoid allocating async state machines when we know there's nothing to bind.
+            if (actionDescriptor.BoundProperties.Count == 0 &&
+                actionDescriptor.Parameters.Count == 0)
+            {
+                return Task.FromResult<IDictionary<string, object>>(
+                    new Dictionary<string, object>(StringComparer.Ordinal));
+            }
+            else
+            {
+                return BindActionArgumentsCoreAsync(
+                    actionContext,
+                    actionBindingContext,
+                    controller,
+                    actionDescriptor);
+            }
+        }
+
+        private async Task<IDictionary<string, object>> BindActionArgumentsCoreAsync(
+            ActionContext actionContext,
+            ActionBindingContext actionBindingContext,
+            object controller,
+            ControllerActionDescriptor actionDescriptor)
+        {
             var operationBindingContext = GetOperationBindingContext(actionContext, actionBindingContext);
             var controllerProperties = new Dictionary<string, object>(StringComparer.Ordinal);
             await PopulateArgumentsAsync(
