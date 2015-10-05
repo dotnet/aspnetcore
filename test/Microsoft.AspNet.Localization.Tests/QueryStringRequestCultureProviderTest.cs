@@ -167,5 +167,31 @@ namespace Microsoft.Extensions.Localization.Tests
                 var response = await client.GetAsync("/page?c=ar-SA&uic=ar-YE");
             }
         }
+        
+        [Fact]
+        public async void GetTheRightCultureInfoRegardlessOfCultureNameCasing()
+        {
+            using (var server = TestServer.Create(app =>
+            {
+                var options = new RequestLocalizationOptions();
+                var provider = new QueryStringRequestCultureProvider();
+                provider.QueryStringKey = "c";
+                provider.UIQueryStringKey = "uic";
+                options.RequestCultureProviders.Insert(0, provider);
+                app.UseRequestLocalization(options);
+                app.Run(context =>
+                {
+                    var requestCultureFeature = context.Features.Get<IRequestCultureFeature>();
+                    var requestCulture = requestCultureFeature.RequestCulture;
+                    Assert.Equal("fr", requestCulture.Culture.ToString());
+                    Assert.Equal("fr", requestCulture.UICulture.ToString());
+                    return Task.FromResult(0);
+                });
+            }))
+            {
+                var client = server.CreateClient();
+                var response = await client.GetAsync("/page?c=FR&uic=FR");
+            }
+        }
     }
 }
