@@ -78,7 +78,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
                 }
                 else
                 {
-                    ip = IPAddress.Any;
+                    ip = IPAddress.IPv6Any;
                 }
             }
 

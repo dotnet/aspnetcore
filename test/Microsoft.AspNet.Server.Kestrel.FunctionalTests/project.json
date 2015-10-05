@@ -1,0 +1,19 @@
+﻿{
+  "version": "1.0.0-*",
+  "dependencies": {
+    "Microsoft.AspNet.Http.Abstractions": "1.0.0-*",
+    "Microsoft.AspNet.Server.Kestrel": "1.0.0-*",
+    "System.Net.Http": "4.0.1-beta-*",
+    "xunit.runner.aspnet": "2.0.0-aspnet-*"
+  },
+  "frameworks": {
+    "dnx451": { },
+    "dnxcore50": { }
+  },
+  "compilationOptions": {
+    "allowUnsafe": true
+  },
+  "commands": {
+    "test": "xunit.runner.aspnet -parallel none"
+  }
+}

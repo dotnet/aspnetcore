@@ -66,16 +66,18 @@ namespace Microsoft.AspNet.Server.KestrelTests
         {
         }
 
-        async Task IFrameControl.WriteAsync(ArraySegment<byte> data, CancellationToken cancellationToken)
+        Task IFrameControl.WriteAsync(ArraySegment<byte> data, CancellationToken cancellationToken)
         {
+            return Task.FromResult(0);
         }
 
         void IFrameControl.Flush()
         {
         }
 
-        async Task IFrameControl.FlushAsync(CancellationToken cancellationToken)
+        Task IFrameControl.FlushAsync(CancellationToken cancellationToken)
         {
+            return Task.FromResult(0);
         }
     }
 }

@@ -11,12 +11,13 @@ namespace Microsoft.AspNet.Server.KestrelTests
     public class CreateIPEndpointTests
     {
         [Theory]
-        [InlineData("localhost", "127.0.0.1")]
+        [InlineData("localhost", "127.0.0.1")] // https://github.com/aspnet/KestrelHttpServer/issues/231
         [InlineData("10.10.10.10", "10.10.10.10")]
-        [InlineData("randomhost", "0.0.0.0")]
+        [InlineData("[::1]", "::1")]
+        [InlineData("randomhost", "::")] // "::" is IPAddress.IPv6Any
+        [InlineData("*", "::")] // "::" is IPAddress.IPv6Any
         public void CorrectIPEndpointsAreCreated(string host, string expectedAddress)
         {
-            // "0.0.0.0" is IPAddress.Any
             var endpoint = UvTcpHandle.CreateIPEndpoint(ServerAddress.FromUrl($"http://{host}:5000/"));
             Assert.NotNull(endpoint);
             Assert.Equal(IPAddress.Parse(expectedAddress), endpoint.Address);
