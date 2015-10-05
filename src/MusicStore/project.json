@@ -12,7 +12,7 @@
     "webroot": "wwwroot",
     "dependencies": {
         "EntityFramework.InMemory": "7.0.0-*",
-        "EntityFramework.SqlServer": "7.0.0-*",
+        "EntityFramework.MicrosoftSqlServer": "7.0.0-*",
         "Microsoft.AspNet.Antiforgery": "1.0.0-*",
         "Microsoft.AspNet.Authentication.Cookies": "1.0.0-*",
         "Microsoft.AspNet.Authentication.Facebook": "1.0.0-*",
