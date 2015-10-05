@@ -625,7 +625,12 @@ namespace Microsoft.AspNet.Mvc.Controllers
                         {
                             _telemetry.WriteTelemetry(
                                 "Microsoft.AspNet.Mvc.BeforeActionMethod",
-                                new { actionContext = ActionContext, arguments = _actionExecutingContext.ActionArguments });
+                                new
+                                {
+                                    actionContext = ActionContext, 
+                                    arguments = _actionExecutingContext.ActionArguments,
+                                    controller = _actionExecutingContext.Controller
+                                });
                         }
 
                         result = await InvokeActionAsync(_actionExecutingContext);
@@ -636,7 +641,13 @@ namespace Microsoft.AspNet.Mvc.Controllers
                         {
                             _telemetry.WriteTelemetry(
                                 "Microsoft.AspNet.Mvc.AfterActionMethod",
-                                new { actionContext = ActionContext, result = result });
+                                new
+                                {
+                                    actionContext = ActionContext,
+                                    arguments = _actionExecutingContext.ActionArguments,
+                                    controller = _actionExecutingContext.Controller,
+                                    result = result
+                                });
                         }
                     }
 

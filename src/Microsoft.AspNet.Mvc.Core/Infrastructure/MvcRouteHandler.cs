@@ -101,7 +101,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 {
                     _telemetry.WriteTelemetry(
                         "Microsoft.AspNet.Mvc.AfterAction",
-                        new { actionDescriptor, httpContext = context.HttpContext });
+                        new { actionDescriptor, httpContext = context.HttpContext, routeData = context.RouteData });
                 }
 
                 if (!context.IsHandled)
