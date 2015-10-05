@@ -14,9 +14,9 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
     public class MemoryPoolHttpResponseStreamWriterFactory : IHttpResponseStreamWriterFactory
     {
         /// <summary>
-        /// The default size of created buffers.
+        /// The default size of created char buffers.
         /// </summary>
-        public static readonly int DefaultBufferSize = 4 * 1024; // 4KB
+        public static readonly int DefaultBufferSize = 1024; // 1KB - results in a 4KB byte array for UTF8.
 
         private readonly IArraySegmentPool<byte> _bytePool;
         private readonly IArraySegmentPool<char> _charPool;
@@ -66,10 +66,14 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
 
             try
             {
-                bytes = _bytePool.Lease(DefaultBufferSize);
                 chars = _charPool.Lease(DefaultBufferSize);
 
-                return new HttpResponseStreamWriter(stream, encoding, bytes, chars);
+                // We need to compute the minimum size of the byte buffer based on the size of the char buffer,
+                // so that we have enough room to encode the buffer in one shot.
+                var minimumSize = encoding.GetMaxByteCount(DefaultBufferSize);
+                bytes = _bytePool.Lease(minimumSize);
+
+                return new HttpResponseStreamWriter(stream, encoding, DefaultBufferSize, bytes, chars);
             }
             catch
             {

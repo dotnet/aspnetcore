@@ -1002,6 +1002,22 @@ namespace Microsoft.AspNet.Mvc.Core
             return string.Format(CultureInfo.CurrentCulture, GetString("ValueProviderResult_NoConverterExists"), p0, p1);
         }
 
+        /// <summary>
+        /// The byte buffer must have a length of at least '{0}' to be used with a char buffer of size '{1}' and encoding '{2}'. Use '{3}.{4}' to compute the correct size for the byte buffer.
+        /// </summary>
+        internal static string HttpResponseStreamWriter_InvalidBufferSize
+        {
+            get { return GetString("HttpResponseStreamWriter_InvalidBufferSize"); }
+        }
+
+        /// <summary>
+        /// The byte buffer must have a length of at least '{0}' to be used with a char buffer of size '{1}' and encoding '{2}'. Use '{3}.{4}' to compute the correct size for the byte buffer.
+        /// </summary>
+        internal static string FormatHttpResponseStreamWriter_InvalidBufferSize(object p0, object p1, object p2, object p3, object p4)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("HttpResponseStreamWriter_InvalidBufferSize"), p0, p1, p2, p3, p4);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

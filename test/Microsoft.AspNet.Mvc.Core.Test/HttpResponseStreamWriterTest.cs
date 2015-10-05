@@ -6,6 +6,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Testing;
 using Microsoft.Extensions.MemoryPool;
 using Xunit;
 
@@ -381,9 +382,9 @@ namespace Microsoft.AspNet.Mvc
                     try
                     {
                         bytes = bytePool.Lease(4096);
-                        chars = charPool.Lease(4096);
+                        chars = charPool.Lease(1024);
 
-                        writer = new HttpResponseStreamWriter(stream, encoding, bytes, chars);
+                        writer = new HttpResponseStreamWriter(stream, encoding, 1024, bytes, chars);
                     }
                     catch
                     {
@@ -412,8 +413,8 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal(expectedBytes, stream.ToArray());
         }
 
-        // This covers the case where we need to limit the usable region of the char buffer
-        // based on the size of the byte buffer. See comments in the constructor.
+        // This covers the error case where the byte buffer is too small. This is a safeguard, and shouldn't happen 
+        // if we're using the writer factory.
         [Fact]
         public void HttpResponseStreamWriter_UsingPooledBuffers_SmallByteBuffer()
         {
@@ -421,12 +422,10 @@ namespace Microsoft.AspNet.Mvc
             var encoding = Encoding.UTF8;
             var stream = new MemoryStream();
 
-            var charBufferSize = encoding.GetMaxCharCount(1024);
-
-            // This content is bigger than the byte buffer can hold, so it will need to be split
-            // into two separate encoding operations.
-            var content = new string('a', charBufferSize + 1);
-            var expectedBytes = encoding.GetBytes(content);
+            var message =
+                "The byte buffer must have a length of at least '12291' to be used with a char buffer of " +
+                "size '4096' and encoding 'Unicode (UTF-8)'. Use 'System.Text.Encoding.GetMaxByteCount' " +
+                "to compute the correct size for the byte buffer.";
 
             using (var bytePool = new DefaultArraySegmentPool<byte>())
             {
@@ -434,14 +433,19 @@ namespace Microsoft.AspNet.Mvc
                 {
                     LeasedArraySegment<byte> bytes = null;
                     LeasedArraySegment<char> chars = null;
-                    HttpResponseStreamWriter writer;
+                    HttpResponseStreamWriter writer = null;
 
                     try
                     {
                         bytes = bytePool.Lease(1024);
                         chars = charPool.Lease(4096);
 
-                        writer = new HttpResponseStreamWriter(stream, encoding, bytes, chars);
+                        // Act & Assert
+                        ExceptionAssert.ThrowsArgument(
+                            () => writer = new HttpResponseStreamWriter(stream, encoding, chars.Data.Count, bytes, chars),
+                            "byteBuffer",
+                            message);
+                        writer.Dispose();
                     }
                     catch
                     {
@@ -454,29 +458,9 @@ namespace Microsoft.AspNet.Mvc
                         {
                             chars.Owner.Return(chars);
                         }
-
-                        throw;
-                    }
-
-                    // Zero the byte buffer because we're going to examine it.
-                    Array.Clear(bytes.Data.Array, 0, bytes.Data.Array.Length);
-
-                    // Act
-                    using (writer)
-                    {
-                        writer.Write(content);
-                    }
-
-                    // Verify that we didn't buffer overflow 'our' region of the underlying array.
-                    if (bytes.Data.Array.Length > bytes.Data.Count)
-                    {
-                        Assert.Equal((byte)0, bytes.Data.Array[bytes.Data.Count]);
                     }
                 }
             }
-
-            // Assert
-            Assert.Equal(expectedBytes, stream.ToArray());
         }
 
         private class TestMemoryStream : MemoryStream

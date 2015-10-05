@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Mvc.Core;
 using Microsoft.Extensions.MemoryPool;
 
 namespace Microsoft.AspNet.Mvc
@@ -58,6 +59,7 @@ namespace Microsoft.AspNet.Mvc
         public HttpResponseStreamWriter(
             Stream stream,
             Encoding encoding,
+            int bufferSize,
             LeasedArraySegment<byte> leasedByteBuffer,
             LeasedArraySegment<char> leasedCharBuffer)
         {
@@ -81,21 +83,27 @@ namespace Microsoft.AspNet.Mvc
                 throw new ArgumentNullException(nameof(leasedCharBuffer));
             }
 
+            var requiredLength = encoding.GetMaxByteCount(bufferSize);
+            if (requiredLength > leasedByteBuffer.Data.Count)
+            {
+                var message = Resources.FormatHttpResponseStreamWriter_InvalidBufferSize(
+                    requiredLength,
+                    bufferSize,
+                    encoding.EncodingName,
+                    typeof(Encoding).FullName,
+                    nameof(Encoding.GetMaxByteCount));
+                throw new ArgumentException(message, nameof(leasedByteBuffer));
+            }
+
             _stream = stream;
             Encoding = encoding;
+            _charBufferSize = bufferSize;
             _leasedByteBuffer = leasedByteBuffer;
             _leasedCharBuffer = leasedCharBuffer;
 
             _encoder = encoding.GetEncoder();
             _byteBuffer = leasedByteBuffer.Data;
             _charBuffer = leasedCharBuffer.Data;
-
-            // We need to compute the usable size of the char buffer based on the size of the byte buffer.
-            // Encoder.GetBytes assumes that the entirety of the byte[] passed in can be used, and that's not the
-            // case with ArraySegments.
-            _charBufferSize = Math.Min(
-                leasedCharBuffer.Data.Count,
-                encoding.GetMaxCharCount(leasedByteBuffer.Data.Count));
         }
 
         public override Encoding Encoding { get; }
@@ -215,16 +223,24 @@ namespace Microsoft.AspNet.Mvc
         // sent in chunked encoding in case of Helios.
         protected override void Dispose(bool disposing)
         {
-            FlushInternal(flushStream: false, flushEncoder: true);
-
-            if (_leasedByteBuffer != null)
+            if (disposing)
             {
-                _leasedByteBuffer.Owner.Return(_leasedByteBuffer);
-            }
+                try
+                {
+                    FlushInternal(flushStream: false, flushEncoder: true);
+                }
+                finally
+                {
+                    if (_leasedByteBuffer != null)
+                    {
+                        _leasedByteBuffer.Owner.Return(_leasedByteBuffer);
+                    }
 
-            if (_leasedCharBuffer != null)
-            {
-                _leasedCharBuffer.Owner.Return(_leasedCharBuffer);
+                    if (_leasedCharBuffer != null)
+                    {
+                        _leasedCharBuffer.Owner.Return(_leasedCharBuffer);
+                    }
+                }
             }
         }
 

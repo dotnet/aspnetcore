@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             // Arrange
             var bytePool = new Mock<IArraySegmentPool<byte>>(MockBehavior.Strict);
             bytePool
-                .Setup(p => p.Lease(MemoryPoolHttpResponseStreamWriterFactory.DefaultBufferSize))
+                .Setup(p => p.Lease(It.IsAny<int>()))
                 .Returns(new LeasedArraySegment<byte>(new ArraySegment<byte>(new byte[0]), bytePool.Object));
             bytePool
                 .Setup(p => p.Return(It.IsAny<LeasedArraySegment<byte>>()))
@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 .Setup(p => p.Return(It.IsAny<LeasedArraySegment<char>>()))
                 .Verifiable();
 
-            var encoding = new Mock<Encoding>(MockBehavior.Strict);
+            var encoding = new Mock<Encoding>();
             encoding
                 .Setup(e => e.GetEncoder())
                 .Throws(new InvalidOperationException());
