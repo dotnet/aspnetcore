@@ -131,13 +131,7 @@ namespace Microsoft.AspNet.Mvc.Routing
 
             foreach (var matchingEntry in _matchingEntries)
             {
-                var requestPath = context.HttpContext.Request.Path.Value;
-
-                if (!string.IsNullOrEmpty(requestPath) && requestPath[0] == '/')
-                {
-                    requestPath = requestPath.Substring(1);
-                }
-
+                var requestPath = context.HttpContext.Request.Path;
                 var values = matchingEntry.TemplateMatcher.Match(requestPath);
                 if (values == null)
                 {
