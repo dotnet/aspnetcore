@@ -5,7 +5,7 @@ It is possible to run the sample apps using [Docker](https://www.docker.com/) an
 
 ### Get the source code
 ```
-git clone git@github.com:aspnet/Home.git aspnet-home
+git clone https://github.com/aspnet/Home.git aspnet-home
 cd aspnet-home/samples/latest/HelloWeb
 ```
 
