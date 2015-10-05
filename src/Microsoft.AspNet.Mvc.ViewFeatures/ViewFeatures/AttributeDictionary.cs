@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Microsoft.AspNet.Mvc.ViewFeatures
 {
@@ -105,20 +106,14 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
         private KeyValuePair<string, string> Get(int index)
         {
-            if (index >= Count)
-            {
-                throw new ArgumentOutOfRangeException();
-            }
-
+            Debug.Assert(index >= 0 && index < Count);
             return _items[index];
         }
 
         private void Set(int index, KeyValuePair<string, string> value)
         {
-            if (index > Count)
-            {
-                throw new ArgumentOutOfRangeException();
-            }
+            Debug.Assert(index >= 0 && index <= Count);
+            Debug.Assert(value.Key != null);
 
             if (_items == null)
             {
@@ -130,10 +125,8 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
         private void Insert(int index, KeyValuePair<string, string> value)
         {
-            if (index > Count)
-            {
-                throw new ArgumentOutOfRangeException();
-            }
+            Debug.Assert(index >= 0 && index <= Count);
+            Debug.Assert(value.Key != null);
 
             if (_items == null)
             {
@@ -145,12 +138,8 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
         private void Remove(int index)
         {
-            if (index >= Count)
-            {
-                throw new ArgumentOutOfRangeException();
-            }
+            Debug.Assert(index >= 0 && index < Count);
 
-            
             _items.RemoveAt(index);
         }
 
@@ -159,6 +148,8 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         // to do something with it.
         private int Find(string key)
         {
+            Debug.Assert(key != null);
+
             if (Count == 0)
             {
                 return ~0;
