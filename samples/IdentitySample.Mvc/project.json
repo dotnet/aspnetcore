@@ -17,7 +17,7 @@
         "Microsoft.AspNet.Authentication.Twitter": "1.0.0-*",
         "Microsoft.AspNet.Authorization": "1.0.0-*",
         "Microsoft.AspNet.StaticFiles": "1.0.0-*",
-        "EntityFramework.SqlServer": "7.0.0-*",
+        "EntityFramework.MicrosoftSqlServer": "7.0.0-*",
         "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.0.0-*",
         "Microsoft.Extensions.Configuration.Json": "1.0.0-*",
         "Microsoft.Extensions.OptionsModel": "1.0.0-*",
