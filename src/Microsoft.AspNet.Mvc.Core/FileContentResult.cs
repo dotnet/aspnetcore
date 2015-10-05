@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
@@ -82,12 +81,12 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <inheritdoc />
-        protected override Task WriteFileAsync(HttpResponse response, CancellationToken cancellation)
+        protected override Task WriteFileAsync(HttpResponse response)
         {
             var bufferingFeature = response.HttpContext.Features.Get<IHttpBufferingFeature>();
             bufferingFeature?.DisableResponseBuffering();
 
-            return response.Body.WriteAsync(FileContents, 0, FileContents.Length, cancellation);
+            return response.Body.WriteAsync(FileContents, offset: 0, count: FileContents.Length);
         }
     }
 }

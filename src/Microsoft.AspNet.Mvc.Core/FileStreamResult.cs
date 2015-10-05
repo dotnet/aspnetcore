@@ -78,7 +78,7 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <inheritdoc />
-        protected async override Task WriteFileAsync(HttpResponse response, CancellationToken cancellation)
+        protected async override Task WriteFileAsync(HttpResponse response)
         {
             var outputStream = response.Body;
 
@@ -87,7 +87,7 @@ namespace Microsoft.AspNet.Mvc
                 var bufferingFeature = response.HttpContext.Features.Get<IHttpBufferingFeature>();
                 bufferingFeature?.DisableResponseBuffering();
 
-                await FileStream.CopyToAsync(outputStream, BufferSize, cancellation);
+                await FileStream.CopyToAsync(outputStream, BufferSize);
             }
         }
     }

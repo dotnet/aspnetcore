@@ -3,7 +3,6 @@
 
 using System.IO;
 using System.Net.Mime;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
@@ -227,7 +226,7 @@ namespace Microsoft.AspNet.Mvc
             {
             }
 
-            protected override Task WriteFileAsync(HttpResponse response, CancellationToken cancellation)
+            protected override Task WriteFileAsync(HttpResponse response)
             {
                 WasWriteFileCalled = true;
                 return Task.FromResult(0);

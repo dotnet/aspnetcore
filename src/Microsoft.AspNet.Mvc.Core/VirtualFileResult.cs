@@ -92,7 +92,7 @@ namespace Microsoft.AspNet.Mvc
         public IFileProvider FileProvider { get; set; }
 
         /// <inheritdoc />
-        protected override async Task WriteFileAsync(HttpResponse response, CancellationToken cancellation)
+        protected override async Task WriteFileAsync(HttpResponse response)
         {
             var fileProvider = GetFileProvider(response.HttpContext.RequestServices);
 
@@ -113,24 +113,22 @@ namespace Microsoft.AspNet.Mvc
                         physicalPath,
                         offset: 0,
                         length: null,
-                        cancellation: cancellation);
-
-                    return;
+                        cancellation: default(CancellationToken));
                 }
                 else
                 {
                     var fileStream = GetFileStream(fileInfo);
                     using (fileStream)
                     {
-                        await fileStream.CopyToAsync(response.Body, DefaultBufferSize, cancellation);
+                        await fileStream.CopyToAsync(response.Body, DefaultBufferSize);
                     }
-
-                    return;
                 }
             }
-
-            throw new FileNotFoundException(
-                Resources.FormatFileResult_InvalidPath(FileName), FileName);
+            else
+            {
+                throw new FileNotFoundException(
+                    Resources.FormatFileResult_InvalidPath(FileName), FileName);
+            }
         }
 
         /// <summary>

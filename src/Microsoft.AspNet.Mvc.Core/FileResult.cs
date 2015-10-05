@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.Net.Http.Headers;
@@ -83,21 +82,16 @@ namespace Microsoft.AspNet.Mvc
                 context.HttpContext.Response.Headers[HeaderNames.ContentDisposition] = cd.ToString();
             }
 
-            // We aren't flowing the cancellation token appropriately, see
-            // https://github.com/aspnet/Mvc/issues/743 for details.
-            return WriteFileAsync(response, CancellationToken.None);
+            return WriteFileAsync(response);
         }
 
         /// <summary>
-        /// Writes the file to the response.
+        /// Writes the file to the specified <paramref name="response"/>.
         /// </summary>
-        /// <param name="response">
-        /// The <see cref="HttpResponse"/> where the file will be written
-        /// </param>
-        /// <param name="cancellation">The <see cref="CancellationToken"/>to cancel the operation.</param>
+        /// <param name="response">The <see cref="HttpResponse"/>.</param>
         /// <returns>
         /// A <see cref="Task"/> that will complete when the file has been written to the response.
         /// </returns>
-        protected abstract Task WriteFileAsync(HttpResponse response, CancellationToken cancellation);
+        protected abstract Task WriteFileAsync(HttpResponse response);
     }
 }
