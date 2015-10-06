@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
-using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Abstractions;
@@ -22,6 +21,8 @@ namespace Microsoft.AspNet.Mvc.Controllers
 {
     public abstract class FilterActionInvoker : IActionInvoker
     {
+        private static readonly IFilterMetadata[] EmptyFilterArray = new IFilterMetadata[0];
+
         private readonly IReadOnlyList<IFilterProvider> _filterProviders;
         private readonly IReadOnlyList<IInputFormatter> _inputFormatters;
         private readonly IReadOnlyList<IModelBinder> _modelBinders;
@@ -223,13 +224,17 @@ namespace Microsoft.AspNet.Mvc.Controllers
 
         private IFilterMetadata[] GetFilters()
         {
-            var context = new FilterProviderContext(
-                ActionContext,
-                ActionContext.ActionDescriptor.FilterDescriptors.Select(fd => new FilterItem(fd)).ToList());
-
-            foreach (var provider in _filterProviders)
+            var filterDescriptors = ActionContext.ActionDescriptor.FilterDescriptors;
+            var items = new List<FilterItem>(filterDescriptors.Count);
+            for (var i = 0; i < filterDescriptors.Count; i++)
             {
-                provider.OnProvidersExecuting(context);
+                items.Add(new FilterItem(filterDescriptors[i]));
+            }
+
+            var context = new FilterProviderContext(ActionContext, items);
+            for (var i = 0; i < _filterProviders.Count; i++)
+            {
+                _filterProviders[i].OnProvidersExecuting(context);
             }
 
             for (var i = _filterProviders.Count - 1; i >= 0; i--)
@@ -237,7 +242,33 @@ namespace Microsoft.AspNet.Mvc.Controllers
                 _filterProviders[i].OnProvidersExecuted(context);
             }
 
-            return context.Results.Select(item => item.Filter).Where(filter => filter != null).ToArray();
+            var count = 0;
+            for (var i = 0; i < items.Count; i++)
+            {
+                if (items[i].Filter != null)
+                {
+                    count++;
+                }
+            }
+
+            if (count == 0)
+            {
+                return EmptyFilterArray;
+            }
+            else
+            {
+                var filters = new IFilterMetadata[count];
+                for (int i = 0, j = 0; i < items.Count; i++)
+                {
+                    var filter = items[i].Filter;
+                    if (filter != null)
+                    {
+                        filters[j++] = filter;
+                    }
+                }
+
+                return filters;
+            }
         }
 
         private Task InvokeAllAuthorizationFiltersAsync()
