@@ -8,30 +8,35 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Core;
+using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public class JQueryFormValueProviderFactory : IValueProviderFactory
     {
-        public async Task<IValueProvider> GetValueProviderAsync(ValueProviderFactoryContext context)
+        public Task<IValueProvider> GetValueProviderAsync(ValueProviderFactoryContext context)
         {
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
-
+            
             var request = context.HttpContext.Request;
-
             if (request.HasFormContentType)
             {
-                return new JQueryFormValueProvider(
+                return CreateValueProviderAsync(request);
+            }
+
+            return TaskCache<IValueProvider>.DefaultCompletedTask;
+        }
+
+        private static async Task<IValueProvider> CreateValueProviderAsync(HttpRequest request)
+        {
+            return new JQueryFormValueProvider(
                     BindingSource.Form,
                     await GetValueCollectionAsync(request),
                     CultureInfo.CurrentCulture);
-            }
-
-            return null;
         }
 
         private static async Task<IDictionary<string, StringValues>> GetValueCollectionAsync(HttpRequest request)

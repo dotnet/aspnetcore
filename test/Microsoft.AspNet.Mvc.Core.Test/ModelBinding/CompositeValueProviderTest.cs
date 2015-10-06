@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 new JQueryFormValueProvider(bindingSource, new Dictionary<string, StringValues>(), culture);
             var valueProvider = new JQueryFormValueProvider(bindingSource, values, culture);
 
-            return new CompositeValueProvider(new[] { emptyValueProvider, valueProvider });
+            return new CompositeValueProvider() { emptyValueProvider, valueProvider };
         }
 
 #if DNX451
@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             provider2.Setup(p => p.GetKeysFromPrefix("prefix"))
                      .Returns(dictionary)
                      .Verifiable();
-            var provider = new CompositeValueProvider(new[] { provider1, provider2.Object });
+            var provider = new CompositeValueProvider() { provider1, provider2.Object };
 
             // Act
             var values = provider.GetKeysFromPrefix("prefix");
@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Arrange
             var provider1 = Mock.Of<IValueProvider>();
             var provider2 = Mock.Of<IValueProvider>();
-            var provider = new CompositeValueProvider(new[] { provider1, provider2 });
+            var provider = new CompositeValueProvider() { provider1, provider2 };
 
             // Act
             var values = provider.GetKeysFromPrefix("prefix");
@@ -89,7 +89,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var valueProvider1 = GetMockValueProvider("Test");
             var valueProvider2 = GetMockValueProvider("Unrelated");
 
-            var provider = new CompositeValueProvider(new List<IValueProvider>() { valueProvider1.Object, valueProvider2.Object });
+            var provider = new CompositeValueProvider() { valueProvider1.Object, valueProvider2.Object };
 
             // Act
             var result = provider.Filter(metadata.BindingSource);

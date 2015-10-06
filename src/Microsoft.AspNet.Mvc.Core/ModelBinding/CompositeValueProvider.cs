@@ -30,8 +30,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// </summary>
         /// <param name="valueProviders">The sequence of <see cref="IValueProvider"/> to add to this instance of
         /// <see cref="CompositeValueProvider"/>.</param>
-        public CompositeValueProvider(IEnumerable<IValueProvider> valueProviders)
-            : base(valueProviders.ToList())
+        protected CompositeValueProvider(IList<IValueProvider> valueProviders)
+            : base(valueProviders)
         {
         }
 

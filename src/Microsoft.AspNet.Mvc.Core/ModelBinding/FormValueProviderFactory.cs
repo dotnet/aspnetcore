@@ -5,12 +5,13 @@ using System;
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Mvc.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public class FormValueProviderFactory : IValueProviderFactory
     {
-        public async Task<IValueProvider> GetValueProviderAsync(ValueProviderFactoryContext context)
+        public Task<IValueProvider> GetValueProviderAsync(ValueProviderFactoryContext context)
         {
             if (context == null)
             {
@@ -18,23 +19,20 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
 
             var request = context.HttpContext.Request;
-
             if (request.HasFormContentType)
             {
-                var culture = GetCultureInfo(request);
-
-                return new ReadableStringCollectionValueProvider(
-                    BindingSource.Form,
-                    await request.ReadFormAsync(),
-                    culture);
+                return CreateValueProviderAsync(request);
             }
 
-            return null;
+            return TaskCache<IValueProvider>.DefaultCompletedTask;
         }
 
-        private static CultureInfo GetCultureInfo(HttpRequest request)
+        private static async Task<IValueProvider> CreateValueProviderAsync(HttpRequest request)
         {
-            return CultureInfo.CurrentCulture;
+            return new ReadableStringCollectionValueProvider(
+                BindingSource.Form,
+                await request.ReadFormAsync(),
+                CultureInfo.CurrentCulture);
         }
     }
 }
