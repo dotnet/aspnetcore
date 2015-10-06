@@ -20,5 +20,8 @@
     },
     "compilationOptions": {
         "warningsAsErrors": true
+    },
+    "packInclude": {
+        "content/net451/": "web.config.transform"
     }
 }

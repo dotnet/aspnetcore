@@ -2,6 +2,7 @@
     "dependencies": {
         "Microsoft.AspNet.DataProtection.Abstractions": "1.0.0-*",
         "Microsoft.AspNet.DataProtection.Extensions": "1.0.0-*",
+        "Microsoft.AspNet.DataProtection.Test.Shared": { "type": "build", "version": "" },
         "Microsoft.AspNet.Testing": "1.0.0-*",
         "Moq": "4.2.1312.1622",
         "xunit.runner.aspnet": "2.0.0-aspnet-*"

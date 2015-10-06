@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using Microsoft.AspNet.DataProtection.Test.Shared;
 using Microsoft.AspNet.Testing.xunit;
 using Xunit;
 
@@ -36,6 +37,7 @@ namespace Microsoft.AspNet.DataProtection
 
         [ConditionalFact]
         [ConditionalRunTestOnlyIfLocalAppDataAvailable]
+        [ConditionalRunTestOnlyOnWindows]
         public void System_UsesProvidedDirectory_WithConfigurationCallback()
         {
             WithUniqueTempDirectory(directory =>

@@ -18,15 +18,15 @@ namespace Microsoft.AspNet.DataProtection.XmlEncryption
         public void Encrypt_Decrypt_RoundTrips()
         {
             // Arrange
-            var aes = new AesCryptoServiceProvider();
-            aes.GenerateKey();
+            var symmetricAlgorithm = new TripleDESCryptoServiceProvider();
+            symmetricAlgorithm.GenerateKey();
 
             var serviceCollection = new ServiceCollection();
             var mockInternalEncryptor = new Mock<IInternalCertificateXmlEncryptor>();
             mockInternalEncryptor.Setup(o => o.PerformEncryption(It.IsAny<EncryptedXml>(), It.IsAny<XmlElement>()))
                 .Returns<EncryptedXml, XmlElement>((encryptedXml, element) =>
                 {
-                    encryptedXml.AddKeyNameMapping("theKey", aes); // use symmetric encryption
+                    encryptedXml.AddKeyNameMapping("theKey", symmetricAlgorithm); // use symmetric encryption
                     return encryptedXml.Encrypt(element, "theKey");
                 });
             serviceCollection.AddInstance<IInternalCertificateXmlEncryptor>(mockInternalEncryptor.Object);
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.DataProtection.XmlEncryption
             mockInternalDecryptor.Setup(o => o.PerformPreDecryptionSetup(It.IsAny<EncryptedXml>()))
                 .Callback<EncryptedXml>(encryptedXml =>
                 {
-                    encryptedXml.AddKeyNameMapping("theKey", aes); // use symmetric encryption
+                    encryptedXml.AddKeyNameMapping("theKey", symmetricAlgorithm); // use symmetric encryption
                 });
             serviceCollection.AddInstance<IInternalEncryptedXmlDecryptor>(mockInternalDecryptor.Object);
 

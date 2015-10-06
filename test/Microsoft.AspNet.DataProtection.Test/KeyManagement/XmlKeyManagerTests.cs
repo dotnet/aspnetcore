@@ -130,9 +130,9 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
             // Finally, was the correct element stored in the repository?
             string expectedXml = String.Format(@"
                 <key id='3d6d01fd-c0e7-44ae-82dd-013b996b4093' version='1' xmlns:enc='http://schemas.asp.net/2015/03/dataProtection'>
-                  <creationDate>2014-01-01T00:00:00Z</creationDate>
-                  <activationDate>2014-02-01T00:00:00Z</activationDate>
-                  <expirationDate>2014-03-01T00:00:00Z</expirationDate>
+                  {1}
+                  {2}
+                  {3}
                   <descriptor deserializerType='{0}'>
                     <theElement>
                       <secret enc:requiresEncryption='true'>
@@ -141,7 +141,10 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
                     </theElement>
                   </descriptor>
                 </key>",
-                typeof(MyDeserializer).AssemblyQualifiedName);
+                typeof(MyDeserializer).AssemblyQualifiedName,
+                new XElement("creationDate", creationDate),
+                new XElement("activationDate", activationDate),
+                new XElement("expirationDate", expirationDate));
             XmlAssert.Equal(expectedXml, elementStoredInRepository);
             Assert.Equal("key-3d6d01fd-c0e7-44ae-82dd-013b996b4093", friendlyNameStoredInRepository);
         }
@@ -221,9 +224,9 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
             // This should not have gone through the encryptor.
             string expectedEscrowXml = String.Format(@"
                 <key id='3d6d01fd-c0e7-44ae-82dd-013b996b4093' version='1' xmlns:enc='http://schemas.asp.net/2015/03/dataProtection'>
-                  <creationDate>2014-01-01T00:00:00Z</creationDate>
-                  <activationDate>2014-02-01T00:00:00Z</activationDate>
-                  <expirationDate>2014-03-01T00:00:00Z</expirationDate>
+                  {1}
+                  {2}
+                  {3}
                   <descriptor deserializerType='{0}'>
                     <theElement>
                       <secret enc:requiresEncryption='true'>
@@ -232,7 +235,10 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
                     </theElement>
                   </descriptor>
                 </key>",
-                typeof(MyDeserializer).AssemblyQualifiedName);
+                typeof(MyDeserializer).AssemblyQualifiedName,
+                new XElement("creationDate", creationDate),
+                new XElement("activationDate", activationDate),
+                new XElement("expirationDate", expirationDate));
             XmlAssert.Equal(expectedEscrowXml, elementStoredInEscrow);
             Assert.Equal(keyId, keyIdStoredInEscrow.Value);
 
@@ -240,9 +246,9 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
             // This should have gone through the encryptor (which we set to be the null encryptor in this test)
             string expectedRepositoryXml = String.Format(@"
                 <key id='3d6d01fd-c0e7-44ae-82dd-013b996b4093' version='1' xmlns:enc='http://schemas.asp.net/2015/03/dataProtection'>
-                  <creationDate>2014-01-01T00:00:00Z</creationDate>
-                  <activationDate>2014-02-01T00:00:00Z</activationDate>
-                  <expirationDate>2014-03-01T00:00:00Z</expirationDate>
+                  {2}
+                  {3}
+                  {4}
                   <descriptor deserializerType='{0}'>
                     <theElement>
                       <enc:encryptedSecret decryptorType='{1}'>
@@ -256,7 +262,10 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
                   </descriptor>
                 </key>",
                 typeof(MyDeserializer).AssemblyQualifiedName,
-                typeof(NullXmlDecryptor).AssemblyQualifiedName);
+                typeof(NullXmlDecryptor).AssemblyQualifiedName,
+                new XElement("creationDate", creationDate),
+                new XElement("activationDate", activationDate),
+                new XElement("expirationDate", expirationDate));
             XmlAssert.Equal(expectedRepositoryXml, elementStoredInRepository);
             Assert.Equal("key-3d6d01fd-c0e7-44ae-82dd-013b996b4093", friendlyNameStoredInRepository);
         }
@@ -660,7 +669,7 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
             var services = serviceCollection.BuildServiceProvider();
             var keyManager = new XmlKeyManager(services);
 
-            var revocationDate = DateTimeOffset.UtcNow;
+            var revocationDate = new DateTimeOffset(2014, 01, 01, 0, 0, 0, TimeSpan.Zero);
 
             // Act & assert
 
@@ -672,19 +681,20 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
             // and we should've gotten a new CT.
             ((IInternalXmlKeyManager)keyManager).RevokeSingleKey(
                 keyId: new Guid("a11f35fc-1fed-4bd4-b727-056a63b70932"),
-                revocationDate: new DateTimeOffset(2014, 01, 01, 0, 0, 0, TimeSpan.Zero),
+                revocationDate: revocationDate,
                 reason: "Here's some reason text.");
             var secondCancellationToken = keyManager.GetCacheExpirationToken();
             Assert.True(firstCancellationToken.IsCancellationRequested);
             Assert.False(secondCancellationToken.IsCancellationRequested);
 
             // Was the correct element stored in the repository?
-            const string expectedRepositoryXml = @"
+            var expectedRepositoryXml = string.Format(@"
                 <revocation version='1'>
-                  <revocationDate>2014-01-01T00:00:00Z</revocationDate>
+                  {0}
                   <key id='a11f35fc-1fed-4bd4-b727-056a63b70932' />
                   <reason>Here's some reason text.</reason>
-                </revocation>";
+                </revocation>",
+                new XElement("revocationDate", revocationDate));
             XmlAssert.Equal(expectedRepositoryXml, elementStoredInRepository);
             Assert.Equal("revocation-a11f35fc-1fed-4bd4-b727-056a63b70932", friendlyNameStoredInRepository);
         }

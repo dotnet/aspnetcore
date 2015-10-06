@@ -5,6 +5,8 @@ using System;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.AspNet.DataProtection.Test.Shared;
+using Microsoft.AspNet.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNet.DataProtection.Managed
@@ -77,7 +79,8 @@ namespace Microsoft.AspNet.DataProtection.Managed
             });
         }
 
-        [Fact]
+        [ConditionalFact]
+        [ConditionalRunTestOnlyOnWindows]
         public void Encrypt_KnownKey()
         {
             // Arrange
