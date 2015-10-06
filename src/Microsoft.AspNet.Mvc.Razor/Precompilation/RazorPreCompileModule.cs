@@ -16,6 +16,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
     /// </summary>
     public abstract class RazorPreCompileModule : ICompileModule
     {
+        private const string ReleaseConfiguration = "release";
         private readonly object _memoryCacheLookupLock = new object();
         private readonly Dictionary<PrecompilationCacheKey, MemoryCache> _memoryCacheLookup =
             new Dictionary<PrecompilationCacheKey, MemoryCache>();
@@ -29,6 +30,11 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
         /// <remarks>Pre-compiles all Razor views in the application.</remarks>
         public virtual void BeforeCompile(BeforeCompileContext context)
         {
+            if (!EnablePreCompilation(context))
+            {
+                return;
+            }
+
             var fileProvider = new PhysicalFileProvider(context.ProjectContext.ProjectDirectory);
 
             MemoryCache memoryCache;
@@ -65,6 +71,27 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
         /// <inheritdoc />
         public void AfterCompile(AfterCompileContext context)
         {
+        }
+
+        /// <summary>
+        /// Determines if this instance of <see cref="RazorPreCompileModule"/> should enable
+        /// compilation of views.
+        /// </summary>
+        /// <param name="context">The <see cref="BeforeCompileContext"/>.</param>
+        /// <returns><c>true</c> if views should be precompiled; otherwise <c>false</c>.</returns>
+        /// <remarks>Returns <c>true</c> if the current application is being built in <c>release</c>
+        /// configuration.</remarks>
+        protected virtual bool EnablePreCompilation(BeforeCompileContext context)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return string.Equals(
+                context.ProjectContext.Configuration,
+                ReleaseConfiguration,
+                StringComparison.OrdinalIgnoreCase);
         }
 
         private class PrecompilationCacheKey : IEquatable<PrecompilationCacheKey>
