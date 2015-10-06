@@ -122,7 +122,7 @@
     <comment>Error when optimistic concurrency fails</comment>
   </data>
   <data name="DefaultError" xml:space="preserve">
-    <value>An unknown failure has occured.</value>
+    <value>An unknown failure has occurred.</value>
     <comment>Default identity result error message</comment>
   </data>
   <data name="DuplicateEmail" xml:space="preserve">
