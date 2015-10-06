@@ -31,6 +31,7 @@
                     "bin\\lib\\Microsoft.Dnx.DesignTimeHost\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
                     "bin\\lib\\Microsoft.Dnx.Tooling\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
                     "bin\\lib\\Microsoft.Dnx.Tooling\\System.Net.Http.dll": "Need to follow up, not from ADX team",
+                    "bin\\Microsoft.Win32.Primitives.dll": "Need to follow up, not from ADX team",
                     "bin\\mscorlib.dll": "Need to follow up, not from ADX team",
                     "bin\\System.Console.dll": "Need to follow up, not from ADX team",
                     "bin\\System.Diagnostics.Debug.dll": "Need to follow up, not from ADX team",
@@ -52,6 +53,7 @@
                     "bin\\lib\\Microsoft.Dnx.DesignTimeHost\\Newtonsoft.Json.dll": "3rd party DLLs don't need this",
                     "bin\\lib\\Microsoft.Dnx.Tooling\\Newtonsoft.Json.dll": "3rd party DLLs don't need this",
                     "bin\\lib\\Microsoft.Dnx.Tooling\\System.Net.Http.dll": "Need to follow up, not from ADX team",
+                    "bin\\Microsoft.Win32.Primitives.dll": "Need to follow up, not from ADX team",
                     "bin\\mscorlib.dll": "Need to follow up, not from ADX team",
                     "bin\\System.Console.dll": "Need to follow up, not from ADX team",
                     "bin\\System.Diagnostics.Debug.dll": "Need to follow up, not from ADX team",
@@ -248,6 +250,9 @@
             "Microsoft.Net.Http.Headers": { },
             "Microsoft.Net.Http.Server": { },
             "Microsoft.Net.WebSockets": { },
+            "Microsoft.NETCore.ConsoleHost-x64": { },
+            "Microsoft.NETCore.Runtime.CoreCLR-arm": { },
+            "Microsoft.NETCore.Runtime.CoreCLR-x86": { },
             "Microsoft.VisualStudio.Web.BrowserLink.Loader": { }
         }
     },
@@ -303,7 +308,8 @@
         "packages": {
             "Microsoft.DotNet.BuildTools.ApiTools": {
                 "SIGN_STRONGNAME": {
-                    "tools\\ApiCompat.exe": "3rd party DLLs don't need this"
+                    "tools\\ApiCompat.exe": "Need to follow up, not from ADX team",
+                    "tools\\GenFacades.exe": "Need to follow up, not from ADX team"
                 }
             },
             "Microsoft.Cci": { },
@@ -316,6 +322,15 @@
             "Microsoft.CodeAnalysis.VisualBasic.Workspaces": { },
             "Microsoft.CodeAnalysis.Workspaces.Common": { },
             "Microsoft.CSharp": { },
+            "Microsoft.DotNet.BuildTools.CoreCLR": {
+                "SIGN_STRONGNAME": {
+                    "BclRewriter.exe": "Need to follow up, not from ADX team"
+                }
+            },
+            "Microsoft.DotNet.CoreCLR": { },
+            "Microsoft.DotNet.TestHost": { },
+            "Microsoft.NETCore.ConsoleHost-arm": { },
+            "Microsoft.NETCore.ConsoleHost-x86": { },
             "Microsoft.NETCore": { },
             "Microsoft.NETCore.Console": { },
             "Microsoft.NETCore.ConsoleHost": { },
@@ -323,14 +338,20 @@
             "Microsoft.NETCore.Portable.Compatibility": { },
             "Microsoft.NETCore.Runtime": { },
             "Microsoft.NETCore.Runtime.CoreCLR": { },
+            "Microsoft.NETCore.Runtime.CoreCLR-x64": { },
             "Microsoft.NETCore.Runtime.Native": { },
             "Microsoft.NETCore.Targets": { },
-            "Microsoft.NETCore.TestHost": { },
             "Microsoft.NETCore.Targets.DNXCore": { },
             "Microsoft.NETCore.Targets.NETFramework": { },
             "Microsoft.NETCore.Targets.UniversalWindowsPlatform": { },
+            "Microsoft.NETCore.TestHost": { },
+            "Microsoft.NETCore.TestHost-arm": { },
+            "Microsoft.NETCore.TestHost-x64": { },
+            "Microsoft.NETCore.TestHost-x86": { },
             "Microsoft.NETCore.UniversalWindowsPlatform": { },
             "Microsoft.NETCore.Windows.ApiSets": { },
+            "Microsoft.NETCore.Windows.ApiSets-x64": { },
+            "Microsoft.NETCore.Windows.ApiSets-x86": { },
             "Microsoft.VisualBasic": { },
             "Microsoft.Win32.Primitives": { },
             "Microsoft.Win32.Registry": { },
@@ -531,55 +552,60 @@
                 }
             },
             "runtime.linux.System.IO.Compression.ZipFile": {
-                "SIGN_AUTHENTICODE": {
+                "SIGN_STRONGNAME": {
                     "lib\\dotnet\\System.IO.Compression.ZipFile.dll": "3rd party DLLs don't need this"
                 }
             },
             "runtime.osx.10.10.System.IO.Compression.ZipFile": {
-                "SIGN_AUTHENTICODE": {
+                "SIGN_STRONGNAME": {
                     "lib\\dotnet\\System.IO.Compression.ZipFile.dll": "3rd party DLLs don't need this"
                 }
             },
             "runtime.osx.System.Diagnostics.Process": {
-                "SIGN_AUTHENTICODE": {
+                "SIGN_STRONGNAME": {
                     "lib\\dotnet\\System.Diagnostics.Process.dll": "3rd party DLLs don't need this"
                 }
             },
             "runtime.osx.System.IO.Compression.ZipFile": {
-                "SIGN_AUTHENTICODE": {
+                "SIGN_STRONGNAME": {
                     "lib\\dotnet\\System.IO.Compression.ZipFile.dll": "3rd party DLLs don't need this"
                 }
             },
             "runtime.osx.System.IO.FileSystem.DriveInfo": {
-                "SIGN_AUTHENTICODE": {
+                "SIGN_STRONGNAME": {
                     "lib\\dotnet\\System.IO.FileSystem.DriveInfo.dll": "3rd party DLLs don't need this"
                 }
             },
             "runtime.osx.System.IO.FileSystem.Watcher": {
-                "SIGN_AUTHENTICODE": {
+                "SIGN_STRONGNAME": {
                     "lib\\dotnet\\System.IO.FileSystem.Watcher.dll": "3rd party DLLs don't need this"
                 }
             },
             "runtime.osx.System.IO.MemoryMappedFiles": {
-                "SIGN_AUTHENTICODE": {
+                "SIGN_STRONGNAME": {
                     "lib\\dotnet\\System.IO.MemoryMappedFiles.dll": "3rd party DLLs don't need this"
                 }
             },
             "runtime.osx.System.Net.Http": {
-                "SIGN_AUTHENTICODE": {
+                "SIGN_STRONGNAME": {
                     "lib\\dotnet\\System.Net.Http.dll": "3rd party DLLs don't need this"
                 }
             },
             "runtime.osx.System.Runtime.Extensions": {
-                "SIGN_AUTHENTICODE": {
+                "SIGN_STRONGNAME": {
                     "lib\\dotnet\\System.Runtime.Extensions.dll": "3rd party DLLs don't need this"
                 }
             },
             "runtime.osx.System.Runtime.InteropServices.RuntimeInformation": {
-                "SIGN_AUTHENTICODE": {
+                "SIGN_STRONGNAME": {
                     "lib\\dotnet\\System.Runtime.InteropServices.RuntimeInformation.dll": "3rd party DLLs don't need this"
                 }
             },
+            "runtime.win7-arm.Microsoft.NETCore.ConsoleHost": { },
+            "runtime.win7-arm.Microsoft.NETCore.TestHost": { },
+            "runtime.win7-arm.System.IO.Compression.clrcompression": { },
+            "runtime.win7.System.IO.Compression.ZipFile": { },
+            "runtime.win8-arm.Microsoft.NETCore.Runtime.CoreCLR": { },
             "runtime.win7.Microsoft.Win32.Primitives": { },
             "runtime.win7.System.Console": { },
             "runtime.win7.System.Diagnostics.Debug": { },
@@ -632,6 +658,9 @@
             "System.Console": { },
             "System.Data.Common": { },
             "System.Data.SqlClient": { },
+            "System.Data.SqlClient.sni-arm": { },
+            "System.Data.SqlClient.sni-x64": { },
+            "System.Data.SqlClient.sni-x86": { },
             "System.Diagnostics.Contracts": { },
             "System.Diagnostics.Debug": { },
             "System.Diagnostics.FileVersionInfo": { },
@@ -648,6 +677,9 @@
             "System.Globalization.Extensions": { },
             "System.IO": { },
             "System.IO.Compression": { },
+            "System.IO.Compression.clrcompression-arm": { },
+            "System.IO.Compression.clrcompression-x64": { },
+            "System.IO.Compression.clrcompression-x86": { },
             "System.IO.Compression.ZipFile": { },
             "System.IO.FileSystem": { },
             "System.IO.FileSystem.AccessControl": { },
@@ -713,9 +745,16 @@
             "System.Security.Cryptography.Algorithms": { },
             "System.Security.Cryptography.Cng": { },
             "System.Security.Cryptography.Csp": { },
+            "System.Security.Cryptography.DeriveBytes": { },
             "System.Security.Cryptography.Encoding": { },
+            "System.Security.Cryptography.Encryption": { },
+            "System.Security.Cryptography.Encryption.Aes": { },
+            "System.Security.Cryptography.Hashing": { },
+            "System.Security.Cryptography.Hashing.Algorithms": { },
             "System.Security.Cryptography.OpenSsl": { },
             "System.Security.Cryptography.Primitives": { },
+            "System.Security.Cryptography.RandomNumberGenerator": { },
+            "System.Security.Cryptography.RSA": { },
             "System.Security.Cryptography.X509Certificates": { },
             "System.Security.Principal": { },
             "System.Security.Principal.Windows": { },
