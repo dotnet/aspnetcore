@@ -13,23 +13,26 @@ using Microsoft.AspNet.Server.Kestrel.Http;
 using Microsoft.AspNet.Server.Kestrel.Https;
 using Microsoft.AspNet.Testing.xunit;
 using Xunit;
+using Microsoft.AspNet.Http.Features;
 
 namespace Microsoft.AspNet.Server.KestrelTests
 {
     public class HttpsConnectionFilterTests
     {
-        private async Task App(Frame frame)
+        private async Task App(IFeatureCollection frame)
         {
-            frame.ResponseHeaders.Clear();
+            var request = frame.Get<IHttpRequestFeature>();
+            var response = frame.Get<IHttpResponseFeature>();
+            response.Headers.Clear();
             while (true)
             {
                 var buffer = new byte[8192];
-                var count = await frame.RequestBody.ReadAsync(buffer, 0, buffer.Length);
+                var count = await request.Body.ReadAsync(buffer, 0, buffer.Length);
                 if (count == 0)
                 {
                     break;
                 }
-                await frame.ResponseBody.WriteAsync(buffer, 0, count);
+                await response.Body.WriteAsync(buffer, 0, count);
             }
         }
 

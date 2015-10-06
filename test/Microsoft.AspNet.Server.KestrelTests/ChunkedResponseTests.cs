@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNet.Http.Features;
 using System;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,9 +16,10 @@ namespace Microsoft.AspNet.Server.KestrelTests
         {
             using (var server = new TestServer(async frame =>
             {
-                frame.ResponseHeaders.Clear();
-                await frame.ResponseBody.WriteAsync(Encoding.ASCII.GetBytes("Hello "), 0, 6);
-                await frame.ResponseBody.WriteAsync(Encoding.ASCII.GetBytes("World!"), 0, 6);
+                var response = frame.Get<IHttpResponseFeature>();
+                response.Headers.Clear();
+                await response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello "), 0, 6);
+                await response.Body.WriteAsync(Encoding.ASCII.GetBytes("World!"), 0, 6);
             }))
             {
                 using (var connection = new TestConnection())
@@ -46,10 +48,11 @@ namespace Microsoft.AspNet.Server.KestrelTests
         {
             using (var server = new TestServer(async frame =>
             {
-                frame.ResponseHeaders.Clear();
-                await frame.ResponseBody.WriteAsync(Encoding.ASCII.GetBytes("Hello "), 0, 6);
-                await frame.ResponseBody.WriteAsync(new byte[0], 0, 0);
-                await frame.ResponseBody.WriteAsync(Encoding.ASCII.GetBytes("World!"), 0, 6);
+                var response = frame.Get<IHttpResponseFeature>();
+                response.Headers.Clear();
+                await response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello "), 0, 6);
+                await response.Body.WriteAsync(new byte[0], 0, 0);
+                await response.Body.WriteAsync(Encoding.ASCII.GetBytes("World!"), 0, 6);
             }))
             {
                 using (var connection = new TestConnection())
@@ -78,8 +81,9 @@ namespace Microsoft.AspNet.Server.KestrelTests
         {
             using (var server = new TestServer(async frame =>
             {
-                frame.ResponseHeaders.Clear();
-                await frame.ResponseBody.WriteAsync(new byte[0], 0, 0);
+                var response = frame.Get<IHttpResponseFeature>();
+                response.Headers.Clear();
+                await response.Body.WriteAsync(new byte[0], 0, 0);
             }))
             {
                 using (var connection = new TestConnection())
@@ -104,8 +108,9 @@ namespace Microsoft.AspNet.Server.KestrelTests
         {
             using (var server = new TestServer(async frame =>
             {
-                frame.ResponseHeaders.Clear();
-                await frame.ResponseBody.WriteAsync(Encoding.ASCII.GetBytes("Hello World!"), 0, 12);
+                var response = frame.Get<IHttpResponseFeature>();
+                response.Headers.Clear();
+                await response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello World!"), 0, 12);
                 throw new Exception();
             }))
             {
@@ -133,8 +138,9 @@ namespace Microsoft.AspNet.Server.KestrelTests
         {
             using (var server = new TestServer(async frame =>
             {
-                frame.ResponseHeaders.Clear();
-                await frame.ResponseBody.WriteAsync(new byte[0], 0, 0);
+                var response = frame.Get<IHttpResponseFeature>();
+                response.Headers.Clear();
+                await response.Body.WriteAsync(new byte[0], 0, 0);
                 throw new Exception();
             }))
             {

@@ -7,6 +7,7 @@ using Microsoft.AspNet.Server.Kestrel;
 using Microsoft.AspNet.Server.Kestrel.Http;
 using Microsoft.Dnx.Runtime;
 using Microsoft.Dnx.Runtime.Infrastructure;
+using Microsoft.AspNet.Http.Features;
 
 namespace Microsoft.AspNet.Server.KestrelTests
 {
@@ -18,16 +19,16 @@ namespace Microsoft.AspNet.Server.KestrelTests
         private KestrelEngine _engine;
         private IDisposable _server;
 
-        public TestServer(Func<Frame, Task> app)
+        public TestServer(Func<IFeatureCollection, Task> app)
             : this(app, new TestServiceContext())
         {
         }
 
-        public TestServer(Func<Frame, Task> app, ServiceContext context)
+        public TestServer(Func<IFeatureCollection, Task> app, ServiceContext context)
             : this(app, context, "http://localhost:54321/")
         {
         }
-        public TestServer(Func<Frame, Task> app, ServiceContext context, string serverAddress)
+        public TestServer(Func<IFeatureCollection, Task> app, ServiceContext context, string serverAddress)
         {
             Create(app, context, serverAddress);
         }
@@ -54,7 +55,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
             }
         }
 
-        public void Create(Func<Frame, Task> app, ServiceContext context, string serverAddress)
+        public void Create(Func<IFeatureCollection, Task> app, ServiceContext context, string serverAddress)
         {
             _engine = new KestrelEngine(
                 LibraryManager, 

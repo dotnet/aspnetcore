@@ -11,7 +11,6 @@ using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 using Microsoft.AspNet.Server.Kestrel.Networking;
 using Microsoft.Dnx.Runtime;
 using Microsoft.Extensions.Logging;
-using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Server.Kestrel
 {

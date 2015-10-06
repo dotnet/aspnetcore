@@ -6,6 +6,7 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Dnx.Runtime;
+using Microsoft.AspNet.Server.Kestrel;
 
 #if DNX451
 using System.IO;

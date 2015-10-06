@@ -13,6 +13,7 @@ using Microsoft.AspNet.Server.Kestrel.Http;
 using Microsoft.Dnx.Runtime;
 using Microsoft.Dnx.Runtime.Infrastructure;
 using Xunit;
+using Microsoft.AspNet.Http.Features;
 
 namespace Microsoft.AspNet.Server.KestrelTests
 {
@@ -40,18 +41,20 @@ namespace Microsoft.AspNet.Server.KestrelTests
             }
         }
 
-        private async Task App(Frame frame)
+        private async Task App(IFeatureCollection frame)
         {
-            frame.ResponseHeaders.Clear();
+            var request = frame.Get<IHttpRequestFeature>();
+            var response = frame.Get<IHttpResponseFeature>();
+            response.Headers.Clear();
             while (true)
             {
                 var buffer = new byte[8192];
-                var count = await frame.RequestBody.ReadAsync(buffer, 0, buffer.Length);
+                var count = await request.Body.ReadAsync(buffer, 0, buffer.Length);
                 if (count == 0)
                 {
                     break;
                 }
-                await frame.ResponseBody.WriteAsync(buffer, 0, count);
+                await response.Body.WriteAsync(buffer, 0, count);
             }
         }
 
@@ -78,20 +81,22 @@ namespace Microsoft.AspNet.Server.KestrelTests
             }
         }
 
-        private async Task AppChunked(Frame frame)
+        private async Task AppChunked(IFeatureCollection frame)
         {
+            var request = frame.Get<IHttpRequestFeature>();
+            var response = frame.Get<IHttpResponseFeature>();
             var data = new MemoryStream();
-            await frame.RequestBody.CopyToAsync(data);
+            await request.Body.CopyToAsync(data);
             var bytes = data.ToArray();
 
-            frame.ResponseHeaders.Clear();
-            frame.ResponseHeaders["Content-Length"] = new[] { bytes.Length.ToString() };
-            await frame.ResponseBody.WriteAsync(bytes, 0, bytes.Length);
+            response.Headers.Clear();
+            response.Headers["Content-Length"] = bytes.Length.ToString();
+            await response.Body.WriteAsync(bytes, 0, bytes.Length);
         }
 
-        private Task EmptyApp(Frame frame)
+        private Task EmptyApp(IFeatureCollection frame)
         {
-            frame.ResponseHeaders.Clear();
+            frame.Get<IHttpResponseFeature>().Headers.Clear();
             return Task.FromResult<object>(null);
         }
 
@@ -494,12 +499,14 @@ namespace Microsoft.AspNet.Server.KestrelTests
         {
             using (var server = new TestServer(async frame =>
             {
-                frame.ResponseHeaders.Clear();
+                var request = frame.Get<IHttpRequestFeature>();
+                var response = frame.Get<IHttpResponseFeature>();
+                response.Headers.Clear();
 
-                using (var reader = new StreamReader(frame.RequestBody, Encoding.ASCII))
+                using (var reader = new StreamReader(request.Body, Encoding.ASCII))
                 {
                     var statusString = await reader.ReadLineAsync();
-                    frame.StatusCode = int.Parse(statusString);
+                    response.StatusCode = int.Parse(statusString);
                 }
             }, testContext))
             {
@@ -547,15 +554,16 @@ namespace Microsoft.AspNet.Server.KestrelTests
 
             using (var server = new TestServer(frame =>
             {
-                frame.OnStarting(_ =>
+                var response = frame.Get<IHttpResponseFeature>();
+                response.OnStarting(_ =>
                 {
                     onStartingCalled = true;
                     return Task.FromResult<object>(null);
                 }, null);
 
                 // Anything added to the ResponseHeaders dictionary is ignored
-                frame.ResponseHeaders.Clear();
-                frame.ResponseHeaders["Content-Length"] = new[] { "11" };
+                response.Headers.Clear();
+                response.Headers["Content-Length"] = "11";
                 throw new Exception();
             }, testContext))
             {
@@ -599,15 +607,16 @@ namespace Microsoft.AspNet.Server.KestrelTests
 
             using (var server = new TestServer(async frame =>
             {
-                frame.OnStarting(_ =>
+                var response = frame.Get<IHttpResponseFeature>();
+                response.OnStarting(_ =>
                 {
                     onStartingCalled = true;
                     return Task.FromResult<object>(null);
                 }, null);
 
-                frame.ResponseHeaders.Clear();
-                frame.ResponseHeaders["Content-Length"] = new[] { "11" };
-                await frame.ResponseBody.WriteAsync(Encoding.ASCII.GetBytes("Hello World"), 0, 11);
+                response.Headers.Clear();
+                response.Headers["Content-Length"] = new[] { "11" };
+                await response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello World"), 0, 11);
                 throw new Exception();
             }, testContext))
             {
@@ -636,15 +645,16 @@ namespace Microsoft.AspNet.Server.KestrelTests
 
             using (var server = new TestServer(async frame =>
             {
-                frame.OnStarting(_ =>
+                var response = frame.Get<IHttpResponseFeature>();
+                response.OnStarting(_ =>
                 {
                     onStartingCalled = true;
                     return Task.FromResult<object>(null);
                 }, null);
 
-                frame.ResponseHeaders.Clear();
-                frame.ResponseHeaders["Content-Length"] = new[] { "11" };
-                await frame.ResponseBody.WriteAsync(Encoding.ASCII.GetBytes("Hello"), 0, 5);
+                response.Headers.Clear();
+                response.Headers["Content-Length"] = new[] { "11" };
+                await response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello"), 0, 5);
                 throw new Exception();
             }, testContext))
             {
@@ -740,13 +750,14 @@ namespace Microsoft.AspNet.Server.KestrelTests
         {
             using (var server = new TestServer(frame =>
             {
-                frame.OnStarting(_ =>
+                var response = frame.Get<IHttpResponseFeature>();
+                response.OnStarting(_ =>
                 {
                     throw new Exception();
                 }, null);
 
-                frame.ResponseHeaders.Clear();
-                frame.ResponseHeaders["Content-Length"] = new[] { "11" };
+                response.Headers.Clear();
+                response.Headers["Content-Length"] = new[] { "11" };
 
                 // If we write to the response stream, we will not get a 500.
 
@@ -791,21 +802,22 @@ namespace Microsoft.AspNet.Server.KestrelTests
             {
                 var onStartingException = new Exception();
 
-                frame.OnStarting(_ =>
+                var response = frame.Get<IHttpResponseFeature>();
+                response.OnStarting(_ =>
                 {
                     throw onStartingException;
                 }, null);
 
-                frame.ResponseHeaders.Clear();
-                frame.ResponseHeaders["Content-Length"] = new[] { "11" };
+                response.Headers.Clear();
+                response.Headers["Content-Length"] = new[] { "11" };
 
                 var writeException = await Assert.ThrowsAsync<Exception>(async () =>
-                    await frame.ResponseBody.WriteAsync(Encoding.ASCII.GetBytes("Hello World"), 0, 11));
+                    await response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello World"), 0, 11));
 
                 Assert.Same(onStartingException, writeException);
 
                 // The second write should succeed since the OnStarting callback will not be called again
-                await frame.ResponseBody.WriteAsync(Encoding.ASCII.GetBytes("Exception!!"), 0, 11);
+                await response.Body.WriteAsync(Encoding.ASCII.GetBytes("Exception!!"), 0, 11);
             }, testContext))
             {
                 using (var connection = new TestConnection())
