@@ -34,7 +34,7 @@ namespace E2ETests
             catch (Exception exception)
             {
                 //Ignore if there is failure in cleanup.
-                logger.LogWarning("Error occured while dropping database {0}. Exception : {1}", databaseName, exception.ToString());
+                logger.LogWarning("Error occurred while dropping database {0}. Exception : {1}", databaseName, exception.ToString());
             }
         }
     }
