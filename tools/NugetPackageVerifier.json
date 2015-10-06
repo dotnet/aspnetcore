@@ -301,6 +301,11 @@
             "AssemblyStrongNameRule"
         ],
         "packages": {
+            "Microsoft.DotNet.BuildTools.ApiTools": {
+                "SIGN_STRONGNAME": {
+                    "tools\ApiCompat.exe": "3rd party DLLs don't need this"
+                }
+            },
             "Microsoft.Cci": { },
             "Microsoft.CodeAnalysis": { },
             "Microsoft.CodeAnalysis.Analyzers": { },
@@ -525,6 +530,56 @@
                     "lib\\dotnet\\System.Threading.dll": "3rd party DLLs don't need this"
                 }
             },
+            "runtime.linux.System.IO.Compression.ZipFile": {
+                "SIGN_AUTHENTICODE": {
+                    "lib\dotnet\System.IO.Compression.ZipFile.dll": "3rd party DLLs don't need this"
+                }
+            },
+            "runtime.osx.10.10.System.IO.Compression.ZipFile": {
+                "SIGN_AUTHENTICODE": {
+                    "lib\dotnet\System.IO.Compression.ZipFile.dll": "3rd party DLLs don't need this"
+                }
+            },
+            "runtime.osx.System.Diagnostics.Process": {
+                "SIGN_AUTHENTICODE": {
+                    "lib\dotnet\System.Diagnostics.Process.dll": "3rd party DLLs don't need this"
+                }
+            },
+            "runtime.osx.System.IO.Compression.ZipFile": {
+                "SIGN_AUTHENTICODE": {
+                    "lib\dotnet\System.IO.Compression.ZipFile.dll": "3rd party DLLs don't need this"
+                }
+            },
+            "runtime.osx.System.IO.FileSystem.DriveInfo": {
+                SIGN_AUTHENTICODE": {
+                    "lib\dotnet\System.IO.FileSystem.DriveInfo.dll": "3rd party DLLs don't need this"
+                }
+            },
+            "runtime.osx.System.IO.FileSystem.Watcher": {
+                SIGN_AUTHENTICODE": {
+                    "lib\dotnet\System.IO.FileSystem.Watcher.dll": "3rd party DLLs don't need this"
+                }
+            },
+            "runtime.osx.System.IO.MemoryMappedFiles": {
+                SIGN_AUTHENTICODE": {
+                    "lib\dotnet\System.IO.MemoryMappedFiles.dll": "3rd party DLLs don't need this"
+                }
+            },
+            "runtime.osx.System.Net.Http": {
+                SIGN_AUTHENTICODE": {
+                    "lib\dotnet\System.Net.Http.dll": "3rd party DLLs don't need this"
+                }
+            },
+            "runtime.osx.System.Runtime.Extensions": {
+                SIGN_AUTHENTICODE": {
+                    "lib\dotnet\System.Runtime.Extensions.dll": "3rd party DLLs don't need this"
+                }
+            },
+            "runtime.osx.System.Runtime.InteropServices.RuntimeInformation": {
+                SIGN_AUTHENTICODE": {
+                    "lib\dotnet\System.Runtime.InteropServices.RuntimeInformation.dll": "3rd party DLLs don't need this"
+                }
+            },
             "runtime.win7.Microsoft.Win32.Primitives": { },
             "runtime.win7.System.Console": { },
             "runtime.win7.System.Diagnostics.Debug": { },
@@ -549,10 +604,6 @@
             "runtime.win7.System.Security.Cryptography.X509Certificates": { },
             "runtime.win7.System.Text.Encoding.CodePages": { },
             "runtime.win7.System.Threading": { },
-            "runtime.win7-arm64.Microsoft.NETCore.ConsoleHost": { },
-            "runtime.win7-arm64.Microsoft.NETCore.TestHost": { },
-            "runtime.win7-arm64.System.IO.Compression.clrcompression": { },
-            "runtime.win8-arm64.Microsoft.NETCore.Runtime.CoreCLR": { },
             "runtime.win7-x86.Microsoft.NETCore.ConsoleHost": { },
             "runtime.win7-x86.Microsoft.NETCore.Runtime.CoreCLR": { },
             "runtime.win7-x86.Microsoft.NETCore.TestHost": { },
