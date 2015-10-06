@@ -277,4 +277,7 @@
   <data name="Dictionary_DuplicateKey" xml:space="preserve">
     <value>The collection already contains an entry with key '{0}'.</value>
   </data>
+  <data name="ViewComponent_SyncMethod_CannotReturnTask" xml:space="preserve">
+    <value>The view component method '{0}' cannot return a {1}.</value>
+  </data>
 </root>

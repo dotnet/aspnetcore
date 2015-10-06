@@ -55,42 +55,44 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
                 throw new InvalidOperationException(
                     Resources.FormatViewComponent_SyncMethod_ShouldReturnValue(SyncMethodName));
             }
+            else if (method.ReturnType.IsAssignableFrom(typeof(Task)))
+            {
+                throw new InvalidOperationException(
+                    Resources.FormatViewComponent_SyncMethod_CannotReturnTask(SyncMethodName, nameof(Task)));
+            }
 
             return method;
         }
 
         private static MethodInfo GetMethod(TypeInfo componentType, object[] args, string methodName)
         {
-            args = args ?? new object[0];
-            var argumentExpressions = new Expression[args.Length];
-            for (var i = 0; i < args.Length; i++)
+            Type[] types;
+            if (args == null || args.Length == 0)
             {
-                argumentExpressions[i] = Expression.Constant(args[i], args[i].GetType());
+                types = Type.EmptyTypes;
+            }
+            else
+            {
+                types = new Type[args.Length];
+                for (var i = 0; i < args.Length; i++)
+                {
+                    types[i] = args[i]?.GetType() ?? typeof(object);
+                }
             }
 
-            try
-            {
-                // We're currently using this technique to make a call into a component method that looks like a
-                // regular method call.
-                //
-                // Ex: @Component.Invoke<Cart>("hello", 5) => cart.Invoke("hello", 5)
-                //
-                // This approach has some drawbacks, namely it doesn't account for default parameters, and more
-                // noticably, it throws if the method is not found.
-                //
-                // Unfortunely the overload of Type.GetMethod that we would like to use is not present in CoreCLR.
-                // Item #160 in Jira tracks these issues.
-                var expression = Expression.Call(
-                    Expression.Constant(null, componentType.AsType()),
-                    methodName,
-                    null,
-                    argumentExpressions);
-                return expression.Method;
-            }
-            catch (InvalidOperationException)
-            {
-                return null;
-            }
+#if DNX451
+            return componentType.AsType().GetMethod(
+                methodName,
+                BindingFlags.Public | BindingFlags.Instance,
+                binder: null,
+                types: types,
+                modifiers: null);
+#else
+            var method = componentType.AsType().GetMethod(methodName, types: types);
+            // At most one method (including static and instance methods) with the same parameter types can exist
+            // per type.
+            return method != null && method.IsStatic ? null : method;
+#endif
         }
     }
 }
