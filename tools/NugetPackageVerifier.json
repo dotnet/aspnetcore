@@ -551,32 +551,32 @@
                 }
             },
             "runtime.osx.System.IO.FileSystem.DriveInfo": {
-                SIGN_AUTHENTICODE": {
+                "SIGN_AUTHENTICODE": {
                     "lib\\dotnet\\System.IO.FileSystem.DriveInfo.dll": "3rd party DLLs don't need this"
                 }
             },
             "runtime.osx.System.IO.FileSystem.Watcher": {
-                SIGN_AUTHENTICODE": {
+                "SIGN_AUTHENTICODE": {
                     "lib\\dotnet\\System.IO.FileSystem.Watcher.dll": "3rd party DLLs don't need this"
                 }
             },
             "runtime.osx.System.IO.MemoryMappedFiles": {
-                SIGN_AUTHENTICODE": {
+                "SIGN_AUTHENTICODE": {
                     "lib\\dotnet\\System.IO.MemoryMappedFiles.dll": "3rd party DLLs don't need this"
                 }
             },
             "runtime.osx.System.Net.Http": {
-                SIGN_AUTHENTICODE": {
+                "SIGN_AUTHENTICODE": {
                     "lib\\dotnet\\System.Net.Http.dll": "3rd party DLLs don't need this"
                 }
             },
             "runtime.osx.System.Runtime.Extensions": {
-                SIGN_AUTHENTICODE": {
+                "SIGN_AUTHENTICODE": {
                     "lib\\dotnet\\System.Runtime.Extensions.dll": "3rd party DLLs don't need this"
                 }
             },
             "runtime.osx.System.Runtime.InteropServices.RuntimeInformation": {
-                SIGN_AUTHENTICODE": {
+                "SIGN_AUTHENTICODE": {
                     "lib\\dotnet\\System.Runtime.InteropServices.RuntimeInformation.dll": "3rd party DLLs don't need this"
                 }
             },
