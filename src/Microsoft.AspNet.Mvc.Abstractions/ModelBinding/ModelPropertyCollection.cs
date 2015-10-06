@@ -2,50 +2,35 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     /// <summary>
-    /// A read-only list of <see cref="ModelMetadata"/> objects which represent model properties.
+    /// A read-only collection of <see cref="ModelMetadata"/> objects which represent model properties.
     /// </summary>
-    public class ModelPropertyCollection : IReadOnlyList<ModelMetadata>
+    public class ModelPropertyCollection : ReadOnlyCollection<ModelMetadata>
     {
-        private readonly List<ModelMetadata> _properties;
-
         /// <summary>
         /// Creates a new <see cref="ModelPropertyCollection"/>.
         /// </summary>
         /// <param name="properties">The properties.</param>
         public ModelPropertyCollection(IEnumerable<ModelMetadata> properties)
+            : base(properties.ToList())
         {
-            if (properties == null)
-            {
-                throw new ArgumentNullException(nameof(properties));
-            }
-
-            _properties = new List<ModelMetadata>(properties);
-        }
-
-        /// <inheritdoc />
-        public ModelMetadata this[int index]
-        {
-            get
-            {
-                return _properties[index];
-            }
         }
 
         /// <summary>
         /// Gets a <see cref="ModelMetadata"/> instance for the property corresponding to <paramref name="propertyName"/>.
         /// </summary>
         /// <param name="propertyName">
-        /// The property name. Property names are compared using <see cref="StringComparison.Ordinal"/>
+        /// The property name. Property names are compared using <see cref="StringComparison.Ordinal"/>.
         /// </param>
         /// <returns>
-        /// The <see cref="ModelMetadata"/> instance for the property specified by <paramref name="propertyName"/>, or null
-        /// if no match can be found.
+        /// The <see cref="ModelMetadata"/> instance for the property specified by <paramref name="propertyName"/>, or
+        /// <c>null</c> if no match can be found.
         /// </returns>
         public ModelMetadata this[string propertyName]
         {
@@ -56,8 +41,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     throw new ArgumentNullException(nameof(propertyName));
                 }
 
-                foreach (var property in _properties)
+                for (var i = 0; i < Items.Count; i++)
                 {
+                    var property = Items[i];
                     if (string.Equals(property.PropertyName, propertyName, StringComparison.Ordinal))
                     {
                         return property;
@@ -66,27 +52,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
                 return null;
             }
-        }
-
-        /// <inheritdoc />
-        public int Count
-        {
-            get
-            {
-                return _properties.Count;
-            }
-        }
-
-        /// <inheritdoc />
-        public IEnumerator<ModelMetadata> GetEnumerator()
-        {
-            return _properties.GetEnumerator();
-        }
-
-        /// <inheritdoc />
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
         }
     }
 }
