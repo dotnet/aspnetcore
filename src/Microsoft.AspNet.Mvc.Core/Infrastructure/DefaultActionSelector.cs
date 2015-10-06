@@ -260,12 +260,16 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 return null;
             }
 
-            var items = action.ActionConstraints.Select(c => new ActionConstraintItem(c)).ToList();
-            var context = new ActionConstraintProviderContext(httpContext, action, items);
-
-            foreach (var provider in _actionConstraintProviders)
+            var items = new List<ActionConstraintItem>(action.ActionConstraints.Count);
+            for (var i = 0; i < action.ActionConstraints.Count; i++)
             {
-                provider.OnProvidersExecuting(context);
+                items.Add(new ActionConstraintItem(action.ActionConstraints[i]));
+            }
+
+            var context = new ActionConstraintProviderContext(httpContext, action, items);
+            for (var i = 0; i < _actionConstraintProviders.Length; i++)
+            {
+                _actionConstraintProviders[i].OnProvidersExecuting(context);
             }
 
             for (var i = _actionConstraintProviders.Length - 1; i >= 0; i--)
@@ -273,11 +277,31 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 _actionConstraintProviders[i].OnProvidersExecuted(context);
             }
 
-            return
-                context.Results
-                .Where(item => item.Constraint != null)
-                .Select(item => item.Constraint)
-                .ToList();
+            var count = 0;
+            for (var i = 0; i < context.Results.Count; i++)
+            {
+                if (context.Results[i].Constraint != null)
+                {
+                    count++;
+                }
+            }
+
+            if (count == 0)
+            {
+                return null;
+            }
+
+            var results = new IActionConstraint[count];
+            for (int i = 0, j = 0; i < context.Results.Count; i++)
+            {
+                var constraint = context.Results[i].Constraint;
+                if (constraint != null)
+                {
+                    results[j++] = constraint;
+                }
+            }
+
+            return results;
         }
     }
 }

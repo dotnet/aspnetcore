@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Mvc.ActionConstraints
     {
         public static readonly int HttpMethodConstraintOrder = 100;
 
-        private readonly IReadOnlyList<string> _methods;
+        private readonly IReadOnlyList<string> _httpMethods;
 
         private readonly string OriginHeader = "Origin";
         private readonly string AccessControlRequestMethod = "Access-Control-Request-Method";
@@ -39,14 +39,14 @@ namespace Microsoft.AspNet.Mvc.ActionConstraints
                 methods.Add(method);
             }
 
-            _methods = new ReadOnlyCollection<string>(methods);
+            _httpMethods = new ReadOnlyCollection<string>(methods);
         }
 
         public IEnumerable<string> HttpMethods
         {
             get
             {
-                return _methods;
+                return _httpMethods;
             }
         }
 
@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.Mvc.ActionConstraints
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (_methods.Count == 0)
+            if (_httpMethods.Count == 0)
             {
                 return true;
             }
@@ -83,7 +83,16 @@ namespace Microsoft.AspNet.Mvc.ActionConstraints
                 }
             }
 
-            return (HttpMethods.Any(m => m.Equals(method, StringComparison.Ordinal)));
+            for (var i = 0; i < _httpMethods.Count; i++)
+            {
+                var supportedMethod = _httpMethods[i];
+                if (string.Equals(supportedMethod, method, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

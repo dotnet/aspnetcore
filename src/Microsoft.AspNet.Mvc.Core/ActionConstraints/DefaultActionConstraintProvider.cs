@@ -29,9 +29,9 @@ namespace Microsoft.AspNet.Mvc.ActionConstraints
                 throw new ArgumentNullException(nameof(context));
             }
 
-            foreach (var item in context.Results)
+            for (var i = 0; i < context.Results.Count; i++)
             {
-                ProvideConstraint(item, context.HttpContext.RequestServices);
+                ProvideConstraint(context.Results[i], context.HttpContext.RequestServices);
             }
         }
 
