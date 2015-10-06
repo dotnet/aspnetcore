@@ -21,7 +21,9 @@ var npmInstallZipPath = '${Path.Combine(nodeDir, npmZip)}'
 var nodeInstalled = '${ File.Exists(nodeInstallExePath) }'
 
 default nodeGloballyInstalled = '${ !nodeInstalled && TestCommand("node", "--version") }'
-var doInstall = '${ !(nodeGloballyInstalled || nodeInstalled) }'
+
+-// Command simply fails on Linux if nodejs is not available.
+var doInstall = '${ !IsLinux && !(nodeGloballyInstalled || nodeInstalled) }'
 
 @{
   if (doInstall) {

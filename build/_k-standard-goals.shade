@@ -3,9 +3,10 @@ use namespace="System"
 use namespace="System.Globalization"
 use namespace="System.IO"
 use namespace="System.Linq"
-use import="Files"
 use import="BuildEnv"
 use import="Environment"
+use import="Files"
+use import="Json"
 use-teamcity
 
 default BASE_DIR='${Directory.GetCurrentDirectory()}'
@@ -14,6 +15,7 @@ default BUILD_DIR='${Path.Combine(TARGET_DIR, "build")}'
 default TEST_DIR='${Path.Combine(TARGET_DIR, "test")}'
 default Configuration='${E("Configuration")}'
 default Quiet='${ false }'
+default IncludeProjectsWithoutDnxClr = '${ true }'
 default PACKAGELIST_JSON_FILENAME = 'NuGetPackageVerifier.json'
 default DNX_TOOLS_FEED = 'https://www.myget.org/F/dnxtools/api/v3/index.json'
 default NUGET_FEED = 'https://api.nuget.org/v3/index.json'
@@ -43,12 +45,12 @@ default NUGET_FEED = 'https://api.nuget.org/v3/index.json'
 #restore-npm-modules
   -// Find all dirs that contain a package.json file
   var npmDirs = '${GetDirectoriesContaining(Directory.GetCurrentDirectory(), "package.json")}'
-  npm npmCommand='install ${E("npm_install_options")}' each='var npmDir in npmDirs'
+  npm npmCommand='install ${E("KOREBUILD_NPM_INSTALL_OPTIONS")}' each='var npmDir in npmDirs'
 
 #restore-bower-components
   -// Find all dirs that contain a bower.json file
   var bowerDirs = '${GetDirectoriesContaining(Directory.GetCurrentDirectory(), "bower.json")}'
-  bower each='var bowerDir in bowerDirs' bowerCommand='install ${E("bower_install_options")}'
+  bower each='var bowerDir in bowerDirs' bowerCommand='install ${E("KOREBUILD_BOWER_INSTALL_OPTIONS")}'
 
 #run-grunt .restore-npm-modules .restore-bower-components target='initialize'
   -// Find all dirs that contain a gruntfile.js file
@@ -94,9 +96,21 @@ default NUGET_FEED = 'https://api.nuget.org/v3/index.json'
 
 #ci-deep-clean .deep-clean target='clean' if='IsTeamCity'
 
+-// Do not move below any of the build-compile targets; must run before them.
+#build-coreclr-on-linux target='compile' if='IsLinux && IsDnxCoreClr'
+  @{
+    // Work around aspnet/dnx#2566. Note this does not play well with IsBuildV2.
+    IncludeProjectsWithoutDnxClr = false;
+    AddToE("KOREBUILD_DNU_BUILD_OPTIONS", "--framework dnxcore50");
+    AddToE("KOREBUILD_DNU_PACK_OPTIONS", "--framework dnxcore50");
+  }
+
 #build-compile target='compile' if='!IsBuildV2 && Directory.Exists("src")'
   @{
-    var projectFiles = Files.Include("src/**/project.json").ToList();
+    var projectFiles = Files
+        .Include("src/**/project.json")
+        .Where(projectFilePath => IncludeProjectsWithoutDnxClr || ProjectIncludesDnxCore(projectFilePath))
+        .ToList();
     if (ShouldRunInParallel)
     {
         Parallel.ForEach(projectFiles, projectFile => DnuPack(projectFile, BUILD_DIR, Configuration));
@@ -151,7 +165,7 @@ default NUGET_FEED = 'https://api.nuget.org/v3/index.json'
       }
   }
 
-#native-compile target='compile' if='!IsMono && Directory.Exists(Path.Combine(BASE_DIR, "src"))'
+#native-compile target='compile' if='!IsLinux && Directory.Exists(Path.Combine(BASE_DIR, "src"))'
   var programFilesX86 = '${Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86)}'
   var nativeProjects ='${Files.Include(Path.Combine(BASE_DIR, "src", "**", "*.vcxproj"))}'
 
@@ -259,18 +273,23 @@ default NUGET_FEED = 'https://api.nuget.org/v3/index.json'
 
 #--quiet
   @{
-    E("NUGET3_pack_options"," --quiet");
-    E("NUGET3_build_options"," --quiet");
-    E("NUGET3_restore_options"," --quiet");
-    E("bower_install_options","--quiet");
-    E("npm_install_options","--quiet");
+    AddToE("KOREBUILD_BOWER_INSTALL_OPTIONS", "--quiet");
+    AddToE("KOREBUILD_DNU_BUILD_OPTIONS", "--quiet");
+    AddToE("KOREBUILD_DNU_PACK_OPTIONS", "--quiet");
+    AddToE("KOREBUILD_DNU_RESTORE_OPTIONS", "--quiet");
+    AddToE("KOREBUILD_NPM_INSTALL_OPTIONS", "--quiet");
     Quiet = true;
   }
 
 #--parallel
-   @{
+  @{
     E("KOREBUILD_PARALLEL", "1");
-   }
+  }
+
+#--test-dnxcore
+  @{
+    E("KOREBUILD_TEST_DNXCORE", "1");
+  }
 
 #stylecop if='Directory.Exists("src")'
   stylecop-setup
@@ -279,6 +298,32 @@ default NUGET_FEED = 'https://api.nuget.org/v3/index.json'
 functions @{
     string E(string key) { return Environment.GetEnvironmentVariable(key); }
     void E(string key, string value) { Environment.SetEnvironmentVariable(key, value); }
+    void AddToE(string key, string append)
+    {
+      var original = E(key);
+      if (string.IsNullOrEmpty(original))
+      {
+        E(key, append);
+      }
+      else
+      {
+        E(key, original + " " + append);
+      }
+    }
+
+    public bool ProjectIncludesDnxCore(string projectFilePath)
+    {
+        var projectText = File.ReadAllText(projectFilePath);
+        var project = (JsonObject)Json.Deserialize(projectText);
+        var frameworks = project.ValueAsJsonObject("frameworks");
+        if (frameworks == null)
+        {
+            return false;
+        }
+
+        return frameworks.Keys.Any(framework => framework.StartsWith("dnxcore", StringComparison.OrdinalIgnoreCase));
+    }
+
     IEnumerable<string> GetDirectoriesContaining(string path, string searchPattern)
     {
       var sep = Path.DirectorySeparatorChar;
@@ -290,6 +335,7 @@ functions @{
                       .Select(p => Path.GetDirectoryName(p))
                       .Distinct();
     }
+
     bool TestCommand(string program, string commandline)
     {
       // Tests whether a given command succeeds at the command line.

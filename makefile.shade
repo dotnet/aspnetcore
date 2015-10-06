@@ -1,5 +1,4 @@
 
-var PROJECT='AspNet'
 var VERSION='0.2.1'
 
 use-teamcity
@@ -302,7 +301,7 @@ var buildTarget = "compile"
             {
                 GitCommand(repo, string.Format("describe --tags > ..\\{0}", versionFile));
             }
-            catch(Exception e)
+            catch
             {
                 Log.Warn(string.Format("{0} repo not tagged. Skipping....", repo));
                 continue;
@@ -546,7 +545,10 @@ functions
             req.Method = "HEAD";
             try
             {
-                using (req.GetResponse());
+                using (req.GetResponse())
+                {
+                    // intentionally empty
+                }
             }
             catch (WebException ex)
             {
