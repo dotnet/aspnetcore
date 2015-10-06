@@ -41,6 +41,16 @@ namespace Microsoft.AspNet.Routing.Template
 
         public IList<TemplateSegment> Segments { get; private set; }
 
+        public TemplateSegment GetSegment(int index)
+        {
+            if (index < 0)
+            {
+                throw new IndexOutOfRangeException();
+            }
+
+            return index >= Segments.Count ? null : Segments[index];
+        }
+
         private string DebuggerToString()
         {
             return string.Join(SeparatorString, Segments.Select(s => s.DebuggerToString()));

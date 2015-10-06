@@ -10,12 +10,9 @@ namespace Microsoft.AspNet.Routing.Template
     [DebuggerDisplay("{DebuggerToString()}")]
     public class TemplateSegment
     {
-        private readonly List<TemplatePart> _parts = new List<TemplatePart>();
+        public bool IsSimple => Parts.Count == 1;
 
-        public List<TemplatePart> Parts
-        {
-            get { return _parts; }
-        }
+        public List<TemplatePart> Parts { get; } = new List<TemplatePart>();
 
         internal string DebuggerToString()
         {

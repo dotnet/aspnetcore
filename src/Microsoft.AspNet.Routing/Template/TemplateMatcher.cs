@@ -40,85 +40,151 @@ namespace Microsoft.AspNet.Routing.Template
 
         public IDictionary<string, object> Match(PathString path)
         {
-            var values = new RouteValueDictionary();
+            var i = 0;
+            var pathTokenizer = new PathTokenizer(path);
 
-            var requestSegments = new PathTokenizer(path);
-            for (var i = 0; i < requestSegments.Count; i++)
+            // Perf: We do a traversal of the request-segments + route-segments twice.
+            //
+            // For most segment-types, we only really need to any work on one of the two passes.
+            //
+            // On the first pass, we're just looking to see if there's anything that would disqualify us from matching.
+            // The most common case would be a literal segment that doesn't match.
+            //
+            // On the second pass, we're almost certainly going to match the URL, so go ahead and allocate the 'values'
+            // and start capturing strings. 
+            foreach (var requestSegment in pathTokenizer)
             {
-                var routeSegment = Template.Segments.Count > i ? Template.Segments[i] : null;
-                var requestSegment = requestSegments[i];
-
-                if (routeSegment == null)
+                var routeSegment = Template.GetSegment(i++);
+                if (routeSegment == null && requestSegment.Length > 0)
                 {
                     // If pathSegment is null, then we're out of route segments. All we can match is the empty
                     // string.
-                    if (requestSegment.Length > 0)
+                    return null;
+                }
+                else if (routeSegment.IsSimple && routeSegment.Parts[0].IsLiteral)
+                {
+                    // This is a literal segment, so we need to match the text, or the route isn't a match.
+                    var part = routeSegment.Parts[0];
+                    if (!requestSegment.Equals(part.Text))
                     {
                         return null;
                     }
                 }
-                else if (routeSegment.Parts.Count == 1)
+                else if (routeSegment.IsSimple && routeSegment.Parts[0].IsCatchAll)
                 {
-                    // Optimize for the simple case - the segment is made up for a single part
+                    // Nothing to validate for a catch-all - it can match any string, including the empty string.
+                    //
+                    // Also, a catch-all has to be the last part, so we're done.
+                    break;
+                }
+                else if (routeSegment.IsSimple && routeSegment.Parts[0].IsParameter)
+                {
+                    // For a parameter, validate that it's a has some length, or we have a default, or it's optional.
                     var part = routeSegment.Parts[0];
-                    if (part.IsLiteral)
+                    if (requestSegment.Length == 0 &&
+                        !Defaults.ContainsKey(part.Name) &&
+                        !part.IsOptional)
                     {
-                        if (!requestSegment.Equals(part.Text))
-                        {
-                            return null;
-                        }
-                    }
-                    else
-                    {
-                        Debug.Assert(part.IsParameter);
-
-                        if (part.IsCatchAll)
-                        {
-                            var captured = requestSegment.GetRemainingPath();
-                            if (captured.Length > 0)
-                            {
-                                values.Add(part.Name, captured);
-                            }
-                            else
-                            {
-                                // It's ok for a catch-all to produce a null value
-                                object defaultValue;
-                                Defaults.TryGetValue(part.Name, out defaultValue);
-
-                                values.Add(part.Name, defaultValue);
-                            }
-
-                            // A catch-all has to be the last part, so we're done.
-                            break;
-                        }
-                        else
-                        {
-                            if (requestSegment.Length > 0)
-                            {
-                                values.Add(part.Name, requestSegment.ToString());
-                            }
-                            else
-                            {
-                                object defaultValue;
-                                if (Defaults.TryGetValue(part.Name, out defaultValue))
-                                {
-                                    values.Add(part.Name, defaultValue);
-                                }
-                                else if (part.IsOptional)
-                                {
-                                    // This is optional (with no default value)
-                                    // - there's nothing to capture here, so just move on.
-                                }
-                                else
-                                {
-                                    // There's no default for this parameter
-                                    return null;
-                                }
-                            }
-                        }
+                        // There's no value for this parameter, the route can't match.
+                        return null;
                     }
                 }
                 else
+                {
+                    Debug.Assert(!routeSegment.IsSimple);
+
+                    // Don't attempt to validate a complex segment at this point other than being non-emtpy,
+                    // do it in the second pass.
+                }
+            }
+
+            for (; i < Template.Segments.Count; i++)
+            {
+                // We've matched the request path so far, but still have remaining route segments. These need
+                // to be all single-part parameter segments with default values or else they won't match.
+                var routeSegment = Template.GetSegment(i);
+                Debug.Assert(routeSegment != null);
+
+                if (!routeSegment.IsSimple)
+                {
+                    // If the segment is a complex segment, it MUST contain literals, and we've parsed the full
+                    // path so far, so it can't match.
+                    return null;
+                }
+
+                var part = routeSegment.Parts[0];
+                if (part.IsLiteral)
+                {
+                    // If the segment is a simple literal - which need the URL to provide a value, so we don't match.
+                    return null;
+                }
+
+                if (part.IsCatchAll)
+                {
+                    // Nothing to validate for a catch-all - it can match any string, including the empty string.
+                    //
+                    // Also, a catch-all has to be the last part, so we're done.
+                    break;
+                }
+
+                // If we get here, this is a simple segment with a parameter. We need it to be optional, or for the
+                // defaults to have a value.
+                Debug.Assert(routeSegment.IsSimple && part.IsParameter);
+                if (!Defaults.ContainsKey(part.Name) && !part.IsOptional)
+                {
+                    // There's no default for this (non-optional) parameter so it can't match.
+                    return null;
+                }
+            }
+
+            // At this point we've very likely got a match, so start capturing values for real.
+            var values = new RouteValueDictionary();
+
+            i = 0;
+            foreach (var requestSegment in pathTokenizer)
+            {
+                var routeSegment = Template.GetSegment(i++);
+
+                if (routeSegment.IsSimple && routeSegment.Parts[0].IsCatchAll)
+                {
+                    // A catch-all captures til the end of the string.
+                    var part = routeSegment.Parts[0];
+                    var captured = requestSegment.GetRemainingPath();
+                    if (captured.Length > 0)
+                    {
+                        values.Add(part.Name, captured);
+                    }
+                    else
+                    {
+                        // It's ok for a catch-all to produce a null value
+                        object defaultValue;
+                        Defaults.TryGetValue(part.Name, out defaultValue);
+
+                        values.Add(part.Name, defaultValue);
+                    }
+
+                    // A catch-all has to be the last part, so we're done.
+                    break;
+                }
+                else if (routeSegment.IsSimple && routeSegment.Parts[0].IsParameter)
+                {
+                    // A simple parameter captures the whole segment, or a default value if nothing was
+                    // provided.
+                    var part = routeSegment.Parts[0];
+                    if (requestSegment.Length > 0)
+                    {
+                        values.Add(part.Name, requestSegment.ToString());
+                    }
+                    else
+                    {
+                        object defaultValue;
+                        if (Defaults.TryGetValue(part.Name, out defaultValue))
+                        {
+                            values.Add(part.Name, defaultValue);
+                        }
+                    }
+                }
+                else if (!routeSegment.IsSimple)
                 {
                     if (!MatchComplexSegment(routeSegment, requestSegment.ToString(), Defaults, values))
                     {
@@ -127,39 +193,22 @@ namespace Microsoft.AspNet.Routing.Template
                 }
             }
 
-            for (var i = requestSegments.Count; i < Template.Segments.Count; i++)
+            for (; i < Template.Segments.Count; i++)
             {
-                // We've matched the request path so far, but still have remaining route segments. These need
-                // to be all single-part parameter segments with default values or else they won't match.
-                var routeSegment = Template.Segments[i];
-                if (routeSegment.Parts.Count > 1)
-                {
-                    // If it has more than one part it must contain literals, so it can't match.
-                    return null;
-                }
+                // We've matched the request path so far, but still have remaining route segments. We already know these
+                // are simple parameters that either have a default, or don't need to produce a value.
+                var routeSegment = Template.GetSegment(i);
+                Debug.Assert(routeSegment != null);
+                Debug.Assert(routeSegment.IsSimple);
 
                 var part = routeSegment.Parts[0];
-                if (part.IsLiteral)
-                {
-                    return null;
-                }
-
                 Debug.Assert(part.IsParameter);
-
+   
                 // It's ok for a catch-all to produce a null value
                 object defaultValue;
                 if (Defaults.TryGetValue(part.Name, out defaultValue) || part.IsCatchAll)
                 {
                     values.Add(part.Name, defaultValue);
-                }
-                else if (part.IsOptional)
-                {
-                    // This is optional (with no default value) - there's nothing to capture here, so just move on.
-                }
-                else
-                {
-                    // There's no default for this (non-catch-all) parameter so it can't match.
-                    return null;
                 }
             }
 
