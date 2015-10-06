@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#if MOCK_SUPPORT
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,7 +11,6 @@ using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Mvc.ViewEngines;
 using Microsoft.AspNet.Routing;
 using Microsoft.Extensions.OptionsModel;
@@ -713,3 +713,4 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         }
     }
 }
+#endif

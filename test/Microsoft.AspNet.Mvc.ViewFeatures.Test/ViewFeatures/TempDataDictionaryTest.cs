@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ViewFeatures

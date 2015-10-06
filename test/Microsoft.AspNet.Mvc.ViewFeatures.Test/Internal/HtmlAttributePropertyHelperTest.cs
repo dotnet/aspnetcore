@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Linq;
+using System.Reflection;
 using Microsoft.Extensions.Internal;
 using Xunit;
 
@@ -14,7 +15,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures.Internal
         {
             // Arrange
             var anonymous = new { bar_baz = "foo" };
-            var property = anonymous.GetType().GetProperties().First();
+            var property = anonymous.GetType().GetTypeInfo().DeclaredProperties.First();
 
             // Act
             var helper = new HtmlAttributePropertyHelper(property);
@@ -29,7 +30,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures.Internal
         {
             // Arrange
             var anonymous = new { foo = "bar" };
-            var property = anonymous.GetType().GetProperties().First();
+            var property = anonymous.GetType().GetTypeInfo().DeclaredProperties.First();
 
             // Act
             var helper = new HtmlAttributePropertyHelper(property);
@@ -44,7 +45,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures.Internal
         {
             // Arrange
             var anonymous = new { bar = "baz" };
-            var property = anonymous.GetType().GetProperties().First();
+            var property = anonymous.GetType().GetTypeInfo().DeclaredProperties.First();
 
             // Act
             var helper = new HtmlAttributePropertyHelper(property);
@@ -59,7 +60,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures.Internal
         {
             // Arrange
             var anonymous = new { foo = 32 };
-            var property = anonymous.GetType().GetProperties().First();
+            var property = anonymous.GetType().GetTypeInfo().DeclaredProperties.First();
 
             // Act
             var helper = new HtmlAttributePropertyHelper(property);

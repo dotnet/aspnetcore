@@ -19,7 +19,6 @@
     "Microsoft.Extensions.Logging.Testing": "1.0.0-*",
     "Microsoft.Extensions.TelemetryAdapter": "1.0.0-*",
     "Microsoft.Extensions.WebEncoders.Testing": "1.0.0-*",
-    "Moq": "4.2.1312.1622",
     "xunit.runner.aspnet": "2.0.0-aspnet-*"
   },
   "commands": {
@@ -27,7 +26,11 @@
   },
   "frameworks": {
     "dnx451": {
-      "compilationOptions": { "define": [ "MOCK_SUPPORT" ] }
-    }
+      "compilationOptions": { "define": [ "MOCK_SUPPORT" ] },
+      "dependencies": {
+        "Moq": "4.2.1312.1622"
+      }
+    },
+    "dnxcore50": { }
   }
 }

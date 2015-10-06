@@ -9,7 +9,9 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Routing;
+#if MOCK_SUPPORT
 using Moq;
+#endif
 using Newtonsoft.Json;
 using Xunit;
 
@@ -142,6 +144,7 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
+#if MOCK_SUPPORT
         [Fact]
         public void ControllerFileStream_InvokedInUnitTests()
         {
@@ -178,6 +181,7 @@ namespace Microsoft.AspNet.Mvc
                 }
             }
         }
+#endif
 
         [Fact]
         public void ControllerJson_InvokedInUnitTests()
@@ -511,15 +515,15 @@ namespace Microsoft.AspNet.Mvc
         public void ActionContextSetters_CanBeUsedWithControllerActionContext()
         {
             // Arrange
-            var actionDescriptor = new Mock<ActionDescriptor>();
-            var httpContext = new Mock<HttpContext>();
-            var routeData = new Mock<RouteData>();
+            var actionDescriptor = new ActionDescriptor();
+            var httpContext = new DefaultHttpContext();
+            var routeData = new RouteData();
 
             var actionContext = new ActionContext()
             {
-                ActionDescriptor = actionDescriptor.Object,
-                HttpContext = httpContext.Object,
-                RouteData = routeData.Object,
+                ActionDescriptor = actionDescriptor,
+                HttpContext = httpContext,
+                RouteData = routeData,
             };
 
             var controller = new TestabilityController();
@@ -528,10 +532,10 @@ namespace Microsoft.AspNet.Mvc
             controller.ActionContext = actionContext;
 
             // Assert
-            Assert.Equal(httpContext.Object, controller.HttpContext);
-            Assert.Equal(routeData.Object, controller.RouteData);
+            Assert.Same(httpContext, controller.HttpContext);
+            Assert.Same(routeData, controller.RouteData);
             Assert.Equal(actionContext.ModelState, controller.ModelState);
-            Assert.Equal(actionDescriptor.Object, actionContext.ActionDescriptor);
+            Assert.Same(actionDescriptor, actionContext.ActionDescriptor);
         }
 
         [Fact]

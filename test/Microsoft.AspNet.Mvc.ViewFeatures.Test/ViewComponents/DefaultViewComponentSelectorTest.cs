@@ -198,7 +198,10 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
                     GetAssemblyProvider()
                     .CandidateAssemblies
                     .SelectMany(a => a.DefinedTypes)
-                    .Select(t => t.GetTypeInfo());
+#if DNX451
+                    .Select(t => t.GetTypeInfo())
+#endif
+                    ;
             }
 
             private static IAssemblyProvider GetAssemblyProvider()

@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Internal;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ViewFeatures
