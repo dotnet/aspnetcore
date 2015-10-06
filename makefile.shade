@@ -571,6 +571,7 @@ functions
               "Coherence",
               "Coherence-Signed",
               "dnvm",
+              "Setup",
             };
 
             return Enumerable.Concat(nonDefaultRepos, repositories);
