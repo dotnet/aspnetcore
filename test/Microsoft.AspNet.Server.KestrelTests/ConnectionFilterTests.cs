@@ -5,8 +5,8 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Server.Kestrel.Filter;
 using Microsoft.AspNet.Server.Kestrel.Http;
-using Xunit;
 using Microsoft.AspNet.Http.Features;
+using Xunit;
 
 namespace Microsoft.AspNet.Server.KestrelTests
 {

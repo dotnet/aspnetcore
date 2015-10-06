@@ -16,6 +16,10 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 {
     public partial class Frame : IFeatureCollection, IHttpRequestFeature, IHttpResponseFeature, IHttpUpgradeFeature
     {
+        // NOTE: When feature interfaces are added to or removed from this Frame class implementation,
+        // then the list of `implementedFeatures` in the generated code project MUST also be updated.
+        // See also: tools/Microsoft.AspNet.Server.Kestrel.GeneratedCode/FrameFeatureCollection.cs
+
         private string _scheme;
         private string _pathBase;
         private int _featureRevision;

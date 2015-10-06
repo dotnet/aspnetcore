@@ -4,9 +4,10 @@
 using System;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
-using Microsoft.Extensions.Logging;
-using Microsoft.Dnx.Runtime;
+using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Server.Kestrel;
+using Microsoft.Dnx.Runtime;
+using Microsoft.Extensions.Logging;
 
 #if DNX451
 using System.IO;
@@ -20,7 +21,7 @@ namespace SampleApp
     {
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory, IApplicationEnvironment env)
         {
-            var ksi = app.ServerFeatures[typeof(IKestrelServerInformation)] as IKestrelServerInformation;
+            var ksi = app.ServerFeatures.Get<IKestrelServerInformation>();
             //ksi.ThreadCount = 4;
 
             loggerFactory.MinimumLevel = LogLevel.Debug;
@@ -49,8 +50,6 @@ namespace SampleApp
                     context.Request.PathBase,
                     context.Request.Path,
                     context.Request.QueryString);
-
-                foreach (var q in context.Request.Query) { }
 
                 context.Response.ContentLength = 11;
                 context.Response.ContentType = "text/plain";
