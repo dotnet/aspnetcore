@@ -167,6 +167,7 @@ namespace Microsoft.AspNet.Server.Kestrel.GeneratedCode
             return $@"
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNet.Server.Kestrel.Extensions;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNet.Server.Kestrel.Http 
