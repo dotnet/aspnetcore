@@ -195,14 +195,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         protected override int GetCountFast()
         {{
-            var count = MaybeUnknown?.Count ?? 0;
-            {Each(loop.Headers, header => $@"
-                if ({header.TestBit()}) 
-                {{
-                    ++count;
-                }}
-            ")}
-            return count;
+            return _bits.BitCount() + (MaybeUnknown?.Count ?? 0);
         }}
 
         protected override StringValues GetValueFast(string key)
