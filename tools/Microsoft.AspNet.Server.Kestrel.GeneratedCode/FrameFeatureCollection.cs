@@ -85,6 +85,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 }}
                 return SlowFeatureGet(key);
             }}")}
+            {Each(cachedFeatures, feature => $@"
+            if (key == typeof(global::{feature.FullName}))
+            {{
+                return _current{feature.Name};
+            }}")}
             return  SlowFeatureGet(key);
         }}
 
@@ -118,13 +123,21 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         }}
 
         private void FastFeatureSet(Type key, object feature)
-        {{{Each(commonFeatures, feature => $@"
-            if (key == {feature.Name}Type)
+        {{
+            _featureRevision++;
+            {Each(implementedFeatures, feature => $@"
+            if (key == typeof(global::{feature.FullName}))
             {{
                 FastFeatureSetInner(flag{feature.Name}, key, feature);
                 return;
-            }}")}
-            Extra[key] = feature;
+            }}")};
+            {Each(cachedFeatures, feature => $@"
+            if (key == typeof(global::{feature.FullName}))
+            {{
+                _current{feature.Name} = feature;
+                return;
+            }}")};
+            SetExtra(key, feature);
         }}
 
         private IEnumerable<KeyValuePair<Type, object>> FastEnumerable()
