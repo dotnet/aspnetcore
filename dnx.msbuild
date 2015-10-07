@@ -254,7 +254,7 @@
             <SourcePackagesDirectory>$(SignedOutputPath)Packages-NoTimeStamp\</SourcePackagesDirectory>
             <TargetDirectory>$(DNXRootPath)ServiceFabric\output\</TargetDirectory>
             <TargetRuntimeDirectory>$(TargetDirectory)runtime\</TargetRuntimeDirectory>
-            <TargetPackagesDirectory>$(TargetDirectory)packages\</TargetPackagesDirectory>
+            <TargetPackagesDirectory>$(TargetDirectory)libraries\</TargetPackagesDirectory>
             <ServiceFabricNuspec>$(DNXRootPath)ServiceFabric\ServiceFabric.nuspec</ServiceFabricNuspec>
             <BUILD_NUMBER Condition=" '$(BUILD_NUMBER)' == '' ">0</BUILD_NUMBER>
             <ServiceFabricPackageVersion>1.0.$(BUILD_NUMBER)</ServiceFabricPackageVersion>
