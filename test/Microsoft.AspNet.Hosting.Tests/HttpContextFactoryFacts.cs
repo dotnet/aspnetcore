@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Hosting.Tests
         {
             var env = new Dictionary<string, object>();
             var contextFactory = new HttpContextFactory();
-            var context = contextFactory.CreateHttpContext(new OwinFeatureCollection(env));
+            var context = contextFactory.CreateHttpContext(new FeatureCollection(new OwinFeatureCollection(env)));
             
             // Setting a feature will throw if the above feature collection is not wrapped in a mutable feature collection.
             context.Features.Set<ICustomFeature>(new CustomFeature(100));

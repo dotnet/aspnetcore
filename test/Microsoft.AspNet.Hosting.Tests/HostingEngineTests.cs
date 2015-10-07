@@ -309,29 +309,6 @@ namespace Microsoft.AspNet.Hosting
         }
 
         [Fact]
-        public void Hosting_CreatesDefaultRequestIdentifierFeature_IfNotPresent_ForImmutableFeatureCollection()
-        {
-            // Arrange
-            HttpContext httpContext = null;
-            var requestDelegate = new RequestDelegate(innerHttpContext =>
-            {
-                httpContext = innerHttpContext;
-                return Task.FromResult(0);
-            });
-
-            _featuresSupportedByThisHost = new ReadOnlyFeatureCollection();
-
-            var hostingEngine = CreateHostingEngine(requestDelegate);
-
-            // Act
-            var disposable = hostingEngine.Start();
-
-            // Assert
-            Assert.NotNull(httpContext);
-            Assert.IsType<FastHttpRequestIdentifierFeature>(httpContext.Features.Get<IHttpRequestIdentifierFeature>());
-        }
-
-        [Fact]
         public void HostingEngine_DoesNot_CreateDefaultRequestIdentifierFeature_IfPresent()
         {
             // Arrange
