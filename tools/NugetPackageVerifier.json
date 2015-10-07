@@ -8,12 +8,12 @@
             "EntityFramework.Commands": { },
             "EntityFramework.Core": { },
             "EntityFramework.InMemory": { },
+            "EntityFramework.MicrosoftSqlServer": { },
+            "EntityFramework.MicrosoftSqlServer.Design": { },
             "EntityFramework.Relational": { },
             "EntityFramework.Relational.Design": { },
             "EntityFramework.Sqlite": { },
             "EntityFramework.Sqlite.Design": { },
-            "EntityFramework.SqlServer": { },
-            "EntityFramework.SqlServer.Design": { },
             "dnx-clr-win-x64": {
                 "SIGN_AUTHENTICODE": {
                     "bin\\lib\\Microsoft.Dnx.DesignTimeHost\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
