@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             FastReset();
             MaybeExtra?.Clear();
-            Interlocked.Increment(ref _featureRevision);
+            _featureRevision++;
         }
 
         string IHttpRequestFeature.Protocol
