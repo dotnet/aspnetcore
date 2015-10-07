@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.Server.WebListener
         internal FeatureContext(RequestContext requestContext, bool enableResponseCaching)
         {
             _requestContext = requestContext;
-            _features = new StandardFeatureCollection(this);
+            _features = new FeatureCollection(new StandardFeatureCollection(this));
             _authHandler = new AuthenticationHandler(requestContext);
             _enableResponseCaching = enableResponseCaching;
             requestContext.Response.OnStarting(OnStartDelegate, this);
