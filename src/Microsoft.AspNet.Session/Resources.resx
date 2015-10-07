@@ -132,4 +132,7 @@
   <data name="Exception_NumberShouldNotBeNegative" xml:space="preserve">
     <value>The value cannot be negative.</value>
   </data>
+  <data name="ArgumentCannotBeNullOrEmpty" xml:space="preserve">
+    <value>Argument cannot be null or empty string.</value>
+  </data>
 </root>

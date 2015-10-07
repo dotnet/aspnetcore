@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Session
         {
             get { return GetString("Exception_KeyLengthIsExceeded"); }
         }
-        
+
         /// <summary>
         /// The key cannot be longer than '{0}' when encoded with UTF-8.
         /// </summary>
@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Session
         {
             get { return GetString("Exception_InvalidSessionEstablishment"); }
         }
-        
+
         /// <summary>
         /// The session cannot be established after the response has started.
         /// </summary>
@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Session
         {
             get { return GetString("Exception_InvalidToSerializeIn2Bytes"); }
         }
-        
+
         /// <summary>
         /// The value cannot be serialized in two bytes.
         /// </summary>
@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Session
         {
             return GetString("Exception_InvalidToSerializeIn2Bytes");
         }
-        
+
         /// <summary>
         /// The value cannot be serialized in three bytes.
         /// </summary>
@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.Session
         {
             get { return GetString("Exception_InvalidToSerializeIn3Bytes"); }
         }
-        
+
         /// <summary>
         /// The value cannot be serialized in three bytes.
         /// </summary>
@@ -73,7 +73,7 @@ namespace Microsoft.AspNet.Session
         {
             return GetString("Exception_InvalidToSerializeIn3Bytes");
         }
-        
+
         /// <summary>
         /// The value cannot be negative.
         /// </summary>
@@ -81,7 +81,7 @@ namespace Microsoft.AspNet.Session
         {
             get { return GetString("Exception_NumberShouldNotBeNegative"); }
         }
-        
+
         /// <summary>
         /// The value cannot be negative.
         /// </summary>
@@ -89,7 +89,23 @@ namespace Microsoft.AspNet.Session
         {
             return GetString("Exception_NumberShouldNotBeNegative");
         }
-                                 
+
+        /// <summary>
+        /// Argument cannot be null or empty string.
+        /// </summary>
+        internal static string ArgumentCannotBeNullOrEmpty
+        {
+            get { return GetString("ArgumentCannotBeNullOrEmpty"); }
+        }
+
+        /// <summary>
+        /// Argument cannot be null or empty string.
+        /// </summary>
+        internal static string FormatArgumentCannotBeNullOrEmpty()
+        {
+            return GetString("ArgumentCannotBeNullOrEmpty");
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

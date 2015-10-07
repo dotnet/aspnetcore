@@ -4,7 +4,6 @@
 using System;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.Session
@@ -14,8 +13,18 @@ namespace Microsoft.AspNet.Session
         private readonly IDistributedCache _cache;
         private readonly ILoggerFactory _loggerFactory;
 
-        public DistributedSessionStore([NotNull] IDistributedCache cache, [NotNull] ILoggerFactory loggerFactory)
+        public DistributedSessionStore(IDistributedCache cache, ILoggerFactory loggerFactory)
         {
+            if (cache == null)
+            {
+                throw new ArgumentNullException(nameof(cache));
+            }
+
+            if (loggerFactory == null)
+            {
+                throw new ArgumentNullException(nameof(loggerFactory));
+            }
+
             _cache = cache;
             _loggerFactory = loggerFactory;
         }
@@ -33,8 +42,18 @@ namespace Microsoft.AspNet.Session
             _cache.Connect();
         }
 
-        public ISession Create([NotNull] string sessionId, TimeSpan idleTimeout, [NotNull] Func<bool> tryEstablishSession, bool isNewSessionKey)
+        public ISession Create(string sessionId, TimeSpan idleTimeout, Func<bool> tryEstablishSession, bool isNewSessionKey)
         {
+            if (string.IsNullOrEmpty(sessionId))
+            {
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(sessionId));
+            }
+
+            if (tryEstablishSession == null)
+            {
+                throw new ArgumentNullException(nameof(tryEstablishSession));
+            }
+
             return new DistributedSession(_cache, sessionId, idleTimeout, tryEstablishSession, _loggerFactory, isNewSessionKey);
         }
     }

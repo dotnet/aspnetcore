@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNet.Session;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -17,8 +16,13 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
         /// <returns>The <see cref="IServiceCollection"/>.</returns>
-        public static IServiceCollection AddSession([NotNull] this IServiceCollection services)
+        public static IServiceCollection AddSession(this IServiceCollection services)
         {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
             services.AddOptions();
             services.AddTransient<ISessionStore, DistributedSessionStore>();
             return services;
@@ -30,8 +34,13 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
         /// <param name="configure">The session options to configure the middleware with.</param>
         /// <returns>The <see cref="IServiceCollection"/>.</returns>
-        public static IServiceCollection AddSession([NotNull] this IServiceCollection services, Action<SessionOptions> configure)
+        public static IServiceCollection AddSession(this IServiceCollection services, Action<SessionOptions> configure)
         {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
             services.Configure(configure);
             return services.AddSession();
         }

@@ -9,11 +9,11 @@
         "Microsoft.AspNet.Http.Abstractions": "1.0.0-*",
         "Microsoft.Extensions.Caching.Abstractions": "1.0.0-*",
         "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*",
-        "Microsoft.Extensions.NotNullAttribute.Sources": { "type": "build", "version": "1.0.0-*" },
         "Microsoft.Extensions.OptionsModel": "1.0.0-*"
     },
     "compilationOptions": {
-        "allowUnsafe": true
+        "allowUnsafe": true,
+        "warningsAsErrors": true
     },
     "frameworks": {
         "dnx451": { },

@@ -9,7 +9,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.Session
@@ -29,9 +28,34 @@ namespace Microsoft.AspNet.Session
         private bool _loaded;
         private bool _isNewSessionKey;
 
-        public DistributedSession([NotNull] IDistributedCache cache, [NotNull] string sessionId, TimeSpan idleTimeout,
-            [NotNull] Func<bool> tryEstablishSession, [NotNull] ILoggerFactory loggerFactory, bool isNewSessionKey)
+        public DistributedSession(
+            IDistributedCache cache,
+            string sessionId,
+            TimeSpan idleTimeout,
+            Func<bool> tryEstablishSession,
+            ILoggerFactory loggerFactory,
+            bool isNewSessionKey)
         {
+            if (cache == null)
+            {
+                throw new ArgumentNullException(nameof(cache));
+            }
+
+            if (string.IsNullOrEmpty(sessionId))
+            {
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(sessionId));
+            }
+
+            if (tryEstablishSession == null)
+            {
+                throw new ArgumentNullException(nameof(tryEstablishSession));
+            }
+
+            if (loggerFactory == null)
+            {
+                throw new ArgumentNullException(nameof(loggerFactory));
+            }
+
             _cache = cache;
             _sessionId = sessionId;
             _idleTimeout = idleTimeout;
@@ -56,8 +80,13 @@ namespace Microsoft.AspNet.Session
             return _store.TryGetValue(new EncodedKey(key), out value);
         }
 
-        public void Set(string key, [NotNull] byte[] value)
+        public void Set(string key, byte[] value)
         {
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
             var encodedKey = new EncodedKey(key);
             if (encodedKey.KeyBytes.Length > KeyLengthLimit)
             {

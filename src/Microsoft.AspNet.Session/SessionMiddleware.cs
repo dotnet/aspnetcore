@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.OptionsModel;
 
@@ -34,11 +33,31 @@ namespace Microsoft.AspNet.Session
         /// <param name="sessionStore">The <see cref="ISessionStore"/> representing the session store.</param>
         /// <param name="options">The session configuration options.</param>
         public SessionMiddleware(
-            [NotNull] RequestDelegate next,
-            [NotNull] ILoggerFactory loggerFactory,
-            [NotNull] ISessionStore sessionStore,
-            [NotNull] IOptions<SessionOptions> options)
+            RequestDelegate next,
+            ILoggerFactory loggerFactory,
+            ISessionStore sessionStore,
+            IOptions<SessionOptions> options)
         {
+            if (next == null)
+            {
+                throw new ArgumentNullException(nameof(next));
+            }
+
+            if (loggerFactory == null)
+            {
+                throw new ArgumentNullException(nameof(loggerFactory));
+            }
+
+            if (sessionStore == null)
+            {
+                throw new ArgumentNullException(nameof(sessionStore));
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
             _next = next;
             _logger = loggerFactory.CreateLogger<SessionMiddleware>();
             _options = options.Value;
