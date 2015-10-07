@@ -280,7 +280,7 @@
             "Microsoft.Dnx.Host.Mono": { },
             "Microsoft.Dnx.Runtime.CommandParsing.Sources": { },
             "Microsoft.Dnx.Runtime.Internals": { },
-            "Microsoft.Dnx.Runtime.Json.Sources": { },
+            "Microsoft.Extensions.JsonParser.Sources": { },
             "Microsoft.Dnx.Runtime.Sources": { },
             "Microsoft.Dnx.TestHost.Client.Sources": { },
             "Microsoft.Extensions.ActivatorUtilities.Sources": { },
