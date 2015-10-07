@@ -50,8 +50,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework
             builder.Entity<TUser>(b =>
                 {
                     b.HasKey(u => u.Id);
-                    b.Index(u => u.NormalizedUserName).Name("UserNameIndex");
-                    b.Index(u => u.NormalizedEmail).Name("EmailIndex");
+                    b.HasIndex(u => u.NormalizedUserName).HasName("UserNameIndex");
+                    b.HasIndex(u => u.NormalizedEmail).HasName("EmailIndex");
                     b.ToTable("AspNetUsers");
                     b.Property(u => u.ConcurrencyStamp).IsConcurrencyToken();
 
@@ -59,23 +59,23 @@ namespace Microsoft.AspNet.Identity.EntityFramework
                     b.Property(u => u.NormalizedUserName).HasMaxLength(256);
                     b.Property(u => u.Email).HasMaxLength(256);
                     b.Property(u => u.NormalizedEmail).HasMaxLength(256);
-                    b.HasMany(u => u.Claims).WithOne().ForeignKey(uc => uc.UserId);
-                    b.HasMany(u => u.Logins).WithOne().ForeignKey(ul => ul.UserId);
-                    b.HasMany(u => u.Roles).WithOne().ForeignKey(ur => ur.UserId);
+                    b.HasMany(u => u.Claims).WithOne().HasForeignKey(uc => uc.UserId);
+                    b.HasMany(u => u.Logins).WithOne().HasForeignKey(ul => ul.UserId);
+                    b.HasMany(u => u.Roles).WithOne().HasForeignKey(ur => ur.UserId);
                 });
 
             builder.Entity<TRole>(b =>
                 {
                     b.HasKey(r => r.Id);
-                    b.Index(r => r.NormalizedName).Name("RoleNameIndex");
+                    b.HasIndex(r => r.NormalizedName).HasName("RoleNameIndex");
                     b.ToTable("AspNetRoles");
                     b.Property(r => r.ConcurrencyStamp).IsConcurrencyToken();
 
                     b.Property(u => u.Name).HasMaxLength(256);
                     b.Property(u => u.NormalizedName).HasMaxLength(256);
 
-                    b.HasMany(r => r.Users).WithOne().ForeignKey(ur => ur.RoleId);
-                    b.HasMany(r => r.Claims).WithOne().ForeignKey(rc => rc.RoleId);
+                    b.HasMany(r => r.Users).WithOne().HasForeignKey(ur => ur.RoleId);
+                    b.HasMany(r => r.Claims).WithOne().HasForeignKey(rc => rc.RoleId);
                 });
 
             builder.Entity<IdentityUserClaim<TKey>>(b =>
