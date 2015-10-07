@@ -164,6 +164,7 @@
                     "runtimes\\win7-x86\\native\\libuv.dll": "We don't sign 3rd party DLLs"
                 }
             },
+            "Microsoft.AspNet.Server.Kestrel.Https": { },
             "Microsoft.AspNet.Server.Testing": { },
             "Microsoft.AspNet.Server.WebListener": { },
             "Microsoft.AspNet.Session": { },
@@ -296,6 +297,7 @@
             "Microsoft.Extensions.SecurityHelper.Sources": { },
             "Microsoft.Extensions.TypeNameHelper.Sources": { },
             "PageGenerator": { },
+            "Placeholder": { },
             "xunit.execution.AspNet": { },
             "xunit.runner.aspnet": { },
             "xunit.runner.utility.AspNet": { }
