@@ -1,9 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.StaticFiles;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.Builder
 {
@@ -17,8 +17,13 @@ namespace Microsoft.AspNet.Builder
         /// </summary>
         /// <param name="builder"></param>
         /// <returns></returns>
-        public static IApplicationBuilder UseDirectoryBrowser([NotNull] this IApplicationBuilder builder)
+        public static IApplicationBuilder UseDirectoryBrowser(this IApplicationBuilder builder)
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
             return builder.UseDirectoryBrowser(new DirectoryBrowserOptions());
         }
 
@@ -28,8 +33,13 @@ namespace Microsoft.AspNet.Builder
         /// <param name="builder"></param>
         /// <param name="requestPath">The relative request path.</param>
         /// <returns></returns>
-        public static IApplicationBuilder UseDirectoryBrowser([NotNull] this IApplicationBuilder builder, [NotNull] string requestPath)
+        public static IApplicationBuilder UseDirectoryBrowser(this IApplicationBuilder builder, string requestPath)
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
             return builder.UseDirectoryBrowser(new DirectoryBrowserOptions() { RequestPath = new PathString(requestPath) });
         }
 
@@ -39,8 +49,18 @@ namespace Microsoft.AspNet.Builder
         /// <param name="builder"></param>
         /// <param name="options"></param>
         /// <returns></returns>
-        public static IApplicationBuilder UseDirectoryBrowser([NotNull] this IApplicationBuilder builder, [NotNull] DirectoryBrowserOptions options)
+        public static IApplicationBuilder UseDirectoryBrowser(this IApplicationBuilder builder, DirectoryBrowserOptions options)
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
             return builder.UseMiddleware<DirectoryBrowserMiddleware>(options);
         }
     }

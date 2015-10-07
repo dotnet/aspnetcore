@@ -1,8 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Extensions.Internal;
-using Microsoft.AspNet.StaticFiles;
+using System;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -16,8 +15,13 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="services"></param>
         /// <returns></returns>
-        public static IServiceCollection AddDirectoryBrowser([NotNull] this IServiceCollection services)
+        public static IServiceCollection AddDirectoryBrowser(this IServiceCollection services)
         {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
             return services.AddWebEncoders();
         }
     }

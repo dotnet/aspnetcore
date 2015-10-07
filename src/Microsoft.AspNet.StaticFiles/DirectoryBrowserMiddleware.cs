@@ -7,7 +7,6 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
-using Microsoft.Extensions.Internal;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.StaticFiles
@@ -26,8 +25,23 @@ namespace Microsoft.AspNet.StaticFiles
         /// </summary>
         /// <param name="next">The next middleware in the pipeline.</param>
         /// <param name="options">The configuration for this middleware.</param>
-        public DirectoryBrowserMiddleware([NotNull] RequestDelegate next, [NotNull] IHostingEnvironment hostingEnv, [NotNull] DirectoryBrowserOptions options)
+        public DirectoryBrowserMiddleware(RequestDelegate next, IHostingEnvironment hostingEnv, DirectoryBrowserOptions options)
         {
+            if (next == null)
+            {
+                throw new ArgumentNullException(nameof(next));
+            }
+
+            if (hostingEnv == null)
+            {
+                throw new ArgumentNullException(nameof(hostingEnv));
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
             if (options.Formatter == null)
             {
                 throw new ArgumentException(Resources.Args_NoFormatter);

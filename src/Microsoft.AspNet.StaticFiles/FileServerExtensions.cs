@@ -4,7 +4,6 @@
 using System;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.StaticFiles;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.Builder
 {
@@ -19,8 +18,13 @@ namespace Microsoft.AspNet.Builder
         /// </summary>
         /// <param name="builder"></param>
         /// <returns></returns>
-        public static IApplicationBuilder UseFileServer([NotNull] this IApplicationBuilder builder)
+        public static IApplicationBuilder UseFileServer(this IApplicationBuilder builder)
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
             return builder.UseFileServer(new FileServerOptions());
         }
 
@@ -30,8 +34,13 @@ namespace Microsoft.AspNet.Builder
         /// <param name="builder"></param>
         /// <param name="enableDirectoryBrowsing">Should directory browsing be enabled?</param>
         /// <returns></returns>
-        public static IApplicationBuilder UseFileServer([NotNull] this IApplicationBuilder builder, bool enableDirectoryBrowsing)
+        public static IApplicationBuilder UseFileServer(this IApplicationBuilder builder, bool enableDirectoryBrowsing)
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
             return builder.UseFileServer(new FileServerOptions() { EnableDirectoryBrowsing = enableDirectoryBrowsing });
         }
 
@@ -41,8 +50,18 @@ namespace Microsoft.AspNet.Builder
         /// <param name="builder"></param>
         /// <param name="requestPath">The relative request path.</param>
         /// <returns></returns>
-        public static IApplicationBuilder UseFileServer([NotNull] this IApplicationBuilder builder, [NotNull] string requestPath)
+        public static IApplicationBuilder UseFileServer(this IApplicationBuilder builder, string requestPath)
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (requestPath == null)
+            {
+                throw new ArgumentNullException(nameof(requestPath));
+            }
+
             return builder.UseFileServer(new FileServerOptions() { RequestPath = new PathString(requestPath) });
         }
 
@@ -52,8 +71,18 @@ namespace Microsoft.AspNet.Builder
         /// <param name="builder"></param>
         /// <param name="options"></param>
         /// <returns></returns>
-        public static IApplicationBuilder UseFileServer([NotNull] this IApplicationBuilder builder, [NotNull] FileServerOptions options)
+        public static IApplicationBuilder UseFileServer(this IApplicationBuilder builder, FileServerOptions options)
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
             if (options == null)
             {
                 throw new ArgumentNullException(nameof(options));

@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.StaticFiles
@@ -29,8 +28,18 @@ namespace Microsoft.AspNet.StaticFiles
         /// </summary>
         /// <param name="next">The next middleware in the pipeline.</param>
         /// <param name="loggerFactory">An <see cref="ILoggerFactory"/> instance used to create loggers.</param>
-        public SendFileMiddleware([NotNull] RequestDelegate next, [NotNull] ILoggerFactory loggerFactory)
+        public SendFileMiddleware(RequestDelegate next, ILoggerFactory loggerFactory)
         {
+            if (next == null)
+            {
+                throw new ArgumentNullException(nameof(next));
+            }
+
+            if (loggerFactory == null)
+            {
+                throw new ArgumentNullException(nameof(loggerFactory));
+            }
+
             _next = next;
             _logger = loggerFactory.CreateLogger<SendFileMiddleware>();
         }

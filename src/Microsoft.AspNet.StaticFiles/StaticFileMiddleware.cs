@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.StaticFiles
@@ -27,8 +26,28 @@ namespace Microsoft.AspNet.StaticFiles
         /// <param name="next">The next middleware in the pipeline.</param>
         /// <param name="options">The configuration options.</param>
         /// <param name="loggerFactory">An <see cref="ILoggerFactory"/> instance used to create loggers.</param>
-        public StaticFileMiddleware([NotNull] RequestDelegate next, [NotNull] IHostingEnvironment hostingEnv, [NotNull] StaticFileOptions options, [NotNull] ILoggerFactory loggerFactory)
+        public StaticFileMiddleware(RequestDelegate next, IHostingEnvironment hostingEnv, StaticFileOptions options, ILoggerFactory loggerFactory)
         {
+            if (next == null)
+            {
+                throw new ArgumentNullException(nameof(next));
+            }
+
+            if (hostingEnv == null)
+            {
+                throw new ArgumentNullException(nameof(hostingEnv));
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            if (loggerFactory == null)
+            {
+                throw new ArgumentNullException(nameof(loggerFactory));
+            }
+
             if (options.ContentTypeProvider == null)
             {
                 throw new ArgumentException(Resources.Args_NoContentTypeProvider);

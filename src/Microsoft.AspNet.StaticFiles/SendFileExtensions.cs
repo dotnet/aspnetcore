@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Builder;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.StaticFiles
 {
@@ -18,8 +17,13 @@ namespace Microsoft.AspNet.StaticFiles
         /// </summary>
         /// <param name="builder"></param>
         /// <returns></returns>
-        public static IApplicationBuilder UseSendFileFallback([NotNull] this IApplicationBuilder builder)
+        public static IApplicationBuilder UseSendFileFallback(this IApplicationBuilder builder)
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
             /* TODO builder.GetItem(typeof(ISendFile))
 
             // Check for advertised support

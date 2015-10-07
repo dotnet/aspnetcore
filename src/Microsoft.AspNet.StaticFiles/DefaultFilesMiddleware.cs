@@ -1,11 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
-using Microsoft.Extensions.Internal;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.StaticFiles
@@ -26,8 +26,23 @@ namespace Microsoft.AspNet.StaticFiles
         /// </summary>
         /// <param name="next">The next middleware in the pipeline.</param>
         /// <param name="options">The configuration options for this middleware.</param>
-        public DefaultFilesMiddleware([NotNull] RequestDelegate next, [NotNull] IHostingEnvironment hostingEnv, [NotNull] DefaultFilesOptions options)
+        public DefaultFilesMiddleware(RequestDelegate next, IHostingEnvironment hostingEnv, DefaultFilesOptions options)
         {
+            if (next == null)
+            {
+                throw new ArgumentNullException(nameof(next));
+            }
+
+            if (hostingEnv == null)
+            {
+                throw new ArgumentNullException(nameof(hostingEnv));
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
             options.ResolveFileProvider(hostingEnv);
 
             _next = next;

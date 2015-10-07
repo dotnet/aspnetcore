@@ -10,7 +10,6 @@
         "Microsoft.AspNet.FileProviders.Abstractions": "1.0.0-*",
         "Microsoft.AspNet.Hosting.Abstractions": "1.0.0-*",
         "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*",
-        "Microsoft.Extensions.NotNullAttribute.Sources": { "type": "build", "version": "1.0.0-*" },
         "Microsoft.Extensions.WebEncoders": "1.0.0-*"
     },
     "frameworks": {
