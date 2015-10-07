@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 using System.IO;
-using Microsoft.Dnx.Runtime.Json;
+using Microsoft.Extensions.JsonParser.Sources;
 
 namespace Microsoft.Dnx.Runtime
 {

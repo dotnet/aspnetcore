@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.Extensions.FileSystemGlobbing;
-using Microsoft.Dnx.Runtime.Json;
+using Microsoft.Extensions.JsonParser.Sources;
 
 namespace Microsoft.Dnx.Runtime
 {
@@ -33,15 +33,16 @@ namespace Microsoft.Dnx.Runtime
             _matcher.AddExcludePatterns(ExcludePatterns);
         }
 
-        internal static PatternGroup Build(JsonObject rawProject,
-                                           string projectDirectory,
-                                           string projectFilePath,
-                                           string name,
-                                           IEnumerable<string> fallbackIncluding = null,
-                                           IEnumerable<string> additionalIncluding = null,
-                                           IEnumerable<string> additionalExcluding = null,
-                                           bool includePatternsOnly = false,
-                                           ICollection<DiagnosticMessage> warnings = null)
+        internal static PatternGroup Build(
+            JsonObject rawProject,
+            string projectDirectory,
+            string projectFilePath,
+            string name,
+            IEnumerable<string> fallbackIncluding = null,
+            IEnumerable<string> additionalIncluding = null,
+            IEnumerable<string> additionalExcluding = null,
+            bool includePatternsOnly = false,
+            ICollection<DiagnosticMessage> warnings = null)
         {
             string includePropertyName = name;
             additionalIncluding = additionalIncluding ?? Enumerable.Empty<string>();

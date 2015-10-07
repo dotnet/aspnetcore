@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Microsoft.Dnx.Runtime.Json;
+using Microsoft.Extensions.JsonParser.Sources;
 
 namespace Microsoft.Dnx.Runtime
 {
@@ -13,12 +13,13 @@ namespace Microsoft.Dnx.Runtime
     {
         private static readonly char[] PatternSeparator = new[] { ';' };
 
-        public static IEnumerable<string> GetPatternsCollection(JsonObject rawProject,
-                                                                string projectDirectory,
-                                                                string projectFilePath,
-                                                                string propertyName,
-                                                                IEnumerable<string> defaultPatterns = null,
-                                                                bool literalPath = false)
+        public static IEnumerable<string> GetPatternsCollection(
+            JsonObject rawProject,
+            string projectDirectory,
+            string projectFilePath,
+            string propertyName,
+            IEnumerable<string> defaultPatterns = null,
+            bool literalPath = false)
         {
             defaultPatterns = defaultPatterns ?? Enumerable.Empty<string>();
 
