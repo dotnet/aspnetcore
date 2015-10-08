@@ -5,10 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Security.Cryptography;
 using Microsoft.AspNet.DataProtection.Infrastructure;
 using Microsoft.AspNet.DataProtection.Abstractions;
-using Microsoft.Extensions.Internal;
 
 #if DNX451 || DNXCORE50 // [[ISSUE1400]] Replace with DNX_ANY when it becomes available
 using Microsoft.Dnx.Runtime;
@@ -33,8 +31,18 @@ namespace Microsoft.AspNet.DataProtection
         /// <see cref="IDataProtectionProvider.CreateProtector(string)"/>. See that method's
         /// documentation for more information.
         /// </remarks>
-        public static IDataProtector CreateProtector([NotNull] this IDataProtectionProvider provider, [NotNull] IEnumerable<string> purposes)
+        public static IDataProtector CreateProtector(this IDataProtectionProvider provider, IEnumerable<string> purposes)
         {
+            if (provider == null)
+            {
+                throw new ArgumentNullException(nameof(provider));
+            }
+
+            if (purposes == null)
+            {
+                throw new ArgumentNullException(nameof(purposes));
+            }
+
             bool collectionIsEmpty = true;
             IDataProtectionProvider retVal = provider;
             foreach (string purpose in purposes)
@@ -69,8 +77,18 @@ namespace Microsoft.AspNet.DataProtection
         /// <see cref="IDataProtectionProvider.CreateProtector(string)"/>. See that method's
         /// documentation for more information.
         /// </remarks>
-        public static IDataProtector CreateProtector([NotNull] this IDataProtectionProvider provider, [NotNull] string purpose, params string[] subPurposes)
+        public static IDataProtector CreateProtector(this IDataProtectionProvider provider, string purpose, params string[] subPurposes)
         {
+            if (provider == null)
+            {
+                throw new ArgumentNullException(nameof(provider));
+            }
+
+            if (purpose == null)
+            {
+                throw new ArgumentNullException(nameof(purpose));
+            }
+
             // The method signature isn't simply CreateProtector(this IDataProtectionProvider, params string[] purposes)
             // because we don't want the code provider.CreateProtector() [parameterless] to inadvertently compile.
             // The actual signature for this method forces at least one purpose to be provided at the call site.
@@ -127,8 +145,13 @@ namespace Microsoft.AspNet.DataProtection
         /// <param name="services">The service provider from which to retrieve the <see cref="IDataProtectionProvider"/>.</param>
         /// <returns>An <see cref="IDataProtectionProvider"/>. This method is guaranteed never to return null.</returns>
         /// <exception cref="InvalidOperationException">If no <see cref="IDataProtectionProvider"/> service exists in <paramref name="services"/>.</exception>
-        public static IDataProtectionProvider GetDataProtectionProvider([NotNull] this IServiceProvider services)
+        public static IDataProtectionProvider GetDataProtectionProvider(this IServiceProvider services)
         {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
             // We have our own implementation of GetRequiredService<T> since we don't want to
             // take a dependency on DependencyInjection.Interfaces.
             IDataProtectionProvider provider = (IDataProtectionProvider)services.GetService(typeof(IDataProtectionProvider));
@@ -152,8 +175,18 @@ namespace Microsoft.AspNet.DataProtection
         /// then <see cref="CreateProtector(IDataProtectionProvider, IEnumerable{string})"/>. See those methods'
         /// documentation for more information.
         /// </remarks>
-        public static IDataProtector GetDataProtector([NotNull] this IServiceProvider services, [NotNull] IEnumerable<string> purposes)
+        public static IDataProtector GetDataProtector(this IServiceProvider services, IEnumerable<string> purposes)
         {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            if (purposes == null)
+            {
+                throw new ArgumentNullException(nameof(purposes));
+            }
+
             return services.GetDataProtectionProvider().CreateProtector(purposes);
         }
 
@@ -171,8 +204,18 @@ namespace Microsoft.AspNet.DataProtection
         /// then <see cref="CreateProtector(IDataProtectionProvider, string, string[])"/>. See those methods'
         /// documentation for more information.
         /// </remarks>
-        public static IDataProtector GetDataProtector([NotNull] this IServiceProvider services, [NotNull] string purpose, params string[] subPurposes)
+        public static IDataProtector GetDataProtector(this IServiceProvider services, string purpose, params string[] subPurposes)
         {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            if (purpose == null)
+            {
+                throw new ArgumentNullException(nameof(purpose));
+            }
+
             return services.GetDataProtectionProvider().CreateProtector(purpose, subPurposes);
         }
 
@@ -182,8 +225,18 @@ namespace Microsoft.AspNet.DataProtection
         /// <param name="protector">The data protector to use for this operation.</param>
         /// <param name="plaintext">The plaintext data to protect.</param>
         /// <returns>The protected form of the plaintext data.</returns>
-        public static string Protect([NotNull] this IDataProtector protector, [NotNull] string plaintext)
+        public static string Protect(this IDataProtector protector, string plaintext)
         {
+            if (protector == null)
+            {
+                throw new ArgumentNullException(nameof(protector));
+            }
+
+            if (plaintext == null)
+            {
+                throw new ArgumentNullException(nameof(plaintext));
+            }
+
             try
             {
                 byte[] plaintextAsBytes = EncodingUtil.SecureUtf8Encoding.GetBytes(plaintext);
@@ -206,8 +259,18 @@ namespace Microsoft.AspNet.DataProtection
         /// <exception cref="CryptographicException">
         /// Thrown if <paramref name="protectedData"/> is invalid or malformed.
         /// </exception>
-        public static string Unprotect([NotNull] this IDataProtector protector, [NotNull] string protectedData)
+        public static string Unprotect(this IDataProtector protector, string protectedData)
         {
+            if (protector == null)
+            {
+                throw new ArgumentNullException(nameof(protector));
+            }
+
+            if (protectedData == null)
+            {
+                throw new ArgumentNullException(nameof(protectedData));
+            }
+
             try
             {
                 byte[] protectedDataAsBytes = WebEncoders.Base64UrlDecode(protectedData);

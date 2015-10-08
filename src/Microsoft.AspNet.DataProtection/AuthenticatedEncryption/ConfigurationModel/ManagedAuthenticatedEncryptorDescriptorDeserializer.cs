@@ -4,7 +4,6 @@
 using System;
 using System.Security.Cryptography;
 using System.Xml.Linq;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationModel
 {
@@ -29,8 +28,13 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationM
         /// <summary>
         /// Imports the <see cref="ManagedAuthenticatedEncryptorDescriptor"/> from serialized XML.
         /// </summary>
-        public IAuthenticatedEncryptorDescriptor ImportFromXml([NotNull] XElement element)
+        public IAuthenticatedEncryptorDescriptor ImportFromXml(XElement element)
         {
+            if (element == null)
+            {
+                throw new ArgumentNullException(nameof(element));
+            }
+
             // <descriptor>
             //   <!-- managed implementations -->
             //   <encryption algorithm="..." keyLength="..." />

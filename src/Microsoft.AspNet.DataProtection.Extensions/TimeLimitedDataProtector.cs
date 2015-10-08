@@ -5,7 +5,6 @@ using System;
 using System.Security.Cryptography;
 using System.Threading;
 using Microsoft.AspNet.DataProtection.Extensions;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.DataProtection
 {
@@ -25,8 +24,13 @@ namespace Microsoft.AspNet.DataProtection
             _innerProtector = innerProtector;
         }
 
-        public ITimeLimitedDataProtector CreateProtector([NotNull] string purpose)
+        public ITimeLimitedDataProtector CreateProtector(string purpose)
         {
+            if (purpose == null)
+            {
+                throw new ArgumentNullException(nameof(purpose));
+            }
+
             return new TimeLimitedDataProtector(_innerProtector.CreateProtector(purpose));
         }
 
@@ -42,8 +46,13 @@ namespace Microsoft.AspNet.DataProtection
             return retVal;
         }
 
-        public byte[] Protect([NotNull] byte[] plaintext, DateTimeOffset expiration)
+        public byte[] Protect(byte[] plaintext, DateTimeOffset expiration)
         {
+            if (plaintext == null)
+            {
+                throw new ArgumentNullException(nameof(plaintext));
+            }
+
             // We prepend the expiration time (as a 64-bit UTC tick count) to the unprotected data.
             byte[] plaintextWithHeader = new byte[checked(8 + plaintext.Length)];
             BitHelpers.WriteUInt64(plaintextWithHeader, 0, (ulong)expiration.UtcTicks);
@@ -52,13 +61,23 @@ namespace Microsoft.AspNet.DataProtection
             return GetInnerProtectorWithTimeLimitedPurpose().Protect(plaintextWithHeader);
         }
 
-        public byte[] Unprotect([NotNull] byte[] protectedData, out DateTimeOffset expiration)
+        public byte[] Unprotect(byte[] protectedData, out DateTimeOffset expiration)
         {
+            if (protectedData == null)
+            {
+                throw new ArgumentNullException(nameof(protectedData));
+            }
+
             return UnprotectCore(protectedData, DateTimeOffset.UtcNow, out expiration);
         }
 
-        internal byte[] UnprotectCore([NotNull] byte[] protectedData, DateTimeOffset now, out DateTimeOffset expiration)
+        internal byte[] UnprotectCore(byte[] protectedData, DateTimeOffset now, out DateTimeOffset expiration)
         {
+            if (protectedData == null)
+            {
+                throw new ArgumentNullException(nameof(protectedData));
+            }
+
             try
             {
                 byte[] plaintextWithHeader = GetInnerProtectorWithTimeLimitedPurpose().Unprotect(protectedData);
@@ -97,17 +116,32 @@ namespace Microsoft.AspNet.DataProtection
 
         IDataProtector IDataProtectionProvider.CreateProtector(string purpose)
         {
+            if (purpose == null)
+            {
+                throw new ArgumentNullException(nameof(purpose));
+            }
+
             return CreateProtector(purpose);
         }
 
         byte[] IDataProtector.Protect(byte[] plaintext)
         {
+            if (plaintext == null)
+            {
+                throw new ArgumentNullException(nameof(plaintext));
+            }
+
             // MaxValue essentially means 'no expiration'
             return Protect(plaintext, DateTimeOffset.MaxValue);
         }
 
         byte[] IDataProtector.Unprotect(byte[] protectedData)
         {
+            if (protectedData == null)
+            {
+                throw new ArgumentNullException(nameof(protectedData));
+            }
+
             DateTimeOffset expiration; // unused
             return Unprotect(protectedData, out expiration);
         }

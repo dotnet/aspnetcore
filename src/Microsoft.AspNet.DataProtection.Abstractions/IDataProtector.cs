@@ -1,10 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Security.Cryptography;
-using Microsoft.Extensions.Internal;
-
 namespace Microsoft.AspNet.DataProtection
 {
     /// <summary>
@@ -17,7 +13,7 @@ namespace Microsoft.AspNet.DataProtection
         /// </summary>
         /// <param name="plaintext">The plaintext data to protect.</param>
         /// <returns>The protected form of the plaintext data.</returns>
-        byte[] Protect([NotNull] byte[] plaintext);
+        byte[] Protect(byte[] plaintext);
 
         /// <summary>
         /// Cryptographically unprotects a piece of protected data.
@@ -27,6 +23,6 @@ namespace Microsoft.AspNet.DataProtection
         /// <exception cref="CryptographicException">
         /// Thrown if the protected data is invalid or malformed.
         /// </exception>
-        byte[] Unprotect([NotNull] byte[] protectedData);
+        byte[] Unprotect(byte[] protectedData);
     }
 }

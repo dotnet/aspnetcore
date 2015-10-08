@@ -6,7 +6,6 @@ using Microsoft.AspNet.Cryptography;
 using Microsoft.AspNet.Cryptography.Cng;
 using Microsoft.AspNet.Cryptography.SafeHandles;
 using Microsoft.AspNet.DataProtection.Managed;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.DataProtection
 {
@@ -37,9 +36,13 @@ namespace Microsoft.AspNet.DataProtection
         /// Creates a new Secret from the provided input value, where the input value
         /// is specified as an array.
         /// </summary>
-        public Secret([NotNull] byte[] value)
+        public Secret(byte[] value)
             : this(new ArraySegment<byte>(value))
         {
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
         }
 
         /// <summary>
@@ -64,8 +67,13 @@ namespace Microsoft.AspNet.DataProtection
         /// <summary>
         /// Creates a new Secret from another secret object.
         /// </summary>
-        public Secret([NotNull] ISecret secret)
+        public Secret(ISecret secret)
         {
+            if (secret == null)
+            {
+                throw new ArgumentNullException(nameof(secret));
+            }
+
             Secret other = secret as Secret;
             if (other != null)
             {

@@ -9,7 +9,6 @@ using System.Linq;
 using System.Threading;
 using Microsoft.AspNet.Cryptography;
 using Microsoft.AspNet.DataProtection.AuthenticatedEncryption;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.DataProtection.KeyManagement
@@ -54,8 +53,13 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
             }
         }
 
-        public IDataProtector CreateProtector([NotNull] string purpose)
+        public IDataProtector CreateProtector(string purpose)
         {
+            if (purpose == null)
+            {
+                throw new ArgumentNullException(nameof(purpose));
+            }
+
             return new KeyRingBasedDataProtector(
                 logger: _logger,
                 keyRingProvider: _keyRingProvider,
@@ -86,6 +90,11 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
 
         public byte[] Protect(byte[] plaintext)
         {
+            if (plaintext == null)
+            {
+                throw new ArgumentNullException(nameof(plaintext));
+            }
+
             // argument & state checking
             if (plaintext == null)
             {
@@ -177,6 +186,11 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
 
         public byte[] Unprotect(byte[] protectedData)
         {
+            if (protectedData == null)
+            {
+                throw new ArgumentNullException(nameof(protectedData));
+            }
+
             // Argument checking will be done by the callee
             bool requiresMigration, wasRevoked; // unused
             return DangerousUnprotect(protectedData,

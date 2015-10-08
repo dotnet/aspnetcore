@@ -5,7 +5,6 @@ using System;
 using System.Reflection;
 using Microsoft.AspNet.Cryptography;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.DataProtection
 {
@@ -18,9 +17,14 @@ namespace Microsoft.AspNet.DataProtection
         /// Creates an instance of <paramref name="implementationTypeName"/> and ensures
         /// that it is assignable to <typeparamref name="T"/>.
         /// </summary>
-        public static T CreateInstance<T>(this IActivator activator, [NotNull] string implementationTypeName)
+        public static T CreateInstance<T>(this IActivator activator, string implementationTypeName)
             where T : class
         {
+            if (implementationTypeName == null)
+            {
+                throw new ArgumentNullException(nameof(implementationTypeName));
+            }
+
             return activator.CreateInstance(typeof(T), implementationTypeName) as T
                 ?? CryptoUtil.Fail<T>("CreateInstance returned null.");
         }

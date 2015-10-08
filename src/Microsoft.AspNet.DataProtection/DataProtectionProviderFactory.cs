@@ -4,7 +4,6 @@
 using System;
 using Microsoft.AspNet.DataProtection.KeyManagement;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.OptionsModel;
 
 namespace Microsoft.AspNet.DataProtection
@@ -20,13 +19,33 @@ namespace Microsoft.AspNet.DataProtection
         /// <param name="options">The global options to use when creating the provider.</param>
         /// <param name="services">Provides mandatory services for use by the provider.</param>
         /// <returns>An <see cref="IDataProtectionProvider"/>.</returns>
-        public static IDataProtectionProvider GetProviderFromServices([NotNull] DataProtectionOptions options, [NotNull] IServiceProvider services)
+        public static IDataProtectionProvider GetProviderFromServices(DataProtectionOptions options, IServiceProvider services)
         {
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
             return GetProviderFromServices(options, services, mustCreateImmediately: false);
         }
 
-        internal static IDataProtectionProvider GetProviderFromServices([NotNull] DataProtectionOptions options, [NotNull] IServiceProvider services, bool mustCreateImmediately)
+        internal static IDataProtectionProvider GetProviderFromServices(DataProtectionOptions options, IServiceProvider services, bool mustCreateImmediately)
         {
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
             IDataProtectionProvider dataProtectionProvider = null;
 
             // If we're being asked to create the provider immediately, then it means that

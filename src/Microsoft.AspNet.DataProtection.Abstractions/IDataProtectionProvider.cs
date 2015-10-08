@@ -1,9 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using Microsoft.Extensions.Internal;
-
 namespace Microsoft.AspNet.DataProtection
 {
     /// <summary>
@@ -24,6 +21,6 @@ namespace Microsoft.AspNet.DataProtection
         /// values will not be able to decipher each other's payloads. The <paramref name="purpose"/> parameter
         /// value is not intended to be kept secret.
         /// </remarks>
-        IDataProtector CreateProtector([NotNull] string purpose);
+        IDataProtector CreateProtector(string purpose);
     }
 }

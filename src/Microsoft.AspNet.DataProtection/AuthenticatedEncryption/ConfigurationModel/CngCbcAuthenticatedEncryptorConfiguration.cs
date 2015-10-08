@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationModel
 {
@@ -14,13 +13,18 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationM
     {
         private readonly IServiceProvider _services;
 
-        public CngCbcAuthenticatedEncryptorConfiguration([NotNull] CngCbcAuthenticatedEncryptionOptions options)
+        public CngCbcAuthenticatedEncryptorConfiguration(CngCbcAuthenticatedEncryptionOptions options)
             : this(options, services: null)
         {
         }
 
-        public CngCbcAuthenticatedEncryptorConfiguration([NotNull] CngCbcAuthenticatedEncryptionOptions options, IServiceProvider services)
+        public CngCbcAuthenticatedEncryptorConfiguration(CngCbcAuthenticatedEncryptionOptions options, IServiceProvider services)
         {
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
             Options = options;
             _services = services;
         }

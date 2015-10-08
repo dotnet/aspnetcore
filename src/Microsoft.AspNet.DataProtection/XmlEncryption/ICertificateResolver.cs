@@ -3,9 +3,7 @@
 
 #if !DNXCORE50 // [[ISSUE60]] Remove this #ifdef when Core CLR gets support for EncryptedXml
 
-using System;
 using System.Security.Cryptography.X509Certificates;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.DataProtection.XmlEncryption
 {
@@ -19,7 +17,7 @@ namespace Microsoft.AspNet.DataProtection.XmlEncryption
         /// </summary>
         /// <param name="thumbprint">The thumbprint (as a hex string) of the certificate to resolve.</param>
         /// <returns>The resolved <see cref="X509Certificate2"/>, or null if the certificate cannot be found.</returns>
-        X509Certificate2 ResolveCertificate([NotNull] string thumbprint);
+        X509Certificate2 ResolveCertificate(string thumbprint);
     }
 }
 

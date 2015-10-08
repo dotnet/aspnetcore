@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationModel
 {
@@ -13,13 +12,18 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationM
     {
         private readonly IServiceProvider _services;
 
-        public AuthenticatedEncryptorConfiguration([NotNull] AuthenticatedEncryptionOptions options)
+        public AuthenticatedEncryptorConfiguration(AuthenticatedEncryptionOptions options)
             : this(options, services: null)
         {
         }
 
-        public AuthenticatedEncryptorConfiguration([NotNull] AuthenticatedEncryptionOptions options, IServiceProvider services)
+        public AuthenticatedEncryptorConfiguration(AuthenticatedEncryptionOptions options, IServiceProvider services)
         {
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
             Options = options;
             _services = services;
         }
@@ -30,7 +34,7 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationM
         {
             return this.CreateNewDescriptorCore();
         }
-        
+
         IAuthenticatedEncryptorDescriptor IInternalAuthenticatedEncryptorConfiguration.CreateDescriptorFromSecret(ISecret secret)
         {
             return new AuthenticatedEncryptorDescriptor(Options, secret, _services);

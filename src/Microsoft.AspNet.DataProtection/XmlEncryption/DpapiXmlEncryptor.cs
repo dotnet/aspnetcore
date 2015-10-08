@@ -5,9 +5,7 @@ using System;
 using System.Security.Principal;
 using System.Xml.Linq;
 using Microsoft.AspNet.Cryptography;
-using Microsoft.AspNet.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNet.DataProtection.Cng;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.DataProtection.XmlEncryption
@@ -56,8 +54,13 @@ namespace Microsoft.AspNet.DataProtection.XmlEncryption
         /// <paramref name="plaintextElement"/> along with information about how to
         /// decrypt it.
         /// </returns>
-        public EncryptedXmlInfo Encrypt([NotNull] XElement plaintextElement)
+        public EncryptedXmlInfo Encrypt(XElement plaintextElement)
         {
+            if (plaintextElement == null)
+            {
+                throw new ArgumentNullException(nameof(plaintextElement));
+            }
+
             if (_logger.IsVerboseLevelEnabled())
             {
                 if (_protectToLocalMachine)

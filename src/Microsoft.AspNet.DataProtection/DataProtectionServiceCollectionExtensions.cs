@@ -4,7 +4,6 @@
 using System;
 using Microsoft.AspNet.DataProtection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -18,8 +17,13 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="services">The service collection to which to add DataProtection services.</param>
         /// <returns>The <paramref name="services"/> instance.</returns>
-        public static IServiceCollection AddDataProtection([NotNull] this IServiceCollection services)
+        public static IServiceCollection AddDataProtection(this IServiceCollection services)
         {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
             services.AddOptions();
             services.TryAdd(DataProtectionServices.GetDefaultServices());
             return services;
@@ -32,8 +36,18 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="configure">A callback which takes a <see cref="DataProtectionConfiguration"/> parameter.
         /// This callback will be responsible for configuring the system.</param>
         /// <returns>The <paramref name="services"/> instance.</returns>
-        public static IServiceCollection ConfigureDataProtection([NotNull] this IServiceCollection services, [NotNull] Action<DataProtectionConfiguration> configure)
+        public static IServiceCollection ConfigureDataProtection(this IServiceCollection services, Action<DataProtectionConfiguration> configure)
         {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            if (configure == null)
+            {
+                throw new ArgumentNullException(nameof(configure));
+            }
+
             configure(new DataProtectionConfiguration(services));
             return services;
         }

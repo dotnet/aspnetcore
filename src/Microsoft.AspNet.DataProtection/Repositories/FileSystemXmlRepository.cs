@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.DataProtection.Repositories
@@ -25,9 +24,13 @@ namespace Microsoft.AspNet.DataProtection.Repositories
         /// Creates a <see cref="FileSystemXmlRepository"/> with keys stored at the given directory.
         /// </summary>
         /// <param name="directory">The directory in which to persist key material.</param>
-        public FileSystemXmlRepository([NotNull] DirectoryInfo directory)
+        public FileSystemXmlRepository(DirectoryInfo directory)
             : this(directory, services: null)
         {
+            if (directory == null)
+            {
+                throw new ArgumentNullException(nameof(directory));
+            }
         }
 
         /// <summary>
@@ -35,8 +38,13 @@ namespace Microsoft.AspNet.DataProtection.Repositories
         /// </summary>
         /// <param name="directory">The directory in which to persist key material.</param>
         /// <param name="services">An optional <see cref="IServiceProvider"/> to provide ancillary services.</param>
-        public FileSystemXmlRepository([NotNull] DirectoryInfo directory, IServiceProvider services)
+        public FileSystemXmlRepository(DirectoryInfo directory, IServiceProvider services)
         {
+            if (directory == null)
+            {
+                throw new ArgumentNullException(nameof(directory));
+            }
+
             Directory = directory;
             Services = services;
             _logger = services?.GetLogger<FileSystemXmlRepository>();
@@ -188,8 +196,13 @@ namespace Microsoft.AspNet.DataProtection.Repositories
             }
         }
 
-        public virtual void StoreElement([NotNull] XElement element, string friendlyName)
+        public virtual void StoreElement(XElement element, string friendlyName)
         {
+            if (element == null)
+            {
+                throw new ArgumentNullException(nameof(element));
+            }
+
             if (!IsSafeFilename(friendlyName))
             {
                 string newFriendlyName = Guid.NewGuid().ToString();

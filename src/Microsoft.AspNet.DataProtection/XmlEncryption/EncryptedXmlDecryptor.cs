@@ -8,7 +8,6 @@ using System.Security.Cryptography.Xml;
 using System.Xml;
 using System.Xml.Linq;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.DataProtection.XmlEncryption
 {
@@ -42,8 +41,13 @@ namespace Microsoft.AspNet.DataProtection.XmlEncryption
         /// <param name="encryptedElement">An encrypted XML element.</param>
         /// <returns>The decrypted form of <paramref name="encryptedElement"/>.</returns>
         /// <remarks>
-        public XElement Decrypt([NotNull] XElement encryptedElement)
+        public XElement Decrypt(XElement encryptedElement)
         {
+            if (encryptedElement == null)
+            {
+                throw new ArgumentNullException(nameof(encryptedElement));
+            }
+
             // <EncryptedData Type="http://www.w3.org/2001/04/xmlenc#Element" xmlns="http://www.w3.org/2001/04/xmlenc#">
             //   ...
             // </EncryptedData>

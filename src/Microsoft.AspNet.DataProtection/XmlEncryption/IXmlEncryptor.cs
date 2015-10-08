@@ -1,10 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Xml.Linq;
-using Microsoft.AspNet.DataProtection.AuthenticatedEncryption;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.DataProtection.XmlEncryption
 {
@@ -26,6 +23,6 @@ namespace Microsoft.AspNet.DataProtection.XmlEncryption
         /// Implementations of this method must not mutate the <see cref="XElement"/>
         /// instance provided by <paramref name="plaintextElement"/>.
         /// </remarks>
-        EncryptedXmlInfo Encrypt([NotNull] XElement plaintextElement);
+        EncryptedXmlInfo Encrypt(XElement plaintextElement);
     }
 }

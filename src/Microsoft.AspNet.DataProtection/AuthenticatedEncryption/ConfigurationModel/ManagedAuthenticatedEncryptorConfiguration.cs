@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Extensions.Internal;
-using System.Security.Cryptography;
 
 namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationModel
 {
@@ -15,13 +13,18 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationM
     {
         private readonly IServiceProvider _services;
 
-        public ManagedAuthenticatedEncryptorConfiguration([NotNull] ManagedAuthenticatedEncryptionOptions options)
+        public ManagedAuthenticatedEncryptorConfiguration(ManagedAuthenticatedEncryptionOptions options)
             : this(options, services: null)
         {
         }
 
-        public ManagedAuthenticatedEncryptorConfiguration([NotNull] ManagedAuthenticatedEncryptionOptions options, IServiceProvider services)
+        public ManagedAuthenticatedEncryptorConfiguration(ManagedAuthenticatedEncryptionOptions options, IServiceProvider services)
         {
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
             Options = options;
             _services = services;
         }

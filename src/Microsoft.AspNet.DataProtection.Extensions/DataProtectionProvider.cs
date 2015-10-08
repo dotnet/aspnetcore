@@ -4,7 +4,6 @@
 using System;
 using System.IO;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.DataProtection
 {
@@ -21,7 +20,7 @@ namespace Microsoft.AspNet.DataProtection
         /// </summary>
         /// <param name="keyDirectory">The <see cref="DirectoryInfo"/> in which keys should be stored. This may
         /// represent a directory on a local disk or a UNC share.</param>
-        public DataProtectionProvider([NotNull] DirectoryInfo keyDirectory)
+        public DataProtectionProvider(DirectoryInfo keyDirectory)
             : this(keyDirectory, configure: null)
         {
         }
@@ -34,8 +33,13 @@ namespace Microsoft.AspNet.DataProtection
         /// represent a directory on a local disk or a UNC share.</param>
         /// <param name="configure">An optional callback which provides further configuration of the data protection
         /// system. See <see cref="DataProtectionConfiguration"/> for more information.</param>
-        public DataProtectionProvider([NotNull] DirectoryInfo keyDirectory, Action<DataProtectionConfiguration> configure)
+        public DataProtectionProvider(DirectoryInfo keyDirectory, Action<DataProtectionConfiguration> configure)
         {
+            if (keyDirectory == null)
+            {
+                throw new ArgumentNullException(nameof(keyDirectory));
+            }
+
             // build the service collection
             ServiceCollection serviceCollection = new ServiceCollection();
             serviceCollection.AddDataProtection();
@@ -52,8 +56,13 @@ namespace Microsoft.AspNet.DataProtection
         /// <summary>
         /// Implements <see cref="IDataProtectionProvider.CreateProtector(string)"/>.
         /// </summary>
-        public IDataProtector CreateProtector([NotNull] string purpose)
+        public IDataProtector CreateProtector(string purpose)
         {
+            if (purpose == null)
+            {
+                throw new ArgumentNullException(nameof(purpose));
+            }
+
             return _innerProvider.CreateProtector(purpose);
         }
     }

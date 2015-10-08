@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNet.Cryptography.KeyDerivation.PBKDF2;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.Cryptography.KeyDerivation
 {
@@ -25,8 +24,18 @@ namespace Microsoft.AspNet.Cryptography.KeyDerivation
         /// <remarks>
         /// The PBKDF2 algorithm is specified in RFC 2898.
         /// </remarks>
-        public static byte[] Pbkdf2([NotNull] string password, [NotNull] byte[] salt, KeyDerivationPrf prf, int iterationCount, int numBytesRequested)
+        public static byte[] Pbkdf2(string password, byte[] salt, KeyDerivationPrf prf, int iterationCount, int numBytesRequested)
         {
+            if (password == null)
+            {
+                throw new ArgumentNullException(nameof(password));
+            }
+
+            if (salt == null)
+            {
+                throw new ArgumentNullException(nameof(salt));
+            }
+
             // parameter checking
             if (prf < KeyDerivationPrf.HMACSHA1 || prf > KeyDerivationPrf.HMACSHA512)
             {

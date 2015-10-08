@@ -3,7 +3,6 @@
 
 using System;
 using System.Xml.Linq;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationModel
 {
@@ -18,8 +17,13 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationM
         /// Marks the provided <see cref="XElement"/> as requiring encryption before being persisted
         /// to storage. Use when implementing <see cref="IAuthenticatedEncryptorDescriptor.ExportToXml"/>.
         /// </summary>
-        public static void MarkAsRequiresEncryption([NotNull] this XElement element)
+        public static void MarkAsRequiresEncryption(this XElement element)
         {
+            if (element == null)
+            {
+                throw new ArgumentNullException(nameof(element));
+            }
+
             element.SetAttributeValue(XmlConstants.RequiresEncryptionAttributeName, true);
         }
     }

@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Xml;
@@ -15,7 +14,6 @@ using Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationModel
 using Microsoft.AspNet.DataProtection.Repositories;
 using Microsoft.AspNet.DataProtection.XmlEncryption;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 
 using static System.FormattableString;
@@ -57,10 +55,20 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
         /// <param name="configuration">Configuration for newly-created keys.</param>
         /// <param name="services">A provider of optional services.</param>
         public XmlKeyManager(
-            [NotNull] IXmlRepository repository,
-            [NotNull] IAuthenticatedEncryptorConfiguration configuration,
+            IXmlRepository repository,
+            IAuthenticatedEncryptorConfiguration configuration,
             IServiceProvider services)
         {
+            if (repository == null)
+            {
+                throw new ArgumentNullException(nameof(repository));
+            }
+
+            if (configuration == null)
+            {
+                throw new ArgumentNullException(nameof(configuration));
+            }
+
             KeyEncryptor = services.GetService<IXmlEncryptor>(); // optional
             KeyRepository = repository;
 

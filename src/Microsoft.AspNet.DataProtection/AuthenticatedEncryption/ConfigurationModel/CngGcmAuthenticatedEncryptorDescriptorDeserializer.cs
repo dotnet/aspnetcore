@@ -3,7 +3,6 @@
 
 using System;
 using System.Xml.Linq;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationModel
 {
@@ -28,8 +27,13 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationM
         /// <summary>
         /// Imports the <see cref="CngCbcAuthenticatedEncryptorDescriptor"/> from serialized XML.
         /// </summary>
-        public IAuthenticatedEncryptorDescriptor ImportFromXml([NotNull] XElement element)
+        public IAuthenticatedEncryptorDescriptor ImportFromXml(XElement element)
         {
+            if (element == null)
+            {
+                throw new ArgumentNullException(nameof(element));
+            }
+
             // <descriptor>
             //   <!-- Windows CNG-GCM -->
             //   <encryption algorithm="..." keyLength="..." [provider="..."] />

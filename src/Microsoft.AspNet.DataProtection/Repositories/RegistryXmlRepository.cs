@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Principal;
 using System.Xml.Linq;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
 
@@ -27,17 +26,26 @@ namespace Microsoft.AspNet.DataProtection.Repositories
         /// Creates a <see cref="RegistryXmlRepository"/> with keys stored in the given registry key.
         /// </summary>
         /// <param name="registryKey">The registry key in which to persist key material.</param>
-        public RegistryXmlRepository([NotNull] RegistryKey registryKey)
+        public RegistryXmlRepository(RegistryKey registryKey)
             : this(registryKey, services: null)
         {
+            if (registryKey == null)
+            {
+                throw new ArgumentNullException(nameof(registryKey));
+            }
         }
 
         /// <summary>
         /// Creates a <see cref="RegistryXmlRepository"/> with keys stored in the given registry key.
         /// </summary>
         /// <param name="registryKey">The registry key in which to persist key material.</param>
-        public RegistryXmlRepository([NotNull] RegistryKey registryKey, IServiceProvider services)
+        public RegistryXmlRepository(RegistryKey registryKey, IServiceProvider services)
         {
+            if (registryKey == null)
+            {
+                throw new ArgumentNullException(nameof(registryKey));
+            }
+
             RegistryKey = registryKey;
             Services = services;
             _logger = services?.GetLogger<RegistryXmlRepository>();
@@ -141,8 +149,13 @@ namespace Microsoft.AspNet.DataProtection.Repositories
             return (!String.IsNullOrEmpty(data)) ? XElement.Parse(data) : null;
         }
 
-        public virtual void StoreElement([NotNull] XElement element, string friendlyName)
+        public virtual void StoreElement(XElement element, string friendlyName)
         {
+            if (element == null)
+            {
+                throw new ArgumentNullException(nameof(element));
+            }
+
             if (!IsSafeRegistryValueName(friendlyName))
             {
                 string newFriendlyName = Guid.NewGuid().ToString();

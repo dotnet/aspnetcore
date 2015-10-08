@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Security.Cryptography;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.DataProtection
 {
@@ -31,7 +29,7 @@ namespace Microsoft.AspNet.DataProtection
         /// values will not be able to decipher each other's payloads. The <paramref name="purpose"/> parameter
         /// value is not intended to be kept secret.
         /// </remarks>
-        new ITimeLimitedDataProtector CreateProtector([NotNull] string purpose);
+        new ITimeLimitedDataProtector CreateProtector(string purpose);
 
         /// <summary>
         /// Cryptographically protects a piece of plaintext data, expiring the data at
@@ -40,7 +38,7 @@ namespace Microsoft.AspNet.DataProtection
         /// <param name="plaintext">The plaintext data to protect.</param>
         /// <param name="expiration">The time when this payload should expire.</param>
         /// <returns>The protected form of the plaintext data.</returns>
-        byte[] Protect([NotNull] byte[] plaintext, DateTimeOffset expiration);
+        byte[] Protect(byte[] plaintext, DateTimeOffset expiration);
 
         /// <summary>
         /// Cryptographically unprotects a piece of protected data.
@@ -52,6 +50,6 @@ namespace Microsoft.AspNet.DataProtection
         /// <exception cref="CryptographicException">
         /// Thrown if <paramref name="protectedData"/> is invalid, malformed, or expired.
         /// </exception>
-        byte[] Unprotect([NotNull] byte[] protectedData, out DateTimeOffset expiration);
+        byte[] Unprotect(byte[] protectedData, out DateTimeOffset expiration);
     }
 }

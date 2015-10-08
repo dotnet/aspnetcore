@@ -3,7 +3,6 @@
 
 using System;
 using System.Xml.Linq;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.DataProtection.XmlEncryption
@@ -42,8 +41,13 @@ namespace Microsoft.AspNet.DataProtection.XmlEncryption
         /// <paramref name="plaintextElement"/> along with information about how to
         /// decrypt it.
         /// </returns>
-        public EncryptedXmlInfo Encrypt([NotNull] XElement plaintextElement)
+        public EncryptedXmlInfo Encrypt(XElement plaintextElement)
         {
+            if (plaintextElement == null)
+            {
+                throw new ArgumentNullException(nameof(plaintextElement));
+            }
+
             if (_logger.IsWarningLevelEnabled())
             {
                 _logger.LogWarning("Encrypting using a null encryptor; secret information isn't being protected.");

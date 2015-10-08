@@ -10,7 +10,6 @@ using System.Xml;
 using System.Xml.Linq;
 using Microsoft.AspNet.Cryptography;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.DataProtection.XmlEncryption
@@ -31,7 +30,7 @@ namespace Microsoft.AspNet.DataProtection.XmlEncryption
         /// <param name="thumbprint">The thumbprint (as a hex string) of the certificate with which to
         /// encrypt the key material. The certificate must be locatable by <paramref name="certificateResolver"/>.</param>
         /// <param name="certificateResolver">A resolver which can locate <see cref="X509Certificate2"/> objects.</param>
-        public CertificateXmlEncryptor([NotNull] string thumbprint, [NotNull] ICertificateResolver certificateResolver)
+        public CertificateXmlEncryptor(string thumbprint, ICertificateResolver certificateResolver)
             : this(thumbprint, certificateResolver, services: null)
         {
         }
@@ -45,9 +44,19 @@ namespace Microsoft.AspNet.DataProtection.XmlEncryption
         /// encrypt the key material. The certificate must be locatable by <paramref name="certificateResolver"/>.</param>
         /// <param name="certificateResolver">A resolver which can locate <see cref="X509Certificate2"/> objects.</param>
         /// <param name="services">An optional <see cref="IServiceProvider"/> to provide ancillary services.</param>
-        public CertificateXmlEncryptor([NotNull] string thumbprint, [NotNull] ICertificateResolver certificateResolver, IServiceProvider services)
+        public CertificateXmlEncryptor(string thumbprint, ICertificateResolver certificateResolver, IServiceProvider services)
             : this(services)
         {
+            if (thumbprint == null)
+            {
+                throw new ArgumentNullException(nameof(thumbprint));
+            }
+
+            if (certificateResolver == null)
+            {
+                throw new ArgumentNullException(nameof(certificateResolver));
+            }
+
             _certFactory = CreateCertFactory(thumbprint, certificateResolver);
         }
 
@@ -55,7 +64,7 @@ namespace Microsoft.AspNet.DataProtection.XmlEncryption
         /// Creates a <see cref="CertificateXmlEncryptor"/> given an <see cref="X509Certificate2"/> instance.
         /// </summary>
         /// <param name="certificate">The <see cref="X509Certificate2"/> with which to encrypt the key material.</param>
-        public CertificateXmlEncryptor([NotNull] X509Certificate2 certificate)
+        public CertificateXmlEncryptor(X509Certificate2 certificate)
             : this(certificate, services: null)
         {
         }
@@ -66,9 +75,14 @@ namespace Microsoft.AspNet.DataProtection.XmlEncryption
         /// </summary>
         /// <param name="certificate">The <see cref="X509Certificate2"/> with which to encrypt the key material.</param>
         /// <param name="services">An optional <see cref="IServiceProvider"/> to provide ancillary services.</param>
-        public CertificateXmlEncryptor([NotNull] X509Certificate2 certificate, IServiceProvider services)
+        public CertificateXmlEncryptor(X509Certificate2 certificate, IServiceProvider services)
             : this(services)
         {
+            if (certificate == null)
+            {
+                throw new ArgumentNullException(nameof(certificate));
+            }
+
             _certFactory = () => certificate;
         }
 
@@ -87,8 +101,13 @@ namespace Microsoft.AspNet.DataProtection.XmlEncryption
         /// <paramref name="plaintextElement"/> along with information about how to
         /// decrypt it.
         /// </returns>
-        public EncryptedXmlInfo Encrypt([NotNull] XElement plaintextElement)
+        public EncryptedXmlInfo Encrypt(XElement plaintextElement)
         {
+            if (plaintextElement == null)
+            {
+                throw new ArgumentNullException(nameof(plaintextElement));
+            }
+
             // <EncryptedData Type="http://www.w3.org/2001/04/xmlenc#Element" xmlns="http://www.w3.org/2001/04/xmlenc#">
             //   ...
             // </EncryptedData>

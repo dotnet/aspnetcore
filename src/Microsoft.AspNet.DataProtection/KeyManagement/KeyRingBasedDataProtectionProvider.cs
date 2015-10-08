@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.DataProtection.KeyManagement
@@ -18,8 +17,13 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
             _logger = services.GetLogger<KeyRingBasedDataProtector>(); // note: for protector (not provider!) type, could be null
         }
 
-        public IDataProtector CreateProtector([NotNull] string purpose)
+        public IDataProtector CreateProtector(string purpose)
         {
+            if (purpose == null)
+            {
+                throw new ArgumentNullException(nameof(purpose));
+            }
+
             return new KeyRingBasedDataProtector(
                 logger: _logger,
                 keyRingProvider: _keyRingProvider,

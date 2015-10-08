@@ -9,7 +9,6 @@ using Microsoft.AspNet.DataProtection.KeyManagement;
 using Microsoft.AspNet.DataProtection.XmlEncryption;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Internal;
 using Microsoft.Win32;
 
 #if !DNXCORE50 // [[ISSUE60]] Remove this #ifdef when Core CLR gets support for EncryptedXml
@@ -49,8 +48,13 @@ namespace Microsoft.AspNet.DataProtection
         /// <summary>
         /// Creates a new configuration object linked to a <see cref="IServiceCollection"/>.
         /// </summary>
-        public DataProtectionConfiguration([NotNull] IServiceCollection services)
+        public DataProtectionConfiguration(IServiceCollection services)
         {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
             Services = services;
         }
 
@@ -68,8 +72,13 @@ namespace Microsoft.AspNet.DataProtection
         /// <remarks>
         /// Registrations are additive.
         /// </remarks>
-        public DataProtectionConfiguration AddKeyEscrowSink([NotNull] IKeyEscrowSink sink)
+        public DataProtectionConfiguration AddKeyEscrowSink(IKeyEscrowSink sink)
         {
+            if (sink == null)
+            {
+                throw new ArgumentNullException(nameof(sink));
+            }
+
             Services.AddInstance<IKeyEscrowSink>(sink);
             return this;
         }
@@ -97,8 +106,13 @@ namespace Microsoft.AspNet.DataProtection
         /// <remarks>
         /// Registrations are additive. The factory is registered as <see cref="ServiceLifetime.Singleton"/>.
         /// </remarks>
-        public DataProtectionConfiguration AddKeyEscrowSink([NotNull] Func<IServiceProvider, IKeyEscrowSink> factory)
+        public DataProtectionConfiguration AddKeyEscrowSink(Func<IServiceProvider, IKeyEscrowSink> factory)
         {
+            if (factory == null)
+            {
+                throw new ArgumentNullException(nameof(factory));
+            }
+
             Services.AddSingleton<IKeyEscrowSink>(factory);
             return this;
         }
@@ -108,8 +122,13 @@ namespace Microsoft.AspNet.DataProtection
         /// </summary>
         /// <param name="setupAction">A callback that configures the global options.</param>
         /// <returns>The 'this' instance.</returns>
-        public DataProtectionConfiguration ConfigureGlobalOptions([NotNull] Action<DataProtectionOptions> setupAction)
+        public DataProtectionConfiguration ConfigureGlobalOptions(Action<DataProtectionOptions> setupAction)
         {
+            if (setupAction == null)
+            {
+                throw new ArgumentNullException(nameof(setupAction));
+            }
+
             Services.Configure(setupAction);
             return this;
         }
@@ -137,8 +156,13 @@ namespace Microsoft.AspNet.DataProtection
         /// </summary>
         /// <param name="directory">The directory in which to store keys.</param>
         /// <returns>The 'this' instance.</returns>
-        public DataProtectionConfiguration PersistKeysToFileSystem([NotNull] DirectoryInfo directory)
+        public DataProtectionConfiguration PersistKeysToFileSystem(DirectoryInfo directory)
         {
+            if (directory == null)
+            {
+                throw new ArgumentNullException(nameof(directory));
+            }
+
             Use(DataProtectionServiceDescriptors.IXmlRepository_FileSystem(directory));
             return this;
         }
@@ -148,8 +172,13 @@ namespace Microsoft.AspNet.DataProtection
         /// </summary>
         /// <param name="registryKey">The location in the registry where keys should be stored.</param>
         /// <returns>The 'this' instance.</returns>
-        public DataProtectionConfiguration PersistKeysToRegistry([NotNull] RegistryKey registryKey)
+        public DataProtectionConfiguration PersistKeysToRegistry(RegistryKey registryKey)
         {
+            if (registryKey == null)
+            {
+                throw new ArgumentNullException(nameof(registryKey));
+            }
+
             Use(DataProtectionServiceDescriptors.IXmlRepository_Registry(registryKey));
             return this;
         }
@@ -161,8 +190,13 @@ namespace Microsoft.AspNet.DataProtection
         /// </summary>
         /// <param name="certificate">The certificate to use when encrypting keys.</param>
         /// <returns>The 'this' instance.</returns>
-        public DataProtectionConfiguration ProtectKeysWithCertificate([NotNull] X509Certificate2 certificate)
+        public DataProtectionConfiguration ProtectKeysWithCertificate(X509Certificate2 certificate)
         {
+            if (certificate == null)
+            {
+                throw new ArgumentNullException(nameof(certificate));
+            }
+
             Use(DataProtectionServiceDescriptors.IXmlEncryptor_Certificate(certificate));
             return this;
         }
@@ -172,8 +206,13 @@ namespace Microsoft.AspNet.DataProtection
         /// </summary>
         /// <param name="thumbprint">The thumbprint of the certificate to use when encrypting keys.</param>
         /// <returns>The 'this' instance.</returns>
-        public DataProtectionConfiguration ProtectKeysWithCertificate([NotNull] string thumbprint)
+        public DataProtectionConfiguration ProtectKeysWithCertificate(string thumbprint)
         {
+            if (thumbprint == null)
+            {
+                throw new ArgumentNullException(nameof(thumbprint));
+            }
+
             // Make sure the thumbprint corresponds to a valid certificate.
             if (new CertificateResolver().ResolveCertificate(thumbprint) == null)
             {
@@ -249,8 +288,13 @@ namespace Microsoft.AspNet.DataProtection
         /// and <paramref name="flags"/> arguments.
         /// This API is only supported on Windows 8 / Windows Server 2012 and higher.
         /// </remarks>
-        public DataProtectionConfiguration ProtectKeysWithDpapiNG([NotNull] string protectionDescriptorRule, DpapiNGProtectionDescriptorFlags flags)
+        public DataProtectionConfiguration ProtectKeysWithDpapiNG(string protectionDescriptorRule, DpapiNGProtectionDescriptorFlags flags)
         {
+            if (protectionDescriptorRule == null)
+            {
+                throw new ArgumentNullException(nameof(protectionDescriptorRule));
+            }
+
             Use(DataProtectionServiceDescriptors.IXmlEncryptor_DpapiNG(protectionDescriptorRule, flags));
             return this;
         }
@@ -287,15 +331,20 @@ namespace Microsoft.AspNet.DataProtection
             });
             return this;
         }
-        
+
         /// <summary>
         /// Configures the data protection system to use the specified cryptographic algorithms
         /// by default when generating protected payloads.
         /// </summary>
         /// <param name="options">Information about what cryptographic algorithms should be used.</param>
         /// <returns>The 'this' instance.</returns>
-        public DataProtectionConfiguration UseCryptographicAlgorithms([NotNull] AuthenticatedEncryptionOptions options)
+        public DataProtectionConfiguration UseCryptographicAlgorithms(AuthenticatedEncryptionOptions options)
         {
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
             return UseCryptographicAlgorithmsCore(options);
         }
 
@@ -311,8 +360,13 @@ namespace Microsoft.AspNet.DataProtection
         /// This API is only available on Windows.
         /// </remarks>
         [EditorBrowsable(EditorBrowsableState.Advanced)]
-        public DataProtectionConfiguration UseCustomCryptographicAlgorithms([NotNull] CngCbcAuthenticatedEncryptionOptions options)
+        public DataProtectionConfiguration UseCustomCryptographicAlgorithms(CngCbcAuthenticatedEncryptionOptions options)
         {
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
             return UseCryptographicAlgorithmsCore(options);
         }
 
@@ -328,8 +382,13 @@ namespace Microsoft.AspNet.DataProtection
         /// This API is only available on Windows.
         /// </remarks>
         [EditorBrowsable(EditorBrowsableState.Advanced)]
-        public DataProtectionConfiguration UseCustomCryptographicAlgorithms([NotNull] CngGcmAuthenticatedEncryptionOptions options)
+        public DataProtectionConfiguration UseCustomCryptographicAlgorithms(CngGcmAuthenticatedEncryptionOptions options)
         {
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
             return UseCryptographicAlgorithmsCore(options);
         }
 
@@ -342,8 +401,13 @@ namespace Microsoft.AspNet.DataProtection
         /// <param name="options">Information about what cryptographic algorithms should be used.</param>
         /// <returns>The 'this' instance.</returns>
         [EditorBrowsable(EditorBrowsableState.Advanced)]
-        public DataProtectionConfiguration UseCustomCryptographicAlgorithms([NotNull] ManagedAuthenticatedEncryptionOptions options)
+        public DataProtectionConfiguration UseCustomCryptographicAlgorithms(ManagedAuthenticatedEncryptionOptions options)
         {
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
             return UseCryptographicAlgorithmsCore(options);
         }
 

@@ -9,7 +9,6 @@
 
 using System;
 using System.Xml.Linq;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.DataProtection.XmlEncryption
@@ -28,7 +27,7 @@ namespace Microsoft.AspNet.DataProtection.XmlEncryption
             _logger = services.GetLogger<EncryptedXmlDecryptor>();
         }
 
-        public XElement Decrypt([NotNull] XElement encryptedElement)
+        public XElement Decrypt(XElement encryptedElement)
         {
             if (_logger.IsErrorLevelEnabled())
             {

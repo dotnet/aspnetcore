@@ -1,9 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Xml.Linq;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationModel
 {
@@ -17,6 +15,6 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationM
         /// </summary>
         /// <param name="element">The element to deserialize.</param>
         /// <returns>The <see cref="IAuthenticatedEncryptorDescriptor"/> represented by <paramref name="element"/>.</returns>
-        IAuthenticatedEncryptorDescriptor ImportFromXml([NotNull] XElement element);
+        IAuthenticatedEncryptorDescriptor ImportFromXml(XElement element);
     }
 }

@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Security.Cryptography;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.DataProtection
 {
@@ -17,8 +15,18 @@ namespace Microsoft.AspNet.DataProtection
         /// <param name="plaintext">The plaintext data to protect.</param>
         /// <param name="lifetime">The amount of time after which the payload should no longer be unprotectable.</param>
         /// <returns>The protected form of the plaintext data.</returns>
-        public static byte[] Protect([NotNull] this ITimeLimitedDataProtector protector, [NotNull] byte[] plaintext, TimeSpan lifetime)
+        public static byte[] Protect(this ITimeLimitedDataProtector protector, byte[] plaintext, TimeSpan lifetime)
         {
+            if (protector == null)
+            {
+                throw new ArgumentNullException(nameof(protector));
+            }
+
+            if (plaintext == null)
+            {
+                throw new ArgumentNullException(nameof(plaintext));
+            }
+
             return protector.Protect(plaintext, DateTimeOffset.UtcNow + lifetime);
         }
 
@@ -30,8 +38,18 @@ namespace Microsoft.AspNet.DataProtection
         /// <param name="plaintext">The plaintext data to protect.</param>
         /// <param name="expiration">The time when this payload should expire.</param>
         /// <returns>The protected form of the plaintext data.</returns>
-        public static string Protect([NotNull] this ITimeLimitedDataProtector protector, [NotNull] string plaintext, DateTimeOffset expiration)
+        public static string Protect(this ITimeLimitedDataProtector protector, string plaintext, DateTimeOffset expiration)
         {
+            if (protector == null)
+            {
+                throw new ArgumentNullException(nameof(protector));
+            }
+
+            if (plaintext == null)
+            {
+                throw new ArgumentNullException(nameof(plaintext));
+            }
+
             var wrappingProtector = new TimeLimitedWrappingProtector(protector) { Expiration = expiration };
             return wrappingProtector.Protect(plaintext);
         }
@@ -44,8 +62,18 @@ namespace Microsoft.AspNet.DataProtection
         /// <param name="plaintext">The plaintext data to protect.</param>
         /// <param name="lifetime">The amount of time after which the payload should no longer be unprotectable.</param>
         /// <returns>The protected form of the plaintext data.</returns>
-        public static string Protect([NotNull] this ITimeLimitedDataProtector protector, [NotNull] string plaintext, TimeSpan lifetime)
+        public static string Protect(this ITimeLimitedDataProtector protector, string plaintext, TimeSpan lifetime)
         {
+            if (protector == null)
+            {
+                throw new ArgumentNullException(nameof(protector));
+            }
+
+            if (plaintext == null)
+            {
+                throw new ArgumentNullException(nameof(plaintext));
+            }
+
             return Protect(protector, plaintext, DateTimeOffset.Now + lifetime);
         }
 
@@ -55,8 +83,13 @@ namespace Microsoft.AspNet.DataProtection
         /// </summary>
         /// <param name="protector">The <see cref="IDataProtector"/> to convert to a time-limited protector.</param>
         /// <returns>An <see cref="ITimeLimitedDataProtector"/>.</returns>
-        public static ITimeLimitedDataProtector ToTimeLimitedDataProtector([NotNull] this IDataProtector protector)
+        public static ITimeLimitedDataProtector ToTimeLimitedDataProtector(this IDataProtector protector)
         {
+            if (protector == null)
+            {
+                throw new ArgumentNullException(nameof(protector));
+            }
+
             return (protector as ITimeLimitedDataProtector) ?? new TimeLimitedDataProtector(protector);
         }
 
@@ -71,8 +104,18 @@ namespace Microsoft.AspNet.DataProtection
         /// <exception cref="CryptographicException">
         /// Thrown if <paramref name="protectedData"/> is invalid, malformed, or expired.
         /// </exception>
-        public static string Unprotect([NotNull] this ITimeLimitedDataProtector protector, [NotNull] string protectedData, out DateTimeOffset expiration)
+        public static string Unprotect(this ITimeLimitedDataProtector protector, string protectedData, out DateTimeOffset expiration)
         {
+            if (protector == null)
+            {
+                throw new ArgumentNullException(nameof(protector));
+            }
+
+            if (protectedData == null)
+            {
+                throw new ArgumentNullException(nameof(protectedData));
+            }
+
             var wrappingProtector = new TimeLimitedWrappingProtector(protector);
             string retVal = wrappingProtector.Unprotect(protectedData);
             expiration = wrappingProtector.Expiration;
@@ -91,16 +134,31 @@ namespace Microsoft.AspNet.DataProtection
 
             public IDataProtector CreateProtector(string purpose)
             {
+                if (purpose == null)
+                {
+                    throw new ArgumentNullException(nameof(purpose));
+                }
+
                 throw new NotImplementedException();
             }
 
             public byte[] Protect(byte[] plaintext)
             {
+                if (plaintext == null)
+                {
+                    throw new ArgumentNullException(nameof(plaintext));
+                }
+
                 return _innerProtector.Protect(plaintext, Expiration);
             }
 
             public byte[] Unprotect(byte[] protectedData)
             {
+                if (protectedData == null)
+                {
+                    throw new ArgumentNullException(nameof(protectedData));
+                }
+
                 return _innerProtector.Unprotect(protectedData, out Expiration);
             }
         }

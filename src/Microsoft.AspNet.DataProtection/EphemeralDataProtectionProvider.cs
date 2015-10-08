@@ -5,7 +5,6 @@ using System;
 using Microsoft.AspNet.Cryptography.Cng;
 using Microsoft.AspNet.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNet.DataProtection.KeyManagement;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.DataProtection
@@ -57,8 +56,13 @@ namespace Microsoft.AspNet.DataProtection
             _dataProtectionProvider = new KeyRingBasedDataProtectionProvider(keyringProvider, services);
         }
 
-        public IDataProtector CreateProtector([NotNull] string purpose)
+        public IDataProtector CreateProtector(string purpose)
         {
+            if (purpose == null)
+            {
+                throw new ArgumentNullException(nameof(purpose));
+            }
+
             // just forward to the underlying provider
             return _dataProtectionProvider.CreateProtector(purpose);
         }

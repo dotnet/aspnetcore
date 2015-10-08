@@ -4,7 +4,6 @@
 using System;
 using System.Reflection;
 using System.Xml.Linq;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.DataProtection.XmlEncryption
 {
@@ -20,8 +19,18 @@ namespace Microsoft.AspNet.DataProtection.XmlEncryption
         /// <param name="encryptedElement">A piece of encrypted XML.</param>
         /// <param name="decryptorType">The class whose <see cref="IXmlDecryptor.Decrypt(XElement)"/>
         /// method can be used to decrypt <paramref name="encryptedElement"/>.</param>
-        public EncryptedXmlInfo([NotNull] XElement encryptedElement, [NotNull] Type decryptorType)
+        public EncryptedXmlInfo(XElement encryptedElement, Type decryptorType)
         {
+            if (encryptedElement == null)
+            {
+                throw new ArgumentNullException(nameof(encryptedElement));
+            }
+
+            if (decryptorType == null)
+            {
+                throw new ArgumentNullException(nameof(decryptorType));
+            }
+
             if (!typeof(IXmlDecryptor).IsAssignableFrom(decryptorType))
             {
                 throw new ArgumentException(

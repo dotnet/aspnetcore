@@ -7,7 +7,6 @@ using System.Xml.Linq;
 using Microsoft.AspNet.Cryptography;
 using Microsoft.AspNet.Cryptography.SafeHandles;
 using Microsoft.AspNet.DataProtection.Cng;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 
 using static System.FormattableString;
@@ -30,7 +29,7 @@ namespace Microsoft.AspNet.DataProtection.XmlEncryption
         /// </summary>
         /// <param name="protectionDescriptorRule">The rule string from which to create the protection descriptor.</param>
         /// <param name="flags">Flags controlling the creation of the protection descriptor.</param>
-        public DpapiNGXmlEncryptor([NotNull] string protectionDescriptorRule, DpapiNGProtectionDescriptorFlags flags)
+        public DpapiNGXmlEncryptor(string protectionDescriptorRule, DpapiNGProtectionDescriptorFlags flags)
             : this(protectionDescriptorRule, flags, services: null)
         {
         }
@@ -41,8 +40,13 @@ namespace Microsoft.AspNet.DataProtection.XmlEncryption
         /// <param name="protectionDescriptorRule">The rule string from which to create the protection descriptor.</param>
         /// <param name="flags">Flags controlling the creation of the protection descriptor.</param>
         /// <param name="services">An optional <see cref="IServiceProvider"/> to provide ancillary services.</param>
-        public DpapiNGXmlEncryptor([NotNull] string protectionDescriptorRule, DpapiNGProtectionDescriptorFlags flags, IServiceProvider services)
+        public DpapiNGXmlEncryptor(string protectionDescriptorRule, DpapiNGProtectionDescriptorFlags flags, IServiceProvider services)
         {
+            if (protectionDescriptorRule == null)
+            {
+                throw new ArgumentNullException(nameof(protectionDescriptorRule));
+            }
+
             CryptoUtil.AssertPlatformIsWindows8OrLater();
 
             int ntstatus = UnsafeNativeMethods.NCryptCreateProtectionDescriptor(protectionDescriptorRule, (uint)flags, out _protectionDescriptorHandle);
@@ -61,8 +65,13 @@ namespace Microsoft.AspNet.DataProtection.XmlEncryption
         /// <paramref name="plaintextElement"/> along with information about how to
         /// decrypt it.
         /// </returns>
-        public EncryptedXmlInfo Encrypt([NotNull] XElement plaintextElement)
+        public EncryptedXmlInfo Encrypt(XElement plaintextElement)
         {
+            if (plaintextElement == null)
+            {
+                throw new ArgumentNullException(nameof(plaintextElement));
+            }
+
             string protectionDescriptorRuleString = _protectionDescriptorHandle.GetProtectionDescriptorRuleString();
             if (_logger.IsVerboseLevelEnabled())
             {
@@ -92,7 +101,7 @@ namespace Microsoft.AspNet.DataProtection.XmlEncryption
             //   <!-- rule string -->
             //   <value>{base64}</value>
             // </encryptedKey>
-            
+
             var element = new XElement("encryptedKey",
                 new XComment(" This key is encrypted with Windows DPAPI-NG. "),
                 new XComment(" Rule: " + protectionDescriptorRuleString + " "),

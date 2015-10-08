@@ -3,7 +3,6 @@
 
 using System;
 using System.Xml.Linq;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationModel
 {
@@ -15,13 +14,23 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationM
     {
         private readonly IServiceProvider _services;
 
-        public AuthenticatedEncryptorDescriptor([NotNull] AuthenticatedEncryptionOptions options, [NotNull] ISecret masterKey)
+        public AuthenticatedEncryptorDescriptor(AuthenticatedEncryptionOptions options, ISecret masterKey)
             : this(options, masterKey, services: null)
         {
         }
 
-        public AuthenticatedEncryptorDescriptor([NotNull] AuthenticatedEncryptionOptions options, [NotNull] ISecret masterKey, IServiceProvider services)
+        public AuthenticatedEncryptorDescriptor(AuthenticatedEncryptionOptions options, ISecret masterKey, IServiceProvider services)
         {
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            if (masterKey == null)
+            {
+                throw new ArgumentNullException(nameof(masterKey));
+            }
+
             Options = options;
             MasterKey = masterKey;
             _services = services;
@@ -30,7 +39,7 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationM
         internal ISecret MasterKey { get; }
 
         internal AuthenticatedEncryptionOptions Options { get; }
-        
+
         public IAuthenticatedEncryptor CreateEncryptorInstance()
         {
             return Options.CreateAuthenticatedEncryptorInstance(MasterKey, _services);

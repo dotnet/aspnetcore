@@ -21,6 +21,11 @@ namespace Microsoft.AspNet.DataProtection.XmlEncryption
         /// <returns>The resolved <see cref="X509Certificate2"/>, or null if the certificate cannot be found.</returns>
         public virtual X509Certificate2 ResolveCertificate(string thumbprint)
         {
+            if (thumbprint == null)
+            {
+                throw new ArgumentNullException(nameof(thumbprint));
+            }
+
             if (String.IsNullOrEmpty(thumbprint))
             {
                 throw Error.Common_ArgumentCannotBeNullOrEmpty(nameof(thumbprint));

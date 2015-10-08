@@ -3,7 +3,6 @@
 
 using System;
 using System.Xml.Linq;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationModel
@@ -16,13 +15,23 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationM
     {
         private readonly ILogger _log;
 
-        public CngGcmAuthenticatedEncryptorDescriptor([NotNull] CngGcmAuthenticatedEncryptionOptions options, [NotNull] ISecret masterKey)
+        public CngGcmAuthenticatedEncryptorDescriptor(CngGcmAuthenticatedEncryptionOptions options, ISecret masterKey)
             : this(options, masterKey, services: null)
         {
         }
 
-        public CngGcmAuthenticatedEncryptorDescriptor([NotNull] CngGcmAuthenticatedEncryptionOptions options, [NotNull] ISecret masterKey, IServiceProvider services)
+        public CngGcmAuthenticatedEncryptorDescriptor(CngGcmAuthenticatedEncryptionOptions options, ISecret masterKey, IServiceProvider services)
         {
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            if (masterKey == null)
+            {
+                throw new ArgumentNullException(nameof(masterKey));
+            }
+
             Options = options;
             MasterKey = masterKey;
             _log = services.GetLogger<CngGcmAuthenticatedEncryptorDescriptor>();

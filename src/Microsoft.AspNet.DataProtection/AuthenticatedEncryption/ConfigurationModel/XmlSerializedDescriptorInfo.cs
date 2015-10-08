@@ -4,7 +4,6 @@
 using System;
 using System.Reflection;
 using System.Xml.Linq;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationModel
 {
@@ -21,8 +20,18 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationM
         /// <param name="serializedDescriptorElement">The XML-serialized form of the <see cref="IAuthenticatedEncryptorDescriptor"/>.</param>
         /// <param name="deserializerType">The class whose <see cref="IAuthenticatedEncryptorDescriptorDeserializer.ImportFromXml(XElement)"/>
         /// method can be used to deserialize <paramref name="serializedDescriptorElement"/>.</param>
-        public XmlSerializedDescriptorInfo([NotNull] XElement serializedDescriptorElement, [NotNull] Type deserializerType)
+        public XmlSerializedDescriptorInfo(XElement serializedDescriptorElement, Type deserializerType)
         {
+            if (serializedDescriptorElement == null)
+            {
+                throw new ArgumentNullException(nameof(serializedDescriptorElement));
+            }
+
+            if (deserializerType == null)
+            {
+                throw new ArgumentNullException(nameof(deserializerType));
+            }
+
             if (!typeof(IAuthenticatedEncryptorDescriptorDeserializer).IsAssignableFrom(deserializerType))
             {
                 throw new ArgumentException(
