@@ -5,8 +5,8 @@
         "type": "git",
         "url": "git://github.com/aspnet/websockets"
     },
-    "dependencies": {
-        "Microsoft.Extensions.NotNullAttribute.Sources": { "type": "build", "version": "1.0.0-*" }
+    "compilationOptions": {
+        "warningsAsErrors": true
     },
     "frameworks": {
         "net45": { },

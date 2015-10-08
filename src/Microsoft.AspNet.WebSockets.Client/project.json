@@ -5,6 +5,9 @@
         "type": "git",
         "url": "git://github.com/aspnet/websockets"
     },
+    "compilationOptions": {
+        "warningsAsErrors": true
+    },
     "dependencies": {
         "Microsoft.AspNet.WebSockets.Protocol": "1.0.0-*"
     },

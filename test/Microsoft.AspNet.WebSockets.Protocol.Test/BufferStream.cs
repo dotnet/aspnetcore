@@ -7,7 +7,6 @@ using System.Diagnostics.Contracts;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.WebSockets.Protocol.Test
 {
@@ -256,7 +255,7 @@ namespace Microsoft.AspNet.WebSockets.Protocol.Test
             return Task.FromResult<object>(null);
         }
 
-        private static void VerifyBuffer([NotNull] byte[] buffer, int offset, int count, bool allowEmpty)
+        private static void VerifyBuffer(byte[] buffer, int offset, int count, bool allowEmpty)
         {
             if (offset < 0 || offset > buffer.Length)
             {
