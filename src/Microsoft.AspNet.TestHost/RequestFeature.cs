@@ -1,11 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
 using System.IO;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
-using Microsoft.Extensions.Primitives;
+using Microsoft.AspNet.Http.Internal;
 
 namespace Microsoft.AspNet.TestHost
 {
@@ -14,7 +13,7 @@ namespace Microsoft.AspNet.TestHost
         public RequestFeature()
         {
             Body = Stream.Null;
-            Headers = new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase);
+            Headers = new HeaderDictionary();
             Method = "GET";
             Path = "";
             PathBase = "";
@@ -25,7 +24,7 @@ namespace Microsoft.AspNet.TestHost
 
         public Stream Body { get; set; }
 
-        public IDictionary<string, StringValues> Headers { get; set; }
+        public IHeaderDictionary Headers { get; set; }
 
         public string Method { get; set; }
 

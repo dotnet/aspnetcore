@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
-using Microsoft.Extensions.Primitives;
+using Microsoft.AspNet.Http.Internal;
 
 namespace Microsoft.AspNet.TestHost
 {
@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.TestHost
 
         public ResponseFeature()
         {
-            Headers = new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase);
+            Headers = new HeaderDictionary();
             Body = new MemoryStream();
 
             // 200 is the default status code all the way down to the host, so we set it
@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.TestHost
 
         public string ReasonPhrase { get; set; }
 
-        public IDictionary<string, StringValues> Headers { get; set; }
+        public IHeaderDictionary Headers { get; set; }
 
         public Stream Body { get; set; }
 
