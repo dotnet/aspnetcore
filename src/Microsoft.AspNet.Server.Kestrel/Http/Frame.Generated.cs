@@ -6,23 +6,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 {
     public partial class Frame
     {
-        private const long flagIHttpRequestFeature = 1;
-        private const long flagIHttpResponseFeature = 2;
-        private const long flagIHttpRequestIdentifierFeature = 4;
-        private const long flagIHttpSendFileFeature = 8;
-        private const long flagIServiceProvidersFeature = 16;
-        private const long flagIHttpAuthenticationFeature = 32;
-        private const long flagIHttpRequestLifetimeFeature = 64;
-        private const long flagIQueryFeature = 128;
-        private const long flagIFormFeature = 256;
-        private const long flagIResponseCookiesFeature = 512;
-        private const long flagIItemsFeature = 1024;
-        private const long flagIHttpConnectionFeature = 2048;
-        private const long flagITlsConnectionFeature = 4096;
-        private const long flagIHttpUpgradeFeature = 8192;
-        private const long flagIHttpWebSocketFeature = 16384;
-        private const long flagISessionFeature = 32768;
-
         private static readonly Type IHttpRequestFeatureType = typeof(global::Microsoft.AspNet.Http.Features.IHttpRequestFeature);
         private static readonly Type IHttpResponseFeatureType = typeof(global::Microsoft.AspNet.Http.Features.IHttpResponseFeature);
         private static readonly Type IHttpRequestIdentifierFeatureType = typeof(global::Microsoft.AspNet.Http.Features.IHttpRequestIdentifierFeature);
@@ -40,7 +23,10 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private static readonly Type IHttpWebSocketFeatureType = typeof(global::Microsoft.AspNet.Http.Features.IHttpWebSocketFeature);
         private static readonly Type ISessionFeatureType = typeof(global::Microsoft.AspNet.Http.Features.ISessionFeature);
         private static readonly Type IHttpSendFileFeatureType = typeof(global::Microsoft.AspNet.Http.Features.IHttpSendFileFeature);
+        private static readonly Type IHttpUpgradeFeatureType = typeof(global::Microsoft.AspNet.Http.Features.IHttpUpgradeFeature);
 
+        private object _currentIHttpRequestFeature;
+        private object _currentIHttpResponseFeature;
         private object _currentIHttpRequestIdentifierFeature;
         private object _currentIServiceProvidersFeature;
         private object _currentIHttpRequestLifetimeFeature;
@@ -48,41 +34,35 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private object _currentIHttpAuthenticationFeature;
         private object _currentIQueryFeature;
         private object _currentIFormFeature;
-
-        private long _featureOverridenFlags = 0L;
+        private object _currentIHttpUpgradeFeature;
 
         private void FastReset()
         {
-            _featureOverridenFlags = 0L;
+            _currentIHttpRequestFeature = this;
+            _currentIHttpResponseFeature = this;
+            _currentIHttpUpgradeFeature = this;
+            
+            _currentIHttpRequestIdentifierFeature = null;
+            _currentIServiceProvidersFeature = null;
+            _currentIHttpRequestLifetimeFeature = null;
+            _currentIHttpConnectionFeature = null;
+            _currentIHttpAuthenticationFeature = null;
+            _currentIQueryFeature = null;
+            _currentIFormFeature = null;
         }
 
         private object FastFeatureGet(Type key)
         {
             if (key == typeof(global::Microsoft.AspNet.Http.Features.IHttpRequestFeature))
             {
-                if ((_featureOverridenFlags & flagIHttpRequestFeature) == 0L)
-                {
-                    return this;
-                }
-                return SlowFeatureGet(key);
+
+                return _currentIHttpRequestFeature;
             }
             if (key == typeof(global::Microsoft.AspNet.Http.Features.IHttpResponseFeature))
             {
-                if ((_featureOverridenFlags & flagIHttpResponseFeature) == 0L)
-                {
-                    return this;
-                }
-                return SlowFeatureGet(key);
+                return _currentIHttpResponseFeature;
             }
-            if (key == IHttpRequestIdentifierFeatureType)
-            {
-                if ((_featureOverridenFlags & flagIHttpRequestIdentifierFeature) == 0L)
-                {
-                    return this;
-                }
-                return SlowFeatureGet(key);
-            }
-            if (key == IHttpSendFileFeatureType)
+            if (key == typeof(global::Microsoft.AspNet.Http.Features.IHttpRequestIdentifierFeature))
             {
                 if ((_featureOverridenFlags & flagIHttpSendFileFeature) == 0L)
                 {
@@ -146,7 +126,16 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 }
                 return SlowFeatureGet(key);
             }
-            if (key == typeof(global::Microsoft.AspNet.Http.Features.IHttpConnectionFeature))
+            if (key == typeof(global::Microsoft.AspNet.Http.Features.IHttpUpgradeFeature))
+            {
+                return _currentIHttpUpgradeFeature;
+            }
+            return  SlowFeatureGet(key);
+        }
+
+        private object SlowFeatureGet(Type key)
+        {
+            if (MaybeExtra == null) 
             {
                 if ((_featureOverridenFlags & flagIHttpConnectionFeature) == 0L)
                 {
@@ -189,53 +178,20 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             return  SlowFeatureGet(key);
         }
 
-        private object SlowFeatureGet(Type key)
-        {
-            object feature = null;
-            if (MaybeExtra?.TryGetValue(key, out feature) ?? false) 
-            {
-                return feature;
-            }
-            return null;
-        }
-
-        private void FastFeatureSetInner(long flag, Type key, object feature)
-        {
-            Extra[key] = feature;
-
-            // Altering only an individual bit of the long
-            // so need to make sure other concurrent bit changes are not overridden
-            // in an atomic yet lock-free manner
-
-            long currentFeatureFlags;
-            long updatedFeatureFlags;
-            do
-            {
-                currentFeatureFlags = _featureOverridenFlags;
-                updatedFeatureFlags = currentFeatureFlags | flag;
-            } while (System.Threading.Interlocked.CompareExchange(ref _featureOverridenFlags, updatedFeatureFlags, currentFeatureFlags) != currentFeatureFlags);
-
-            System.Threading.Interlocked.Increment(ref _featureRevision);
-        }
 
         private void FastFeatureSet(Type key, object feature)
         {
             if (key == IHttpRequestFeatureType)
             {
-                FastFeatureSetInner(flagIHttpRequestFeature, key, feature);
+                _currentIHttpRequestFeature = feature;
                 return;
             }
             if (key == typeof(global::Microsoft.AspNet.Http.Features.IHttpResponseFeature))
             {
-                FastFeatureSetInner(flagIHttpResponseFeature, key, feature);
+                _currentIHttpResponseFeature = feature;
                 return;
             }
-            if (key == IHttpRequestIdentifierFeatureType)
-            {
-                FastFeatureSetInner(flagIHttpRequestIdentifierFeature, key, feature);
-                return;
-            }
-            if (key == IHttpSendFileFeatureType)
+            if (key == typeof(global::Microsoft.AspNet.Http.Features.IHttpRequestIdentifierFeature))
             {
                 FastFeatureSetInner(flagIHttpSendFileFeature, key, feature);
                 return;
@@ -300,24 +256,25 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 FastFeatureSetInner(flagISessionFeature, key, feature);
                 return;
             }
-            Extra[key] = feature;
+            if (key == typeof(global::Microsoft.AspNet.Http.Features.IHttpUpgradeFeature))
+            {
+                _currentIHttpUpgradeFeature = feature;
+                return;
+            };
+            SetExtra(key, feature);
         }
 
         private IEnumerable<KeyValuePair<Type, object>> FastEnumerable()
         {
-            if ((_featureOverridenFlags & flagIHttpRequestFeature) == 0L)
+            if (_currentIHttpRequestFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IHttpRequestFeatureType, this as global::Microsoft.AspNet.Http.Features.IHttpRequestFeature);
+                yield return new KeyValuePair<Type, object>(IHttpRequestFeatureType, _currentIHttpRequestFeature as global::Microsoft.AspNet.Http.Features.IHttpRequestFeature);
             }
-            if ((_featureOverridenFlags & flagIHttpResponseFeature) == 0L)
+            if (_currentIHttpResponseFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IHttpResponseFeatureType, this as global::Microsoft.AspNet.Http.Features.IHttpResponseFeature);
+                yield return new KeyValuePair<Type, object>(IHttpResponseFeatureType, _currentIHttpResponseFeature as global::Microsoft.AspNet.Http.Features.IHttpResponseFeature);
             }
-            if ((_featureOverridenFlags & flagIHttpRequestIdentifierFeature) == 0L)
-            {
-                yield return new KeyValuePair<Type, object>(IHttpRequestIdentifierFeatureType, this as global::Microsoft.AspNet.Http.Features.IHttpRequestIdentifierFeature);
-            }
-            if ((_featureOverridenFlags & flagIHttpSendFileFeature) == 0L)
+            if (_currentIHttpRequestIdentifierFeature != null)
             {
                 yield return new KeyValuePair<Type, object>(IHttpSendFileFeatureType, this as global::Microsoft.AspNet.Http.Features.IHttpSendFileFeature);
             }
@@ -369,6 +326,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {
                 yield return new KeyValuePair<Type, object>(ISessionFeatureType, this as global::Microsoft.AspNet.Http.Features.ISessionFeature);
             }
+            if (_currentIHttpUpgradeFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(IHttpUpgradeFeatureType, _currentIHttpUpgradeFeature as global::Microsoft.AspNet.Http.Features.IHttpUpgradeFeature);
+            }
+
             if (MaybeExtra != null)
             {
                 foreach(var item in MaybeExtra)

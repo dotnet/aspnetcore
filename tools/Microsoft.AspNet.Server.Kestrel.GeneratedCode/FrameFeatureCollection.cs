@@ -54,6 +54,10 @@ namespace Microsoft.AspNet.Server.Kestrel.GeneratedCode
                 typeof(IHttpUpgradeFeature),
             };
 
+            // Only the always, common and implmented features will have backed objects
+            // the sometimes, rare and user-defined features will use the MaybeExtra collection
+            var cachedFeatures = alwaysFeatures.Concat(commonFeatures).Union(implementedFeatures);
+            
             return $@"
 using System;
 using System.Collections.Generic;
@@ -61,31 +65,18 @@ using System.Collections.Generic;
 namespace Microsoft.AspNet.Server.Kestrel.Http 
 {{
     public partial class Frame
-    {{
-        {Each(commonFeatures.Select((feature, index) => new { feature, index }), entry => $@"
-        private const long flag{entry.feature.Name} = {1 << entry.index};")}
-
-        {Each(commonFeatures, feature => $@"
+    {{{Each(cachedFeatures, feature => $@"
         private static readonly Type {feature.Name}Type = typeof(global::{feature.FullName});")}
 
-        private long _featureOverridenFlags = 0L;
-
         private void FastReset()
-        {{
-            _featureOverridenFlags = 0L;
+        {{{Each(implementedFeatures, feature => $@"
+            _current{feature.Name} = this;")}
+            {Each(cachedFeatures.Where( f => !implementedFeatures.Contains(f)), feature => $@"
+            _current{feature.Name} = null;")}
         }}
 
         private object FastFeatureGet(Type key)
-        {{{Each(commonFeatures, feature => $@"
-            if (key == {feature.Name}Type)
-            {{
-                if ((_featureOverridenFlags & flag{feature.Name}) == 0L)
-                {{
-                    return this;
-                }}
-                return SlowFeatureGet(key);
-            }}")}
-            {Each(cachedFeatures, feature => $@"
+        {{{Each(cachedFeatures, feature => $@"
             if (key == typeof(global::{feature.FullName}))
             {{
                 return _current{feature.Name};
@@ -119,18 +110,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 updatedFeatureFlags = currentFeatureFlags | flag;
             }} while (System.Threading.Interlocked.CompareExchange(ref _featureOverridenFlags, updatedFeatureFlags, currentFeatureFlags) != currentFeatureFlags);
 
-            System.Threading.Interlocked.Increment(ref _featureRevision);
-        }}
-
         private void FastFeatureSet(Type key, object feature)
         {{
             _featureRevision++;
-            {Each(implementedFeatures, feature => $@"
-            if (key == typeof(global::{feature.FullName}))
-            {{
-                FastFeatureSetInner(flag{feature.Name}, key, feature);
-                return;
-            }}")};
             {Each(cachedFeatures, feature => $@"
             if (key == typeof(global::{feature.FullName}))
             {{
@@ -141,10 +123,10 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         }}
 
         private IEnumerable<KeyValuePair<Type, object>> FastEnumerable()
-        {{{Each(commonFeatures, feature => $@"
-            if ((_featureOverridenFlags & flag{feature.Name}) == 0L)
+        {{{Each(cachedFeatures, feature => $@"
+            if (_current{feature.Name} != null)
             {{
-                yield return new KeyValuePair<Type, object>({feature.Name}Type, this as global::{feature.FullName});
+                yield return new KeyValuePair<Type, object>({feature.Name}Type, _current{feature.Name} as global::{feature.FullName});
             }}")}
             if (MaybeExtra != null)
             {{
