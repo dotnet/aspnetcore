@@ -152,6 +152,30 @@ namespace Microsoft.AspNet.Server.KestrelTests
             }
         }
 
+        [Fact]
+        public void IsEndCorrectlyTraversesBlocks()
+        {
+            using (var pool = new MemoryPool2())
+            {
+                var block1 = pool.Lease(128);
+                var block2 = block1.Next = pool.Lease(128);
+                var block3 = block2.Next = pool.Lease(128);
+                var block4 = block3.Next = pool.Lease(128);
+
+                // There is no data in block2 or block4, so IsEnd should be true after 256 bytes are read.
+                block1.End += 128;
+                block3.End += 128;
+
+                var iterStart = block1.GetIterator();
+                var iterMid = iterStart.Add(128);
+                var iterEnd = iterMid.Add(128);
+
+                Assert.False(iterStart.IsEnd);
+                Assert.False(iterMid.IsEnd);
+                Assert.True(iterEnd.IsEnd);
+            }
+        }
+
         private void AssertIterator(MemoryPoolIterator2 iter, MemoryPoolBlock2 block, int index)
         {
             Assert.Same(block, iter.Block);
