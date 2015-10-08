@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
                     {
                         if (block.Start < block.End)
                         {
-                            return true;
+                            return false; // subsequent block has data - IsEnd is false
                         }
                         block = block.Next;
                     }
