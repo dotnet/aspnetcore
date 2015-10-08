@@ -23,8 +23,8 @@ Or browse the full list of repos in the [aspnet](https://github.com/aspnet/) org
 ## Other discussions
 Our team members also monitor several other discussion forums:
 
-* [ASP.NET 5 forum](http://forums.asp.net/1255.aspx/1?ASP+NET+5)
-* [StackOverflow](http://stackoverflow.com/questions/tagged/asp.net-5) with the `asp.net-5` or `entity-framework-7` tag
+* [ASP.NET 5 forum](https://forums.asp.net/1255.aspx/1?ASP+NET+5)
+* [StackOverflow](https://stackoverflow.com/questions/tagged/asp.net-5) with the `asp.net-5` or `entity-framework-7` tag
 * [JabbR chat room](https://jabbr.net/#/rooms/aspnetvnext) for real-time discussions with the community and the people who work on the project
 
 
@@ -41,7 +41,7 @@ Here are questions you can answer before you file a bug to make sure you're not 
 5. What operating system are you using?
 6. What version of IIS are you using?
 
-GitHub supports [markdown](http://github.github.com/github-flavored-markdown/), so when filing bugs make sure you check the formatting before clicking submit.
+GitHub supports [markdown](https://help.github.com/articles/github-flavored-markdown/), so when filing bugs make sure you check the formatting before clicking submit.
 
 
 ## Contributing code and content
@@ -49,7 +49,7 @@ You will need to sign a [Contributor License Agreement](https://cla2.dotnetfound
 
 Make sure you can build the code. Familiarize yourself with the project workflow and our coding conventions. If you don't know what a pull request is read this article: https://help.github.com/articles/using-pull-requests.
 
-Before submitting a feature or substantial code contribution please discuss it with the team and ensure it follows the product roadmap. You might also read these two blogs posts on contributing code: [Open Source Contribution Etiquette](http://tirania.org/blog/archive/2010/Dec-31.html) by Miguel de Icaza and [Don't "Push" Your Pull Requests](http://www.igvita.com/2011/12/19/dont-push-your-pull-requests/) by Ilya Grigorik. Note that all code submissions will be rigorously reviewed and tested by the ASP.NET and Entity Framework teams, and only those that meet an extremely high bar for both quality and design/roadmap appropriateness will be merged into the source.
+Before submitting a feature or substantial code contribution please discuss it with the team and ensure it follows the product roadmap. You might also read these two blogs posts on contributing code: [Open Source Contribution Etiquette](http://tirania.org/blog/archive/2010/Dec-31.html) by Miguel de Icaza and [Don't "Push" Your Pull Requests](https://www.igvita.com/2011/12/19/dont-push-your-pull-requests/) by Ilya Grigorik. Note that all code submissions will be rigorously reviewed and tested by the ASP.NET and Entity Framework teams, and only those that meet an extremely high bar for both quality and design/roadmap appropriateness will be merged into the source.
 
 Here's a few things you should always do when making changes to the code base:
 
