@@ -24,12 +24,13 @@ using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Features.Authentication;
+using Microsoft.AspNet.Http.Internal;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Microsoft.Net.Http.Server;
-using Microsoft.Net.WebSockets;
 
 namespace Microsoft.AspNet.Server.WebListener
 {
@@ -54,7 +55,7 @@ namespace Microsoft.AspNet.Server.WebListener
         private bool _enableResponseCaching;
 
         private Stream _requestBody;
-        private IDictionary<string, StringValues> _requestHeaders;
+        private IHeaderDictionary _requestHeaders;
         private string _scheme;
         private string _httpMethod;
         private string _httpProtocolVersion;
@@ -72,7 +73,7 @@ namespace Microsoft.AspNet.Server.WebListener
         private IAuthenticationHandler _authHandler;
         private CancellationToken? _disconnectToken;
         private Stream _responseStream;
-        private IDictionary<string, StringValues> _responseHeaders;
+        private IHeaderDictionary _responseHeaders;
 
         internal FeatureContext(RequestContext requestContext, bool enableResponseCaching)
         {
@@ -116,13 +117,13 @@ namespace Microsoft.AspNet.Server.WebListener
             set { _requestBody = value; }
         }
 
-        IDictionary<string, StringValues> IHttpRequestFeature.Headers
+        IHeaderDictionary IHttpRequestFeature.Headers
         {
             get
             {
                 if (_requestHeaders == null)
                 {
-                    _requestHeaders = Request.Headers;
+                    _requestHeaders = new HeaderDictionary(Request.Headers);
                 }
                 return _requestHeaders;
             }
@@ -349,13 +350,13 @@ namespace Microsoft.AspNet.Server.WebListener
             set { _responseStream = value; }
         }
 
-        IDictionary<string, StringValues> IHttpResponseFeature.Headers
+        IHeaderDictionary IHttpResponseFeature.Headers
         {
             get
             {
                 if (_responseHeaders == null)
                 {
-                    _responseHeaders = Response.Headers;
+                    _responseHeaders = new HeaderDictionary(Response.Headers);
                 }
                 return _responseHeaders;
             }
