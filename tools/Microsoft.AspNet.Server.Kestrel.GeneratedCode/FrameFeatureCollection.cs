@@ -79,34 +79,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {{
                 return _current{feature.Name};
             }}")}
-            return  SlowFeatureGet(key);
+
+            return ExtraFeatureGet(key);
         }}
-
-        private object SlowFeatureGet(Type key)
-        {{
-            object feature = null;
-            if (MaybeExtra?.TryGetValue(key, out feature) ?? false) 
-            {{
-                return feature;
-            }}
-            return null;
-        }}
-
-        private void FastFeatureSetInner(long flag, Type key, object feature)
-        {{
-            Extra[key] = feature;
-
-            // Altering only an individual bit of the long
-            // so need to make sure other concurrent bit changes are not overridden
-            // in an atomic yet lock-free manner
-
-            long currentFeatureFlags;
-            long updatedFeatureFlags;
-            do
-            {{
-                currentFeatureFlags = _featureOverridenFlags;
-                updatedFeatureFlags = currentFeatureFlags | flag;
-            }} while (System.Threading.Interlocked.CompareExchange(ref _featureOverridenFlags, updatedFeatureFlags, currentFeatureFlags) != currentFeatureFlags);
 
         private void FastFeatureSet(Type key, object feature)
         {{
@@ -117,7 +92,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 _current{feature.Name} = feature;
                 return;
             }}")};
-            SetExtra(key, feature);
+            ExtraFeatureSet(key, feature);
         }}
 
         private IEnumerable<KeyValuePair<Type, object>> FastEnumerable()

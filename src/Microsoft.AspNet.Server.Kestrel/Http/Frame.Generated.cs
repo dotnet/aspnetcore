@@ -172,52 +172,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {
                 return _currentIHttpSendFileFeature;
             }
-            return  SlowFeatureGet(key);
-        }
 
-        private object SlowFeatureGet(Type key)
-        {
-            if (MaybeExtra == null) 
-            {
-                if ((_featureOverridenFlags & flagIHttpConnectionFeature) == 0L)
-                {
-                    return this;
-                }
-                return SlowFeatureGet(key);
-            }
-            if (key == ITlsConnectionFeatureType)
-            {
-                if ((_featureOverridenFlags & flagITlsConnectionFeature) == 0L)
-                {
-                    return this;
-                }
-                return SlowFeatureGet(key);
-            }
-            if (key == IHttpUpgradeFeatureType)
-            {
-                if ((_featureOverridenFlags & flagIHttpUpgradeFeature) == 0L)
-                {
-                    return this;
-                }
-                return SlowFeatureGet(key);
-            }
-            if (key == IHttpWebSocketFeatureType)
-            {
-                if ((_featureOverridenFlags & flagIHttpWebSocketFeature) == 0L)
-                {
-                    return this;
-                }
-                return SlowFeatureGet(key);
-            }
-            if (key == ISessionFeatureType)
-            {
-                if ((_featureOverridenFlags & flagISessionFeature) == 0L)
-                {
-                    return this;
-                }
-                return SlowFeatureGet(key);
-            }
-            return  SlowFeatureGet(key);
+            return ExtraFeatureGet(key);
         }
 
 
@@ -333,7 +289,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 _currentIHttpSendFileFeature = feature;
                 return;
             };
-            SetExtra(key, feature);
+            ExtraFeatureSet(key, feature);
         }
 
         private IEnumerable<KeyValuePair<Type, object>> FastEnumerable()

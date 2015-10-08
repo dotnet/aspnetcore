@@ -6,10 +6,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Features;
-using Microsoft.AspNet.Server.Kestrel.Http;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNet.Server.Kestrel.Http
@@ -33,6 +31,42 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             MaybeExtra?.Clear();
             _featureRevision++;
         }
+
+        private object ExtraFeatureGet(Type key)
+        {
+            if (MaybeExtra == null)
+            {
+                return null;
+            }
+            for (var i = 0; i < MaybeExtra.Count; i++)
+            {
+                var kv = MaybeExtra[i];
+                if (kv.Key == key)
+                {
+                    return kv.Value;
+                }
+            }
+            return null;
+        }
+
+        private void ExtraFeatureSet(Type key, object value)
+        {
+            if (MaybeExtra == null)
+            {
+                MaybeExtra = new List<KeyValuePair<Type, object>>(2);
+            }
+
+            for (var i = 0; i < MaybeExtra.Count; i++)
+            {
+                if (MaybeExtra[i].Key == key)
+                {
+                    MaybeExtra[i] = new KeyValuePair<Type, object>(key, value);
+                    return;
+                }
+            }
+            MaybeExtra.Add(new KeyValuePair<Type, object>(key, value));
+        }
+
 
         string IHttpRequestFeature.Protocol
         {
