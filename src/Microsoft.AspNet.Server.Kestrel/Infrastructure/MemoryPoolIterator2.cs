@@ -442,6 +442,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
                 else
                 {
                     Buffer.BlockCopy(block.Array, index, array, offset, following);
+                    offset += following;
                     remaining -= following;
                     block = block.Next;
                     index = block.Start;

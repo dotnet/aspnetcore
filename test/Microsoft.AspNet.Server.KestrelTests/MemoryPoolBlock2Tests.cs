@@ -117,6 +117,41 @@ namespace Microsoft.AspNet.Server.KestrelTests
             }
         }
 
+        [Fact]
+        public void CopyToCorrectlyTraversesBlocks()
+        {
+            using (var pool = new MemoryPool2())
+            {
+                var block1 = pool.Lease(128);
+                var block2 = block1.Next = pool.Lease(128);
+
+                for (int i = 0; i < 128; i++)
+                {
+                    block1.Array[block1.End++] = (byte)i;
+                }
+                for (int i = 128; i < 256; i++)
+                {
+                    block2.Array[block2.End++] = (byte)i;
+                }
+
+                var beginIterator = block1.GetIterator();
+                
+                var array = new byte[256];
+                int actual;
+                var endIterator = beginIterator.CopyTo(array, 0, 256, out actual);
+
+                Assert.Equal(256, actual);
+
+                for (int i = 0; i < 256; i++)
+                {
+                    Assert.Equal(i, array[i]);
+                }
+
+                endIterator.CopyTo(array, 0, 256, out actual);
+                Assert.Equal(0, actual);
+            }
+        }
+
         private void AssertIterator(MemoryPoolIterator2 iter, MemoryPoolBlock2 block, int index)
         {
             Assert.Same(block, iter.Block);
