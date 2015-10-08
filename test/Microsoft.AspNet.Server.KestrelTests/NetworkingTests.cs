@@ -211,7 +211,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
                         }
                         else
                         {
-                            for (var x = 0; x != 2; ++x)
+                            for (var x = 0; x < 2; x++)
                             {
                                 var req = new UvWriteReq(new KestrelTrace(new TestKestrelTrace()));
                                 req.Init(loop);
@@ -250,7 +250,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
                     TaskCreationOptions.None);
                 socket.Shutdown(SocketShutdown.Send);
                 var buffer = new ArraySegment<byte>(new byte[2048]);
-                for (; ;)
+                while (true)
                 {
                     var count = await Task.Factory.FromAsync(
                         socket.BeginReceive,

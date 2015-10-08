@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
         /// Array of "minus one" bytes of the length of SIMD operations on the current hardware. Used as an argument in the
         /// vector dot product that counts matching character occurence.
         /// </summary>
-        private static Vector<byte> _dotCount = new Vector<byte>(Byte.MaxValue);
+        private static Vector<byte> _dotCount = new Vector<byte>(Byte.MaxValue); 
 
         /// <summary>
         /// Array of negative numbers starting at 0 and continuing for the length of SIMD operations on the current hardware.
@@ -51,12 +51,14 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
                 }
                 else
                 {
-                    for (var block = _block.Next; block != null; block = block.Next)
+                    var block = _block.Next;
+                    while (block != null)
                     {
                         if (block.Start < block.End)
                         {
                             return true;
                         }
+                        block = block.Next;
                     }
                     return true;
                 }
@@ -188,7 +190,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
                             following = vectorStride;
                         }
                     }
-                    for (; following != 0; following--, index++)
+                    while (following > 0)
                     {
                         if (block.Array[index] == byte0)
                         {
@@ -196,6 +198,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
                             _index = index;
                             return char0;
                         }
+                        following--;
+                        index++;
                     }
                 }
             }
@@ -269,7 +273,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
                             following = vectorStride;
                         }
                     }
-                    for (; following != 0; following--, index++)
+                    while (following > 0)
                     {
                         var byteIndex = block.Array[index];
                         if (byteIndex == byte0)
@@ -284,6 +288,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
                             _index = index;
                             return char1;
                         }
+                        following--;
+                        index++;
                     }
                 }
             }

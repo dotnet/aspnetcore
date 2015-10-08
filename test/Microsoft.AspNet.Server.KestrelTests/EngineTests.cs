@@ -131,7 +131,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
             socket.Send(Encoding.ASCII.GetBytes("POST / HTTP/1.0\r\n\r\nHello World"));
             socket.Shutdown(SocketShutdown.Send);
             var buffer = new byte[8192];
-            for (;;)
+            while (true)
             {
                 var length = socket.Receive(buffer);
                 if (length == 0) { break; }

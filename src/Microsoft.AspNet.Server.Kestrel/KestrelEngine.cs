@@ -78,7 +78,7 @@ namespace Microsoft.AspNet.Server.Kestrel
 
         public void Start(int count)
         {
-            for (var index = 0; index != count; ++index)
+            for (var index = 0; index < count; index++)
             {
                 Threads.Add(new KestrelThread(this));
             }
