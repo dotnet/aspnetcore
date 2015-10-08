@@ -296,7 +296,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [MemberData(nameof(ConnectionFilterData))]
         public async Task Http10KeepAliveContentLength(ServiceContext testContext)
         {
-            using (var server = new TestServer(AppChunked))
+            using (var server = new TestServer(AppChunked, testContext))
             {
                 using (var connection = new TestConnection())
                 {
@@ -327,7 +327,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [MemberData(nameof(ConnectionFilterData))]
         public async Task Http10KeepAliveTransferEncoding(ServiceContext testContext)
         {
-            using (var server = new TestServer(AppChunked))
+            using (var server = new TestServer(AppChunked, testContext))
             {
                 using (var connection = new TestConnection())
                 {
