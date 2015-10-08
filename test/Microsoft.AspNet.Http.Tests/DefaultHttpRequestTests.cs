@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.Http.Internal
             // Arrange
             const string expected = "localhost:9001";
 
-            var headers = new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase)
+            var headers = new HeaderDictionary()
             {
                 { "Host", expected },
             };
@@ -85,7 +85,7 @@ namespace Microsoft.AspNet.Http.Internal
             // Arrange
             const string expected = "löcalhöst";
 
-            var headers = new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase)
+            var headers = new HeaderDictionary()
             {
                 { "Host", "xn--lcalhst-90ae" },
             };
@@ -105,7 +105,7 @@ namespace Microsoft.AspNet.Http.Internal
             // Arrange
             const string expected = "xn--lcalhst-90ae";
 
-            var headers = new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase);
+            var headers = new HeaderDictionary();
 
             var request = CreateRequest(headers);
 
@@ -188,7 +188,7 @@ namespace Microsoft.AspNet.Http.Internal
             Assert.Equal(new[] { "name2=value2" }, cookieHeaders);
         }
 
-        private static HttpRequest CreateRequest(IDictionary<string, StringValues> headers)
+        private static HttpRequest CreateRequest(IHeaderDictionary headers)
         {
             var context = new DefaultHttpContext();
             context.Features.Get<IHttpRequestFeature>().Headers = headers;
@@ -217,7 +217,7 @@ namespace Microsoft.AspNet.Http.Internal
 
         private static HttpRequest GetRequestWithHeader(string headerName, string headerValue)
         {
-            var headers = new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase);
+            var headers = new HeaderDictionary();
             if (headerValue != null)
             {
                 headers.Add(headerName, headerValue);

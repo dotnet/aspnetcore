@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Http.Internal
 
         public override IHeaderDictionary Headers
         {
-            get { return new HeaderDictionary(HttpResponseFeature.Headers); }
+            get { return HttpResponseFeature.Headers; }
         }
 
         public override Stream Body

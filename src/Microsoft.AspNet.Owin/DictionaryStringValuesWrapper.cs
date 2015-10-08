@@ -4,11 +4,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNet.Http;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNet.Owin
 {
-    internal class DictionaryStringValuesWrapper : IDictionary<string, StringValues>
+    internal class DictionaryStringValuesWrapper : IHeaderDictionary
     {
         public DictionaryStringValuesWrapper(IDictionary<string, string[]> inner)
         {
@@ -24,6 +25,16 @@ namespace Microsoft.AspNet.Owin
         private StringValues Convert(string[] item) => item;
 
         private string[] Convert(StringValues item) => item;
+
+        StringValues IHeaderDictionary.this[string key]
+        {
+            get
+            {
+                string[] values;
+                return Inner.TryGetValue(key, out values) ? values : null;
+            }
+            set { Inner[key] = value; }
+        }
 
         StringValues IDictionary<string, StringValues>.this[string key]
         {

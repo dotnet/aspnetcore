@@ -4,18 +4,19 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNet.Http;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNet.Owin
 {
     internal class DictionaryStringArrayWrapper : IDictionary<string, string[]>
     {
-        public DictionaryStringArrayWrapper(IDictionary<string, StringValues> inner)
+        public DictionaryStringArrayWrapper(IHeaderDictionary inner)
         {
             Inner = inner;
         }
 
-        public readonly IDictionary<string, StringValues> Inner;
+        public readonly IHeaderDictionary Inner;
 
         private KeyValuePair<string, StringValues> Convert(KeyValuePair<string, string[]> item) => new KeyValuePair<string, StringValues>(item.Key, item.Value);
 
@@ -27,7 +28,7 @@ namespace Microsoft.AspNet.Owin
 
         string[] IDictionary<string, string[]>.this[string key]
         {
-            get { return Inner[key]; }
+            get { return ((IDictionary<string, StringValues>)Inner)[key]; }
             set { Inner[key] = value; }
         }
 

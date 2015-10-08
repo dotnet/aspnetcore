@@ -123,7 +123,7 @@ namespace Microsoft.AspNet.Http.Internal
 
         public override IHeaderDictionary Headers
         {
-            get { return new HeaderDictionary(HttpRequestFeature.Headers); }
+            get { return HttpRequestFeature.Headers; }
         }
 
         public override IReadableStringCollection Cookies

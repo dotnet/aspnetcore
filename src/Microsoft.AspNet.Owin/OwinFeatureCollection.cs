@@ -106,9 +106,9 @@ namespace Microsoft.AspNet.Owin
             set { Prop(OwinConstants.RequestQueryString, Utilities.RemoveQuestionMark(value)); }
         }
 
-        IDictionary<string, StringValues> IHttpRequestFeature.Headers
+        IHeaderDictionary IHttpRequestFeature.Headers
         {
-            get { return Utilities.MakeDictionaryStringValues(Prop<IDictionary<string, string[]>>(OwinConstants.RequestHeaders)); }
+            get { return Utilities.MakeHeaderDictionary(Prop<IDictionary<string, string[]>>(OwinConstants.RequestHeaders)); }
             set { Prop(OwinConstants.RequestHeaders, Utilities.MakeDictionaryStringArray(value)); }
         }
 
@@ -136,9 +136,9 @@ namespace Microsoft.AspNet.Owin
             set { Prop(OwinConstants.ResponseReasonPhrase, value); }
         }
 
-        IDictionary<string, StringValues> IHttpResponseFeature.Headers
+        IHeaderDictionary IHttpResponseFeature.Headers
         {
-            get { return Utilities.MakeDictionaryStringValues(Prop<IDictionary<string, string[]>>(OwinConstants.ResponseHeaders)); }
+            get { return Utilities.MakeHeaderDictionary(Prop<IDictionary<string, string[]>>(OwinConstants.ResponseHeaders)); }
             set { Prop(OwinConstants.ResponseHeaders, Utilities.MakeDictionaryStringArray(value)); }
         }
 

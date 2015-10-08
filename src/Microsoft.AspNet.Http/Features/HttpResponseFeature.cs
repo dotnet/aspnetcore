@@ -2,10 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Primitives;
+using Microsoft.AspNet.Http.Internal;
 
 namespace Microsoft.AspNet.Http.Features.Internal
 {
@@ -14,7 +13,7 @@ namespace Microsoft.AspNet.Http.Features.Internal
         public HttpResponseFeature()
         {
             StatusCode = 200;
-            Headers = new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase);
+            Headers = new HeaderDictionary();
             Body = Stream.Null;
         }
 
@@ -22,7 +21,7 @@ namespace Microsoft.AspNet.Http.Features.Internal
 
         public string ReasonPhrase { get; set; }
 
-        public IDictionary<string, StringValues> Headers { get; set; }
+        public IHeaderDictionary Headers { get; set; }
 
         public Stream Body { get; set; }
 

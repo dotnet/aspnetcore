@@ -2,10 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNet.Http.Features
 {
@@ -13,7 +11,7 @@ namespace Microsoft.AspNet.Http.Features
     {
         int StatusCode { get; set; }
         string ReasonPhrase { get; set; }
-        IDictionary<string, StringValues> Headers { get; set; }
+        IHeaderDictionary Headers { get; set; }
         Stream Body { get; set; }
         bool HasStarted { get; }
         void OnStarting(Func<object, Task> callback, object state);

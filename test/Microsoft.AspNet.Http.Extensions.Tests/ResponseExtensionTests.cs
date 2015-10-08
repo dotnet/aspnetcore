@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Http.Extensions
 
             public bool HasStarted { get { return true; } }
 
-            public IDictionary<string, StringValues> Headers { get; set; }
+            public IHeaderDictionary Headers { get; set; }
 
             public string ReasonPhrase { get; set; }
 

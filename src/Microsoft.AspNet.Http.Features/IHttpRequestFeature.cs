@@ -1,9 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
 using System.IO;
-using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNet.Http.Features
 {
@@ -15,7 +13,7 @@ namespace Microsoft.AspNet.Http.Features
         string PathBase { get; set; }
         string Path { get; set; }
         string QueryString { get; set; }
-        IDictionary<string, StringValues> Headers { get; set; }
+        IHeaderDictionary Headers { get; set; }
         Stream Body { get; set; }
     }
 }
