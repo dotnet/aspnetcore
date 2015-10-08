@@ -4,7 +4,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 
-namespace Microsoft.AspNet.Cors.Core
+namespace Microsoft.AspNet.Cors.Infrastructure
 {
     /// <summary>
     /// A type which can provide a <see cref="CorsPolicy"/> for a particular <see cref="HttpContext"/>.

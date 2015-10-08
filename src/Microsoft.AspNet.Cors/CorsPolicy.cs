@@ -3,10 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Text;
 
-namespace Microsoft.AspNet.Cors.Core
+namespace Microsoft.AspNet.Cors.Infrastructure
 {
     /// <summary>
     /// Defines the policy for Cross-Origin requests based on the CORS specifications.
@@ -124,7 +123,7 @@ namespace Microsoft.AspNet.Cors.Core
             builder.Append(", AllowAnyOrigin: ");
             builder.Append(AllowAnyOrigin);
             builder.Append(", PreflightMaxAge: ");
-            builder.Append(PreflightMaxAge.HasValue ? 
+            builder.Append(PreflightMaxAge.HasValue ?
                 PreflightMaxAge.Value.TotalSeconds.ToString() : "null");
             builder.Append(", SupportsCredentials: ");
             builder.Append(SupportsCredentials);

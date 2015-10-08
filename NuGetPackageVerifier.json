@@ -9,8 +9,7 @@
             "StrictSemanticVersionValidationRule"
         ],
         "packages": {
-            "Microsoft.AspNet.Cors": { },
-            "Microsoft.AspNet.Cors.Core": { }
+            "Microsoft.AspNet.Cors": { }
         }
     },
     "Default": { // Rules to run for packages not listed in any other set.

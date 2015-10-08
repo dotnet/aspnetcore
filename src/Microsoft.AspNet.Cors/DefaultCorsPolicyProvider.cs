@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.Extensions.OptionsModel;
 
-namespace Microsoft.AspNet.Cors.Core
+namespace Microsoft.AspNet.Cors.Infrastructure
 {
     /// <inheritdoc />
     public class DefaultCorsPolicyProvider : ICorsPolicyProvider

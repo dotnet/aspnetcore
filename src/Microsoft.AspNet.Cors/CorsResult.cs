@@ -3,11 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
 using System.Text;
 
-namespace Microsoft.AspNet.Cors.Core
+namespace Microsoft.AspNet.Cors.Infrastructure
 {
     /// <summary>
     /// Results returned by <see cref="ICorsService"/>.

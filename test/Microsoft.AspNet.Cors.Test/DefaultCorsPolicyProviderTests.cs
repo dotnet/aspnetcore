@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Internal;
 using Xunit;
 
-namespace Microsoft.AspNet.Cors.Core.Test
+namespace Microsoft.AspNet.Cors.Infrastructure
 {
     public class DefaultPolicyProviderTests
     {

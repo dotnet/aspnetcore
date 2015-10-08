@@ -3,7 +3,7 @@
 
 using Microsoft.AspNet.Http;
 
-namespace Microsoft.AspNet.Cors.Core
+namespace Microsoft.AspNet.Cors.Infrastructure
 {
     /// <summary>
     /// A type which can evaluate a policy for a particular <see cref="HttpContext"/>.
@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Cors.Core
         /// <param name="context">The <see cref="HttpContext"/> associated with the call.</param>
         /// <param name="policy">The <see cref="CorsPolicy"/> which needs to be evaluated.</param>
         /// <returns>A <see cref="CorsResult"/> which contains the result of policy evaluation and can be
-        /// used by the caller to set apporpriate response headers.</returns>
+        /// used by the caller to set appropriate response headers.</returns>
         CorsResult EvaluatePolicy(HttpContext context, CorsPolicy policy);
 
 

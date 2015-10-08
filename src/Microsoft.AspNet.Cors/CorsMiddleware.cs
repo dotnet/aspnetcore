@@ -4,11 +4,10 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Cors.Core;
 using Microsoft.AspNet.Http;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNet.Cors
+namespace Microsoft.AspNet.Cors.Infrastructure
 {
     /// <summary>
     /// An ASP.NET middleware for handling CORS.

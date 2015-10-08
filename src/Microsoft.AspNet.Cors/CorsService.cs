@@ -9,7 +9,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.Extensions.OptionsModel;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNet.Cors.Core
+namespace Microsoft.AspNet.Cors.Infrastructure
 {
     /// <summary>
     /// Default implementation of <see cref="ICorsService"/>.

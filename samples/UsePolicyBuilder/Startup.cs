@@ -1,6 +1,5 @@
 using System;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Cors.Core;
 using Microsoft.AspNet.Http;
 using Microsoft.Extensions.DependencyInjection;
 

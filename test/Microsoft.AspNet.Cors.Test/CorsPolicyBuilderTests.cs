@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 
-namespace Microsoft.AspNet.Cors.Core.Test
+namespace Microsoft.AspNet.Cors.Infrastructure
 {
     public class CorsPolicyBuilderTests
     {

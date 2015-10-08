@@ -4,7 +4,7 @@
 using System;
 using Xunit;
 
-namespace Microsoft.AspNet.Cors.Core.Test
+namespace Microsoft.AspNet.Cors.Infrastructure
 {
     public class CorsResultTest
     {
@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.Cors.Core.Test
             corsResult.AllowedHeaders.Add("baz");
             corsResult.AllowedMethods.Add("GET");
 
-            // Act 
+            // Act
             var result = corsResult.ToString();
 
             // Assert

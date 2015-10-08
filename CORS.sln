@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.22711.0
+VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{84FE6872-A610-4CEC-855F-A84CBF1F40FC}"
 EndProject
@@ -10,11 +10,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		global.json = global.json
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Cors.Core", "src\Microsoft.AspNet.Cors.Core\Microsoft.AspNet.Cors.Core.xproj", "{C573AEE1-8D54-4A83-8D6B-61C85E8F713E}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{F32074C7-087C-46CC-A913-422BFD2D6E0A}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Cors.Core.Test", "test\Microsoft.AspNet.Cors.Core.Test\Microsoft.AspNet.Cors.Core.Test.xproj", "{B4F83A06-EB8E-4186-84C4-C6DAF7EB03D4}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Cors", "src\Microsoft.AspNet.Cors\Microsoft.AspNet.Cors.xproj", "{41349FCD-D1C4-47A6-82D0-D16D00A8D59D}"
 EndProject
@@ -32,14 +28,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{C573AEE1-8D54-4A83-8D6B-61C85E8F713E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C573AEE1-8D54-4A83-8D6B-61C85E8F713E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C573AEE1-8D54-4A83-8D6B-61C85E8F713E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C573AEE1-8D54-4A83-8D6B-61C85E8F713E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B4F83A06-EB8E-4186-84C4-C6DAF7EB03D4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B4F83A06-EB8E-4186-84C4-C6DAF7EB03D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B4F83A06-EB8E-4186-84C4-C6DAF7EB03D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B4F83A06-EB8E-4186-84C4-C6DAF7EB03D4}.Release|Any CPU.Build.0 = Release|Any CPU
 		{41349FCD-D1C4-47A6-82D0-D16D00A8D59D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{41349FCD-D1C4-47A6-82D0-D16D00A8D59D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{41349FCD-D1C4-47A6-82D0-D16D00A8D59D}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -61,8 +49,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{C573AEE1-8D54-4A83-8D6B-61C85E8F713E} = {84FE6872-A610-4CEC-855F-A84CBF1F40FC}
-		{B4F83A06-EB8E-4186-84C4-C6DAF7EB03D4} = {F32074C7-087C-46CC-A913-422BFD2D6E0A}
 		{41349FCD-D1C4-47A6-82D0-D16D00A8D59D} = {84FE6872-A610-4CEC-855F-A84CBF1F40FC}
 		{F05BE96F-F869-4408-A480-96935B4835EE} = {F32074C7-087C-46CC-A913-422BFD2D6E0A}
 		{8DC90D0F-9660-42AD-BE08-4A7643A8F46E} = {EEF80A8E-F334-4C66-9537-8D24D002149D}

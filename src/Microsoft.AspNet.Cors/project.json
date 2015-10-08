@@ -8,11 +8,14 @@
         "warningsAsErrors": true
     },
     "dependencies": {
-        "Microsoft.AspNet.Cors.Core": "6.0.0-*"
+        "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
+        "Microsoft.Extensions.Configuration.Abstractions": "1.0.0-*",
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.0-*",
+        "Microsoft.Extensions.OptionsModel": "1.0.0-*"
     },
 
-    "frameworks" : {
-        "dnx451" : { },
-        "dnxcore50" : { }
+    "frameworks": {
+        "dnx451": { },
+        "dnxcore50": { }
     }
 }
