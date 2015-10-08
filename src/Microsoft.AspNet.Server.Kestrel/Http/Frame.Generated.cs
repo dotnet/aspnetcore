@@ -24,6 +24,12 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private static readonly Type ISessionFeatureType = typeof(global::Microsoft.AspNet.Http.Features.ISessionFeature);
         private static readonly Type IHttpSendFileFeatureType = typeof(global::Microsoft.AspNet.Http.Features.IHttpSendFileFeature);
         private static readonly Type IHttpUpgradeFeatureType = typeof(global::Microsoft.AspNet.Http.Features.IHttpUpgradeFeature);
+        private static readonly Type IResponseCookiesFeatureType = typeof(global::Microsoft.AspNet.Http.Features.Internal.IResponseCookiesFeature);
+        private static readonly Type IItemsFeatureType = typeof(global::Microsoft.AspNet.Http.Features.Internal.IItemsFeature);
+        private static readonly Type ITlsConnectionFeatureType = typeof(global::Microsoft.AspNet.Http.Features.ITlsConnectionFeature);
+        private static readonly Type IHttpWebSocketFeatureType = typeof(global::Microsoft.AspNet.Http.Features.IHttpWebSocketFeature);
+        private static readonly Type ISessionFeatureType = typeof(global::Microsoft.AspNet.Http.Features.ISessionFeature);
+        private static readonly Type IHttpSendFileFeatureType = typeof(global::Microsoft.AspNet.Http.Features.IHttpSendFileFeature);
 
         private object _currentIHttpRequestFeature;
         private object _currentIHttpResponseFeature;
@@ -35,6 +41,12 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private object _currentIQueryFeature;
         private object _currentIFormFeature;
         private object _currentIHttpUpgradeFeature;
+        private object _currentIResponseCookiesFeature;
+        private object _currentIItemsFeature;
+        private object _currentITlsConnectionFeature;
+        private object _currentIHttpWebSocketFeature;
+        private object _currentISessionFeature;
+        private object _currentIHttpSendFileFeature;
 
         private void FastReset()
         {
@@ -49,6 +61,12 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             _currentIHttpAuthenticationFeature = null;
             _currentIQueryFeature = null;
             _currentIFormFeature = null;
+            _currentIResponseCookiesFeature = null;
+            _currentIItemsFeature = null;
+            _currentITlsConnectionFeature = null;
+            _currentIHttpWebSocketFeature = null;
+            _currentISessionFeature = null;
+            _currentIHttpSendFileFeature = null;
         }
 
         private object FastFeatureGet(Type key)
@@ -129,6 +147,30 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             if (key == typeof(global::Microsoft.AspNet.Http.Features.IHttpUpgradeFeature))
             {
                 return _currentIHttpUpgradeFeature;
+            }
+            if (key == typeof(global::Microsoft.AspNet.Http.Features.Internal.IResponseCookiesFeature))
+            {
+                return _currentIResponseCookiesFeature;
+            }
+            if (key == typeof(global::Microsoft.AspNet.Http.Features.Internal.IItemsFeature))
+            {
+                return _currentIItemsFeature;
+            }
+            if (key == typeof(global::Microsoft.AspNet.Http.Features.ITlsConnectionFeature))
+            {
+                return _currentITlsConnectionFeature;
+            }
+            if (key == typeof(global::Microsoft.AspNet.Http.Features.IHttpWebSocketFeature))
+            {
+                return _currentIHttpWebSocketFeature;
+            }
+            if (key == typeof(global::Microsoft.AspNet.Http.Features.ISessionFeature))
+            {
+                return _currentISessionFeature;
+            }
+            if (key == typeof(global::Microsoft.AspNet.Http.Features.IHttpSendFileFeature))
+            {
+                return _currentIHttpSendFileFeature;
             }
             return  SlowFeatureGet(key);
         }
@@ -260,6 +302,36 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {
                 _currentIHttpUpgradeFeature = feature;
                 return;
+            }
+            if (key == typeof(global::Microsoft.AspNet.Http.Features.Internal.IResponseCookiesFeature))
+            {
+                _currentIResponseCookiesFeature = feature;
+                return;
+            }
+            if (key == typeof(global::Microsoft.AspNet.Http.Features.Internal.IItemsFeature))
+            {
+                _currentIItemsFeature = feature;
+                return;
+            }
+            if (key == typeof(global::Microsoft.AspNet.Http.Features.ITlsConnectionFeature))
+            {
+                _currentITlsConnectionFeature = feature;
+                return;
+            }
+            if (key == typeof(global::Microsoft.AspNet.Http.Features.IHttpWebSocketFeature))
+            {
+                _currentIHttpWebSocketFeature = feature;
+                return;
+            }
+            if (key == typeof(global::Microsoft.AspNet.Http.Features.ISessionFeature))
+            {
+                _currentISessionFeature = feature;
+                return;
+            }
+            if (key == typeof(global::Microsoft.AspNet.Http.Features.IHttpSendFileFeature))
+            {
+                _currentIHttpSendFileFeature = feature;
+                return;
             };
             SetExtra(key, feature);
         }
@@ -329,6 +401,30 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             if (_currentIHttpUpgradeFeature != null)
             {
                 yield return new KeyValuePair<Type, object>(IHttpUpgradeFeatureType, _currentIHttpUpgradeFeature as global::Microsoft.AspNet.Http.Features.IHttpUpgradeFeature);
+            }
+            if (_currentIResponseCookiesFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(IResponseCookiesFeatureType, _currentIResponseCookiesFeature as global::Microsoft.AspNet.Http.Features.Internal.IResponseCookiesFeature);
+            }
+            if (_currentIItemsFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(IItemsFeatureType, _currentIItemsFeature as global::Microsoft.AspNet.Http.Features.Internal.IItemsFeature);
+            }
+            if (_currentITlsConnectionFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(ITlsConnectionFeatureType, _currentITlsConnectionFeature as global::Microsoft.AspNet.Http.Features.ITlsConnectionFeature);
+            }
+            if (_currentIHttpWebSocketFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(IHttpWebSocketFeatureType, _currentIHttpWebSocketFeature as global::Microsoft.AspNet.Http.Features.IHttpWebSocketFeature);
+            }
+            if (_currentISessionFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(ISessionFeatureType, _currentISessionFeature as global::Microsoft.AspNet.Http.Features.ISessionFeature);
+            }
+            if (_currentIHttpSendFileFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(IHttpSendFileFeatureType, _currentIHttpSendFileFeature as global::Microsoft.AspNet.Http.Features.IHttpSendFileFeature);
             }
 
             if (MaybeExtra != null)

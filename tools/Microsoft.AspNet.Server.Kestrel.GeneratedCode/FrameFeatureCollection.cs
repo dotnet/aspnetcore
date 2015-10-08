@@ -53,10 +53,6 @@ namespace Microsoft.AspNet.Server.Kestrel.GeneratedCode
                 typeof(IHttpResponseFeature),
                 typeof(IHttpUpgradeFeature),
             };
-
-            // Only the always, common and implmented features will have backed objects
-            // the sometimes, rare and user-defined features will use the MaybeExtra collection
-            var cachedFeatures = alwaysFeatures.Concat(commonFeatures).Union(implementedFeatures);
             
             return $@"
 using System;
@@ -65,18 +61,20 @@ using System.Collections.Generic;
 namespace Microsoft.AspNet.Server.Kestrel.Http 
 {{
     public partial class Frame
-    {{{Each(cachedFeatures, feature => $@"
+    {{{Each(allFeatures, feature => $@"
         private static readonly Type {feature.Name}Type = typeof(global::{feature.FullName});")}
+{Each(allFeatures, feature => $@"
+        private object _current{feature.Name};")}
 
         private void FastReset()
         {{{Each(implementedFeatures, feature => $@"
             _current{feature.Name} = this;")}
-            {Each(cachedFeatures.Where( f => !implementedFeatures.Contains(f)), feature => $@"
+            {Each(allFeatures.Where( f => !implementedFeatures.Contains(f)), feature => $@"
             _current{feature.Name} = null;")}
         }}
 
         private object FastFeatureGet(Type key)
-        {{{Each(cachedFeatures, feature => $@"
+        {{{Each(allFeatures, feature => $@"
             if (key == typeof(global::{feature.FullName}))
             {{
                 return _current{feature.Name};
@@ -113,7 +111,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private void FastFeatureSet(Type key, object feature)
         {{
             _featureRevision++;
-            {Each(cachedFeatures, feature => $@"
+            {Each(allFeatures, feature => $@"
             if (key == typeof(global::{feature.FullName}))
             {{
                 _current{feature.Name} = feature;
@@ -123,7 +121,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         }}
 
         private IEnumerable<KeyValuePair<Type, object>> FastEnumerable()
-        {{{Each(cachedFeatures, feature => $@"
+        {{{Each(allFeatures, feature => $@"
             if (_current{feature.Name} != null)
             {{
                 yield return new KeyValuePair<Type, object>({feature.Name}Type, _current{feature.Name} as global::{feature.FullName});
