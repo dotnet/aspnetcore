@@ -9,9 +9,12 @@ namespace Microsoft.AspNet.Hosting.Internal
 {
     public class FastHttpRequestIdentifierFeature : IHttpRequestIdentifierFeature
     {
-        private static readonly string _hexChars = "0123456789ABCDEF";
-        // Seed the _requestId for this application instance with a random int
-        private static long _requestId = new Random().Next();
+        // Base64 encoding - but in ascii sort order for easy text based sorting 
+        private static readonly string _encode32Chars = "0123456789ABCDEFGHIJKLMNOPQRSTUV";
+        // Seed the _requestId for this application instance with 
+        // the number of 100-nanosecond intervals that have elapsed since 12:00:00 midnight, January 1, 0001
+        // for a roughly increasing _requestId over restarts
+        private static long _requestId = DateTime.UtcNow.Ticks;
         
         private string _id = null;
         
@@ -32,29 +35,31 @@ namespace Microsoft.AspNet.Hosting.Internal
             }
         }
 
-        private static string GenerateRequestId(long id)
+        private static unsafe string GenerateRequestId(long id)
         {
-            // The following routine is ~33% faster than calling long.ToString() when testing in tight loops of
-            // 1 million iterations.
-            var charBuffer = new char[sizeof(long) * 2];
-            charBuffer[0] = _hexChars[(int)(id >> 60) & 0x0f];
-            charBuffer[1] = _hexChars[(int)(id >> 56) & 0x0f];
-            charBuffer[2] = _hexChars[(int)(id >> 52) & 0x0f];
-            charBuffer[3] = _hexChars[(int)(id >> 48) & 0x0f];
-            charBuffer[4] = _hexChars[(int)(id >> 44) & 0x0f];
-            charBuffer[5] = _hexChars[(int)(id >> 40) & 0x0f];
-            charBuffer[6] = _hexChars[(int)(id >> 36) & 0x0f];
-            charBuffer[7] = _hexChars[(int)(id >> 32) & 0x0f];
-            charBuffer[8] = _hexChars[(int)(id >> 28) & 0x0f];
-            charBuffer[9] = _hexChars[(int)(id >> 24) & 0x0f];
-            charBuffer[10] = _hexChars[(int)(id >> 20) & 0x0f];
-            charBuffer[11] = _hexChars[(int)(id >> 16) & 0x0f];
-            charBuffer[12] = _hexChars[(int)(id >> 12) & 0x0f];
-            charBuffer[13] = _hexChars[(int)(id >> 8) & 0x0f];
-            charBuffer[14] = _hexChars[(int)(id >> 4) & 0x0f];
-            charBuffer[15] = _hexChars[(int)(id >> 0) & 0x0f];
+            // The following routine is ~310% faster than calling long.ToString() on x64
+            // and ~600% faster than calling long.ToString() on x86 in tight loops of 1 million+ iterations
+            // See: https://github.com/aspnet/Hosting/pull/385
 
-            return new string(charBuffer);
+            // stackalloc to allocate array on stack rather than heap
+            char* charBuffer = stackalloc char[13];
+
+            charBuffer[0] = _encode32Chars[(int)(id >> 60) & 31];
+            charBuffer[1] = _encode32Chars[(int)(id >> 55) & 31];
+            charBuffer[2] = _encode32Chars[(int)(id >> 50) & 31];
+            charBuffer[3] = _encode32Chars[(int)(id >> 45) & 31];
+            charBuffer[4] = _encode32Chars[(int)(id >> 40) & 31];
+            charBuffer[5] = _encode32Chars[(int)(id >> 35) & 31];
+            charBuffer[6] = _encode32Chars[(int)(id >> 30) & 31];
+            charBuffer[7] = _encode32Chars[(int)(id >> 25) & 31];
+            charBuffer[8] = _encode32Chars[(int)(id >> 20) & 31];
+            charBuffer[9] = _encode32Chars[(int)(id >> 15) & 31];
+            charBuffer[10] = _encode32Chars[(int)(id >> 10) & 31];
+            charBuffer[11] = _encode32Chars[(int)(id >> 5) & 31];
+            charBuffer[12] = _encode32Chars[(int)id & 31];
+
+            // string ctor overload that takes char*
+            return new string(charBuffer, 0, 13);
         }
     }
 }
