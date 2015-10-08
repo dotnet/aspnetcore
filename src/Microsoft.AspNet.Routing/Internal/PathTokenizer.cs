@@ -6,10 +6,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.AspNet.Http;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNet.Routing.Internal
 {
-    public struct PathTokenizer : IReadOnlyList<PathSegment>
+    public struct PathTokenizer : IReadOnlyList<StringSegment>
     {
         private readonly string _path;
         private int _count;
@@ -63,7 +64,7 @@ namespace Microsoft.AspNet.Routing.Internal
             }
         }
 
-        public PathSegment this[int index]
+        public StringSegment this[int index]
         {
             get
             {
@@ -82,7 +83,7 @@ namespace Microsoft.AspNet.Routing.Internal
                 {
                     if (currentSegmentIndex++ == index)
                     {
-                        return new PathSegment(_path, currentSegmentStart, delimiterIndex - currentSegmentStart);
+                        return new StringSegment(_path, currentSegmentStart, delimiterIndex - currentSegmentStart);
                     }
                     else
                     {
@@ -96,7 +97,7 @@ namespace Microsoft.AspNet.Routing.Internal
                 Debug.Assert(_path[_path.Length - 1] != '/');
                 Debug.Assert(currentSegmentIndex == index);
 
-                return new PathSegment(_path, currentSegmentStart, _path.Length - currentSegmentStart);
+                return new StringSegment(_path, currentSegmentStart, _path.Length - currentSegmentStart);
             }
         }
 
@@ -105,7 +106,7 @@ namespace Microsoft.AspNet.Routing.Internal
             return new Enumerator(this);
         }
 
-        IEnumerator<PathSegment> IEnumerable<PathSegment>.GetEnumerator()
+        IEnumerator<StringSegment> IEnumerable<StringSegment>.GetEnumerator()
         {
             return GetEnumerator();
         }
@@ -115,7 +116,7 @@ namespace Microsoft.AspNet.Routing.Internal
             return GetEnumerator();
         }
 
-        public struct Enumerator : IEnumerator<PathSegment>
+        public struct Enumerator : IEnumerator<StringSegment>
         {
             private readonly string _path;
 
@@ -130,11 +131,11 @@ namespace Microsoft.AspNet.Routing.Internal
                 _length = -1;
             }
 
-            public PathSegment Current
+            public StringSegment Current
             {
                 get
                 {
-                    return new PathSegment(_path, _index, _length);
+                    return new StringSegment(_path, _index, _length);
                 }
             }
 

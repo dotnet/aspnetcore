@@ -2,72 +2,73 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNet.Http;
+using Microsoft.Extensions.Primitives;
 using Xunit;
 
 namespace Microsoft.AspNet.Routing.Internal
 {
     public class PathTokenizerTest
     {
-        public static TheoryData<string, PathSegment[]> TokenizationData
+        public static TheoryData<string, StringSegment[]> TokenizationData
         {
             get
             {
-                return new TheoryData<string, PathSegment[]>
+                return new TheoryData<string, StringSegment[]>
                 {
-                    { string.Empty, new PathSegment[] { } },
-                    { "/", new PathSegment[] { } },
-                    { "//", new PathSegment[] { new PathSegment("//", 1, 0) } },
+                    { string.Empty, new StringSegment[] { } },
+                    { "/", new StringSegment[] { } },
+                    { "//", new StringSegment[] { new StringSegment("//", 1, 0) } },
                     {
                         "///",
-                        new PathSegment[]
+                        new StringSegment[]
                         {
-                            new PathSegment("///", 1, 0),
-                            new PathSegment("///", 2, 0),
+                            new StringSegment("///", 1, 0),
+                            new StringSegment("///", 2, 0),
                         }
                     },
                     {
                         "////",
-                        new PathSegment[]
+                        new StringSegment[]
                         {
-                            new PathSegment("////", 1, 0),
-                            new PathSegment("////", 2, 0),
-                            new PathSegment("////", 3, 0),
+                            new StringSegment("////", 1, 0),
+                            new StringSegment("////", 2, 0),
+                            new StringSegment("////", 3, 0),
                         }
                     },
-                    { "/zero", new PathSegment[] { new PathSegment("/zero", 1, 4) } },
-                    { "/zero/", new PathSegment[] { new PathSegment("/zero/", 1, 4) } },
+                    { "/zero", new StringSegment[] { new StringSegment("/zero", 1, 4) } },
+                    { "/zero/", new StringSegment[] { new StringSegment("/zero/", 1, 4) } },
                     {
                         "/zero/one",
-                        new PathSegment[]
+                        new StringSegment[]
                         {
-                            new PathSegment("/zero/one", 1, 4),
-                            new PathSegment("/zero/one", 6, 3),
+                            new StringSegment("/zero/one", 1, 4),
+                            new StringSegment("/zero/one", 6, 3),
                         }
                     },
                     {
                         "/zero/one/",
-                        new PathSegment[]
+                        new StringSegment[]
                         {
-                            new PathSegment("/zero/one/", 1, 4),
-                            new PathSegment("/zero/one/", 6, 3),
+                            new StringSegment("/zero/one/", 1, 4),
+                            new StringSegment("/zero/one/", 6, 3),
                         }
                     },
                     {
                         "/zero/one/two",
-                        new PathSegment[]
+                        new StringSegment[]
                         {
-                            new PathSegment("/zero/one/two", 1, 4),
-                            new PathSegment("/zero/one/two", 6, 3),
-                            new PathSegment("/zero/one/two", 10, 3),
+                            new StringSegment("/zero/one/two", 1, 4),
+                            new StringSegment("/zero/one/two", 6, 3),
+                            new StringSegment("/zero/one/two", 10, 3),
                         }
                     },
                     {
                         "/zero/one/two/",
-                        new PathSegment[]
+                        new StringSegment[]
                         {
-                            new PathSegment("/zero/one/two/", 1, 4),
-                            new PathSegment("/zero/one/two/", 6, 3),
-                            new PathSegment("/zero/one/two/", 10, 3),
+                            new StringSegment("/zero/one/two/", 1, 4),
+                            new StringSegment("/zero/one/two/", 6, 3),
+                            new StringSegment("/zero/one/two/", 10, 3),
                         }
                     },
                 };
@@ -76,7 +77,7 @@ namespace Microsoft.AspNet.Routing.Internal
 
         [Theory]
         [MemberData(nameof(TokenizationData))]
-        public void PathTokenizer_Count(string path, PathSegment[] expectedSegments)
+        public void PathTokenizer_Count(string path, StringSegment[] expectedSegments)
         {
             // Arrange
             var tokenizer = new PathTokenizer(new PathString(path));
@@ -90,7 +91,7 @@ namespace Microsoft.AspNet.Routing.Internal
 
         [Theory]
         [MemberData(nameof(TokenizationData))]
-        public void PathTokenizer_Indexer(string path, PathSegment[] expectedSegments)
+        public void PathTokenizer_Indexer(string path, StringSegment[] expectedSegments)
         {
             // Arrange
             var tokenizer = new PathTokenizer(new PathString(path));
@@ -104,13 +105,13 @@ namespace Microsoft.AspNet.Routing.Internal
 
         [Theory]
         [MemberData(nameof(TokenizationData))]
-        public void PathTokenizer_Enumerator(string path, PathSegment[] expectedSegments)
+        public void PathTokenizer_Enumerator(string path, StringSegment[] expectedSegments)
         {
             // Arrange
             var tokenizer = new PathTokenizer(new PathString(path));
 
             // Act & Assert
-            Assert.Equal<PathSegment>(expectedSegments, tokenizer);
+            Assert.Equal<StringSegment>(expectedSegments, tokenizer);
         }
     }
 }

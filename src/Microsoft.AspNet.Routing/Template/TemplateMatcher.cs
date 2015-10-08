@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.Routing.Template
                 {
                     // This is a literal segment, so we need to match the text, or the route isn't a match.
                     var part = routeSegment.Parts[0];
-                    if (!requestSegment.Equals(part.Text))
+                    if (!requestSegment.Equals(part.Text, StringComparison.OrdinalIgnoreCase))
                     {
                         return null;
                     }
@@ -149,7 +149,7 @@ namespace Microsoft.AspNet.Routing.Template
                 {
                     // A catch-all captures til the end of the string.
                     var part = routeSegment.Parts[0];
-                    var captured = requestSegment.GetRemainingPath();
+                    var captured = requestSegment.Buffer.Substring(requestSegment.Offset);
                     if (captured.Length > 0)
                     {
                         values.Add(part.Name, captured);
