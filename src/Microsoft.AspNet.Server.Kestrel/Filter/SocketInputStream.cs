@@ -18,7 +18,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Filter
     public class SocketInputStream : Stream
     {
         private static Task _emptyTask = Task.FromResult<object>(null);
-        private static byte[] _emptyBuffer = new byte[0];
 
         private readonly SocketInput _socketInput;
 
@@ -91,8 +90,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Filter
 
         protected override void Dispose(bool disposing)
         {
-            // Close _socketInput with a 0-length write.
-            Write(_emptyBuffer, 0, 0);
+            // Close _socketInput with a fake zero-length write that will result in a zero-length read.
+            _socketInput.IncomingComplete(0, error: null);
             base.Dispose(disposing);
         }
     }

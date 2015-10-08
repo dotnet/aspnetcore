@@ -130,15 +130,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
             }
         }
 
-        public static MemoryPoolBlock2 Create(int size, MemoryPool2 pool)
-        {
-            return new MemoryPoolBlock2
-            {
-                Data = new ArraySegment<byte>(new byte[size]),
-                Pool = pool
-            };
-        }
-
         public static MemoryPoolBlock2 Create(
             ArraySegment<byte> data,
             IntPtr dataPtr,

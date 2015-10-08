@@ -90,6 +90,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 // Unpin may called without an earlier Pin 
                 if (_pinned != null)
                 {
+                    _pinned.Unpin();
+
                     _pinned.End += count;
                     if (_head == null)
                     {
@@ -170,7 +172,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {
                 var returnBlock = returnStart;
                 returnStart = returnStart.Next;
-                returnBlock.Pool.Return(returnBlock);
+                returnBlock.Pool?.Return(returnBlock);
             }
         }
 
