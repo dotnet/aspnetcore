@@ -5,7 +5,8 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using Microsoft.Dnx.Runtime;using Microsoft.Win32;
+using Microsoft.Dnx.Runtime;
+using Microsoft.Win32;
 
 namespace CultureInfoGenerator
 {

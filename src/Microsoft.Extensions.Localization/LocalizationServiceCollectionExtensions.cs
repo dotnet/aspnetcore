@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Localization;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -18,8 +17,13 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
         /// <returns>The <see cref="IServiceCollection"/>.</returns>
-        public static IServiceCollection AddLocalization([NotNull] this IServiceCollection services)
+        public static IServiceCollection AddLocalization(this IServiceCollection services)
         {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
             return AddLocalization(services, setupAction: null);
         }
 
@@ -30,9 +34,14 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="setupAction">An action to configure the <see cref="LocalizationOptions"/>.</param>
         /// <returns>The <see cref="IServiceCollection"/>.</returns>
         public static IServiceCollection AddLocalization(
-            [NotNull] this IServiceCollection services,
+            this IServiceCollection services,
             Action<LocalizationOptions> setupAction)
         {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
             services.TryAdd(new ServiceDescriptor(
                 typeof(IStringLocalizerFactory),
                 typeof(ResourceManagerStringLocalizerFactory),

@@ -4,7 +4,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.Localization
 {
@@ -19,13 +18,25 @@ namespace Microsoft.AspNet.Localization
         /// Creates a new <see cref="CustomRequestCultureProvider"/> using the specified delegate.
         /// </summary>
         /// <param name="provider">The provider delegate.</param>
-        public CustomRequestCultureProvider([NotNull] Func<HttpContext, Task<RequestCulture>> provider)
+        public CustomRequestCultureProvider(Func<HttpContext, Task<RequestCulture>> provider)
         {
+            if (provider == null)
+            {
+                throw new ArgumentNullException(nameof(provider));
+            }
+
             _provider = provider;
         }
 
         /// <inheritdoc />
-        public override Task<RequestCulture> DetermineRequestCulture([NotNull] HttpContext httpContext)
-            => _provider(httpContext);
+        public override Task<RequestCulture> DetermineRequestCulture(HttpContext httpContext)
+        {
+            if (httpContext == null)
+            {
+                throw new ArgumentNullException(nameof(httpContext));
+            }
+
+            return _provider(httpContext);
+        }
     }
 }

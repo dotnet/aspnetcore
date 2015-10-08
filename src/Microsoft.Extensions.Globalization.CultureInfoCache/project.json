@@ -5,7 +5,8 @@
         "type": "git",
         "url": "https://github.com/aspnet/localization"
     },
-    "dependencies": {
+    "compilationOptions": {
+        "warningsAsErrors": true
     },
     "frameworks": {
         "dnx451": { },

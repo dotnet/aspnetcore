@@ -1,11 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved. 
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.Extensions.Globalization;
-using Microsoft.Extensions.Internal;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Localization
@@ -23,8 +23,13 @@ namespace Microsoft.AspNet.Localization
         public int MaximumAcceptLanguageHeaderValuesToTry { get; set; } = 3;
 
         /// <inheritdoc />
-        public override Task<RequestCulture> DetermineRequestCulture([NotNull] HttpContext httpContext)
+        public override Task<RequestCulture> DetermineRequestCulture(HttpContext httpContext)
         {
+            if (httpContext == null)
+            {
+                throw new ArgumentNullException(nameof(httpContext));
+            }
+
             var acceptLanguageHeader = httpContext.Request.GetTypedHeaders().AcceptLanguage;
 
             if (acceptLanguageHeader == null || acceptLanguageHeader.Count == 0)
@@ -40,7 +45,7 @@ namespace Microsoft.AspNet.Localization
                 // attempt to parse as a CultureInfo to mitigate potentially spinning CPU on lots of parse attempts.
                 languages = languages.Take(MaximumAcceptLanguageHeaderValuesToTry);
             }
-            
+
             var orderedLanguages = languages.OrderByDescending(h => h, StringWithQualityHeaderValueComparer.QualityComparer)
                 .ToList();
 

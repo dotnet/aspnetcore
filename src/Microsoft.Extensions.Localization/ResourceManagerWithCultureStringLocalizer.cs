@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved. 
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
@@ -26,31 +27,66 @@ namespace Microsoft.Extensions.Localization
         /// <param name="resourceNamesCache">Cache of the list of strings for a given resource assembly name.</param>
         /// <param name="culture">The specific <see cref="CultureInfo"/> to use.</param>
         public ResourceManagerWithCultureStringLocalizer(
-            [NotNull] ResourceManager resourceManager,
-            [NotNull] Assembly resourceAssembly,
-            [NotNull] string baseName,
-            [NotNull] IResourceNamesCache resourceNamesCache,
-            [NotNull] CultureInfo culture)
+            ResourceManager resourceManager,
+            Assembly resourceAssembly,
+            string baseName,
+            IResourceNamesCache resourceNamesCache,
+            CultureInfo culture)
             : base(resourceManager, resourceAssembly, baseName, resourceNamesCache)
         {
+            if (resourceManager == null)
+            {
+                throw new ArgumentNullException(nameof(resourceManager));
+            }
+
+            if (resourceAssembly == null)
+            {
+                throw new ArgumentNullException(nameof(resourceAssembly));
+            }
+
+            if (baseName == null)
+            {
+                throw new ArgumentNullException(nameof(baseName));
+            }
+
+            if (resourceNamesCache == null)
+            {
+                throw new ArgumentNullException(nameof(resourceNamesCache));
+            }
+
+            if (culture == null)
+            {
+                throw new ArgumentNullException(nameof(culture));
+            }
+
             _culture = culture;
         }
 
         /// <inheritdoc />
-        public override LocalizedString this[[NotNull] string name]
+        public override LocalizedString this[string name]
         {
             get
             {
+                if (name == null)
+                {
+                    throw new ArgumentNullException(nameof(name));
+                }
+
                 var value = GetStringSafely(name, _culture);
                 return new LocalizedString(name, value ?? name);
             }
         }
 
         /// <inheritdoc />
-        public override LocalizedString this[[NotNull] string name, params object[] arguments]
+        public override LocalizedString this[string name, params object[] arguments]
         {
             get
             {
+                if (name == null)
+                {
+                    throw new ArgumentNullException(nameof(name));
+                }
+
                 var format = GetStringSafely(name, _culture);
                 var value = string.Format(_culture, format ?? name, arguments);
                 return new LocalizedString(name, value ?? name, resourceNotFound: format == null);

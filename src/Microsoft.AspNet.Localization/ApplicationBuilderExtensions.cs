@@ -1,8 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved. 
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
+using System;
 using Microsoft.AspNet.Localization;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.Builder
 {
@@ -17,8 +17,13 @@ namespace Microsoft.AspNet.Builder
         /// </summary>
         /// <param name="builder">The <see cref="IApplicationBuilder"/>.</param>
         /// <returns>The <see cref="IApplicationBuilder"/>.</returns>
-        public static IApplicationBuilder UseRequestLocalization([NotNull] this IApplicationBuilder builder)
+        public static IApplicationBuilder UseRequestLocalization(this IApplicationBuilder builder)
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
             var options = new RequestLocalizationOptions();
 
             return UseRequestLocalization(builder, options);
@@ -32,8 +37,20 @@ namespace Microsoft.AspNet.Builder
         /// <param name="options">The options to configure the middleware with.</param>
         /// <returns>The <see cref="IApplicationBuilder"/>.</returns>
         public static IApplicationBuilder UseRequestLocalization(
-            [NotNull] this IApplicationBuilder builder,
-            [NotNull] RequestLocalizationOptions options)
-            => builder.UseMiddleware<RequestLocalizationMiddleware>(options);
+            this IApplicationBuilder builder,
+            RequestLocalizationOptions options)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            return builder.UseMiddleware<RequestLocalizationMiddleware>(options);
+        }
     }
 }

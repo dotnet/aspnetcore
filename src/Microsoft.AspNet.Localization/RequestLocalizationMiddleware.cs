@@ -1,13 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved. 
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
+using System;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.Localization
 {
@@ -19,14 +19,24 @@ namespace Microsoft.AspNet.Localization
     {
         private readonly RequestDelegate _next;
         private readonly RequestLocalizationOptions _options;
-        
+
         /// <summary>
         /// Creates a new <see cref="RequestLocalizationMiddleware"/>.
         /// </summary>
         /// <param name="next">The <see cref="RequestDelegate"/> representing the next middleware in the pipeline.</param>
         /// <param name="options">The <see cref="RequestLocalizationOptions"/> representing the options for the <see cref="RequestLocalizationMiddleware"/>.</param>
-        public RequestLocalizationMiddleware([NotNull] RequestDelegate next, [NotNull] RequestLocalizationOptions options)
+        public RequestLocalizationMiddleware(RequestDelegate next, RequestLocalizationOptions options)
         {
+            if (next == null)
+            {
+                throw new ArgumentNullException(nameof(next));
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
             _next = next;
             _options = options;
         }
@@ -36,8 +46,13 @@ namespace Microsoft.AspNet.Localization
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/>.</param>
         /// <returns>A <see cref="Task"/> that completes when the middleware has completed processing.</returns>
-        public async Task Invoke([NotNull] HttpContext context)
+        public async Task Invoke(HttpContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var requestCulture = _options.DefaultRequestCulture ??
                 new RequestCulture(CultureInfo.CurrentCulture, CultureInfo.CurrentUICulture);
 

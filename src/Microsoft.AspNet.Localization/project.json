@@ -5,14 +5,13 @@
         "type": "git",
         "url": "https://github.com/aspnet/localization"
     },
+    "compilationOptions": {
+        "warningsAsErrors": true
+    },
     "dependencies": {
         "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
         "Microsoft.Extensions.Globalization.CultureInfoCache": "1.0.0-*",
-        "Microsoft.Extensions.Localization.Abstractions": "1.0.0-*",
-        "Microsoft.Extensions.NotNullAttribute.Sources": {
-            "type": "build",
-            "version": "1.0.0-*"
-        }
+        "Microsoft.Extensions.Localization.Abstractions": "1.0.0-*"
     },
     "frameworks": {
         "dnx451": { },

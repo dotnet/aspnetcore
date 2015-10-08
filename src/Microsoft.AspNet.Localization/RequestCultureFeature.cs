@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved. 
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
-using Microsoft.Extensions.Internal;
+using System;
 
 namespace Microsoft.AspNet.Localization
 {
@@ -15,8 +15,13 @@ namespace Microsoft.AspNet.Localization
         /// </summary>
         /// <param name="requestCulture">The <see cref="Localization.RequestCulture"/>.</param>
         /// <param name="provider">The <see cref="IRequestCultureProvider"/>.</param>
-        public RequestCultureFeature([NotNull] RequestCulture requestCulture, IRequestCultureProvider provider)
+        public RequestCultureFeature(RequestCulture requestCulture, IRequestCultureProvider provider)
         {
+            if (requestCulture == null)
+            {
+                throw new ArgumentNullException(nameof(requestCulture));
+            }
+
             RequestCulture = requestCulture;
             Provider = provider;
         }

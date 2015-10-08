@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved. 
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
-using Microsoft.Extensions.Internal;
+using System;
 
 namespace Microsoft.Extensions.Localization
 {
@@ -15,10 +15,9 @@ namespace Microsoft.Extensions.Localization
         /// </summary>
         /// <param name="name">The name of the string in the resource it was loaded from.</param>
         /// <param name="value">The actual string.</param>
-        public LocalizedString([NotNull] string name, [NotNull] string value)
+        public LocalizedString(string name, string value)
             : this(name, value, resourceNotFound: false)
         {
-
         }
 
         /// <summary>
@@ -27,14 +26,24 @@ namespace Microsoft.Extensions.Localization
         /// <param name="name">The name of the string in the resource it was loaded from.</param>
         /// <param name="value">The actual string.</param>
         /// <param name="resourceNotFound">Whether the string was found in a resource. Set this to <c>false</c> to indicate an alternate string value was used.</param>
-        public LocalizedString([NotNull] string name, [NotNull] string value, bool resourceNotFound)
+        public LocalizedString(string name, string value, bool resourceNotFound)
         {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
             Name = name;
             Value = value;
             ResourceNotFound = resourceNotFound;
         }
 
-        public static implicit operator string (LocalizedString localizedString)
+        public static implicit operator string(LocalizedString localizedString)
         {
             return localizedString.Value;
         }

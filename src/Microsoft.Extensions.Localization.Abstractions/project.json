@@ -5,11 +5,8 @@
         "type": "git",
         "url": "https://github.com/aspnet/localization"
     },
-    "dependencies": {
-        "Microsoft.Extensions.NotNullAttribute.Sources": {
-            "type": "build",
-            "version": "1.0.0-*"
-        }
+    "compilationOptions": {
+        "warningsAsErrors": true
     },
     "frameworks": {
         "dnx451": { },

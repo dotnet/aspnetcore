@@ -5,7 +5,6 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.Extensions.Globalization;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.Localization
 {
@@ -17,7 +16,7 @@ namespace Microsoft.AspNet.Localization
         private static readonly char[] _cookieSeparator = new[] { '|' };
         private static readonly string _culturePrefix = "c=";
         private static readonly string _uiCulturePrefix = "uic=";
-        
+
         /// <summary>
         /// Represent the default cookie name used to track the user's preferred culture information, which is "ASPNET_CULTURE".
         /// </summary>
@@ -30,8 +29,13 @@ namespace Microsoft.AspNet.Localization
         public string CookieName { get; set; } = DefaultCookieName;
 
         /// <inheritdoc />
-        public override Task<RequestCulture> DetermineRequestCulture([NotNull] HttpContext httpContext)
+        public override Task<RequestCulture> DetermineRequestCulture(HttpContext httpContext)
         {
+            if (httpContext == null)
+            {
+                throw new ArgumentNullException(nameof(httpContext));
+            }
+
             var cookie = httpContext.Request.Cookies[CookieName];
 
             if (cookie == null)
@@ -51,8 +55,13 @@ namespace Microsoft.AspNet.Localization
         /// </summary>
         /// <param name="requestCulture">The <see cref="RequestCulture"/>.</param>
         /// <returns>The cookie value.</returns>
-        public static string MakeCookieValue([NotNull] RequestCulture requestCulture)
+        public static string MakeCookieValue(RequestCulture requestCulture)
         {
+            if (requestCulture == null)
+            {
+                throw new ArgumentNullException(nameof(requestCulture));
+            }
+
             var seperator = _cookieSeparator[0].ToString();
 
             return string.Join(seperator,
@@ -66,7 +75,7 @@ namespace Microsoft.AspNet.Localization
         /// </summary>
         /// <param name="value">The cookie value to parse.</param>
         /// <returns>The <see cref="RequestCulture"/> or <c>null</c> if parsing fails.</returns>
-        public static RequestCulture ParseCookieValue([NotNull] string value)
+        public static RequestCulture ParseCookieValue(string value)
         {
             if (string.IsNullOrWhiteSpace(value))
             {

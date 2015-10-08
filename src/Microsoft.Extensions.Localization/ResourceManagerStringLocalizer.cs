@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved. 
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
+using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -34,24 +35,47 @@ namespace Microsoft.Extensions.Localization
         /// <param name="baseName">The base name of the embedded resource in the <see cref="Assembly"/> that contains the strings.</param>
         /// <param name="resourceNamesCache">Cache of the list of strings for a given resource assembly name.</param>
         public ResourceManagerStringLocalizer(
-            [NotNull] ResourceManager resourceManager,
-            [NotNull] Assembly resourceAssembly,
-            [NotNull] string baseName,
-            [NotNull] IResourceNamesCache resourceNamesCache)
+            ResourceManager resourceManager,
+            Assembly resourceAssembly,
+            string baseName,
+            IResourceNamesCache resourceNamesCache)
             : this(resourceManager, new AssemblyWrapper(resourceAssembly), baseName, resourceNamesCache)
         {
-            
+            if (resourceAssembly == null)
+            {
+                throw new ArgumentNullException(nameof(resourceAssembly));
+            }
         }
 
         /// <summary>
         /// Intended for testing purposes only.
         /// </summary>
         public ResourceManagerStringLocalizer(
-            [NotNull] ResourceManager resourceManager,
-            [NotNull] AssemblyWrapper resourceAssemblyWrapper,
-            [NotNull] string baseName,
-            [NotNull] IResourceNamesCache resourceNamesCache)
+            ResourceManager resourceManager,
+            AssemblyWrapper resourceAssemblyWrapper,
+            string baseName,
+            IResourceNamesCache resourceNamesCache)
         {
+            if (resourceManager == null)
+            {
+                throw new ArgumentNullException(nameof(resourceManager));
+            }
+
+            if (resourceAssemblyWrapper == null)
+            {
+                throw new ArgumentNullException(nameof(resourceAssemblyWrapper));
+            }
+
+            if (baseName == null)
+            {
+                throw new ArgumentNullException(nameof(baseName));
+            }
+
+            if (resourceNamesCache == null)
+            {
+                throw new ArgumentNullException(nameof(resourceNamesCache));
+            }
+
             _resourceAssemblyWrapper = resourceAssemblyWrapper;
             _resourceManager = resourceManager;
             _resourceBaseName = baseName;
@@ -59,20 +83,30 @@ namespace Microsoft.Extensions.Localization
         }
 
         /// <inheritdoc />
-        public virtual LocalizedString this[[NotNull] string name]
+        public virtual LocalizedString this[string name]
         {
             get
             {
+                if (name == null)
+                {
+                    throw new ArgumentNullException(nameof(name));
+                }
+
                 var value = GetStringSafely(name, null);
                 return new LocalizedString(name, value ?? name, resourceNotFound: value == null);
             }
         }
 
         /// <inheritdoc />
-        public virtual LocalizedString this[[NotNull] string name, params object[] arguments]
+        public virtual LocalizedString this[string name, params object[] arguments]
         {
             get
             {
+                if (name == null)
+                {
+                    throw new ArgumentNullException(nameof(name));
+                }
+
                 var format = GetStringSafely(name, null);
                 var value = string.Format(format ?? name, arguments);
                 return new LocalizedString(name, value, resourceNotFound: format == null);
@@ -110,8 +144,13 @@ namespace Microsoft.Extensions.Localization
         /// <param name="includeAncestorCultures"></param>
         /// <param name="culture">The <see cref="CultureInfo"/> to get strings for.</param>
         /// <returns>The strings.</returns>
-        protected IEnumerable<LocalizedString> GetAllStrings(bool includeAncestorCultures, [NotNull] CultureInfo culture)
+        protected IEnumerable<LocalizedString> GetAllStrings(bool includeAncestorCultures, CultureInfo culture)
         {
+            if (culture == null)
+            {
+                throw new ArgumentNullException(nameof(culture));
+            }
+
             var resourceNames = includeAncestorCultures
                 ? GetResourceNamesFromCultureHierarchy(culture)
                 : GetResourceNamesForCulture(culture);
@@ -130,8 +169,13 @@ namespace Microsoft.Extensions.Localization
         /// <param name="name">The name of the string resource.</param>
         /// <param name="culture">The <see cref="CultureInfo"/> to get the string for.</param>
         /// <returns>The resource string, or <c>null</c> if none was found.</returns>
-        protected string GetStringSafely([NotNull] string name, CultureInfo culture)
+        protected string GetStringSafely(string name, CultureInfo culture)
         {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
             var cacheKey = $"name={name}&culture={(culture ?? CultureInfo.CurrentUICulture).Name}";
 
             if (_missingManifestCache.ContainsKey(cacheKey))
