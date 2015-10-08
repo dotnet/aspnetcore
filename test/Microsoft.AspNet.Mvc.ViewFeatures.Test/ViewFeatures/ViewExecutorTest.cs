@@ -146,7 +146,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             Assert.Equal(500, context.Response.StatusCode);
             Assert.Equal("abcd", Encoding.UTF8.GetString(memoryStream.ToArray()));
         }
-
+#pragma warning disable 0618
         [Fact]
         public async Task ExecuteAsync_WritesTelemetry()
         {
@@ -190,7 +190,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             Assert.NotNull(adapter.AfterView?.View);
             Assert.NotNull(adapter.AfterView?.ViewContext);
         }
-
+#pragma warning restore 0618
         [Fact]
         public async Task ExecuteAsync_DoesNotWriteToResponse_OnceExceptionIsThrown()
         {
@@ -277,7 +277,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
             return view.Object;
         }
-
+#pragma warning disable 0618
         private ViewExecutor CreateViewExecutor(TelemetryListener listener = null)
         {
             if (listener == null)
@@ -291,6 +291,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 new Mock<ICompositeViewEngine>(MockBehavior.Strict).Object,
                 listener);
         }
+#pragma warning restore 0618
     }
 }
 #endif

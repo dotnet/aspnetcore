@@ -18,6 +18,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
 {
     public class ControllerActionInvokerProvider : IActionInvokerProvider
     {
+#pragma warning disable 0618
         private readonly IControllerActionArgumentBinder _argumentBinder;
         private readonly IControllerFactory _controllerFactory;
         private readonly IFilterProvider[] _filterProviders;
@@ -53,6 +54,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
             _logger = loggerFactory.CreateLogger<ControllerActionInvoker>();
             _telemetry = telemetry;
         }
+#pragma warning restore 0618
 
         public int Order
         {

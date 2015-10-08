@@ -16,6 +16,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
     /// </summary>
     public class PartialViewResultExecutor : ViewExecutor
     {
+#pragma warning disable 0618
         /// <summary>
         /// Creates a new <see cref="PartialViewResultExecutor"/>.
         /// </summary>
@@ -39,6 +40,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
             Logger = loggerFactory.CreateLogger<PartialViewResultExecutor>();
         }
+#pragma warning restore 0618
 
         /// <summary>
         /// Gets the <see cref="ILogger"/>.
@@ -69,6 +71,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             var result = viewEngine.FindPartialView(actionContext, viewName);
             if (result.Success)
             {
+#pragma warning disable 0618
                 if (Telemetry.IsEnabled("Microsoft.AspNet.Mvc.ViewFound"))
                 {
                     Telemetry.WriteTelemetry(
@@ -82,11 +85,12 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                             view = result.View,
                         });
                 }
-
+#pragma warning restore 0618
                 Logger.LogVerbose("The partial view '{PartialViewName}' was found.", viewName);
             }
             else
             {
+#pragma warning disable 0618
                 if (Telemetry.IsEnabled("Microsoft.AspNet.Mvc.ViewNotFound"))
                 {
                     Telemetry.WriteTelemetry(
@@ -100,6 +104,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                             searchedLocations = result.SearchedLocations
                         });
                 }
+#pragma warning restore 0618
 
                 Logger.LogError(
                     "The partial view '{PartialViewName}' was not found. Searched locations: {SearchedViewLocations}",

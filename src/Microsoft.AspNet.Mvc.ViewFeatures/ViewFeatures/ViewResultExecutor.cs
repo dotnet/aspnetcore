@@ -16,6 +16,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
     /// </summary>
     public class ViewResultExecutor : ViewExecutor
     {
+#pragma warning disable 0618
         /// <summary>
         /// Creates a new <see cref="ViewResultExecutor"/>.
         /// </summary>
@@ -39,6 +40,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
             Logger = loggerFactory.CreateLogger<ViewResultExecutor>();
         }
+#pragma warning restore 0618
 
         /// <summary>
         /// Gets the <see cref="ILogger"/>.
@@ -69,6 +71,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             var result = viewEngine.FindView(actionContext, viewName);
             if (result.Success)
             {
+#pragma warning disable 0618
                 if (Telemetry.IsEnabled("Microsoft.AspNet.Mvc.ViewFound"))
                 {
                     Telemetry.WriteTelemetry(
@@ -82,11 +85,13 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                             view = result.View,
                         });
                 }
+#pragma warning restore 0618
 
                 Logger.LogVerbose("The view '{ViewName}' was found.", viewName);
             }
             else
             {
+#pragma warning disable 0618
                 if (Telemetry.IsEnabled("Microsoft.AspNet.Mvc.ViewNotFound"))
                 {
                     Telemetry.WriteTelemetry(
@@ -100,6 +105,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                             searchedLocations = result.SearchedLocations
                         });
                 }
+#pragma warning restore 0618
 
                 Logger.LogError(
                     "The view '{ViewName}' was not found. Searched locations: {SearchedViewLocations}",

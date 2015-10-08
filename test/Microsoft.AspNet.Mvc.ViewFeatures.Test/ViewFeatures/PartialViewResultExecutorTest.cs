@@ -71,6 +71,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             Assert.Equal(viewName, viewEngineResult.ViewName);
         }
 
+#pragma warning disable 0618
         [Fact]
         public void FindView_Notifies_ViewFound()
         {
@@ -141,6 +142,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             Assert.Equal(new string[] { "location/myview" }, listener.ViewNotFound.SearchedLocations);
             Assert.Equal("myview", listener.ViewNotFound.ViewName);
         }
+#pragma warning restore 0618
 
         [Fact]
         public async Task ExecuteAsync_UsesContentType_FromPartialViewResult()
@@ -200,6 +202,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             return new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
         }
 
+#pragma warning disable 0618
         private PartialViewResultExecutor GetViewExecutor(TelemetrySource telemetry = null)
         {
             if (telemetry == null)
@@ -224,6 +227,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
             return viewExecutor;
         }
+#pragma warning restore 0618
     }
 }
 #endif

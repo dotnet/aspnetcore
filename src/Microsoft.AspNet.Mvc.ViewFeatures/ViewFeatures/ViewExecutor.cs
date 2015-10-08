@@ -26,6 +26,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             Encoding = Encoding.UTF8
         }.CopyAsReadOnly();
 
+#pragma warning disable 0618
         /// <summary>
         /// Creates a new <see cref="ViewExecutor"/>.
         /// </summary>
@@ -69,6 +70,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         /// Gets the <see cref="TelemetrySource"/>.
         /// </summary>
         protected TelemetrySource Telemetry { get; }
+#pragma warning restore 0618
 
         /// <summary>
         /// Gets the default <see cref="IViewEngine"/>.
@@ -158,21 +160,25 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                     writer,
                     ViewOptions.HtmlHelperOptions);
 
+#pragma warning disable 0618
                 if (Telemetry.IsEnabled("Microsoft.AspNet.Mvc.BeforeView"))
                 {
                     Telemetry.WriteTelemetry(
                         "Microsoft.AspNet.Mvc.BeforeView",
                         new { view = view, viewContext = viewContext, });
                 }
+#pragma warning restore 0618
 
                 await view.RenderAsync(viewContext);
 
+#pragma warning disable 0618
                 if (Telemetry.IsEnabled("Microsoft.AspNet.Mvc.AfterView"))
                 {
                     Telemetry.WriteTelemetry(
                         "Microsoft.AspNet.Mvc.AfterView",
                         new { view = view, viewContext = viewContext, });
                 }
+#pragma warning restore 0618
 
                 // Perf: Invoke FlushAsync to ensure any buffered content is asynchronously written to the underlying
                 // response asynchronously. In the absence of this line, the buffer gets synchronously written to the

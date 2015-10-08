@@ -20,7 +20,9 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
         private IActionInvokerFactory _actionInvokerFactory;
         private IActionSelector _actionSelector;
         private ILogger _logger;
+#pragma warning disable 0618
         private TelemetrySource _telemetry;
+#pragma warning restore 0618
 
         public VirtualPathData GetVirtualPath(VirtualPathContext context)
         {
@@ -80,12 +82,14 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             {
                 context.RouteData = newRouteData;
 
+#pragma warning disable 0618
                 if (_telemetry.IsEnabled("Microsoft.AspNet.Mvc.BeforeAction"))
                 {
                     _telemetry.WriteTelemetry(
                         "Microsoft.AspNet.Mvc.BeforeAction",
                         new { actionDescriptor, httpContext = context.HttpContext, routeData = context.RouteData });
                 }
+#pragma warning restore 0618
 
                 using (_logger.BeginScope("ActionId: {ActionId}", actionDescriptor.Id))
                 {
@@ -97,12 +101,14 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             }
             finally
             {
+#pragma warning disable 0618
                 if (_telemetry.IsEnabled("Microsoft.AspNet.Mvc.AfterAction"))
                 {
                     _telemetry.WriteTelemetry(
                         "Microsoft.AspNet.Mvc.AfterAction",
                         new { actionDescriptor, httpContext = context.HttpContext, routeData = context.RouteData });
                 }
+#pragma warning restore 0618
 
                 if (!context.IsHandled)
                 {
@@ -150,10 +156,12 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 _logger = factory.CreateLogger<MvcRouteHandler>();
             }
 
+#pragma warning disable 0618
             if (_telemetry == null)
             {
                 _telemetry = context.RequestServices.GetRequiredService<TelemetrySource>();
             }
+#pragma warning restore 0618
         }
     }
 }

@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
         private readonly ControllerActionDescriptor _descriptor;
         private readonly IControllerFactory _controllerFactory;
         private readonly IControllerActionArgumentBinder _argumentBinder;
-
+#pragma warning disable 0618
         public ControllerActionInvoker(
             ActionContext actionContext,
             IReadOnlyList<IFilterProvider> filterProviders,
@@ -129,6 +129,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
                     "descriptor");
             }
         }
+#pragma warning disable 0618
 
         protected override object CreateInstance()
         {

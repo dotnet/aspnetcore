@@ -242,13 +242,13 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             {
                 optionsAccessor = new TestOptionsManager<MvcOptions>();
             }
-
+#pragma warning disable 0618
             var telemetry = new TelemetryListener("Microsoft.AspNet");
             if (telemetryListener != null)
             {
                 telemetry.SubscribeWithAdapter(telemetryListener);
             }
-
+#pragma warning restore 0618
             var httpContext = new Mock<HttpContext>();
             httpContext.Setup(h => h.RequestServices.GetService(typeof(IActionContextAccessor)))
                 .Returns(new ActionContextAccessor());
@@ -262,9 +262,10 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                  .Returns(new MvcMarkerService());
             httpContext.Setup(h => h.RequestServices.GetService(typeof(IOptions<MvcOptions>)))
                  .Returns(optionsAccessor);
+#pragma warning disable 0618
             httpContext.Setup(h => h.RequestServices.GetService(typeof(TelemetrySource)))
                 .Returns(telemetry);
-
+#pragma warning restore 0618
             return new RouteContext(httpContext.Object);
         }
     }

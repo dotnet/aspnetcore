@@ -105,12 +105,14 @@ namespace Microsoft.AspNet.Mvc
         private HttpContext GetHttpContext()
         {
             var options = new TestOptionsManager<MvcViewOptions>();
+#pragma warning disable 0618
             var viewExecutor = new ViewResultExecutor(
                 options,
                 new TestHttpResponseStreamWriterFactory(),
                 new CompositeViewEngine(options),
                 new TelemetryListener("Microsoft.AspNet"),
                NullLoggerFactory.Instance);
+#pragma warning restore 0618
 
             var services = new ServiceCollection();
             services.AddInstance(viewExecutor);

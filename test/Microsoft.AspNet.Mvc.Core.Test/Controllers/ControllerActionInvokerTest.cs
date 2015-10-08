@@ -2041,7 +2041,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
             filterProvider
                 .SetupGet(fp => fp.Order)
                 .Returns(-1000);
-
+#pragma warning disable 0618
             var invoker = new TestControllerActionInvoker(
                 actionContext,
                 new[] { filterProvider.Object },
@@ -2057,7 +2057,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
                 new NullLoggerFactory().CreateLogger<ControllerActionInvoker>(),
                 new TelemetryListener("Microsoft.AspNet"),
                 maxAllowedErrorsInModelState);
-
+#pragma warning restore 0618
             return invoker;
         }
 
@@ -2101,6 +2101,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
                              .Returns(new TestController());
 
             var metadataProvider = new EmptyModelMetadataProvider();
+#pragma warning disable 0618
             var invoker = new ControllerActionInvoker(
                 actionContext,
                 new List<IFilterProvider>(),
@@ -2118,6 +2119,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
                 new NullLoggerFactory().CreateLogger<ControllerActionInvoker>(),
                 new TelemetryListener("Microsoft.AspNet"),
                 200);
+#pragma warning restore 0618
 
             // Act
             await invoker.InvokeAsync();
@@ -2204,6 +2206,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
 
         private class TestControllerActionInvoker : ControllerActionInvoker
         {
+#pragma warning disable 0618
             public TestControllerActionInvoker(
                 ActionContext actionContext,
                 IFilterProvider[] filterProvider,
@@ -2237,6 +2240,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
             {
                 ControllerFactory = controllerFactory;
             }
+#pragma warning restore 0618
 
             public MockControllerFactory ControllerFactory { get; }
 

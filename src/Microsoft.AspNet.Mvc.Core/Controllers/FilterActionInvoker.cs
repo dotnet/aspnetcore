@@ -31,7 +31,9 @@ namespace Microsoft.AspNet.Mvc.Controllers
         private readonly IReadOnlyList<IValueProviderFactory> _valueProviderFactories;
         private readonly IActionBindingContextAccessor _actionBindingContextAccessor;
         private readonly ILogger _logger;
+#pragma warning disable 0618
         private readonly TelemetrySource _telemetry;
+#pragma warning restore 0618
         private readonly int _maxModelValidationErrors;
 
         private IFilterMetadata[] _filters;
@@ -61,6 +63,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
         private const string ResultFilterShortCircuitLogMessage =
             "Request was short circuited at result filter '{ResultFilter}'.";
 
+#pragma warning disable 0618
         public FilterActionInvoker(
             ActionContext actionContext,
             IReadOnlyList<IFilterProvider> filterProviders,
@@ -137,6 +140,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
             _telemetry = telemetry;
             _maxModelValidationErrors = maxModelValidationErrors;
         }
+#pragma warning restore 0618
 
         protected ActionContext ActionContext { get; private set; }
 
@@ -652,6 +656,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
 
                     try
                     {
+#pragma warning disable 0618
                         if (_telemetry.IsEnabled("Microsoft.AspNet.Mvc.BeforeActionMethod"))
                         {
                             _telemetry.WriteTelemetry(
@@ -663,11 +668,13 @@ namespace Microsoft.AspNet.Mvc.Controllers
                                     controller = _actionExecutingContext.Controller
                                 });
                         }
+#pragma warning restore 0618
 
                         result = await InvokeActionAsync(_actionExecutingContext);
                     }
                     finally
                     {
+#pragma warning disable 0618
                         if (_telemetry.IsEnabled("Microsoft.AspNet.Mvc.AfterActionMethod"))
                         {
                             _telemetry.WriteTelemetry(
@@ -680,6 +687,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
                                     result = result
                                 });
                         }
+#pragma warning restore 0618
                     }
 
                     _actionExecutedContext = new ActionExecutedContext(
@@ -827,12 +835,14 @@ namespace Microsoft.AspNet.Mvc.Controllers
 
         private async Task InvokeResultAsync(IActionResult result)
         {
+#pragma warning disable 0618
             if (_telemetry.IsEnabled("Microsoft.AspNet.Mvc.BeforeActionResult"))
             {
                 _telemetry.WriteTelemetry(
                     "Microsoft.AspNet.Mvc.BeforeActionResult",
                     new { actionContext = ActionContext, result = result });
             }
+#pragma warning restore 0618
 
             try
             {
@@ -840,12 +850,14 @@ namespace Microsoft.AspNet.Mvc.Controllers
             }
             finally
             {
+#pragma warning disable 0618
                 if (_telemetry.IsEnabled("Microsoft.AspNet.Mvc.AfterActionResult"))
                 {
                     _telemetry.WriteTelemetry(
                         "Microsoft.AspNet.Mvc.AfterActionResult",
                         new { actionContext = ActionContext, result = result });
                 }
+#pragma warning restore 0618
             }
         }
 
