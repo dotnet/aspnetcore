@@ -437,6 +437,7 @@ namespace Microsoft.AspNet.TestHost
             Assert.Equal("FoundFoo:False", await result.Content.ReadAsStringAsync());
         }
 
+#pragma warning disable 0618
         [Fact]
         public async Task BeginEndTelemetryAvailable()
         {
@@ -480,6 +481,7 @@ namespace Microsoft.AspNet.TestHost
             Assert.NotNull(listener.UnhandledException?.HttpContext);
             Assert.NotNull(listener.UnhandledException?.Exception);
         }
+#pragma warning restore 0618
 
         public class TestTelemetryListener
         {

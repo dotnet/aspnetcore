@@ -88,7 +88,9 @@ namespace Microsoft.AspNet.Hosting.Internal
             var logger = _applicationServices.GetRequiredService<ILogger<HostingEngine>>();
             var contextFactory = _applicationServices.GetRequiredService<IHttpContextFactory>();
             var contextAccessor = _applicationServices.GetRequiredService<IHttpContextAccessor>();
+#pragma warning disable 0618
             var telemetrySource = _applicationServices.GetRequiredService<TelemetrySource>();
+#pragma warning restore 0618
             var server = ServerFactory.Start(_serverInstance,
                 async features =>
                 {
@@ -96,12 +98,12 @@ namespace Microsoft.AspNet.Hosting.Internal
                     httpContext.ApplicationServices = _applicationServices;
                     var requestIdentifier = GetRequestIdentifier(httpContext);
                     contextAccessor.HttpContext = httpContext;
-
+#pragma warning disable 0618
                     if (telemetrySource.IsEnabled("Microsoft.AspNet.Hosting.BeginRequest"))
                     {
                         telemetrySource.WriteTelemetry("Microsoft.AspNet.Hosting.BeginRequest", new { httpContext = httpContext });
                     }
-
+#pragma warning restore 0618
                     try
                     {
                         using (logger.IsEnabled(LogLevel.Critical)
@@ -113,18 +115,20 @@ namespace Microsoft.AspNet.Hosting.Internal
                     }
                     catch (Exception ex)
                     {
+#pragma warning disable 0618
                         if (telemetrySource.IsEnabled("Microsoft.AspNet.Hosting.UnhandledException"))
                         {
                             telemetrySource.WriteTelemetry("Microsoft.AspNet.Hosting.UnhandledException", new { httpContext = httpContext, exception = ex });
                         }
-
+#pragma warning restore 0618
                         throw;
                     }
-
+#pragma warning disable 0618
                     if (telemetrySource.IsEnabled("Microsoft.AspNet.Hosting.EndRequest"))
                     {
                         telemetrySource.WriteTelemetry("Microsoft.AspNet.Hosting.EndRequest", new { httpContext = httpContext });
                     }
+#pragma warning restore 0618
                 });
 
             _applicationLifetime.NotifyStarted();

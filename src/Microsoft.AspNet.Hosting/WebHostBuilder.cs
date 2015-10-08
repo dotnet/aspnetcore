@@ -99,9 +99,11 @@ namespace Microsoft.AspNet.Hosting
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddLogging();
 
+#pragma warning disable 0618
             var telemetrySource = new TelemetryListener("Microsoft.AspNet");
             services.AddInstance<TelemetrySource>(telemetrySource);
             services.AddInstance<TelemetryListener>(telemetrySource);
+#pragma warning restore 0618
 
             // Conjure up a RequestServices
             services.AddTransient<IStartupFilter, AutoRequestServicesStartupFilter>();
