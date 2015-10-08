@@ -2,13 +2,13 @@ namespace Asp
 {
     using System.Threading.Tasks;
 
-    public class ASPV_TestFiles_Input_InjectWithModel_cshtml : Microsoft.AspNet.Mvc.Razor.RazorPage<MyModel>
+    public class ASPV_testfiles_input_injectwithmodel_cshtml : Microsoft.AspNet.Mvc.Razor.RazorPage<MyModel>
     {
         private static object @__o;
         private void @__RazorDesignTimeHelpers__()
         {
             #pragma warning disable 219
-#line 1 "TestFiles/Input/InjectWithModel.cshtml"
+#line 1 "testfiles/input/injectwithmodel.cshtml"
 var __modelHelper = default(MyModel);
 
 #line default
@@ -16,13 +16,13 @@ var __modelHelper = default(MyModel);
             #pragma warning restore 219
         }
         #line hidden
-        public ASPV_TestFiles_Input_InjectWithModel_cshtml()
+        public ASPV_testfiles_input_injectwithmodel_cshtml()
         {
         }
         #line hidden
         [Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute]
         public
-#line 2 "TestFiles/Input/InjectWithModel.cshtml"
+#line 2 "testfiles/input/injectwithmodel.cshtml"
         MyApp MyPropertyName
 
 #line default
@@ -30,7 +30,7 @@ var __modelHelper = default(MyModel);
         { get; private set; }
         [Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute]
         public
-#line 3 "TestFiles/Input/InjectWithModel.cshtml"
+#line 3 "testfiles/input/injectwithmodel.cshtml"
         MyService<MyModel> Html
 
 #line default

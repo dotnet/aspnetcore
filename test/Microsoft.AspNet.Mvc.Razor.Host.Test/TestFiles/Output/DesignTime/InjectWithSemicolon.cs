@@ -2,13 +2,13 @@ namespace Asp
 {
     using System.Threading.Tasks;
 
-    public class ASPV_TestFiles_Input_InjectWithSemicolon_cshtml : Microsoft.AspNet.Mvc.Razor.RazorPage<MyModel>
+    public class ASPV_testfiles_input_injectwithsemicolon_cshtml : Microsoft.AspNet.Mvc.Razor.RazorPage<MyModel>
     {
         private static object @__o;
         private void @__RazorDesignTimeHelpers__()
         {
             #pragma warning disable 219
-#line 1 "TestFiles/Input/InjectWithSemicolon.cshtml"
+#line 1 "testfiles/input/injectwithsemicolon.cshtml"
 var __modelHelper = default(MyModel);
 
 #line default
@@ -16,13 +16,13 @@ var __modelHelper = default(MyModel);
             #pragma warning restore 219
         }
         #line hidden
-        public ASPV_TestFiles_Input_InjectWithSemicolon_cshtml()
+        public ASPV_testfiles_input_injectwithsemicolon_cshtml()
         {
         }
         #line hidden
         [Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute]
         public
-#line 2 "TestFiles/Input/InjectWithSemicolon.cshtml"
+#line 2 "testfiles/input/injectwithsemicolon.cshtml"
         MyApp MyPropertyName
 
 #line default
@@ -30,7 +30,7 @@ var __modelHelper = default(MyModel);
         { get; private set; }
         [Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute]
         public
-#line 3 "TestFiles/Input/InjectWithSemicolon.cshtml"
+#line 3 "testfiles/input/injectwithsemicolon.cshtml"
         MyService<MyModel> Html
 
 #line default
@@ -38,7 +38,7 @@ var __modelHelper = default(MyModel);
         { get; private set; }
         [Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute]
         public
-#line 4 "TestFiles/Input/InjectWithSemicolon.cshtml"
+#line 4 "testfiles/input/injectwithsemicolon.cshtml"
         MyApp MyPropertyName2
 
 #line default
@@ -46,7 +46,7 @@ var __modelHelper = default(MyModel);
         { get; private set; }
         [Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute]
         public
-#line 5 "TestFiles/Input/InjectWithSemicolon.cshtml"
+#line 5 "testfiles/input/injectwithsemicolon.cshtml"
         MyService<MyModel> Html2
 
 #line default

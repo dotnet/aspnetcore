@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 string.Equals(
                     Path.GetFileName(Context.SourceFile),
                     ViewHierarchyUtility.ViewImportsFileName,
-                    StringComparison.Ordinal))
+                    StringComparison.OrdinalIgnoreCase))
             {
                 // Write a using TModel = System.Object; token during design time to make intellisense work
                 writer.WriteLine($"using {ChunkHelper.TModelToken} = {typeof(object).FullName};");

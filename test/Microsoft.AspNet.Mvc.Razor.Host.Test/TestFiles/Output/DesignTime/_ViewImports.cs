@@ -3,7 +3,7 @@ namespace Asp
     using System.Threading.Tasks;
 
     using TModel = System.Object;
-    public class ASPV_TestFiles_Input__ViewImports_cshtml : Microsoft.AspNet.Mvc.Razor.RazorPage<dynamic>
+    public class ASPV_testfiles_input__viewimports_cshtml : Microsoft.AspNet.Mvc.Razor.RazorPage<dynamic>
     {
         private static object @__o;
         private void @__RazorDesignTimeHelpers__()
@@ -12,13 +12,13 @@ namespace Asp
             #pragma warning restore 219
         }
         #line hidden
-        public ASPV_TestFiles_Input__ViewImports_cshtml()
+        public ASPV_testfiles_input__viewimports_cshtml()
         {
         }
         #line hidden
         [Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute]
         public
-#line 1 "TestFiles/Input/_ViewImports.cshtml"
+#line 1 "testfiles/input/_viewimports.cshtml"
         IHtmlHelper<dynamic> Model
 
 #line default

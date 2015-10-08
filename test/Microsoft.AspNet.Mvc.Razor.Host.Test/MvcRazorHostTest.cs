@@ -478,7 +478,8 @@ namespace Microsoft.AspNet.Mvc.Razor
             GeneratorResults results;
             using (var stream = ResourceFile.GetResourceStream(_assembly, inputFile, sourceFile: true))
             {
-                results = host.GenerateCode(inputFile, stream);
+                // VS tooling passes in paths in all lower case. We'll mimic this behavior in our tests.
+                results = host.GenerateCode(inputFile.ToLowerInvariant(), stream);
             }
 
             // Assert

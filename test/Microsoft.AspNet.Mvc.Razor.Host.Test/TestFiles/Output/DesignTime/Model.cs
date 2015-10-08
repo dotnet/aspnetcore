@@ -2,13 +2,13 @@ namespace Asp
 {
     using System.Threading.Tasks;
 
-    public class ASPV_TestFiles_Input_Model_cshtml : Microsoft.AspNet.Mvc.Razor.RazorPage<System.Collections.IEnumerable>
+    public class ASPV_testfiles_input_model_cshtml : Microsoft.AspNet.Mvc.Razor.RazorPage<System.Collections.IEnumerable>
     {
         private static object @__o;
         private void @__RazorDesignTimeHelpers__()
         {
             #pragma warning disable 219
-#line 1 "TestFiles/Input/Model.cshtml"
+#line 1 "testfiles/input/model.cshtml"
 var __modelHelper = default(System.Collections.IEnumerable);
 
 #line default
@@ -16,7 +16,7 @@ var __modelHelper = default(System.Collections.IEnumerable);
             #pragma warning restore 219
         }
         #line hidden
-        public ASPV_TestFiles_Input_Model_cshtml()
+        public ASPV_testfiles_input_model_cshtml()
         {
         }
         #line hidden

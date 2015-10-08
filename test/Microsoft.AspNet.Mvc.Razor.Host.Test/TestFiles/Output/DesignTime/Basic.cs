@@ -2,7 +2,7 @@ namespace Asp
 {
     using System.Threading.Tasks;
 
-    public class ASPV_TestFiles_Input_Basic_cshtml : Microsoft.AspNet.Mvc.Razor.RazorPage<dynamic>
+    public class ASPV_testfiles_input_basic_cshtml : Microsoft.AspNet.Mvc.Razor.RazorPage<dynamic>
     {
         private static object @__o;
         private void @__RazorDesignTimeHelpers__()
@@ -11,7 +11,7 @@ namespace Asp
             #pragma warning restore 219
         }
         #line hidden
-        public ASPV_TestFiles_Input_Basic_cshtml()
+        public ASPV_testfiles_input_basic_cshtml()
         {
         }
         #line hidden
@@ -29,12 +29,12 @@ namespace Asp
         #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
-#line 1 "TestFiles/Input/Basic.cshtml"
+#line 1 "testfiles/input/basic.cshtml"
        __o = logo;
 
 #line default
 #line hidden
-#line 3 "TestFiles/Input/Basic.cshtml"
+#line 3 "testfiles/input/basic.cshtml"
 __o = Html.Input("SomeKey");
 
 #line default
