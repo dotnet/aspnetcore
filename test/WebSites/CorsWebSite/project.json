@@ -5,7 +5,7 @@
     },
     "dependencies": {
         "Microsoft.AspNet.Server.Kestrel": "1.0.0-*",
-        "Microsoft.AspNet.Cors.Core": "6.0.0-*",
+        "Microsoft.AspNet.Cors": "6.0.0-*",
         "Microsoft.AspNet.Mvc": "6.0.0-*",
         "Microsoft.AspNet.Mvc.Formatters.Xml": "6.0.0-*",
         "Microsoft.AspNet.Mvc.TestConfiguration": "1.0.0",

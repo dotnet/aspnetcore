@@ -3,7 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Cors.Core;
+using Microsoft.AspNet.Cors.Infrastructure;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.Extensions.Primitives;

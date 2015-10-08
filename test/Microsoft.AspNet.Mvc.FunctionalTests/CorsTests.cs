@@ -5,7 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Cors.Core;
+using Microsoft.AspNet.Cors.Infrastructure;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests

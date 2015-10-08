@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Cors.Core;
+using Microsoft.AspNet.Cors.Infrastructure;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.Extensions.Primitives;
@@ -98,7 +98,7 @@ namespace Microsoft.AspNet.Mvc.Cors
         private bool IsClosestToAction(IEnumerable<IFilterMetadata> filters)
         {
             // If there are multiple ICorsAuthorizationFilter which are defined at the class and
-            // at the action level, the one closest to the action overrides the others. 
+            // at the action level, the one closest to the action overrides the others.
             // Since filterdescriptor collection is ordered (the last filter is the one closest to the action),
             // we apply this constraint only if there is no ICorsAuthorizationFilter after this.
             return filters.Last(filter => filter is ICorsAuthorizationFilter) == this;

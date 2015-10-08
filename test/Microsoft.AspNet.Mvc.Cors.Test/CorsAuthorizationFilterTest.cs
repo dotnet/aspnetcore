@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Cors.Core;
+using Microsoft.AspNet.Cors.Infrastructure;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
@@ -93,7 +93,7 @@ namespace Microsoft.AspNet.Mvc.Cors
 
         [Fact]
         public async Task CorsRequest_FailedMatch_Writes200()
-        {   
+        {
             // Arrange
             var mockEngine = GetFailingEngine();
             var filter = GetFilter(mockEngine);
@@ -129,7 +129,7 @@ namespace Microsoft.AspNet.Mvc.Cors
             RequestHeaders headers = null,
             bool isPreflight = false)
         {
-            
+
             // HttpContext
             var httpContext = new DefaultHttpContext();
             if (headers != null)

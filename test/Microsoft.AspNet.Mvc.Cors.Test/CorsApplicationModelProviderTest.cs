@@ -3,7 +3,7 @@
 
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNet.Cors.Core;
+using Microsoft.AspNet.Cors;
 using Microsoft.AspNet.Mvc.ApplicationModels;
 using Xunit;
 

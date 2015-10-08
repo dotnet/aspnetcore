@@ -9,7 +9,7 @@
         "warningsAsErrors": true
     },
     "dependencies": {
-        "Microsoft.AspNet.Cors.Core": "6.0.0-*",
+        "Microsoft.AspNet.Cors": "6.0.0-*",
         "Microsoft.AspNet.Mvc.Core": "6.0.0-*"
     },
 
