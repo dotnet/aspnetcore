@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -131,19 +132,18 @@ namespace Microsoft.AspNet.Mvc
         [InlineData("..\\TestFiles\\SubFolder/SubFolderTestFile.txt")]
         [InlineData("~/SubFolder/SubFolderTestFile.txt")]
         [InlineData("~/SubFolder\\SubFolderTestFile.txt")]
-        public async Task ExecuteAsync_ThrowsFileNotFound_ForNonRootedPaths(string path)
+        public async Task ExecuteAsync_ThrowsNotSupported_ForNonRootedPaths(string path)
         {
             // Arrange
             var result = new TestPhysicalFileResult(path, "text/plain");
             var context = new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
-            var expectedMessage = "Could not find file: " + path;
+            var expectedMessage = $"Path '{path}' was not rooted.";
 
             // Act
-            var ex = await Assert.ThrowsAsync<FileNotFoundException>(() => result.ExecuteResultAsync(context));
+            var ex = await Assert.ThrowsAsync<NotSupportedException>(() => result.ExecuteResultAsync(context));
 
             // Assert
             Assert.Equal(expectedMessage, ex.Message);
-            Assert.Equal(path, ex.FileName);
         }
 
         [Theory]

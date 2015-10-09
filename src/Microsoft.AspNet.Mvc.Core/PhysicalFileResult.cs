@@ -87,7 +87,7 @@ namespace Microsoft.AspNet.Mvc
         {
             if (!Path.IsPathRooted(FileName))
             {
-                throw new FileNotFoundException(Resources.FormatFileResult_InvalidPath(FileName), FileName);
+                throw new NotSupportedException(Resources.FormatFileResult_PathNotRooted(FileName));
             }
 
             var sendFile = response.HttpContext.Features.Get<IHttpSendFileFeature>();

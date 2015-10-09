@@ -315,4 +315,8 @@
   <data name="HttpResponseStreamWriter_InvalidBufferSize" xml:space="preserve">
     <value>The byte buffer must have a length of at least '{0}' to be used with a char buffer of size '{1}' and encoding '{2}'. Use '{3}.{4}' to compute the correct size for the byte buffer.</value>
   </data>
+  <data name="FileResult_PathNotRooted" xml:space="preserve">
+    <value>Path '{0}' was not rooted.</value>
+    <comment>{0} is the path which wasn't rooted</comment>
+  </data>
 </root>

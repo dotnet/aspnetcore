@@ -650,6 +650,11 @@ namespace Microsoft.AspNet.Mvc.Core
             return string.Format(CultureInfo.CurrentCulture, GetString("FileResult_InvalidPath"), p0);
         }
 
+        internal static string FormatFileResult_PathNotRooted(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("FileResult_PathNotRooted"), p0);
+        }
+
         /// <summary>
         /// The input was not valid.
         /// </summary>
