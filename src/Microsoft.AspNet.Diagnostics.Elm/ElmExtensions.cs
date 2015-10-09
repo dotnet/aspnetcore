@@ -4,7 +4,6 @@
 using System;
 using Microsoft.AspNet.Diagnostics.Elm;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.OptionsModel;
 
@@ -15,8 +14,13 @@ namespace Microsoft.AspNet.Builder
         /// <summary>
         /// Enables the Elm logging service, which can be accessed via the <see cref="ElmPageMiddleware"/>.
         /// </summary>
-        public static IApplicationBuilder UseElmCapture([NotNull] this IApplicationBuilder builder)
+        public static IApplicationBuilder UseElmCapture(this IApplicationBuilder builder)
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
             // add the elm provider to the factory here so the logger can start capturing logs immediately
             var factory = builder.ApplicationServices.GetRequiredService<ILoggerFactory>();
             var store = builder.ApplicationServices.GetRequiredService<ElmStore>();
@@ -29,8 +33,13 @@ namespace Microsoft.AspNet.Builder
         /// <summary>
         /// Enables viewing logs captured by the <see cref="ElmCaptureMiddleware"/>.
         /// </summary>
-        public static IApplicationBuilder UseElmPage([NotNull] this IApplicationBuilder builder)
+        public static IApplicationBuilder UseElmPage(this IApplicationBuilder builder)
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
             return builder.UseMiddleware<ElmPageMiddleware>();
         }
     }

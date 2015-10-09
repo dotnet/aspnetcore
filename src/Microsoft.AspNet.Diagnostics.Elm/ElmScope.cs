@@ -5,7 +5,6 @@ using System.Runtime.Remoting.Messaging;
 #else
 using System.Threading;
 #endif
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.Diagnostics.Elm
 {
@@ -61,8 +60,18 @@ namespace Microsoft.AspNet.Diagnostics.Elm
         }
 #endif
 
-        public static IDisposable Push([NotNull] ElmScope scope, [NotNull] ElmStore store)
+        public static IDisposable Push(ElmScope scope, ElmStore store)
         {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            if (store == null)
+            {
+                throw new ArgumentNullException(nameof(store));
+            }
+
             var temp = Current;
             Current = scope;
             Current.Parent = temp;

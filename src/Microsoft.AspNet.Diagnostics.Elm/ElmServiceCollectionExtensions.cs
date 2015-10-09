@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNet.Diagnostics.Elm;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -12,8 +11,13 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <summary>
         /// Registers an <see cref="ElmStore"/> and configures default <see cref="ElmOptions"/>.
         /// </summary>
-        public static IServiceCollection AddElm([NotNull] this IServiceCollection services)
+        public static IServiceCollection AddElm(this IServiceCollection services)
         {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
             services.AddOptions();
             services.AddSingleton<ElmStore>();
             return services;
@@ -25,9 +29,19 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="services">The services available in the application.</param>
         /// <param name="configureOptions">The <see cref="ElmOptions"/> which need to be configured.</param>
         public static void ConfigureElm(
-            [NotNull] this IServiceCollection services, 
-            [NotNull] Action<ElmOptions> configureOptions)
+            this IServiceCollection services,
+            Action<ElmOptions> configureOptions)
         {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            if (configureOptions == null)
+            {
+                throw new ArgumentNullException(nameof(configureOptions));
+            }
+
             services.Configure(configureOptions);
         }
     }

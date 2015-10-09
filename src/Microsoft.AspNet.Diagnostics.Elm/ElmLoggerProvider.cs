@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.Diagnostics.Elm
@@ -12,8 +11,18 @@ namespace Microsoft.AspNet.Diagnostics.Elm
         private readonly ElmStore _store;
         private readonly ElmOptions _options;
 
-        public ElmLoggerProvider([NotNull] ElmStore store, [NotNull] ElmOptions options)
+        public ElmLoggerProvider(ElmStore store, ElmOptions options)
         {
+            if (store == null)
+            {
+                throw new ArgumentNullException(nameof(store));
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
             _store = store;
             _options = options;
         }
