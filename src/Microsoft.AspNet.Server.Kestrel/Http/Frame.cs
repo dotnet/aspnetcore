@@ -728,5 +728,5 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                    statusCode != 205 &&
                    statusCode != 304;
         }
-            }
+    }
 }
