@@ -25,25 +25,39 @@ namespace Microsoft.AspNet.Server.Kestrel.GeneratedCode
 
         public static string GeneratedFile()
         {
-            var commonFeatures = new[]
+            var alwaysFeatures = new[]
             {
                 typeof(IHttpRequestFeature),
                 typeof(IHttpResponseFeature),
                 typeof(IHttpRequestIdentifierFeature),
-                typeof(IHttpSendFileFeature),
                 typeof(IServiceProvidersFeature),
-                typeof(IHttpAuthenticationFeature),
                 typeof(IHttpRequestLifetimeFeature),
+                typeof(IHttpConnectionFeature)
+            };
+
+            var commonFeatures = new[]
+            {
+                typeof(IHttpAuthenticationFeature),
                 typeof(IQueryFeature),
-                typeof(IFormFeature),
+                typeof(IFormFeature)
+            };
+
+            var sometimesFeatures = new[]
+            {
+                typeof(IHttpUpgradeFeature),
                 typeof(IResponseCookiesFeature),
                 typeof(IItemsFeature),
-                typeof(IHttpConnectionFeature),
                 typeof(ITlsConnectionFeature),
-                typeof(IHttpUpgradeFeature),
                 typeof(IHttpWebSocketFeature),
-                typeof(ISessionFeature),
+                typeof(ISessionFeature)
             };
+
+            var rareFeatures = new[]
+            {
+                typeof(IHttpSendFileFeature)
+            };
+
+            var allFeatures = alwaysFeatures.Concat(commonFeatures).Concat(sometimesFeatures).Concat(rareFeatures);
 
             // NOTE: This list MUST always match the set of feature interfaces implemented by Frame.
             // See also: src/Microsoft.AspNet.Server.Kestrel/Http/Frame.FeatureCollection.cs
@@ -53,7 +67,7 @@ namespace Microsoft.AspNet.Server.Kestrel.GeneratedCode
                 typeof(IHttpResponseFeature),
                 typeof(IHttpUpgradeFeature),
             };
-            
+
             return $@"
 using System;
 using System.Collections.Generic;
@@ -69,7 +83,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private void FastReset()
         {{{Each(implementedFeatures, feature => $@"
             _current{feature.Name} = this;")}
-            {Each(allFeatures.Where( f => !implementedFeatures.Contains(f)), feature => $@"
+            {Each(allFeatures.Where(f => !implementedFeatures.Contains(f)), feature => $@"
             _current{feature.Name} = null;")}
         }}
 
@@ -79,7 +93,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {{
                 return _current{feature.Name};
             }}")}
-
             return ExtraFeatureGet(key);
         }}
 
@@ -101,6 +114,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {{
                 yield return new KeyValuePair<Type, object>({feature.Name}Type, _current{feature.Name} as global::{feature.FullName});
             }}")}
+
             if (MaybeExtra != null)
             {{
                 foreach(var item in MaybeExtra)

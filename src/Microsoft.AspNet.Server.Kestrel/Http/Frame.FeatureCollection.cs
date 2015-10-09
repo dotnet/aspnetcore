@@ -22,8 +22,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private string _pathBase;
         private int _featureRevision;
 
-        private Dictionary<Type, object> Extra => MaybeExtra ?? Interlocked.CompareExchange(ref MaybeExtra, new Dictionary<Type, object>(), null);
-        private Dictionary<Type, object> MaybeExtra;
+        private List<KeyValuePair<Type, object>> MaybeExtra;
 
         public void ResetFeatureCollection()
         {
