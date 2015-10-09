@@ -1,6 +1,6 @@
 {
     "compilationOptions": {
-        "warningsAsErrors": true
+        "warningsAsErrors": false
     },
     "dependencies": {
         "Microsoft.AspNet.Diagnostics.Elm": "1.0.0-*",
