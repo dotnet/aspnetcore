@@ -6,7 +6,6 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.HttpOverrides
 {
@@ -21,8 +20,18 @@ namespace Microsoft.AspNet.HttpOverrides
         private readonly OverrideHeaderMiddlewareOptions _options;
         private readonly RequestDelegate _next;
 
-        public OverrideHeaderMiddleware([NotNull] RequestDelegate next, [NotNull] OverrideHeaderMiddlewareOptions options)
+        public OverrideHeaderMiddleware(RequestDelegate next, OverrideHeaderMiddlewareOptions options)
         {
+            if (next == null)
+            {
+                throw new ArgumentNullException(nameof(next));
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
             _options = options;
             _next = next;
         }

@@ -6,8 +6,7 @@
     "url": "git://github.com/aspnet/basicmiddleware"
   },
   "dependencies": {
-    "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
-    "Microsoft.Extensions.NotNullAttribute.Sources": { "version": "1.0.0-*", "type": "build" }
+    "Microsoft.AspNet.Http.Extensions": "1.0.0-*"
   },
   "frameworks": {
     "dnx451": { },
