@@ -4,7 +4,7 @@
     "description": "Microsoft.StandardsPolice Class Library",
 
     "dependencies": {
-        "Microsoft.Dnx.Compilation.CSharp.Abstractions": "1.0.0-beta8-*"
+        "Microsoft.Dnx.Compilation.CSharp.Abstractions": "1.0.0-*"
     },
 
     "commands": {
