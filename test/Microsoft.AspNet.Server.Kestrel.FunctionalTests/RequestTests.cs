@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Server.Kestrel.FunctionalTests
 {
     public class RequestTests
     {
-        [Fact(Skip = "https://github.com/aspnet/KestrelHttpServer/issues/234")]
+        [Fact]
         public async Task LargeUpload()
         {
             var config = new ConfigurationBuilder()
