@@ -1,0 +1,25 @@
+﻿{
+  "compilationOptions": {
+        "warningsAsErrors": true
+    },
+  "commands": {
+    "test": "xunit.runner.aspnet"
+  },
+  "dependencies": {
+        "Microsoft.AspNet.Server.Testing": "1.0.0-*",
+        "Microsoft.Extensions.Logging.Console": "1.0.0-*",
+        "xunit.runner.aspnet": "2.0.0-aspnet-*"
+    },
+  "frameworks": {
+    "dnx451": { },
+    "dnxcore50": {
+      "dependencies": {
+        "Microsoft.CSharp": "4.0.1-beta-*",
+        "System.Collections": "4.0.11-beta-*",
+        "System.Linq": "4.0.1-beta-*",
+        "System.Runtime": "4.0.21-beta-*",
+        "System.Threading": "4.0.11-beta-*"
+      }
+    }
+  }
+}
