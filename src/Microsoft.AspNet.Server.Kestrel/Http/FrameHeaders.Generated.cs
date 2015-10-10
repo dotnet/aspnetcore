@@ -586,217 +586,25 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
         }
         
+        private static int BitCount(long value)
+        {
+            // see https://github.com/dotnet/corefx/blob/master/src/System.Reflection.Metadata/src/System/Reflection/Internal/Utilities/BitArithmetic.cs
+
+            const ulong Mask01010101 = 0x5555555555555555UL;
+            const ulong Mask00110011 = 0x3333333333333333UL;
+            const ulong Mask00001111 = 0x0F0F0F0F0F0F0F0FUL;
+            const ulong Mask00000001 = 0x0101010101010101UL;
+
+            var v = (ulong)value;
+
+            v = v - ((v >> 1) & Mask01010101);
+            v = (v & Mask00110011) + ((v >> 2) & Mask00110011);
+            return (int)(unchecked(((v + (v >> 4)) & Mask00001111) * Mask00000001) >> 56);
+        }
 
         protected override int GetCountFast()
         {
-            var count = MaybeUnknown?.Count ?? 0;
-            
-                if (((_bits & 1L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 2L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 4L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 8L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 16L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 32L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 64L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 128L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 256L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 512L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 1024L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 2048L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 4096L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 8192L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 16384L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 32768L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 65536L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 131072L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 262144L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 524288L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 1048576L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 2097152L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 4194304L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 8388608L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 16777216L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 33554432L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 67108864L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 134217728L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 268435456L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 536870912L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 1073741824L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 2147483648L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 4294967296L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 8589934592L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 17179869184L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 34359738368L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 68719476736L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 137438953472L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 274877906944L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 549755813888L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 1099511627776L) != 0)) 
-                {
-                    ++count;
-                }
-            
-            return count;
+            return BitCount(_bits) + (MaybeUnknown?.Count ?? 0);
         }
 
         protected override StringValues GetValueFast(string key)
@@ -5620,162 +5428,25 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
         }
         
+        private static int BitCount(long value)
+        {
+            // see https://github.com/dotnet/corefx/blob/master/src/System.Reflection.Metadata/src/System/Reflection/Internal/Utilities/BitArithmetic.cs
+
+            const ulong Mask01010101 = 0x5555555555555555UL;
+            const ulong Mask00110011 = 0x3333333333333333UL;
+            const ulong Mask00001111 = 0x0F0F0F0F0F0F0F0FUL;
+            const ulong Mask00000001 = 0x0101010101010101UL;
+
+            var v = (ulong)value;
+
+            v = v - ((v >> 1) & Mask01010101);
+            v = (v & Mask00110011) + ((v >> 2) & Mask00110011);
+            return (int)(unchecked(((v + (v >> 4)) & Mask00001111) * Mask00000001) >> 56);
+        }
 
         protected override int GetCountFast()
         {
-            var count = MaybeUnknown?.Count ?? 0;
-            
-                if (((_bits & 1L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 2L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 4L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 8L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 16L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 32L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 64L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 128L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 256L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 512L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 1024L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 2048L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 4096L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 8192L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 16384L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 32768L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 65536L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 131072L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 262144L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 524288L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 1048576L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 2097152L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 4194304L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 8388608L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 16777216L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 33554432L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 67108864L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 134217728L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 268435456L) != 0)) 
-                {
-                    ++count;
-                }
-            
-                if (((_bits & 536870912L) != 0)) 
-                {
-                    ++count;
-                }
-            
-            return count;
+            return BitCount(_bits) + (MaybeUnknown?.Count ?? 0);
         }
 
         protected override StringValues GetValueFast(string key)
