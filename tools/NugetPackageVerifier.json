@@ -376,7 +376,7 @@
             "runtime.linux.System.Net.Sockets": {
                 "SIGN_STRONGNAME": {
                     "lib\\dnxcore50\\System.Net.Sockets.dll": "3rd party DLLs don't need this"
-                }
+                },
                 "SIGN_AUTHENTICODE": {
                     "lib\\dnxcore50\\System.Net.Sockets.dll": "We don't sign 3rd party DLLs"
                 }
