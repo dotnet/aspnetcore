@@ -8,8 +8,6 @@
             "EntityFramework.Commands": { },
             "EntityFramework.Core": { },
             "EntityFramework.InMemory": { },
-            "EntityFramework.MicrosoftSqlServer": { },
-            "EntityFramework.MicrosoftSqlServer.Design": { },
             "EntityFramework.Relational": { },
             "EntityFramework.Relational.Design": { },
             "EntityFramework.Sqlite": { },
@@ -188,7 +186,6 @@
                     "runtimes\\win7-x86\\native\\libuv.dll": "We don't sign 3rd party DLLs"
                 }
             },
-            "Microsoft.AspNet.Server.Kestrel.Https": { },
             "Microsoft.AspNet.Server.Testing": { },
             "Microsoft.AspNet.Server.WebListener": { },
             "Microsoft.AspNet.Session": { },
@@ -231,47 +228,6 @@
             "Microsoft.Dnx.Tooling": { },
             "Microsoft.Dnx.Watcher": { },
             "Microsoft.Dnx.Watcher.Core": { },
-            "Microsoft.Extensions.Caching.Abstractions": { },
-            "Microsoft.Extensions.Caching.Memory": { },
-            "Microsoft.Extensions.Caching.Redis": { },
-            "Microsoft.Extensions.Caching.SqlConfig": { },
-            "Microsoft.Extensions.Caching.SqlServer": { },
-            "Microsoft.Extensions.CodeGeneration": { },
-            "Microsoft.Extensions.CodeGeneration.Core": { },
-            "Microsoft.Extensions.CodeGeneration.EntityFramework": { },
-            "Microsoft.Extensions.CodeGeneration.Templating": { },
-            "Microsoft.Extensions.CodeGenerators.Mvc": { },
-            "Microsoft.Extensions.Configuration": { },
-            "Microsoft.Extensions.Configuration.Abstractions": { },
-            "Microsoft.Extensions.Configuration.Binder": { },
-            "Microsoft.Extensions.Configuration.CommandLine": { },
-            "Microsoft.Extensions.Configuration.EnvironmentVariables": { },
-            "Microsoft.Extensions.Configuration.FileExtensions": { },
-            "Microsoft.Extensions.Configuration.Ini": { },
-            "Microsoft.Extensions.Configuration.Json": { },
-            "Microsoft.Extensions.Configuration.UserSecrets": { },
-            "Microsoft.Extensions.Configuration.Xml": { },
-            "Microsoft.Extensions.DependencyInjection": { },
-            "Microsoft.Extensions.DependencyInjection.Abstractions": { },
-            "Microsoft.Extensions.FileSystemGlobbing": { },
-            "Microsoft.Extensions.Globalization.CultureInfoCache": { },
-            "Microsoft.Extensions.Localization": { },
-            "Microsoft.Extensions.Localization.Abstractions": { },
-            "Microsoft.Extensions.Logging": { },
-            "Microsoft.Extensions.Logging.Abstractions": { },
-            "Microsoft.Extensions.Logging.Console": { },
-            "Microsoft.Extensions.Logging.Debug": { },
-            "Microsoft.Extensions.Logging.EventLog": { },
-            "Microsoft.Extensions.Logging.Testing": { },
-            "Microsoft.Extensions.Logging.TraceSource": { },
-            "Microsoft.Extensions.MemoryPool": { },
-            "Microsoft.Extensions.OptionsModel": { },
-            "Microsoft.Extensions.Primitives": { },
-            "Microsoft.Extensions.SecretManager": { },
-            "Microsoft.Extensions.TelemetryAdapter": { },
-            "Microsoft.Extensions.WebEncoders": { },
-            "Microsoft.Extensions.WebEncoders.Core": { },
-            "Microsoft.Extensions.WebEncoders.Testing": { },
             "Microsoft.Net.Http.Headers": { },
             "Microsoft.Net.Http.Server": { },
             "Microsoft.Net.WebSockets": { },
@@ -321,7 +277,6 @@
             "Microsoft.Extensions.SecurityHelper.Sources": { },
             "Microsoft.Extensions.TypeNameHelper.Sources": { },
             "PageGenerator": { },
-            "Placeholder": { },
             "xunit.execution.AspNet": { },
             "xunit.runner.aspnet": { },
             "xunit.runner.utility.AspNet": { }
@@ -419,6 +374,9 @@
                 }
             },
             "runtime.linux.System.Net.Sockets": {
+                "SIGN_STRONGNAME": {
+                    "lib\\dnxcore50\\System.Net.Sockets.dll": "3rd party DLLs don't need this"
+                }
                 "SIGN_AUTHENTICODE": {
                     "lib\\dnxcore50\\System.Net.Sockets.dll": "We don't sign 3rd party DLLs"
                 }
@@ -487,6 +445,9 @@
             },
             "runtime.osx.10.10.System.Net.Sockets": {
                 "SIGN_AUTHENTICODE": {
+                    "lib\\dnxcore50\\System.Net.Sockets.dll": "We don't sign 3rd party DLLs"
+                },
+                "SIGN_STRONGNAME": {
                     "lib\\dnxcore50\\System.Net.Sockets.dll": "We don't sign 3rd party DLLs"
                 }
             },
