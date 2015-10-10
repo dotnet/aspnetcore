@@ -260,22 +260,8 @@
             "Microsoft.Dnx.Host.Mono": { },
             "Microsoft.Dnx.Runtime.CommandParsing.Sources": { },
             "Microsoft.Dnx.Runtime.Internals": { },
-            "Microsoft.Extensions.JsonParser.Sources": { },
             "Microsoft.Dnx.Runtime.Sources": { },
             "Microsoft.Dnx.TestHost.Client.Sources": { },
-            "Microsoft.Extensions.ActivatorUtilities.Sources": { },
-            "Microsoft.Extensions.BufferedHtmlContent.Sources": { },
-            "Microsoft.Extensions.ClosedGenericMatcher.Sources": { },
-            "Microsoft.Extensions.CodeGeneration.Sources": { },
-            "Microsoft.Extensions.CommandLineUtils.Sources": { },
-            "Microsoft.Extensions.CopyOnWriteDictionary.Sources": { },
-            "Microsoft.Extensions.HashCodeCombiner.Sources": { },
-            "Microsoft.Extensions.Logging.NLog": { },
-            "Microsoft.Extensions.NotNullAttribute.Sources": { },
-            "Microsoft.Extensions.PropertyActivator.Sources": { },
-            "Microsoft.Extensions.PropertyHelper.Sources": { },
-            "Microsoft.Extensions.SecurityHelper.Sources": { },
-            "Microsoft.Extensions.TypeNameHelper.Sources": { },
             "PageGenerator": { },
             "xunit.execution.AspNet": { },
             "xunit.runner.aspnet": { },
@@ -527,10 +513,12 @@
                 }
             },
             "runtime.unix.System.Net.Security": {
+                "SIGN_STRONGNAME": {
+                    "lib\\dnxcore50\\System.Net.Security.dll": "We don't sign 3rd party DLLs"
+                },
                 "SIGN_AUTHENTICODE": {
                     "lib\\dnxcore50\\System.Net.Security.dll": "We don't sign 3rd party DLLs"
-                }
-            },
+                }            },
             "runtime.unix.System.Private.Uri": {
                 "SIGN_STRONGNAME": {
                     "lib\\dotnet\\System.Private.Uri.dll": "3rd party DLLs don't need this"
