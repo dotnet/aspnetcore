@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNet.Html.Abstractions;
 
 namespace Microsoft.AspNet.Mvc.ViewFeatures
 {
@@ -11,6 +12,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         private readonly Dictionary<string, bool> _renderedFields =
             new Dictionary<string, bool>(StringComparer.Ordinal);
         private Dictionary<string, object> _formData;
+        private IList<IHtmlContent> _endOfFormContent;
 
         /// <summary>
         /// Property bag for any information you wish to associate with a &lt;form/&gt; in an
@@ -28,6 +30,25 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 return _formData;
             }
         }
+
+        public bool HasFormData => _formData != null;
+
+        public bool HasEndOfFormContent => _endOfFormContent != null;
+
+        public IList<IHtmlContent> EndOfFormContent
+        {
+            get
+            {
+                if (_endOfFormContent == null)
+                {
+                    _endOfFormContent = new List<IHtmlContent>();
+                }
+
+                return _endOfFormContent;
+            }
+        }
+
+        public bool CanRenderAtEndOfForm { get; set; }
 
         public bool RenderedField(string fieldName)
         {

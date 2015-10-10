@@ -5,11 +5,12 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Globalization;
+using System.IO;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.TestCommon;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Routing;
+using Microsoft.Extensions.WebEncoders.Testing;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Rendering
@@ -125,6 +126,32 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             // Assert
             Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(html));
+        }
+
+        [Fact]
+        public void CheckBox_WithCanRenderAtEndOfFormSet_DoesNotGenerateInlineHiddenTag()
+        {
+            // Arrange
+            // Mono issue - https://github.com/aspnet/External/issues/19
+            var expected = PlatformNormalizer.NormalizeContent(
+                @"<input checked=""HtmlEncode[[checked]]"" data-val=""HtmlEncode[[true]]"" " +
+                @"data-val-required=""HtmlEncode[[The Boolean field is required.]]"" id=""HtmlEncode[[Property1]]"" " +
+                @"name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[checkbox]]"" " +
+                @"value=""HtmlEncode[[true]]"" />");
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetTestModelViewData());
+            helper.ViewContext.FormContext.CanRenderAtEndOfForm = true;
+
+            // Act
+            var html = helper.CheckBox("Property1", isChecked: true, htmlAttributes: null);
+
+            // Assert
+            Assert.True(helper.ViewContext.FormContext.HasEndOfFormContent);
+            Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(html));
+            var writer = new StringWriter();
+            var hiddenTag = Assert.Single(helper.ViewContext.FormContext.EndOfFormContent);
+            hiddenTag.WriteTo(writer, new CommonTestEncoder());
+            Assert.Equal("<input name=\"HtmlEncode[[Property1]]\" type=\"HtmlEncode[[hidden]]\" value=\"HtmlEncode[[false]]\" />",
+                writer.ToString());
         }
 
         [Fact]

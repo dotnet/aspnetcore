@@ -3,6 +3,8 @@
 
 using System;
 using Microsoft.AspNet.Mvc.ViewFeatures;
+using Microsoft.Extensions.WebEncoders;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
@@ -19,9 +21,6 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
 
             _viewContext = viewContext;
-
-            // Push the new FormContext; GenerateEndForm() does the corresponding pop.
-            _viewContext.FormContext = new FormContext();
         }
 
         public void Dispose()
@@ -40,6 +39,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         protected virtual void GenerateEndForm()
         {
+            RenderEndOfFormContent();
             _viewContext.Writer.Write("</form>");
             _viewContext.FormContext = null;
         }
@@ -50,6 +50,34 @@ namespace Microsoft.AspNet.Mvc.Rendering
             {
                 _disposed = true;
                 GenerateEndForm();
+            }
+        }
+
+        private void RenderEndOfFormContent()
+        {
+            var formContext = _viewContext.FormContext;
+            if (formContext.HasEndOfFormContent)
+            {
+                var writer = _viewContext.Writer;
+                var htmlWriter = writer as HtmlTextWriter;
+
+                IHtmlEncoder htmlEncoder = null;
+                if (htmlWriter == null)
+                {
+                    htmlEncoder = _viewContext.HttpContext.RequestServices.GetRequiredService<IHtmlEncoder>();
+                }
+
+                foreach (var content in formContext.EndOfFormContent)
+                {
+                    if (htmlWriter == null)
+                    {
+                        content.WriteTo(writer, htmlEncoder);
+                    }
+                    else
+                    {
+                        htmlWriter.Write(content);
+                    }
+                }
             }
         }
     }

@@ -272,12 +272,24 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             FormMethod method,
             object htmlAttributes)
         {
+            // Push the new FormContext; MvcForm.GenerateEndForm() does the corresponding pop.
+            _viewContext.FormContext = new FormContext
+            {
+                CanRenderAtEndOfForm = true
+            };
+
             return GenerateForm(actionName, controllerName, routeValues, method, htmlAttributes);
         }
 
         /// <inheritdoc />
         public MvcForm BeginRouteForm(string routeName, object routeValues, FormMethod method, object htmlAttributes)
         {
+            // Push the new FormContext; MvcForm.GenerateEndForm() does the corresponding pop.
+            _viewContext.FormContext = new FormContext
+            {
+                CanRenderAtEndOfForm = true
+            };
+
             return GenerateRouteForm(routeName, routeValues, method, htmlAttributes);
         }
 
@@ -708,13 +720,24 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 isChecked,
                 htmlAttributes);
 
-            var hidden = _htmlGenerator.GenerateHiddenForCheckbox(ViewContext, modelExplorer, expression);
-            if (checkbox == null || hidden == null)
+            var hiddenForCheckboxTag = _htmlGenerator.GenerateHiddenForCheckbox(ViewContext, modelExplorer, expression);
+            if (checkbox == null || hiddenForCheckboxTag == null)
             {
                 return HtmlString.Empty;
             }
 
-            return new BufferedHtmlContent().Append(checkbox).Append(hidden);
+            var checkboxContent = new BufferedHtmlContent().Append(checkbox);
+
+            if (ViewContext.FormContext.CanRenderAtEndOfForm)
+            {
+                ViewContext.FormContext.EndOfFormContent.Add(hiddenForCheckboxTag);
+            }
+            else
+            {
+                checkboxContent.Append(hiddenForCheckboxTag);
+            }
+
+            return checkboxContent;
         }
 
         protected virtual string GenerateDisplayName(ModelExplorer modelExplorer, string expression)

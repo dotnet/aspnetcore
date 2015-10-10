@@ -2,12 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 #if MOCK_SUPPORT
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Mvc.ViewFeatures;
+using Microsoft.Extensions.WebEncoders;
+using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
 using Xunit;
 
@@ -316,6 +319,37 @@ namespace Microsoft.AspNet.Mvc.Rendering
             // Assert
             Assert.Equal("</form>", builder.ToString());
             urlHelper.Verify();
+        }
+
+        [Fact]
+        public void EndForm_RendersHiddenTagForCheckBox()
+        {
+            // Arrange
+            var htmlHelper = DefaultTemplatesUtilities.GetHtmlHelper();
+            var serviceProvider = new Mock<IServiceProvider>();
+            serviceProvider.Setup(s => s.GetService(typeof(IHtmlEncoder))).Returns(new CommonTestEncoder());
+            var viewContext = htmlHelper.ViewContext;
+            viewContext.HttpContext.RequestServices = serviceProvider.Object;
+
+            var writer = viewContext.Writer as StringWriter;
+            Assert.NotNull(writer);
+            var builder = writer.GetStringBuilder();
+
+            var tagBuilder = new TagBuilder("input");
+            tagBuilder.MergeAttribute("name", "SomeName");
+            tagBuilder.MergeAttribute("type", "hidden");
+            tagBuilder.MergeAttribute("value", "false");
+            tagBuilder.TagRenderMode = TagRenderMode.SelfClosing;
+
+            htmlHelper.ViewContext.FormContext.EndOfFormContent.Add(tagBuilder);
+
+            // Act
+            htmlHelper.EndForm();
+
+            // Assert
+            Assert.Equal(
+                "<input name=\"HtmlEncode[[SomeName]]\" type=\"HtmlEncode[[hidden]]\" value=\"HtmlEncode[[false]]\" /></form>",
+                builder.ToString());
         }
 
         private string GetHtmlAttributesAsString(object htmlAttributes)

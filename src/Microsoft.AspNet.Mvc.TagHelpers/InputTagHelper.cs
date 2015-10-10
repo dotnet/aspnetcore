@@ -278,7 +278,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 if (hiddenForCheckboxTag != null)
                 {
                     hiddenForCheckboxTag.TagRenderMode = renderingMode;
-                    output.Content.Append(hiddenForCheckboxTag);
+
+                    if (ViewContext.FormContext.CanRenderAtEndOfForm)
+                    {
+                        ViewContext.FormContext.EndOfFormContent.Add(hiddenForCheckboxTag);
+                    }
+                    else
+                    {
+                        output.Content.Append(hiddenForCheckboxTag);
+                    }
                 }
             }
         }
