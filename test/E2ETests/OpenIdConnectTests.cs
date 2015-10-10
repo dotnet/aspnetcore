@@ -13,11 +13,10 @@ namespace E2ETests
     public class OpenIdConnectTests
     {
         [ConditionalTheory(Skip = "Temporarily skipped the test to fix potential product issue"), Trait("E2Etests", "E2Etests")]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        //[InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5040/")]
-        // https://github.com/aspnet/Security/issues/223
-        // [InlineData(
-        //          ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5041/")]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5040/")]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5041/")]
         public async Task OpenIdConnect_OnX86(
             ServerType serverType,
             RuntimeFlavor runtimeFlavor,
@@ -27,9 +26,17 @@ namespace E2ETests
             await OpenIdConnectTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl);
         }
 
+        [ConditionalTheory(Skip = "Bug https://github.com/aspnet/dnx/issues/2958"), Trait("E2Etests", "E2Etests")]
+        [OSSkipCondition(OperatingSystems.Windows)]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5042/")]
+        public async Task OpenIdConnect_OnNonWindows(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
+        {
+            await OpenIdConnectTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl);
+        }
+
         [ConditionalTheory, Trait("E2Etests", "E2Etests")]
-        [FrameworkSkipCondition(RuntimeFrameworks.CLR | RuntimeFrameworks.CoreCLR)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.Mono, RuntimeArchitecture.x86, "http://localhost:5042/")]
+        [OSSkipCondition(OperatingSystems.Windows)]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.Mono, RuntimeArchitecture.x86, "http://localhost:5043/")]
         public async Task OpenIdConnect_OnMono(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
             await OpenIdConnectTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl);

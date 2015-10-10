@@ -38,9 +38,10 @@
     },
     "commands": {
         "gen": "Microsoft.Extensions.CodeGeneration",
-        "kestrel": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.Kestrel --server.urls http://localhost:5004",
         "run": "run server.urls=http://localhost:5003",
-        "web": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls http://localhost:5002"
+        "web": "Microsoft.AspNet.Server.Kestrel",
+        "kestrel": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.Kestrel --server.urls http://localhost:5004",
+        "weblistener": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls http://localhost:5002"
     },
     "frameworks": {
         "dnx451": { },

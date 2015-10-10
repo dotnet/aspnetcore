@@ -10,14 +10,16 @@ using Xunit;
 namespace E2ETests
 {
     // Uses ports ranging 5001 - 5025.
-    public class SmokeTests_X86_Clr
+    public class SmokeTests_X86
     {
         [ConditionalTheory, Trait("E2Etests", "E2Etests")]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        // [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5001/")]
-        [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5002/")]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5001/")]
+        [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5002/")]
         [InlineData(ServerType.Kestrel, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5003/")]
-        public async Task SmokeTestSuite_OnX86_clr(
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5004/")]
+        public async Task WindowsOS(
             ServerType serverType,
             RuntimeFlavor runtimeFlavor,
             RuntimeArchitecture architecture,
@@ -26,16 +28,11 @@ namespace E2ETests
             var smokeTestRunner = new SmokeTests();
             await smokeTestRunner.SmokeTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl);
         }
-    }
 
-    public class SmokeTests_X86_Coreclr
-    {
         [ConditionalTheory, Trait("E2Etests", "E2Etests")]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        //[InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5004/")]
-        [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5005/")]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5006/")]
-        public async Task SmokeTestSuite_OnX86_coreclr(
+        [OSSkipCondition(OperatingSystems.Windows)]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.Mono, RuntimeArchitecture.x86, "http://localhost:5005/")]
+        public async Task NonWindowsOS(
             ServerType serverType,
             RuntimeFlavor runtimeFlavor,
             RuntimeArchitecture architecture,
@@ -49,12 +46,13 @@ namespace E2ETests
     public class SmokeTests_X64
     {
         [ConditionalTheory, Trait("E2Etests", "E2Etests")]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [SkipOn32BitOS]
-        [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5007/")]
-        //[InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5008/")]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5006/")]
+        [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5007/")]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5008/")]
         [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5009/")]
-        public async Task SmokeTestSuite_OnAMD64(
+        public async Task WindowsOS(
             ServerType serverType,
             RuntimeFlavor runtimeFlavor,
             RuntimeArchitecture architecture,
@@ -63,14 +61,11 @@ namespace E2ETests
             var smokeTestRunner = new SmokeTests();
             await smokeTestRunner.SmokeTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl);
         }
-    }
 
-    public class SmokeTests_OnMono
-    {
-        [ConditionalTheory, Trait("E2Etests", "E2Etests")]
-        [FrameworkSkipCondition(RuntimeFrameworks.CLR | RuntimeFrameworks.CoreCLR)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.Mono, RuntimeArchitecture.x86, "http://localhost:5010/")]
-        public async Task SmokeTestSuite_OnMono(
+        [ConditionalTheory(Skip = "Bug: https://github.com/dotnet/coreclr/issues/1752"), Trait("E2Etests", "E2Etests")]
+        [OSSkipCondition(OperatingSystems.Windows)]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5011/")]
+        public async Task NonWindowsOS(
             ServerType serverType,
             RuntimeFlavor runtimeFlavor,
             RuntimeArchitecture architecture,
@@ -84,11 +79,11 @@ namespace E2ETests
     public class SmokeTests_OnIIS
     {
         [ConditionalTheory, Trait("E2Etests", "E2Etests")]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [OSSkipCondition(OperatingSystems.Linux)]
         [SkipIfCurrentRuntimeIsCoreClr]
         [SkipIfIISVariationsNotEnabled]
-        [InlineData(ServerType.IIS, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5013/")]
+        [InlineData(ServerType.IIS, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5012/")]
         [InlineData(ServerType.IIS, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5013/")]
         public async Task SmokeTestSuite_On_IIS_X86(
             ServerType serverType,

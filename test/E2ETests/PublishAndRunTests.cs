@@ -13,14 +13,29 @@ namespace E2ETests
     // Uses ports ranging 5025 - 5039.
     public class PublishAndRunTests_OnX64
     {
-        // https://github.com/aspnet/MusicStore/issues/487
         [ConditionalTheory, Trait("E2Etests", "E2Etests")]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [InlineData(
-            ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5025/", false)]
-        //https://github.com/aspnet/KRuntime/issues/642
-        //[InlineData(ServerType.Helios, RuntimeFlavor.CoreClr, RuntimeArchitecture.amd64, "http://localhost:5026/")]
-        public async Task Publish_And_Run_Tests_On_AMD64(
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5025/", false)]
+        [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5026/", false)]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5027/", false)]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5028/", false)]
+        public async Task WindowsOS(
+            ServerType serverType,
+            RuntimeFlavor runtimeFlavor,
+            RuntimeArchitecture architecture,
+            string applicationBaseUrl,
+            bool noSource)
+        {
+            var testRunner = new PublishAndRunTests();
+            await testRunner.Publish_And_Run_Tests(
+                serverType, runtimeFlavor, architecture, applicationBaseUrl, noSource);
+        }
+
+        [ConditionalTheory(Skip = "Bug https://github.com/aspnet/dnx/issues/2958"), Trait("E2Etests", "E2Etests")]
+        [OSSkipCondition(OperatingSystems.Windows)]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5030/", false)]
+        public async Task NonWindowsOS(
             ServerType serverType,
             RuntimeFlavor runtimeFlavor,
             RuntimeArchitecture architecture,
@@ -35,14 +50,14 @@ namespace E2ETests
 
     public class PublishAndRunTests_OnX86
     {
-        // https://github.com/aspnet/MusicStore/issues/487
         [ConditionalTheory, Trait("E2Etests", "E2Etests")]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        //[InlineData(
-        //    ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5027/", false)]
-        //[InlineData(
-        //    ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5028/", true)]
-        public async Task Publish_And_Run_Tests_On_X86(
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5031/", false)]
+        [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5032/", false)]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5033/", false)]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5034/", false)]
+        public async Task WindowsOS(
             ServerType serverType,
             RuntimeFlavor runtimeFlavor,
             RuntimeArchitecture architecture,
@@ -55,10 +70,9 @@ namespace E2ETests
         }
 
         [ConditionalTheory, Trait("E2Etests", "E2Etests")]
-        [FrameworkSkipCondition(RuntimeFrameworks.CLR | RuntimeFrameworks.CoreCLR)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.Mono, RuntimeArchitecture.x86, "http://localhost:5029/", false)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.Mono, RuntimeArchitecture.x86, "http://localhost:5030/", true)]
-        public async Task Publish_And_Run_Tests_On_Mono(
+        [OSSkipCondition(OperatingSystems.Windows)]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.Mono, RuntimeArchitecture.x86, "http://localhost:5035/", false)]
+        public async Task NonWindowsOS(
             ServerType serverType,
             RuntimeFlavor runtimeFlavor,
             RuntimeArchitecture architecture,
