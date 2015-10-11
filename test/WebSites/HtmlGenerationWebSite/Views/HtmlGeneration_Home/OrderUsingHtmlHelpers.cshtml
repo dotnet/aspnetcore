@@ -34,7 +34,7 @@ Html.BeginForm(actionName: "Submit", controllerName: "HtmlGeneration_Order"))
         </div>
         <div>
             @Html.LabelFor(m => m.OrderDate, htmlAttributes: new { @class = "order" })
-            @Html.TextBoxFor(m => m.OrderDate, format: "{0:yyyy/MM/dd/ g}", htmlAttributes: new { type = "datetime" })
+            @Html.TextBoxFor(m => m.OrderDate, format: "{0:yyyy/MM/dd HH:mm:ss}", htmlAttributes: new { type = "datetime" })
         </div>
         <div>
             @Html.LabelFor(m => m.NeedSpecialHandle, htmlAttributes: new { @class = "order" })

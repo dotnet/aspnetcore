@@ -32,11 +32,14 @@ namespace TagHelpersWebSite.TagHelpers
 
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
-            // Need to check if output.TagName == null in-case the ConditionTagHelper calls into SuppressOutput and
-            // therefore sets the TagName to null.
-            if (MakePretty.HasValue && !MakePretty.Value ||
-                output.TagName == null)
+            if (MakePretty.HasValue && !MakePretty.Value)
             {
+                return;
+            }
+
+            if (output.TagName == null)
+            {
+                // Another tag helper e.g. TagHelperviewComponentTagHelper has suppressed the start and end tags.
                 return;
             }
 

@@ -12,9 +12,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.TagHelpers;
-#if DNXCORE50
-using Microsoft.AspNet.Testing;
-#endif
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Xunit;
@@ -48,7 +45,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             get
             {
-                var data = new TheoryData<string, string>
+                return new TheoryData<string, string>
                 {
                     { "Customer", "/Customer/HtmlGeneration_Customer" },
                     { "Index", null },
@@ -59,12 +56,16 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                     { "CreateWarehouse", null },
                     // Testing the HTML helpers with FormTagHelper
                     { "EditWarehouse", null },
+                    // Testing MVC tag helpers invoked in the editor templates from HTML helpers
+                    { "EmployeeList", null },
                     // Testing the EnvironmentTagHelper
                     { "Environment", null },
                     // Testing the ImageTagHelper
                     { "Image", null },
                     // Testing InputTagHelper with File
                     { "Input", null },
+                    // Testing the LinkTagHelper
+                    { "Link", null },
                     // Test ability to generate nearly identical HTML with MVC tag and HTML helpers.
                     // Only attribute order should differ.
                     { "Order", "/HtmlGeneration_Order/Submit" },
@@ -74,19 +75,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                     // Testing the ScriptTagHelper
                     { "Script", null },
                 };
-
-#if DNXCORE50
-                // Work around aspnet/External#33. Large resources corrupted with Core CLR on Linux.
-                if (!TestPlatformHelper.IsLinux)
-#endif
-                {
-                    // Testing MVC tag helpers invoked in the editor templates from HTML helpers
-                    data.Add("EmployeeList", null);
-                    // Testing the LinkTagHelper
-                    data.Add("Link", null);
-                }
-
-                return data;
             }
         }
 
@@ -144,26 +132,17 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             get
             {
-                var data = new TheoryData<string, string>
+                return new TheoryData<string, string>
                 {
                     { "AttributesWithBooleanValues", null },
                     { "EditWarehouse", null },
                     { "Index", null },
                     { "Link", null },
+                    { "Order", "/HtmlGeneration_Order/Submit" },
                     { "OrderUsingHtmlHelpers", "/HtmlGeneration_Order/Submit" },
                     { "Product", null },
+                    { "Script", null },
                 };
-
-#if DNXCORE50
-                // Work around aspnet/External#33. Large resources corrupted with Core CLR on Linux.
-                if (!TestPlatformHelper.IsLinux)
-#endif
-                {
-                    data.Add("Order", "/HtmlGeneration_Order/Submit");
-                    data.Add("Script", null);
-                }
-
-                return data;
             }
         }
 

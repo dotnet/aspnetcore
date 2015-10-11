@@ -31,23 +31,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             get
             {
-                var data = new TheoryData<string, string>
+                return new TheoryData<string, string>
                 {
                     { "http://localhost/Home/RedirectToActionReturningTaskAction", "/Home/ActionReturningTask" },
                     { "http://localhost/Home/RedirectToRouteActionAsMethodAction", "/Home/ActionReturningTask" },
                     { "http://localhost/Home/RedirectToRouteUsingRouteName", "/api/orders/10" },
+                    { "http://pingüino/Home/RedirectToRouteUsingRouteName", "/api/orders/10" },
                 };
-
-#if DNXCORE50
-                // Work around aspnet/External#41. Non-ASCII hostnames lead to a NotImplementedException with Core CLR
-                // on Linux.
-                if (!TestPlatformHelper.IsLinux)
-#endif
-                {
-                    data.Add("http://pingüino/Home/RedirectToRouteUsingRouteName", "/api/orders/10");
-                }
-
-                return data;
             }
         }
 

@@ -4,9 +4,6 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Testing;
-#if DNXCORE50
-using Microsoft.AspNet.Testing.xunit;
-#endif
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -50,13 +47,7 @@ False";
             Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);
         }
 
-#if DNXCORE50
-        [ConditionalFact]
-        // Work around aspnet/External#42. Only the invariant culture works with Core CLR on Linux.
-        [OSSkipCondition(OperatingSystems.Linux)]
-#else
         [Fact]
-#endif
         [ReplaceCulture]
         public async Task OverrideAppWideDefaultsInViewAndPartialView()
         {

@@ -7,7 +7,6 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Testing;
 using Microsoft.Net.Http.Headers;
-using Newtonsoft.Json;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -28,26 +27,20 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             get
             {
-#if DNXCORE50
-                // Work around aspnet/External#42. Only the invariant culture works with Core CLR on Linux.
-                if (!TestPlatformHelper.IsLinux)
-#endif
-                {
-                    var expected1 =
+                var expected1 =
 @"<language-layout>en-gb-index
 partial
 mypartial
 </language-layout>";
 
-                    yield return new[] { "en-GB", expected1 };
+                yield return new[] { "en-GB", expected1 };
 
-                    var expected2 =
+                var expected2 =
 @"<fr-language-layout>fr-index
 fr-partial
 mypartial
 </fr-language-layout>";
-                    yield return new[] { "fr", expected2 };
-                }
+                yield return new[] { "fr", expected2 };
 
                 if (!TestPlatformHelper.IsMono)
                 {

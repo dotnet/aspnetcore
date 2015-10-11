@@ -123,19 +123,13 @@ partial-contentcomponent-content";
         {
             get
             {
-#if DNXCORE50
-                // Work around aspnet/External#42. Only the invariant culture works with Core CLR on Linux.
-                if (!TestPlatformHelper.IsLinux)
-#endif
-                {
-                    var expected1 = @"expander-index
+                var expected1 = @"expander-index
 gb-partial";
-                    yield return new[] { "en-GB", expected1 };
+                yield return new[] { "en-GB", expected1 };
 
-                    var expected2 = @"fr-index
+                var expected2 = @"fr-index
 fr-partial";
-                    yield return new[] { "fr", expected2 };
-                }
+                yield return new[] { "fr", expected2 };
 
                 if (!TestPlatformHelper.IsMono)
                 {
@@ -275,16 +269,10 @@ index-content";
                     yield return new[] { "!-invalid-!", expected1 };
                 }
 
-#if DNXCORE50
-                // Work around aspnet/External#42. Only the invariant culture works with Core CLR on Linux.
-                if (!TestPlatformHelper.IsLinux)
-#endif
-                {
-                    var expected2 =
+                var expected2 =
 @"<fr-language-layout>View With Layout
 </fr-language-layout>";
-                    yield return new[] { "fr", expected2 };
-                }
+                yield return new[] { "fr", expected2 };
             }
         }
 
