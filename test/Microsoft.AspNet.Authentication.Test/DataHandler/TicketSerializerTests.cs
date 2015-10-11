@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using Microsoft.AspNet.Http.Authentication;
+using Microsoft.AspNet.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNet.Authentication
@@ -97,7 +98,10 @@ namespace Microsoft.AspNet.Authentication
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(
+            RuntimeFrameworks.Mono,
+            SkipReason = "Test fails with Mono 4.0.4. Build rarely reaches testing with Mono 4.2.1")]
         public void CanRoundTripClaimProperties()
         {
             var serializer = new TicketSerializer();
