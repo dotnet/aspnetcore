@@ -30,6 +30,32 @@ namespace Microsoft.AspNet.Mvc
             new TempDataDictionary(new HttpContextAccessor(), new SessionStateTempDataProvider());
 
         [Fact]
+        public async Task ExecuteAsync_ViewComponentResult_AllowsNullViewDataAndTempData()
+        {
+            // Arrange
+            var descriptor = new ViewComponentDescriptor()
+            {
+                FullName = "Full.Name.Text",
+                ShortName = "Text",
+                Type = typeof(TextViewComponent),
+            };
+
+            var actionContext = CreateActionContext(descriptor);
+            
+            var viewComponentResult = new ViewComponentResult
+            {
+                Arguments = new object[] { "World!" },
+                ViewData = null,
+                TempData = null,
+                ViewComponentName = "Text"
+            };
+
+            // Act
+            await viewComponentResult.ExecuteResultAsync(actionContext);
+            // No assert, just confirm it didn't throw
+        }
+
+        [Fact]
         public async Task ExecuteResultAsync_Throws_IfNameOrTypeIsNotSet()
         {
             // Arrange
@@ -76,10 +102,10 @@ namespace Microsoft.AspNet.Mvc
             // Arrange
             var expected = $"A view component named '{typeof(TextViewComponent).FullName}' could not be found.";
 
-            var services = CreateServices();
+            var actionContext = CreateActionContext();
+            var services = CreateServices(actionContext.HttpContext);
             services.AddSingleton<IViewComponentSelector>();
 
-            var actionContext = CreateActionContext();
 
             var viewComponentResult = new ViewComponentResult
             {
@@ -387,8 +413,11 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal(expectedContentType, actionContext.HttpContext.Response.ContentType);
         }
 
-        private IServiceCollection CreateServices(params ViewComponentDescriptor[] descriptors)
-        {
+        private IServiceCollection CreateServices(HttpContext context, params ViewComponentDescriptor[] descriptors)
+        { 
+            var httpContext = new HttpContextAccessor() { HttpContext = context };
+            var tempDataProvider = new SessionStateTempDataProvider();
+
             var services = new ServiceCollection();
             services.AddSingleton<IOptions<MvcViewOptions>, TestOptionsManager<MvcViewOptions>>();
             services.AddTransient<IViewComponentHelper, DefaultViewComponentHelper>();
@@ -400,15 +429,17 @@ namespace Microsoft.AspNet.Mvc
             services.AddInstance<IViewComponentDescriptorProvider>(new FixedSetViewComponentDescriptorProvider(descriptors));
             services.AddSingleton<IModelMetadataProvider, EmptyModelMetadataProvider>();
             services.AddInstance<ILoggerFactory>(NullLoggerFactory.Instance);
+            services.AddInstance<ITempDataDictionary>(new TempDataDictionary(httpContext, tempDataProvider));
+            services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
 
             return services;
         }
 
         private HttpContext CreateHttpContext(params ViewComponentDescriptor[] descriptors)
         {
-            var services = CreateServices(descriptors);
-
             var httpContext = new DefaultHttpContext();
+            var services = CreateServices(httpContext, descriptors);
+
             httpContext.Response.Body = new MemoryStream();
             httpContext.RequestServices = services.BuildServiceProvider();
 

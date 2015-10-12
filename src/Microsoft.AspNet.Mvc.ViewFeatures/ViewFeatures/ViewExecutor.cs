@@ -6,8 +6,10 @@ using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Infrastructure;
+using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewEngines;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.OptionsModel;
 using Microsoft.Net.Http.Headers;
 
@@ -117,14 +119,16 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(view));
             }
 
+            var services = actionContext.HttpContext.RequestServices;
             if (viewData == null)
             {
-                throw new ArgumentNullException(nameof(viewData));
+                var metadataProvider = services.GetRequiredService<IModelMetadataProvider>();
+                viewData = new ViewDataDictionary(metadataProvider);
             }
 
             if (tempData == null)
             {
-                throw new ArgumentNullException(nameof(tempData));
+                tempData = services.GetRequiredService<ITempDataDictionary>();
             }
 
             var response = actionContext.HttpContext.Response;

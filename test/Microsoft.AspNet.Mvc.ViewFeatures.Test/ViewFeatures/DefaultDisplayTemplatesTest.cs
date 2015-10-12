@@ -122,12 +122,11 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         public void ObjectTemplate_IgnoresPropertiesWith_ScaffoldColumnFalse()
         {
             // Arrange
-            var expected =
-@"<div class=""HtmlEncode[[display-label]]"">HtmlEncode[[Property1]]</div>
-<div class=""HtmlEncode[[display-field]]""></div>
-<div class=""HtmlEncode[[display-label]]"">HtmlEncode[[Property3]]</div>
-<div class=""HtmlEncode[[display-field]]""></div>
-";
+            var expected = "<div class=\"HtmlEncode[[display-label]]\">HtmlEncode[[Property1]]</div>" + Environment.NewLine +
+                "<div class=\"HtmlEncode[[display-field]]\"></div>"+ Environment.NewLine +
+                "<div class=\"HtmlEncode[[display-label]]\">HtmlEncode[[Property3]]</div>"+ Environment.NewLine +
+                "<div class=\"HtmlEncode[[display-field]]\"></div>"+ Environment.NewLine;
+
             var model = new DefaultTemplatesUtilities.ObjectWithScaffoldColumn();
             var viewEngine = new Mock<ICompositeViewEngine>();
             viewEngine.Setup(v => v.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))

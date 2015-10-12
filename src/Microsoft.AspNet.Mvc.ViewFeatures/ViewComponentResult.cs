@@ -84,6 +84,12 @@ namespace Microsoft.AspNet.Mvc
                 viewData = new ViewDataDictionary(modelMetadataProvider, context.ModelState);
             }
 
+            var tempData = TempData;
+            if (tempData == null)
+            {
+                tempData = services.GetRequiredService<ITempDataDictionary>();
+            }
+
             var contentType = ContentType;
             if (contentType != null && contentType.Encoding == null)
             {
@@ -98,8 +104,8 @@ namespace Microsoft.AspNet.Mvc
             //      3. ViewExecutor.DefaultContentType (sensible default)
             //
             //
-            response.ContentType = 
-                contentType?.ToString() ?? 
+            response.ContentType =
+                contentType?.ToString() ??
                 response.ContentType ??
                 ViewExecutor.DefaultContentType.ToString();
 
@@ -115,7 +121,7 @@ namespace Microsoft.AspNet.Mvc
                     context,
                     NullView.Instance,
                     viewData,
-                    TempData,
+                    tempData,
                     writer,
                     htmlHelperOptions);
 
