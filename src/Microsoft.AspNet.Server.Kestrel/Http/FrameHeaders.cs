@@ -5,15 +5,30 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNet.Http;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNet.Server.Kestrel.Http
 {
-    public abstract class FrameHeaders : IDictionary<string, StringValues>
+    public abstract class FrameHeaders : IHeaderDictionary
     {
         protected Dictionary<string, StringValues> MaybeUnknown;
 
         protected Dictionary<string, StringValues> Unknown => MaybeUnknown ?? (MaybeUnknown = new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase));
+
+        StringValues IHeaderDictionary.this[string key]
+        {
+            get
+            {
+                StringValues value;
+                TryGetValueFast(key, out value);
+                return value;
+            }
+            set
+            {
+                SetValueFast(key, value);
+            }
+        }
 
         StringValues IDictionary<string, StringValues>.this[string key]
         {

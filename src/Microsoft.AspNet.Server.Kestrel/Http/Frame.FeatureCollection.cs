@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.Extensions.Primitives;
 
@@ -145,7 +146,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
         }
 
-        IDictionary<string, StringValues> IHttpRequestFeature.Headers
+        IHeaderDictionary IHttpRequestFeature.Headers
         {
             get
             {
@@ -197,7 +198,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
         }
 
-        IDictionary<string, StringValues> IHttpResponseFeature.Headers
+        IHeaderDictionary IHttpResponseFeature.Headers
         {
             get
             {

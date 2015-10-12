@@ -2,14 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http.Features;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
@@ -55,13 +54,13 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         public string Path { get; set; }
         public string QueryString { get; set; }
         public string HttpVersion { get; set; }
-        public IDictionary<string, StringValues> RequestHeaders { get; set; }
+        public IHeaderDictionary RequestHeaders { get; set; }
         public MessageBody MessageBody { get; set; }
         public Stream RequestBody { get; set; }
 
         public int StatusCode { get; set; }
         public string ReasonPhrase { get; set; }
-        public IDictionary<string, StringValues> ResponseHeaders { get; set; }
+        public IHeaderDictionary ResponseHeaders { get; set; }
         public Stream ResponseBody { get; set; }
 
         public Stream DuplexStream { get; set; }
