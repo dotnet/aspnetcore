@@ -187,6 +187,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         }
                         catch (Exception ex)
                         {
+                            Log.ApplicationError(ex);
                             error = ex;
                         }
                         finally

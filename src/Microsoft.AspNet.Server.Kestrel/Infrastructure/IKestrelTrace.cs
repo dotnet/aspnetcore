@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
@@ -27,5 +28,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
         void ConnectionWrite(long connectionId, int count);
 
         void ConnectionWriteCallback(long connectionId, int status);
+
+        void ApplicationError(Exception ex);
     }
 }

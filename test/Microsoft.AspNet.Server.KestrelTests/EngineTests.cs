@@ -7,13 +7,13 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Server.Kestrel;
 using Microsoft.AspNet.Server.Kestrel.Filter;
-using Microsoft.AspNet.Server.Kestrel.Http;
 using Microsoft.Dnx.Runtime;
 using Microsoft.Dnx.Runtime.Infrastructure;
+using Microsoft.Extensions.Logging;
 using Xunit;
-using Microsoft.AspNet.Http.Features;
 
 namespace Microsoft.AspNet.Server.KestrelTests
 {
@@ -552,6 +552,9 @@ namespace Microsoft.AspNet.Server.KestrelTests
         {
             bool onStartingCalled = false;
 
+            var testLogger = new TestApplicationErrorLogger();
+            testContext.Log = new KestrelTrace(testLogger);
+
             using (var server = new TestServer(frame =>
             {
                 var response = frame.Get<IHttpResponseFeature>();
@@ -595,6 +598,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
                         "");
 
                     Assert.False(onStartingCalled);
+                    Assert.Equal(2, testLogger.ApplicationErrorsLogged);
                 }
             }
         }
@@ -604,6 +608,9 @@ namespace Microsoft.AspNet.Server.KestrelTests
         public async Task ThrowingAfterWritingKillsConnection(ServiceContext testContext)
         {
             bool onStartingCalled = false;
+
+            var testLogger = new TestApplicationErrorLogger();
+            testContext.Log = new KestrelTrace(testLogger);
 
             using (var server = new TestServer(async frame =>
             {
@@ -633,6 +640,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
                         "Hello World");
 
                     Assert.True(onStartingCalled);
+                    Assert.Equal(1, testLogger.ApplicationErrorsLogged);
                 }
             }
         }
@@ -642,6 +650,9 @@ namespace Microsoft.AspNet.Server.KestrelTests
         public async Task ThrowingAfterPartialWriteKillsConnection(ServiceContext testContext)
         {
             bool onStartingCalled = false;
+
+            var testLogger = new TestApplicationErrorLogger();
+            testContext.Log = new KestrelTrace(testLogger);
 
             using (var server = new TestServer(async frame =>
             {
@@ -671,6 +682,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
                         "Hello");
 
                     Assert.True(onStartingCalled);
+                    Assert.Equal(1, testLogger.ApplicationErrorsLogged);
                 }
             }
         }
@@ -831,6 +843,30 @@ namespace Microsoft.AspNet.Server.KestrelTests
                         "Content-Length: 11",
                         "",
                         "Exception!!"); ;
+                }
+            }
+        }
+
+        private class TestApplicationErrorLogger : ILogger
+        {
+            public int ApplicationErrorsLogged { get; set; }
+
+            public IDisposable BeginScopeImpl(object state)
+            {
+                throw new NotImplementedException();
+            }
+
+            public bool IsEnabled(LogLevel logLevel)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void Log(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
+            {
+                // Application errors are logged using 13 as the eventId.
+                if (eventId == 13)
+                {
+                    ApplicationErrorsLogged++;
                 }
             }
         }

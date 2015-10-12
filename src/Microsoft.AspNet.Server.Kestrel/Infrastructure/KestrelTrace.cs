@@ -82,6 +82,11 @@ namespace Microsoft.AspNet.Server.Kestrel
             // Reserved: Event ID 12
         }
 
+        public virtual void ApplicationError(Exception ex)
+        {
+            _logger.LogError(13, "An unhandled exception was thrown by the application.", ex);
+        }
+
         public virtual void Log(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
         {
             _logger.Log(logLevel, eventId, state, exception, formatter);
