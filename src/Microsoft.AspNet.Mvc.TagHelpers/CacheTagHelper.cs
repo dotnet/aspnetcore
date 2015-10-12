@@ -271,6 +271,40 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             }
         }
 
+        private static void AddStringCollectionKey(
+            StringBuilder builder,
+            string keyName,
+            string value,
+            IHeaderDictionary sourceCollection)
+        {
+            if (!string.IsNullOrEmpty(value))
+            {
+                // keyName(param1=value1|param2=value2)
+                builder.Append(CacheKeyTokenSeparator)
+                       .Append(keyName)
+                       .Append("(");
+
+                var tokenFound = false;
+                foreach (var item in Tokenize(value))
+                {
+                    tokenFound = true;
+
+                    builder.Append(item)
+                           .Append(CacheKeyTokenSeparator)
+                           .Append(sourceCollection[item])
+                           .Append(CacheKeyTokenSeparator);
+                }
+
+                if (tokenFound)
+                {
+                    // Remove the trailing separator
+                    builder.Length -= CacheKeyTokenSeparator.Length;
+                }
+
+                builder.Append(")");
+            }
+        }
+
         private void AddVaryByRouteKey(StringBuilder builder)
         {
             var tokenFound = false;
