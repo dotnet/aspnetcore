@@ -1,18 +1,24 @@
 @{/*
 
-k 
-    Run dnx commands in your project. Executes dnx cmd.
+k
+    Run dnx commands in your project. Executes `dnx` command.
 
 command=''
+    The `dnx` subcommand to execute.
+dnxDir=''
+    Optional. The directory in which to execute the `dnx` command.
 dnvmUse=''
-
+    Optional. The DNX framework to use. Suitable for a `dnvm run` command.
 */}
+
+default currentDir = '${Directory.GetCurrentDirectory()}'
+default dnxDir = '${ currentDir }'
 
 default dnvmUse=''
 var dnvmPath = '${ Path.Combine(Directory.GetCurrentDirectory(), "packages", "KoreBuild", "build", "dnvm") }'
 
-exec program='cmd' commandline='/C dnx ${command}' if='!IsLinux && string.IsNullOrEmpty(dnvmUse)'
-exec program='cmd' commandline='/C "${dnvmPath}" run ${dnvmUse} ${command}' if='!IsLinux && !string.IsNullOrEmpty(dnvmUse)'
-exec program='dnx' commandline='${command}' if='IsLinux && string.IsNullOrEmpty(dnvmUse)'
+exec program='cmd' commandline='/C dnx ${command}' workingdir='${dnxDir}' if='!IsLinux && string.IsNullOrEmpty(dnvmUse)'
+exec program='cmd' commandline='/C "${dnvmPath}" run ${dnvmUse} ${command}' workingdir='${dnxDir}' if='!IsLinux && !string.IsNullOrEmpty(dnvmUse)'
+exec program='dnx' commandline='${command}' workingdir='${dnxDir}' if='IsLinux && string.IsNullOrEmpty(dnvmUse)'
 var commandLine = 'bash -c ". \"${dnvmPath}.sh\"; dnvm run ${dnvmUse} ${command}"'
-exec program='/usr/bin/env' commandline='${ commandLine }' if='IsLinux && !string.IsNullOrEmpty(dnvmUse)'
+exec program='/usr/bin/env' commandline='${ commandLine }' workingdir='${dnxDir}' if='IsLinux && !string.IsNullOrEmpty(dnvmUse)'

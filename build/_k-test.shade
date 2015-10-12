@@ -9,7 +9,7 @@ default KOREBUILD_TEST_DNXCORE='${E("KOREBUILD_TEST_DNXCORE")}'
 k-test
     Run unit tests in your project.
 
-projectFile='' 
+projectFile=''
     Required. Path to the test project.json to execute
 
 */}
@@ -19,7 +19,7 @@ projectFile=''
     var project = (JsonObject)Json.Deserialize(projectText);
 
     var commands = project.ValueAsJsonObject("commands");
-            
+
     if (commands != null && commands.Keys.Contains("test"))
     {
         var projectFolder = Path.GetDirectoryName(projectFile);
@@ -42,7 +42,7 @@ projectFile=''
         {
             targetFrameworks = configs.Keys;
         }
-        
+
         // Currently only dnx* targets are supported. See aspnet/Universe#53
         targetFrameworks = targetFrameworks.Where(k => k.StartsWith("dnx", StringComparison.OrdinalIgnoreCase));
 
@@ -52,28 +52,18 @@ projectFile=''
 
             if (!framework.StartsWith("dnxcore", StringComparison.OrdinalIgnoreCase))
             {
-                string runtime;
                 if (IsLinux)
                 {
-                    runtime = "mono";
-
                     // Work around issue with testing in parallel on Mono.
                     testArgs = " -parallel none";
                 }
-                else
-                {
-                    runtime = "clr";
-                }
 
-                K("test" + testArgs, projectFolder, "default -runtime " + runtime);
+                Dnx("test" + testArgs, projectFolder);
             }
             else if (!IsLinux || !string.IsNullOrEmpty(KOREBUILD_TEST_DNXCORE))
             {
-                K("test" + testArgs, projectFolder, "default -runtime coreclr");
+                Dnx("test" + testArgs, projectFolder, "default -runtime coreclr");
             }
         }
     }
 }
-
-macro name='K' command='string' workingdir='string' dnvmUse='string'
-    k

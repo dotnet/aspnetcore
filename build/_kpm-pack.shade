@@ -40,14 +40,7 @@ default pack_options=' ${E("KOREBUILD_DNU_PACK_OPTIONS")}'
 
         var projectsArg=projectFile.Replace(";", " ");
         var dnuArgs=string.Format("pack{0} {1} --configuration {2}", pack_options, projectsArg, configuration);
-        if (!IsLinux)
-        {
-            Exec("cmd", "/C dnu " + dnuArgs);
-        }
-        else
-        {
-            Exec("dnu", dnuArgs);
-        }
+        Dnu(dnuArgs);
 
         foreach(var projFolder in projectsToPack)
         {
@@ -66,14 +59,7 @@ default pack_options=' ${E("KOREBUILD_DNU_PACK_OPTIONS")}'
         DeleteFolder(projectBin);
 
         var dnuArgs=string.Format("pack{0} {1} --configuration {2}", pack_options, projectFolder, configuration);
-        if (!IsLinux)
-        {
-            Exec("cmd", "/C dnu " + dnuArgs);
-        }
-        else
-        {
-            Exec("dnu", dnuArgs);
-        }
+        Dnu(dnuArgs);
 
         CopyFolder(projectBin, Path.Combine(kpmPackOutputDir, projectName), true);
     }

@@ -17,5 +17,4 @@ default targetPackagesDir=''
                            .Where(p => !p.EndsWith(".symbols.nupkg"));
 }
 
-exec program='cmd' commandline='/C dnu packages add ${package} ${targetPackagesDir}' if='!IsLinux' each='var package in packages'
-exec program='dnu' commandline='packages add ${package} ${targetPackagesDir}' if='IsLinux' each='var package in packages'
+dnu command='/C dnu packages add ${package} ${targetPackagesDir}' each='var package in packages'

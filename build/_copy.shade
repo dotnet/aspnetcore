@@ -3,7 +3,6 @@ use import="Files"
 default include='**/*.*'
 default exclude=''
 default overwrite='${ false }'
-default Quiet='${ false }'
 
 @{
   var copyFiles = Files.BasePath(Path.GetFullPath(sourceDir));

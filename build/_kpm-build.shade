@@ -37,14 +37,7 @@ default build_options=' ${E("KOREBUILD_DNU_BUILD_OPTIONS")}'
 
         var projectsArg=projectFile.Replace(";", " ");
         var dnuArgs=string.Format("build{0} {1} --configuration {2}", build_options, projectsArg, configuration);
-        if (!IsLinux)
-        {
-            Exec("cmd", "/C dnu " + dnuArgs);
-        }
-        else
-        {
-            Exec("dnu", dnuArgs);
-        }
+        Dnu(dnuArgs);
     }
     else
     {
@@ -54,13 +47,6 @@ default build_options=' ${E("KOREBUILD_DNU_BUILD_OPTIONS")}'
         DeleteFolder(projectBin);
 
         var dnuArgs=string.Format("build{0} {1} --configuration {2}", build_options, projectFolder, configuration);
-        if (!IsLinux)
-        {
-            Exec("cmd", "/C dnu " + dnuArgs);
-        }
-        else
-        {
-            Exec("dnu", dnuArgs);
-        }
+        Dnu(dnuArgs);
     }
 }

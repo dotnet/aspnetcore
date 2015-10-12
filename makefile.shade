@@ -14,6 +14,8 @@ use import="BuildEnv"
 
 functions
     @{
+        private static bool Quiet { get; set; }
+
         static string BUILD_BRANCH = Environment.GetEnvironmentVariable("BUILD_BRANCH") ?? "dev";
         static string BASE_DIR = Directory.GetCurrentDirectory();
         static string TARGET_DIR = Path.Combine(BASE_DIR, "artifacts", "build");
@@ -42,6 +44,11 @@ var buildTarget = "compile"
 }
 
 #default .compile
+
+#--quiet
+  @{
+    Quiet = true;
+  }
 
 #pull
 #compile .pull

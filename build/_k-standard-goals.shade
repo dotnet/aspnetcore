@@ -14,8 +14,6 @@ default TARGET_DIR='${Path.Combine(BASE_DIR, "artifacts")}'
 default BUILD_DIR='${Path.Combine(TARGET_DIR, "build")}'
 default TEST_DIR='${Path.Combine(TARGET_DIR, "test")}'
 default Configuration='${E("Configuration")}'
-default Quiet='${ false }'
-default IncludeProjectsWithoutDnxClr = '${ true }'
 default PACKAGELIST_JSON_FILENAME = 'NuGetPackageVerifier.json'
 default DNX_TOOLS_FEED = 'https://www.myget.org/F/dnxtools/api/v3/index.json'
 default NUGET_FEED = 'https://api.nuget.org/v3/index.json'
@@ -96,21 +94,9 @@ default NUGET_FEED = 'https://api.nuget.org/v3/index.json'
 
 #ci-deep-clean .deep-clean target='clean' if='IsTeamCity'
 
--// Do not move below any of the build-compile targets; must run before them.
-#build-coreclr-on-linux target='compile' if='IsLinux && IsDnxCoreClr'
-  @{
-    // Work around aspnet/dnx#2566. Note this does not play well with IsBuildV2.
-    IncludeProjectsWithoutDnxClr = false;
-    AddToE("KOREBUILD_DNU_BUILD_OPTIONS", "--framework dnxcore50");
-    AddToE("KOREBUILD_DNU_PACK_OPTIONS", "--framework dnxcore50");
-  }
-
 #build-compile target='compile' if='!IsBuildV2 && Directory.Exists("src")'
   @{
-    var projectFiles = Files
-        .Include("src/**/project.json")
-        .Where(projectFilePath => IncludeProjectsWithoutDnxClr || ProjectIncludesDnxCore(projectFilePath))
-        .ToList();
+    var projectFiles = Files.Include("src/**/project.json").ToList();
     if (ShouldRunInParallel)
     {
         Parallel.ForEach(projectFiles, projectFile => DnuPack(projectFile, BUILD_DIR, Configuration));
@@ -296,6 +282,8 @@ default NUGET_FEED = 'https://api.nuget.org/v3/index.json'
   stylecop-run each='var projectFile in Files.Include("src/**/project.json")'
 
 functions @{
+    private static bool Quiet { get; set; }
+
     string E(string key) { return Environment.GetEnvironmentVariable(key); }
     void E(string key, string value) { Environment.SetEnvironmentVariable(key, value); }
     void AddToE(string key, string append)
@@ -309,19 +297,6 @@ functions @{
       {
         E(key, original + " " + append);
       }
-    }
-
-    public bool ProjectIncludesDnxCore(string projectFilePath)
-    {
-        var projectText = File.ReadAllText(projectFilePath);
-        var project = (JsonObject)Json.Deserialize(projectText);
-        var frameworks = project.ValueAsJsonObject("frameworks");
-        if (frameworks == null)
-        {
-            return false;
-        }
-
-        return frameworks.Keys.Any(framework => framework.StartsWith("dnxcore", StringComparison.OrdinalIgnoreCase));
     }
 
     IEnumerable<string> GetDirectoriesContaining(string path, string searchPattern)
@@ -394,6 +369,15 @@ functions @{
 
 macro name='Exec' program='string' commandline='string'
     exec
+
+macro name='Dnu' command='string'
+    dnu
+
+macro name='Dnx' command='string' dnxDir='string'
+    k
+
+macro name='Dnx' command='string' dnxDir='string' dnvmUse='string'
+    k
 
 macro name="UpdateResx" resxFile='string'
     k-generate-resx
