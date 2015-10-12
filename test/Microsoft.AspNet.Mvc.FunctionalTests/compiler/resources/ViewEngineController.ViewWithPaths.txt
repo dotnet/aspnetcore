@@ -3,7 +3,7 @@
     /Views/ViewWithPaths/Index.cshtml
 </Layout>
 <ViewStart>
-    Views\ViewWithPaths\_ViewStart.cshtml
+    /Views/ViewWithPaths/_ViewStart.cshtml
     /Views/ViewWithPaths/Index.cshtml
 </ViewStart>
 <Index>

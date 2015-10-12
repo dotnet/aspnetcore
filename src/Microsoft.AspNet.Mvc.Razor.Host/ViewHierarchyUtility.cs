@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -77,18 +78,31 @@ namespace Microsoft.AspNet.Mvc.Razor
                 // If the specified path is for the file hierarchy being constructed, then the first file that applies
                 // to it is in a parent directory.
                 relativePath = Path.GetDirectoryName(relativePath);
+
                 if (string.IsNullOrEmpty(relativePath))
                 {
                     return Enumerable.Empty<string>();
                 }
             }
 
-            var locations = new List<string>();
-            while (!string.IsNullOrEmpty(relativePath))
+            var builder = new StringBuilder(relativePath);
+            builder.Replace('\\', '/');
+
+            if (builder.Length > 0 && builder[0] != '/')
             {
-                relativePath = Path.GetDirectoryName(relativePath);
-                var path = Path.Combine(relativePath, fileName);
-                locations.Add(path);
+                builder.Insert(0, '/');
+            }
+
+            var locations = new List<string>();
+            for (var index = builder.Length - 1; index >= 0; index--)
+            {
+                if (builder[index] == '/')
+                {
+                    builder.Length = index + 1;
+                    builder.Append(fileName);
+
+                    locations.Add(builder.ToString());
+                }
             }
 
             return locations;

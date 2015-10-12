@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using Moq;
 using Xunit;
 
@@ -21,9 +20,9 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         public static TheoryData ViewImportsPaths =>
             new TheoryData<string>
             {
-                Path.Combine("Views", "Home", "_ViewImports.cshtml"),
-                Path.Combine("Views", "_ViewImports.cshtml"),
-                "_ViewImports.cshtml",
+                "/Views/Home/_ViewImports.cshtml",
+                "/Views/_ViewImports.cshtml",
+                "/_ViewImports.cshtml",
             };
 
         [Fact]

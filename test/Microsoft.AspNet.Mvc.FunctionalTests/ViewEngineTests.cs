@@ -400,7 +400,7 @@ Partial that does not specify Layout
             ResourceFile.UpdateFile(_assembly, outputFile, expectedContent, responseContent);
 #else
             Assert.Equal(
-                PlatformNormalizer.NormalizePath(expectedContent),
+                expectedContent,
                 responseContent,
                 ignoreLineEndingDifferences: true);
 #endif

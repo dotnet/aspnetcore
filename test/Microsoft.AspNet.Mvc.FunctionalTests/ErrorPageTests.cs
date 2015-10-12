@@ -58,10 +58,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
             Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
             var content = await response.Content.ReadAsStringAsync();
-            Assert.Contains(
-                PlatformNormalizer.NormalizePath(@"Views\ErrorFromViewImports\_ViewImports.cshtml"),
-                content);
-
+            Assert.Contains("/Views/ErrorFromViewImports/_ViewImports.cshtml", content);
             Assert.Contains(expectedMessage, content);
         }
     }

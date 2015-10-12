@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
-using Microsoft.AspNet.Testing;
 using Microsoft.AspNet.Testing.xunit;
 using Xunit;
 
@@ -43,9 +42,34 @@ namespace Microsoft.AspNet.Mvc.Razor
             // Arrange
             var expected = new[]
             {
-                PlatformNormalizer.NormalizePath(@"Views\Home\_ViewStart.cshtml"),
-                PlatformNormalizer.NormalizePath(@"Views\_ViewStart.cshtml"),
-                @"_ViewStart.cshtml"
+                "/Views/Home/_ViewStart.cshtml",
+                "/Views/_ViewStart.cshtml",
+                "/_ViewStart.cshtml"
+            };
+
+            // Act
+            var result = ViewHierarchyUtility.GetViewStartLocations(inputPath);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Linux,
+            SkipReason = "Back slashes only work as path separators on Windows")]
+        [OSSkipCondition(OperatingSystems.MacOSX,
+            SkipReason = "Back slashes only work as path separators on Windows")]
+        [InlineData(@"~/Views\Home\MyView.cshtml")]
+        [InlineData(@"Views\Home\MyView.cshtml")]
+        public void GetViewStartLocations_ReturnsPotentialViewStartLocations_PathsContainBackSlash(
+            string inputPath)
+        {
+            // Arrange
+            var expected = new[]
+            {
+                "/Views/Home/_ViewStart.cshtml",
+                "/Views/_ViewStart.cshtml",
+                "/_ViewStart.cshtml"
             };
 
             // Act
@@ -64,9 +88,9 @@ namespace Microsoft.AspNet.Mvc.Razor
             // Arrange
             var expected = new[]
             {
-                PlatformNormalizer.NormalizePath(@"Views\Home\_ViewImports.cshtml"),
-                PlatformNormalizer.NormalizePath(@"Views\_ViewImports.cshtml"),
-                @"_ViewImports.cshtml"
+                "/Views/Home/_ViewImports.cshtml",
+                "/Views/_ViewImports.cshtml",
+                "/_ViewImports.cshtml"
             };
 
             // Act
@@ -85,8 +109,8 @@ namespace Microsoft.AspNet.Mvc.Razor
             // Arrange
             var expected = new[]
             {
-                PlatformNormalizer.NormalizePath(@"Views\_ViewStart.cshtml"),
-                @"_ViewStart.cshtml"
+                "/Views/_ViewStart.cshtml",
+                "/_ViewStart.cshtml"
             };
 
             // Act
@@ -105,9 +129,9 @@ namespace Microsoft.AspNet.Mvc.Razor
             // Arrange
             var expected = new[]
             {
-                PlatformNormalizer.NormalizePath(@"Views\Home\_ViewImports.cshtml"),
-                PlatformNormalizer.NormalizePath(@"Views\_ViewImports.cshtml"),
-                @"_ViewImports.cshtml"
+                "/Views/Home/_ViewImports.cshtml",
+                "/Views/_ViewImports.cshtml",
+                "/_ViewImports.cshtml"
             };
 
             // Act
@@ -126,8 +150,8 @@ namespace Microsoft.AspNet.Mvc.Razor
             // Arrange
             var expected = new[]
             {
-                PlatformNormalizer.NormalizePath(@"Views\_ViewImports.cshtml"),
-                @"_ViewImports.cshtml"
+                "/Views/_ViewImports.cshtml",
+                "/_ViewImports.cshtml"
             };
 
             // Act
@@ -145,14 +169,42 @@ namespace Microsoft.AspNet.Mvc.Razor
             // Arrange
             var expected = new[]
             {
-                PlatformNormalizer.NormalizePath(@"Areas\MyArea\Sub\Views\Admin\_ViewStart.cshtml"),
-                PlatformNormalizer.NormalizePath(@"Areas\MyArea\Sub\Views\_ViewStart.cshtml"),
-                PlatformNormalizer.NormalizePath(@"Areas\MyArea\Sub\_ViewStart.cshtml"),
-                PlatformNormalizer.NormalizePath(@"Areas\MyArea\_ViewStart.cshtml"),
-                PlatformNormalizer.NormalizePath(@"Areas\_ViewStart.cshtml"),
-                @"_ViewStart.cshtml",
+                "/Areas/MyArea/Sub/Views/Admin/_ViewStart.cshtml",
+                "/Areas/MyArea/Sub/Views/_ViewStart.cshtml",
+                "/Areas/MyArea/Sub/_ViewStart.cshtml",
+                "/Areas/MyArea/_ViewStart.cshtml",
+                "/Areas/_ViewStart.cshtml",
+                "/_ViewStart.cshtml",
             };
-            var viewPath = Path.Combine("Areas", "MyArea", "Sub", "Views", "Admin", fileName);
+            var viewPath = $"Areas/MyArea/Sub/Views/Admin/{fileName}";
+
+            // Act
+            var result = ViewHierarchyUtility.GetViewStartLocations(viewPath);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Linux,
+            SkipReason = "Back slashes only work as path separators on Windows")]
+        [OSSkipCondition(OperatingSystems.MacOSX,
+            SkipReason = "Back slashes only work as path separators on Windows")]
+        [InlineData("Test.cshtml")]
+        [InlineData("ViewStart.cshtml")]
+        public void GetViewStartLocations_ReturnsPotentialViewStartLocations_ForPathsWithBackSlashes(string fileName)
+        {
+            // Arrange
+            var expected = new[]
+            {
+                "/Areas/MyArea/Sub/Views/Admin/_ViewStart.cshtml",
+                "/Areas/MyArea/Sub/Views/_ViewStart.cshtml",
+                "/Areas/MyArea/Sub/_ViewStart.cshtml",
+                "/Areas/MyArea/_ViewStart.cshtml",
+                "/Areas/_ViewStart.cshtml",
+                "/_ViewStart.cshtml",
+            };
+            var viewPath = $"Areas\\MyArea\\Sub\\Views\\Admin/{fileName}";
 
             // Act
             var result = ViewHierarchyUtility.GetViewStartLocations(viewPath);
@@ -170,14 +222,14 @@ namespace Microsoft.AspNet.Mvc.Razor
             // Arrange
             var expected = new[]
             {
-                PlatformNormalizer.NormalizePath(@"Areas\MyArea\Sub\Views\Admin\_ViewImports.cshtml"),
-                PlatformNormalizer.NormalizePath(@"Areas\MyArea\Sub\Views\_ViewImports.cshtml"),
-                PlatformNormalizer.NormalizePath(@"Areas\MyArea\Sub\_ViewImports.cshtml"),
-                PlatformNormalizer.NormalizePath(@"Areas\MyArea\_ViewImports.cshtml"),
-                PlatformNormalizer.NormalizePath(@"Areas\_ViewImports.cshtml"),
-                @"_ViewImports.cshtml",
+                "/Areas/MyArea/Sub/Views/Admin/_ViewImports.cshtml",
+                "/Areas/MyArea/Sub/Views/_ViewImports.cshtml",
+                "/Areas/MyArea/Sub/_ViewImports.cshtml",
+                "/Areas/MyArea/_ViewImports.cshtml",
+                "/Areas/_ViewImports.cshtml",
+                "/_ViewImports.cshtml",
             };
-            var viewPath = Path.Combine("Areas", "MyArea", "Sub", "Views", "Admin", fileName);
+            var viewPath = $"Areas/MyArea/Sub/Views/Admin/{fileName}";
 
             // Act
             var result = ViewHierarchyUtility.GetViewImportsLocations(viewPath);
@@ -194,13 +246,13 @@ namespace Microsoft.AspNet.Mvc.Razor
             // Arrange
             var expected = new[]
             {
-                PlatformNormalizer.NormalizePath(@"Areas\MyArea\Sub\Views\_ViewStart.cshtml"),
-                PlatformNormalizer.NormalizePath(@"Areas\MyArea\Sub\_ViewStart.cshtml"),
-                PlatformNormalizer.NormalizePath(@"Areas\MyArea\_ViewStart.cshtml"),
-                PlatformNormalizer.NormalizePath(@"Areas\_ViewStart.cshtml"),
-                @"_ViewStart.cshtml",
+                "/Areas/MyArea/Sub/Views/_ViewStart.cshtml",
+                "/Areas/MyArea/Sub/_ViewStart.cshtml",
+                "/Areas/MyArea/_ViewStart.cshtml",
+                "/Areas/_ViewStart.cshtml",
+                "/_ViewStart.cshtml",
             };
-            var viewPath = Path.Combine("Areas", "MyArea", "Sub", "Views", "Admin", fileName);
+            var viewPath = $"Areas/MyArea/Sub/Views/Admin/{fileName}";
 
             // Act
             var result = ViewHierarchyUtility.GetViewStartLocations(viewPath);
