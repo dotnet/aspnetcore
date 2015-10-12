@@ -52,6 +52,35 @@ namespace Microsoft.AspNet.Server.KestrelTests
             Assert.Equal(0, count2);
         }
 
+        [Fact]
+        public async Task CanHandleLargeBlocks()
+        {
+            var input = new TestInput();
+            var body = MessageBody.For("HTTP/1.0", new Dictionary<string, StringValues>(), input.FrameContext);
+            var stream = new FrameRequestStream(body);
+
+            // Input needs to be greater than 4032 bytes to allocate a block not backed by a slab.
+            var largeInput = new string('a', 8192);
+
+            input.Add(largeInput, true);
+            // Add a smaller block to the end so that SocketInput attempts to return the large
+            // block to the memory pool.
+            input.Add("Hello", true);
+
+            var readBuffer = new byte[8192];
+
+            var count1 = await stream.ReadAsync(readBuffer, 0, 8192);
+            Assert.Equal(8192, count1);
+            AssertASCII(largeInput, new ArraySegment<byte>(readBuffer, 0, 8192));
+
+            var count2 = await stream.ReadAsync(readBuffer, 0, 8192);
+            Assert.Equal(5, count2);
+            AssertASCII("Hello", new ArraySegment<byte>(readBuffer, 0, 5));
+
+            var count3 = await stream.ReadAsync(readBuffer, 0, 8192);
+            Assert.Equal(0, count3);
+        }
+
         private void AssertASCII(string expected, ArraySegment<byte> actual)
         {
             var encoding = Encoding.ASCII;
