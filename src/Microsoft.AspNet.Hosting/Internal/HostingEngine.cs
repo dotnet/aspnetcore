@@ -93,27 +93,34 @@ namespace Microsoft.AspNet.Hosting.Internal
                 {
                     var httpContext = contextFactory.CreateHttpContext(features);
                     httpContext.ApplicationServices = _applicationServices;
-                    var requestIdentifier = GetRequestIdentifier(httpContext);
+
                     if (diagnosticSource.IsEnabled("Microsoft.AspNet.Hosting.BeginRequest"))
                     {
                         diagnosticSource.Write("Microsoft.AspNet.Hosting.BeginRequest", new { httpContext = httpContext });
                     }
-                    try
+
+                    using (logger.RequestScope(httpContext))
                     {
-                        using (logger.IsEnabled(LogLevel.Critical)
-                            ? logger.BeginScope("Request Id: {RequestId}", requestIdentifier) 
-                            : null)
+                        int startTime = 0;
+                        try
                         {
+                            logger.RequestStarting(httpContext);
+
+                            startTime = Environment.TickCount;
                             await application(httpContext);
+
+                            logger.RequestFinished(httpContext, startTime);
                         }
-                    }
-                    catch (Exception ex)
-                    {
-                        if (diagnosticSource.IsEnabled("Microsoft.AspNet.Hosting.UnhandledException"))
+                        catch (Exception ex)
                         {
-                            diagnosticSource.Write("Microsoft.AspNet.Hosting.UnhandledException", new { httpContext = httpContext, exception = ex });
+                            logger.RequestFailed(httpContext, startTime);
+
+                            if (diagnosticSource.IsEnabled("Microsoft.AspNet.Hosting.UnhandledException"))
+                            {
+                                diagnosticSource.Write("Microsoft.AspNet.Hosting.UnhandledException", new { httpContext = httpContext, exception = ex });
+                            }
+                            throw;
                         }
-                        throw;
                     }
                     if (diagnosticSource.IsEnabled("Microsoft.AspNet.Hosting.EndRequest"))
                     {
@@ -264,18 +271,6 @@ namespace Microsoft.AspNet.Hosting.Internal
                     }
                 }
             }
-        }
-
-        private string GetRequestIdentifier(HttpContext httpContext)
-        {
-            var requestIdentifierFeature = httpContext.Features.Get<IHttpRequestIdentifierFeature>();
-            if (requestIdentifierFeature == null)
-            {
-                requestIdentifierFeature = new FastHttpRequestIdentifierFeature();
-                httpContext.Features.Set(requestIdentifierFeature);
-            }
-
-            return requestIdentifierFeature.TraceIdentifier;
         }
 
         private class Disposable : IDisposable

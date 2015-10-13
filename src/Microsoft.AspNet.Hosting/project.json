@@ -6,8 +6,7 @@
     "url": "git://github.com/aspnet/hosting"
   },
   "compilationOptions": {
-    "warningsAsErrors": true,
-    "allowUnsafe": true
+    "warningsAsErrors": true
   },
   "dependencies": {
     "Microsoft.AspNet.FileProviders.Physical": "1.0.0-*",
