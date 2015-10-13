@@ -23,7 +23,9 @@ namespace Microsoft.AspNet.Server.Kestrel.LibuvCopier
 
                 if (string.IsNullOrEmpty(packagesFolder))
                 {
-                    var dnxFolder = Environment.GetEnvironmentVariable("DNX_HOME");
+                    var dnxFolder = Environment.GetEnvironmentVariable("DNX_HOME") ??
+                                    Environment.GetEnvironmentVariable("DNX_USER_HOME") ??
+                                    Environment.GetEnvironmentVariable("DNX_GLOBAL_HOME");
 
                     var firstCandidate = dnxFolder?.Split(';')
                                                   ?.Select(path => Environment.ExpandEnvironmentVariables(path))
@@ -79,7 +81,14 @@ namespace Microsoft.AspNet.Server.Kestrel.LibuvCopier
             }
             else
             {
-                return Environment.GetEnvironmentVariable("HOME");
+                var home = Environment.GetEnvironmentVariable("HOME");
+
+                if (string.IsNullOrEmpty(home))
+                {
+                    throw new Exception("Home directory not found. The HOME environment variable is not set.");
+                }
+
+                return home;
             }
 #endif
         }
