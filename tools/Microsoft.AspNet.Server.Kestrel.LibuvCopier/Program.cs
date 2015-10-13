@@ -1,12 +1,20 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using Microsoft.Dnx.Runtime;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.Server.Kestrel.LibuvCopier
 {
     public class Program
     {
+        private readonly IRuntimeEnvironment _runtimeEnv;
+
+        public Program(IRuntimeEnvironment runtimeEnv)
+        {
+            _runtimeEnv = runtimeEnv;
+        }
+
         public void Main(string[] args)
         {
             try
@@ -17,23 +25,12 @@ namespace Microsoft.AspNet.Server.Kestrel.LibuvCopier
                 {
                     var dnxFolder = Environment.GetEnvironmentVariable("DNX_HOME");
 
-#if DNX451
-                    // DNXCore,Version=v5.0 error CS0117: 'Environment' does not contain a definition for 'SpecialFolder'
-                    // DNXCore,Version=v5.0 error CS0117: 'Environment' does not contain a definition for 'GetFolderPath'
                     if (string.IsNullOrEmpty(dnxFolder))
                     {
-                        dnxFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".dnx");
+                        dnxFolder = Path.Combine(GetHome(), ".dnx");
                     }
-#endif
 
-                    if (!string.IsNullOrEmpty(dnxFolder))
-                    {
-                        packagesFolder = Path.Combine(dnxFolder, "packages");
-                    }
-                    else
-                    {
-                        throw new Exception("DNX folder not found. Try setting the DNX_HOME and/or DNX_PACKAGES environment variables.");
-                    }
+                    packagesFolder = Path.Combine(dnxFolder, "packages");
                 }
 
                 packagesFolder = Environment.ExpandEnvironmentVariables(packagesFolder);
@@ -58,6 +55,24 @@ namespace Microsoft.AspNet.Server.Kestrel.LibuvCopier
                 Console.WriteLine(ex);
                 throw;
             }
+        }
+
+        // Copied from DNX's DnuEnvironment.cs
+        private string GetHome()
+        {
+#if DNX451
+            return Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+#else
+            if (_runtimeEnv.OperatingSystem == "Windows")
+            {
+                return Environment.GetEnvironmentVariable("USERPROFILE") ??
+                    Environment.GetEnvironmentVariable("HOMEDRIVE") + Environment.GetEnvironmentVariable("HOMEPATH");
+            }
+            else
+            {
+                return Environment.GetEnvironmentVariable("HOME");
+            }
+#endif
         }
     }
 }
