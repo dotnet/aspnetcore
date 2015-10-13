@@ -18,7 +18,8 @@ namespace Microsoft.AspNet.IISPlatformHandler.FunctionalTests
     public class HttpsTest
     {
         [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "https://localhost:44399/")]
         [InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x64, "https://localhost:44398/")]
         public Task Https_HelloWorld(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
@@ -71,7 +72,8 @@ namespace Microsoft.AspNet.IISPlatformHandler.FunctionalTests
         }
 
         [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "https://localhost:44397/")]
         [InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x86, "https://localhost:44396/")]
         public Task Https_HelloWorld_NoClientCert(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
@@ -80,7 +82,8 @@ namespace Microsoft.AspNet.IISPlatformHandler.FunctionalTests
         }
 
         [ConditionalTheory(Skip = "Manual test only, selecting a client cert is non-determanistic on different machines.")]
-        [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "https://localhost:44395/")]
         [InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x64, "https://localhost:44394/")]
         public Task Https_HelloWorld_ClientCert(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
