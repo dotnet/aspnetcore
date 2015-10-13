@@ -14,7 +14,7 @@ namespace Microsoft.Net.Http.Server
     public class WebSocketTests
     {
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Win7And2008R2)]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
         public async Task WebSocketAccept_AfterHeadersSent_Throws()
         {
             string address;
@@ -35,7 +35,7 @@ namespace Microsoft.Net.Http.Server
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Win7And2008R2)]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
         public async Task WebSocketAccept_Success()
         {
             string address;
@@ -53,7 +53,7 @@ namespace Microsoft.Net.Http.Server
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Win7And2008R2)]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
         public async Task WebSocketAccept_SendAndReceive_Success()
         {
             string address;
