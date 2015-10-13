@@ -7,7 +7,6 @@ using System.IO;
 using System.Linq;
 using Microsoft.AspNet.Razor;
 using Microsoft.AspNet.Razor.CodeGenerators;
-using Microsoft.Dnx.Runtime;
 
 namespace PageGenerator
 {
@@ -15,29 +14,16 @@ namespace PageGenerator
     {
         private const int NumArgs = 1;
 
-        private readonly ILibraryManager _libraryManager;
-
-        public Program(ILibraryManager libraryManager)
-        {
-            _libraryManager = libraryManager;
-        }
-
         public void Main(string[] args)
         {
             if (args.Length != NumArgs)
             {
-                throw new ArgumentException(string.Format("Requires {0} argument (Library Name), {1} given", NumArgs, args.Length));
+                throw new ArgumentException(string.Format("Requires {0} argument (Project Directory), {1} given", NumArgs, args.Length));
             }
-            var diagnosticsLibInfo = _libraryManager.GetLibrary(args[0]);
-            if (diagnosticsLibInfo == null)
-            {
-                throw new ArgumentException(string.Format(
-                    "Unable to open library {0}. Is it spelled correctly and listed as a dependency in project.json?",
-                    args[0]));
-            }
+            var diagnosticsDir = args[0];
 
             var viewDirectories = Directory.EnumerateDirectories(
-                Path.GetDirectoryName(diagnosticsLibInfo.Path), "Views", SearchOption.AllDirectories);
+                Path.GetDirectoryName(diagnosticsDir), "Views", SearchOption.AllDirectories);
 
             var fileCount = 0;
             foreach (var viewDir in viewDirectories)
@@ -56,7 +42,8 @@ namespace PageGenerator
                 foreach (var fileName in cshtmlFiles)
                 {
                     Console.WriteLine("    Generating code file for view {0}...", Path.GetFileName(fileName));
-                    GenerateCodeFile(fileName, string.Format("{0}.Views", args[0]));
+                    var nameSpace = viewDir.Split(Path.DirectorySeparatorChar)[1];
+                    GenerateCodeFile(fileName, $"{nameSpace}.Views");
                     Console.WriteLine("      Done!");
                     fileCount++;
                 }
@@ -91,7 +78,7 @@ namespace PageGenerator
                 var code = engine.GenerateCode(
                     input: fileStream,
                     className: fileNameNoExtension,
-                    rootNamespace: rootNamespace,
+                    rootNamespace: Path.GetFileName(rootNamespace),
                     sourceFileName: fileName);
 
                 var source = code.GeneratedCode;
@@ -113,7 +100,7 @@ namespace PageGenerator
                     var includeFileName = source.Substring(startIndex + startMatch.Length, endIndex - (startIndex + startMatch.Length));
                     includeFileName = SanitizeFileName(includeFileName);
                     Console.WriteLine("      Inlining file {0}", includeFileName);
-                    var replacement = File.ReadAllText(Path.Combine(basePath, includeFileName)).Replace("\"", "\\\"").Replace("\r\n", "\\r\\n");
+                    var replacement = File.ReadAllText(Path.Combine(basePath, includeFileName)).Replace("\"", "\\\"").Replace("\n", "\\n").Replace("\r", "\\r");
                     source = source.Substring(0, startIndex) + replacement + source.Substring(endIndex + endMatch.Length);
                     startIndex = startIndex + replacement.Length;
                 }
@@ -129,8 +116,15 @@ namespace PageGenerator
             //"s
 
             var invalidChars = new List<char>(Path.GetInvalidFileNameChars());
+            Console.WriteLine($"InvalidChars are {invalidChars}");
             invalidChars.Add('+');
             invalidChars.Add(' ');
+            //These are already in the list on windows, but for other platforms
+            //it seems like some of them are missing, so we add them explicitly
+            invalidChars.Add('"');
+            invalidChars.Add('\'');
+            invalidChars.Add('\r');
+            invalidChars.Add('\n');
 
             return string.Join(string.Empty, fileName.Where(c => !invalidChars.Contains(c)).ToArray());
         }

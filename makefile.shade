@@ -6,3 +6,6 @@ var AUTHORS='Microsoft Open Technologies, Inc.'
 
 use-standard-lifecycle
 k-standard-goals
+
+#generatepages target='initialize'
+	k command='run ../Microsoft.AspNet.Diagnostics' dnxDir='src/PageGenerator'

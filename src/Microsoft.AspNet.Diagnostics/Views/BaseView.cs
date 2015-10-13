@@ -3,6 +3,8 @@
 
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -81,40 +83,38 @@ namespace Microsoft.AspNet.Diagnostics.Views
             WriteLiteralTo(Output, value);
         }
 
-        /// <summary>
-        /// Writes the given attribute to the output
-        /// </summary>
-        /// <param name="name">The name of the attribute to write</param>
-        /// <param name="leader">The value and position of the prefix</param>
-        /// <param name="trailer">The value and position of the suffix</param>
-        /// <param name="values">The <see cref="AttributeValue"/>s to write.</param>
-        protected void WriteAttribute(
-            string name,
-            Tuple<string, int> leader,
-            Tuple<string, int> trailer,
-            params AttributeValue[] values)
+        private List<string> AttributeValues { get; set; }
+
+        protected void WriteAttributeValue(string thingy, int startPostion, object value, int endValue, int dealyo, bool yesno)
         {
-            if (name == null)
+            if (AttributeValues == null)
             {
-                throw new ArgumentNullException(nameof(name));
+                AttributeValues = new List<string>();
             }
 
-            if (leader == null)
-            {
-                throw new ArgumentNullException(nameof(leader));
-            }
+            AttributeValues.Add(value.ToString());
+        }
 
-            if (trailer == null)
-            {
-                throw new ArgumentNullException(nameof(trailer));
-            }
+        private string AttributeEnding { get; set; }
 
-            WriteAttributeTo(
-                Output,
-                name,
-                leader,
-                trailer,
-                values);
+        protected void BeginWriteAttribute(string name, string begining, int startPosition, string ending, int endPosition, int thingy)
+        {
+            Debug.Assert(string.IsNullOrEmpty(AttributeEnding));
+
+            Output.Write(begining);
+            AttributeEnding = ending;
+        }
+
+        protected void EndWriteAttribute()
+        {
+            Debug.Assert(!string.IsNullOrEmpty(AttributeEnding));
+
+            var attributes = string.Join(" ", AttributeValues);
+            Output.Write(attributes);
+            AttributeValues = null;
+
+            Output.Write(AttributeEnding);
+            AttributeEnding = null;
         }
 
         /// <summary>
@@ -122,14 +122,14 @@ namespace Microsoft.AspNet.Diagnostics.Views
         /// </summary>
         /// <param name="writer">The <see cref="TextWriter"/> instance to write to.</param>
         /// <param name="name">The name of the attribute to write</param>
-        /// <param name="leader">The value and position of the prefix</param>
-        /// <param name="trailer">The value and position of the suffix</param>
+        /// <param name="leader">The value of the prefix</param>
+        /// <param name="trailer">The value of the suffix</param>
         /// <param name="values">The <see cref="AttributeValue"/>s to write.</param>
         protected void WriteAttributeTo(
             TextWriter writer,
             string name,
-            Tuple<string, int> leader,
-            Tuple<string, int> trailer,
+            string leader,
+            string trailer,
             params AttributeValue[] values)
         {
             if (writer == null)
@@ -153,19 +153,19 @@ namespace Microsoft.AspNet.Diagnostics.Views
             }
 
 
-            WriteLiteralTo(writer, leader.Item1);
+            WriteLiteralTo(writer, leader);
             foreach (var value in values)
             {
-                WriteLiteralTo(writer, value.Prefix.Item1);
+                WriteLiteralTo(writer, value.Prefix);
 
                 // The special cases here are that the value we're writing might already be a string, or that the
                 // value might be a bool. If the value is the bool 'true' we want to write the attribute name
                 // instead of the string 'true'. If the value is the bool 'false' we don't want to write anything.
                 // Otherwise the value is another object (perhaps an HtmlString) and we'll ask it to format itself.
                 string stringValue;
-                if (value.Value.Item1 is bool)
+                if (value.Value is bool)
                 {
-                    if ((bool)value.Value.Item1)
+                    if ((bool)value.Value)
                     {
                         stringValue = name;
                     }
@@ -176,7 +176,7 @@ namespace Microsoft.AspNet.Diagnostics.Views
                 }
                 else
                 {
-                    stringValue = value.Value.Item1 as string;
+                    stringValue = value.Value as string;
                 }
 
                 // Call the WriteTo(string) overload when possible
@@ -186,7 +186,7 @@ namespace Microsoft.AspNet.Diagnostics.Views
                 }
                 else if (value.Literal)
                 {
-                    WriteLiteralTo(writer, value.Value.Item1);
+                    WriteLiteralTo(writer, value.Value);
                 }
                 else if (stringValue != null)
                 {
@@ -194,10 +194,10 @@ namespace Microsoft.AspNet.Diagnostics.Views
                 }
                 else
                 {
-                    WriteTo(writer, value.Value.Item1);
+                    WriteTo(writer, value.Value);
                 }
             }
-            WriteLiteralTo(writer, trailer.Item1);
+            WriteLiteralTo(writer, trailer);
         }
 
         /// <summary>

@@ -169,6 +169,12 @@
     $(".page").hide();
     $("#stackpage").show();
 
+    $("#rawExceptionButton").click(function () {
+        var div = document.getElementById('rawException');
+        div.style.display = 'inline-block';
+        div.scrollIntoView(true);
+    });
+
     $(".frame")
         .click(function () {
             frame(this);

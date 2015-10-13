@@ -66,9 +66,10 @@ using Microsoft.Dnx.Runtime;
 #line default
 #line hidden
 
-            WriteLiteral("\r\n<!DOCTYPE html>\r\n<html");
-            WriteAttribute("lang", Tuple.Create(" lang=\"", 429), Tuple.Create("\"", 490), 
-            Tuple.Create(Tuple.Create("", 436), Tuple.Create<System.Object, System.Int32>(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName, 436), false));
+            WriteLiteral("<!DOCTYPE html>\r\n<html");
+            BeginWriteAttribute("lang", " lang=\"", 429, "\"", 490, 1);
+            WriteAttributeValue("", 436, CultureInfo.CurrentUICulture.TwoLetterISOLanguageName, 436, 54, false);
+            EndWriteAttribute();
             WriteLiteral(" xmlns=\"http://www.w3.org/1999/xhtml\">\r\n<head>\r\n    <meta charset=\"utf-8\" />\r\n   " +
 " <title>");
 #line 24 "RuntimeInfoPage.cshtml"
@@ -198,13 +199,7 @@ using Microsoft.Dnx.Runtime;
 #line default
 #line hidden
 
-            WriteLiteral("\r\n");
-#line 56 "RuntimeInfoPage.cshtml"
-            
-
-#line default
-#line hidden
-
+            WriteLiteral("            ");
 #line 56 "RuntimeInfoPage.cshtml"
              foreach (var package in Model.References.OrderBy(package => package.Name.ToLowerInvariant()))
             {
@@ -213,8 +208,9 @@ using Microsoft.Dnx.Runtime;
 #line hidden
 
             WriteLiteral("                <tr");
-            WriteAttribute("class", Tuple.Create(" class=\"", 2209), Tuple.Create("\"", 2237), 
-            Tuple.Create(Tuple.Create("", 2217), Tuple.Create<System.Object, System.Int32>(even?"even":"odd", 2217), false));
+            BeginWriteAttribute("class", " class=\"", 2209, "\"", 2237, 1);
+            WriteAttributeValue("", 2217, even?"even":"odd", 2217, 20, false);
+            EndWriteAttribute();
             WriteLiteral(">\r\n                    <td>");
 #line 59 "RuntimeInfoPage.cshtml"
                    Write(package.Name);

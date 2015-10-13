@@ -27,5 +27,6 @@
                 "System.Reflection.Extensions": "4.0.1-beta-*"
             }
         }
-    }
+    },
+    "compileExclude": ["DeveloperExceptionPage/Views/*.cshtml", "RuntimeInfo/Views/*.cshtml", "WelcomePage/Views/*.cshtml"]
 }

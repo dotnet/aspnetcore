@@ -2,7 +2,8 @@
 @using System.Globalization
 @using System.Linq
 @using System.Net
-@using Views
+@using Microsoft.AspNet.Diagnostics.Views
+@using Microsoft.AspNet.Diagnostics
 @functions
 {
     public ErrorPage(ErrorPageModel model)
@@ -126,6 +127,17 @@
                             </li>
                         }
                         </ul>
+                    </li>
+                    <li>
+                        <br/>
+                        <div class="rawExceptionBlock">
+                            <div>
+                                <a href="#" id="rawExceptionButton">Show raw exception details</a>
+                            </div>
+                            <div id="rawException" style="display:none">
+                                <pre>@errorDetail.Error.ToString()</pre>
+                            </div>
+                        </div>
                     </li>
                 }
             </ul>

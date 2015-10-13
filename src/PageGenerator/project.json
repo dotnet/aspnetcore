@@ -1,20 +1,21 @@
 {
   "version": "1.0.0-*",
+  "description": "Builds the pages for the Diagnostics projects. Runs in build.cmd.",
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/diagnostics"
   },
   "dependencies": {
-    "Microsoft.AspNet.Diagnostics.Elm": "1.0.0-*",
-    "Microsoft.AspNet.Diagnostics.Entity": "7.0.0-*",
     "Microsoft.AspNet.Razor": "4.0.0-*"
   },
 
   "frameworks": {
-    "dnx451": { },
+    "dnx451": {
+    },
     "dnxcore50": {
       "dependencies": {
-        "System.Console": "4.0.0-beta-*"
+        "System.Console": "4.0.0-beta-*",
+        "System.Runtime": "4.0.21-*"
       }
     }
   },
