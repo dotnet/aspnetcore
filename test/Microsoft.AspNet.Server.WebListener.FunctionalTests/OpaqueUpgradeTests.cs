@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Server.WebListener
     public class OpaqueUpgradeTests
     {
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Win7And2008R2)]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
         public async Task OpaqueUpgrade_SupportKeys_Present()
         {
             string address;
@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.Server.WebListener
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Win7And2008R2)]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
         public async Task OpaqueUpgrade_AfterHeadersSent_Throws()
         {
             bool? upgradeThrew = null;
@@ -92,7 +92,7 @@ namespace Microsoft.AspNet.Server.WebListener
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Win7And2008R2)]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
         public async Task OpaqueUpgrade_GetUpgrade_Success()
         {
             ManualResetEvent waitHandle = new ManualResetEvent(false);
@@ -120,7 +120,7 @@ namespace Microsoft.AspNet.Server.WebListener
         }
 
         [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Win7And2008R2)]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
         // See HTTP_VERB for known verbs
         [InlineData("UNKNOWN", null)]
         [InlineData("INVALID", null)]
@@ -179,7 +179,7 @@ namespace Microsoft.AspNet.Server.WebListener
         }
 
         [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Win7And2008R2)]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
         // Http.Sys returns a 411 Length Required if PUT or POST does not specify content-length or chunked.
         [InlineData("POST", "Content-Length: 10")]
         [InlineData("POST", "Transfer-Encoding: chunked")]

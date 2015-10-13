@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Server.WebListener
     public class WebSocketTests
     {
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Win7And2008R2)]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
         public async Task WebSocketTests_SupportKeys_Present()
         {
             string address;
@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.Server.WebListener
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Win7And2008R2)]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
         public async Task WebSocketTests_AfterHeadersSent_Throws()
         {
             bool? upgradeThrew = null;
@@ -88,7 +88,7 @@ namespace Microsoft.AspNet.Server.WebListener
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Win7And2008R2)]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
         public async Task WebSocketAccept_Success()
         {
             ManualResetEvent waitHandle = new ManualResetEvent(false);
@@ -115,7 +115,7 @@ namespace Microsoft.AspNet.Server.WebListener
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Win7And2008R2)]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
         public async Task WebSocketAccept_SendAndReceive_Success()
         {
             byte[] clientBuffer = new byte[] { 0x00, 0x01, 0xFF, 0x00, 0x00 };
@@ -161,7 +161,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 return await client.GetAsync(uri);
             }
         }
-        
+
         private async Task<WebSocket> SendWebSocketRequestAsync(string address)
         {
             ClientWebSocket client = new ClientWebSocket();
