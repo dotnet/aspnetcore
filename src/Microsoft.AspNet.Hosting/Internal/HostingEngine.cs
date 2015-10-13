@@ -135,7 +135,7 @@ namespace Microsoft.AspNet.Hosting.Internal
 
             return new Application(ApplicationServices, _serverInstance, new Disposable(() =>
             {
-                _applicationLifetime.NotifyStopping();
+                _applicationLifetime.StopApplication();
                 server.Dispose();
                 _applicationLifetime.NotifyStopped();
                 (_applicationServices as IDisposable)?.Dispose();

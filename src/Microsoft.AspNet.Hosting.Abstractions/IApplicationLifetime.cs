@@ -30,5 +30,10 @@ namespace Microsoft.AspNet.Hosting
         /// </summary>
         /// <returns></returns>
         CancellationToken ApplicationStopped { get; }
+
+        /// <summary>
+        /// Requests termination the current application.
+        /// </summary>
+        void StopApplication();
     }
 }

@@ -19,20 +19,14 @@ namespace Microsoft.AspNet.Hosting
         /// Triggered when the application host has fully started and is about to wait
         /// for a graceful shutdown.
         /// </summary>
-        public CancellationToken ApplicationStarted
-        {
-            get { return _startedSource.Token; }
-        }
+        public CancellationToken ApplicationStarted => _startedSource.Token;
 
         /// <summary>
         /// Triggered when the application host is performing a graceful shutdown.
         /// Request may still be in flight. Shutdown will block until this event completes.
         /// </summary>
         /// <returns></returns>
-        public CancellationToken ApplicationStopping
-        {
-            get { return _stoppingSource.Token; }
-        }
+        public CancellationToken ApplicationStopping => _stoppingSource.Token;
 
         /// <summary>
         /// Triggered when the application host is performing a graceful shutdown.
@@ -40,9 +34,21 @@ namespace Microsoft.AspNet.Hosting
         /// until this event completes.
         /// </summary>
         /// <returns></returns>
-        public CancellationToken ApplicationStopped
+        public CancellationToken ApplicationStopped => _stoppedSource.Token;
+
+        /// <summary>
+        /// Signals the ApplicationStopping event and blocks until it completes.
+        /// </summary>
+        public void StopApplication()
         {
-            get { return _stoppedSource.Token; }
+            try
+            {
+                _stoppingSource.Cancel(throwOnFirstException: false);
+            }
+            catch (Exception)
+            {
+                // TODO: LOG
+            }
         }
 
         /// <summary>
@@ -53,21 +59,6 @@ namespace Microsoft.AspNet.Hosting
             try
             {
                 _startedSource.Cancel(throwOnFirstException: false);
-            }
-            catch (Exception)
-            {
-                // TODO: LOG
-            }
-        }
-
-        /// <summary>
-        /// Signals the ApplicationStopping event and blocks until it completes.
-        /// </summary>
-        public void NotifyStopping()
-        {
-            try
-            {
-                _stoppingSource.Cancel(throwOnFirstException: false);
             }
             catch (Exception)
             {
