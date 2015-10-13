@@ -1,14 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Server.Kestrel.Networking;
 using System;
 using System.Collections.Generic;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Server.Kestrel.Infrastructure;
-using Microsoft.Dnx.Runtime;
+using Microsoft.AspNet.Server.Kestrel.Networking;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.Server.Kestrel
@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Server.Kestrel
     {
         private static Action<object, object> _objectCallbackAdapter = (callback, state) => ((Action<object>)callback).Invoke(state);
         private KestrelEngine _engine;
-        private readonly IApplicationShutdown _appShutdown;
+        private readonly IApplicationLifetime _appLifetime;
         private Thread _thread;
         private UvLoopHandle _loop;
         private UvAsyncHandle _post;
@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Server.Kestrel
         public KestrelThread(KestrelEngine engine)
         {
             _engine = engine;
-            _appShutdown = engine.AppShutdown;
+            _appLifetime = engine.AppLifetime;
             _log = engine.Log;
             _loop = new UvLoopHandle(_log);
             _post = new UvAsyncHandle(_log);
@@ -232,7 +232,7 @@ namespace Microsoft.AspNet.Server.Kestrel
                 _closeError = ExceptionDispatchInfo.Capture(ex);
                 // Request shutdown so we can rethrow this exception
                 // in Stop which should be observable.
-                _appShutdown.RequestShutdown();
+                _appLifetime.RequestShutdown();
             }
         }
 

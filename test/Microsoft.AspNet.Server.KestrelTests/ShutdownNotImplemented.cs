@@ -3,12 +3,36 @@
 
 using System;
 using System.Threading;
-using Microsoft.Dnx.Runtime;
+using Microsoft.AspNet.Hosting;
 
 namespace Microsoft.AspNet.Server.KestrelTests
 {
-    public class ShutdownNotImplemented : IApplicationShutdown
+    public class ShutdownNotImplemented : IApplicationLifetime
     {
+        public CancellationToken ApplicationStarted
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public CancellationToken ApplicationStopped
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public CancellationToken ApplicationStopping
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+        }
+
         public CancellationToken ShutdownRequested
         {
             get

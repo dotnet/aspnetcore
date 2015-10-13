@@ -6,7 +6,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
     {
         public TestServiceContext()
         {
-            AppShutdown = new ShutdownNotImplemented();
+            AppLifetime = new ShutdownNotImplemented();
             Log = new TestKestrelTrace();
             DateHeaderValueManager = new TestDateHeaderValueManager();
         }

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Hosting.Server;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Server.Features;
@@ -20,13 +21,13 @@ namespace Microsoft.AspNet.Server.Kestrel
     public class ServerFactory : IServerFactory
     {
         private readonly ILibraryManager _libraryManager;
-        private readonly IApplicationShutdown _appShutdownService;
+        private readonly IApplicationLifetime _appLifetime;
         private readonly ILogger _logger;
 
-        public ServerFactory(ILibraryManager libraryManager, IApplicationShutdown appShutdownService, ILoggerFactory loggerFactory)
+        public ServerFactory(ILibraryManager libraryManager, IApplicationLifetime appLifetime, ILoggerFactory loggerFactory)
         {
             _libraryManager = libraryManager;
-            _appShutdownService = appShutdownService;
+            _appLifetime = appLifetime;
             _logger = loggerFactory.CreateLogger("Microsoft.AspNet.Server.Kestrel");
         }
 
@@ -57,7 +58,7 @@ namespace Microsoft.AspNet.Server.Kestrel
                 var dateHeaderValueManager = new DateHeaderValueManager();
                 var engine = new KestrelEngine(_libraryManager, new ServiceContext
                 {
-                    AppShutdown = _appShutdownService,
+                    AppLifetime = _appLifetime,
                     Log = new KestrelTrace(_logger),
                     DateHeaderValueManager = dateHeaderValueManager,
                     ConnectionFilter = information.ConnectionFilter

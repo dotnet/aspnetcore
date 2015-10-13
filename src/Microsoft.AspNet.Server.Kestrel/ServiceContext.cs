@@ -1,10 +1,10 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Server.Kestrel.Filter;
 using Microsoft.AspNet.Server.Kestrel.Http;
 using Microsoft.AspNet.Server.Kestrel.Infrastructure;
-using Microsoft.Dnx.Runtime;
 
 namespace Microsoft.AspNet.Server.Kestrel
 {
@@ -17,14 +17,14 @@ namespace Microsoft.AspNet.Server.Kestrel
 
         public ServiceContext(ServiceContext context)
         {
-            AppShutdown = context.AppShutdown;
+            AppLifetime = context.AppLifetime;
             Memory = context.Memory;
             Log = context.Log;
             DateHeaderValueManager = context.DateHeaderValueManager;
             ConnectionFilter = context.ConnectionFilter;
         }
 
-        public IApplicationShutdown AppShutdown { get; set; }
+        public IApplicationLifetime AppLifetime { get; set; }
 
         public IMemoryPool Memory { get; set; }
 
