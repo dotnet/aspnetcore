@@ -2,19 +2,19 @@
     "dependencies": {
         "Microsoft.AspNet.Authentication.Cookies": "1.0.0-*",
         "Microsoft.AspNet.Authentication.OpenIdConnect": "1.0.0-*",
-        "Microsoft.AspNet.DataProtection": "1.0.0-*",
-        "Microsoft.AspNet.Server.IIS": "1.0.0-*",
+        "Microsoft.AspNet.IISPlatformHandler": "1.0.0-*",
+        "Microsoft.AspNet.Server.Kestrel": "1.0.0-*",
         "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
-        "Microsoft.Extensions.Logging.Console": "1.0.0-*",
-        "Microsoft.AspNet.Server.Kestrel": "1.0.0-*"
+        "Microsoft.Extensions.Logging.Console": "1.0.0-*"
     },
     "frameworks": {
         "dnx451": { },
         "dnxcore50": { }
     },
     "commands": {
-        "web": "Microsoft.AspNet.Hosting server=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:42023",
-        "kestrel": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.Kestrel --server.urls http://localhost:42023"
+        "web": "Microsoft.AspNet.Server.Kestrel",
+        "kestrel": "Microsoft.AspNet.Server.Kestrel --server.urls http://localhost:42023",
+        "weblistener": "Microsoft.AspNet.Server.WebListener --server.urls http://localhost:42023"
     },
     "webroot": "wwwroot"
 }

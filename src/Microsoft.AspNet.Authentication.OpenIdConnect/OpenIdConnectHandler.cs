@@ -659,8 +659,21 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             var responseMessage = await Backchannel.SendAsync(requestMessage);
             responseMessage.EnsureSuccessStatusCode();
             var userInfoResponse = await responseMessage.Content.ReadAsStringAsync();
-            var userInfoEndpointJwt = new JwtSecurityToken(userInfoResponse);
-            var user = JObject.Parse(userInfoResponse);
+            JObject user;
+            var contentType = responseMessage.Content.Headers.ContentType;
+            if (contentType.MediaType.Equals("application/json", StringComparison.OrdinalIgnoreCase))
+            {
+                user = JObject.Parse(userInfoResponse);
+            }
+            else if (contentType.MediaType.Equals("application/jwt", StringComparison.OrdinalIgnoreCase))
+            {
+                var userInfoEndpointJwt = new JwtSecurityToken(userInfoResponse);
+                user = JObject.FromObject(userInfoEndpointJwt.Payload);
+            }
+            else
+            {
+                throw new NotSupportedException("Unknown response type: " + contentType.MediaType);
+            }
 
             var userInformationReceivedContext = await RunUserInformationReceivedEventAsync(ticket, message, user);
             if (userInformationReceivedContext.HandledResponse)
@@ -676,7 +689,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
 
             Options.ProtocolValidator.ValidateUserInfoResponse(new OpenIdConnectProtocolValidationContext()
             {
-                UserInfoEndpointResponse = userInfoEndpointJwt,
+                UserInfoEndpointResponse = userInfoResponse,
                 ValidatedIdToken = jwt,
             });
 
@@ -710,7 +723,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 identity.AddClaim(new Claim(pair.Key, claimValue, ClaimValueTypes.String, Options.ClaimsIssuer));
             }
 
-            return new AuthenticationTicket(new ClaimsPrincipal(identity), ticket.Properties, ticket.AuthenticationScheme);
+            return ticket;
         }
 
         /// <summary>

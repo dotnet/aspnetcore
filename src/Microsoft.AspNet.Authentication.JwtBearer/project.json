@@ -10,7 +10,7 @@
     },
     "dependencies": {
         "Microsoft.AspNet.Authentication": "1.0.0-*",
-        "Microsoft.IdentityModel.Protocols.OpenIdConnect": "2.0.0-beta8-*"
+        "Microsoft.IdentityModel.Protocols.OpenIdConnect": "2.0.0-rc1-*"
     },
     "frameworks": {
         "dnx451": {

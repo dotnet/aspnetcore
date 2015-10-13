@@ -21,6 +21,8 @@ namespace OpenIdConnectSample
         {
             loggerfactory.AddConsole(LogLevel.Information);
 
+            app.UseIISPlatformHandler();
+
             app.UseCookieAuthentication(options =>
             {
                 options.AutomaticAuthenticate = true;
@@ -31,8 +33,9 @@ namespace OpenIdConnectSample
                 options.ClientId = "63a87a83-64b9-4ac1-b2c5-092126f8474f";
                 options.ClientSecret = "Yse2iP7tO1Azq0iDajNisMaTSnIDv+FXmAsFuXr+Cy8="; // for code flow
                 options.Authority = "https://login.windows.net/tratcheroutlook.onmicrosoft.com";
-                options.RedirectUri = "http://localhost:42023";
+                options.RedirectUri = "http://localhost:42023/signin-oidc";
                 options.ResponseType = OpenIdConnectResponseTypes.Code;
+                options.GetClaimsFromUserInfoEndpoint = true;
             });
 
             app.Run(async context =>
