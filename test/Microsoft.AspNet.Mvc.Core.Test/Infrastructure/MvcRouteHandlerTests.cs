@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.Internal;
+using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Routing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -109,6 +110,43 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             Assert.Equal("Index", context.RouteData.Values["action"]);
 
             Assert.Equal(initialRouter, Assert.Single(context.RouteData.Routers));
+        }
+
+        [Fact]
+        public async Task RouteAsync_RemovesRouteGroupFromRouteValues()
+        {
+            // Arrange
+            RouteData actionRouteData = null;
+            var invoker = new Mock<IActionInvoker>();
+            invoker
+                .Setup(i => i.InvokeAsync())
+                .Returns(Task.FromResult(true));
+
+            var invokerFactory = new Mock<IActionInvokerFactory>();
+            invokerFactory
+                .Setup(f => f.CreateInvoker(It.IsAny<ActionContext>()))
+                .Returns<ActionContext>((c) =>
+                {
+                    actionRouteData = c.RouteData;
+                    return invoker.Object;
+                });
+
+            var context = CreateRouteContext(invokerFactory: invokerFactory.Object);
+            var handler = new MvcRouteHandler();
+
+            var originalRouteData = context.RouteData;
+            originalRouteData.Values.Add(AttributeRouting.RouteGroupKey, "/Home/Test");
+
+            // Act
+            await handler.RouteAsync(context);
+
+            // Assert
+            Assert.NotSame(originalRouteData, context.RouteData);
+            Assert.NotSame(originalRouteData, actionRouteData);
+            Assert.Same(actionRouteData, context.RouteData);
+
+            // The new routedata is a copy
+            Assert.False(context.RouteData.Values.ContainsKey(AttributeRouting.RouteGroupKey));
         }
 
         [Fact]
