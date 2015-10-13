@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var request = new HttpRequestMessage(
                 HttpMethod.Post,
                 "http://localhost/Home/GetDummyClass?sampleInput=10");
-            request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/xml;charset=utf-8"));
+            request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/xml"));
 
             // Act
             var response = await Client.SendAsync(request);
@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var request = new HttpRequestMessage(
                 HttpMethod.Post,
                 "http://localhost/XmlSerializer/GetDummyClass?sampleInput=10");
-            request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/xml;charset=utf-8"));
+            request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/xml"));
 
             // Act
             var response = await Client.SendAsync(request);
@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var request = new HttpRequestMessage(
                 HttpMethod.Post,
                 "http://localhost/DataContractSerializer/GetPerson?name=HelloWorld");
-            request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/xml;charset=utf-8"));
+            request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/xml"));
 
             // Act
             var response = await Client.SendAsync(request);
@@ -93,7 +93,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var request = new HttpRequestMessage(
                 HttpMethod.Post,
                 "http://localhost/XmlSerializer/GetDerivedDummyClass?sampleInput=10");
-            request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/xml;charset=utf-8"));
+            request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/xml"));
 
             // Act
             var response = await Client.SendAsync(request);
@@ -116,7 +116,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var request = new HttpRequestMessage(
                 HttpMethod.Post,
                 "http://localhost/Home/GetDerivedDummyClass?sampleInput=10");
-            request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/xml;charset=utf-8"));
+            request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/xml"));
 
             // Act
             var response = await Client.SendAsync(request);
@@ -137,7 +137,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var request = new HttpRequestMessage(
                 HttpMethod.Post,
                 "http://localhost/XmlSerializer/GetDictionary");
-            request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/xml;charset=utf-8"));
+            request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/xml"));
 
             // Act
             var response = await Client.SendAsync(request);

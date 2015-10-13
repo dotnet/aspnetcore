@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public HttpClient Client { get; }
 
         [Theory]
-        [InlineData("application/xml,*/*;0.2")]
+        [InlineData("application/xml,*/*;q=0.2")]
         [InlineData("application/xml,*/*")]
         public async Task AllMediaRangeAcceptHeader_FirstFormatterInListWritesResponse(string acceptHeader)
         {
@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [ConditionalTheory]
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [InlineData("application/xml,*/*;0.2")]
+        [InlineData("application/xml,*/*;q=0.2")]
         [InlineData("application/xml,*/*")]
         public async Task AllMediaRangeAcceptHeader_ProducesAttributeIsHonored(string acceptHeader)
         {
@@ -71,9 +71,41 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [ConditionalTheory]
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [InlineData("application/xml,*/*;0.2")]
+        [InlineData("application/xml,*/*;q=0.2")]
         [InlineData("application/xml,*/*")]
-        public async Task AllMediaRangeAcceptHeader_WithContentTypeHeader_ContentTypeIsHonored(string acceptHeader)
+        public async Task AllMediaRangeAcceptHeader_WithContentTypeHeader_ContentTypeIsIgnored(string acceptHeader)
+        {
+            // Arrange
+            var requestData =
+                "<RespectBrowserAcceptHeaderController.Employee xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\"" +
+                " xmlns=\"http://schemas.datacontract.org/2004/07/FormatterWebSite.Controllers\"><Id>35</Id><Name>Jimmy" +
+                "</Name></RespectBrowserAcceptHeaderController.Employee>";
+            var expectedResponseData = @"{""Id"":35,""Name"":""Jimmy""}";
+            var request = RequestWithAccept("http://localhost/RespectBrowserAcceptHeader/CreateEmployee", acceptHeader);
+            request.Content = new StringContent(requestData, Encoding.UTF8, "application/xml");
+            request.Method = HttpMethod.Post;
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.NotNull(response.Content);
+            Assert.NotNull(response.Content.Headers.ContentType);
+
+            // Site uses default output formatter (ignores Accept header) because that header contained a wildcard match.
+            Assert.Equal("application/json; charset=utf-8", response.Content.Headers.ContentType.ToString());
+
+            var responseData = await response.Content.ReadAsStringAsync();
+            Assert.Equal(expectedResponseData, responseData);
+        }
+
+        [ConditionalTheory]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [InlineData("application/xml,application/json;q=0.2")]
+        [InlineData("application/xml,application/json")]
+        public async Task AllMediaRangeAcceptHeader_WithExactMatch_ReturnsExpectedContent(string acceptHeader)
         {
             // Arrange
             var requestData =

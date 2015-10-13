@@ -77,6 +77,8 @@ namespace Microsoft.AspNet.Mvc.Formatters
             {
                 List<MediaTypeHeaderValue> mediaTypes = null;
 
+                // Confirm this formatter supports a more specific media type than requested e.g. OK if "text/*"
+                // requested and formatter supports "text/plain". Treat contentType like it came from an Accept header.
                 foreach (var mediaType in _supportedMediaTypes)
                 {
                     if (mediaType.IsSubsetOf(contentType))
@@ -119,8 +121,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
                 {
                     var requestCharset = requestContentType.Charset;
                     encoding = SupportedEncodings.FirstOrDefault(
-                                                            supportedEncoding =>
-                                                                requestCharset.Equals(supportedEncoding.WebName));
+                        supportedEncoding => requestCharset.Equals(supportedEncoding.WebName));
                 }
             }
 
@@ -151,10 +152,11 @@ namespace Microsoft.AspNet.Mvc.Formatters
             }
             else
             {
-                // Since supportedMedia Type is going to be more specific check if supportedMediaType is a subset
-                // of the content type which is typically what we get on acceptHeader.
-                mediaType = SupportedMediaTypes
-                                  .FirstOrDefault(supportedMediaType => supportedMediaType.IsSubsetOf(contentType));
+                // Confirm this formatter supports a more specific media type than requested e.g. OK if "text/*"
+                // requested and formatter supports "text/plain". contentType is typically what we got in an Accept
+                // header.
+                mediaType = SupportedMediaTypes.FirstOrDefault(
+                    supportedMediaType => supportedMediaType.IsSubsetOf(contentType));
             }
 
             if (mediaType != null)
@@ -201,11 +203,11 @@ namespace Microsoft.AspNet.Mvc.Formatters
             // Copy the media type as we don't want it to affect the next request
             selectedMediaType = selectedMediaType.Copy();
 
-            // Not text-based media types will use an encoding/charset - binary formats just ignore it. We want to
+            // Note text-based media types will use an encoding/charset - binary formats just ignore it. We want to
             // make this class work with media types that use encodings, and those that don't.
             //
             // The default implementation of SelectCharacterEncoding will read from the list of SupportedEncodings
-            // and will always choose a default encoding if any are supported. So, the only cases where the 
+            // and will always choose a default encoding if any are supported. So, the only cases where the
             // selectedEncoding can be null are:
             //
             // 1). No supported encodings - we assume this is a non-text format
@@ -237,21 +239,17 @@ namespace Microsoft.AspNet.Mvc.Formatters
             if (acceptCharsetHeaders != null && acceptCharsetHeaders.Count > 0)
             {
                 var sortedAcceptCharsetHeaders = acceptCharsetHeaders
-                                                    .Where(acceptCharset =>
-                                                                acceptCharset.Quality != HeaderQuality.NoMatch)
-                                                    .OrderByDescending(
-                                                        m => m, StringWithQualityHeaderValueComparer.QualityComparer);
+                    .Where(acceptCharset => acceptCharset.Quality != HeaderQuality.NoMatch)
+                    .OrderByDescending(m => m, StringWithQualityHeaderValueComparer.QualityComparer);
 
                 foreach (var acceptCharset in sortedAcceptCharsetHeaders)
                 {
                     var charset = acceptCharset.Value;
                     if (!string.IsNullOrWhiteSpace(charset))
                     {
-                        var encoding = SupportedEncodings.FirstOrDefault(
-                                                        supportedEncoding =>
-                                                            charset.Equals(supportedEncoding.WebName,
-                                                                           StringComparison.OrdinalIgnoreCase) ||
-                                                            charset.Equals("*", StringComparison.Ordinal));
+                        var encoding = SupportedEncodings.FirstOrDefault(supportedEncoding =>
+                            charset.Equals(supportedEncoding.WebName, StringComparison.OrdinalIgnoreCase) ||
+                            charset.Equals("*", StringComparison.Ordinal));
                         if (encoding != null)
                         {
                             return encoding;

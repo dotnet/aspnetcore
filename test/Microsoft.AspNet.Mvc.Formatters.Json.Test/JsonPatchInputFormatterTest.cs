@@ -75,8 +75,8 @@ namespace Microsoft.AspNet.Mvc.Formatters
         [Theory]
         [InlineData("application/json-patch+json", true)]
         [InlineData("application/json", false)]
-        [InlineData("application/*", true)]
-        [InlineData("*/*", true)]
+        [InlineData("application/*", false)]
+        [InlineData("*/*", false)]
         public void CanRead_ReturnsTrueOnlyForJsonPatchContentType(string requestContentType, bool expectedCanRead)
         {
             // Arrange

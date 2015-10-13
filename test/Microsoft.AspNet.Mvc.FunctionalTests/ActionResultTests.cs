@@ -170,7 +170,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 "<DummyClass xmlns=\"http://schemas.datacontract.org/2004/07/ActionResultsWebSite\">" +
                 "<SampleInt>2</SampleInt><SampleString>foo</SampleString></DummyClass>";
             var request = new HttpRequestMessage(HttpMethod.Post, "Home/GetCustomErrorObject");
-            request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/json;charset=utf-8"));
+            request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/json"));
             request.Content = new StringContent(input, Encoding.UTF8, "application/xml");
 
             // Act
@@ -218,7 +218,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal("content", await response.Content.ReadAsStringAsync());
         }
 
-        [Theory]
+        [Fact]
         public async Task ContentResult_WritesContent_SetsContentTypeAndEncoding()
         {
             // Arrange

@@ -43,10 +43,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
         [Theory]
         [InlineData("application/json")]
-        [InlineData("application/*")]
-        [InlineData("*/*")]
         [InlineData("text/json")]
-        [InlineData("text/*")]
         public async Task JsonInputFormatter_IsSelectedForJsonRequest(string requestContentType)
         {
             // Arrange

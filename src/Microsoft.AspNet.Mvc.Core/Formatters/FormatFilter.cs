@@ -13,7 +13,7 @@ using Microsoft.Net.Http.Headers;
 namespace Microsoft.AspNet.Mvc.Formatters
 {
     /// <summary>
-    /// A filter which will use the format value in the route data or query string to set the content type on an 
+    /// A filter which will use the format value in the route data or query string to set the content type on an
     /// <see cref="ObjectResult" /> returned from an action.
     /// </summary>
     public class FormatFilter : IFormatFilter, IResourceFilter, IResultFilter
@@ -48,13 +48,13 @@ namespace Microsoft.AspNet.Mvc.Formatters
         public MediaTypeHeaderValue ContentType { get; }
 
         /// <summary>
-        /// <c>true</c> if the current <see cref="FormatFilter"/> is active and will execute. 
+        /// <c>true</c> if the current <see cref="FormatFilter"/> is active and will execute.
         /// </summary>
         public bool IsActive { get; }
 
         /// <summary>
         /// As a <see cref="IResourceFilter"/>, this filter looks at the request and rejects it before going ahead if
-        /// 1. The format in the request doesnt match any format in the map.
+        /// 1. The format in the request does not match any format in the map.
         /// 2. If there is a conflicting producesFilter.
         /// </summary>
         /// <param name="context">The <see cref="ResourceExecutingContext"/>.</param>
@@ -67,7 +67,8 @@ namespace Microsoft.AspNet.Mvc.Formatters
 
             if (!IsActive)
             {
-                return; // no format specified by user, so the filter is muted
+                // no format specified by user, so the filter is muted
+                return;
             }
 
             if (ContentType == null)
@@ -77,19 +78,22 @@ namespace Microsoft.AspNet.Mvc.Formatters
                 return;
             }
 
+            // Determine media types this action supports.
             var responseTypeFilters = context.Filters.OfType<IApiResponseMetadataProvider>();
-            var contentTypes = new List<MediaTypeHeaderValue>();
-
+            var supportedMediaTypes = new List<MediaTypeHeaderValue>();
             foreach (var filter in responseTypeFilters)
             {
-                filter.SetContentTypes(contentTypes);
+                filter.SetContentTypes(supportedMediaTypes);
             }
 
-            if (contentTypes.Count != 0)
+            // Check if support is adequate for requested media type.
+            if (supportedMediaTypes.Count != 0)
             {
-                // We need to check if the action can generate the content type the user asked for. If it cannot, exit
-                // here with not found result. 
-                if (!contentTypes.Any(c => ContentType.IsSubsetOf(c)))
+                // We need to check if the action can generate the content type the user asked for. That is, treat the
+                // request's format and IApiResponseMetadataProvider-provided content types similarly to an Accept
+                // header and an output formatter's SupportedMediaTypes: Confirm action supports a more specific media
+                // type than requested e.g. OK if "text/*" requested and action supports "text/plain".
+                if (!supportedMediaTypes.Any(contentType => contentType.IsSubsetOf(ContentType)))
                 {
                     context.Result = new HttpNotFoundResult();
                 }

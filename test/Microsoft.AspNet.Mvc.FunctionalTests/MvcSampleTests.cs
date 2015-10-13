@@ -100,7 +100,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Home/ReturnUser");
-            request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/xml;charset=utf-8"));
+            request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/xml"));
 
             // Act
             var response = await Client.SendAsync(request);

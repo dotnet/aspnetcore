@@ -22,10 +22,10 @@ namespace Microsoft.AspNet.Mvc.Formatters
 
         [Theory]
         [InlineData("application/json", true)]
-        [InlineData("application/*", true)]
-        [InlineData("*/*", true)]
+        [InlineData("application/*", false)]
+        [InlineData("*/*", false)]
         [InlineData("text/json", true)]
-        [InlineData("text/*", true)]
+        [InlineData("text/*", false)]
         [InlineData("text/xml", false)]
         [InlineData("application/xml", false)]
         [InlineData("", false)]

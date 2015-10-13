@@ -86,17 +86,15 @@ namespace Microsoft.AspNet.Mvc
         {
             var logger = formatterContext.HttpContext.RequestServices.GetRequiredService<ILogger<ObjectResult>>();
 
-            // Check if any content-type was explicitly set (for example, via ProducesAttribute 
-            // or Url path extension mapping). If yes, then ignore content-negotiation and use this content-type.
+            // Check if any content-type was explicitly set (for example, via ProducesAttribute
+            // or URL path extension mapping). If yes, then ignore content-negotiation and use this content-type.
             if (ContentTypes.Count == 1)
             {
                 logger.LogVerbose(
                     "Skipped content negotiation as content type '{ContentType}' is explicitly set for the response.",
                     ContentTypes[0]);
 
-                return SelectFormatterUsingAnyAcceptableContentType(formatterContext,
-                                                                    formatters,
-                                                                    ContentTypes);
+                return SelectFormatterUsingAnyAcceptableContentType(formatterContext, formatters, ContentTypes);
             }
 
             var sortedAcceptHeaderMediaTypes = GetSortedAcceptHeaderMediaTypes(formatterContext);
@@ -106,11 +104,7 @@ namespace Microsoft.AspNet.Mvc
             {
                 // Check if we have enough information to do content-negotiation, otherwise get the first formatter
                 // which can write the type.
-                MediaTypeHeaderValue requestContentType = null;
-                MediaTypeHeaderValue.TryParse(
-                    formatterContext.HttpContext.Request.ContentType,
-                    out requestContentType);
-                if (!sortedAcceptHeaderMediaTypes.Any() && requestContentType == null)
+                if (!sortedAcceptHeaderMediaTypes.Any())
                 {
                     logger.LogVerbose("No information found on request to perform content negotiation.");
 
@@ -122,25 +116,12 @@ namespace Microsoft.AspNet.Mvc
                 //
 
                 // 1. Select based on sorted accept headers.
-                if (sortedAcceptHeaderMediaTypes.Any())
-                {
-                    selectedFormatter = SelectFormatterUsingSortedAcceptHeaders(
-                                                                            formatterContext,
-                                                                            formatters,
-                                                                            sortedAcceptHeaderMediaTypes);
-                }
+                selectedFormatter = SelectFormatterUsingSortedAcceptHeaders(
+                    formatterContext,
+                    formatters,
+                    sortedAcceptHeaderMediaTypes);
 
-                // 2. No formatter was found based on accept headers, fall back on request Content-Type header.
-                if (selectedFormatter == null && requestContentType != null)
-                {
-                    selectedFormatter = SelectFormatterUsingAnyAcceptableContentType(
-                                                                                formatterContext,
-                                                                                formatters,
-                                                                                new[] { requestContentType });
-                }
-
-                // 3. No formatter was found based on Accept and request Content-Type headers, so
-                // fallback on type based match.
+                // 2. No formatter was found based on Accept header. Fallback to type-based match.
                 if (selectedFormatter == null)
                 {
                     logger.LogVerbose("Could not find an output formatter based on content negotiation.");
@@ -157,15 +138,15 @@ namespace Microsoft.AspNet.Mvc
                 if (sortedAcceptHeaderMediaTypes.Any())
                 {
                     // Filter and remove accept headers which cannot support any of the user specified content types.
+                    // That is, confirm this result supports a more specific media type than requested e.g. OK if
+                    // "text/*" requested and result supports "text/plain".
                     var filteredAndSortedAcceptHeaders = sortedAcceptHeaderMediaTypes
-                                                                    .Where(acceptHeader =>
-                                                                        ContentTypes.Any(contentType =>
-                                                                            contentType.IsSubsetOf(acceptHeader)));
+                        .Where(acceptHeader => ContentTypes.Any(contentType => contentType.IsSubsetOf(acceptHeader)));
 
                     selectedFormatter = SelectFormatterUsingSortedAcceptHeaders(
-                                                                        formatterContext,
-                                                                        formatters,
-                                                                        filteredAndSortedAcceptHeaders);
+                        formatterContext,
+                        formatters,
+                        filteredAndSortedAcceptHeaders);
                 }
 
                 if (selectedFormatter == null)
@@ -177,9 +158,9 @@ namespace Microsoft.AspNet.Mvc
                     // In any of these cases, if the user has specified content types,
                     // do a last effort to find a formatter which can write any of the user specified content type.
                     selectedFormatter = SelectFormatterUsingAnyAcceptableContentType(
-                                                                        formatterContext,
-                                                                        formatters,
-                                                                        ContentTypes);
+                        formatterContext,
+                        formatters,
+                        ContentTypes);
                 }
             }
 
@@ -202,9 +183,9 @@ namespace Microsoft.AspNet.Mvc
         }
 
         public virtual IOutputFormatter SelectFormatterUsingSortedAcceptHeaders(
-                                                            OutputFormatterContext formatterContext,
-                                                            IEnumerable<IOutputFormatter> formatters,
-                                                            IEnumerable<MediaTypeHeaderValue> sortedAcceptHeaders)
+            OutputFormatterContext formatterContext,
+            IEnumerable<IOutputFormatter> formatters,
+            IEnumerable<MediaTypeHeaderValue> sortedAcceptHeaders)
         {
             IOutputFormatter selectedFormatter = null;
             foreach (var contentType in sortedAcceptHeaders)
@@ -212,8 +193,7 @@ namespace Microsoft.AspNet.Mvc
                 // Loop through each of the formatters and see if any one will support this
                 // mediaType Value.
                 selectedFormatter = formatters.FirstOrDefault(
-                                                    formatter =>
-                                                        formatter.CanWriteResult(formatterContext, contentType));
+                    formatter => formatter.CanWriteResult(formatterContext, contentType));
                 if (selectedFormatter != null)
                 {
                     // we found our match.
@@ -225,15 +205,14 @@ namespace Microsoft.AspNet.Mvc
         }
 
         public virtual IOutputFormatter SelectFormatterUsingAnyAcceptableContentType(
-                                                            OutputFormatterContext formatterContext,
-                                                            IEnumerable<IOutputFormatter> formatters,
-                                                            IEnumerable<MediaTypeHeaderValue> acceptableContentTypes)
+            OutputFormatterContext formatterContext,
+            IEnumerable<IOutputFormatter> formatters,
+            IEnumerable<MediaTypeHeaderValue> acceptableContentTypes)
         {
             var selectedFormatter = formatters.FirstOrDefault(
-                                            formatter =>
-                                                    acceptableContentTypes
-                                                    .Any(contentType =>
-                                                            formatter.CanWriteResult(formatterContext, contentType)));
+                formatter => acceptableContentTypes.Any(
+                    contentType => formatter.CanWriteResult(formatterContext, contentType)));
+
             return selectedFormatter;
         }
 
@@ -264,7 +243,7 @@ namespace Microsoft.AspNet.Mvc
             if (respectAcceptHeader)
             {
                 sortedAcceptHeaderMediaTypes = SortMediaTypeHeaderValues(incomingAcceptHeaderMediaTypes)
-                                                .Where(header => header.Quality != HeaderQuality.NoMatch);
+                    .Where(header => header.Quality != HeaderQuality.NoMatch);
             }
 
             return sortedAcceptHeaderMediaTypes;
@@ -286,9 +265,9 @@ namespace Microsoft.AspNet.Mvc
         {
             // Use OrderBy() instead of Array.Sort() as it performs fewer comparisons. In this case the comparisons
             // are quite expensive so OrderBy() performs better.
-            return headerValues.OrderByDescending(headerValue =>
-                                                    headerValue,
-                                                    MediaTypeHeaderValueComparer.QualityComparer);
+            return headerValues.OrderByDescending(
+                headerValue => headerValue,
+                MediaTypeHeaderValueComparer.QualityComparer);
         }
 
         private IEnumerable<IOutputFormatter> GetDefaultFormatters(ActionContext context)
@@ -302,7 +281,7 @@ namespace Microsoft.AspNet.Mvc
                     .GetRequiredService<IActionBindingContextAccessor>()
                     .ActionBindingContext;
 
-                // In scenarios where there is a resource filter which directly shortcircuits using an ObjectResult.
+                // In scenarios where there is a resource filter which directly short-circuits using an ObjectResult.
                 // actionBindingContext is not setup yet and is null.
                 if (actionBindingContext == null)
                 {

@@ -62,12 +62,17 @@ namespace Microsoft.AspNet.Mvc.Formatters
 
             var contentType = context.HttpContext.Request.ContentType;
             MediaTypeHeaderValue requestContentType;
-            if (!MediaTypeHeaderValue.TryParse(contentType, out requestContentType))
+            if (!MediaTypeHeaderValue.TryParse(contentType, out requestContentType) || requestContentType == null)
             {
                 return false;
             }
 
-            return SupportedMediaTypes.Any(supportedMediaType => supportedMediaType.IsSubsetOf(requestContentType));
+            // Confirm the request's content type is more specific than a media type this formatter supports e.g. OK if
+            // client sent "text/plain" data and this formatter supports "text/*".
+            return SupportedMediaTypes.Any(supportedMediaType =>
+            {
+                return requestContentType.IsSubsetOf(supportedMediaType);
+            });
         }
 
         /// <summary>

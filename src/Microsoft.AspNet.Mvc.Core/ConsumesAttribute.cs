@@ -56,10 +56,10 @@ namespace Microsoft.AspNet.Mvc
                 MediaTypeHeaderValue requestContentType = null;
                 MediaTypeHeaderValue.TryParse(context.HttpContext.Request.ContentType, out requestContentType);
 
-                // Only execute if this is the last filter before calling the action.
-                // This ensures that we only run the filter which is closest to the action.
+                // Confirm the request's content type is more specific than a media type this action supports e.g. OK
+                // if client sent "text/plain" data and this action supports "text/*".
                 if (requestContentType != null &&
-                    !ContentTypes.Any(contentType => contentType.IsSubsetOf(requestContentType)))
+                    !ContentTypes.Any(contentType => requestContentType.IsSubsetOf(contentType)))
                 {
                     context.Result = new UnsupportedMediaTypeResult();
                 }
@@ -102,7 +102,9 @@ namespace Microsoft.AspNet.Mvc
                 return !isActionWithoutConsumeConstraintPresent;
             }
 
-            if (ContentTypes.Any(c => c.IsSubsetOf(requestContentType)))
+            // Confirm the request's content type is more specific than a media type this action supports e.g. OK
+            // if client sent "text/plain" data and this action supports "text/*".
+            if (ContentTypes.Any(contentType => requestContentType.IsSubsetOf(contentType)))
             {
                 return true;
             }

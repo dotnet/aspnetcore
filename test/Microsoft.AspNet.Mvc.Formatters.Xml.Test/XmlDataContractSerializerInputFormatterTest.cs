@@ -56,10 +56,10 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [InlineData("application/xml", true)]
-        [InlineData("application/*", true)]
-        [InlineData("*/*", true)]
+        [InlineData("application/*", false)]
+        [InlineData("*/*", false)]
         [InlineData("text/xml", true)]
-        [InlineData("text/*", true)]
+        [InlineData("text/*", false)]
         [InlineData("text/json", false)]
         [InlineData("application/json", false)]
         [InlineData("", false)]
