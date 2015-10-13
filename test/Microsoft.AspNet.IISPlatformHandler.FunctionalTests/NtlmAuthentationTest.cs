@@ -17,8 +17,7 @@ namespace Microsoft.AspNet.IISPlatformHandler.FunctionalTests
     // Uses ports ranging 5050 - 5060.
     public class NtlmAuthenticationTests
     {
-        // TODO: The middleware needs to implement auth handlers.
-        [ConditionalTheory, Trait("ServerComparison.FunctionalTests", "ServerComparison.FunctionalTests")]
+        [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5050/")]
@@ -42,7 +41,7 @@ namespace Microsoft.AspNet.IISPlatformHandler.FunctionalTests
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, logger))
                 {
                     var deploymentResult = deployer.Deploy();
-                    var httpClientHandler = new HttpClientHandler() { UseDefaultCredentials = true };
+                    var httpClientHandler = new HttpClientHandler();
                     var httpClient = new HttpClient(httpClientHandler) { BaseAddress = new Uri(deploymentResult.ApplicationBaseUri) };
 
                     // Request to base address and check if various parts of the body are rendered & measure the cold startup time.
@@ -54,54 +53,60 @@ namespace Microsoft.AspNet.IISPlatformHandler.FunctionalTests
                     var responseText = await response.Content.ReadAsStringAsync();
                     try
                     {
-                        // TODO: Currently we do not implement mixed auth.
-                        // https://github.com/aspnet/IISIntegration/issues/1
                         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                        // Assert.Contains("NTLM", response.Headers.WwwAuthenticate.ToString());
-                        // Assert.Contains("Negotiate", response.Headers.WwwAuthenticate.ToString());
-
-                        /*
                         Assert.Equal("Hello World", responseText);
 
-                        responseText = await httpClient.GetStringAsync("/Anonymous");
+                        response = await httpClient.GetAsync("/Anonymous");
+                        responseText = await response.Content.ReadAsStringAsync();
+                        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                         Assert.Equal("Anonymous?True", responseText);
 
                         response = await httpClient.GetAsync("/Restricted");
+                        responseText = await response.Content.ReadAsStringAsync();
                         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
                         Assert.Contains("NTLM", response.Headers.WwwAuthenticate.ToString());
                         Assert.Contains("Negotiate", response.Headers.WwwAuthenticate.ToString());
 
                         response = await httpClient.GetAsync("/RestrictedNTLM");
+                        responseText = await response.Content.ReadAsStringAsync();
                         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
                         Assert.Contains("NTLM", response.Headers.WwwAuthenticate.ToString());
                         // Note we can't restrict a challenge to a specific auth type, the native auth modules always add themselves.
                         Assert.Contains("Negotiate", response.Headers.WwwAuthenticate.ToString());
 
                         response = await httpClient.GetAsync("/Forbidden");
+                        responseText = await response.Content.ReadAsStringAsync();
                         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-                        */
-                        // httpClientHandler = new HttpClientHandler() { UseDefaultCredentials = true };
-                        // httpClient = new HttpClient(httpClientHandler) { BaseAddress = new Uri(deploymentResult.ApplicationBaseUri) };
 
-                        responseText = await httpClient.GetStringAsync("/Anonymous");
-                        Assert.Equal("Anonymous?False", responseText);
+                        httpClientHandler = new HttpClientHandler() { UseDefaultCredentials = true };
+                        httpClient = new HttpClient(httpClientHandler) { BaseAddress = new Uri(deploymentResult.ApplicationBaseUri) };
 
-                        /*
+                        response = await httpClient.GetAsync("/Anonymous");
+                        responseText = await response.Content.ReadAsStringAsync();
+                        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                        Assert.Equal("Anonymous?True", responseText);
+
                         response = await httpClient.GetAsync("/AutoForbid");
+                        responseText = await response.Content.ReadAsStringAsync();
                         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
 
-                        responseText = await httpClient.GetStringAsync("/Restricted");
-                        Assert.Equal("Negotiate", responseText);
+                        response = await httpClient.GetAsync("/Restricted");
+                        responseText = await response.Content.ReadAsStringAsync();
+                        Assert.Equal("Kerberos", responseText);
 
-                        responseText = await httpClient.GetStringAsync("/RestrictedNegotiate");
-                        Assert.Equal("Negotiate", responseText);
-
-                        response = await httpClient.GetAsync("/RestrictedNTLM");
-                        // This isn't a Forbidden because we authenticate with Negotiate and challenge for NTLM.
+                        response = await httpClient.GetAsync("/RestrictedNegotiate");
+                        responseText = await response.Content.ReadAsStringAsync();
+                        // This is Forbidden because we authenticate with Kerberos and challenge for Negotiate.
                         // Note we can't restrict a challenge to a specific auth type, the native auth modules always add themselves,
                         // so both Negotiate and NTLM get sent again.
-                        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-                        */
+                        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+
+                        response = await httpClient.GetAsync("/RestrictedNTLM");
+                        responseText = await response.Content.ReadAsStringAsync();
+                        // This is Forbidden because we authenticate with Kerberos and challenge for NTLM.
+                        // Note we can't restrict a challenge to a specific auth type, the native auth modules always add themselves,
+                        // so both Negotiate and NTLM get sent again.
+                        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
                     }
                     catch (XunitException)
                     {

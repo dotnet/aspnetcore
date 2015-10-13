@@ -6,6 +6,7 @@
       "url": "git://github.com/aspnet/IISIntegration"
   },
   "dependencies": {
+    "Microsoft.AspNet.Http": "1.0.0-*",
     "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
     "Microsoft.Extensions.SecurityHelper.Sources": {
       "type": "build",
