@@ -39,7 +39,8 @@ namespace Microsoft.AspNet.Server.KestrelTests
         // https://github.com/aspnet/KestrelHttpServer/issues/240
         // This test currently fails on mono because of an issue with SslStream.
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task CanReadAndWriteWithHttpsConnectionFilter()
         {
             RemoteCertificateValidationCallback validationCallback =
