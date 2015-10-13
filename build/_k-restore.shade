@@ -10,6 +10,6 @@ restoreDir=''
 default currentDir = '${ Directory.GetCurrentDirectory() }'
 default restoreDir = '${ currentDir }'
 
-default restore_options=' ${ E("KOREBUILD_DNU_RESTORE_OPTIONS") } --parallel'
+default restore_options=' ${ E("KOREBUILD_DNU_RESTORE_OPTIONS") } ${ IsLinux ? string.Empty : "--parallel" }'
 
-dnu command='restore${ restore_options }' workingDir='${ restoreDir }' dnvmUse='default -runtime coreclr'
+dnu command='restore${ restore_options }' workingDir='${ restoreDir }'
