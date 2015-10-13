@@ -25,9 +25,18 @@ namespace Microsoft.AspNet.Server.Kestrel.LibuvCopier
                 {
                     var dnxFolder = Environment.GetEnvironmentVariable("DNX_HOME");
 
-                    if (string.IsNullOrEmpty(dnxFolder))
+                    var firstCandidate = dnxFolder?.Split(';')
+                                                  ?.Select(path => Environment.ExpandEnvironmentVariables(path))
+                                                  ?.Where(path => Directory.Exists(path))
+                                                  ?.FirstOrDefault();
+
+                    if (string.IsNullOrEmpty(firstCandidate))
                     {
                         dnxFolder = Path.Combine(GetHome(), ".dnx");
+                    }
+                    else
+                    {
+                        dnxFolder = firstCandidate;
                     }
 
                     packagesFolder = Path.Combine(dnxFolder, "packages");
@@ -50,7 +59,7 @@ namespace Microsoft.AspNet.Server.Kestrel.LibuvCopier
                     }
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine(ex);
                 throw;
