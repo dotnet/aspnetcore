@@ -67,7 +67,7 @@ function _WriteOut {
 
 ### Constants
 $ProductVersion="1.0.0"
-$BuildVersion="rc1-15526"
+$BuildVersion="rc1-15527"
 $Authors="Microsoft Open Technologies, Inc."
 
 # If the Version hasn't been replaced...
@@ -846,6 +846,14 @@ function Is-Elevated() {
     return $user.IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
 }
 
+function Get-ScriptRoot() {
+    if ($PSVersionTable.PSVersion.Major -ge 3) {
+        return $PSScriptRoot
+    }
+
+    return Split-Path $script:MyInvocation.MyCommand.Path -Parent
+}
+
 ### Commands
 
 <#
@@ -863,9 +871,10 @@ function dnvm-update-self {
     $wc = New-Object System.Net.WebClient
     Apply-Proxy $wc -Proxy:$Proxy
 
-    $dnvmFile = Join-Path $PSScriptRoot "dnvm.ps1"
-    $tempDnvmFile = Join-Path $PSScriptRoot "temp"
-    $backupFilePath = Join-Path $PSSCriptRoot "dnvm.ps1.bak"
+    $CurrentScriptRoot = Get-ScriptRoot
+    $dnvmFile = Join-Path $CurrentScriptRoot "dnvm.ps1"
+    $tempDnvmFile = Join-Path $CurrentScriptRoot "temp"
+    $backupFilePath = Join-Path $CurrentScriptRoot "dnvm.ps1.bak"
 
     $wc.DownloadFile($DNVMUpgradeUrl, $tempDnvmFile)
 
