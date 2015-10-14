@@ -590,7 +590,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
             Func<object, int> method = foo => 1;
             return new ControllerActionDescriptor
             {
-                MethodInfo = method.Method,
+                MethodInfo = method.GetMethodInfo(),
                 ControllerTypeInfo = typeof(TestController).GetTypeInfo(),
                 BoundProperties = new List<ParameterDescriptor>(),
                 Parameters = new List<ParameterDescriptor>()

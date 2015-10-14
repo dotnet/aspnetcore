@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Threading;
+using System.Globalization;
 using Microsoft.AspNet.Mvc.DataAnnotations.Test;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
@@ -15,9 +15,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public static string DisplayAttribute_Name { get; } = Resources.DisplayAttribute_Name;
 
         public static string DisplayAttribute_CultureSensitiveName =>
-            Resources.DisplayAttribute_Name + Thread.CurrentThread.CurrentUICulture;
+            Resources.DisplayAttribute_Name + CultureInfo.CurrentUICulture;
 
         public static string DisplayAttribute_CultureSensitiveDescription =>
-            Resources.DisplayAttribute_Description + Thread.CurrentThread.CurrentUICulture;
+            Resources.DisplayAttribute_Description + CultureInfo.CurrentUICulture;
     }
 }

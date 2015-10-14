@@ -23,8 +23,8 @@ namespace Microsoft.AspNet.Mvc
 
             var controllerTypes = new[]
             {
-                typeof(ControllerTypeA).GetTypeInfo(),
-                typeof(TypeBController).GetTypeInfo(),
+                typeof(ControllerTypeA),
+                typeof(TypeBController),
             };
 
             // Act
@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.Mvc
 
             Assert.Equal(typeof(IControllerTypeProvider), services[3].ServiceType);
             var typeProvider = Assert.IsType<StaticControllerTypeProvider>(services[3].ImplementationInstance);
-            Assert.Equal(controllerTypes, typeProvider.ControllerTypes.OrderBy(c => c.Name));
+            Assert.Equal(controllerTypes, typeProvider.ControllerTypes.OrderBy(c => c.Name).Select(t => t.AsType()));
             Assert.Equal(ServiceLifetime.Singleton, services[3].Lifetime);
         }
     }

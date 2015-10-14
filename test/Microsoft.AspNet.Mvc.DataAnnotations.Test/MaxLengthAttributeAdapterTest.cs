@@ -62,7 +62,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             Assert.Equal("Length must be at most 5", rule.ErrorMessage);
         }
 
-#if DNX451
         [Fact]
         [ReplaceCulture]
         public void ClientRulesWithMaxLengthAttribute_StringLocalizer_ReturnsLocalizedErrorString()
@@ -93,6 +92,5 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             Assert.Equal(10, rule.ValidationParameters["max"]);
             Assert.Equal("Longueur est invalide", rule.ErrorMessage);
         }
-#endif
-        }
+    }
 }

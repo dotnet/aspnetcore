@@ -1,17 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if DNX451
 using System;
-#endif
 using System.Collections.Generic;
 using System.Globalization;
-#if DNX451
 using System.Threading.Tasks;
 using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
-#endif
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -29,7 +25,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return new CompositeValueProvider() { emptyValueProvider, valueProvider };
         }
 
-#if DNX451
         [Fact]
         public void GetKeysFromPrefixAsync_ReturnsResultFromFirstValueProviderThatReturnsValues()
         {
@@ -142,6 +137,5 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 }
             }
         }
-#endif
     }
 }

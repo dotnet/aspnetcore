@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if MOCK_SUPPORT
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -74,8 +73,8 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             var viewContext = GetViewContext<Model>(model: null, metadataProvider: metadataProvider);
             var modelExplorer = metadataProvider.GetModelExplorerForType(typeof(string), model: null);
 
-            var expected = "The name of an HTML field cannot be null or empty. Instead use methods " + 
-                "Microsoft.AspNet.Mvc.Rendering.IHtmlHelper.Editor or Microsoft.AspNet.Mvc.Rendering." + 
+            var expected = "The name of an HTML field cannot be null or empty. Instead use methods " +
+                "Microsoft.AspNet.Mvc.Rendering.IHtmlHelper.Editor or Microsoft.AspNet.Mvc.Rendering." +
                 "IHtmlHelper`1.EditorFor with a non-empty htmlFieldName argument value." +
                 Environment.NewLine + "Parameter name: expression";
 
@@ -136,7 +135,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
             // Act and assert
             var ex = Assert.Throws<ArgumentException>(
-                "expression", 
+                "expression",
                 () => htmlGenerator.GenerateTextArea(
                     viewContext,
                     modelExplorer,
@@ -164,7 +163,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
             // Act and assert
             var ex = Assert.Throws<ArgumentException>(
-                "expression", 
+                "expression",
                 () => htmlGenerator.GenerateValidationMessage(
                     viewContext,
                     null,
@@ -713,4 +712,3 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         }
     }
 }
-#endif

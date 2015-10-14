@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Design;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -15,7 +14,7 @@ using Microsoft.AspNet.Mvc.ApplicationModels;
 using Microsoft.AspNet.Mvc.Controllers;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Routing;
-using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
@@ -635,21 +634,22 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
         {
             var actionDescriptorProvider = GetActionDescriptorProvider();
 
-            // service container does not work quite like our built in Depenency Injection container.
-            var serviceContainer = new ServiceContainer();
+            var serviceContainer = new ServiceCollection();
             var list = new List<IActionDescriptorProvider>()
             {
                 actionDescriptorProvider,
             };
 
-            serviceContainer.AddService(typeof(IEnumerable<IActionDescriptorProvider>), list);
+            serviceContainer.AddSingleton(typeof(IEnumerable<IActionDescriptorProvider>), list);
 
-            var actionCollectionDescriptorProvider = new DefaultActionDescriptorsCollectionProvider(serviceContainer);
+            var actionCollectionDescriptorProvider = new DefaultActionDescriptorsCollectionProvider(
+                serviceContainer.BuildServiceProvider());
             var decisionTreeProvider = new ActionSelectorDecisionTreeProvider(actionCollectionDescriptorProvider);
 
-            var actionConstraintProviders = new IActionConstraintProvider[] {
-                    new DefaultActionConstraintProvider(),
-                };
+            var actionConstraintProviders = new[]
+            {
+                new DefaultActionConstraintProvider(),
+            };
 
             var defaultActionSelector = new DefaultActionSelector(
                 actionCollectionDescriptorProvider,
@@ -761,7 +761,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             var routeData = new RouteData();
             routeData.Routers.Add(new Mock<IRouter>(MockBehavior.Strict).Object);
 
-            var serviceContainer = new ServiceContainer();
+            var serviceProvider = new ServiceCollection().BuildServiceProvider();
 
             var httpContext = new Mock<HttpContext>(MockBehavior.Strict);
 
@@ -770,7 +770,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             request.SetupGet(r => r.Path).Returns(new PathString());
             request.SetupGet(r => r.Headers).Returns(new HeaderDictionary());
             httpContext.SetupGet(c => c.Request).Returns(request.Object);
-            httpContext.SetupGet(c => c.RequestServices).Returns(serviceContainer);
+            httpContext.SetupGet(c => c.RequestServices).Returns(serviceProvider);
 
             return new RouteContext(httpContext.Object)
             {

@@ -10,7 +10,6 @@ using Microsoft.AspNet.Mvc.ActionConstraints;
 using Microsoft.AspNet.Mvc.ApiExplorer;
 using Microsoft.AspNet.Mvc.ApplicationModels;
 using Microsoft.AspNet.Mvc.Controllers;
-using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Cors;
 using Microsoft.AspNet.Mvc.DataAnnotations.Internal;
 using Microsoft.AspNet.Mvc.Filters;
@@ -107,7 +106,7 @@ namespace Microsoft.AspNet.Mvc
                     // 'single-registration' services should only have one implementation registered.
                     AssertServiceCountEquals(services, service.ServiceType, 1);
                 }
-                else if (service.ImplementationType != null && !service.ImplementationType.Assembly.FullName.Contains("Mvc"))
+                else if (service.ImplementationType != null && !service.ImplementationType.GetTypeInfo().Assembly.FullName.Contains("Mvc"))
                 {
                     // Ignore types that don't come from MVC
                 }
@@ -129,7 +128,7 @@ namespace Microsoft.AspNet.Mvc
                 var multiRegistrationServiceTypes = MutliRegistrationServiceTypes;
                 return services
                     .Where(sd => !multiRegistrationServiceTypes.Keys.Contains(sd.ServiceType))
-                    .Where(sd => sd.ServiceType.Assembly.FullName.Contains("Mvc"))
+                    .Where(sd => sd.ServiceType.GetTypeInfo().Assembly.FullName.Contains("Mvc"))
                     .Select(sd => sd.ServiceType);
             }
         }

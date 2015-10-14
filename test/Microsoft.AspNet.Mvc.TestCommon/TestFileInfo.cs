@@ -8,7 +8,7 @@ using Microsoft.AspNet.FileProviders;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
-    internal class TestFileInfo : IFileInfo
+    public class TestFileInfo : IFileInfo
     {
         private string _content;
 

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using Microsoft.AspNet.Routing;
 using Xunit;
 
@@ -28,14 +29,14 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
                 var value1 = property.GetValue(route);
                 var value2 = property.GetValue(route2);
 
-                if (typeof(IEnumerable<object>).IsAssignableFrom(property.PropertyType))
+                if (typeof(IEnumerable<object>).GetTypeInfo().IsAssignableFrom(property.PropertyType.GetTypeInfo()))
                 {
                     Assert.Equal<object>((IEnumerable<object>)value1, (IEnumerable<object>)value2);
 
                     // Ensure non-default value
                     Assert.NotEmpty((IEnumerable<object>)value1);
                 }
-                else if (property.PropertyType.IsValueType ||
+                else if (property.PropertyType.GetTypeInfo().IsValueType ||
                     Nullable.GetUnderlyingType(property.PropertyType) != null)
                 {
                     Assert.Equal(value1, value2);

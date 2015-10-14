@@ -1,13 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-#if DNX451
 using Moq;
-#endif
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
@@ -16,7 +12,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
     {
         private readonly IModelMetadataProvider _metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
 
-#if DNX451
         [Fact]
         public void GetValidators_ReturnsValidatorForIValidatableObject()
         {
@@ -36,7 +31,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             var validator = Assert.Single(providerContext.Validators);
             Assert.IsType<ValidatableObjectAdapter>(validator);
         }
-#endif
 
         [Fact]
         public void GetValidators_InsertsRequiredValidatorsFirst()
@@ -89,7 +83,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 
         // Default IValidatableObject adapter factory
 
-#if DNX451
         [Fact]
         public void IValidatableObjectGetsAValidator()
         {
@@ -108,7 +101,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             // Assert
             Assert.Single(providerContext.Validators);
         }
-#endif
 
         private class ObservableModel
         {

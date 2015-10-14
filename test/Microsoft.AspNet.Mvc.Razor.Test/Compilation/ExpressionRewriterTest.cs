@@ -4,13 +4,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Dnx.Compilation.CSharp;
 using Microsoft.Extensions.CompilationAbstractions;
 using Microsoft.Extensions.PlatformAbstractions;
-using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Razor.Compilation
@@ -456,10 +457,20 @@ public class Person
 
         private CSharpCompilation Compile(SyntaxTree tree)
         {
+            // Disable 1702 until roslyn turns this off by default
+            var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+                .WithSpecificDiagnosticOptions(new Dictionary<string, ReportDiagnostic>
+                {
+                    { "CS1701", ReportDiagnostic.Suppress }, // Binding redirects
+                    { "CS1702", ReportDiagnostic.Suppress },
+                    { "CS1705", ReportDiagnostic.Suppress }
+                });
+
             var compilation = CSharpCompilation.Create(
                 "Test.Assembly",
                 new[] { tree },
-                GetReferences());
+                GetReferences(),
+                options: options);
 
             var diagnostics = compilation.GetDiagnostics();
             if (diagnostics.Length > 0)

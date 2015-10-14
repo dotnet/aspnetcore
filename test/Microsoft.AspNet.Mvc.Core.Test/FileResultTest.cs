@@ -3,7 +3,6 @@
 
 using System;
 using System.IO;
-using System.Net.Mime;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
@@ -275,7 +274,7 @@ namespace Microsoft.AspNet.Mvc
             public bool WasWriteFileCalled;
 
             public EmptyFileResult()
-                : base(MediaTypeHeaderValue.Parse(MediaTypeNames.Application.Octet))
+                : base(MediaTypeHeaderValue.Parse("application/octet"))
             {
             }
 

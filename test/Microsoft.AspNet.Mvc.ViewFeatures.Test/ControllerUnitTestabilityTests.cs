@@ -9,9 +9,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Controllers;
 using Microsoft.AspNet.Routing;
-#if MOCK_SUPPORT
 using Moq;
-#endif
 using Newtonsoft.Json;
 using Xunit;
 
@@ -144,7 +142,6 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-#if MOCK_SUPPORT
         [Fact]
         public void ControllerFileStream_InvokedInUnitTests()
         {
@@ -180,7 +177,6 @@ namespace Microsoft.AspNet.Mvc
                 }
             }
         }
-#endif
 
         [Fact]
         public void ControllerJson_InvokedInUnitTests()

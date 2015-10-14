@@ -3,9 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Http.Internal;
-#if DNX451
 using Moq;
-#endif
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
@@ -63,7 +61,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.Equal(isIncluded, predicate(context, property));
         }
 
-#if DNX451
         [Theory]
         [InlineData("UserName", true)]
         [InlineData("Username", false)]
@@ -120,7 +117,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.True(predicate(context, "UserName"));
             Assert.True(predicate(context, "UserName"));
         }
-#endif
 
         private class TestProvider : IPropertyBindingPredicateProvider
         {

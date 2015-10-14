@@ -127,8 +127,6 @@ namespace System.Web.Http.Dispatcher
             Assert.DoesNotContain("OH NO", modelStateError["[2].Name"] as IEnumerable<string>);
         }
 
-#if !DNXCORE50
-
         [Fact]
         public void HttpError_Roundtrips_WithJsonFormatter()
         {
@@ -218,8 +216,6 @@ namespace System.Web.Http.Dispatcher
                 "<Error><Message>An error has occurred.</Message><ExceptionMessage>error</ExceptionMessage><ExceptionType>System.ArgumentException</ExceptionType><StackTrace /><InnerException><Message>An error has occurred.</Message><ExceptionMessage>innerError</ExceptionMessage><ExceptionType>System.Exception</ExceptionType><StackTrace /></InnerException></Error>",
                 serializedError);
         }
-
-#endif
 
         [Fact]
         public void GetPropertyValue_GetsValue_IfTypeMatches()

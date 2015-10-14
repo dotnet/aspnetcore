@@ -6,9 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-#if !DNXCORE50
 using Moq;
-#endif
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
@@ -267,7 +265,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             Assert.True(isRequired);
         }
 
-#if !DNXCORE50
         [Fact]
         public void PropertiesProperty_CallsProvider()
         {
@@ -485,7 +482,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             Assert.Equal(expectedNames.Count(), properties.Count);
             Assert.Equal(expectedNames.ToArray(), properties.Select(p => p.PropertyName).ToArray());
         }
-#endif
 
         [Fact]
         public void PropertiesSetOnce()

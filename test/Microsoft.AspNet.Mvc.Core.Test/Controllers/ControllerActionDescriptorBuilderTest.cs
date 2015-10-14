@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
                 typeof(TestController).GetTypeInfo(),
                 new List<object>() { });
 
-            var propertyInfo = controller.ControllerType.GetProperty("BoundProperty");
+            var propertyInfo = controller.ControllerType.AsType().GetProperty("BoundProperty");
             controller.ControllerProperties.Add(
                 new PropertyModel(
                     propertyInfo,
@@ -32,7 +32,9 @@ namespace Microsoft.AspNet.Mvc.Controllers
                 });
 
             controller.ControllerProperties.Add(
-               new PropertyModel(controller.ControllerType.GetProperty("UnboundProperty"), new List<object>() { }));
+               new PropertyModel(
+                   controller.ControllerType.AsType().GetProperty("UnboundProperty"),
+                   new List<object>() { }));
 
             controller.Application = applicationModel;
             applicationModel.Controllers.Add(controller);

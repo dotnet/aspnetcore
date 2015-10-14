@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
                     // Ensure non-default value
                     Assert.NotEmpty((IDictionary<object, object>)value1);
                 }
-                else if (property.PropertyType.IsValueType ||
+                else if (property.PropertyType.GetTypeInfo().IsValueType ||
                     Nullable.GetUnderlyingType(property.PropertyType) != null)
                 {
                     Assert.Equal(value1, value2);

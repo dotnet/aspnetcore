@@ -6,16 +6,27 @@
   "dependencies": {
     "Microsoft.AspNet.Http": "1.0.0-*",
     "Microsoft.AspNet.Mvc": "6.0.0-*",
-    "Microsoft.AspNet.Mvc.Formatters.Xml" : "6.0.0-*",
-    "Microsoft.AspNet.Mvc.TestCommon": { "type": "build", "version": "6.0.0-*" },
+    "Microsoft.AspNet.Mvc.Formatters.Xml": "6.0.0-*",
+    "Microsoft.AspNet.Mvc.TestCommon": {
+      "type": "build",
+      "version": "6.0.0-*"
+    },
     "Microsoft.AspNet.Testing": "1.0.0-*",
-    "Moq": "4.2.1312.1622",
     "xunit.runner.aspnet": "2.0.0-aspnet-*"
   },
   "commands": {
     "test": "xunit.runner.aspnet"
   },
   "frameworks": {
-    "dnx451": { }
+    "dnx451": {
+      "dependencies": {
+        "Moq": "4.2.1312.1622"
+      }
+    },
+    "dnxcore50": {
+      "dependencies": {
+        "moq.netcore": "4.4.0-beta8"
+      }
+    }
   }
 }

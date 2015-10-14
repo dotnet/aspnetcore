@@ -2,16 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
-using System.Reflection;
 using System.Runtime.Versioning;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Dnx.Runtime;
 using Microsoft.Extensions.CompilationAbstractions;
-using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.PlatformAbstractions;
 using Moq;
 using Xunit;
 
@@ -27,8 +25,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             // Arrange
             var content = @"
 public class MyTestType  {}";
-            var applicationEnvironment = GetApplicationEnvironment();
-            var libraryExporter = GetLibraryExporter();
+            var applicationEnvironment = PlatformServices.Default.Application;
+            var libraryExporter = CompilationServices.Default.LibraryExporter;
 
             var compilerOptionsProvider = new Mock<ICompilerOptionsProvider>();
             compilerOptionsProvider
@@ -67,8 +65,8 @@ public class MyTestType  {}";
             var content = $@"
 #line 1 ""{viewPath}""
 this should fail";
-            var applicationEnvironment = GetApplicationEnvironment();
-            var libraryExporter = GetLibraryExporter();
+            var applicationEnvironment = PlatformServices.Default.Application;
+            var libraryExporter = CompilationServices.Default.LibraryExporter;
 
             var compilerOptionsProvider = new Mock<ICompilerOptionsProvider>();
             compilerOptionsProvider
@@ -106,8 +104,8 @@ this should fail";
             // Arrange
             var fileContent = "file content";
             var content = @"this should fail";
-            var applicationEnvironment = GetApplicationEnvironment();
-            var libraryExporter = GetLibraryExporter();
+            var applicationEnvironment = PlatformServices.Default.Application;
+            var libraryExporter = CompilationServices.Default.LibraryExporter;
 
             var compilerOptionsProvider = new Mock<ICompilerOptionsProvider>();
             compilerOptionsProvider
@@ -148,8 +146,8 @@ this should fail";
             var content = $@"
 #line 1 ""{path}""
 this should fail";
-            var applicationEnvironment = GetApplicationEnvironment();
-            var libraryExporter = GetLibraryExporter();
+            var applicationEnvironment = PlatformServices.Default.Application;
+            var libraryExporter = CompilationServices.Default.LibraryExporter;
 
             var compilerOptionsProvider = new Mock<ICompilerOptionsProvider>();
             compilerOptionsProvider
@@ -197,8 +195,8 @@ public class MyCustomDefinedClass {}
 public class MyNonCustomDefinedClass {}
 #endif
 ";
-            var applicationEnvironment = GetApplicationEnvironment();
-            var libraryExporter = GetLibraryExporter();
+            var applicationEnvironment = PlatformServices.Default.Application;
+            var libraryExporter = CompilationServices.Default.LibraryExporter;
 
             var compilerOptionsProvider = new Mock<ICompilerOptionsProvider>();
             compilerOptionsProvider
@@ -236,8 +234,8 @@ public class MyNonCustomDefinedClass {}
             var content = @"
 public class RazorPrefixType  {}
 public class NotRazorPrefixType {}";
-            var applicationEnvironment = GetApplicationEnvironment();
-            var libraryExporter = GetLibraryExporter();
+            var applicationEnvironment = PlatformServices.Default.Application;
+            var libraryExporter = CompilationServices.Default.LibraryExporter;
 
             var compilerOptionsProvider = new Mock<ICompilerOptionsProvider>();
             compilerOptionsProvider
@@ -284,8 +282,8 @@ public class NotRazorPrefixType {}";
                     FileProvider = fileProvider
                 });
             var compilationService = new RoslynCompilationService(
-                GetApplicationEnvironment(),
-                GetLibraryExporter(),
+                PlatformServices.Default.Application,
+                CompilationServices.Default.LibraryExporter,
                 Mock.Of<ICompilerOptionsProvider>(),
                 Mock.Of<IMvcRazorHost>(),
                 options.Object);
@@ -373,37 +371,6 @@ public class NotRazorPrefixType {}";
                 category: "some-category",
                 defaultSeverity: DiagnosticSeverity.Error,
                 isEnabledByDefault: true);
-        }
-
-        private static ILibraryExporter GetLibraryExporter()
-        {
-            var fileReference = new Mock<IMetadataFileReference>();
-            fileReference
-                .SetupGet(f => f.Path)
-                .Returns(typeof(string).Assembly.Location);
-            var libraryExport = new LibraryExport(fileReference.Object);
-
-            var libraryExporter = new Mock<ILibraryExporter>();
-            libraryExporter
-                .Setup(l => l.GetAllExports(It.IsAny<string>()))
-                .Returns(libraryExport);
-            return libraryExporter.Object;
-        }
-
-        private IApplicationEnvironment GetApplicationEnvironment()
-        {
-            var applicationEnvironment = new Mock<IApplicationEnvironment>();
-            applicationEnvironment
-                .SetupGet(a => a.ApplicationName)
-                .Returns("MyApp");
-            applicationEnvironment
-                .SetupGet(a => a.RuntimeFramework)
-                .Returns(new FrameworkName("ASPNET", new Version(5, 0)));
-            applicationEnvironment
-                .SetupGet(a => a.ApplicationBasePath)
-                .Returns("MyBasePath");
-
-            return applicationEnvironment.Object;
         }
 
         private static IOptions<RazorViewEngineOptions> GetOptions(IFileProvider fileProvider = null)

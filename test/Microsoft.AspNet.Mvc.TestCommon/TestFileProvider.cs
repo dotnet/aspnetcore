@@ -9,7 +9,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
-    internal class TestFileProvider : IFileProvider
+    public class TestFileProvider : IFileProvider
     {
         private readonly Dictionary<string, IFileInfo> _lookup =
             new Dictionary<string, IFileInfo>(StringComparer.Ordinal);

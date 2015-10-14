@@ -8,12 +8,8 @@ using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.Routing;
 using Microsoft.Extensions.OptionsModel;
 using Microsoft.Net.Http.Headers;
-#if DNX451
 using Moq;
-#endif
 using Xunit;
-
-
 
 namespace Microsoft.AspNet.Mvc.Formatters
 {
@@ -26,7 +22,6 @@ namespace Microsoft.AspNet.Mvc.Formatters
             RouteAndQueryData
         }
 
-#if DNX451
         [Theory]
         [InlineData("json", FormatSource.RouteData, "application/json")]
         [InlineData("json", FormatSource.QueryData, "application/json")]
@@ -405,6 +400,5 @@ namespace Microsoft.AspNet.Mvc.Formatters
                 };
             }
         }
-#endif
     }
 }

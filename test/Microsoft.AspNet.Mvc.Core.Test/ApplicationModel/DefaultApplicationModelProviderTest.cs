@@ -266,7 +266,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             var typeInfo = typeof(DerivedController).GetTypeInfo();
             var methodInfo =
                 typeInfo.GetRuntimeInterfaceMap(typeof(IDisposable)).TargetMethods[0];
-            var method = typeInfo.GetMethods().Where(m => (m == methodInfo)).SingleOrDefault();
+            var method = typeInfo.AsType().GetMethods().SingleOrDefault(m => (m == methodInfo));
             Assert.NotNull(method);
 
             // Act
@@ -284,7 +284,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             var typeInfo = typeof(DerivedController).GetTypeInfo();
             var methodInfo =
                 typeInfo.GetRuntimeInterfaceMap(typeof(IDisposable)).TargetMethods[0];
-            var methods = typeInfo.GetMethods().Where(m => m.Name.Equals("Dispose") && m != methodInfo);
+            var methods = typeInfo.AsType().GetMethods().Where(m => m.Name.Equals("Dispose") && m != methodInfo);
 
             Assert.NotEmpty(methods);
 
@@ -338,7 +338,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             var typeInfo = typeof(IDisposablePocoController).GetTypeInfo();
             var methodInfo =
                 typeInfo.GetRuntimeInterfaceMap(typeof(IDisposable)).TargetMethods[0];
-            var method = typeInfo.GetMethods().Where(m => (m == methodInfo)).SingleOrDefault();
+            var method = typeInfo.AsType().GetMethods().SingleOrDefault(m => (m == methodInfo));
             Assert.NotNull(method);
 
             // Act
@@ -356,7 +356,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             var typeInfo = typeof(IDisposablePocoController).GetTypeInfo();
             var methodInfo =
                 typeInfo.GetRuntimeInterfaceMap(typeof(IDisposable)).TargetMethods[0];
-            var methods = typeInfo.GetMethods().Where(m => m.Name.Equals("Dispose") && m != methodInfo);
+            var methods = typeInfo.AsType().GetMethods().Where(m => m.Name.Equals("Dispose") && m != methodInfo);
 
             Assert.NotEmpty(methods);
 
@@ -376,7 +376,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             // Arrange
             var builder = new TestApplicationModelProvider();
             var typeInfo = typeof(SimplePocoController).GetTypeInfo();
-            var methods = typeInfo.GetMethods().Where(m => m.Name.Equals("Dispose"));
+            var methods = typeInfo.AsType().GetMethods().Where(m => m.Name.Equals("Dispose"));
 
             Assert.NotEmpty(methods);
 
@@ -419,7 +419,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             var actionName = nameof(ConventionallyRoutedController.Edit);
 
             // Act
-            var actions = builder.BuildActionModels(typeInfo, typeInfo.GetMethod(actionName));
+            var actions = builder.BuildActionModels(typeInfo, typeInfo.AsType().GetMethod(actionName));
 
             // Assert
             var action = Assert.Single(actions);
@@ -438,7 +438,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             var actionName = nameof(ConventionallyRoutedController.Update);
 
             // Act
-            var actions = builder.BuildActionModels(typeInfo, typeInfo.GetMethod(actionName));
+            var actions = builder.BuildActionModels(typeInfo, typeInfo.AsType().GetMethod(actionName));
 
             // Assert
             var action = Assert.Single(actions);
@@ -459,7 +459,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             var actionName = nameof(ConventionallyRoutedController.Delete);
 
             // Act
-            var actions = builder.BuildActionModels(typeInfo, typeInfo.GetMethod(actionName));
+            var actions = builder.BuildActionModels(typeInfo, typeInfo.AsType().GetMethod(actionName));
 
             // Assert
             var action = Assert.Single(actions);
@@ -481,7 +481,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             var actionName = nameof(ConventionallyRoutedController.Details);
 
             // Act
-            var actions = builder.BuildActionModels(typeInfo, typeInfo.GetMethod(actionName));
+            var actions = builder.BuildActionModels(typeInfo, typeInfo.AsType().GetMethod(actionName));
 
             // Assert
             var action = Assert.Single(actions);
@@ -501,7 +501,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             var actionName = nameof(ConventionallyRoutedController.List);
 
             // Act
-            var actions = builder.BuildActionModels(typeInfo, typeInfo.GetMethod(actionName));
+            var actions = builder.BuildActionModels(typeInfo, typeInfo.AsType().GetMethod(actionName));
 
             // Assert
             var action = Assert.Single(actions);
@@ -521,7 +521,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             var actionName = nameof(NoRouteAttributeOnControllerController.Edit);
 
             // Act
-            var actions = builder.BuildActionModels(typeInfo, typeInfo.GetMethod(actionName));
+            var actions = builder.BuildActionModels(typeInfo, typeInfo.AsType().GetMethod(actionName));
 
             // Assert
             var action = Assert.Single(actions);
@@ -546,7 +546,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             var actionName = nameof(NoRouteAttributeOnControllerController.Update);
 
             // Act
-            var actions = builder.BuildActionModels(typeInfo, typeInfo.GetMethod(actionName));
+            var actions = builder.BuildActionModels(typeInfo, typeInfo.AsType().GetMethod(actionName));
 
             // Assert
             var action = Assert.Single(actions);
@@ -570,7 +570,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             var actionName = nameof(NoRouteAttributeOnControllerController.List);
 
             // Act
-            var actions = builder.BuildActionModels(typeInfo, typeInfo.GetMethod(actionName));
+            var actions = builder.BuildActionModels(typeInfo, typeInfo.AsType().GetMethod(actionName));
 
             // Assert
             var action = Assert.Single(actions);
@@ -594,7 +594,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             var actionName = nameof(NoRouteAttributeOnControllerController.Index);
 
             // Act
-            var actions = builder.BuildActionModels(typeInfo, typeInfo.GetMethod(actionName));
+            var actions = builder.BuildActionModels(typeInfo, typeInfo.AsType().GetMethod(actionName));
 
             // Assert
             Assert.Equal(2, actions.Count());
@@ -625,7 +625,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             var actionName = nameof(NoRouteAttributeOnControllerController.Remove);
 
             // Act
-            var actions = builder.BuildActionModels(typeInfo, typeInfo.GetMethod(actionName));
+            var actions = builder.BuildActionModels(typeInfo, typeInfo.AsType().GetMethod(actionName));
 
             // Assert
             var action = Assert.Single(actions);
@@ -649,7 +649,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             var typeInfo = controller.GetTypeInfo();
 
             // Act
-            var actions = builder.BuildActionModels(typeInfo, typeInfo.GetMethod("Delete"));
+            var actions = builder.BuildActionModels(typeInfo, typeInfo.AsType().GetMethod("Delete"));
 
             // Assert
             var action = Assert.Single(actions);
@@ -673,7 +673,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             var typeInfo = controller.GetTypeInfo();
 
             // Act
-            var actions = builder.BuildActionModels(typeInfo, typeInfo.GetMethod("Index"));
+            var actions = builder.BuildActionModels(typeInfo, typeInfo.AsType().GetMethod("Index"));
 
             // Assert
             Assert.Equal(2, actions.Count());
@@ -703,7 +703,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             var actionName = nameof(MixedHttpVerbsAndRouteAttributeController.VerbAndRoute);
 
             // Act
-            var actions = builder.BuildActionModels(typeInfo, typeInfo.GetMethod(actionName));
+            var actions = builder.BuildActionModels(typeInfo, typeInfo.AsType().GetMethod(actionName));
 
             // Assert
             var action = Assert.Single(actions);
@@ -720,7 +720,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             var actionName = nameof(MixedHttpVerbsAndRouteAttributeController.MultipleVerbsAndRoutes);
 
             // Act
-            var actions = builder.BuildActionModels(typeInfo, typeInfo.GetMethod(actionName));
+            var actions = builder.BuildActionModels(typeInfo, typeInfo.AsType().GetMethod(actionName));
 
             // Assert
             Assert.Equal(2, actions.Count());
@@ -742,7 +742,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             var actionName = nameof(MixedHttpVerbsAndRouteAttributeController.MultipleVerbsWithAnyWithoutTemplateAndRoutes);
 
             // Act
-            var actions = builder.BuildActionModels(typeInfo, typeInfo.GetMethod(actionName));
+            var actions = builder.BuildActionModels(typeInfo, typeInfo.AsType().GetMethod(actionName));
 
             // Assert
             Assert.Equal(3, actions.Count());
@@ -766,7 +766,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             var actionName = nameof(MixedHttpVerbsAndRouteAttributeController.Invalid);
 
             // Act
-            var actions = builder.BuildActionModels(typeInfo, typeInfo.GetMethod(actionName));
+            var actions = builder.BuildActionModels(typeInfo, typeInfo.AsType().GetMethod(actionName));
 
             // Assert
             Assert.Equal(2, actions.Count());
@@ -787,7 +787,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             var actionName = nameof(DerivedClassInheritsAttributeRoutesController.Edit);
 
             // Act
-            var actions = builder.BuildActionModels(typeInfo, typeInfo.GetMethod(actionName));
+            var actions = builder.BuildActionModels(typeInfo, typeInfo.AsType().GetMethod(actionName));
 
             // Assert
             Assert.Equal(2, actions.Count());
@@ -810,7 +810,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             var actionName = nameof(DerivedClassOverridesAttributeRoutesController.Edit);
 
             // Act
-            var actions = builder.BuildActionModels(typeInfo, typeInfo.GetMethod(actionName));
+            var actions = builder.BuildActionModels(typeInfo, typeInfo.AsType().GetMethod(actionName));
 
             // Assert
             Assert.Equal(2, actions.Count());

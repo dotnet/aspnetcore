@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -33,6 +32,7 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal(expectedData, memoryStream.ToArray());
         }
 
+#if DNX451
         [Fact]
         public async Task DoesNotFlush_UnderlyingStream_OnClosingWriter()
         {
@@ -48,6 +48,7 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal(0, stream.FlushCallCount);
             Assert.Equal(0, stream.FlushAsyncCallCount);
         }
+#endif
 
         [Fact]
         public async Task DoesNotFlush_UnderlyingStream_OnDisposingWriter()
@@ -65,6 +66,7 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal(0, stream.FlushAsyncCallCount);
         }
 
+#if DNX451
         [Fact]
         public async Task DoesNotClose_UnderlyingStream_OnDisposingWriter()
         {
@@ -79,6 +81,7 @@ namespace Microsoft.AspNet.Mvc
             // Assert
             Assert.Equal(0, stream.CloseCallCount);
         }
+#endif
 
         [Fact]
         public async Task DoesNotDispose_UnderlyingStream_OnDisposingWriter()
@@ -108,7 +111,11 @@ namespace Microsoft.AspNet.Mvc
             await writer.WriteAsync(new string('a', byteLength));
 
             // Act
+#if DNX451
             writer.Close();
+#else
+            writer.Dispose();
+#endif
 
             // Assert
             Assert.Equal(0, stream.FlushCallCount);
@@ -299,7 +306,10 @@ namespace Microsoft.AspNet.Mvc
 
         [Theory]
         [InlineData("你好世界", "utf-16")]
+#if !DNXCORE50
+        // CoreCLR does not like shift_jis as an encoding.
         [InlineData("こんにちは世界", "shift_jis")]
+#endif
         [InlineData("హలో ప్రపంచ", "iso-8859-1")]
         [InlineData("வணக்கம் உலக", "utf-32")]
         public async Task WritesData_InExpectedEncoding(string data, string encodingName)
@@ -327,9 +337,12 @@ namespace Microsoft.AspNet.Mvc
         [InlineData('你', 1023, "utf-16")]
         [InlineData('你', 1024, "utf-16")]
         [InlineData('你', 1050, "utf-16")]
+#if !DNXCORE50
+        // CoreCLR does not like shift_jis as an encoding.
         [InlineData('こ', 1023, "shift_jis")]
         [InlineData('こ', 1024, "shift_jis")]
         [InlineData('こ', 1050, "shift_jis")]
+#endif
         [InlineData('హ', 1023, "iso-8859-1")]
         [InlineData('హ', 1024, "iso-8859-1")]
         [InlineData('హ', 1050, "iso-8859-1")]
@@ -467,14 +480,13 @@ namespace Microsoft.AspNet.Mvc
         {
             private int _flushCallCount;
             private int _flushAsyncCallCount;
-            private int _closeCallCount;
             private int _disposeCallCount;
 
             public int FlushCallCount { get { return _flushCallCount; } }
 
             public int FlushAsyncCallCount { get { return _flushAsyncCallCount; } }
 
-            public int CloseCallCount { get { return _closeCallCount; } }
+            public int CloseCallCount { get; private set; }
 
             public int DisposeCallCount { get { return _disposeCallCount; } }
 
@@ -490,11 +502,13 @@ namespace Microsoft.AspNet.Mvc
                 return base.FlushAsync(cancellationToken);
             }
 
+#if DNX451
             public override void Close()
             {
-                _closeCallCount++;
+                CloseCallCount++;
                 base.Close();
             }
+#endif
 
             protected override void Dispose(bool disposing)
             {

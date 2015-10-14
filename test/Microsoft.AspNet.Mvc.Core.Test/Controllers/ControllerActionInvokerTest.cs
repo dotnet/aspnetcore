@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
     public class ControllerActionInvokerTest
     {
         // Intentionally choosing an uncommon exception type.
-        private readonly Exception _actionException = new TimeZoneNotFoundException();
+        private readonly Exception _actionException = new DivideByZeroException();
 
         private readonly ContentResult _result = new ContentResult() { Content = "Hello, world!" };
 

@@ -331,7 +331,10 @@ namespace System.Net.Http
             if (result?.Formatter == null)
             {
                 // Return a 406 when we're actually performing conneg and it fails to find a formatter.
-                return request.CreateResponse(HttpStatusCode.NotAcceptable);
+                return new HttpResponseMessage(HttpStatusCode.NotAcceptable)
+                {
+                    RequestMessage = request
+                };
             }
             else
             {

@@ -14,7 +14,6 @@ using Microsoft.AspNet.Mvc.Controllers;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.Formatters;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Routing.Constraints;
@@ -1056,7 +1055,7 @@ namespace Microsoft.AspNet.Mvc.Description
                 action.ControllerTypeInfo = controllerType.GetTypeInfo();
                 action.BoundProperties = new List<ParameterDescriptor>();
 
-                foreach (var property in action.ControllerTypeInfo.GetProperties())
+                foreach (var property in controllerType.GetProperties())
                 {
                     var bindingInfo = BindingInfo.GetBindingInfo(property.GetCustomAttributes().OfType<object>());
                     if (bindingInfo != null)

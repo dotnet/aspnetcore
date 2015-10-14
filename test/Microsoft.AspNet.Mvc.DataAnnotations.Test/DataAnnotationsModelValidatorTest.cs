@@ -3,14 +3,9 @@
 
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-#if DNX451
 using System.Linq;
-#endif
 using Microsoft.Extensions.Localization;
-#if DNX451
 using Moq;
-using Moq.Protected;
-#endif
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
@@ -26,7 +21,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             var attribute = new RequiredAttribute();
 
             // Act
-            var validator = new DataAnnotationsModelValidator(attribute, stringLocalizer : null);
+            var validator = new DataAnnotationsModelValidator(attribute, stringLocalizer: null);
 
             // Assert
             Assert.Same(attribute, validator.Attribute);
@@ -54,7 +49,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             }
         }
 
-#if DNX451
         [Theory]
         [MemberData(nameof(Validate_SetsMemberName_OnValidationContext_ForProperties_Data))]
         public void Validate_SetsMemberName_OnValidationContext_ForProperties(
@@ -64,15 +58,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             string expectedMemberName)
         {
             // Arrange
-            var attribute = new Mock<ValidationAttribute> { CallBase = true };
-            attribute.Protected()
-                     .Setup<ValidationResult>("IsValid", ItExpr.IsAny<object>(), ItExpr.IsAny<ValidationContext>())
-                     .Callback((object o, ValidationContext context) =>
-                     {
-                         Assert.Equal(expectedMemberName, context.MemberName);
-                     })
-                     .Returns(ValidationResult.Success)
-                     .Verifiable();
+            var attribute = new Mock<TestableValidationAttribute> { CallBase = true };
+            attribute
+                .Setup(p => p.IsValidPublic(It.IsAny<object>(), It.IsAny<ValidationContext>()))
+                .Callback((object o, ValidationContext context) =>
+                {
+                    Assert.Equal(expectedMemberName, context.MemberName);
+                })
+                .Returns(ValidationResult.Success)
+                .Verifiable();
             var validator = new DataAnnotationsModelValidator(attribute.Object, stringLocalizer: null);
             var validationContext = new ModelValidationContext()
             {
@@ -151,10 +145,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             var container = "Hello";
             var model = container.Length;
 
-            var attribute = new Mock<ValidationAttribute> { CallBase = true };
-            attribute.Protected()
-                     .Setup<ValidationResult>("IsValid", ItExpr.IsAny<object>(), ItExpr.IsAny<ValidationContext>())
-                     .Returns(ValidationResult.Success);
+            var attribute = new Mock<TestableValidationAttribute> { CallBase = true };
+            attribute
+                .Setup(p => p.IsValidPublic(It.IsAny<object>(), It.IsAny<ValidationContext>()))
+                .Returns(ValidationResult.Success);
             var validator = new DataAnnotationsModelValidator(attribute.Object, stringLocalizer: null);
             var validationContext = new ModelValidationContext()
             {
@@ -180,10 +174,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             var container = "Hello";
             var model = container.Length;
 
-            var attribute = new Mock<ValidationAttribute> { CallBase = true };
-            attribute.Protected()
-                     .Setup<ValidationResult>("IsValid", ItExpr.IsAny<object>(), ItExpr.IsAny<ValidationContext>())
-                     .Returns(new ValidationResult(errorMessage, memberNames: null));
+            var attribute = new Mock<TestableValidationAttribute> { CallBase = true };
+            attribute
+                 .Setup(p => p.IsValidPublic(It.IsAny<object>(), It.IsAny<ValidationContext>()))
+                 .Returns(new ValidationResult(errorMessage, memberNames: null));
             var validator = new DataAnnotationsModelValidator(attribute.Object, stringLocalizer: null);
 
             var validationContext = new ModelValidationContext()
@@ -211,10 +205,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             var metadata = _metadataProvider.GetMetadataForType(typeof(object));
             var model = new object();
 
-            var attribute = new Mock<ValidationAttribute> { CallBase = true };
-            attribute.Protected()
-                     .Setup<ValidationResult>("IsValid", ItExpr.IsAny<object>(), ItExpr.IsAny<ValidationContext>())
-                     .Returns(new ValidationResult(errorMessage, new[] { "FirstName" }));
+            var attribute = new Mock<TestableValidationAttribute> { CallBase = true };
+            attribute
+                 .Setup(p => p.IsValidPublic(It.IsAny<object>(), It.IsAny<ValidationContext>()))
+                 .Returns(new ValidationResult(errorMessage, new[] { "FirstName" }));
 
             var validator = new DataAnnotationsModelValidator(attribute.Object, stringLocalizer: null);
             var validationContext = new ModelValidationContext()
@@ -239,10 +233,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             var metadata = _metadataProvider.GetMetadataForType(typeof(SampleModel));
             var model = new SampleModel();
 
-            var attribute = new Mock<ValidationAttribute> { CallBase = true };
-            attribute.Protected()
-                     .Setup<ValidationResult>("IsValid", ItExpr.IsAny<object>(), ItExpr.IsAny<ValidationContext>())
-                     .Returns(new ValidationResult("Name error", new[] { "Name" }));
+            var attribute = new Mock<TestableValidationAttribute> { CallBase = true };
+            attribute
+                 .Setup(p => p.IsValidPublic(It.IsAny<object>(), It.IsAny<ValidationContext>()))
+                 .Returns(new ValidationResult("Name error", new[] { "Name" }));
 
             var validator = new DataAnnotationsModelValidator(attribute.Object, stringLocalizer: null);
             var validationContext = new ModelValidationContext()
@@ -292,10 +286,19 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             Assert.Equal("", validationResult.MemberName);
             Assert.Equal("Longueur est invalide", validationResult.Message);
         }
-#endif
 
         private class DerivedRequiredAttribute : RequiredAttribute
         {
+        }
+
+        public abstract class TestableValidationAttribute : ValidationAttribute
+        {
+            protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+            {
+                return IsValidPublic(value, validationContext);
+            }
+
+            public abstract ValidationResult IsValidPublic(object value, ValidationContext validationContext);
         }
 
         private class SampleModel

@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.Extensions.Primitives
 {
-    internal class TestFileChangeToken : IChangeToken
+    public class TestFileChangeToken : IChangeToken
     {
         public bool ActiveChangeCallbacks => false;
 

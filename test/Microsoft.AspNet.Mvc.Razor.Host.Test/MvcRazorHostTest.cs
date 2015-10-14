@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 {
     public class MvcRazorHostTest
     {
-        private static Assembly _assembly = typeof(MvcRazorHostTest).Assembly;
+        private static Assembly _assembly = typeof(MvcRazorHostTest).GetTypeInfo().Assembly;
 
         public static TheoryData NormalizeChunkInheritanceUtilityPaths_Data
         {

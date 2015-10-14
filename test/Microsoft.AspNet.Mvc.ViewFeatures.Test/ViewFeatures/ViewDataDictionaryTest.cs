@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if MOCK_SUPPORT
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -682,7 +681,14 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         {
             // Arrange
             var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider());
-            viewData.Add("Foo", new Dictionary<string, object> { { "Bar", new Hashtable { { "Baz", "Quux" } } } });
+            var value = new Dictionary<string, object>
+            {
+                ["Bar"] = new Dictionary<string, string>
+                {
+                    { "Baz", "Quux" }
+                }
+            };
+            viewData.Add("Foo", value);
 
             // Act
             var result = viewData.Eval("Foo.Bar.Baz");
@@ -819,4 +825,3 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         }
     }
 }
-#endif

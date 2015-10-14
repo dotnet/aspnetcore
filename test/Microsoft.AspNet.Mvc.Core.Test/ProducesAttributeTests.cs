@@ -10,9 +10,7 @@ using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.Formatters;
 using Microsoft.AspNet.Routing;
 using Microsoft.Net.Http.Headers;
-#if DNX451
 using Moq;
-#endif
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Test

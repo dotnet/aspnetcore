@@ -426,6 +426,9 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
             }
         }
 
+#if !DNXCORE50
+        // DataContractSerializer in CoreCLR does not throw if the declared type is different from the type being
+        // serialized.
         [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
@@ -440,6 +443,27 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
             await Assert.ThrowsAsync(typeof(SerializationException),
                 async () => await formatter.WriteAsync(outputFormatterContext));
         }
+#else
+        [Fact]
+        public async Task WriteAsync_SerializesObjectWhenDeclaredTypeIsDifferentFromActualType()
+        {
+            // Arrange
+            var expected = @"<DummyClass xmlns:i=""http://www.w3.org/2001/XMLSchema-instance"" xmlns="""" " +
+                @"i:type=""SomeDummyClass""><SampleInt>1</SampleInt><SampleString>Test</SampleString></DummyClass>";
+            var sampleInput = new SomeDummyClass { SampleInt = 1, SampleString = "Test" };
+            var formatter = new XmlDataContractSerializerOutputFormatter();
+            var outputFormatterContext = GetOutputFormatterContext(sampleInput, typeof(DummyClass));
+
+            // Act
+            await formatter.WriteAsync(outputFormatterContext);
+
+            // Assert
+            var body = outputFormatterContext.HttpContext.Response.Body;
+            body.Position = 0;
+            var actual = new StreamReader(body).ReadToEnd();
+            XmlAssert.Equal(expected, actual);
+        }
+#endif
 
         [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/18

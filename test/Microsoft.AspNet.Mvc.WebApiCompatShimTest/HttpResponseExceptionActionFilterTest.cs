@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if !DNXCORE50
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
@@ -11,7 +10,6 @@ using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Routing;
 using Moq;
-#endif
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.WebApiCompatShim
@@ -28,8 +26,6 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             // Act & Assert
             Assert.Equal(expectedFilterOrder, filter.Order);
         }
-
-#if !DNXCORE50
 
         [Fact]
         public void OnActionExecuting_IsNoOp()
@@ -87,8 +83,5 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             Assert.Equal(context.HttpContext.GetHttpRequestMessage(), response.RequestMessage);
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         }
-
-#endif
-
     }
 }

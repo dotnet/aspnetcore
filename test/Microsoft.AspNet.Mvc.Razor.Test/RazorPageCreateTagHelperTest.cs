@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Abstractions;
@@ -74,7 +75,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             serviceProvider.Setup(mock => mock.GetService(typeof(ITypeActivatorCache)))
                            .Returns(typeActivator);
             serviceProvider.Setup(mock => mock.GetService(It.Is<Type>(serviceType =>
-                serviceType.IsGenericType && serviceType.GetGenericTypeDefinition() == typeof(IEnumerable<>))))
+                serviceType.GetTypeInfo().IsGenericType && serviceType.GetGenericTypeDefinition() == typeof(IEnumerable<>))))
                 .Returns<Type>(serviceType =>
                 {
                     var enumerableType = serviceType.GetGenericArguments().First();
@@ -86,12 +87,13 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var actionContext = new ActionContext(httpContext.Object, new RouteData(), new ActionDescriptor());
             var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider());
-            var viewContext = new ViewContext(actionContext,
-                                              Mock.Of<IView>(),
-                                              viewData,
-                                              Mock.Of<ITempDataDictionary>(),
-                                              TextWriter.Null,
-                                              new HtmlHelperOptions());
+            var viewContext = new ViewContext(
+                actionContext,
+                Mock.Of<IView>(),
+                viewData,
+                Mock.Of<ITempDataDictionary>(),
+                TextWriter.Null,
+                new HtmlHelperOptions());
 
             return new TestRazorPage
             {

@@ -3,23 +3,18 @@
 
 using System;
 using System.Collections.Generic;
-#if DNX451
 using System.Globalization;
 using System.Linq;
-#endif
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
-#if DNX451
 using Moq;
-#endif
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 {
     public class CollectionModelBinderTest
     {
-#if DNX451
         [Fact]
         public async Task BindComplexCollectionFromIndexes_FiniteIndexes()
         {
@@ -205,7 +200,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var model = Assert.IsType<List<int>>(result.Model);
             Assert.Empty(model);
         }
-#endif
 
         [Fact]
         public async Task BindSimpleCollection_RawValueIsEmptyCollection_ReturnsEmptyList()
@@ -342,7 +336,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.Equal(expectedResult, result);
         }
 
-#if DNX451
         [Fact]
         public async Task BindSimpleCollection_SubBindingSucceeds()
         {
@@ -418,7 +411,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 });
             return mockIntBinder.Object;
         }
-#endif
 
         private static ModelBindingContext CreateContext()
         {
@@ -462,7 +454,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             public ListWithThrowingConstructor()
                 : base()
             {
-                throw new ApplicationException("No, don't do this.");
+                throw new RankException("No, don't do this.");
             }
         }
     }

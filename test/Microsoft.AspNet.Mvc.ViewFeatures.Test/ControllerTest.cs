@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if MOCK_SUPPORT
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -1278,7 +1277,6 @@ namespace Microsoft.AspNet.Mvc.Test
 
         // These tests share code with the ActionFilterAttribute tests because the various filter
         // implementations need to behave the same way.
-#if DNX451
         [Fact]
         public async Task Controller_ActionFilter_SettingResult_ShortCircuits()
         {
@@ -1640,8 +1638,6 @@ namespace Microsoft.AspNet.Mvc.Test
             binder.Verify();
         }
 
-#endif
-
         [Fact]
         public void ControllerExposes_RequestServices()
         {
@@ -1969,5 +1965,3 @@ namespace Microsoft.AspNet.Mvc.Test
         }
     }
 }
-
-#endif

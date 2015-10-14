@@ -27,8 +27,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
 
         private readonly FileProviderGlobbingDirectory _baseGlobbingDirectory;
 
-        // Internal for testing
-        internal GlobbingUrlBuilder() { }
+        public GlobbingUrlBuilder() { }
 
         /// <summary>
         /// Creates a new <see cref="GlobbingUrlBuilder"/>.

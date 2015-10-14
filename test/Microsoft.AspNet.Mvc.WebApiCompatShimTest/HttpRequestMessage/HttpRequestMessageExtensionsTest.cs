@@ -9,9 +9,7 @@ using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.WebApiCompatShim;
 using Microsoft.AspNet.Testing;
 using Microsoft.Extensions.OptionsModel;
-#if !DNXCORE50
 using Moq;
-#endif
 using Xunit;
 
 namespace System.Net.Http
@@ -49,8 +47,6 @@ namespace System.Net.Http
                 "for the current request.",
                 ex.Message);
         }
-
-#if !DNXCORE50
 
         [Fact]
         public void CreateResponse_DoingConneg_OnlyContent_RetrievesContentNegotiatorFromServices()
@@ -286,6 +282,8 @@ namespace System.Net.Http
             Assert.Equal("bin/baz", response.Content.Headers.ContentType.MediaType);
         }
 
+#if !DNXCORE50
+        // API doesn't exist in CoreCLR.
         [Fact]
         public void CreateErrorResponseRangeNotSatisfiable_SetsCorrectStatusCodeAndContentRangeHeader()
         {
@@ -305,6 +303,7 @@ namespace System.Net.Http
             Assert.Equal(HttpStatusCode.RequestedRangeNotSatisfiable, response.StatusCode);
             Assert.Same(expectedContentRange, response.Content.Headers.ContentRange);
         }
+#endif
 
         private static IServiceProvider CreateServices(
             IContentNegotiator contentNegotiator = null,
@@ -338,7 +337,7 @@ namespace System.Net.Http
 
             return services.Object;
         }
-#endif
+
         private static object CreateValue()
         {
             return new object();

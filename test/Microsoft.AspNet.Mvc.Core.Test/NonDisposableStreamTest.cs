@@ -1,16 +1,15 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if DNX451
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.Core;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Internal
 {
     public class NonDisposableStreamTest
     {
+#if DNX451
         [Fact]
         public void InnerStreamIsOpenOnClose()
         {
@@ -24,6 +23,7 @@ namespace Microsoft.AspNet.Mvc.Internal
             // Assert
             Assert.True(innerStream.CanRead);
         }
+#endif
 
         [Fact]
         public void InnerStreamIsOpenOnDispose()
@@ -49,6 +49,7 @@ namespace Microsoft.AspNet.Mvc.Internal
             nonDisposableStream.Dispose();
         }
 
+#if DNX451
         [Fact]
         public void InnerStreamIsNotFlushedOnClose()
         {
@@ -60,6 +61,7 @@ namespace Microsoft.AspNet.Mvc.Internal
             // Act & Assert
             nonDisposableStream.Close();
         }
+#endif
 
         [Fact]
         public void InnerStreamIsNotFlushedOnFlush()
@@ -86,4 +88,3 @@ namespace Microsoft.AspNet.Mvc.Internal
         }
     }
 }
-#endif

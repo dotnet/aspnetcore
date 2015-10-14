@@ -4,6 +4,7 @@
 #if !DNXCORE50
 
 using System.Net.Http.Headers;
+
 namespace System.Net.Http.Formatting.Mocks
 {
     public class MockMediaTypeMapping : MediaTypeMapping

@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if !DNXCORE50
-
 using System;
 using System.IO;
 using System.Net.Http;
@@ -31,9 +29,9 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShimTest
             var httpResponseMessage = new HttpResponseMessage();
             httpResponseMessage.Content = streamContent.Object;
             var outputFormatterContext = GetOutputFormatterContext(
-                                                httpResponseMessage,
-                                                typeof(HttpResponseMessage),
-                                                new DefaultHttpContext());
+                httpResponseMessage,
+                typeof(HttpResponseMessage),
+                new DefaultHttpContext());
 
             // Act
             await formatter.WriteAsync(outputFormatterContext);
@@ -55,9 +53,9 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShimTest
             var httpContext = new DefaultHttpContext();
             var formatter = new HttpResponseMessageOutputFormatter();
             var outputFormatterContext = GetOutputFormatterContext(
-                                                httpResponseMessage,
-                                                typeof(HttpResponseMessage),
-                                                httpContext);
+                httpResponseMessage,
+                typeof(HttpResponseMessage),
+                httpContext);
             // Act
             await formatter.WriteAsync(outputFormatterContext);
 
@@ -80,9 +78,9 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShimTest
             var httpContext = new DefaultHttpContext();
             var formatter = new HttpResponseMessageOutputFormatter();
             var outputFormatterContext = GetOutputFormatterContext(
-                                                httpResponseMessage,
-                                                typeof(HttpResponseMessage),
-                                                httpContext);
+                httpResponseMessage,
+                typeof(HttpResponseMessage),
+                httpContext);
             // Act
             await formatter.WriteAsync(outputFormatterContext);
 
@@ -105,9 +103,9 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShimTest
             var httpContext = new DefaultHttpContext();
             var formatter = new HttpResponseMessageOutputFormatter();
             var outputFormatterContext = GetOutputFormatterContext(
-                                                httpResponseMessage,
-                                                typeof(HttpResponseMessage),
-                                                httpContext);
+                httpResponseMessage,
+                typeof(HttpResponseMessage),
+                httpContext);
             // Act
             await formatter.WriteAsync(outputFormatterContext);
 
@@ -133,9 +131,9 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShimTest
             var httpContext = new DefaultHttpContext();
             var formatter = new HttpResponseMessageOutputFormatter();
             var outputFormatterContext = GetOutputFormatterContext(
-                                                httpResponseMessage,
-                                                typeof(HttpResponseMessage),
-                                                httpContext);
+                httpResponseMessage,
+                typeof(HttpResponseMessage),
+                httpContext);
             // Act
             await formatter.WriteAsync(outputFormatterContext);
 
@@ -159,4 +157,3 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShimTest
         }
     }
 }
-#endif

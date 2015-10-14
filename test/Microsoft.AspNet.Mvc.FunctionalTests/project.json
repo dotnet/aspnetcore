@@ -3,7 +3,7 @@
     "../Microsoft.AspNet.Mvc.Formatters.Xml.Test/XmlAssert.cs"
   ],
   "compilationOptions": {
-    "define": [ "__RemoveThisBitTo__GENERATE_BASELINES" ],
+    "define": [ "__RemoveThisBitTo__GENERATE_BASELINES", "FUNCTIONAL_TESTS" ],
     "warningsAsErrors": true
   },
   "dependencies": {

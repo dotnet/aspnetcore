@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if DNX451
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -565,9 +564,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             public DictionaryWithThrowingConstructor()
                 : base()
             {
-                throw new ApplicationException("No, don't do this.");
+                throw new RankException("No, don't do this.");
             }
         }
     }
 }
-#endif

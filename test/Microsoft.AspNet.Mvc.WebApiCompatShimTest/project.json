@@ -19,6 +19,10 @@
         "Moq": "4.2.1312.1622"
       }
     },
-    "dnxcore50": { }
+    "dnxcore50": {
+      "dependencies": {
+        "moq.netcore": "4.4.0-beta8"
+      }
+    }
   }
 }
