@@ -550,7 +550,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [MemberData(nameof(ConnectionFilterData))]
         public async Task ThrowingResultsIn500Response(ServiceContext testContext)
         {
-            bool onStartingCalled = false;
+            var onStartingCallCount = 0;
 
             var testLogger = new TestApplicationErrorLogger();
             testContext.Log = new KestrelTrace(testLogger);
@@ -560,7 +560,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 var response = frame.Get<IHttpResponseFeature>();
                 response.OnStarting(_ =>
                 {
-                    onStartingCalled = true;
+                    onStartingCallCount++;
                     return Task.FromResult<object>(null);
                 }, null);
 
@@ -597,7 +597,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
                         "",
                         "");
 
-                    Assert.False(onStartingCalled);
+                    Assert.Equal(2, onStartingCallCount);
                     Assert.Equal(2, testLogger.ApplicationErrorsLogged);
                 }
             }
@@ -758,22 +758,30 @@ namespace Microsoft.AspNet.Server.KestrelTests
 
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
-        public async Task ThrowingInOnStartingResultsIn500Response(ServiceContext testContext)
+        public async Task ThrowingInOnStartingResultsInFailedWritesAnd500Response(ServiceContext testContext)
         {
-            using (var server = new TestServer(frame =>
+            var onStartingCallCount = 0;
+            var failedWriteCount = 0;
+
+            var testLogger = new TestApplicationErrorLogger();
+            testContext.Log = new KestrelTrace(testLogger);
+
+            using (var server = new TestServer(async frame =>
             {
                 var response = frame.Get<IHttpResponseFeature>();
                 response.OnStarting(_ =>
                 {
+                    onStartingCallCount++;
                     throw new Exception();
                 }, null);
 
                 response.Headers.Clear();
                 response.Headers["Content-Length"] = new[] { "11" };
 
-                // If we write to the response stream, we will not get a 500.
+                await Assert.ThrowsAsync<ObjectDisposedException>(async () =>
+                    await response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello World"), 0, 11));
 
-                return Task.FromResult<object>(null);
+                failedWriteCount++;
             }, testContext))
             {
                 using (var connection = new TestConnection())
@@ -802,34 +810,31 @@ namespace Microsoft.AspNet.Server.KestrelTests
                         "Connection: close",
                         "",
                         "");
+
+                    Assert.Equal(2, onStartingCallCount);
+                    Assert.Equal(2, testLogger.ApplicationErrorsLogged);
                 }
             }
         }
 
-        [Theory]
         [MemberData(nameof(ConnectionFilterData))]
-        public async Task ThrowingInOnStartingResultsInFailedWrites(ServiceContext testContext)
+        public async Task ThrowingInOnCompletedIsLoggedAndClosesConnection(ServiceContext testContext)
         {
+            var testLogger = new TestApplicationErrorLogger();
+            testContext.Log = new KestrelTrace(testLogger);
+
             using (var server = new TestServer(async frame =>
             {
-                var onStartingException = new Exception();
-
                 var response = frame.Get<IHttpResponseFeature>();
-                response.OnStarting(_ =>
+                response.OnCompleted(_ =>
                 {
-                    throw onStartingException;
+                    throw new Exception();
                 }, null);
 
                 response.Headers.Clear();
                 response.Headers["Content-Length"] = new[] { "11" };
 
-                var writeException = await Assert.ThrowsAsync<Exception>(async () =>
-                    await response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello World"), 0, 11));
-
-                Assert.Same(onStartingException, writeException);
-
-                // The second write should succeed since the OnStarting callback will not be called again
-                await response.Body.WriteAsync(Encoding.ASCII.GetBytes("Exception!!"), 0, 11);
+                await response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello World"), 0, 11);
             }, testContext))
             {
                 using (var connection = new TestConnection())
@@ -838,12 +843,14 @@ namespace Microsoft.AspNet.Server.KestrelTests
                         "GET / HTTP/1.1",
                         "",
                         "");
-                    await connection.Receive(
+                    await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
                         "Content-Length: 11",
                         "",
-                        "Exception!!"); ;
+                        "Hello World");
                 }
+
+                Assert.Equal(1, testLogger.ApplicationErrorsLogged);
             }
         }
 

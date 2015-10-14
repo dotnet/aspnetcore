@@ -42,6 +42,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private bool _responseStarted;
         private bool _keepAlive;
         private bool _autoChunk;
+        private bool _applicationFailed;
 
         public Frame(ConnectionContext context) : base(context)
         {
@@ -172,28 +173,27 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         ResponseBody = new FrameResponseStream(this);
                         DuplexStream = new FrameDuplexStream(RequestBody, ResponseBody);
 
-                        Exception error = null;
                         try
                         {
                             await Application.Invoke(this).ConfigureAwait(false);
-
+                        }
+                        catch (Exception ex)
+                        {
+                            ReportApplicationError(ex);
+                        }
+                        finally
+                        {
                             // Trigger FireOnStarting if ProduceStart hasn't been called yet.
                             // We call it here, so it can go through our normal error handling
                             // and respond with a 500 if an OnStarting callback throws.
                             if (!_responseStarted)
                             {
-                                FireOnStarting();
+                                await FireOnStarting();
                             }
-                        }
-                        catch (Exception ex)
-                        {
-                            Log.ApplicationError(ex);
-                            error = ex;
-                        }
-                        finally
-                        {
-                            FireOnCompleted();
-                            ProduceEnd(error);
+
+                            await FireOnCompleted();
+
+                            await ProduceEnd();
                         }
 
                         terminated = !_keepAlive;
@@ -250,7 +250,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
         }
 
-        private void FireOnStarting()
+        private async Task FireOnStarting()
         {
             List<KeyValuePair<Func<object, Task>, object>> onStarting = null;
             lock (_onStartingSync)
@@ -262,12 +262,19 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {
                 foreach (var entry in onStarting)
                 {
-                    entry.Key.Invoke(entry.Value).Wait();
+                    try
+                    {
+                        await entry.Key.Invoke(entry.Value);
+                    }
+                    catch (Exception ex)
+                    {
+                        ReportApplicationError(ex);
+                    }
                 }
             }
         }
 
-        private void FireOnCompleted()
+        private async Task FireOnCompleted()
         {
             List<KeyValuePair<Func<object, Task>, object>> onCompleted = null;
             lock (_onCompletedSync)
@@ -281,11 +288,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 {
                     try
                     {
-                        entry.Key.Invoke(entry.Value).Wait();
+                        await entry.Key.Invoke(entry.Value);
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        // Ignore exceptions
+                        ReportApplicationError(ex);
                     }
                 }
             }
@@ -293,19 +300,19 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         public void Flush()
         {
-            ProduceStart(immediate: false);
+            ProduceStartAndFireOnStarting(immediate: false).GetAwaiter().GetResult();
             SocketOutput.Write(_emptyData, immediate: true);
         }
 
-        public Task FlushAsync(CancellationToken cancellationToken)
+        public async Task FlushAsync(CancellationToken cancellationToken)
         {
-            ProduceStart(immediate: false);
-            return SocketOutput.WriteAsync(_emptyData, immediate: true);
+            await ProduceStartAndFireOnStarting(immediate: false);
+            await SocketOutput.WriteAsync(_emptyData, immediate: true);
         }
 
         public void Write(ArraySegment<byte> data)
         {
-            ProduceStart(immediate: false);
+            ProduceStartAndFireOnStarting(immediate: false).GetAwaiter().GetResult();
 
             if (_autoChunk)
             {
@@ -321,21 +328,21 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
         }
 
-        public Task WriteAsync(ArraySegment<byte> data, CancellationToken cancellationToken)
+        public async Task WriteAsync(ArraySegment<byte> data, CancellationToken cancellationToken)
         {
-            ProduceStart(immediate: false);
+            await ProduceStartAndFireOnStarting(immediate: false);
 
             if (_autoChunk)
             {
                 if (data.Count == 0)
                 {
-                    return TaskUtilities.CompletedTask;
+                    return;
                 }
-                return WriteChunkedAsync(data, cancellationToken);
+                await WriteChunkedAsync(data, cancellationToken);
             }
             else
             {
-                return SocketOutput.WriteAsync(data, immediate: true, cancellationToken: cancellationToken);
+                await SocketOutput.WriteAsync(data, immediate: true, cancellationToken: cancellationToken);
             }
         }
 
@@ -387,12 +394,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             SocketOutput.Write(_endChunkedResponseBytes, immediate: true);
         }
 
-        public void Upgrade(IDictionary<string, object> options, Func<object, Task> callback)
-        {
-            _keepAlive = false;
-            ProduceStart();
-        }
-
         private static ArraySegment<byte> CreateAsciiByteArraySegment(string text)
         {
             var bytes = Encoding.ASCII.GetBytes(text);
@@ -412,23 +413,38 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
         }
 
-        public void ProduceStart(bool immediate = true, bool appCompleted = false)
+        public async Task ProduceStartAndFireOnStarting(bool immediate = true)
         {
-            // ProduceStart shouldn't no-op in the future just b/c FireOnStarting throws.
             if (_responseStarted) return;
-            FireOnStarting();
+
+            await FireOnStarting();
+           
+            if (_applicationFailed) 
+            {
+                throw new ObjectDisposedException(typeof(Frame).FullName);
+            }
+
+            await ProduceStart(immediate, appCompleted: false);
+        }
+
+        private async Task ProduceStart(bool immediate, bool appCompleted)
+        {
+            if (_responseStarted) return;
             _responseStarted = true;
 
             var status = ReasonPhrases.ToStatus(StatusCode, ReasonPhrase);
 
             var responseHeader = CreateResponseHeader(status, appCompleted);
-            SocketOutput.Write(responseHeader.Item1, immediate: immediate);
-            responseHeader.Item2.Dispose();
+
+            using (responseHeader.Item2)
+            {
+                await SocketOutput.WriteAsync(responseHeader.Item1, immediate: immediate);
+            }
         }
 
-        public void ProduceEnd(Exception ex)
+        private async Task ProduceEnd()
         {
-            if (ex != null)
+            if (_applicationFailed)
             {
                 if (_responseStarted)
                 {
@@ -450,7 +466,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 }
             }
 
-            ProduceStart(immediate: true, appCompleted: true);
+            await ProduceStart(immediate: true, appCompleted: true);
 
             // _autoChunk should be checked after we are sure ProduceStart() has been called
             // since ProduceStart() may set _autoChunk to true.
@@ -727,6 +743,12 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                    statusCode != 204 &&
                    statusCode != 205 &&
                    statusCode != 304;
+        }
+
+        private void ReportApplicationError(Exception ex)
+        {
+            _applicationFailed = true;
+            Log.ApplicationError(ex);
         }
     }
 }
