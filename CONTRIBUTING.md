@@ -64,7 +64,7 @@ Summary of the changes (Less than 80 chars)
  - Detail 1
  - Detail 2
 
-#bugnumber (in this specific format)
+Addresses #bugnumber (in this specific format)
 ```
 
 **Tests**
