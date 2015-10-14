@@ -232,7 +232,7 @@ namespace Microsoft.AspNet.Server.Kestrel
                 _closeError = ExceptionDispatchInfo.Capture(ex);
                 // Request shutdown so we can rethrow this exception
                 // in Stop which should be observable.
-                _appLifetime.RequestShutdown();
+                _appLifetime.StopApplication();
             }
         }
 

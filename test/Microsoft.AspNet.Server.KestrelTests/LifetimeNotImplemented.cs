@@ -7,7 +7,7 @@ using Microsoft.AspNet.Hosting;
 
 namespace Microsoft.AspNet.Server.KestrelTests
 {
-    public class ShutdownNotImplemented : IApplicationLifetime
+    public class LifetimeNotImplemented : IApplicationLifetime
     {
         public CancellationToken ApplicationStarted
         {
@@ -33,15 +33,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
             }
         }
 
-        public CancellationToken ShutdownRequested
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public void RequestShutdown()
+        public void StopApplication()
         {
             throw new NotImplementedException();
         }
