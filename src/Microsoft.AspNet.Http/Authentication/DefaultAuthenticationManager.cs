@@ -54,7 +54,6 @@ namespace Microsoft.AspNet.Http.Authentication.Internal
             }
 
             var handler = HttpAuthenticationFeature.Handler;
-
             if (handler != null)
             {
                 await handler.AuthenticateAsync(context);
@@ -62,15 +61,15 @@ namespace Microsoft.AspNet.Http.Authentication.Internal
 
             if (!context.Accepted)
             {
-                throw new InvalidOperationException($"The following authentication scheme was not accepted: {context.AuthenticationScheme}");
+                throw new InvalidOperationException($"No authentication handler is configured to authenticate for the scheme: {context.AuthenticationScheme}");
             }
         }
 
         public override async Task ChallengeAsync(string authenticationScheme, AuthenticationProperties properties, ChallengeBehavior behavior)
         {
-            if (authenticationScheme == null)
+            if (string.IsNullOrEmpty(authenticationScheme))
             {
-                throw new ArgumentNullException(nameof(authenticationScheme));
+                throw new ArgumentException(nameof(authenticationScheme));
             }
 
             var handler = HttpAuthenticationFeature.Handler;
@@ -83,15 +82,15 @@ namespace Microsoft.AspNet.Http.Authentication.Internal
 
             if (!challengeContext.Accepted)
             {
-                throw new InvalidOperationException($"The following authentication scheme was not accepted: {authenticationScheme}");
+                throw new InvalidOperationException($"No authentication handler is configured to handle the scheme: {authenticationScheme}");
             }
         }
 
         public override async Task SignInAsync(string authenticationScheme, ClaimsPrincipal principal, AuthenticationProperties properties)
         {
-            if (authenticationScheme == null)
+            if (string.IsNullOrEmpty(authenticationScheme))
             {
-                throw new ArgumentNullException(nameof(authenticationScheme));
+                throw new ArgumentException(nameof(authenticationScheme));
             }
 
             if (principal == null)
@@ -109,15 +108,15 @@ namespace Microsoft.AspNet.Http.Authentication.Internal
 
             if (!signInContext.Accepted)
             {
-                throw new InvalidOperationException($"The following authentication scheme was not accepted: {authenticationScheme}");
+                throw new InvalidOperationException($"No authentication handler is configured to handle the scheme: {authenticationScheme}");
             }
         }
 
         public override async Task SignOutAsync(string authenticationScheme, AuthenticationProperties properties)
         {
-            if (authenticationScheme == null)
+            if (string.IsNullOrEmpty(authenticationScheme))
             {
-                throw new ArgumentNullException(nameof(authenticationScheme));
+                throw new ArgumentException(nameof(authenticationScheme));
             }
 
             var handler = HttpAuthenticationFeature.Handler;
@@ -130,7 +129,7 @@ namespace Microsoft.AspNet.Http.Authentication.Internal
 
             if (!signOutContext.Accepted)
             {
-                throw new InvalidOperationException($"The following authentication scheme was not accepted: {authenticationScheme}");
+                throw new InvalidOperationException($"No authentication handler is configured to handle the scheme: {authenticationScheme}");
             }
         }
     }

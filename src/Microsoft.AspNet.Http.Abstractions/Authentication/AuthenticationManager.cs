@@ -11,6 +11,11 @@ namespace Microsoft.AspNet.Http.Authentication
 {
     public abstract class AuthenticationManager
     {
+        /// <summary>
+        /// Constant used to represent the automatic scheme
+        /// </summary>
+        public const string AutomaticScheme = "Automatic";
+
         public abstract IEnumerable<AuthenticationDescription> GetAuthenticationSchemes();
 
         public abstract Task AuthenticateAsync(AuthenticateContext context);
@@ -34,14 +39,14 @@ namespace Microsoft.AspNet.Http.Authentication
 
         public virtual Task ChallengeAsync(AuthenticationProperties properties)
         {
-            return ChallengeAsync(authenticationScheme: string.Empty, properties: properties);
+            return ChallengeAsync(authenticationScheme: AutomaticScheme, properties: properties);
         }
 
         public virtual Task ChallengeAsync(string authenticationScheme)
         {
-            if (authenticationScheme == null)
+            if (string.IsNullOrEmpty(authenticationScheme))
             {
-                throw new ArgumentNullException(nameof(authenticationScheme));
+                throw new ArgumentException(nameof(authenticationScheme));
             }
 
             return ChallengeAsync(authenticationScheme: authenticationScheme, properties: null);
@@ -50,9 +55,9 @@ namespace Microsoft.AspNet.Http.Authentication
         // Leave it up to authentication handler to do the right thing for the challenge
         public virtual Task ChallengeAsync(string authenticationScheme, AuthenticationProperties properties)
         {
-            if (authenticationScheme == null)
+            if (string.IsNullOrEmpty(authenticationScheme))
             {
-                throw new ArgumentNullException(nameof(authenticationScheme));
+                throw new ArgumentException(nameof(authenticationScheme));
             }
 
             return ChallengeAsync(authenticationScheme, properties, ChallengeBehavior.Automatic);
@@ -60,9 +65,9 @@ namespace Microsoft.AspNet.Http.Authentication
 
         public virtual Task SignInAsync(string authenticationScheme, ClaimsPrincipal principal)
         {
-            if (authenticationScheme == null)
+            if (string.IsNullOrEmpty(authenticationScheme))
             {
-                throw new ArgumentNullException(nameof(authenticationScheme));
+                throw new ArgumentException(nameof(authenticationScheme));
             }
 
             if (principal == null)

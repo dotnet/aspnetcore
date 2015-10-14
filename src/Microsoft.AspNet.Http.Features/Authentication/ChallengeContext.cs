@@ -15,9 +15,9 @@ namespace Microsoft.AspNet.Http.Features.Authentication
 
         public ChallengeContext(string authenticationScheme, IDictionary<string, string> properties, ChallengeBehavior behavior)
         {
-            if (authenticationScheme == null)
+            if (string.IsNullOrEmpty(authenticationScheme))
             {
-                throw new ArgumentNullException(nameof(authenticationScheme));
+                throw new ArgumentException(nameof(authenticationScheme));
             }
 
             AuthenticationScheme = authenticationScheme;

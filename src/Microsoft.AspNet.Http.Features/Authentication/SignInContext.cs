@@ -11,9 +11,9 @@ namespace Microsoft.AspNet.Http.Features.Authentication
     {
         public SignInContext(string authenticationScheme, ClaimsPrincipal principal, IDictionary<string, string> properties)
         {
-            if (authenticationScheme == null)
+            if (string.IsNullOrEmpty(authenticationScheme))
             {
-                throw new ArgumentNullException(nameof(authenticationScheme));
+                throw new ArgumentException(nameof(authenticationScheme));
             }
 
             if (principal == null)

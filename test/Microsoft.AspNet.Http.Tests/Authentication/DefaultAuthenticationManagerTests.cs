@@ -12,7 +12,7 @@ using Xunit;
 
 namespace Microsoft.AspNet.Http.Authentication.Internal
 {
-    public class AuthenticationManagerTests
+    public class DefaultAuthenticationManagerTests
     {
 
         [Fact]
@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Http.Authentication.Internal
         }
 
         [Theory]
-        [InlineData("")]
+        [InlineData("Automatic")]
         [InlineData("Foo")]
         public async Task ChallengeWithNoAuthMiddlewareMayThrow(string scheme)
         {

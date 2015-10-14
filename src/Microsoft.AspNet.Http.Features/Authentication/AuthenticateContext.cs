@@ -11,9 +11,9 @@ namespace Microsoft.AspNet.Http.Features.Authentication
     {
         public AuthenticateContext(string authenticationScheme)
         {
-            if (authenticationScheme == null)
+            if (string.IsNullOrEmpty(authenticationScheme))
             {
-                throw new ArgumentNullException(nameof(authenticationScheme));
+                throw new ArgumentException(nameof(authenticationScheme));
             }
 
             AuthenticationScheme = authenticationScheme;
@@ -29,6 +29,8 @@ namespace Microsoft.AspNet.Http.Features.Authentication
 
         public IDictionary<string, object> Description { get; private set; }
 
+        public Exception Error { get; private set; }
+
         public virtual void Authenticated(ClaimsPrincipal principal, IDictionary<string, string> properties, IDictionary<string, object> description)
         {
             Accepted = true;
@@ -39,6 +41,12 @@ namespace Microsoft.AspNet.Http.Features.Authentication
 
         public virtual void NotAuthenticated()
         {
+            Accepted = true;
+        }
+
+        public virtual void Failed(Exception error)
+        {
+            Error = error;
             Accepted = true;
         }
     }
