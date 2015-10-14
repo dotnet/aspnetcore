@@ -67,7 +67,7 @@ function _WriteOut {
 
 ### Constants
 $ProductVersion="1.0.0"
-$BuildVersion="rc1-15523"
+$BuildVersion="rc1-15526"
 $Authors="Microsoft Open Technologies, Inc."
 
 # If the Version hasn't been replaced...
@@ -1848,10 +1848,17 @@ if(Test-Path env:\KRE_HOME) {
 
 $cmd = $args[0]
 
+$cmdargs = @()
 if($args.Length -gt 1) {
-    $cmdargs = @($args[1..($args.Length-1)])
-} else {
-    $cmdargs = @()
+    # Combine arguments, ensuring any containing whitespace or parenthesis are correctly quoted 
+    ForEach ($arg In $args[1..($args.Length-1)]) {
+        if ($arg -match "[\s\(\)]") {
+            $cmdargs += """$arg"""
+        } else {
+            $cmdargs += $arg
+        }
+        $cmdargs += " "
+    }
 }
 
 # Can't add this as script-level arguments because they mask '-a' arguments in subcommands!

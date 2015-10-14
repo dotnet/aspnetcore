@@ -2,7 +2,7 @@
 
 This guide is designed to get you started building applications with the latest development versions ASP.NET 5 and DNX. This means nightly builds and potentially broken or unstable packages.
 
-If you want a more stable, released, experience then you should go to http://www.asp.net/vnext.
+If you want a more stable, released, experience then you should go to https://www.asp.net/vnext.
 
 ## What you need
 
@@ -40,7 +40,7 @@ where dnvm
 
 ## OS X
 
-See the instructions on the ASP.NET 5 Documentation site: [Installing ASP.NET 5 on Mac OS X](http://docs.asp.net/en/latest/getting-started/installing-on-mac.html)
+See the instructions on the ASP.NET 5 Documentation site: [Installing ASP.NET 5 on Mac OS X](https://docs.asp.net/en/latest/getting-started/installing-on-mac.html)
 
 ## Linux
 
@@ -69,13 +69,13 @@ You should also be able to run `dnx` and see the help text of the `dnx` command.
 4. You should see a bunch of output as all the dependencies of the app are downloaded from MyGet.
 5. Run the sample using the appropriate DNX command:
     - For the console app run  `dnx run`.
-    - For the web apps run `dnx web` on Windows or `dnx kestrel` on OS X/Linux.
+    - For the web apps run `dnx kestrel`.
 6. You should see the output of the console app or a message that says the site is now started.
 7. You can navigate to the web apps in a browser by navigating to `http://localhost:5001` or `http://localhost:5004` if running on OS X/Linux.
 
 # Documentation and Further Learning
 
-## [Community Standup](http://www.youtube.com/playlist?list=PL0M0zPgJ3HSftTAAHttA3JQU4vOjXFquF)
+## [Community Standup](https://www.youtube.com/playlist?list=PL0M0zPgJ3HSftTAAHttA3JQU4vOjXFquF)
 The community standup is held every week and streamed live to YouTube. You can view past standups in the linked playlist.
 
 If you have questions you can also jump online during the next standup and have them answered live.
@@ -85,7 +85,7 @@ We have some useful documentation on the wiki of this Repo. This wiki is a centr
 
 If you see errors, or want some extra content, then feel free to create an issue or send a pull request (see feedback section below).
 
-## [ASP.NET/vNext](http://www.asp.net/vnext)
+## [ASP.NET/vNext](https://www.asp.net/vnext)
 The vNext page on the ASP.NET site has links to some TechEd videos and articles with some good information about vNext.
 
 ## Repos and Projects
