@@ -449,7 +449,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 if (_responseStarted)
                 {
                     // We can no longer respond with a 500, so we simply close the connection.
-                    ConnectionControl.End(ProduceEndType.SocketDisconnect);
+                    _keepAlive = false;
                     return;
                 }
                 else
@@ -475,7 +475,10 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 WriteChunkedResponseSuffix();
             }
 
-            ConnectionControl.End(_keepAlive ? ProduceEndType.ConnectionKeepAlive : ProduceEndType.SocketShutdownSend);
+            if (_keepAlive)
+            {
+                ConnectionControl.End(ProduceEndType.ConnectionKeepAlive);
+            }
         }
 
         private Tuple<ArraySegment<byte>, IDisposable> CreateResponseHeader(
