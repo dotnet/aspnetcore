@@ -76,6 +76,16 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// </exception>
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (output == null)
+            {
+                throw new ArgumentNullException(nameof(output));
+            }
+
             // Note null or empty For.Name is allowed because TemplateInfo.HtmlFieldPrefix may be sufficient.
             // IHtmlGenerator will enforce name requirements.
             var metadata = For.Metadata;

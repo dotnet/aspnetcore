@@ -8,7 +8,6 @@ using System.Linq;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Mvc.Razor.TagHelpers;
 using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Mvc.TagHelpers.Internal;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
@@ -217,7 +216,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// <inheritdoc />
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
-            string resolvedUrl;
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (output == null)
+            {
+                throw new ArgumentNullException(nameof(output));
+            }
 
             // Pass through attribute that is also a well-known HTML attribute.
             if (Href != null)
@@ -274,6 +281,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             if (mode == Mode.Fallback)
             {
+                string resolvedUrl;
                 if (TryResolveUrl(FallbackHref, encodeWebRoot: false, resolvedUrl: out resolvedUrl))
                 {
                     FallbackHref = resolvedUrl;

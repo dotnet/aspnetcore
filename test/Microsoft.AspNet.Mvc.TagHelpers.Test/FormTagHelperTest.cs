@@ -407,9 +407,16 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                                        "'action' must not have attributes starting with 'asp-route-' or an " +
                                        "'asp-action' or 'asp-controller' or 'asp-route' attribute.";
 
+            var context = new TagHelperContext(
+                allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
+                    Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
+                items: new Dictionary<object, object>(),
+                uniqueId: "test",
+                getChildContentAsync: _ => Task.FromResult<TagHelperContent>(null));
+
             // Act & Assert
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-                () => formTagHelper.ProcessAsync(context: null, output: tagHelperOutput));
+                () => formTagHelper.ProcessAsync(context, tagHelperOutput));
 
             Assert.Equal(expectedErrorMessage, ex.Message);
         }
@@ -431,9 +438,16 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedErrorMessage = "Cannot determine an 'action' attribute for <form>. A <form> with a specified " +
                 "'asp-route' must not have an 'asp-action' or 'asp-controller' attribute.";
 
+            var context = new TagHelperContext(
+                allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
+                    Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
+                items: new Dictionary<object, object>(),
+                uniqueId: "test",
+                getChildContentAsync: _ => Task.FromResult<TagHelperContent>(null));
+
             // Act & Assert
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-                () => formTagHelper.ProcessAsync(context: null, output: output));
+                () => formTagHelper.ProcessAsync(context, output));
 
             Assert.Equal(expectedErrorMessage, ex.Message);
         }

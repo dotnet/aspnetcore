@@ -115,11 +115,17 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             output.Content.SetContent(expectedContent);
             output.PostContent.SetContent(expectedPostContent);
 
-            
             validationSummaryTagHelper.ViewContext = expectedViewContext;
 
+            var context = new TagHelperContext(
+                allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
+                    Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
+                items: new Dictionary<object, object>(),
+                uniqueId: "test",
+                getChildContentAsync: _ => Task.FromResult<TagHelperContent>(null));
+
             // Act & Assert
-            await validationSummaryTagHelper.ProcessAsync(context: null, output: output);
+            await validationSummaryTagHelper.ProcessAsync(context, output);
 
             generator.Verify();
             Assert.Equal("div", output.TagName);
@@ -166,8 +172,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var viewContext = CreateViewContext();
             validationSummaryTagHelper.ViewContext = viewContext;
 
+            var context = new TagHelperContext(
+                allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
+                    Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
+                items: new Dictionary<object, object>(),
+                uniqueId: "test",
+                getChildContentAsync: _ => Task.FromResult<TagHelperContent>(null));
+
             // Act
-            await validationSummaryTagHelper.ProcessAsync(context: null, output: output);
+            await validationSummaryTagHelper.ProcessAsync(context, output);
 
             // Assert
             Assert.Equal("div", output.TagName);
@@ -207,8 +220,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var viewContext = CreateViewContext();
             validationSummaryTagHelper.ViewContext = viewContext;
 
+            var context = new TagHelperContext(
+                allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
+                    Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
+                items: new Dictionary<object, object>(),
+                uniqueId: "test",
+                getChildContentAsync: _ => Task.FromResult<TagHelperContent>(null));
+
             // Act
-            await validationSummaryTagHelper.ProcessAsync(context: null, output: output);
+            await validationSummaryTagHelper.ProcessAsync(context, output);
 
             // Assert
             Assert.Equal("div", output.TagName);
@@ -255,8 +275,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var viewContext = CreateViewContext();
             validationSummaryTagHelper.ViewContext = viewContext;
 
+            var context = new TagHelperContext(
+                allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
+                    Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
+                items: new Dictionary<object, object>(),
+                uniqueId: "test",
+                getChildContentAsync: _ => Task.FromResult<TagHelperContent>(null));
+
             // Act
-            await validationSummaryTagHelper.ProcessAsync(context: null, output: output);
+            await validationSummaryTagHelper.ProcessAsync(context, output);
 
             // Assert
             Assert.Equal("div", output.TagName);

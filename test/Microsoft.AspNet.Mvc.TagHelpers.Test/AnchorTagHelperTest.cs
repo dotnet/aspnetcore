@@ -10,7 +10,6 @@ using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
-using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
 using Xunit;
 
@@ -220,9 +219,16 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                                        "'asp-action', 'asp-controller', 'asp-route', 'asp-protocol', 'asp-host', or " +
                                        "'asp-fragment' attribute.";
 
+            var context = new TagHelperContext(
+                allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
+                    Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
+                items: new Dictionary<object, object>(),
+                uniqueId: "test",
+                getChildContentAsync: _ => Task.FromResult<TagHelperContent>(null));
+
             // Act & Assert
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-                () => anchorTagHelper.ProcessAsync(context: null, output: output));
+                () => anchorTagHelper.ProcessAsync(context, output));
 
             Assert.Equal(expectedErrorMessage, ex.Message);
         }
@@ -248,9 +254,16 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedErrorMessage = "Cannot determine an 'href' attribute for <a>. An <a> with a specified " +
                 "'asp-route' must not have an 'asp-action' or 'asp-controller' attribute.";
 
+            var context = new TagHelperContext(
+                allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
+                    Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
+                items: new Dictionary<object, object>(),
+                uniqueId: "test",
+                getChildContentAsync: _ => Task.FromResult<TagHelperContent>(null));
+
             // Act & Assert
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-                () => anchorTagHelper.ProcessAsync(context: null, output: output));
+                () => anchorTagHelper.ProcessAsync(context, output));
 
             Assert.Equal(expectedErrorMessage, ex.Message);
         }
