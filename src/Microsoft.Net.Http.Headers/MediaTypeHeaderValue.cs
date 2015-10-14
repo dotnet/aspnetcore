@@ -219,6 +219,21 @@ namespace Microsoft.Net.Http.Headers
             get { return _isReadOnly; }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether this <see cref="MediaTypeHeaderValue"/> is a subset of
+        /// <paramref name="otherMediaType"/>. A "subset" is defined as the same or a more specific media type
+        /// according to the precedence described in https://www.ietf.org/rfc/rfc2068.txt section 14.1, Accept.
+        /// </summary>
+        /// <param name="otherMediaType">The <see cref="MediaTypeHeaderValue"/> to compare.</param>
+        /// <returns>
+        /// A value indicating whether this <see cref="MediaTypeHeaderValue"/> is a subset of
+        /// <paramref name="otherMediaType"/>.
+        /// </returns>
+        /// <remarks>
+        /// For example "multipart/mixed; boundary=1234" is a subset of "multipart/mixed; boundary=1234",
+        /// "multipart/mixed", "multipart/*", and "*/*" but not "multipart/mixed; boundary=2345" or
+        /// "multipart/message; boundary=1234".
+        /// </remarks>
         public bool IsSubsetOf(MediaTypeHeaderValue otherMediaType)
         {
             if (otherMediaType == null)
@@ -226,6 +241,7 @@ namespace Microsoft.Net.Http.Headers
                 return false;
             }
 
+            // "text/plain" is a subset of "text/plain", "text/*" and "*/*". "*/*" is a subset only of "*/*".
             if (!Type.Equals(otherMediaType.Type, StringComparison.OrdinalIgnoreCase))
             {
                 if (!otherMediaType.MatchesAllTypes)
@@ -241,22 +257,29 @@ namespace Microsoft.Net.Http.Headers
                 }
             }
 
-            if (Parameters != null)
+            // "text/plain; charset=utf-8; level=1" is a subset of "text/plain; charset=utf-8". In turn
+            // "text/plain; charset=utf-8" is a subset of "text/plain".
+            if (otherMediaType._parameters != null && otherMediaType._parameters.Count != 0)
             {
-                if (Parameters.Count != 0 && (otherMediaType.Parameters == null || otherMediaType.Parameters.Count == 0))
+                // Make sure all parameters in the potential superset are included locally. Fine to have additional
+                // parameters locally; they make this one more specific.
+                foreach (var parameter in otherMediaType._parameters)
                 {
-                    return false;
-                }
-
-                // Make sure all parameters listed locally are listed in the other one. The other one may have additional parameters.
-                foreach (var param in _parameters)
-                {
-                    var otherParam = NameValueHeaderValue.Find(otherMediaType._parameters, param.Name);
-                    if (otherParam == null)
+                    if (string.Equals(parameter.Name, "q", StringComparison.OrdinalIgnoreCase))
                     {
+                        // "q" and later parameters are not involved in media type matching. Quoting the RFC: The first
+                        // "q" parameter (if any) separates the media-range parameter(s) from the accept-params.
+                        break;
+                    }
+
+                    var localParameter = NameValueHeaderValue.Find(_parameters, parameter.Name);
+                    if (localParameter == null)
+                    {
+                        // Not found.
                         return false;
                     }
-                    if (!string.Equals(param.Value, otherParam.Value, StringComparison.OrdinalIgnoreCase))
+
+                    if (!string.Equals(parameter.Value, localParameter.Value, StringComparison.OrdinalIgnoreCase))
                     {
                         return false;
                     }
@@ -364,7 +387,7 @@ namespace Microsoft.Net.Http.Headers
                 return 0;
             }
 
-            // Caller must remove leading whitespaces. If not, we'll return 0.
+            // Caller must remove leading whitespace. If not, we'll return 0.
             string mediaType = null;
             var mediaTypeLength = MediaTypeHeaderValue.GetMediaTypeExpressionLength(input, startIndex, out mediaType);
 
@@ -432,7 +455,7 @@ namespace Microsoft.Net.Http.Headers
                 return 0;
             }
 
-            // If there are no whitespaces between <type> and <subtype> in <type>/<subtype> get the media type using
+            // If there is no whitespace between <type> and <subtype> in <type>/<subtype> get the media type using
             // one Substring call. Otherwise get substrings for <type> and <subtype> and combine them.
             var mediatTypeLength = current + subtypeLength - startIndex;
             if (typeLength + subtypeLength + 1 == mediatTypeLength)
@@ -454,8 +477,8 @@ namespace Microsoft.Net.Http.Headers
                 throw new ArgumentException("An empty string is not allowed.", parameterName);
             }
 
-            // When adding values using strongly typed objects, no leading/trailing LWS (whitespaces) are allowed.
-            // Also no LWS between type and subtype are allowed.
+            // When adding values using strongly typed objects, no leading/trailing LWS (whitespace) is allowed.
+            // Also no LWS between type and subtype is allowed.
             string tempMediaType;
             var mediaTypeLength = GetMediaTypeExpressionLength(mediaType, 0, out tempMediaType);
             if ((mediaTypeLength == 0) || (tempMediaType.Length != mediaType.Length))

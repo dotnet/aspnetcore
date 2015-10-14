@@ -542,13 +542,16 @@ namespace Microsoft.Net.Http.Headers
 
         [Theory]
         [InlineData("*/*;", "*/*")]
-        [InlineData("text/*;", "text/*")]
+        [InlineData("text/*", "text/*")]
+        [InlineData("text/*;", "*/*")]
         [InlineData("text/plain;", "text/plain")]
-        [InlineData("*/*;", "*/*;charset=utf-8;")]
-        [InlineData("text/*;", "*/*;charset=utf-8;")]
-        [InlineData("text/plain;", "*/*;charset=utf-8;")]
-        [InlineData("text/plain;", "text/*;charset=utf-8;")]
-        [InlineData("text/plain;", "text/plain;charset=utf-8;")]
+        [InlineData("text/plain", "text/*")]
+        [InlineData("text/plain;", "*/*")]
+        [InlineData("*/*;missingparam=4", "*/*")]
+        [InlineData("text/*;missingparam=4;", "*/*;")]
+        [InlineData("text/plain;missingparam=4", "*/*;")]
+        [InlineData("text/plain;missingparam=4", "text/*")]
+        [InlineData("text/plain;charset=utf-8", "text/plain;charset=utf-8")]
         [InlineData("text/plain;version=v1", "Text/plain;Version=v1")]
         [InlineData("text/plain;version=v1", "tExT/plain;version=V1")]
         [InlineData("text/plain;version=v1", "TEXT/PLAIN;VERSION=V1")]
@@ -558,26 +561,38 @@ namespace Microsoft.Net.Http.Headers
         [InlineData("text/plain;charset=utf-8;foo=bar;q=0.0", "*/*;charset=utf-8;foo=bar;q=0.0")]
         public void IsSubsetOf_PositiveCases(string mediaType1, string mediaType2)
         {
+            // Arrange
             var parsedMediaType1 = MediaTypeHeaderValue.Parse(mediaType1);
             var parsedMediaType2 = MediaTypeHeaderValue.Parse(mediaType2);
 
+            // Act
             var isSubset = parsedMediaType1.IsSubsetOf(parsedMediaType2);
+
+            // Assert
             Assert.True(isSubset);
         }
 
         [Theory]
+        [InlineData("application/html", "text/*")]
+        [InlineData("application/json", "application/html")]
         [InlineData("text/plain;version=v1", "text/plain;version=")]
         [InlineData("*/*;", "text/plain;charset=utf-8;foo=bar;q=0.0")]
         [InlineData("text/*;", "text/plain;charset=utf-8;foo=bar;q=0.0")]
-        [InlineData("text/plain;missingparam=4;", "text/plain;charset=utf-8;foo=bar;q=0.0")]
-        [InlineData("text/plain;missingparam=4;", "text/*;charset=utf-8;foo=bar;q=0.0")]
-        [InlineData("text/plain;missingparam=4;", "*/*;charset=utf-8;foo=bar;q=0.0")]
+        [InlineData("text/*;charset=utf-8;foo=bar;q=0.0", "text/plain;missingparam=4;")]
+        [InlineData("*/*;charset=utf-8;foo=bar;q=0.0", "text/plain;missingparam=4;")]
+        [InlineData("text/plain;charset=utf-8;foo=bar;q=0.0", "text/plain;missingparam=4;")]
+        [InlineData("text/plain;charset=utf-8;foo=bar;q=0.0", "text/*;missingparam=4;")]
+        [InlineData("text/plain;charset=utf-8;foo=bar;q=0.0", "*/*;missingparam=4;")]
         public void IsSubsetOf_NegativeCases(string mediaType1, string mediaType2)
         {
+            // Arrange
             var parsedMediaType1 = MediaTypeHeaderValue.Parse(mediaType1);
             var parsedMediaType2 = MediaTypeHeaderValue.Parse(mediaType2);
 
+            // Act
             var isSubset = parsedMediaType1.IsSubsetOf(parsedMediaType2);
+
+            // Assert
             Assert.False(isSubset);
         }
 
