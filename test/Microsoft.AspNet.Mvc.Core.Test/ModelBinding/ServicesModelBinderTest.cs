@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
-    public class ServiceModelBinderTest
+    public class ServicesModelBinderTest
     {
         [Fact]
         public async Task ServiceModelBinder_BindsService()
