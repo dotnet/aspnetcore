@@ -227,7 +227,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         /// </remarks>
         protected ViewDataDictionary(ViewDataDictionary source, object model, Type declaredModelType)
             : this(source._metadataProvider,
-                   new ModelStateDictionary(source.ModelState),
+                   source.ModelState,
                    declaredModelType,
                    data: new CopyOnWriteDictionary<string, object>(source, StringComparer.OrdinalIgnoreCase),
                    templateInfo: new TemplateInfo(source.TemplateInfo))

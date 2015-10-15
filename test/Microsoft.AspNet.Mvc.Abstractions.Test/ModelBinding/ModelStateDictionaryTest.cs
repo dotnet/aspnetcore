@@ -2,8 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Globalization;
-using Microsoft.Extensions.Internal;
+using System.Collections.Generic;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
@@ -156,7 +155,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.Equal(0, target.ErrorCount);
             Assert.Equal(1, target.Count);
             Assert.Same(modelState, target["key"]);
-            Assert.IsType<CopyOnWriteDictionary<string, ModelState>>(target.InnerDictionary);
+            Assert.IsType<Dictionary<string, ModelState>>(target.InnerDictionary);
         }
 
         [Fact]
