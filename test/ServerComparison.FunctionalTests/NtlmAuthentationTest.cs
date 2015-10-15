@@ -59,15 +59,18 @@ namespace ServerComparison.FunctionalTests
                     {
                         Assert.Equal("Hello World", responseText);
 
-                        responseText = await httpClient.GetStringAsync("/Anonymous");
+                        response = await httpClient.GetAsync("/Anonymous");
+                        responseText = await response.Content.ReadAsStringAsync();
                         Assert.Equal("Anonymous?True", responseText);
 
                         response = await httpClient.GetAsync("/Restricted");
+                        responseText = await response.Content.ReadAsStringAsync();
                         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
                         Assert.Contains("NTLM", response.Headers.WwwAuthenticate.ToString());
                         Assert.Contains("Negotiate", response.Headers.WwwAuthenticate.ToString());
 
                         response = await httpClient.GetAsync("/RestrictedNTLM");
+                        responseText = await response.Content.ReadAsStringAsync();
                         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
                         Assert.Contains("NTLM", response.Headers.WwwAuthenticate.ToString());
                         // Note IIS can't restrict a challenge to a specific auth type, the native auth modules always add themselves.
@@ -88,22 +91,30 @@ namespace ServerComparison.FunctionalTests
                         httpClient = new HttpClient(httpClientHandler) { BaseAddress = new Uri(deploymentResult.ApplicationBaseUri) };
 
                         response = await httpClient.GetAsync("/AutoForbid");
+                        responseText = await response.Content.ReadAsStringAsync();
                         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
 
-                        responseText = await httpClient.GetStringAsync("/Restricted");
+                        response = await httpClient.GetAsync("/Restricted");
+                        responseText = await response.Content.ReadAsStringAsync();
+                        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                         Assert.Equal("Negotiate", responseText);
 
-                        responseText = await httpClient.GetStringAsync("/RestrictedNegotiate");
+                        response = await httpClient.GetAsync("/RestrictedNegotiate");
+                        responseText = await response.Content.ReadAsStringAsync();
+                        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                         Assert.Equal("Negotiate", responseText);
 
                         if (serverType == ServerType.WebListener)
                         {
-                            responseText = await httpClient.GetStringAsync("/RestrictedNTLM");
+                            response = await httpClient.GetAsync("/RestrictedNTLM");
+                            responseText = await response.Content.ReadAsStringAsync();
+                            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                             Assert.Equal("NTLM", responseText);
                         }
                         else if (serverType == ServerType.IISExpress)
                         {
                             response = await httpClient.GetAsync("/RestrictedNTLM");
+                            responseText = await response.Content.ReadAsStringAsync();
                             // This isn't a Forbidden because we authenticate with Negotiate and challenge for NTLM.
                             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
                             // Note IIS can't restrict a challenge to a specific auth type, the native auth modules always add themselves,

@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
@@ -28,6 +29,24 @@ namespace ServerComparison.TestSites
         {
             loggerFactory.AddConsole(minLevel: LogLevel.Warning);
 
+            app.Use(async (context, next) =>
+            {
+                try
+                {
+                    await next();
+                }
+                catch (Exception ex)
+                {
+                    if (context.Response.HasStarted)
+                    {
+                        throw;
+                    }
+                    context.Response.Clear();
+                    context.Response.StatusCode = 500;
+                    await context.Response.WriteAsync(ex.ToString());
+                }
+            });
+
             // Set up NTLM authentication for WebListener like below.
             // For IIS and IISExpress: Use inetmgr to setup NTLM authentication on the application vDir or modify the applicationHost.config to enable NTLM.
             var listener = app.ServerFeatures.Get<WebListener>();
@@ -35,6 +54,10 @@ namespace ServerComparison.TestSites
             {
                 listener.AuthenticationManager.AuthenticationSchemes =
                     AuthenticationSchemes.Negotiate | AuthenticationSchemes.NTLM | AuthenticationSchemes.AllowAnonymous;
+            }
+            else
+            {
+                app.UseIISPlatformHandler();
             }
 
             app.Use((context, next) => 
@@ -58,7 +81,7 @@ namespace ServerComparison.TestSites
 
                 if (context.Request.Path.Equals("/Forbidden"))
                 {
-                    return context.Authentication.ForbidAsync(string.Empty);
+                    return context.Authentication.ForbidAsync(Microsoft.AspNet.Http.Authentication.AuthenticationManager.AutomaticScheme);
                 }
 
                 if (context.Request.Path.Equals("/AutoForbid"))
