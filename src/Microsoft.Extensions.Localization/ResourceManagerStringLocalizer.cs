@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
 using System.Resources;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Localization.Internal;
 
 namespace Microsoft.Extensions.Localization
