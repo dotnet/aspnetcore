@@ -10,12 +10,14 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Http.Internal
 {
-    public class DefaultHttpResponse : HttpResponse
+    public class DefaultHttpResponse : HttpResponse, IFeatureCache
     {
         private readonly DefaultHttpContext _context;
         private readonly IFeatureCollection _features;
-        private FeatureReference<IHttpResponseFeature> _response = FeatureReference<IHttpResponseFeature>.Default;
-        private FeatureReference<IResponseCookiesFeature> _cookies = FeatureReference<IResponseCookiesFeature>.Default;
+        private int _cachedFeaturesRevision = -1;
+
+        private IHttpResponseFeature _response;
+        private IResponseCookiesFeature _cookies;
 
         public DefaultHttpResponse(DefaultHttpContext context, IFeatureCollection features)
         {
@@ -23,14 +25,31 @@ namespace Microsoft.AspNet.Http.Internal
             _features = features;
         }
 
+        void IFeatureCache.CheckFeaturesRevision()
+        {
+            if (_cachedFeaturesRevision != _features.Revision)
+            {
+                _response = null;
+                _cookies = null;
+                _cachedFeaturesRevision = _features.Revision;
+            }
+        }
+
         private IHttpResponseFeature HttpResponseFeature
         {
-            get { return _response.Fetch(_features); }
+            get { return FeatureHelpers.GetAndCache(this, _features, ref _response); }
         }
 
         private IResponseCookiesFeature ResponseCookiesFeature
         {
-            get { return _cookies.Fetch(_features) ?? _cookies.Update(_features, new ResponseCookiesFeature(_features)); }
+            get
+            {
+                return FeatureHelpers.GetOrCreateAndCache(
+                    this, 
+                    _features, 
+                    (f) => new ResponseCookiesFeature(f), 
+                    ref _cookies);
+            }
         }
 
         public override HttpContext HttpContext { get { return _context; } }

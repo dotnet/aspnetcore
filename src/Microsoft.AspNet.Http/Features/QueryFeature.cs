@@ -9,10 +9,12 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNet.Http.Features.Internal
 {
-    public class QueryFeature : IQueryFeature
+    public class QueryFeature : IQueryFeature, IFeatureCache
     {
         private readonly IFeatureCollection _features;
-        private FeatureReference<IHttpRequestFeature> _request = FeatureReference<IHttpRequestFeature>.Default;
+        private int _cachedFeaturesRevision = -1;
+
+        private IHttpRequestFeature _request;
 
         private string _original;
         private IReadableStringCollection _parsedValues;
@@ -46,6 +48,20 @@ namespace Microsoft.AspNet.Http.Features.Internal
             _features = features;
         }
 
+        void IFeatureCache.CheckFeaturesRevision()
+        {
+            if (_cachedFeaturesRevision != _features.Revision)
+            {
+                _request = null;
+                _cachedFeaturesRevision = _features.Revision;
+            }
+        }
+
+        private IHttpRequestFeature HttpRequestFeature
+        {
+            get { return FeatureHelpers.GetAndCache(this, _features, ref _request); }
+        }
+
         public IReadableStringCollection Query
         {
             get
@@ -55,7 +71,7 @@ namespace Microsoft.AspNet.Http.Features.Internal
                     return _parsedValues ?? ReadableStringCollection.Empty;
                 }
 
-                var current = _request.Fetch(_features).QueryString;
+                var current = HttpRequestFeature.QueryString;
                 if (_parsedValues == null || !string.Equals(_original, current, StringComparison.Ordinal))
                 {
                     _original = current;
@@ -71,12 +87,12 @@ namespace Microsoft.AspNet.Http.Features.Internal
                     if (value == null)
                     {
                         _original = string.Empty;
-                        _request.Fetch(_features).QueryString = string.Empty;
+                        HttpRequestFeature.QueryString = string.Empty;
                     }
                     else
                     {
                         _original = QueryString.Create(_parsedValues).ToString();
-                        _request.Fetch(_features).QueryString = _original;
+                        HttpRequestFeature.QueryString = _original;
                     }
                 }
             }

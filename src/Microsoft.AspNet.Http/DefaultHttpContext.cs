@@ -14,20 +14,22 @@ using Microsoft.AspNet.Http.Features.Internal;
 
 namespace Microsoft.AspNet.Http.Internal
 {
-    public class DefaultHttpContext : HttpContext
+    public class DefaultHttpContext : HttpContext, IFeatureCache
     {
         private readonly HttpRequest _request;
         private readonly HttpResponse _response;
         private readonly ConnectionInfo _connection;
         private readonly AuthenticationManager _authenticationManager;
 
-        private FeatureReference<IItemsFeature> _items;
-        private FeatureReference<IServiceProvidersFeature> _serviceProviders;
-        private FeatureReference<IHttpAuthenticationFeature> _authentication;
-        private FeatureReference<IHttpRequestLifetimeFeature> _lifetime;
-        private FeatureReference<ISessionFeature> _session;
+        private IItemsFeature _items;
+        private IServiceProvidersFeature _serviceProviders;
+        private IHttpAuthenticationFeature _authentication;
+        private IHttpRequestLifetimeFeature _lifetime;
+        private ISessionFeature _session;
         private WebSocketManager _websockets;
+
         private IFeatureCollection _features;
+        private int _cachedFeaturesRevision = -1;
 
         public DefaultHttpContext()
             : this(new FeatureCollection())
@@ -43,37 +45,77 @@ namespace Microsoft.AspNet.Http.Internal
             _response = new DefaultHttpResponse(this, features);
             _connection = new DefaultConnectionInfo(features);
             _authenticationManager = new DefaultAuthenticationManager(features);
+        }
 
-            _items = FeatureReference<IItemsFeature>.Default;
-            _serviceProviders = FeatureReference<IServiceProvidersFeature>.Default;
-            _authentication = FeatureReference<IHttpAuthenticationFeature>.Default;
-            _lifetime = FeatureReference<IHttpRequestLifetimeFeature>.Default;
-            _session = FeatureReference<ISessionFeature>.Default;
+        void IFeatureCache.CheckFeaturesRevision()
+        {
+            if (_cachedFeaturesRevision !=_features.Revision)
+            {
+                _items = null;
+                _serviceProviders = null;
+                _authentication = null;
+                _lifetime = null;
+                _session = null;
+                _cachedFeaturesRevision = _features.Revision;
+            }
         }
 
         IItemsFeature ItemsFeature
         {
-            get { return _items.Fetch(_features) ?? _items.Update(_features, new ItemsFeature()); }
+            get
+            {
+                return FeatureHelpers.GetOrCreateAndCache(
+                    this, 
+                    _features, 
+                    () => new ItemsFeature(), 
+                    ref _items);
+            }
         }
 
         IServiceProvidersFeature ServiceProvidersFeature
         {
-            get { return _serviceProviders.Fetch(_features) ?? _serviceProviders.Update(_features, new ServiceProvidersFeature()); }
+            get
+            {
+                return FeatureHelpers.GetOrCreateAndCache(
+                    this, 
+                    _features, 
+                    () => new ServiceProvidersFeature(), 
+                    ref _serviceProviders);
+            }
         }
 
         private IHttpAuthenticationFeature HttpAuthenticationFeature
         {
-            get { return _authentication.Fetch(_features) ?? _authentication.Update(_features, new HttpAuthenticationFeature()); }
+            get
+            {
+                return FeatureHelpers.GetOrCreateAndCache(
+                    this, 
+                    _features, 
+                    () => new HttpAuthenticationFeature(), 
+                    ref _authentication);
+            }
         }
 
         private IHttpRequestLifetimeFeature LifetimeFeature
         {
-            get { return _lifetime.Fetch(_features) ?? _lifetime.Update(_features, new HttpRequestLifetimeFeature()); }
+            get
+            {
+                return FeatureHelpers.GetOrCreateAndCache(
+                    this, 
+                    _features, 
+                    () => new HttpRequestLifetimeFeature(), 
+                    ref _lifetime);
+            }
         }
 
         private ISessionFeature SessionFeature
         {
-            get { return _session.Fetch(_features); }
+            get { return FeatureHelpers.GetAndCache(this, _features, ref _session); }
+            set
+            {
+                _features.Set(value);
+                _session = value;
+            }
         }
 
         public override IFeatureCollection Features { get { return _features; } }
@@ -143,7 +185,7 @@ namespace Microsoft.AspNet.Http.Internal
                 if (feature == null)
                 {
                     feature = new DefaultSessionFeature();
-                    _session.Update(_features, feature);
+                    SessionFeature = feature;
                 }
                 feature.Session = value;
             }

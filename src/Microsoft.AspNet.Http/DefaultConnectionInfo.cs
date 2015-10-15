@@ -10,26 +10,51 @@ using Microsoft.AspNet.Http.Features.Internal;
 
 namespace Microsoft.AspNet.Http.Internal
 {
-    public class DefaultConnectionInfo : ConnectionInfo
+    public class DefaultConnectionInfo : ConnectionInfo, IFeatureCache
     {
         private readonly IFeatureCollection _features;
+        private int _cachedFeaturesRevision = -1;
 
-        private FeatureReference<IHttpConnectionFeature> _connection = FeatureReference<IHttpConnectionFeature>.Default;
-        private FeatureReference<ITlsConnectionFeature> _tlsConnection = FeatureReference<ITlsConnectionFeature>.Default;
+        private IHttpConnectionFeature _connection;
+        private ITlsConnectionFeature _tlsConnection;
 
         public DefaultConnectionInfo(IFeatureCollection features)
         {
             _features = features;
         }
 
+        void IFeatureCache.CheckFeaturesRevision()
+        {
+            if (_cachedFeaturesRevision != _features.Revision)
+            {
+                _connection = null;
+                _tlsConnection = null;
+                _cachedFeaturesRevision = _features.Revision;
+            }
+        }
+
         private IHttpConnectionFeature HttpConnectionFeature
         {
-            get { return _connection.Fetch(_features) ?? _connection.Update(_features, new HttpConnectionFeature()); }
+            get
+            {
+                return FeatureHelpers.GetOrCreateAndCache(
+                    this, 
+                    _features, 
+                    () => new HttpConnectionFeature(), 
+                    ref _connection);
+            }
         }
 
         private ITlsConnectionFeature TlsConnectionFeature
         {
-            get { return _tlsConnection.Fetch(_features) ?? _tlsConnection.Update(_features, new TlsConnectionFeature()); }
+            get
+            {
+                return FeatureHelpers.GetOrCreateAndCache(
+                    this, 
+                    _features,
+                    () => new TlsConnectionFeature(),
+                    ref _tlsConnection);
+            }
         }
 
         public override IPAddress RemoteIpAddress
