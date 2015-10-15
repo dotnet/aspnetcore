@@ -5,7 +5,6 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Features;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc.Formatters
 {
@@ -15,7 +14,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
     public class StreamOutputFormatter : IOutputFormatter
     {
         /// <inheritdoc />
-        public bool CanWriteResult(OutputFormatterContext context, MediaTypeHeaderValue contentType)
+        public bool CanWriteResult(OutputFormatterCanWriteContext context)
         {
             if (context == null)
             {
@@ -25,7 +24,6 @@ namespace Microsoft.AspNet.Mvc.Formatters
             // Ignore the passed in content type, if the object is a Stream.
             if (context.Object is Stream)
             {
-                context.SelectedContentType = contentType;
                 return true;
             }
 
@@ -33,7 +31,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
         }
 
         /// <inheritdoc />
-        public async Task WriteAsync(OutputFormatterContext context)
+        public async Task WriteAsync(OutputFormatterWriteContext context)
         {
             if (context == null)
             {
@@ -44,9 +42,9 @@ namespace Microsoft.AspNet.Mvc.Formatters
             {
                 var response = context.HttpContext.Response;
 
-                if (context.SelectedContentType != null)
+                if (context.ContentType != null)
                 {
-                    response.ContentType = context.SelectedContentType.ToString();
+                    response.ContentType = context.ContentType.ToString();
                 }
 
                 var bufferingFeature = context.HttpContext.Features.Get<IHttpBufferingFeature>();

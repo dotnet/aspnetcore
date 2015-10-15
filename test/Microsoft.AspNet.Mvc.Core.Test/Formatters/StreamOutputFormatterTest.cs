@@ -17,46 +17,40 @@ namespace Microsoft.AspNet.Mvc.Formatters
         [Theory]
         [InlineData(typeof(Stream), "text/plain")]
         [InlineData(typeof(Stream), null)]
-        [InlineData(typeof(object), "text/plain")]
-        [InlineData(typeof(object), null)]
-        [InlineData(typeof(IActionResult), "text/plain")]
-        [InlineData(typeof(IActionResult), null)]
-        public void CanWriteResult_ReturnsTrue_ForStreams(Type declaredType, string contentType)
+        public void CanWriteResult_ReturnsTrue_ForStreams(Type type, string contentType)
         {
             // Arrange
             var formatter = new StreamOutputFormatter();
             var contentTypeHeader = contentType == null ? null : new MediaTypeHeaderValue(contentType);
-            var formatterContext = new OutputFormatterContext()
+
+            var context = new OutputFormatterWriteContext(new DefaultHttpContext(), type, new MemoryStream())
             {
-                DeclaredType = declaredType,
-                Object = new MemoryStream()
+                ContentType = contentTypeHeader,
             };
 
             // Act
-            var canWrite = formatter.CanWriteResult(formatterContext, contentTypeHeader);
+            var canWrite = formatter.CanWriteResult(context);
 
             // Assert
             Assert.True(canWrite);
         }
 
         [Theory]
-        [InlineData(typeof(object), "text/plain")]
-        [InlineData(typeof(object), null)]
         [InlineData(typeof(SimplePOCO), "text/plain")]
         [InlineData(typeof(SimplePOCO), null)]
-        public void CanWriteResult_OnlyActsOnStreams_IgnoringContentType(Type declaredType, string contentType)
+        public void CanWriteResult_OnlyActsOnStreams_IgnoringContentType(Type type, string contentType)
         {
             // Arrange
             var formatter = new StreamOutputFormatter();
             var contentTypeHeader = contentType == null ? null : new MediaTypeHeaderValue(contentType);
-            var formatterContext = new OutputFormatterContext()
+
+            var context = new OutputFormatterWriteContext(new DefaultHttpContext(), type, new SimplePOCO())
             {
-                DeclaredType = declaredType,
-                Object = new SimplePOCO()
+                ContentType = contentTypeHeader,
             };
 
             // Act
-            var canWrite = formatter.CanWriteResult(formatterContext, contentTypeHeader);
+            var canWrite = formatter.CanWriteResult(context);
 
             // Assert
             Assert.False(canWrite);
@@ -70,56 +64,39 @@ namespace Microsoft.AspNet.Mvc.Formatters
         {
             // Arrange
             var formatter = new StreamOutputFormatter();
-            var context = new OutputFormatterContext();
-            var contentType = new MediaTypeHeaderValue("text/plain");
+            var @object = type != null ? Activator.CreateInstance(type) : null;
 
-            context.Object = type != null ? Activator.CreateInstance(type) : null;
+            var context = new OutputFormatterWriteContext(new DefaultHttpContext(), type, @object);
 
             // Act
-            var result = formatter.CanWriteResult(context, contentType);
+            var result = formatter.CanWriteResult(context);
 
             // Assert
             Assert.False(result);
-            Assert.Null(context.SelectedContentType);
-        }
-
-        [Fact]
-        public void CanWriteResult_SetsContentType()
-        {
-            // Arrange
-            var formatter = new StreamOutputFormatter();
-            var contentType = new MediaTypeHeaderValue("text/plain");
-            var context = new OutputFormatterContext();
-            context.Object = new MemoryStream();
-
-            // Act
-            var result = formatter.CanWriteResult(context, contentType);
-
-            // Assert
-            Assert.True(result);
-            Assert.Same(contentType, context.SelectedContentType);
         }
 
         [Fact]
         public async Task DisablesResponseBuffering_IfBufferingFeatureAvailable()
         {
             // Arrange
-            var expected = Encoding.UTF8.GetBytes("Test data");
             var formatter = new StreamOutputFormatter();
+
+            var expected = Encoding.UTF8.GetBytes("Test data");
+
             var httpContext = new DefaultHttpContext();
-            var ms = new MemoryStream();
-            httpContext.Response.Body = ms;
+            var body = new MemoryStream();
+            httpContext.Response.Body = body;
+
             var bufferingFeature = new TestBufferingFeature();
             httpContext.Features.Set<IHttpBufferingFeature>(bufferingFeature);
-            var context = new OutputFormatterContext();
-            context.Object = new MemoryStream(expected);
-            context.HttpContext = httpContext;
+
+            var context = new OutputFormatterWriteContext(httpContext, typeof(Stream), new MemoryStream(expected));
 
             // Act
             await formatter.WriteAsync(context);
 
             // Assert
-            Assert.Equal(expected, ms.ToArray());
+            Assert.Equal(expected, body.ToArray());
             Assert.True(bufferingFeature.DisableResponseBufferingInvoked);
         }
 

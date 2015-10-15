@@ -146,17 +146,12 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShimTest
             Assert.NotNull(httpContext.Response.ContentLength);
         }
 
-        private OutputFormatterContext GetOutputFormatterContext(
+        private OutputFormatterWriteContext GetOutputFormatterContext(
             object outputValue,
             Type outputType,
             HttpContext httpContext)
         {
-            return new OutputFormatterContext
-            {
-                Object = outputValue,
-                DeclaredType = outputType,
-                HttpContext = httpContext,
-            };
+            return new OutputFormatterWriteContext(httpContext, outputType, outputValue);
         }
     }
 }

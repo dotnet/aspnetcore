@@ -6,6 +6,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Internal;
 using Moq;
 using Xunit;
 
@@ -28,19 +29,18 @@ namespace Microsoft.AspNet.Mvc.Formatters
 
         [Theory]
         [MemberData(nameof(OutputFormatterContextValues))]
-        public void CanWriteResult_ReturnsTrueForStringTypes(object value, bool useDeclaredTypeAsString, bool expectedCanWriteResult)
+        public void CanWriteResult_ReturnsTrueForStringTypes(
+            object value,
+            bool useDeclaredTypeAsString,
+            bool expectedCanWriteResult)
         {
             // Arrange
             var formatter = new StringOutputFormatter();
-            var typeToUse = useDeclaredTypeAsString ? typeof(string) : typeof(object);
-            var formatterContext = new OutputFormatterContext()
-            {
-                Object = value,
-                DeclaredType = typeToUse
-            };
+            var type = useDeclaredTypeAsString ? typeof(string) : typeof(object);
+            var context = new OutputFormatterWriteContext(new DefaultHttpContext(), type, value);
 
             // Act
-            var result = formatter.CanWriteResult(formatterContext, null);
+            var result = formatter.CanWriteResult(context);
 
             // Assert
             Assert.Equal(expectedCanWriteResult, result);
@@ -55,20 +55,14 @@ namespace Microsoft.AspNet.Mvc.Formatters
             var response = new Mock<HttpResponse>();
             response.SetupProperty<long?>(o => o.ContentLength);
             response.SetupGet(r => r.Body).Returns(memoryStream);
-            var mockHttpContext = new Mock<HttpContext>();
-            mockHttpContext.Setup(o => o.Response).Returns(response.Object);
+            var httpContext = new Mock<HttpContext>();
+            httpContext.Setup(o => o.Response).Returns(response.Object);
 
             var formatter = new StringOutputFormatter();
-            var formatterContext = new OutputFormatterContext()
-            {
-                Object = null,
-                DeclaredType = typeof(string),
-                HttpContext = mockHttpContext.Object,
-                SelectedEncoding = encoding
-            };
+            var context = new OutputFormatterWriteContext(httpContext.Object, typeof(string), @object: null);
 
             // Act
-            await formatter.WriteResponseBodyAsync(formatterContext);
+            await formatter.WriteResponseBodyAsync(context);
 
             // Assert
             Assert.Equal(0, memoryStream.Length);

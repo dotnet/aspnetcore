@@ -14,12 +14,12 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
 {
     public class HttpResponseMessageOutputFormatter : IOutputFormatter
     {
-        public bool CanWriteResult(OutputFormatterContext context, MediaTypeHeaderValue contentType)
+        public bool CanWriteResult(OutputFormatterCanWriteContext context)
         {
             return context.Object is HttpResponseMessage;
         }
 
-        public async Task WriteAsync(OutputFormatterContext context)
+        public async Task WriteAsync(OutputFormatterWriteContext context)
         {
             var response = context.HttpContext.Response;
 

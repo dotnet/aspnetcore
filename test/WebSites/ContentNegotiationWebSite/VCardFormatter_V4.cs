@@ -24,12 +24,12 @@ namespace ContentNegotiationWebSite
             SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("text/vcard;version=v4.0"));
         }
 
-        protected override bool CanWriteType(Type declaredType, Type runtimeType)
+        protected override bool CanWriteType(Type type)
         {
-            return typeof(Contact).GetTypeInfo().IsAssignableFrom(runtimeType.GetTypeInfo());
+            return typeof(Contact).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo());
         }
 
-        public override async Task WriteResponseBodyAsync(OutputFormatterContext context)
+        public override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context)
         {
             var contact = (Contact)context.Object;
 
@@ -41,7 +41,9 @@ namespace ContentNegotiationWebSite
             builder.AppendLine();
             builder.AppendLine("END:VCARD");
 
-            await context.HttpContext.Response.WriteAsync(builder.ToString(), context.SelectedEncoding);
+            await context.HttpContext.Response.WriteAsync(
+                builder.ToString(),
+                context.ContentType?.Encoding ?? Encoding.UTF8);
         }
     }
 }

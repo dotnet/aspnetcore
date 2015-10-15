@@ -103,13 +103,13 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 formatters = GetDefaultFormatters();
             }
 
-            var formatterContext = new OutputFormatterContext()
+            var objectType = result.DeclaredType;
+            if (objectType == null || objectType == typeof(object))
             {
-                DeclaredType = result.DeclaredType,
-                HttpContext = context.HttpContext,
-                Object = result.Value,
+                objectType = result.Value?.GetType();
             };
 
+            var formatterContext = new OutputFormatterWriteContext(context.HttpContext, objectType, result.Value);
             var selectedFormatter = SelectFormatter(formatterContext, result.ContentTypes, formatters);
             if (selectedFormatter == null)
             {
@@ -124,7 +124,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 "Selected output formatter '{OutputFormatter}' and content type " +
                 "'{ContentType}' to write the response.",
                 selectedFormatter.GetType().FullName,
-                formatterContext.SelectedContentType);
+                formatterContext.ContentType);
 
             result.OnFormatting(context);
             return selectedFormatter.WriteAsync(formatterContext);
@@ -133,7 +133,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
         /// <summary>
         /// Selects the <see cref="IOutputFormatter"/> to write the response.
         /// </summary>
-        /// <param name="formatterContext">The <see cref="OutputFormatterContext"/>.</param>
+        /// <param name="formatterContext">The <see cref="OutputFormatterWriteContext"/>.</param>
         /// <param name="contentTypes">
         /// The list of content types provided by <see cref="ObjectResult.ContentTypes"/>.
         /// </param>
@@ -144,7 +144,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
         /// The selected <see cref="IOutputFormatter"/> or <c>null</c> if no formatter can write the response.
         /// </returns>
         protected virtual IOutputFormatter SelectFormatter(
-            OutputFormatterContext formatterContext,
+            OutputFormatterWriteContext formatterContext,
             IList<MediaTypeHeaderValue> contentTypes,
             IEnumerable<IOutputFormatter> formatters)
         {
@@ -249,7 +249,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
         /// Selects the <see cref="IOutputFormatter"/> to write the response. The first formatter which
         /// can write the response should be chosen without any consideration for content type.
         /// </summary>
-        /// <param name="formatterContext">The <see cref="OutputFormatterContext"/>.</param>
+        /// <param name="formatterContext">The <see cref="OutputFormatterWriteContext"/>.</param>
         /// <param name="formatters">
         /// The list of <see cref="IOutputFormatter"/> instances to consider.
         /// </param>
@@ -257,7 +257,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
         /// The selected <see cref="IOutputFormatter"/> or <c>null</c> if no formatter can write the response.
         /// </returns>
         protected virtual IOutputFormatter SelectFormatterNotUsingAcceptHeaders(
-            OutputFormatterContext formatterContext,
+            OutputFormatterWriteContext formatterContext,
             IEnumerable<IOutputFormatter> formatters)
         {
             if (formatterContext == null)
@@ -272,7 +272,8 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
 
             foreach (var formatter in formatters)
             {
-                if (formatter.CanWriteResult(formatterContext, contentType: null))
+                formatterContext.ContentType = null;
+                if (formatter.CanWriteResult(formatterContext))
                 {
                     return formatter;
                 }
@@ -285,7 +286,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
         /// Selects the <see cref="IOutputFormatter"/> to write the response based on the content type values
         /// present in <paramref name="sortedAcceptHeaders"/>.
         /// </summary>
-        /// <param name="formatterContext">The <see cref="OutputFormatterContext"/>.</param>
+        /// <param name="formatterContext">The <see cref="OutputFormatterWriteContext"/>.</param>
         /// <param name="formatters">
         /// The list of <see cref="IOutputFormatter"/> instances to consider.
         /// </param>
@@ -296,7 +297,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
         /// The selected <see cref="IOutputFormatter"/> or <c>null</c> if no formatter can write the response.
         /// </returns>
         protected virtual IOutputFormatter SelectFormatterUsingSortedAcceptHeaders(
-            OutputFormatterContext formatterContext,
+            OutputFormatterWriteContext formatterContext,
             IEnumerable<IOutputFormatter> formatters,
             IEnumerable<MediaTypeHeaderValue> sortedAcceptHeaders)
         {
@@ -314,29 +315,27 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             {
                 throw new ArgumentNullException(nameof(sortedAcceptHeaders));
             }
-
-            IOutputFormatter selectedFormatter = null;
+            
             foreach (var contentType in sortedAcceptHeaders)
             {
-                // Loop through each of the formatters and see if any one will support this
-                // mediaType Value.
-                selectedFormatter = formatters.FirstOrDefault(
-                    formatter => formatter.CanWriteResult(formatterContext, contentType));
-                if (selectedFormatter != null)
+                foreach (var formatter in formatters)
                 {
-                    // we found our match.
-                    break;
+                    formatterContext.ContentType = contentType;
+                    if (formatter.CanWriteResult(formatterContext))
+                    {
+                        return formatter;
+                    }
                 }
             }
 
-            return selectedFormatter;
+            return null;
         }
 
         /// <summary>
         /// Selects the <see cref="IOutputFormatter"/> to write the response based on the content type values
         /// present in <paramref name="acceptableContentTypes"/>.
         /// </summary>
-        /// <param name="formatterContext">The <see cref="OutputFormatterContext"/>.</param>
+        /// <param name="formatterContext">The <see cref="OutputFormatterWriteContext"/>.</param>
         /// <param name="formatters">
         /// The list of <see cref="IOutputFormatter"/> instances to consider.
         /// </param>
@@ -347,7 +346,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
         /// The selected <see cref="IOutputFormatter"/> or <c>null</c> if no formatter can write the response.
         /// </returns>
         protected virtual IOutputFormatter SelectFormatterUsingAnyAcceptableContentType(
-            OutputFormatterContext formatterContext,
+            OutputFormatterWriteContext formatterContext,
             IEnumerable<IOutputFormatter> formatters,
             IEnumerable<MediaTypeHeaderValue> acceptableContentTypes)
         {
@@ -366,15 +365,23 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 throw new ArgumentNullException(nameof(acceptableContentTypes));
             }
 
-            var selectedFormatter = formatters.FirstOrDefault(
-                formatter => acceptableContentTypes.Any(
-                    contentType => formatter.CanWriteResult(formatterContext, contentType)));
+            foreach (var formatter in formatters)
+            {
+                foreach (var contentType in acceptableContentTypes)
+                {
+                    formatterContext.ContentType = contentType;
+                    if (formatter.CanWriteResult(formatterContext))
+                    {
+                        return formatter;
+                    }
+                }
+            }
 
-            return selectedFormatter;
+            return null;
         }
 
         private IEnumerable<MediaTypeHeaderValue> GetSortedAcceptHeaderMediaTypes(
-            OutputFormatterContext formatterContext)
+            OutputFormatterWriteContext formatterContext)
         {
             var request = formatterContext.HttpContext.Request;
             var incomingAcceptHeaderMediaTypes = request.GetTypedHeaders().Accept ?? new MediaTypeHeaderValue[] { };

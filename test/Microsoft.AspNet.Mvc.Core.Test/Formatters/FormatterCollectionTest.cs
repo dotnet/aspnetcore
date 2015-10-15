@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
 
         private class TestOutputFormatter : OutputFormatter
         {
-            public override Task WriteResponseBodyAsync(OutputFormatterContext context)
+            public override Task WriteResponseBodyAsync(OutputFormatterWriteContext context)
             {
                 throw new NotImplementedException();
             }
@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
 
         private class AnotherTestOutputFormatter : OutputFormatter
         {
-            public override Task WriteResponseBodyAsync(OutputFormatterContext context)
+            public override Task WriteResponseBodyAsync(OutputFormatterWriteContext context)
             {
                 throw new NotImplementedException();
             }

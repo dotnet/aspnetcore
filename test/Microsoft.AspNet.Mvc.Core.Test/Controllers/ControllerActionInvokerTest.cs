@@ -1988,12 +1988,12 @@ namespace Microsoft.AspNet.Mvc.Controllers
 
             var formatter = new Mock<IOutputFormatter>();
             formatter
-                .Setup(f => f.CanWriteResult(It.IsAny<OutputFormatterContext>(), It.IsAny<MediaTypeHeaderValue>()))
+                .Setup(f => f.CanWriteResult(It.IsAny<OutputFormatterCanWriteContext>()))
                 .Returns(true);
 
             formatter
-                .Setup(f => f.WriteAsync(It.IsAny<OutputFormatterContext>()))
-                .Returns<OutputFormatterContext>(async c =>
+                .Setup(f => f.WriteAsync(It.IsAny<OutputFormatterWriteContext>()))
+                .Returns<OutputFormatterWriteContext>(async c =>
                 {
                     await c.HttpContext.Response.WriteAsync(c.Object.ToString());
                 });

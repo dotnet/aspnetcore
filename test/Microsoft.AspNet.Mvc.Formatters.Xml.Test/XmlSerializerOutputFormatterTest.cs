@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
         {
             // Arrange
             var formatter = new XmlSerializerOutputFormatter();
-            var outputFormatterContext = GetOutputFormatterContext(input, typeof(object));
+            var outputFormatterContext = GetOutputFormatterContext(input, input.GetType());
 
             // Act
             await formatter.WriteAsync(outputFormatterContext);
@@ -74,11 +74,13 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
             // Arrange
             var input = new DummyClass { SampleInt = 10 };
             var formatter = new TestXmlSerializerOutputFormatter();
+
             var context = GetOutputFormatterContext(input, typeof(DummyClass));
+            context.ContentType = MediaTypeHeaderValue.Parse("application/xml");
 
             // Act
-            formatter.CanWriteResult(context, MediaTypeHeaderValue.Parse("application/xml"));
-            formatter.CanWriteResult(context, MediaTypeHeaderValue.Parse("application/xml"));
+            formatter.CanWriteResult(context);
+            formatter.CanWriteResult(context);
 
             // Assert
             Assert.Equal(1, formatter.createSerializerCalledCount);
@@ -280,11 +282,8 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
             {
                 yield return new object[] { null, typeof(string), true };
                 yield return new object[] { null, null, false };
-                yield return new object[] { new DummyClass { SampleInt = 5 }, null, true };
-                yield return new object[] { new DummyClass { SampleInt = 5 }, typeof(object), true };
+                yield return new object[] { new DummyClass { SampleInt = 5 }, typeof(DummyClass), true };
                 yield return new object[] { null, typeof(object), true };
-                yield return new object[] {
-                    new Dictionary<string, string> { { "Hello", "world" } }, typeof(object), false };
                 yield return new object[] {
                     new Dictionary<string, string> { { "Hello", "world" } }, typeof(Dictionary<string,string>), false };
                 yield return new object[] {
@@ -301,9 +300,10 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
             // Arrange
             var formatter = new XmlSerializerOutputFormatter();
             var outputFormatterContext = GetOutputFormatterContext(input, declaredType);
+            outputFormatterContext.ContentType = MediaTypeHeaderValue.Parse("application/xml");
 
             // Act
-            var result = formatter.CanWriteResult(outputFormatterContext, MediaTypeHeaderValue.Parse("application/xml"));
+            var result = formatter.CanWriteResult(outputFormatterContext);
 
             // Assert
             Assert.Equal(expectedOutput, result);
@@ -328,25 +328,21 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
         {
             get
             {
-                yield return new object[] { typeof(DummyClass), typeof(DummyClass), "application/xml" };
-                yield return new object[] { typeof(DummyClass), typeof(object), "application/xml" };
-                yield return new object[] { null, typeof(DummyClass), "application/xml" };
-                yield return new object[] { typeof(DummyClass), null, "application/xml" };
-                yield return new object[] { typeof(object), null, "application/xml" };
-                yield return new object[] { null, null, null };
+                yield return new object[] { typeof(DummyClass), "application/xml" };
+                yield return new object[] { typeof(object), "application/xml" };
+                yield return new object[] { null, null };
             }
         }
 
         [Theory]
         [MemberData(nameof(TypesForGetSupportedContentTypes))]
-        public void XmlSerializer_GetSupportedContentTypes_Returns_SupportedTypes(Type declaredType, Type runtimeType, object expectedOutput)
+        public void XmlSerializer_GetSupportedContentTypes_Returns_SupportedTypes(Type type, object expectedOutput)
         {
             // Arrange
             var formatter = new XmlSerializerOutputFormatter();
 
             // Act
-            var result = formatter.GetSupportedContentTypes(
-                declaredType, runtimeType, MediaTypeHeaderValue.Parse("application/xml"));
+            var result = formatter.GetSupportedContentTypes(MediaTypeHeaderValue.Parse("application/xml"), type);
 
             // Assert
             if (expectedOutput != null)
@@ -359,17 +355,12 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
             }
         }
 
-        private OutputFormatterContext GetOutputFormatterContext(
+        private OutputFormatterWriteContext GetOutputFormatterContext(
             object outputValue,
             Type outputType,
             string contentType = "application/xml; charset=utf-8")
         {
-            return new OutputFormatterContext
-            {
-                Object = outputValue,
-                DeclaredType = outputType,
-                HttpContext = GetHttpContext(contentType)
-            };
+            return new OutputFormatterWriteContext(GetHttpContext(contentType), outputType, outputValue);
         }
 
         private static HttpContext GetHttpContext(string contentType)

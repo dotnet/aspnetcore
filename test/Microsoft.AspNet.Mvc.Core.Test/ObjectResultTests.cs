@@ -74,12 +74,12 @@ namespace Microsoft.AspNet.Mvc
 
         private class NoOpOutputFormatter : IOutputFormatter
         {
-            public bool CanWriteResult(OutputFormatterContext context, MediaTypeHeaderValue contentType)
+            public bool CanWriteResult(OutputFormatterCanWriteContext context)
             {
                 return true;
             }
 
-            public Task WriteAsync(OutputFormatterContext context)
+            public Task WriteAsync(OutputFormatterWriteContext context)
             {
                 return Task.FromResult(0);
             }

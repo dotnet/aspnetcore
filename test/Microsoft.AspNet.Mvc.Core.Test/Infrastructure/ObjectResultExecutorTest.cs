@@ -31,10 +31,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 new TestJsonOutputFormatter(), // This will be chosen based on the accept header
             };
 
-            var context = new OutputFormatterContext()
-            {
-                HttpContext = new DefaultHttpContext(),
-            };
+            var context = new OutputFormatterWriteContext(new DefaultHttpContext(), objectType: null, @object: null);
             context.HttpContext.Request.Headers[HeaderNames.Accept] = "application/json";
 
             // Act
@@ -45,7 +42,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
 
             // Assert
             Assert.Same(formatters[1], formatter);
-            Assert.Equal(new MediaTypeHeaderValue("application/json"), context.SelectedContentType);
+            Assert.Equal(new MediaTypeHeaderValue("application/json"), context.ContentType);
         }
 
         [Fact]
@@ -60,10 +57,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 new TestJsonOutputFormatter(), // This will be chosen based on the content type
             };
 
-            var context = new OutputFormatterContext()
-            {
-                HttpContext = new DefaultHttpContext(),
-            };
+            var context = new OutputFormatterWriteContext(new DefaultHttpContext(), objectType: null, @object: null);
             context.HttpContext.Request.Headers[HeaderNames.Accept] = "application/xml"; // This will not be used
 
             // Act
@@ -74,7 +68,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
 
             // Assert
             Assert.Same(formatters[1], formatter);
-            Assert.Equal(new MediaTypeHeaderValue("application/json"), context.SelectedContentType);
+            Assert.Equal(new MediaTypeHeaderValue("application/json"), context.ContentType);
         }
 
         [Fact]
@@ -88,10 +82,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 new TestXmlOutputFormatter(),
             };
 
-            var context = new OutputFormatterContext()
-            {
-                HttpContext = new DefaultHttpContext(),
-            };
+            var context = new OutputFormatterWriteContext(new DefaultHttpContext(), objectType: null, @object: null);
             context.HttpContext.Request.Headers[HeaderNames.Accept] = "application/xml"; // This will not be used
 
             // Act
@@ -158,10 +149,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 new TestJsonOutputFormatter(),
             };
 
-            var context = new OutputFormatterContext()
-            {
-                HttpContext = new DefaultHttpContext(),
-            };
+            var context = new OutputFormatterWriteContext(new DefaultHttpContext(), objectType: null, @object: null);
             context.HttpContext.Request.Headers[HeaderNames.Accept] = acceptHeader;
 
             // Act
@@ -172,7 +160,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
 
             // Assert
             Assert.Same(formatters[1], formatter);
-            Assert.Equal(new MediaTypeHeaderValue(expectedContentType), context.SelectedContentType);
+            Assert.Equal(new MediaTypeHeaderValue(expectedContentType), context.ContentType);
         }
 
         [Fact]
@@ -188,10 +176,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 new TestXmlOutputFormatter(),
             };
 
-            var context = new OutputFormatterContext()
-            {
-                HttpContext = new DefaultHttpContext(),
-            };
+            var context = new OutputFormatterWriteContext(new DefaultHttpContext(), objectType: null, @object: null);
 
             // Act
             var formatter = executor.SelectFormatter(
@@ -201,7 +186,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
 
             // Assert
             Assert.Same(formatters[1], formatter);
-            Assert.Equal(new MediaTypeHeaderValue("application/json"), context.SelectedContentType);
+            Assert.Equal(new MediaTypeHeaderValue("application/json"), context.ContentType);
             Assert.Null(context.FailedContentNegotiation);
         }
 
@@ -217,10 +202,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 new TestJsonOutputFormatter(),
             };
 
-            var context = new OutputFormatterContext()
-            {
-                HttpContext = new DefaultHttpContext(),
-            };
+            var context = new OutputFormatterWriteContext(new DefaultHttpContext(), objectType: null, @object: null);
             context.HttpContext.Request.Headers[HeaderNames.Accept] = "text/custom, application/custom";
 
             // Act
@@ -231,7 +213,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
 
             // Assert
             Assert.Same(formatters[0], formatter);
-            Assert.Equal(new MediaTypeHeaderValue("application/xml"), context.SelectedContentType);
+            Assert.Equal(new MediaTypeHeaderValue("application/xml"), context.ContentType);
             Assert.True(context.FailedContentNegotiation);
         }
 
@@ -437,12 +419,12 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
 
         private class CannotWriteFormatter : IOutputFormatter
         {
-            public virtual bool CanWriteResult(OutputFormatterContext context, MediaTypeHeaderValue contentType)
+            public virtual bool CanWriteResult(OutputFormatterCanWriteContext context)
             {
                 return false;
             }
 
-            public virtual Task WriteAsync(OutputFormatterContext context)
+            public virtual Task WriteAsync(OutputFormatterWriteContext context)
             {
                 throw new NotImplementedException();
             }
@@ -458,7 +440,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 SupportedEncodings.Add(Encoding.UTF8);
             }
 
-            public override Task WriteResponseBodyAsync(OutputFormatterContext context)
+            public override Task WriteResponseBodyAsync(OutputFormatterWriteContext context)
             {
                 return Task.FromResult(0);
             }
@@ -474,7 +456,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 SupportedEncodings.Add(Encoding.UTF8);
             }
 
-            public override Task WriteResponseBodyAsync(OutputFormatterContext context)
+            public override Task WriteResponseBodyAsync(OutputFormatterWriteContext context)
             {
                 return Task.FromResult(0);
             }
@@ -491,7 +473,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             }
 
             public new IOutputFormatter SelectFormatter(
-                OutputFormatterContext formatterContext,
+                OutputFormatterWriteContext formatterContext,
                 IList<MediaTypeHeaderValue> contentTypes,
                 IEnumerable<IOutputFormatter> formatters)
             {

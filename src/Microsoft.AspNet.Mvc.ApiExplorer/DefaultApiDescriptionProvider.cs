@@ -129,7 +129,6 @@ namespace Microsoft.AspNet.Mvc.ApiExplorer
                 var formats = GetResponseFormats(
                     action,
                     responseMetadataAttributes,
-                    declaredReturnType,
                     runtimeReturnType);
 
                 foreach (var format in formats)
@@ -306,8 +305,7 @@ namespace Microsoft.AspNet.Mvc.ApiExplorer
         private IReadOnlyList<ApiResponseFormat> GetResponseFormats(
             ControllerActionDescriptor action,
             IApiResponseMetadataProvider[] responseMetadataAttributes,
-            Type declaredType,
-            Type runtimeType)
+            Type type)
         {
             var results = new List<ApiResponseFormat>();
 
@@ -334,10 +332,7 @@ namespace Microsoft.AspNet.Mvc.ApiExplorer
                     var responseFormatMetadataProvider = formatter as IApiResponseFormatMetadataProvider;
                     if (responseFormatMetadataProvider != null)
                     {
-                        var supportedTypes = responseFormatMetadataProvider.GetSupportedContentTypes(
-                            declaredType,
-                            runtimeType,
-                            contentType);
+                        var supportedTypes = responseFormatMetadataProvider.GetSupportedContentTypes(contentType, type);
 
                         if (supportedTypes != null)
                         {

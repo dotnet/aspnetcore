@@ -3,7 +3,6 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc.Formatters
 {
@@ -13,13 +12,13 @@ namespace Microsoft.AspNet.Mvc.Formatters
     public class HttpNotAcceptableOutputFormatter : IOutputFormatter
     {
         /// <inheritdoc />
-        public bool CanWriteResult(OutputFormatterContext context, MediaTypeHeaderValue contentType)
+        public bool CanWriteResult(OutputFormatterCanWriteContext context)
         {
             return context.FailedContentNegotiation ?? false;
         }
 
         /// <inheritdoc />
-        public Task WriteAsync(OutputFormatterContext context)
+        public Task WriteAsync(OutputFormatterWriteContext context)
         {
             var response = context.HttpContext.Response;
             response.StatusCode = StatusCodes.Status406NotAcceptable;

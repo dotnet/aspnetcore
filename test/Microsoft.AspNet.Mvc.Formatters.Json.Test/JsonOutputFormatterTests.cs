@@ -165,19 +165,20 @@ namespace Microsoft.AspNet.Mvc.Formatters
             // Arrange
             var formatter = new JsonOutputFormatter();
             var formattedContent = "\"" + content + "\"";
-            var mediaType = string.Format("application/json; charset={0}", encodingAsString);
+            var mediaType = MediaTypeHeaderValue.Parse(string.Format("application/json; charset={0}", encodingAsString));
             var encoding = CreateOrGetSupportedEncoding(formatter, encodingAsString, isDefaultEncoding);
             var expectedData = encoding.GetBytes(formattedContent);
 
 
             var body = new MemoryStream();
-            var actionContext = GetActionContext(MediaTypeHeaderValue.Parse(mediaType), body);
-            var outputFormatterContext = new OutputFormatterContext
+            var actionContext = GetActionContext(mediaType, body);
+
+            var outputFormatterContext = new OutputFormatterWriteContext(
+                actionContext.HttpContext,
+                typeof(string),
+                content)
             {
-                Object = content,
-                DeclaredType = typeof(string),
-                HttpContext = actionContext.HttpContext,
-                SelectedEncoding = encoding
+                ContentType = mediaType,
             };
 
             // Act
@@ -208,7 +209,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
             return encoding;
         }
 
-        private static OutputFormatterContext GetOutputFormatterContext(
+        private static OutputFormatterWriteContext GetOutputFormatterContext(
             object outputValue,
             Type outputType,
             string contentType = "application/xml; charset=utf-8",
@@ -217,12 +218,9 @@ namespace Microsoft.AspNet.Mvc.Formatters
             var mediaTypeHeaderValue = MediaTypeHeaderValue.Parse(contentType);
 
             var actionContext = GetActionContext(mediaTypeHeaderValue, responseStream);
-            return new OutputFormatterContext
+            return new OutputFormatterWriteContext(actionContext.HttpContext, outputType, outputValue)
             {
-                Object = outputValue,
-                DeclaredType = outputType,
-                HttpContext = actionContext.HttpContext,
-                SelectedEncoding = Encoding.GetEncoding(mediaTypeHeaderValue.Charset)
+                ContentType = mediaTypeHeaderValue,
             };
         }
 

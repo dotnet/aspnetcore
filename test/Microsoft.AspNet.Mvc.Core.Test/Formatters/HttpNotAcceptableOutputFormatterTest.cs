@@ -13,18 +13,18 @@ namespace Microsoft.AspNet.Mvc.Formatters
         [Theory]
         [InlineData(false)]
         [InlineData(null)]
-        public void CanWriteResult_ReturnsFalse_WhenConnegHasntFailed(bool? connegFailedValue)
+        public void CanWriteResult_ReturnsFalse_WhenConnegHasntFailed(bool? failedContentNegotiation)
         {
             // Arrange
             var formatter = new HttpNotAcceptableOutputFormatter();
 
-            var context = new OutputFormatterContext()
+            var context = new OutputFormatterWriteContext(new DefaultHttpContext(), objectType: null, @object: null)
             {
-                FailedContentNegotiation = connegFailedValue,
+                FailedContentNegotiation = failedContentNegotiation,
             };
 
             // Act
-            var result = formatter.CanWriteResult(context, contentType: null);
+            var result = formatter.CanWriteResult(context);
 
             // Assert
             Assert.False(result);
@@ -36,13 +36,13 @@ namespace Microsoft.AspNet.Mvc.Formatters
             // Arrange
             var formatter = new HttpNotAcceptableOutputFormatter();
 
-            var context = new OutputFormatterContext()
+            var context = new OutputFormatterWriteContext(new DefaultHttpContext(), objectType: null, @object: null)
             {
                 FailedContentNegotiation = true,
             };
 
             // Act
-            var result = formatter.CanWriteResult(context, contentType: null);
+            var result = formatter.CanWriteResult(context);
 
             // Assert
             Assert.True(result);
@@ -54,10 +54,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
             // Arrange
             var formatter = new HttpNotAcceptableOutputFormatter();
 
-            var context = new OutputFormatterContext()
-            {
-                HttpContext = new DefaultHttpContext(),
-            };
+            var context = new OutputFormatterWriteContext(new DefaultHttpContext(), objectType: null, @object: null);
 
             // Act
              await formatter.WriteAsync(context);

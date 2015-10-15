@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
             SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("text/plain").CopyAsReadOnly());
         }
 
-        public override bool CanWriteResult(OutputFormatterContext context, MediaTypeHeaderValue contentType)
+        public override bool CanWriteResult(OutputFormatterCanWriteContext context)
         {
             if (context == null)
             {
@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
 
             // Ignore the passed in content type, if the object is string
             // always return it as a text/plain format.
-            if (context.DeclaredType == typeof(string))
+            if (context.ObjectType == typeof(string))
             {
                 return true;
             }
@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
             return false;
         }
 
-        public override Task WriteResponseBodyAsync(OutputFormatterContext context)
+        public override Task WriteResponseBodyAsync(OutputFormatterWriteContext context)
         {
             if (context == null)
             {
@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
 
             var response = context.HttpContext.Response;
 
-            return response.WriteAsync(valueAsString, context.SelectedEncoding);
+            return response.WriteAsync(valueAsString, context.ContentType?.Encoding ?? Encoding.UTF8);
         }
     }
 }

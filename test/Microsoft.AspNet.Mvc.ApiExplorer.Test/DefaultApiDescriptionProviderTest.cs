@@ -1360,24 +1360,24 @@ namespace Microsoft.AspNet.Mvc.Description
         {
             public List<Type> SupportedTypes { get; } = new List<Type>();
 
-            public override Task WriteResponseBodyAsync(OutputFormatterContext context)
+            public override Task WriteResponseBodyAsync(OutputFormatterWriteContext context)
             {
                 throw new NotImplementedException();
             }
 
-            protected override bool CanWriteType(Type declaredType, Type actualType)
+            protected override bool CanWriteType(Type type)
             {
                 if (SupportedTypes.Count == 0)
                 {
                     return true;
                 }
-                else if ((actualType ?? declaredType) == null)
+                else if (type == null)
                 {
                     return false;
                 }
                 else
                 {
-                    return SupportedTypes.Contains(actualType ?? declaredType);
+                    return SupportedTypes.Contains(type);
                 }
             }
         }

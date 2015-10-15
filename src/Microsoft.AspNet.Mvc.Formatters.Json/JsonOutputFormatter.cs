@@ -98,7 +98,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
             return JsonSerializer.Create(SerializerSettings);
         }
 
-        public override Task WriteResponseBodyAsync(OutputFormatterContext context)
+        public override Task WriteResponseBodyAsync(OutputFormatterWriteContext context)
         {
             if (context == null)
             {
@@ -106,7 +106,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
             }
 
             var response = context.HttpContext.Response;
-            var selectedEncoding = context.SelectedEncoding;
+            var selectedEncoding = context.ContentType?.Encoding ?? Encoding.UTF8;
 
             using (var writer = new HttpResponseStreamWriter(response.Body, selectedEncoding))
             {

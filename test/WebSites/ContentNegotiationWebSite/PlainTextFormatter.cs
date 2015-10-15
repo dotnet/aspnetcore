@@ -17,9 +17,9 @@ namespace ContentNegotiationWebSite
             SupportedEncodings.Add(Encoding.GetEncoding("utf-8"));
         }
 
-        public override bool CanWriteResult(OutputFormatterContext context, MediaTypeHeaderValue contentType)
+        public override bool CanWriteResult(OutputFormatterCanWriteContext context)
         {
-            if (base.CanWriteResult(context, contentType))
+            if (base.CanWriteResult(context))
             {
                 var actionReturnString = context.Object as string;
                 if (actionReturnString != null)
@@ -31,7 +31,7 @@ namespace ContentNegotiationWebSite
             return false;
         }
 
-        public override async Task WriteResponseBodyAsync(OutputFormatterContext context)
+        public override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context)
         {
             var response = context.HttpContext.Response;
             response.ContentType = "text/plain;charset=utf-8";

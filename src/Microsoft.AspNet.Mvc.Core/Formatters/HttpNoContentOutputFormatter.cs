@@ -3,7 +3,6 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc.Formatters
 {
@@ -18,12 +17,13 @@ namespace Microsoft.AspNet.Mvc.Formatters
         /// </summary>
         public bool TreatNullValueAsNoContent { get; set; } = true;
 
-        public bool CanWriteResult(OutputFormatterContext context, MediaTypeHeaderValue contentType)
+        /// <inheritdoc />
+        public bool CanWriteResult(OutputFormatterCanWriteContext context)
         {
             // ignore the contentType and just look at the content.
             // This formatter will be selected if the content is null.
             // We check for Task as a user can directly create an ObjectContentResult with the unwrapped type.
-            if (context.DeclaredType == typeof(void) || context.DeclaredType == typeof(Task))
+            if (context.ObjectType == typeof(void) || context.ObjectType == typeof(Task))
             {
                 return true;
             }
@@ -31,7 +31,8 @@ namespace Microsoft.AspNet.Mvc.Formatters
             return TreatNullValueAsNoContent && context.Object == null;
         }
 
-        public Task WriteAsync(OutputFormatterContext context)
+        /// <inheritdoc />
+        public Task WriteAsync(OutputFormatterWriteContext context)
         {
             var response = context.HttpContext.Response;
             response.ContentLength = 0;
