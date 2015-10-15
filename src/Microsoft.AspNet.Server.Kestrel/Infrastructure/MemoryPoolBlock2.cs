@@ -66,7 +66,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
         /// </summary>
         public int End { get; set; }
 
-
         /// <summary>
         /// Reference to the next block of data when the overall "active" bytes spans multiple blocks. At the point when the block is
         /// leased Next is guaranteed to be null. Start, End, and Next are used together in order to create a linked-list of discontiguous 

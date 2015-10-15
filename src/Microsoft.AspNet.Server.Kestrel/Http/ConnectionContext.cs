@@ -22,7 +22,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         public SocketInput SocketInput { get; set; }
         public ISocketOutput SocketOutput { get; set; }
-
         public IConnectionControl ConnectionControl { get; set; }
     }
 }
