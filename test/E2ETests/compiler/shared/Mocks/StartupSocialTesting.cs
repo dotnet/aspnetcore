@@ -137,7 +137,7 @@ namespace MusicStore
                 options.Events = new OAuthEvents()
                 {
                     OnCreatingTicket = TestFacebookEvents.OnCreatingTicket,
-                    OnSigningIn = TestFacebookEvents.OnSigningIn,
+                    OnTicketReceived = TestFacebookEvents.OnTicketReceived,
                     OnRedirectToAuthorizationEndpoint = TestFacebookEvents.RedirectToAuthorizationEndpoint
                 };
                 options.BackchannelHttpHandler = new FacebookMockBackChannelHttpHandler();
@@ -155,7 +155,7 @@ namespace MusicStore
                 options.Events = new OAuthEvents()
                 {
                     OnCreatingTicket = TestGoogleEvents.OnCreatingTicket,
-                    OnSigningIn = TestGoogleEvents.OnSigningIn,
+                    OnTicketReceived = TestGoogleEvents.OnTicketReceived,
                     OnRedirectToAuthorizationEndpoint = TestGoogleEvents.RedirectToAuthorizationEndpoint
                 };
                 options.StateDataFormat = new CustomStateDataFormat();
@@ -169,7 +169,7 @@ namespace MusicStore
                 options.Events = new TwitterEvents()
                 {
                     OnCreatingTicket = TestTwitterEvents.OnCreatingTicket,
-                    OnSigningIn = TestTwitterEvents.OnSigningIn,
+                    OnTicketReceived = TestTwitterEvents.OnTicketReceived,
                     OnRedirectToAuthorizationEndpoint = TestTwitterEvents.RedirectToAuthorizationEndpoint
                 };
                 options.StateDataFormat = new CustomTwitterStateDataFormat();
@@ -184,7 +184,7 @@ namespace MusicStore
                 options.Events = new OAuthEvents()
                 {
                     OnCreatingTicket = TestMicrosoftAccountEvents.OnCreatingTicket,
-                    OnSigningIn = TestMicrosoftAccountEvents.OnSigningIn,
+                    OnTicketReceived = TestMicrosoftAccountEvents.OnTicketReceived,
                     OnRedirectToAuthorizationEndpoint = TestMicrosoftAccountEvents.RedirectToAuthorizationEndpoint
                 };
                 options.BackchannelHttpHandler = new MicrosoftAccountMockBackChannelHandler();

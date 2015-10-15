@@ -25,9 +25,9 @@ namespace MusicStore.Mocks.Twitter
             return Task.FromResult(0);
         }
 
-        internal static Task OnSigningIn(SigningInContext context)
+        internal static Task OnTicketReceived(TicketReceivedContext context)
         {
-            if (context.Principal != null && context.SignInScheme == new IdentityCookieOptions().ExternalCookieAuthenticationScheme)
+            if (context.Principal != null && context.Options.SignInScheme == new IdentityCookieOptions().ExternalCookieAuthenticationScheme)
             {
                 //This way we will know all Events were fired.
                 var identity = context.Principal.Identities.First();
