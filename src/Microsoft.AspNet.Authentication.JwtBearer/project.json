@@ -1,6 +1,6 @@
 {
     "version": "1.0.0-*",
-    "description": "ASP.NET 5 middleware that enables an application to receive a OpenIdConnect bearer token.",
+    "description": "ASP.NET 5 middleware that enables an application to receive an OpenID Connect bearer token.",
     "repository": {
         "type": "git",
         "url": "git://github.com/aspnet/security"
