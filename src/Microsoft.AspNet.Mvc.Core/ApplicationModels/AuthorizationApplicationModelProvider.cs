@@ -38,20 +38,30 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             {
                 policy = AuthorizationPolicy.Combine(
                     _authorizationOptions,
-                    controllerModel.Attributes.OfType<AuthorizeAttribute>());
+                    controllerModel.Attributes.OfType<IAuthorizeData>());
                 if (policy != null)
                 {
                     controllerModel.Filters.Add(new AuthorizeFilter(policy));
+                }
+
+                foreach (var attribute in controllerModel.Attributes.OfType<IAllowAnonymous>())
+                {
+                    controllerModel.Filters.Add(new AllowAnonymousFilter());
                 }
 
                 foreach (var actionModel in controllerModel.Actions)
                 {
                     policy = AuthorizationPolicy.Combine(
                         _authorizationOptions,
-                        actionModel.Attributes.OfType<AuthorizeAttribute>());
+                        actionModel.Attributes.OfType<IAuthorizeData>());
                     if (policy != null)
                     {
                         actionModel.Filters.Add(new AuthorizeFilter(policy));
+                    }
+
+                    foreach (var attribute in actionModel.Attributes.OfType<IAllowAnonymous>())
+                    {
+                        actionModel.Filters.Add(new AllowAnonymousFilter());
                     }
                 }
             }

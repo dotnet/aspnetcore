@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.Mvc.Filters
             }
 
             // Allow Anonymous skips all authorization
-            if (context.Filters.Any(item => item is IAllowAnonymous))
+            if (context.Filters.Any(item => item is IAllowAnonymousFilter))
             {
                 return;
             }

@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Mvc.Internal;
 
 namespace Microsoft.AspNet.Mvc.Filters
@@ -36,7 +37,7 @@ namespace Microsoft.AspNet.Mvc.Filters
                 throw new ArgumentNullException(nameof(context));
             }
 
-            return context.Filters.Any(item => item is IAllowAnonymous);
+            return context.Filters.Any(item => item is IAllowAnonymousFilter);
         }
 
         protected virtual void Fail(AuthorizationContext context)

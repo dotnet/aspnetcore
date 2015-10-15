@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.Mvc.Filters
             var authorizationContext = GetAuthorizationContext(services => services.AddAuthorization(),
                 anonymous: true);
 
-            authorizationContext.Filters.Add(new AllowAnonymousAttribute());
+            authorizationContext.Filters.Add(new AllowAnonymousFilter());
 
             // Act
             await authorizeFilter.OnAuthorizationAsync(authorizationContext);

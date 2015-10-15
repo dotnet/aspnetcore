@@ -56,6 +56,26 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
             Assert.Equal(3, authorizeFilters.First().Policy.Requirements.Count);
         }
 
+        [Fact]
+        public void CreateControllerModelAndActionModel_AllowAnonymousAttributeAddsAllowAnonymousFilter()
+        {
+            // Arrange
+            var provider = new AuthorizationApplicationModelProvider(new TestOptionsManager<AuthorizationOptions>());
+            var defaultProvider = new DefaultApplicationModelProvider(new TestOptionsManager<MvcOptions>());
+
+            var context = new ApplicationModelProviderContext(new[] { typeof(AnonymousController).GetTypeInfo() });
+            defaultProvider.OnProvidersExecuting(context);
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            var controller = Assert.Single(context.Result.Controllers);
+            Assert.Single(controller.Filters, f => f is AllowAnonymousFilter);
+            var action = Assert.Single(controller.Actions);
+            Assert.Single(action.Filters, f => f is AllowAnonymousFilter);
+        }
+
         private class BaseController
         {
             [Authorize(Policy = "Base")]
@@ -75,6 +95,15 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
         [Authorize]
         public class AccountController
         {
+        }
+
+        [AllowAnonymous]
+        public class AnonymousController
+        {
+            [AllowAnonymous]
+            public void SomeAction()
+            {
+            }
         }
     }
 }
