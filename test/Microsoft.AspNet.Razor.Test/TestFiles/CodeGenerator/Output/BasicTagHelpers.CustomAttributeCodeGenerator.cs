@@ -55,7 +55,7 @@ namespace TestOutput
                 StartTagHelperWritingScope();
                 WriteLiteral("2000 + ");
 #line 6 "BasicTagHelpers.cshtml"
-Write(ViewBag.DefaultInterval);
+                                Write(ViewBag.DefaultInterval);
 
 #line default
 #line hidden

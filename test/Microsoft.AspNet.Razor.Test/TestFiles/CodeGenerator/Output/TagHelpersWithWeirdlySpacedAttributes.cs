@@ -46,7 +46,7 @@ namespace TestOutput
             __tagHelperExecutionContext.AddTagHelperAttribute("age", __PTagHelper.Age);
             StartTagHelperWritingScope();
 #line 7 "TagHelpersWithWeirdlySpacedAttributes.cshtml"
-Write(true);
+             Write(true);
 
 #line default
 #line hidden

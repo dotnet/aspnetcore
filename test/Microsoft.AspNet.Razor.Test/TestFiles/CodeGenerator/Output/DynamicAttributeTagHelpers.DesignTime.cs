@@ -32,170 +32,170 @@ namespace TestOutput
         {
             __InputTagHelper = CreateTagHelper<InputTagHelper>();
 #line 3 "DynamicAttributeTagHelpers.cshtml"
-__o = DateTime.Now;
+                  __o = DateTime.Now;
 
 #line default
 #line hidden
             __InputTagHelper = CreateTagHelper<InputTagHelper>();
 #line 5 "DynamicAttributeTagHelpers.cshtml"
-if (true) { 
+                if (true) { 
 
 #line default
 #line hidden
 
 #line 5 "DynamicAttributeTagHelpers.cshtml"
-__o = string.Empty;
+                        __o = string.Empty;
 
 #line default
 #line hidden
 #line 5 "DynamicAttributeTagHelpers.cshtml"
- } else { 
+                                           } else { 
 
 #line default
 #line hidden
 
 #line 5 "DynamicAttributeTagHelpers.cshtml"
-__o = false;
+                                               __o = false;
 
 #line default
 #line hidden
 #line 5 "DynamicAttributeTagHelpers.cshtml"
- }
+                                                           }
 
 #line default
 #line hidden
 
             __InputTagHelper = CreateTagHelper<InputTagHelper>();
 #line 7 "DynamicAttributeTagHelpers.cshtml"
-__o = DateTime.Now;
+                __o = DateTime.Now;
 
 #line default
 #line hidden
             __InputTagHelper.Bound = string.Empty;
 #line 7 "DynamicAttributeTagHelpers.cshtml"
-__o = DateTime.Now;
+                                                      __o = DateTime.Now;
 
 #line default
 #line hidden
             __InputTagHelper = CreateTagHelper<InputTagHelper>();
 #line 9 "DynamicAttributeTagHelpers.cshtml"
-__o = long.MinValue;
+         __o = long.MinValue;
 
 #line default
 #line hidden
 #line 9 "DynamicAttributeTagHelpers.cshtml"
-if (true) { 
-
-#line default
-#line hidden
-
-#line 9 "DynamicAttributeTagHelpers.cshtml"
-__o = string.Empty;
-
-#line default
-#line hidden
-#line 9 "DynamicAttributeTagHelpers.cshtml"
- } else { 
+                             if (true) { 
 
 #line default
 #line hidden
 
 #line 9 "DynamicAttributeTagHelpers.cshtml"
-__o = false;
+                                     __o = string.Empty;
 
 #line default
 #line hidden
 #line 9 "DynamicAttributeTagHelpers.cshtml"
- }
+                                                        } else { 
 
 #line default
 #line hidden
 
 #line 9 "DynamicAttributeTagHelpers.cshtml"
-__o = int.MaxValue;
+                                                            __o = false;
+
+#line default
+#line hidden
+#line 9 "DynamicAttributeTagHelpers.cshtml"
+                                                                        }
+
+#line default
+#line hidden
+
+#line 9 "DynamicAttributeTagHelpers.cshtml"
+                                                                     __o = int.MaxValue;
 
 #line default
 #line hidden
             __InputTagHelper.Bound = string.Empty;
 #line 10 "DynamicAttributeTagHelpers.cshtml"
-__o = long.MinValue;
+           __o = long.MinValue;
 
 #line default
 #line hidden
 #line 10 "DynamicAttributeTagHelpers.cshtml"
-if (true) { 
-
-#line default
-#line hidden
-
-#line 10 "DynamicAttributeTagHelpers.cshtml"
-__o = string.Empty;
-
-#line default
-#line hidden
-#line 10 "DynamicAttributeTagHelpers.cshtml"
- } else { 
+                               if (true) { 
 
 #line default
 #line hidden
 
 #line 10 "DynamicAttributeTagHelpers.cshtml"
-__o = false;
+                                       __o = string.Empty;
 
 #line default
 #line hidden
 #line 10 "DynamicAttributeTagHelpers.cshtml"
- }
+                                                          } else { 
 
 #line default
 #line hidden
 
 #line 10 "DynamicAttributeTagHelpers.cshtml"
-__o = int.MaxValue;
+                                                              __o = false;
+
+#line default
+#line hidden
+#line 10 "DynamicAttributeTagHelpers.cshtml"
+                                                                          }
+
+#line default
+#line hidden
+
+#line 10 "DynamicAttributeTagHelpers.cshtml"
+                                                                       __o = int.MaxValue;
 
 #line default
 #line hidden
             __InputTagHelper = CreateTagHelper<InputTagHelper>();
 #line 12 "DynamicAttributeTagHelpers.cshtml"
-__o = long.MinValue;
+           __o = long.MinValue;
 
 #line default
 #line hidden
 #line 12 "DynamicAttributeTagHelpers.cshtml"
-__o = DateTime.Now;
+                          __o = DateTime.Now;
 
 #line default
 #line hidden
 #line 12 "DynamicAttributeTagHelpers.cshtml"
-__o = int.MaxValue;
+                                                          __o = int.MaxValue;
 
 #line default
 #line hidden
             __InputTagHelper = CreateTagHelper<InputTagHelper>();
 #line 14 "DynamicAttributeTagHelpers.cshtml"
-if (true) { 
+                if (true) { 
 
 #line default
 #line hidden
 
 #line 14 "DynamicAttributeTagHelpers.cshtml"
-__o = string.Empty;
+                        __o = string.Empty;
 
 #line default
 #line hidden
 #line 14 "DynamicAttributeTagHelpers.cshtml"
- } else { 
+                                           } else { 
 
 #line default
 #line hidden
 
 #line 14 "DynamicAttributeTagHelpers.cshtml"
-__o = false;
+                                               __o = false;
 
 #line default
 #line hidden
 #line 14 "DynamicAttributeTagHelpers.cshtml"
- }
+                                                           }
 
 #line default
 #line hidden

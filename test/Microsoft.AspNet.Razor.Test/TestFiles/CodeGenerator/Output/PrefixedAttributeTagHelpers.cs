@@ -176,7 +176,7 @@ __InputTagHelper1.IntProperty = 42;
             StartTagHelperWritingScope();
             WriteLiteral("literate ");
 #line 21 "PrefixedAttributeTagHelpers.cshtml"
-WriteLiteral(literate);
+                             WriteLiteral(literate);
 
 #line default
 #line hidden

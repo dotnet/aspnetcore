@@ -47,7 +47,7 @@ namespace TestOutput
             __InputTagHelper = CreateTagHelper<InputTagHelper>();
             __InputTagHelper2 = CreateTagHelper<InputTagHelper2>();
 #line 8 "NestedScriptTagTagHelpers.cshtml"
-__o = ViewBag.DefaultInterval;
+                                            __o = ViewBag.DefaultInterval;
 
 #line default
 #line hidden

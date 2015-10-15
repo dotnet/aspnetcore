@@ -137,7 +137,7 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
             return hashCodeCombiner;
         }
 
-        public IEnumerable<Span> Flatten()
+        public virtual IEnumerable<Span> Flatten()
         {
             // Create an enumerable that flattens the tree for use by syntax highlighters, etc.
             foreach (SyntaxTreeNode element in Children)

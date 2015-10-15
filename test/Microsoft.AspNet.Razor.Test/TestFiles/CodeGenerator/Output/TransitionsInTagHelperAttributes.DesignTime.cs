@@ -46,7 +46,7 @@ namespace TestOutput
 #line hidden
             __PTagHelper = CreateTagHelper<PTagHelper>();
 #line 8 "TransitionsInTagHelperAttributes.cshtml"
-__o = @class;
+      __o = @class;
 
 #line default
 #line hidden
@@ -75,7 +75,7 @@ __o = @class;
 #line hidden
             __PTagHelper = CreateTagHelper<PTagHelper>();
 #line 12 "TransitionsInTagHelperAttributes.cshtml"
-__o = @class;
+             __o = @class;
 
 #line default
 #line hidden

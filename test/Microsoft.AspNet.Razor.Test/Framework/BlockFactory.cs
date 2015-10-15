@@ -3,6 +3,8 @@
 
 using System.Collections.Generic;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
+using Microsoft.AspNet.Razor.Parser.TagHelpers;
+using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 
 namespace Microsoft.AspNet.Razor.Test.Framework
 {
@@ -54,6 +56,28 @@ namespace Microsoft.AspNet.Razor.Test.Framework
             return new MarkupTagBlock(
                 _factory.Markup(content).Accepts(acceptedCharacters)
             );
+        }
+
+        public Block TagHelperBlock(
+            string tagName,
+            TagMode tagMode,
+            SourceLocation start,
+            Block startTag,
+            SyntaxTreeNode[] children,
+            Block endTag)
+        {
+            var builder = new TagHelperBlockBuilder(
+                tagName,
+                tagMode,
+                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>(),
+                children: children)
+            {
+                Start = start,
+                SourceStartTag = startTag,
+                SourceEndTag = endTag
+            };
+
+            return builder.Build();
         }
     }
 }

@@ -56,7 +56,7 @@ AddHtmlAttributeValue(" ", 57, DateTime.Now, 58, 14, false);
             BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "unbound", 2);
             AddHtmlAttributeValue("", 95, new Template((__razor_attribute_value_writer) => {
 #line 5 "DynamicAttributeTagHelpers.cshtml"
-if (true) { 
+                 if (true) { 
 
 #line default
 #line hidden
@@ -69,20 +69,20 @@ WriteTo(__razor_attribute_value_writer, string.Empty);
 #line hidden
                 Instrumentation.EndContext();
 #line 5 "DynamicAttributeTagHelpers.cshtml"
- } else { 
+                                           } else { 
 
 #line default
 #line hidden
 
                 Instrumentation.BeginContext(132, 5, false);
 #line 5 "DynamicAttributeTagHelpers.cshtml"
-WriteTo(__razor_attribute_value_writer, false);
+             WriteTo(__razor_attribute_value_writer, false);
 
 #line default
 #line hidden
                 Instrumentation.EndContext();
 #line 5 "DynamicAttributeTagHelpers.cshtml"
- }
+                                                           }
 
 #line default
 #line hidden
@@ -107,7 +107,7 @@ WriteTo(__razor_attribute_value_writer, false);
             StartTagHelperWritingScope();
             WriteLiteral("prefix ");
 #line 7 "DynamicAttributeTagHelpers.cshtml"
-WriteLiteral(DateTime.Now);
+         WriteLiteral(DateTime.Now);
 
 #line default
 #line hidden
@@ -139,42 +139,42 @@ AddHtmlAttributeValue(" ", 212, DateTime.Now, 213, 14, false);
             __tagHelperExecutionContext.Add(__InputTagHelper);
             StartTagHelperWritingScope();
 #line 9 "DynamicAttributeTagHelpers.cshtml"
-WriteLiteral(long.MinValue);
+  WriteLiteral(long.MinValue);
 
 #line default
 #line hidden
             WriteLiteral(" ");
 #line 9 "DynamicAttributeTagHelpers.cshtml"
-if (true) { 
+                              if (true) { 
 
 #line default
 #line hidden
 
 #line 9 "DynamicAttributeTagHelpers.cshtml"
-WriteLiteral(string.Empty);
+                              WriteLiteral(string.Empty);
 
 #line default
 #line hidden
 #line 9 "DynamicAttributeTagHelpers.cshtml"
- } else { 
+                                                        } else { 
 
 #line default
 #line hidden
 
 #line 9 "DynamicAttributeTagHelpers.cshtml"
-WriteLiteral(false);
+                                                     WriteLiteral(false);
 
 #line default
 #line hidden
 #line 9 "DynamicAttributeTagHelpers.cshtml"
- }
+                                                                        }
 
 #line default
 #line hidden
 
             WriteLiteral(" ");
 #line 9 "DynamicAttributeTagHelpers.cshtml"
-WriteLiteral(int.MaxValue);
+                                                              WriteLiteral(int.MaxValue);
 
 #line default
 #line hidden
@@ -189,33 +189,33 @@ AddHtmlAttributeValue("", 347, long.MinValue, 347, 14, false);
 #line hidden
             AddHtmlAttributeValue(" ", 361, new Template((__razor_attribute_value_writer) => {
 #line 10 "DynamicAttributeTagHelpers.cshtml"
-if (true) { 
+                                if (true) { 
 
 #line default
 #line hidden
 
                 Instrumentation.BeginContext(376, 12, false);
 #line 10 "DynamicAttributeTagHelpers.cshtml"
-WriteTo(__razor_attribute_value_writer, string.Empty);
+     WriteTo(__razor_attribute_value_writer, string.Empty);
 
 #line default
 #line hidden
                 Instrumentation.EndContext();
 #line 10 "DynamicAttributeTagHelpers.cshtml"
- } else { 
+                                                          } else { 
 
 #line default
 #line hidden
 
                 Instrumentation.BeginContext(399, 5, false);
 #line 10 "DynamicAttributeTagHelpers.cshtml"
-WriteTo(__razor_attribute_value_writer, false);
+                            WriteTo(__razor_attribute_value_writer, false);
 
 #line default
 #line hidden
                 Instrumentation.EndContext();
 #line 10 "DynamicAttributeTagHelpers.cshtml"
- }
+                                                                          }
 
 #line default
 #line hidden
@@ -276,7 +276,7 @@ AddHtmlAttributeValue(" ", 490, int.MaxValue, 491, 14, false);
             BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "unbound", 1);
             AddHtmlAttributeValue("", 528, new Template((__razor_attribute_value_writer) => {
 #line 14 "DynamicAttributeTagHelpers.cshtml"
-if (true) { 
+                 if (true) { 
 
 #line default
 #line hidden
@@ -289,20 +289,20 @@ WriteTo(__razor_attribute_value_writer, string.Empty);
 #line hidden
                 Instrumentation.EndContext();
 #line 14 "DynamicAttributeTagHelpers.cshtml"
- } else { 
+                                           } else { 
 
 #line default
 #line hidden
 
                 Instrumentation.BeginContext(565, 5, false);
 #line 14 "DynamicAttributeTagHelpers.cshtml"
-WriteTo(__razor_attribute_value_writer, false);
+             WriteTo(__razor_attribute_value_writer, false);
 
 #line default
 #line hidden
                 Instrumentation.EndContext();
 #line 14 "DynamicAttributeTagHelpers.cshtml"
- }
+                                                           }
 
 #line default
 #line hidden

@@ -6,6 +6,8 @@ using System.Threading;
 using System.Web.WebPages.TestUtils;
 using Microsoft.AspNet.Razor.Editor;
 using Microsoft.AspNet.Razor.Parser;
+using Microsoft.AspNet.Razor.Parser.SyntaxTree;
+using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Razor.Test.Framework;
 using Microsoft.AspNet.Razor.Test.Generator;
 using Microsoft.AspNet.Razor.Test.Utils;
@@ -31,6 +33,70 @@ namespace Microsoft.AspNet.Razor.Test.Editor
         public void ConstructorRequiresNonEmptyPhysicalPath()
         {
             Assert.Throws<ArgumentException>("sourceFileName", () => new RazorEditorParser(CreateHost(), string.Empty));
+        }
+
+        [Theory]
+        [InlineData(" ")]
+        [InlineData("\r\n")]
+        [InlineData("abcdefg")]
+        [InlineData("\f\r\n abcd   \t")]
+        public void TreesAreDifferentReturnsFalseForAddedContent(string content)
+        {
+            // Arrange
+            var factory = SpanFactory.CreateCsHtml();
+            var blockFactory = new BlockFactory(factory);
+            var original = new MarkupBlock(
+                blockFactory.MarkupTagBlock("<p>"),
+                blockFactory.TagHelperBlock(
+                    tagName: "div",
+                    tagMode: TagMode.StartTagAndEndTag,
+                    start: new SourceLocation(3, 0, 3),
+                    startTag: blockFactory.MarkupTagBlock("<div>"),
+                    children: new SyntaxTreeNode[]
+                    {
+                        factory.Markup($"{Environment.NewLine}{Environment.NewLine}")
+                    },
+                    endTag: blockFactory.MarkupTagBlock("</div>")),
+                blockFactory.MarkupTagBlock("</p>"));
+
+            factory.Reset();
+
+            var modified = new MarkupBlock(
+                blockFactory.MarkupTagBlock("<p>"),
+                blockFactory.TagHelperBlock(
+                    tagName: "div",
+                    tagMode: TagMode.StartTagAndEndTag,
+                    start: new SourceLocation(3, 0, 3),
+                    startTag: blockFactory.MarkupTagBlock("<div>"),
+                    children: new SyntaxTreeNode[]
+                    {
+                        factory.Markup($"{Environment.NewLine}{content}{Environment.NewLine}")
+                    },
+                    endTag: blockFactory.MarkupTagBlock("</div>")),
+                blockFactory.MarkupTagBlock("</p>"));
+            original.LinkNodes();
+            modified.LinkNodes();
+
+            var oldBuffer = new StringTextBuffer($"<p><div>{Environment.NewLine}{Environment.NewLine}</div></p>");
+            var newBuffer = new StringTextBuffer(
+                $"<p><div>{Environment.NewLine}{content}{Environment.NewLine}</div></p>");
+
+            // Act
+            var treesAreDifferent = BackgroundParser.TreesAreDifferent(
+                original,
+                modified,
+                new[]
+                {
+                    new TextChange(
+                        position: 8 + Environment.NewLine.Length,
+                        oldLength: 0,
+                        oldBuffer: oldBuffer,
+                        newLength: content.Length,
+                        newBuffer: newBuffer)
+                });
+
+            // Assert
+            Assert.False(treesAreDifferent);
         }
 
         [Fact]

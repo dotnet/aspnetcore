@@ -134,6 +134,6 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
         /// <summary>
         /// The starting <see cref="SourceLocation"/> of the tag helper.
         /// </summary>
-        public SourceLocation Start { get; private set; }
+        public SourceLocation Start { get; set; }
     }
 }

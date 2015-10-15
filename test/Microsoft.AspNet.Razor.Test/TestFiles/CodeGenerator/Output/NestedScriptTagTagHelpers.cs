@@ -60,7 +60,7 @@ namespace TestOutput
                 StartTagHelperWritingScope();
                 WriteLiteral("2000 + ");
 #line 8 "NestedScriptTagTagHelpers.cshtml"
-Write(ViewBag.DefaultInterval);
+                                            Write(ViewBag.DefaultInterval);
 
 #line default
 #line hidden

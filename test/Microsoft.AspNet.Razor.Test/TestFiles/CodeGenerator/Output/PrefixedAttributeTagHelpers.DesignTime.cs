@@ -105,7 +105,7 @@ __InputTagHelper1.IntProperty = 42;
             __InputTagHelper1.StringDictionaryProperty["paprika"] = "another string";
             __InputTagHelper2.StringDictionaryProperty["paprika"] = __InputTagHelper1.StringDictionaryProperty["paprika"];
 #line 21 "PrefixedAttributeTagHelpers.cshtml"
-__o = literate;
+                                    __o = literate;
 
 #line default
 #line hidden

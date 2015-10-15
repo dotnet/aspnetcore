@@ -52,7 +52,7 @@ namespace TestOutput
                         Instrumentation.EndContext();
                         Instrumentation.BeginContext(313, 4, false);
 #line 11 "TagHelpersInSection.cshtml"
-                                 Write(code);
+                                                  Write(code);
 
 #line default
 #line hidden
@@ -76,7 +76,7 @@ namespace TestOutput
                 StartTagHelperWritingScope();
                 WriteLiteral("Current Time: ");
 #line 9 "TagHelpersInSection.cshtml"
-WriteLiteral(DateTime.Now);
+                                      WriteLiteral(DateTime.Now);
 
 #line default
 #line hidden

@@ -99,6 +99,30 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
             }
         }
 
+        public override IEnumerable<Span> Flatten()
+        {
+            if (SourceStartTag != null)
+            {
+                foreach (var childSpan in SourceStartTag.Flatten())
+                {
+                    yield return childSpan;
+                }
+            }
+
+            foreach (var childSpan in base.Flatten())
+            {
+                yield return childSpan;
+            }
+
+            if (SourceEndTag != null)
+            {
+                foreach (var childSpan in SourceEndTag.Flatten())
+                {
+                    yield return childSpan;
+                }
+            }
+        }
+
         /// <inheritdoc />
         public override string ToString()
         {
