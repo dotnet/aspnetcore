@@ -18,7 +18,8 @@ namespace Microsoft.AspNet.Identity
             ApplicationCookie = new CookieAuthenticationOptions
             {
                 AuthenticationScheme = ApplicationCookieAuthenticationScheme,
-                AutomaticAuthentication = true,
+                AutomaticAuthenticate = true,
+                AutomaticChallenge = true,
                 LoginPath = new PathString("/Account/Login"),
                 Events = new CookieAuthenticationEvents
                 {
