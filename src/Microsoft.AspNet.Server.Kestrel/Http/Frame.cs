@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private bool _responseStarted;
         private bool _keepAlive;
         private bool _autoChunk;
-        private bool _applicationFailed;
+        private Exception _applicationException;
 
         public Frame(ConnectionContext context) : base(context)
         {
@@ -79,6 +79,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             _responseStarted = false;
             _keepAlive = false;
             _autoChunk = false;
+            _applicationException = null;
 
             _requestHeaders.Reset();
             ResetResponseHeaders();
@@ -183,10 +184,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         }
                         finally
                         {
-                            // Trigger FireOnStarting if ProduceStart hasn't been called yet.
-                            // We call it here, so it can go through our normal error handling
-                            // and respond with a 500 if an OnStarting callback throws.
-                            if (!_responseStarted)
+                            // Trigger OnStarting if it hasn't been called yet and the app hasn't
+                            // already failed. If an OnStarting callback throws we can go through
+                            // our normal error handling in ProduceEnd.
+                            // https://github.com/aspnet/KestrelHttpServer/issues/43
+                            if (!_responseStarted && _applicationException == null)
                             {
                                 await FireOnStarting();
                             }
@@ -260,16 +262,16 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
             if (onStarting != null)
             {
-                foreach (var entry in onStarting)
+                try
                 {
-                    try
+                    foreach (var entry in onStarting)
                     {
                         await entry.Key.Invoke(entry.Value);
                     }
-                    catch (Exception ex)
-                    {
-                        ReportApplicationError(ex);
-                    }
+                }
+                catch (Exception ex)
+                {
+                    ReportApplicationError(ex);
                 }
             }
         }
@@ -419,9 +421,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
             await FireOnStarting();
            
-            if (_applicationFailed) 
+            if (_applicationException != null) 
             {
-                throw new ObjectDisposedException(typeof(Frame).FullName);
+                throw new ObjectDisposedException(
+                    "The response has been aborted due to an unhandled application exception.",
+                    _applicationException);
             }
 
             await ProduceStart(immediate, appCompleted: false);
@@ -444,22 +448,18 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         private async Task ProduceEnd()
         {
-            if (_applicationFailed)
+            if (_applicationException != null)
             {
                 if (_responseStarted)
                 {
                     // We can no longer respond with a 500, so we simply close the connection.
-                    _keepAlive = false;
+                    _requestProcessingStopping = true;
                     return;
                 }
                 else
                 {
                     StatusCode = 500;
                     ReasonPhrase = null;
-
-                    // If OnStarting hasn't been triggered yet, we don't want to trigger it now that
-                    // the app func has failed. https://github.com/aspnet/KestrelHttpServer/issues/43
-                    _onStarting = null;
 
                     ResetResponseHeaders();
                     _responseHeaders.HeaderContentLength = "0";
@@ -750,7 +750,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         private void ReportApplicationError(Exception ex)
         {
-            _applicationFailed = true;
+            _applicationException = ex;
             Log.ApplicationError(ex);
         }
     }

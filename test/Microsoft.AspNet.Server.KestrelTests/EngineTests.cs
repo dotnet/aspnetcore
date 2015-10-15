@@ -550,7 +550,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [MemberData(nameof(ConnectionFilterData))]
         public async Task ThrowingResultsIn500Response(ServiceContext testContext)
         {
-            var onStartingCallCount = 0;
+            bool onStartingCalled = false;
 
             var testLogger = new TestApplicationErrorLogger();
             testContext.Log = new KestrelTrace(testLogger);
@@ -560,7 +560,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 var response = frame.Get<IHttpResponseFeature>();
                 response.OnStarting(_ =>
                 {
-                    onStartingCallCount++;
+                    onStartingCalled = true;
                     return Task.FromResult<object>(null);
                 }, null);
 
@@ -597,7 +597,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
                         "",
                         "");
 
-                    Assert.Equal(2, onStartingCallCount);
+                    Assert.False(onStartingCalled);
                     Assert.Equal(2, testLogger.ApplicationErrorsLogged);
                 }
             }
@@ -760,7 +760,8 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [MemberData(nameof(ConnectionFilterData))]
         public async Task ThrowingInOnStartingResultsInFailedWritesAnd500Response(ServiceContext testContext)
         {
-            var onStartingCallCount = 0;
+            var onStartingCallCount1 = 0;
+            var onStartingCallCount2 = 0;
             var failedWriteCount = 0;
 
             var testLogger = new TestApplicationErrorLogger();
@@ -768,18 +769,27 @@ namespace Microsoft.AspNet.Server.KestrelTests
 
             using (var server = new TestServer(async frame =>
             {
+                var onStartingException = new Exception();
+
                 var response = frame.Get<IHttpResponseFeature>();
                 response.OnStarting(_ =>
                 {
-                    onStartingCallCount++;
-                    throw new Exception();
+                    onStartingCallCount1++;
+                    throw onStartingException;
+                }, null);
+                response.OnStarting(_ =>
+                {
+                    onStartingCallCount2++;
+                    throw onStartingException;
                 }, null);
 
                 response.Headers.Clear();
                 response.Headers["Content-Length"] = new[] { "11" };
 
-                await Assert.ThrowsAsync<ObjectDisposedException>(async () =>
+                var writeException = await Assert.ThrowsAsync<ObjectDisposedException>(async () =>
                     await response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello World"), 0, 11));
+
+                Assert.Same(onStartingException, writeException.InnerException);
 
                 failedWriteCount++;
             }, testContext))
@@ -811,7 +821,9 @@ namespace Microsoft.AspNet.Server.KestrelTests
                         "",
                         "");
 
-                    Assert.Equal(2, onStartingCallCount);
+                    Assert.Equal(2, onStartingCallCount1);
+                    // The second OnStarting callback should not be called since the first failed.
+                    Assert.Equal(0, onStartingCallCount2);
                     Assert.Equal(2, testLogger.ApplicationErrorsLogged);
                 }
             }
@@ -820,6 +832,9 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [MemberData(nameof(ConnectionFilterData))]
         public async Task ThrowingInOnCompletedIsLoggedAndClosesConnection(ServiceContext testContext)
         {
+            var onCompletedCalled1 = false;
+            var onCompletedCalled2 = false;
+
             var testLogger = new TestApplicationErrorLogger();
             testContext.Log = new KestrelTrace(testLogger);
 
@@ -828,6 +843,12 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 var response = frame.Get<IHttpResponseFeature>();
                 response.OnCompleted(_ =>
                 {
+                    onCompletedCalled1 = true;
+                    throw new Exception();
+                }, null);
+                response.OnCompleted(_ =>
+                {
+                    onCompletedCalled2 = true;
                     throw new Exception();
                 }, null);
 
@@ -850,7 +871,10 @@ namespace Microsoft.AspNet.Server.KestrelTests
                         "Hello World");
                 }
 
-                Assert.Equal(1, testLogger.ApplicationErrorsLogged);
+                // All OnCompleted callbacks should be called even if they throw.
+                Assert.Equal(2, testLogger.ApplicationErrorsLogged);
+                Assert.True(onCompletedCalled1);
+                Assert.True(onCompletedCalled2);
             }
         }
 
