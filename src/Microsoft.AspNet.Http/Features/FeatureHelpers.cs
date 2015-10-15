@@ -23,6 +23,21 @@ namespace Microsoft.AspNet.Http.Features
             return obj;
         }
 
+        public static T GetOrCreate<T>(
+            IFeatureCollection features,
+            Func<T> factory)
+        {
+            T obj = features.Get<T>();
+            if (obj == null)
+            {
+                obj = factory();
+                features.Set(obj);
+            }
+
+            return obj;
+        }
+
+
         public static T GetOrCreateAndCache<T>(
             IFeatureCache cache, 
             IFeatureCollection features,

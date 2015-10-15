@@ -34,6 +34,8 @@ namespace Microsoft.AspNet.Http
 
         public abstract CancellationToken RequestAborted { get; set; }
 
+        public abstract string TraceIdentifier { get; set; }
+
         public abstract ISession Session { get; set; }
 
         public abstract void Abort();
