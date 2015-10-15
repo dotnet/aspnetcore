@@ -129,7 +129,6 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [Fact]
         public async Task SocketCanRead()
         {
-            int bytesRead = 0;
             var loop = new UvLoopHandle(_logger);
             loop.Init(_uv);
             var tcp = new UvTcpHandle(_logger);
@@ -145,10 +144,9 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 var data = Marshal.AllocCoTaskMem(500);
                 tcp2.ReadStart(
                     (a, b, c) => _uv.buf_init(data, 500),
-                    (__, nread, errCode, error2, state2) =>
+                    (__, nread, state2) =>
                     {
-                        bytesRead += nread;
-                        if (nread == 0)
+                        if (nread <= 0)
                         {
                             tcp2.Dispose();
                         }
@@ -186,7 +184,6 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [Fact]
         public async Task SocketCanReadAndWrite()
         {
-            int bytesRead = 0;
             var loop = new UvLoopHandle(_logger);
             loop.Init(_uv);
             var tcp = new UvTcpHandle(_logger);
@@ -202,10 +199,9 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 var data = Marshal.AllocCoTaskMem(500);
                 tcp2.ReadStart(
                     (a, b, c) => tcp2.Libuv.buf_init(data, 500),
-                    (__, nread, errCode, error2, state2) =>
+                    (__, nread, state2) =>
                     {
-                        bytesRead += nread;
-                        if (nread == 0)
+                        if (nread <= 0)
                         {
                             tcp2.Dispose();
                         }

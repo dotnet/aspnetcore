@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 {
     public class Connection : ConnectionContext, IConnectionControl
     {
-        private static readonly Action<UvStreamHandle, int, int, Exception, object> _readCallback = ReadCallback;
+        private static readonly Action<UvStreamHandle, int, object> _readCallback = ReadCallback;
         private static readonly Func<UvStreamHandle, int, object, Libuv.uv_buf_t> _allocCallback = AllocCallback;
 
         private static long _lastConnectionId;
@@ -113,28 +113,34 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 result.Data.Count);
         }
 
-        private static void ReadCallback(UvStreamHandle handle, int readCount, int errorCode, Exception error, object state)
+        private static void ReadCallback(UvStreamHandle handle, int status, object state)
         {
-            ((Connection)state).OnRead(handle, readCount, errorCode, error);
+            ((Connection)state).OnRead(handle, status);
         }
 
-        private void OnRead(UvStreamHandle handle, int readCount, int errorCode, Exception error)
+        private void OnRead(UvStreamHandle handle, int status)
         {
-            var normalRead = readCount != 0 && errorCode == 0;
-            var normalDone = readCount == 0 && (errorCode == 0 || errorCode == Constants.ECONNRESET || errorCode == Constants.EOF);
+            var normalRead = status > 0;
+            var normalDone = status == 0 || status == Constants.ECONNRESET || status == Constants.EOF;
             var errorDone = !(normalDone || normalRead);
+            var readCount = normalRead ? status : 0;
 
             if (normalRead)
             {
                 Log.ConnectionRead(_connectionId, readCount);
             }
-            else if (normalDone || errorDone)
+            else
             {
                 _socket.ReadStop();
                 Log.ConnectionReadFin(_connectionId);
             }
 
-            _rawSocketInput.IncomingComplete(readCount, errorDone ? error : null);
+            Exception error = null;
+            if (errorDone)
+            {
+                handle.Libuv.Check(status, out error);
+            }
+            _rawSocketInput.IncomingComplete(readCount, error);
         }
 
         void IConnectionControl.Pause()

@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         private GCHandle _listenVitality;
 
         public Func<UvStreamHandle, int, object, Libuv.uv_buf_t> _allocCallback;
-        public Action<UvStreamHandle, int, int, Exception, object> _readCallback;
+        public Action<UvStreamHandle, int, object> _readCallback;
         public object _readState;
         private GCHandle _readVitality;
 
@@ -72,13 +72,14 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
 
         public void ReadStart(
             Func<UvStreamHandle, int, object, Libuv.uv_buf_t> allocCallback,
-            Action<UvStreamHandle, int, int, Exception, object> readCallback,
+            Action<UvStreamHandle, int, object> readCallback,
             object state)
         {
             if (_readVitality.IsAllocated)
             {
                 throw new InvalidOperationException("TODO: ReadStop must be called before ReadStart may be called again");
             }
+
             try
             {
                 _allocCallback = allocCallback;
@@ -118,7 +119,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             return _uv.try_write(this, new[] { buf }, 1);
         }
 
-
         private static void UvConnectionCb(IntPtr handle, int status)
         {
             var stream = FromIntPtr<UvStreamHandle>(handle);
@@ -137,7 +137,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             }
         }
 
-
         private static void UvAllocCb(IntPtr handle, int suggested_size, out Libuv.uv_buf_t buf)
         {
             var stream = FromIntPtr<UvStreamHandle>(handle);
@@ -153,22 +152,13 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             }
         }
 
-        private static void UvReadCb(IntPtr handle, int nread, ref Libuv.uv_buf_t buf)
+        private static void UvReadCb(IntPtr handle, int status, ref Libuv.uv_buf_t buf)
         {
             var stream = FromIntPtr<UvStreamHandle>(handle);
 
             try
             {
-                if (nread < 0)
-                {
-                    Exception error;
-                    stream._uv.Check(nread, out error);
-                    stream._readCallback(stream, 0, nread, error, stream._readState);
-                }
-                else
-                {
-                    stream._readCallback(stream, nread, 0, null, stream._readState);
-                }
+                stream._readCallback(stream, status, stream._readState);
             }
             catch (Exception ex)
             {

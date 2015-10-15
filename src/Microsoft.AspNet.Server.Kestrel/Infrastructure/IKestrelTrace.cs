@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
 
         void ConnectionStop(long connectionId);
 
-        void ConnectionRead(long connectionId, int status);
+        void ConnectionRead(long connectionId, int count);
 
         void ConnectionPause(long connectionId);
 
