@@ -118,6 +118,15 @@ namespace Microsoft.AspNet.Http.Internal
             }
         }
 
+        private IHttpRequestIdentifierFeature RequestIdentifierFeature
+        {
+            get {
+                return FeatureHelpers.GetOrCreate<IHttpRequestIdentifierFeature>(
+                  _features,
+                  () => new HttpRequestIdentifierFeature());
+            }
+        }
+
         public override IFeatureCollection Features { get { return _features; } }
 
         public override HttpRequest Request { get { return _request; } }
@@ -165,6 +174,12 @@ namespace Microsoft.AspNet.Http.Internal
         {
             get { return LifetimeFeature.RequestAborted; }
             set { LifetimeFeature.RequestAborted = value; }
+        }
+
+        public override string TraceIdentifier
+        {
+            get { return RequestIdentifierFeature.TraceIdentifier; }
+            set { RequestIdentifierFeature.TraceIdentifier = value; }
         }
 
         public override ISession Session

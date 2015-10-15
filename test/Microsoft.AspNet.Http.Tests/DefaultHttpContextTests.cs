@@ -120,6 +120,20 @@ namespace Microsoft.AspNet.Http.Internal
         }
 
         [Fact]
+        public void GetItems_DefaultRequestIdentifierAvailable()
+        {
+            var context = new DefaultHttpContext(new FeatureCollection());
+            Assert.Null(context.Features.Get<IHttpRequestIdentifierFeature>());
+            var traceIdentifier = context.TraceIdentifier;
+            Assert.NotNull(context.Features.Get<IHttpRequestIdentifierFeature>());
+            Assert.NotNull(traceIdentifier);
+            Assert.Same(traceIdentifier, context.TraceIdentifier);
+
+            context.TraceIdentifier = "Hello";
+            Assert.Same("Hello", context.TraceIdentifier);
+        }
+
+        [Fact]
         public void SetItems_NewCollectionUsed()
         {
             var context = new DefaultHttpContext(new FeatureCollection());
