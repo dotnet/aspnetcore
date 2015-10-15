@@ -20,22 +20,22 @@ namespace FiltersWebSite
                 // This policy cannot succeed since the claim is never added
                 options.AddPolicy("Impossible", policy =>
                 {
-                    policy.ActiveAuthenticationSchemes.Add("Interactive");
+                    policy.AuthenticationSchemes.Add("Interactive");
                     policy.RequireClaim("Never");
                 });
                 options.AddPolicy("Api", policy =>
                 {
-                    policy.ActiveAuthenticationSchemes.Add("Api");
+                    policy.AuthenticationSchemes.Add("Api");
                     policy.RequireClaim(ClaimTypes.NameIdentifier);
                 });
                 options.AddPolicy("Api-Manager", policy =>
                 {
-                    policy.ActiveAuthenticationSchemes.Add("Api");
+                    policy.AuthenticationSchemes.Add("Api");
                     policy.Requirements.Add(Operations.Edit);
                 });
                 options.AddPolicy("Interactive", policy =>
                 {
-                    policy.ActiveAuthenticationSchemes.Add("Interactive");
+                    policy.AuthenticationSchemes.Add("Interactive");
                     policy.RequireClaim(ClaimTypes.NameIdentifier)
                           .RequireClaim("Permission", "CanViewPage");
                 });

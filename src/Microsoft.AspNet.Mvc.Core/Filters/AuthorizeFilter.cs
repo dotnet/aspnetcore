@@ -44,10 +44,10 @@ namespace Microsoft.AspNet.Mvc.Filters
             }
 
             // Build a ClaimsPrincipal with the Policy's required authentication types
-            if (Policy.ActiveAuthenticationSchemes != null && Policy.ActiveAuthenticationSchemes.Any())
+            if (Policy.AuthenticationSchemes != null && Policy.AuthenticationSchemes.Any())
             {
                 ClaimsPrincipal newPrincipal = null;
-                foreach (var scheme in Policy.ActiveAuthenticationSchemes)
+                foreach (var scheme in Policy.AuthenticationSchemes)
                 {
                     var result = await context.HttpContext.Authentication.AuthenticateAsync(scheme);
                     if (result != null)
@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.Mvc.Filters
                 !httpContext.User.Identities.Any(i => i.IsAuthenticated) ||
                 !await authService.AuthorizeAsync(httpContext.User, context, Policy))
             {
-                context.Result = new ChallengeResult(Policy.ActiveAuthenticationSchemes.ToArray());
+                context.Result = new ChallengeResult(Policy.AuthenticationSchemes.ToArray());
             }
         }
     }

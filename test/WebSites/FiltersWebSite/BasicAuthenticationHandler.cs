@@ -13,7 +13,7 @@ namespace FiltersWebSite
 {
     public class BasicAuthenticationHandler : AuthenticationHandler<BasicOptions>
     {
-        protected override Task<AuthenticationTicket> HandleAuthenticateAsync()
+        protected override Task<AuthenticateResult> HandleAuthenticateAsync()
         {
             var principal = new ClaimsPrincipal();
             principal.AddIdentity(new ClaimsIdentity(
@@ -24,8 +24,8 @@ namespace FiltersWebSite
                     new Claim(ClaimTypes.NameIdentifier, "John")
                 },
                 Options.AuthenticationScheme));
-            return Task.FromResult(new AuthenticationTicket(principal, 
-                new AuthenticationProperties(), Options.AuthenticationScheme));
+            return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(principal, 
+                new AuthenticationProperties(), Options.AuthenticationScheme)));
         }
     }
 }
