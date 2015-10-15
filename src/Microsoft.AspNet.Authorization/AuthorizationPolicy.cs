@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Authorization
             return builder.Build();
         }
 
-        public static AuthorizationPolicy Combine(AuthorizationOptions options, IEnumerable<AuthorizeAttribute> attributes)
+        public static AuthorizationPolicy Combine(AuthorizationOptions options, IEnumerable<IAuthorizeData> attributes)
         {
             if (options == null)
             {
