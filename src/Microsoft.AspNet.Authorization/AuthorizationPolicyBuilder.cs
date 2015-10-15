@@ -9,9 +9,9 @@ namespace Microsoft.AspNet.Authorization
 {
     public class AuthorizationPolicyBuilder
     {
-        public AuthorizationPolicyBuilder(params string[] activeAuthenticationSchemes)
+        public AuthorizationPolicyBuilder(params string[] authenticationSchemes)
         {
-            AddAuthenticationSchemes(activeAuthenticationSchemes);
+            AddAuthenticationSchemes(authenticationSchemes);
         }
 
         public AuthorizationPolicyBuilder(AuthorizationPolicy policy)
@@ -20,13 +20,13 @@ namespace Microsoft.AspNet.Authorization
         }
 
         public IList<IAuthorizationRequirement> Requirements { get; set; } = new List<IAuthorizationRequirement>();
-        public IList<string> ActiveAuthenticationSchemes { get; set; } = new List<string>();
+        public IList<string> AuthenticationSchemes { get; set; } = new List<string>();
 
-        public AuthorizationPolicyBuilder AddAuthenticationSchemes(params string[] activeAuthTypes)
+        public AuthorizationPolicyBuilder AddAuthenticationSchemes(params string[] schemes)
         {
-            foreach (var authType in activeAuthTypes)
+            foreach (var authType in schemes)
             {
-                ActiveAuthenticationSchemes.Add(authType);
+                AuthenticationSchemes.Add(authType);
             }
             return this;
         }
@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.Authorization
                 throw new ArgumentNullException(nameof(policy));
             }
 
-            AddAuthenticationSchemes(policy.ActiveAuthenticationSchemes.ToArray());
+            AddAuthenticationSchemes(policy.AuthenticationSchemes.ToArray());
             AddRequirements(policy.Requirements.ToArray());
             return this;
         }
@@ -135,7 +135,7 @@ namespace Microsoft.AspNet.Authorization
 
         public AuthorizationPolicy Build()
         {
-            return new AuthorizationPolicy(Requirements, ActiveAuthenticationSchemes.Distinct());
+            return new AuthorizationPolicy(Requirements, AuthenticationSchemes.Distinct());
         }
     }
 }

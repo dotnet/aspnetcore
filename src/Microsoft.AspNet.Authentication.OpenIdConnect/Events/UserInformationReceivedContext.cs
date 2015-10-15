@@ -7,14 +7,12 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.Authentication.OpenIdConnect
 {
-    public class UserInformationReceivedContext : BaseControlContext<OpenIdConnectOptions>
+    public class UserInformationReceivedContext : BaseOpenIdConnectContext
     {
         public UserInformationReceivedContext(HttpContext context, OpenIdConnectOptions options)
             : base(context, options)
         {
         }
-
-        public OpenIdConnectMessage ProtocolMessage { get; set; }
 
         public JObject User { get; set; }
     }

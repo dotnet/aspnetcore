@@ -27,11 +27,16 @@ namespace Microsoft.AspNet.Authentication
         }
 
         /// <summary>
-        /// If true the authentication middleware alter the request user coming in and
-        /// alter 401 Unauthorized responses going out. If false the authentication middleware will only provide
-        /// identity and alter responses when explicitly indicated by the AuthenticationScheme.
+        /// If true the authentication middleware alter the request user coming in. If false the authentication middleware will only provide
+        /// identity when explicitly indicated by the AuthenticationScheme.
         /// </summary>
-        public bool AutomaticAuthentication { get; set; }
+        public bool AutomaticAuthenticate { get; set; }
+
+        /// <summary>
+        /// If true the authentication middleware should handle automatic challenge.
+        /// If false the authentication middleware will only alter responses when explicitly indicated by the AuthenticationScheme.
+        /// </summary>
+        public bool AutomaticChallenge { get; set; }
 
         /// <summary>
         /// Gets or sets the issuer that should be used for any claims that are created

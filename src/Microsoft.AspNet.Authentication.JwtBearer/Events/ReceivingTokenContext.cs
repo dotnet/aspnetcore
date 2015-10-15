@@ -5,7 +5,7 @@ using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Authentication.JwtBearer
 {
-    public class ReceivingTokenContext : BaseControlContext<JwtBearerOptions>
+    public class ReceivingTokenContext : BaseJwtBearerContext
     {
         public ReceivingTokenContext(HttpContext context, JwtBearerOptions options)
             : base(context, options)

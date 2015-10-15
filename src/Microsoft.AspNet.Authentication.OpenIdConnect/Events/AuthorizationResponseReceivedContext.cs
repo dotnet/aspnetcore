@@ -7,14 +7,12 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace Microsoft.AspNet.Authentication.OpenIdConnect
 {
-    public class AuthorizationResponseReceivedContext : BaseControlContext<OpenIdConnectOptions>
+    public class AuthorizationResponseReceivedContext : BaseOpenIdConnectContext
     {
         public AuthorizationResponseReceivedContext(HttpContext context, OpenIdConnectOptions options)
             : base(context, options)
         {
         }
-
-        public OpenIdConnectMessage ProtocolMessage { get; set; }
 
         public AuthenticationProperties Properties { get; set; }
     }

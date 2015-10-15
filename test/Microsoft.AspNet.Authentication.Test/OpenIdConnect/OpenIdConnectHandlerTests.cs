@@ -98,6 +98,7 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             options.ConfigurationManager = TestUtilities.DefaultOpenIdConnectConfigurationManager;
             options.ClientId = Guid.NewGuid().ToString();
             options.StateDataFormat = new AuthenticationPropertiesFormaterKeyValue();
+            options.SignInScheme = "Cookies";
             options.Events = new OpenIdConnectEvents()
             {
                 OnTokenResponseReceived = context =>

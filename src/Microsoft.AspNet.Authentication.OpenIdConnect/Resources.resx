@@ -136,7 +136,7 @@
     <value>OIDCH_0028: Response.StatusCode != 401, StatusCode: '{0}'.</value>
   </data>
   <data name="OIDCH_0029_ChallengContextEqualsNull" xml:space="preserve">
-    <value>OIDCH_0029: ChallengeContext == null AND !Options.AutomaticAuthentication</value>
+    <value>OIDCH_0029: ChallengeContext == null AND !Options.AutomaticAuthenticate</value>
   </data>
   <data name="OIDCH_0030_Using_Properties_RedirectUri" xml:space="preserve">
     <value>OIDCH_0030: Using properties.RedirectUri for 'local redirect' post authentication: '{0}'.</value>

@@ -18,6 +18,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.WebEncoders;
 using Newtonsoft.Json;
 using Xunit;
+using System.Diagnostics;
+using Microsoft.AspNet.Authentication.Cookies;
 
 namespace Microsoft.AspNet.Authentication.Facebook
 {
@@ -45,7 +47,7 @@ namespace Microsoft.AspNet.Authentication.Facebook
                     app.UseCookieAuthentication(options =>
                     {
                         options.AuthenticationScheme = "External";
-                        options.AutomaticAuthentication = true;
+                        options.AutomaticAuthenticate = true;
                     });
                 },
                 services =>
@@ -158,11 +160,12 @@ namespace Microsoft.AspNet.Authentication.Facebook
         public async Task CustomUserInfoEndpointHasValidGraphQuery()
         {
             var customUserInfoEndpoint = "https://graph.facebook.com/me?fields=email,timezone,picture";
-            string finalUserInfoEndpoint = string.Empty;
+            var finalUserInfoEndpoint = string.Empty;
             var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider().CreateProtector("FacebookTest"));
             var server = CreateServer(
                 app =>
                 {
+                    app.UseCookieAuthentication();
                     app.UseFacebookAuthentication(options =>
                     {
                         options.AppId = "Test App Id";
@@ -200,11 +203,10 @@ namespace Microsoft.AspNet.Authentication.Facebook
                             }
                         };
                     });
-                    app.UseCookieAuthentication();
                 },
                 services =>
                 {
-                    services.AddAuthentication();
+                    services.AddAuthentication(options => options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme);
                 }, handler: null);
 
             var properties = new AuthenticationProperties();

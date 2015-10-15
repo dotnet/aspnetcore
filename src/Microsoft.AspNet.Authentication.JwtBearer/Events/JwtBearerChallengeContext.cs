@@ -5,7 +5,7 @@ using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Authentication.JwtBearer
 {
-    public class JwtBearerChallengeContext : BaseControlContext<JwtBearerOptions>
+    public class JwtBearerChallengeContext : BaseJwtBearerContext
     {
         public JwtBearerChallengeContext(HttpContext context, JwtBearerOptions options)
             : base(context, options)

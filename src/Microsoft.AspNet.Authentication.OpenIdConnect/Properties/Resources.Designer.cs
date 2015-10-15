@@ -107,7 +107,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         }
 
         /// <summary>
-        /// OIDCH_0029: ChallengeContext == null AND !Options.AutomaticAuthentication
+        /// OIDCH_0029: ChallengeContext == null AND !Options.AutomaticAuthenticate
         /// </summary>
         internal static string OIDCH_0029_ChallengContextEqualsNull
         {
@@ -115,7 +115,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         }
 
         /// <summary>
-        /// OIDCH_0029: ChallengeContext == null AND !Options.AutomaticAuthentication
+        /// OIDCH_0029: ChallengeContext == null AND !Options.AutomaticAuthenticate
         /// </summary>
         internal static string FormatOIDCH_0029_ChallengContextEqualsNull()
         {

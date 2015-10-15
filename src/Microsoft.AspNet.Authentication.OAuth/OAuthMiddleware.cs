@@ -91,6 +91,11 @@ namespace Microsoft.AspNet.Authentication.OAuth
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, nameof(Options.TokenEndpoint)));
             }
 
+            if (!Options.CallbackPath.HasValue)
+            {
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, nameof(Options.CallbackPath)));
+            }
+
             if (Options.Events == null)
             {
                 Options.Events = new OAuthEvents();
@@ -111,6 +116,10 @@ namespace Microsoft.AspNet.Authentication.OAuth
             if (string.IsNullOrEmpty(Options.SignInScheme))
             {
                 Options.SignInScheme = sharedOptions.Value.SignInScheme;
+            }
+            if (string.IsNullOrEmpty(Options.SignInScheme))
+            {
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, nameof(Options.SignInScheme)));
             }
         }
 

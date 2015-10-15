@@ -12,14 +12,13 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Http.Extensions;
 using Microsoft.AspNet.Http.Features.Authentication;
-using Microsoft.AspNet.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.Authentication.OAuth
 {
-    public class OAuthHandler<TOptions> : AuthenticationHandler<TOptions> where TOptions : OAuthOptions
+    public class OAuthHandler<TOptions> : RemoteAuthenticationHandler<TOptions> where TOptions : OAuthOptions
     {
         private static readonly RandomNumberGenerator CryptoRandom = RandomNumberGenerator.Create();
 
@@ -30,131 +29,71 @@ namespace Microsoft.AspNet.Authentication.OAuth
 
         protected HttpClient Backchannel { get; private set; }
 
-        public override async Task<bool> InvokeAsync()
-        {
-            if (Options.CallbackPath.HasValue && Options.CallbackPath == Request.Path)
-            {
-                return await InvokeReturnPathAsync();
-            }
-            return false;
-        }
-
-        public async Task<bool> InvokeReturnPathAsync()
-        {
-            var ticket = await HandleAuthenticateOnceAsync();
-            if (ticket == null)
-            {
-                Logger.LogWarning("Invalid return state, unable to redirect.");
-                Response.StatusCode = 500;
-                return true;
-            }
-
-            var context = new SigningInContext(Context, ticket)
-            {
-                SignInScheme = Options.SignInScheme,
-                RedirectUri = ticket.Properties.RedirectUri,
-            };
-            ticket.Properties.RedirectUri = null;
-
-            await Options.Events.SigningIn(context);
-
-            if (context.SignInScheme != null && context.Principal != null)
-            {
-                await Context.Authentication.SignInAsync(context.SignInScheme, context.Principal, context.Properties);
-            }
-
-            if (!context.IsRequestCompleted && context.RedirectUri != null)
-            {
-                if (context.Principal == null)
-                {
-                    // add a redirect hint that sign-in failed in some way
-                    context.RedirectUri = QueryHelpers.AddQueryString(context.RedirectUri, "error", "access_denied");
-                }
-                Response.Redirect(context.RedirectUri);
-                context.RequestCompleted();
-            }
-
-            return context.IsRequestCompleted;
-        }
-
-        protected override async Task<AuthenticationTicket> HandleAuthenticateAsync()
+        protected override async Task<AuthenticateResult> HandleRemoteAuthenticateAsync()
         {
             AuthenticationProperties properties = null;
-            try
+            var query = Request.Query;
+
+            var error = query["error"];
+            if (!StringValues.IsNullOrEmpty(error))
             {
-                var query = Request.Query;
+                return AuthenticateResult.Failed(error);
+            }
 
-                // TODO: Is this a standard error returned by servers?
-                var value = query["error"];
-                if (!StringValues.IsNullOrEmpty(value))
+            var code = query["code"];
+            var state = query["state"];
+
+            properties = Options.StateDataFormat.Unprotect(state);
+            if (properties == null)
+            {
+                return AuthenticateResult.Failed("The oauth state was missing or invalid.");
+            }
+
+            // OAuth2 10.12 CSRF
+            if (!ValidateCorrelationId(properties))
+            {
+                return AuthenticateResult.Failed("Correlation failed.");
+            }
+
+            if (StringValues.IsNullOrEmpty(code))
+            {
+                return AuthenticateResult.Failed("Code was not found.");
+            }
+
+            var tokens = await ExchangeCodeAsync(code, BuildRedirectUri(Options.CallbackPath));
+
+            if (string.IsNullOrEmpty(tokens.AccessToken))
+            {
+                return AuthenticateResult.Failed("Access token was not found.");
+            }
+
+            var identity = new ClaimsIdentity(Options.ClaimsIssuer);
+
+            if (Options.SaveTokensAsClaims)
+            {
+                identity.AddClaim(new Claim("access_token", tokens.AccessToken,
+                                            ClaimValueTypes.String, Options.ClaimsIssuer));
+
+                if (!string.IsNullOrEmpty(tokens.RefreshToken))
                 {
-                    Logger.LogVerbose("Remote server returned an error: " + Request.QueryString);
-                    // TODO: Fail request rather than passing through?
-                    return null;
-                }
-
-                var code = query["code"];
-                var state = query["state"];
-
-                properties = Options.StateDataFormat.Unprotect(state);
-                if (properties == null)
-                {
-                    return null;
-                }
-
-                // OAuth2 10.12 CSRF
-                if (!ValidateCorrelationId(properties))
-                {
-                    return new AuthenticationTicket(properties, Options.AuthenticationScheme);
-                }
-
-                if (StringValues.IsNullOrEmpty(code))
-                {
-                    // Null if the remote server returns an error.
-                    return new AuthenticationTicket(properties, Options.AuthenticationScheme);
-                }
-
-                var tokens = await ExchangeCodeAsync(code, BuildRedirectUri(Options.CallbackPath));
-
-                if (string.IsNullOrEmpty(tokens.AccessToken))
-                {
-                    Logger.LogWarning("Access token was not found");
-                    return new AuthenticationTicket(properties, Options.AuthenticationScheme);
-                }
-
-                var identity = new ClaimsIdentity(Options.ClaimsIssuer);
-
-                if (Options.SaveTokensAsClaims)
-                {
-                    identity.AddClaim(new Claim("access_token", tokens.AccessToken,
+                    identity.AddClaim(new Claim("refresh_token", tokens.RefreshToken,
                                                 ClaimValueTypes.String, Options.ClaimsIssuer));
-
-                    if (!string.IsNullOrEmpty(tokens.RefreshToken))
-                    {
-                        identity.AddClaim(new Claim("refresh_token", tokens.RefreshToken,
-                                                    ClaimValueTypes.String, Options.ClaimsIssuer));
-                    }
-
-                    if (!string.IsNullOrEmpty(tokens.TokenType))
-                    {
-                        identity.AddClaim(new Claim("token_type", tokens.TokenType,
-                                                    ClaimValueTypes.String, Options.ClaimsIssuer));
-                    }
-
-                    if (!string.IsNullOrEmpty(tokens.ExpiresIn))
-                    {
-                        identity.AddClaim(new Claim("expires_in", tokens.ExpiresIn,
-                                                    ClaimValueTypes.String, Options.ClaimsIssuer));
-                    }
                 }
 
-                return await CreateTicketAsync(identity, properties, tokens);
+                if (!string.IsNullOrEmpty(tokens.TokenType))
+                {
+                    identity.AddClaim(new Claim("token_type", tokens.TokenType,
+                                                ClaimValueTypes.String, Options.ClaimsIssuer));
+                }
+
+                if (!string.IsNullOrEmpty(tokens.ExpiresIn))
+                {
+                    identity.AddClaim(new Claim("expires_in", tokens.ExpiresIn,
+                                                ClaimValueTypes.String, Options.ClaimsIssuer));
+                }
             }
-            catch (Exception ex)
-            {
-                Logger.LogError("Authentication failed", ex);
-                return new AuthenticationTicket(properties, Options.AuthenticationScheme);
-            }
+
+            return AuthenticateResult.Success(await CreateTicketAsync(identity, properties, tokens));
         }
 
         protected virtual async Task<OAuthTokenResponse> ExchangeCodeAsync(string code, string redirectUri)
@@ -176,7 +115,6 @@ namespace Microsoft.AspNet.Authentication.OAuth
             var response = await Backchannel.SendAsync(requestMessage, Context.RequestAborted);
             response.EnsureSuccessStatusCode();
             var payload = JObject.Parse(await response.Content.ReadAsStringAsync());
-
             return new OAuthTokenResponse(payload);
         }
 
@@ -215,27 +153,11 @@ namespace Microsoft.AspNet.Authentication.OAuth
             GenerateCorrelationId(properties);
 
             var authorizationEndpoint = BuildChallengeUrl(properties, BuildRedirectUri(Options.CallbackPath));
-
             var redirectContext = new OAuthRedirectToAuthorizationContext(
                 Context, Options,
                 properties, authorizationEndpoint);
             await Options.Events.RedirectToAuthorizationEndpoint(redirectContext);
             return true;
-        }
-
-        protected override Task HandleSignOutAsync(SignOutContext context)
-        {
-            throw new NotSupportedException();
-        }
-
-        protected override Task HandleSignInAsync(SignInContext context)
-        {
-            throw new NotSupportedException();
-        }
-
-        protected override Task<bool> HandleForbiddenAsync(ChallengeContext context)
-        {
-            throw new NotSupportedException();
         }
 
         protected virtual string BuildChallengeUrl(AuthenticationProperties properties, string redirectUri)

@@ -5,9 +5,9 @@ using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Authentication
 {
-    public class BaseControlContext<TOptions> : BaseContext<TOptions>
+    public class BaseControlContext : BaseContext
     {
-        protected BaseControlContext(HttpContext context, TOptions options) : base(context, options)
+        protected BaseControlContext(HttpContext context) : base(context)
         {
         }
 

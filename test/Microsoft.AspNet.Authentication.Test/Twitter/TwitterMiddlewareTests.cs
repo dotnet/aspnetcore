@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
@@ -10,6 +11,7 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.WebEncoders;
 using Xunit;
 
 namespace Microsoft.AspNet.Authentication.Twitter
@@ -59,6 +61,22 @@ namespace Microsoft.AspNet.Authentication.Twitter
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             var query = transaction.Response.Headers.Location.Query;
             Assert.Contains("custom=test", query);
+        }
+
+        [Fact]
+        public async Task BadSignInWill500()
+        {
+            var server = CreateServer(options =>
+            {
+                options.ConsumerKey = "Test Consumer Key";
+                options.ConsumerSecret = "Test Consumer Secret";
+            });
+
+            // Send a bogus sign in
+            var transaction = await server.SendAsync(
+                "https://example.com/signin-twitter");
+
+            Assert.Equal(HttpStatusCode.InternalServerError, transaction.Response.StatusCode);
         }
 
         [Fact]

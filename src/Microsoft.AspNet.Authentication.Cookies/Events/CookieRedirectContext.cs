@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
     /// <summary>
     /// Context passed when a Challenge, SignIn, or SignOut causes a redirect in the cookie middleware 
     /// </summary>
-    public class CookieRedirectContext : BaseContext<CookieAuthenticationOptions>
+    public class CookieRedirectContext : BaseCookieContext
     {
         /// <summary>
         /// Creates a new context object.

@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
         /// Searches the 'Authorization' header for a 'Bearer' token. If the 'Bearer' token is found, it is validated using <see cref="TokenValidationParameters"/> set in the options.
         /// </summary>
         /// <returns></returns>
-        protected override async Task<AuthenticationTicket> HandleAuthenticateAsync()
+        protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
             string token = null;
             try
@@ -32,12 +32,12 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
                 await Options.Events.ReceivingToken(receivingTokenContext);
                 if (receivingTokenContext.HandledResponse)
                 {
-                    return receivingTokenContext.AuthenticationTicket;
+                    return AuthenticateResult.Success(receivingTokenContext.AuthenticationTicket);
                 }
 
                 if (receivingTokenContext.Skipped)
                 {
-                    return null;
+                    return AuthenticateResult.Success(ticket: null);
                 }
 
                 // If application retrieved token from somewhere else, use that.
@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
                     // If no authorization header found, nothing to process further
                     if (string.IsNullOrEmpty(authorization))
                     {
-                        return null;
+                        return AuthenticateResult.Failed("No authorization header.");
                     }
 
                     if (authorization.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
                     // If no token found, no further work possible
                     if (string.IsNullOrEmpty(token))
                     {
-                        return null;
+                        return AuthenticateResult.Failed("No bearer token.");
                     }
                 }
 
@@ -74,12 +74,12 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
                 await Options.Events.ReceivedToken(receivedTokenContext);
                 if (receivedTokenContext.HandledResponse)
                 {
-                    return receivedTokenContext.AuthenticationTicket;
+                    return AuthenticateResult.Success(receivedTokenContext.AuthenticationTicket);
                 }
 
                 if (receivedTokenContext.Skipped)
                 {
-                    return null;
+                    return AuthenticateResult.Success(ticket: null);
                 }
 
                 if (_configuration == null && Options.ConfigurationManager != null)
@@ -118,18 +118,19 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
                         await Options.Events.ValidatedToken(validatedTokenContext);
                         if (validatedTokenContext.HandledResponse)
                         {
-                            return validatedTokenContext.AuthenticationTicket;
+                            return AuthenticateResult.Success(validatedTokenContext.AuthenticationTicket);
                         }
 
                         if (validatedTokenContext.Skipped)
                         {
-                            return null;
+                            return AuthenticateResult.Success(ticket: null);
                         }
 
-                        return ticket;
+                        return AuthenticateResult.Success(ticket);
                     }
                 }
 
+                // REVIEW: this maybe return an error instead?
                 throw new InvalidOperationException("No SecurityTokenValidator available for token: " + token ?? "null");
             }
             catch (Exception ex)
@@ -150,12 +151,11 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
                 await Options.Events.AuthenticationFailed(authenticationFailedContext);
                 if (authenticationFailedContext.HandledResponse)
                 {
-                    return authenticationFailedContext.AuthenticationTicket;
+                    return AuthenticateResult.Success(authenticationFailedContext.AuthenticationTicket);
                 }
-
                 if (authenticationFailedContext.Skipped)
                 {
-                    return null;
+                    return AuthenticateResult.Success(ticket: null);
                 }
 
                 throw;

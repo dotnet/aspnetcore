@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
     /// <summary>
     /// Context object passed to the ICookieAuthenticationProvider method ValidatePrincipal.
     /// </summary>
-    public class CookieValidatePrincipalContext : BaseContext<CookieAuthenticationOptions>
+    public class CookieValidatePrincipalContext : BaseCookieContext
     {
         /// <summary>
         /// Creates a new instance of the context object.

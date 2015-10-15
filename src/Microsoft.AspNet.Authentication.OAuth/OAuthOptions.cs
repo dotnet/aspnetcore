@@ -12,8 +12,13 @@ namespace Microsoft.AspNet.Authentication.OAuth
     /// <summary>
     /// Configuration options for <see cref="OAuthMiddleware"/>.
     /// </summary>
-    public class OAuthOptions : AuthenticationOptions
+    public class OAuthOptions : RemoteAuthenticationOptions
     {
+        public OAuthOptions()
+        {
+            Events = new OAuthEvents();
+        }
+
         /// <summary>
         /// Gets or sets the provider-assigned client id.
         /// </summary>
@@ -42,52 +47,18 @@ namespace Microsoft.AspNet.Authentication.OAuth
         public string UserInformationEndpoint { get; set; }
 
         /// <summary>
-        /// Get or sets the text that the user can display on a sign in user interface.
-        /// </summary>
-        public string DisplayName
-        {
-            get { return Description.DisplayName; }
-            set { Description.DisplayName = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets timeout value in milliseconds for back channel communications with the auth provider.
-        /// </summary>
-        /// <value>
-        /// The back channel timeout.
-        /// </value>
-        public TimeSpan BackchannelTimeout { get; set; } = TimeSpan.FromSeconds(60);
-
-        /// <summary>
-        /// The HttpMessageHandler used to communicate with the auth provider.
-        /// This cannot be set at the same time as BackchannelCertificateValidator unless the value 
-        /// can be downcast to a WebRequestHandler.
-        /// </summary>
-        public HttpMessageHandler BackchannelHttpHandler { get; set; }
-
-        /// <summary>
         /// Gets or sets the <see cref="IOAuthEvents"/> used to handle authentication events.
         /// </summary>
-        public IOAuthEvents Events { get; set; } = new OAuthEvents();
+        public new IOAuthEvents Events
+        {
+            get { return (IOAuthEvents)base.Events; }
+            set { base.Events = value; }
+        }
 
         /// <summary>
         /// A list of permissions to request.
         /// </summary>
         public IList<string> Scope { get; } = new List<string>();
-
-        /// <summary>
-        /// The request path within the application's base path where the user-agent will be returned.
-        /// The middleware will process this request when it arrives.
-        /// </summary>
-        public PathString CallbackPath { get; set; }
-
-        /// <summary>
-        /// Gets or sets the authentication scheme corresponding to the middleware
-        /// responsible of persisting user's identity after a successful authentication.
-        /// This value typically corresponds to a cookie middleware registered in the Startup class.
-        /// When omitted, <see cref="SharedAuthenticationOptions.SignInScheme"/> is used as a fallback value.
-        /// </summary>
-        public string SignInScheme { get; set; }
 
         /// <summary>
         /// Gets or sets the type used to secure data handled by the middleware.

@@ -34,9 +34,9 @@ namespace Microsoft.AspNet.Authroization.Test
             var combined = AuthorizationPolicy.Combine(options, attributes);
 
             // Assert
-            Assert.Equal(2, combined.ActiveAuthenticationSchemes.Count());
-            Assert.True(combined.ActiveAuthenticationSchemes.Contains("dupe"));
-            Assert.True(combined.ActiveAuthenticationSchemes.Contains("roles"));
+            Assert.Equal(2, combined.AuthenticationSchemes.Count());
+            Assert.True(combined.AuthenticationSchemes.Contains("dupe"));
+            Assert.True(combined.AuthenticationSchemes.Contains("roles"));
             Assert.Equal(4, combined.Requirements.Count());
             Assert.True(combined.Requirements.Any(r => r is DenyAnonymousAuthorizationRequirement));
             Assert.Equal(2, combined.Requirements.OfType<ClaimsAuthorizationRequirement>().Count());
@@ -59,9 +59,9 @@ namespace Microsoft.AspNet.Authroization.Test
             var combined = AuthorizationPolicy.Combine(options, attributes);
 
             // Assert
-            Assert.Equal(2, combined.ActiveAuthenticationSchemes.Count());
-            Assert.True(combined.ActiveAuthenticationSchemes.Contains("dupe"));
-            Assert.True(combined.ActiveAuthenticationSchemes.Contains("default"));
+            Assert.Equal(2, combined.AuthenticationSchemes.Count());
+            Assert.True(combined.AuthenticationSchemes.Contains("dupe"));
+            Assert.True(combined.AuthenticationSchemes.Contains("default"));
             Assert.Equal(2, combined.Requirements.Count());
             Assert.False(combined.Requirements.Any(r => r is DenyAnonymousAuthorizationRequirement));
             Assert.Equal(2, combined.Requirements.OfType<ClaimsAuthorizationRequirement>().Count());

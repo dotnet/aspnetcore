@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
     /// <summary>
     /// This Context can be used to be informed when an 'AuthorizationCode' is received over the OpenIdConnect protocol.
     /// </summary>
-    public class AuthorizationCodeReceivedContext : BaseControlContext<OpenIdConnectOptions>
+    public class AuthorizationCodeReceivedContext : BaseOpenIdConnectContext
     {
         /// <summary>
         /// Creates a <see cref="AuthorizationCodeReceivedContext"/>
@@ -30,11 +30,6 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         /// Gets or sets the <see cref="JwtSecurityToken"/> that was received in the id_token + code OpenIdConnectRequest.
         /// </summary>
         public JwtSecurityToken JwtSecurityToken { get; set; }
-
-        /// <summary>
-        /// Gets or sets the <see cref="OpenIdConnectMessage"/>.
-        /// </summary>
-        public OpenIdConnectMessage ProtocolMessage { get; set; }
 
         /// <summary>
         /// Gets or sets the 'redirect_uri'.

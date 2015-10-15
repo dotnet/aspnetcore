@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
             var server = CreateServer(options =>
             {
                 options.LoginPath = new PathString("/login");
-                options.AutomaticAuthentication = auto;
+                options.AutomaticChallenge = auto;
             });
 
             var transaction = await SendAsync(server, "http://example.com/protected");
@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
         [Fact]
         public async Task ProtectedCustomRequestShouldRedirectToCustomRedirectUri()
         {
-            var server = CreateServer(options => options.AutomaticAuthentication = true);
+            var server = CreateServer(options => options.AutomaticChallenge = true);
 
             var transaction = await SendAsync(server, "http://example.com/protected/CustomRedirect");
 
@@ -573,7 +573,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
             var clock = new TestClock();
             var server = CreateServer(options =>
             {
-                options.AutomaticAuthentication = automatic;
+                options.AutomaticAuthenticate = automatic;
                 options.SystemClock = clock;
             }, 
             SignInAsAlice);
@@ -596,7 +596,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
             var clock = new TestClock();
             var server = CreateServer(options =>
             {
-                options.AutomaticAuthentication = automatic;
+                options.AutomaticAuthenticate = automatic;
                 options.SystemClock = clock;
             },
             SignInAsAlice);
@@ -617,7 +617,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
             var clock = new TestClock();
             var server = CreateServer(options =>
             {
-                options.AutomaticAuthentication = automatic;
+                options.AutomaticAuthenticate = automatic;
                 options.SystemClock = clock;
             },
             SignInAsAlice);
@@ -1002,10 +1002,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
                     }
                 });
             },
-            services =>
-            {
-                services.AddAuthentication();
-            });
+            services => services.AddAuthentication());
             server.BaseAddress = baseAddress;
             return server;
         }

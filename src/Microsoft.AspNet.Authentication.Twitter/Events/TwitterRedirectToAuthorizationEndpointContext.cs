@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
     /// <summary>
     /// The Context passed when a Challenge causes a redirect to authorize endpoint in the Twitter middleware.
     /// </summary>
-    public class TwitterRedirectToAuthorizationEndpointContext : BaseContext<TwitterOptions>
+    public class TwitterRedirectToAuthorizationEndpointContext : BaseTwitterContext
     {
         /// <summary>
         /// Creates a new context object.

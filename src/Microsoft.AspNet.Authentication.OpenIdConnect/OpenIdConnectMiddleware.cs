@@ -77,9 +77,18 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 throw new ArgumentNullException(nameof(options));
             }
 
-            if (string.IsNullOrEmpty(Options.SignInScheme) && !string.IsNullOrEmpty(sharedOptions.Value.SignInScheme))
+            if (!Options.CallbackPath.HasValue)
+            {
+                throw new ArgumentException("Options.CallbackPath must be provided.");
+            }
+
+            if (string.IsNullOrEmpty(Options.SignInScheme))
             {
                 Options.SignInScheme = sharedOptions.Value.SignInScheme;
+            }
+            if (string.IsNullOrEmpty(Options.SignInScheme))
+            {
+                throw new ArgumentException("Options.SignInScheme is required.");
             }
 
             if (Options.HtmlEncoder == null)

@@ -19,7 +19,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNet.Authentication.Twitter
 {
-    internal class TwitterHandler : AuthenticationHandler<TwitterOptions>
+    internal class TwitterHandler : RemoteAuthenticationHandler<TwitterOptions>
     {
         private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         private const string StateCookie = "__TwitterState";
@@ -34,89 +34,70 @@ namespace Microsoft.AspNet.Authentication.Twitter
             _httpClient = httpClient;
         }
 
-        public override async Task<bool> InvokeAsync()
-        {
-            if (Options.CallbackPath.HasValue && Options.CallbackPath == Request.Path)
-            {
-                return await InvokeReturnPathAsync();
-            }
-            return false;
-        }
-
-        protected override async Task<AuthenticationTicket> HandleAuthenticateAsync()
+        protected override async Task<AuthenticateResult> HandleRemoteAuthenticateAsync()
         {
             AuthenticationProperties properties = null;
-            try
+            var query = Request.Query;
+            var protectedRequestToken = Request.Cookies[StateCookie];
+
+            var requestToken = Options.StateDataFormat.Unprotect(protectedRequestToken);
+
+            if (requestToken == null)
             {
-                var query = Request.Query;
-                var protectedRequestToken = Request.Cookies[StateCookie];
-
-                var requestToken = Options.StateDataFormat.Unprotect(protectedRequestToken);
-
-                if (requestToken == null)
-                {
-                    Logger.LogWarning("Invalid state");
-                    return null;
-                }
-
-                properties = requestToken.Properties;
-
-                var returnedToken = query["oauth_token"];
-                if (StringValues.IsNullOrEmpty(returnedToken))
-                {
-                    Logger.LogWarning("Missing oauth_token");
-                    return new AuthenticationTicket(properties, Options.AuthenticationScheme);
-                }
-
-                if (!string.Equals(returnedToken, requestToken.Token, StringComparison.Ordinal))
-                {
-                    Logger.LogWarning("Unmatched token");
-                    return new AuthenticationTicket(properties, Options.AuthenticationScheme);
-                }
-
-                var oauthVerifier = query["oauth_verifier"];
-                if (StringValues.IsNullOrEmpty(oauthVerifier))
-                {
-                    Logger.LogWarning("Missing or blank oauth_verifier");
-                    return new AuthenticationTicket(properties, Options.AuthenticationScheme);
-                }
-
-                var cookieOptions = new CookieOptions
-                {
-                    HttpOnly = true,
-                    Secure = Request.IsHttps
-                };
-
-                Response.Cookies.Delete(StateCookie, cookieOptions);
-
-                var accessToken = await ObtainAccessTokenAsync(Options.ConsumerKey, Options.ConsumerSecret, requestToken, oauthVerifier);
-
-                var identity = new ClaimsIdentity(new[]
-                {
-                    new Claim(ClaimTypes.NameIdentifier, accessToken.UserId, ClaimValueTypes.String, Options.ClaimsIssuer),
-                    new Claim(ClaimTypes.Name, accessToken.ScreenName, ClaimValueTypes.String, Options.ClaimsIssuer),
-                    new Claim("urn:twitter:userid", accessToken.UserId, ClaimValueTypes.String, Options.ClaimsIssuer),
-                    new Claim("urn:twitter:screenname", accessToken.ScreenName, ClaimValueTypes.String, Options.ClaimsIssuer)
-                },
-                Options.ClaimsIssuer);
-
-                if (Options.SaveTokensAsClaims)
-                {
-                    identity.AddClaim(new Claim("access_token", accessToken.Token, ClaimValueTypes.String, Options.ClaimsIssuer));
-                }
-
-                return await CreateTicketAsync(identity, properties, accessToken);
+                return AuthenticateResult.Failed("Invalid state cookie.");
             }
-            catch (Exception ex)
+
+            properties = requestToken.Properties;
+
+            // REVIEW: see which of these are really errors
+
+            var returnedToken = query["oauth_token"];
+            if (StringValues.IsNullOrEmpty(returnedToken))
             {
-                Logger.LogError("Authentication failed", ex);
-                return new AuthenticationTicket(properties, Options.AuthenticationScheme);
+                return AuthenticateResult.Failed("Missing oauth_token");
             }
+
+            if (!string.Equals(returnedToken, requestToken.Token, StringComparison.Ordinal))
+            {
+                return AuthenticateResult.Failed("Unmatched token");
+            }
+
+            var oauthVerifier = query["oauth_verifier"];
+            if (StringValues.IsNullOrEmpty(oauthVerifier))
+            {
+                return AuthenticateResult.Failed("Missing or blank oauth_verifier");
+            }
+
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = Request.IsHttps
+            };
+
+            Response.Cookies.Delete(StateCookie, cookieOptions);
+
+            var accessToken = await ObtainAccessTokenAsync(Options.ConsumerKey, Options.ConsumerSecret, requestToken, oauthVerifier);
+
+            var identity = new ClaimsIdentity(new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, accessToken.UserId, ClaimValueTypes.String, Options.ClaimsIssuer),
+                new Claim(ClaimTypes.Name, accessToken.ScreenName, ClaimValueTypes.String, Options.ClaimsIssuer),
+                new Claim("urn:twitter:userid", accessToken.UserId, ClaimValueTypes.String, Options.ClaimsIssuer),
+                new Claim("urn:twitter:screenname", accessToken.ScreenName, ClaimValueTypes.String, Options.ClaimsIssuer)
+            },
+            Options.ClaimsIssuer);
+
+            if (Options.SaveTokensAsClaims)
+            {
+                identity.AddClaim(new Claim("access_token", accessToken.Token, ClaimValueTypes.String, Options.ClaimsIssuer));
+            }
+
+            return AuthenticateResult.Success(await CreateTicketAsync(identity, properties, accessToken));
         }
 
         protected virtual async Task<AuthenticationTicket> CreateTicketAsync(ClaimsIdentity identity, AuthenticationProperties properties, AccessToken token)
         {
-            var context = new TwitterCreatingTicketContext(Context, token.UserId, token.ScreenName, token.Token, token.TokenSecret)
+            var context = new TwitterCreatingTicketContext(Context, Options, token.UserId, token.ScreenName, token.Token, token.TokenSecret)
             {
                 Principal = new ClaimsPrincipal(identity),
                 Properties = properties
@@ -145,83 +126,23 @@ namespace Microsoft.AspNet.Authentication.Twitter
                 properties.RedirectUri = CurrentUri;
             }
 
+            // If CallbackConfirmed is false, this will throw
             var requestToken = await ObtainRequestTokenAsync(Options.ConsumerKey, Options.ConsumerSecret, BuildRedirectUri(Options.CallbackPath), properties);
-            if (requestToken.CallbackConfirmed)
+            var twitterAuthenticationEndpoint = AuthenticationEndpoint + requestToken.Token;
+
+            var cookieOptions = new CookieOptions
             {
-                var twitterAuthenticationEndpoint = AuthenticationEndpoint + requestToken.Token;
-
-                var cookieOptions = new CookieOptions
-                {
-                    HttpOnly = true,
-                    Secure = Request.IsHttps
-                };
-
-                Response.Cookies.Append(StateCookie, Options.StateDataFormat.Protect(requestToken), cookieOptions);
-
-                var redirectContext = new TwitterRedirectToAuthorizationEndpointContext(
-                    Context, Options,
-                    properties, twitterAuthenticationEndpoint);
-                await Options.Events.RedirectToAuthorizationEndpoint(redirectContext);
-                return true;
-            }
-            else
-            {
-                Logger.LogError("requestToken CallbackConfirmed!=true");
-            }
-            return false; // REVIEW: Make sure this should not stop other handlers
-        }
-
-        public async Task<bool> InvokeReturnPathAsync()
-        {
-            var model = await HandleAuthenticateOnceAsync();
-            if (model == null)
-            {
-                Logger.LogWarning("Invalid return state, unable to redirect.");
-                Response.StatusCode = 500;
-                return true;
-            }
-
-            var context = new SigningInContext(Context, model)
-            {
-                SignInScheme = Options.SignInScheme,
-                RedirectUri = model.Properties.RedirectUri
+                HttpOnly = true,
+                Secure = Request.IsHttps
             };
-            model.Properties.RedirectUri = null;
 
-            await Options.Events.SigningIn(context);
+            Response.Cookies.Append(StateCookie, Options.StateDataFormat.Protect(requestToken), cookieOptions);
 
-            if (context.SignInScheme != null && context.Principal != null)
-            {
-                await Context.Authentication.SignInAsync(context.SignInScheme, context.Principal, context.Properties);
-            }
-
-            if (!context.IsRequestCompleted && context.RedirectUri != null)
-            {
-                if (context.Principal == null)
-                {
-                    // add a redirect hint that sign-in failed in some way
-                    context.RedirectUri = QueryHelpers.AddQueryString(context.RedirectUri, "error", "access_denied");
-                }
-                Response.Redirect(context.RedirectUri);
-                context.RequestCompleted();
-            }
-
-            return context.IsRequestCompleted;
-        }
-
-        protected override Task HandleSignOutAsync(SignOutContext context)
-        {
-            throw new NotSupportedException();
-        }
-
-        protected override Task HandleSignInAsync(SignInContext context)
-        {
-            throw new NotSupportedException();
-        }
-
-        protected override Task<bool> HandleForbiddenAsync(ChallengeContext context)
-        {
-            throw new NotSupportedException();
+            var redirectContext = new TwitterRedirectToAuthorizationEndpointContext(
+                Context, Options,
+                properties, twitterAuthenticationEndpoint);
+            await Options.Events.RedirectToAuthorizationEndpoint(redirectContext);
+            return true;
         }
 
         private async Task<RequestToken> ObtainRequestTokenAsync(string consumerKey, string consumerSecret, string callBackUri, AuthenticationProperties properties)
@@ -275,12 +196,12 @@ namespace Microsoft.AspNet.Authentication.Twitter
             string responseText = await response.Content.ReadAsStringAsync();
 
             var responseParameters = new FormCollection(FormReader.ReadForm(responseText));
-            if (string.Equals(responseParameters["oauth_callback_confirmed"], "true", StringComparison.Ordinal))
+            if (!string.Equals(responseParameters["oauth_callback_confirmed"], "true", StringComparison.Ordinal))
             {
-                return new RequestToken { Token = Uri.UnescapeDataString(responseParameters["oauth_token"]), TokenSecret = Uri.UnescapeDataString(responseParameters["oauth_token_secret"]), CallbackConfirmed = true, Properties = properties };
+                throw new Exception("Twitter oauth_callback_confirmed is not true.");
             }
 
-            return new RequestToken();
+            return new RequestToken { Token = Uri.UnescapeDataString(responseParameters["oauth_token"]), TokenSecret = Uri.UnescapeDataString(responseParameters["oauth_token_secret"]), CallbackConfirmed = true, Properties = properties };
         }
 
         private async Task<AccessToken> ObtainAccessTokenAsync(string consumerKey, string consumerSecret, RequestToken token, string verifier)

@@ -43,11 +43,6 @@ namespace Microsoft.AspNet.Authentication.Cookies
         };
 
         /// <summary>
-        /// A delegate assigned to this property will be invoked when the related method is called.
-        /// </summary>
-        public Func<CookieExceptionContext, Task> OnException { get; set; } = context => Task.FromResult(0);
-
-        /// <summary>
         /// Implements the interface method by invoking the related delegate method.
         /// </summary>
         /// <param name="context"></param>
@@ -95,11 +90,5 @@ namespace Microsoft.AspNet.Authentication.Cookies
         /// </summary>
         /// <param name="context">Contains information about the event</param>
         public virtual Task RedirectToAccessDenied(CookieRedirectContext context) => OnRedirect(context);
-
-        /// <summary>
-        /// Implements the interface method by invoking the related delegate method.
-        /// </summary>
-        /// <param name="context">Contains information about the event</param>
-        public virtual Task Exception(CookieExceptionContext context) => OnException(context);
     }
 }

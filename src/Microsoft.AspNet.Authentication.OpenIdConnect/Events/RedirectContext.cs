@@ -10,16 +10,11 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
     /// When a user configures the <see cref="OpenIdConnectMiddleware"/> to be notified prior to redirecting to an IdentityProvider
     /// an instance of <see cref="RedirectContext"/> is passed to the 'RedirectToAuthenticationEndpoint' or 'RedirectToEndSessionEndpoint' events.
     /// </summary>
-    public class RedirectContext : BaseControlContext<OpenIdConnectOptions>
+    public class RedirectContext : BaseOpenIdConnectContext
     {
         public RedirectContext(HttpContext context, OpenIdConnectOptions options)
             : base(context, options)
         {
         }
-
-        /// <summary>
-        /// Gets or sets the <see cref="OpenIdConnectMessage"/>.
-        /// </summary>
-        public OpenIdConnectMessage ProtocolMessage { get; set; }
     }
 }

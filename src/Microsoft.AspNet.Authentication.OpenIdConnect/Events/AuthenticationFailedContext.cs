@@ -7,7 +7,7 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace Microsoft.AspNet.Authentication.OpenIdConnect
 {
-    public class AuthenticationFailedContext : BaseControlContext<OpenIdConnectOptions>
+    public class AuthenticationFailedContext : BaseOpenIdConnectContext
     {
         public AuthenticationFailedContext(HttpContext context, OpenIdConnectOptions options)
             : base(context, options)
@@ -15,7 +15,5 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         }
 
         public Exception Exception { get; set; }
-
-        public OpenIdConnectMessage ProtocolMessage { get; set; }
     }
 }

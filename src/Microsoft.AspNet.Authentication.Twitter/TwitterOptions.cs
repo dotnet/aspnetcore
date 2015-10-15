@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
     /// <summary>
     /// Options for the Twitter authentication middleware.
     /// </summary>
-    public class TwitterOptions : AuthenticationOptions
+    public class TwitterOptions : RemoteAuthenticationOptions
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="TwitterOptions"/> class.
@@ -21,6 +21,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
             DisplayName = AuthenticationScheme;
             CallbackPath = new PathString("/signin-twitter");
             BackchannelTimeout = TimeSpan.FromSeconds(60);
+            Events = new TwitterEvents();
         }
 
         /// <summary>
@@ -36,45 +37,6 @@ namespace Microsoft.AspNet.Authentication.Twitter
         public string ConsumerSecret { get; set; }
 
         /// <summary>
-        /// Gets or sets timeout value in milliseconds for back channel communications with Twitter.
-        /// </summary>
-        /// <value>
-        /// The back channel timeout.
-        /// </value>
-        public TimeSpan BackchannelTimeout { get; set; }
-
-        /// <summary>
-        /// The HttpMessageHandler used to communicate with Twitter.
-        /// This cannot be set at the same time as BackchannelCertificateValidator unless the value 
-        /// can be downcast to a WebRequestHandler.
-        /// </summary>
-        public HttpMessageHandler BackchannelHttpHandler { get; set; }
-
-        /// <summary>
-        /// Get or sets the text that the user can display on a sign in user interface.
-        /// </summary>
-        public string DisplayName
-        {
-            get { return Description.DisplayName; }
-            set { Description.DisplayName = value; }
-        }
-
-        /// <summary>
-        /// The request path within the application's base path where the user-agent will be returned.
-        /// The middleware will process this request when it arrives.
-        /// Default value is "/signin-twitter".
-        /// </summary>
-        public PathString CallbackPath { get; set; }
-
-        /// <summary>
-        /// Gets or sets the authentication scheme corresponding to the middleware
-        /// responsible of persisting user's identity after a successful authentication.
-        /// This value typically corresponds to a cookie middleware registered in the Startup class.
-        /// When omitted, <see cref="SharedAuthenticationOptions.SignInScheme"/> is used as a fallback value.
-        /// </summary>
-        public string SignInScheme { get; set; }
-
-        /// <summary>
         /// Gets or sets the type used to secure data handled by the middleware.
         /// </summary>
         public ISecureDataFormat<RequestToken> StateDataFormat { get; set; }
@@ -82,7 +44,11 @@ namespace Microsoft.AspNet.Authentication.Twitter
         /// <summary>
         /// Gets or sets the <see cref="ITwitterEvents"/> used to handle authentication events.
         /// </summary>
-        public ITwitterEvents Events { get; set; }
+        public new ITwitterEvents Events
+        {
+            get { return (ITwitterEvents)base.Events; }
+            set { base.Events = value; }
+        }
 
         /// <summary>
         /// Defines whether access tokens should be stored in the

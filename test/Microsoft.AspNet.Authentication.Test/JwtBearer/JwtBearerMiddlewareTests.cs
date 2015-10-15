@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
         {
             var server = CreateServer(options =>
             {
-                options.AutomaticAuthentication = true;
+                options.AutomaticAuthenticate = true;
 
                 options.Authority = "https://login.windows.net/tushartest.onmicrosoft.com";
                 options.Audience = "https://TusharTest.onmicrosoft.com/TodoListService-ManualJwt";
@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
         {
             var server = CreateServer(options =>
             {
-                options.AutomaticAuthentication = true;
+                options.AutomaticAuthenticate = true;
             });
             var transaction = await server.SendAsync("https://example.com/signIn");
             Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
         {
             var server = CreateServer(options =>
             {
-                options.AutomaticAuthentication = true;
+                options.AutomaticAuthenticate = true;
             });
             var transaction = await server.SendAsync("https://example.com/signOut");
             Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
         {
             var server = CreateServer(options =>
             {
-                options.AutomaticAuthentication = true;
+                options.AutomaticAuthenticate = true;
 
                 options.Events = new JwtBearerEvents()
                 {
@@ -117,7 +117,7 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
         {
             var server = CreateServer(options =>
             {
-                options.AutomaticAuthentication = true;
+                options.AutomaticAuthenticate = true;
 
                 options.Events = new JwtBearerEvents()
                 {
@@ -151,7 +151,7 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
         {
             var server = CreateServer(options =>
             {
-                options.AutomaticAuthentication = true;
+                options.AutomaticAuthenticate = true;
 
                 options.Events = new JwtBearerEvents()
                 {
@@ -188,7 +188,7 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
         {
             var server = CreateServer(options =>
             {
-                options.AutomaticAuthentication = true;
+                options.AutomaticAuthenticate = true;
 
                 options.Events = new JwtBearerEvents()
                 {

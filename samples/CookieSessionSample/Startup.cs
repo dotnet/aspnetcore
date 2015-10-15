@@ -22,7 +22,7 @@ namespace CookieSessionSample
 
             app.UseCookieAuthentication(options =>
             {
-                options.AutomaticAuthentication = true;
+                options.AutomaticAuthenticate = true;
                 options.SessionStore = new MemoryCacheTicketStore();
             });
 

@@ -4,6 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Http.Features.Authentication;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
@@ -17,7 +18,7 @@ namespace Microsoft.AspNet.Authentication
     /// <typeparam name="TOptions">Specifies which type for of AuthenticationOptions property</typeparam>
     public abstract class AuthenticationHandler<TOptions> : IAuthenticationHandler where TOptions : AuthenticationOptions
     {
-        private Task<AuthenticationTicket> _authenticateTask;
+        private Task<AuthenticateResult> _authenticateTask;
         private bool _finishCalled;
 
         protected bool SignInAccepted { get; set; }
@@ -96,10 +97,10 @@ namespace Microsoft.AspNet.Authentication
 
             Response.OnStarting(OnStartingCallback, this);
 
-            // Automatic authentication is the empty scheme
-            if (ShouldHandleScheme(string.Empty))
+            if (ShouldHandleScheme(AuthenticationManager.AutomaticScheme, Options.AutomaticAuthenticate))
             {
-                var ticket = await HandleAuthenticateOnceAsync();
+                var result = await HandleAuthenticateOnceAsync();
+                var ticket = result?.Ticket;
                 if (ticket?.Principal != null)
                 {
                     Context.User = SecurityHelper.MergeUserPrincipal(Context.User, ticket.Principal);
@@ -139,7 +140,7 @@ namespace Microsoft.AspNet.Authentication
 
         private async Task HandleAutomaticChallengeIfNeeded()
         {
-            if (!ChallengeCalled && Options.AutomaticAuthentication && Response.StatusCode == 401)
+            if (!ChallengeCalled && Options.AutomaticChallenge && Response.StatusCode == 401)
             {
                 await HandleUnauthorizedAsync(new ChallengeContext(Options.AuthenticationScheme));
             }
@@ -169,7 +170,7 @@ namespace Microsoft.AspNet.Authentication
         /// <returns>Returning false will cause the common code to call the next middleware in line. Returning true will
         /// cause the common code to begin the async completion journey without calling the rest of the middleware
         /// pipeline.</returns>
-        public virtual Task<bool> InvokeAsync()
+        public virtual Task<bool> HandleRequestAsync()
         {
             return Task.FromResult(false);
         }
@@ -184,35 +185,46 @@ namespace Microsoft.AspNet.Authentication
             }
         }
 
-        public bool ShouldHandleScheme(string authenticationScheme)
+        public bool ShouldHandleScheme(string authenticationScheme, bool handleAutomatic)
         {
             return string.Equals(Options.AuthenticationScheme, authenticationScheme, StringComparison.Ordinal) ||
-                (Options.AutomaticAuthentication && string.IsNullOrEmpty(authenticationScheme));
+                (handleAutomatic && string.Equals(authenticationScheme, AuthenticationManager.AutomaticScheme, StringComparison.Ordinal));
         }
 
         public async Task AuthenticateAsync(AuthenticateContext context)
         {
-            if (ShouldHandleScheme(context.AuthenticationScheme))
+            var handled = false;
+            if (ShouldHandleScheme(context.AuthenticationScheme, Options.AutomaticAuthenticate))
             {
                 // Calling Authenticate more than once should always return the original value. 
-                var ticket = await HandleAuthenticateOnceAsync();
-                if (ticket?.Principal != null)
+                var result = await HandleAuthenticateOnceAsync();
+
+                if (result?.Error != null)
                 {
-                    context.Authenticated(ticket.Principal, ticket.Properties.Items, Options.Description.Items);
+                    context.Failed(result.Error);
                 }
                 else
                 {
-                    context.NotAuthenticated();
+                    var ticket = result?.Ticket;
+                    if (ticket?.Principal != null)
+                    {
+                        context.Authenticated(ticket.Principal, ticket.Properties.Items, Options.Description.Items);
+                        handled = true;
+                    }
+                    else
+                    {
+                        context.NotAuthenticated();
+                    }
                 }
             }
 
-            if (PriorHandler != null)
+            if (PriorHandler != null && !handled)
             {
                 await PriorHandler.AuthenticateAsync(context);
             }
         }
 
-        protected Task<AuthenticationTicket> HandleAuthenticateOnceAsync()
+        protected Task<AuthenticateResult> HandleAuthenticateOnceAsync()
         {
             if (_authenticateTask == null)
             {
@@ -221,18 +233,17 @@ namespace Microsoft.AspNet.Authentication
             return _authenticateTask;
         }
 
-        protected abstract Task<AuthenticationTicket> HandleAuthenticateAsync();
+        protected abstract Task<AuthenticateResult> HandleAuthenticateAsync();
 
         public async Task SignInAsync(SignInContext context)
         {
-            if (ShouldHandleScheme(context.AuthenticationScheme))
+            if (ShouldHandleScheme(context.AuthenticationScheme, handleAutomatic: false))
             {
                 SignInAccepted = true;
                 await HandleSignInAsync(context);
                 context.Accept();
             }
-
-            if (PriorHandler != null)
+            else if (PriorHandler != null)
             {
                 await PriorHandler.SignInAsync(context);
             }
@@ -245,14 +256,13 @@ namespace Microsoft.AspNet.Authentication
 
         public async Task SignOutAsync(SignOutContext context)
         {
-            if (ShouldHandleScheme(context.AuthenticationScheme))
+            if (ShouldHandleScheme(context.AuthenticationScheme, handleAutomatic: false))
             {
                 SignOutAccepted = true;
                 await HandleSignOutAsync(context);
                 context.Accept();
             }
-
-            if (PriorHandler != null)
+            else if (PriorHandler != null)
             {
                 await PriorHandler.SignOutAsync(context);
             }
@@ -263,10 +273,6 @@ namespace Microsoft.AspNet.Authentication
             return Task.FromResult(0);
         }
 
-        /// <summary>
-        /// </summary>
-        /// <param name="context"></param>
-        /// <returns>True if no other handlers should be called</returns>
         protected virtual Task<bool> HandleForbiddenAsync(ChallengeContext context)
         {
             Response.StatusCode = 403;
@@ -288,24 +294,20 @@ namespace Microsoft.AspNet.Authentication
 
         public async Task ChallengeAsync(ChallengeContext context)
         {
-            bool handled = false;
             ChallengeCalled = true;
-            if (ShouldHandleScheme(context.AuthenticationScheme))
+            var handled = false;
+            if (ShouldHandleScheme(context.AuthenticationScheme, Options.AutomaticChallenge))
             {
                 switch (context.Behavior)
                 {
                     case ChallengeBehavior.Automatic:
                         // If there is a principal already, invoke the forbidden code path
-                        var ticket = await HandleAuthenticateOnceAsync();
-                        if (ticket?.Principal != null)
+                        var result = await HandleAuthenticateOnceAsync();
+                        if (result?.Ticket?.Principal != null)
                         {
-                            handled = await HandleForbiddenAsync(context);
+                            goto case ChallengeBehavior.Forbidden;
                         }
-                        else
-                        {
-                            handled = await HandleUnauthorizedAsync(context);
-                        }
-                        break;
+                        goto case ChallengeBehavior.Unauthorized;
                     case ChallengeBehavior.Unauthorized:
                         handled = await HandleUnauthorizedAsync(context);
                         break;

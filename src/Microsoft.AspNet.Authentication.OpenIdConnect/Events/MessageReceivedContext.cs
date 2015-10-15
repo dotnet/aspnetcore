@@ -6,14 +6,12 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace Microsoft.AspNet.Authentication.OpenIdConnect
 {
-    public class MessageReceivedContext : BaseControlContext<OpenIdConnectOptions>
+    public class MessageReceivedContext : BaseOpenIdConnectContext
     {
         public MessageReceivedContext(HttpContext context, OpenIdConnectOptions options)
             : base(context, options)
         {
         }
-
-        public OpenIdConnectMessage ProtocolMessage { get; set; }
 
         /// <summary>
         /// Bearer Token. This will give application an opportunity to retrieve token from an alternation location.

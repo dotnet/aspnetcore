@@ -78,6 +78,10 @@ namespace Microsoft.AspNet.Authentication.Twitter
             {
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, nameof(Options.ConsumerKey)));
             }
+            if (!Options.CallbackPath.HasValue)
+            {
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, nameof(Options.CallbackPath)));
+            }
 
             if (Options.Events == null)
             {

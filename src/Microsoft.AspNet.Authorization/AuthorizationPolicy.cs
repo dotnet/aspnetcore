@@ -9,16 +9,16 @@ namespace Microsoft.AspNet.Authorization
 {
     public class AuthorizationPolicy
     {
-        public AuthorizationPolicy(IEnumerable<IAuthorizationRequirement> requirements, IEnumerable<string> activeAuthenticationSchemes)
+        public AuthorizationPolicy(IEnumerable<IAuthorizationRequirement> requirements, IEnumerable<string> authenticationSchemes)
         {
             if (requirements == null)
             {
                 throw new ArgumentNullException(nameof(requirements));
             }
 
-            if (activeAuthenticationSchemes == null)
+            if (authenticationSchemes == null)
             {
-                throw new ArgumentNullException(nameof(activeAuthenticationSchemes));
+                throw new ArgumentNullException(nameof(authenticationSchemes));
             }
 
             if (requirements.Count() == 0)
@@ -26,11 +26,11 @@ namespace Microsoft.AspNet.Authorization
                 throw new InvalidOperationException(Resources.Exception_AuthorizationPolicyEmpty);
             }
             Requirements = new List<IAuthorizationRequirement>(requirements).AsReadOnly();
-            ActiveAuthenticationSchemes = new List<string>(activeAuthenticationSchemes).AsReadOnly();
+            AuthenticationSchemes = new List<string>(authenticationSchemes).AsReadOnly();
         }
 
         public IReadOnlyList<IAuthorizationRequirement> Requirements { get; }
-        public IReadOnlyList<string> ActiveAuthenticationSchemes { get; }
+        public IReadOnlyList<string> AuthenticationSchemes { get; }
 
         public static AuthorizationPolicy Combine(params AuthorizationPolicy[] policies)
         {
@@ -96,7 +96,7 @@ namespace Microsoft.AspNet.Authorization
                 {
                     foreach (var authType in authTypesSplit)
                     {
-                        policyBuilder.ActiveAuthenticationSchemes.Add(authType);
+                        policyBuilder.AuthenticationSchemes.Add(authType);
                     }
                 }
                 if (useDefaultPolicy)

@@ -21,7 +21,7 @@ namespace CookieSample
 
             app.UseCookieAuthentication(options =>
             {
-                options.AutomaticAuthentication = true;
+                options.AutomaticAuthenticate = true;
             });
 
             app.Run(async context =>

@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.Authentication
             await handler.InitializeAsync(Options, context, Logger, UrlEncoder);
             try
             {
-                if (!await handler.InvokeAsync())
+                if (!await handler.HandleRequestAsync())
                 {
                     await _next(context);
                 }
@@ -84,7 +84,6 @@ namespace Microsoft.AspNet.Authentication
                 }
                 throw;
             }
-            await handler.TeardownAsync();
         }
 
         protected abstract AuthenticationHandler<TOptions> CreateHandler();

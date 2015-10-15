@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Authentication.OAuth
     /// <summary>
     /// Contains information about the login session as well as the user <see cref="System.Security.Claims.ClaimsIdentity"/>.
     /// </summary>
-    public class OAuthCreatingTicketContext : BaseContext<OAuthOptions>
+    public class OAuthCreatingTicketContext : BaseContext
     {
         /// <summary>
         /// Initializes a new <see cref="OAuthCreatingTicketContext"/>.
@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.Authentication.OAuth
             HttpClient backchannel,
             OAuthTokenResponse tokens,
             JObject user)
-            : base(context, options)
+            : base(context)
         {
             if (context == null)
             {
@@ -76,7 +76,10 @@ namespace Microsoft.AspNet.Authentication.OAuth
             TokenResponse = tokens;
             Backchannel = backchannel;
             User = user;
+            Options = options;
         }
+
+        public OAuthOptions Options { get; }
 
         /// <summary>
         /// Gets the JSON-serialized user or an empty

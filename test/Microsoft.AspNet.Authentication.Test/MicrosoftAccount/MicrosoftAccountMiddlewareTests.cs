@@ -182,7 +182,7 @@ namespace Microsoft.AspNet.Authentication.Tests.MicrosoftAccount
                 app.UseCookieAuthentication(options =>
                 {
                     options.AuthenticationScheme = TestExtensions.CookieAuthenticationScheme;
-                    options.AutomaticAuthentication = true;
+                    options.AutomaticAuthenticate = true;
                 });
                 app.UseMicrosoftAccountAuthentication(configureOptions);
 
