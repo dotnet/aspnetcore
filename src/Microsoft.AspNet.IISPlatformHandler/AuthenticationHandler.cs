@@ -6,6 +6,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Http.Features.Authentication;
 
 namespace Microsoft.AspNet.IISPlatformHandler
@@ -121,7 +122,7 @@ namespace Microsoft.AspNet.IISPlatformHandler
 
         private bool ShouldHandleScheme(string authenticationScheme)
         {
-            if (Options.AutomaticAuthentication && string.IsNullOrEmpty(authenticationScheme))
+            if (Options.AutomaticAuthentication && string.Equals(AuthenticationManager.AutomaticScheme, authenticationScheme, StringComparison.Ordinal))
             {
                 return true;
             }

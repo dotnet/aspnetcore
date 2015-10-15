@@ -1,8 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Authentication;
 using Microsoft.Extensions.Logging;
 
 namespace TestSites
@@ -12,6 +14,26 @@ namespace TestSites
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {
             loggerFactory.AddConsole();
+
+            app.Use(async (context, next) =>
+            {
+                try
+                {
+                    await next();
+                }
+                catch (Exception ex)
+                {
+                    if (context.Response.HasStarted)
+                    {
+                        throw;
+                    }
+
+                    context.Response.Clear();
+                    context.Response.StatusCode = 500;
+                    await context.Response.WriteAsync(ex.ToString());
+                }
+            });
+
             app.UseIISPlatformHandler();
             app.Use((context, next) =>
             {
@@ -34,7 +56,7 @@ namespace TestSites
 
                 if (context.Request.Path.Equals("/Forbidden"))
                 {
-                    return context.Authentication.ForbidAsync(string.Empty);
+                    return context.Authentication.ForbidAsync(AuthenticationManager.AutomaticScheme);
                 }
 
                 if (context.Request.Path.Equals("/AutoForbid"))
