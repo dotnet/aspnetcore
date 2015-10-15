@@ -79,12 +79,14 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <inheritdoc />
-        protected override void OnFormatting(ActionContext context)
+        public override void OnFormatting(ActionContext context)
         {
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
+
+            base.OnFormatting(context);
 
             context.HttpContext.Response.Headers[HeaderNames.Location] = Location;
         }

@@ -35,7 +35,12 @@ namespace Microsoft.AspNet.Mvc.Formatters
         {
             var response = context.HttpContext.Response;
             response.ContentLength = 0;
-            response.StatusCode = context.StatusCode ?? StatusCodes.Status204NoContent;
+
+            if (response.StatusCode == StatusCodes.Status200OK)
+            {
+                response.StatusCode = StatusCodes.Status204NoContent;
+            }
+
             return Task.FromResult(true);
         }
     }

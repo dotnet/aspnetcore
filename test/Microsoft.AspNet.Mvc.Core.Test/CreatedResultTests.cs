@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
@@ -10,7 +11,9 @@ using Microsoft.AspNet.Mvc.Formatters;
 using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.WebUtilities;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.OptionsModel;
 using Moq;
 using Xunit;
@@ -79,36 +82,26 @@ namespace Microsoft.AspNet.Mvc
 
         private static HttpContext GetHttpContext()
         {
-            var httpContext = new Mock<HttpContext>();
-            var realContext = new DefaultHttpContext();
-            var request = realContext.Request;
-            request.PathBase = new PathString("");
-            var response = realContext.Response;
-            response.Body = new MemoryStream();
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.PathBase = new PathString("");
+            httpContext.Response.Body = new MemoryStream();
+            httpContext.RequestServices = CreateServices();
+            return httpContext;
+        }
 
-            httpContext.Setup(o => o.Request)
-                       .Returns(request);
-            httpContext.Setup(o => o.Response)
-                       .Returns(response);
-            var optionsAccessor = new TestOptionsManager<MvcOptions>();
-            optionsAccessor.Value.OutputFormatters.Add(new StringOutputFormatter());
-            optionsAccessor.Value.OutputFormatters.Add(new JsonOutputFormatter());
-            httpContext
-                .Setup(p => p.RequestServices.GetService(typeof(IOptions<MvcOptions>)))
-                .Returns(optionsAccessor);
-            httpContext
-                .Setup(p => p.RequestServices.GetService(typeof(ILogger<ObjectResult>)))
-                .Returns(new Mock<ILogger<ObjectResult>>().Object);
+        private static IServiceProvider CreateServices()
+        {
+            var options = new TestOptionsManager<MvcOptions>();
+            options.Value.OutputFormatters.Add(new StringOutputFormatter());
+            options.Value.OutputFormatters.Add(new JsonOutputFormatter());
 
-            var actionBindingContext = new ActionBindingContext()
-            {
-                OutputFormatters = optionsAccessor.Value.OutputFormatters
-            };
-            httpContext
-                .Setup(o => o.RequestServices.GetService(typeof(IActionBindingContextAccessor)))
-                .Returns(new ActionBindingContextAccessor() { ActionBindingContext = actionBindingContext });
+            var services = new ServiceCollection();
+            services.AddInstance(new ObjectResultExecutor(
+                options,
+                new ActionBindingContextAccessor(),
+                NullLoggerFactory.Instance));
 
-            return httpContext.Object;
+            return services.BuildServiceProvider();
         }
     }
 }

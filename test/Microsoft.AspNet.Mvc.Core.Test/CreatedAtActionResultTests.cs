@@ -13,7 +13,9 @@ using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.OptionsModel;
 using Moq;
 using Xunit;
@@ -68,17 +70,6 @@ namespace Microsoft.AspNet.Mvc
             "No route matches the supplied values.");
         }
 
-        private static HttpResponse GetMockedHttpResponseObject()
-        {
-            var stream = new MemoryStream();
-            var httpResponse = new Mock<HttpResponse>();
-            httpResponse.SetupProperty(o => o.StatusCode);
-            httpResponse.Setup(o => o.Headers).Returns(
-                new HeaderDictionary());
-            httpResponse.SetupGet(o => o.Body).Returns(stream);
-            return httpResponse.Object;
-        }
-
         private static ActionContext GetActionContext(HttpContext httpContext)
         {
             var routeData = new RouteData();
@@ -88,32 +79,28 @@ namespace Microsoft.AspNet.Mvc
                                     routeData,
                                     new ActionDescriptor());
         }
-
         private static HttpContext GetHttpContext()
         {
             var httpContext = new DefaultHttpContext();
             httpContext.Request.PathBase = new PathString("");
             httpContext.Response.Body = new MemoryStream();
-
-            var services = new Mock<IServiceProvider>();
-            httpContext.RequestServices = services.Object;
-
-            var optionsAccessor = new TestOptionsManager<MvcOptions>();
-            optionsAccessor.Value.OutputFormatters.Add(new StringOutputFormatter());
-            optionsAccessor.Value.OutputFormatters.Add(new JsonOutputFormatter());
-            services.Setup(p => p.GetService(typeof(IOptions<MvcOptions>)))
-                .Returns(optionsAccessor);
-            services.Setup(s => s.GetService(typeof(ILogger<ObjectResult>)))
-                       .Returns(new Mock<ILogger<ObjectResult>>().Object);
-
-            var actionBindingContext = new ActionBindingContext
-            {
-                OutputFormatters = optionsAccessor.Value.OutputFormatters
-            };
-            services.Setup(o => o.GetService(typeof(IActionBindingContextAccessor)))
-                    .Returns(new ActionBindingContextAccessor() { ActionBindingContext = actionBindingContext });
-
+            httpContext.RequestServices = CreateServices();
             return httpContext;
+        }
+
+        private static IServiceProvider CreateServices()
+        {
+            var options = new TestOptionsManager<MvcOptions>();
+            options.Value.OutputFormatters.Add(new StringOutputFormatter());
+            options.Value.OutputFormatters.Add(new JsonOutputFormatter());
+
+            var services = new ServiceCollection();
+            services.AddInstance(new ObjectResultExecutor(
+                options,
+                new ActionBindingContextAccessor(),
+                NullLoggerFactory.Instance));
+
+            return services.BuildServiceProvider();
         }
 
         private static IUrlHelper GetMockUrlHelper(string returnValue)

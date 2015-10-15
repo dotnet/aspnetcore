@@ -69,26 +69,17 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal(StatusCodes.Status200OK, httpContext.Response.StatusCode);
         }
 
-        private IServiceProvider CreateServices()
+        private static IServiceProvider CreateServices()
         {
+            var options = new TestOptionsManager<MvcOptions>();
+            options.Value.OutputFormatters.Add(new StringOutputFormatter());
+            options.Value.OutputFormatters.Add(new JsonOutputFormatter());
+
             var services = new ServiceCollection();
-            services.Add(new ServiceDescriptor(
-                typeof(ILogger<ObjectResult>),
-                new Logger<ObjectResult>(NullLoggerFactory.Instance)));
-
-            var optionsAccessor = new TestOptionsManager<MvcOptions>();
-            optionsAccessor.Value.OutputFormatters.Add(new JsonOutputFormatter());
-            services.Add(new ServiceDescriptor(typeof(IOptions<MvcOptions>), optionsAccessor));
-
-            var bindingContext = new ActionBindingContext
-            {
-                OutputFormatters = optionsAccessor.Value.OutputFormatters,
-            };
-            var bindingContextAccessor = new ActionBindingContextAccessor
-            {
-                ActionBindingContext = bindingContext,
-            };
-            services.Add(new ServiceDescriptor(typeof(IActionBindingContextAccessor), bindingContextAccessor));
+            services.AddInstance(new ObjectResultExecutor(
+                options,
+                new ActionBindingContextAccessor(),
+                NullLoggerFactory.Instance));
 
             return services.BuildServiceProvider();
         }

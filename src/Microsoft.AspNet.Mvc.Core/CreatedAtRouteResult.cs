@@ -61,12 +61,14 @@ namespace Microsoft.AspNet.Mvc
         public IDictionary<string, object> RouteValues { get; set; }
 
         /// <inheritdoc />
-        protected override void OnFormatting(ActionContext context)
+        public override void OnFormatting(ActionContext context)
         {
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
+
+            base.OnFormatting(context);
 
             var urlHelper = UrlHelper ?? context.HttpContext.RequestServices.GetRequiredService<IUrlHelper>();
 

@@ -141,6 +141,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IHttpResponseStreamWriterFactory, MemoryPoolHttpResponseStreamWriterFactory>();
             services.TryAddSingleton<IArraySegmentPool<byte>, DefaultArraySegmentPool<byte>>();
             services.TryAddSingleton<IArraySegmentPool<char>, DefaultArraySegmentPool<char>>();
+            services.TryAddSingleton<ObjectResultExecutor>();
         }
 
         private static void ConfigureDefaultServices(IServiceCollection services)

@@ -39,10 +39,6 @@ namespace Microsoft.AspNet.Mvc.Formatters
         /// </summary>
         public MediaTypeHeaderValue SelectedContentType { get; set; }
 
-        /// <summary>
-        /// Gets the status code that should be used for the response when successfully formatting.
-        /// </summary>
-        public int? StatusCode { get; set; }
 
         /// <summary>
         /// Gets or sets a flag to indicate that content-negotiation could not find a formatter based on the 

@@ -3,18 +3,13 @@
 
 using System;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
-using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.Formatters;
 using Microsoft.AspNet.Mvc.Infrastructure;
-using Microsoft.AspNet.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.OptionsModel;
-using Moq;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc
@@ -46,80 +41,43 @@ namespace Microsoft.AspNet.Mvc
         public async Task HttpNotFoundObjectResult_ExecuteSuccessful()
         {
             // Arrange
-            var input = "Test Content";
-            var stream = new MemoryStream();
-
-            var httpResponse = new Mock<HttpResponse>();
-            var tempContentType = string.Empty;
-            httpResponse.SetupProperty(o => o.ContentType);
-            httpResponse.SetupGet(r => r.Body).Returns(stream);
-
-            var actionContext = CreateMockActionContext(httpResponse.Object);
-            var notFound = new HttpNotFoundObjectResult(input);
-
-            // Act
-            await notFound.ExecuteResultAsync(actionContext);
-
-            // Assert
-            httpResponse.VerifySet(r => r.StatusCode = StatusCodes.Status404NotFound);
-            Assert.Equal(input.Length, httpResponse.Object.Body.Length);
-        }
-
-        private static ActionContext CreateMockActionContext(
-            HttpResponse response = null,
-            string requestAcceptHeader = "application/*",
-            string requestContentType = "application/json",
-            string requestAcceptCharsetHeader = "",
-            bool respectBrowserAcceptHeader = false)
-        {
-            var httpContext = new Mock<HttpContext>();
-            if (response != null)
+            var httpContext = GetHttpContext();
+            var actionContext = new ActionContext()
             {
-                httpContext.Setup(o => o.Response).Returns(response);
-            }
-
-            var content = "{name: 'Person Name', Age: 'not-an-age'}";
-            var contentBytes = Encoding.UTF8.GetBytes(content);
-
-            var request = new DefaultHttpContext().Request;
-            request.Headers["Accept-Charset"] = requestAcceptCharsetHeader;
-            request.Headers["Accept"] = requestAcceptHeader;
-            request.ContentType = requestContentType;
-            request.Body = new MemoryStream(contentBytes);
-
-            httpContext.Setup(o => o.Request).Returns(request);
-            httpContext.Setup(o => o.RequestServices).Returns(GetServiceProvider());
-            var optionsAccessor = new TestOptionsManager<MvcOptions>();
-            optionsAccessor.Value.OutputFormatters.Add(new StringOutputFormatter());
-            optionsAccessor.Value.OutputFormatters.Add(new JsonOutputFormatter());
-            optionsAccessor.Value.RespectBrowserAcceptHeader = respectBrowserAcceptHeader;
-            var actionBindingContextAccessor = new ActionBindingContextAccessor()
-            {
-                ActionBindingContext = new ActionBindingContext()
-                {
-                    OutputFormatters = optionsAccessor.Value.OutputFormatters
-                }
+                HttpContext = httpContext,
             };
 
-            httpContext.Setup(o => o.RequestServices.GetService(typeof(IActionBindingContextAccessor)))
-                       .Returns(actionBindingContextAccessor);
-            httpContext.Setup(o => o.RequestServices.GetService(typeof(IOptions<MvcOptions>)))
-                .Returns(optionsAccessor);
-            httpContext.Setup(o => o.RequestServices.GetService(typeof(ILogger<ObjectResult>)))
-                .Returns(new Mock<ILogger<ObjectResult>>().Object);
+            var result = new HttpNotFoundObjectResult("Test Content");
+            
+            // Act
+            await result.ExecuteResultAsync(actionContext);
 
-            return new ActionContext(httpContext.Object, new RouteData(), new ActionDescriptor());
+            // Assert
+            Assert.Equal(StatusCodes.Status404NotFound, httpContext.Response.StatusCode);
         }
 
-        private static IServiceProvider GetServiceProvider()
+        private static HttpContext GetHttpContext()
         {
-            var options = new MvcOptions();
-            var optionsAccessor = new Mock<IOptions<MvcOptions>>();
-            optionsAccessor.SetupGet(o => o.Value).Returns(options);
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.PathBase = new PathString("");
+            httpContext.Response.Body = new MemoryStream();
+            httpContext.RequestServices = CreateServices();
+            return httpContext;
+        }
 
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddInstance(optionsAccessor.Object);
-            return serviceCollection.BuildServiceProvider();
+        private static IServiceProvider CreateServices()
+        {
+            var options = new TestOptionsManager<MvcOptions>();
+            options.Value.OutputFormatters.Add(new StringOutputFormatter());
+            options.Value.OutputFormatters.Add(new JsonOutputFormatter());
+
+            var services = new ServiceCollection();
+            services.AddInstance(new ObjectResultExecutor(
+                options,
+                new ActionBindingContextAccessor(),
+                NullLoggerFactory.Instance));
+
+            return services.BuildServiceProvider();
         }
     }
 }
