@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
@@ -85,9 +86,9 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
         public bool RefreshOnIssuerKeyNotFound { get; set; } = true;
 
         /// <summary>
-        /// Used to know what the current clock time is when calculating or validating token expiration. When not assigned default is based on
-        /// DateTimeOffset.UtcNow. This is typically needed only for unit testing.
+        /// For testing purposes only.
         /// </summary>
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public ISystemClock SystemClock { get; set; } = new SystemClock();
 
         /// <summary>

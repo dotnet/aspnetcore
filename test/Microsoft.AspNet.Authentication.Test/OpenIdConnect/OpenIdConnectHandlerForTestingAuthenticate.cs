@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
     /// </summary>
     public class OpenIdConnectHandlerForTestingAuthenticate : OpenIdConnectHandler
     {
-        public OpenIdConnectHandlerForTestingAuthenticate() : base(null)
+        public OpenIdConnectHandlerForTestingAuthenticate() : base(null, null)
         {
         }
 

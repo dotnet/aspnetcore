@@ -39,7 +39,8 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             IUrlEncoder encoder,
             IServiceProvider services,
             IOptions<SharedAuthenticationOptions> sharedOptions,
-            OpenIdConnectOptions options)
+            OpenIdConnectOptions options,
+            IHtmlEncoder htmlEncoder)
             : base(next, options, loggerFactory, encoder)
         {
             if (next == null)
@@ -77,6 +78,11 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 throw new ArgumentNullException(nameof(options));
             }
 
+            if (htmlEncoder == null)
+            {
+                throw new ArgumentNullException(nameof(htmlEncoder));
+            }
+
             if (!Options.CallbackPath.HasValue)
             {
                 throw new ArgumentException("Options.CallbackPath must be provided.");
@@ -91,10 +97,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 throw new ArgumentException("Options.SignInScheme is required.");
             }
 
-            if (Options.HtmlEncoder == null)
-            {
-                Options.HtmlEncoder = services.GetHtmlEncoder();
-            }
+            HtmlEncoder = htmlEncoder;
 
             if (Options.StateDataFormat == null)
             {
@@ -170,13 +173,15 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
 
         protected HttpClient Backchannel { get; private set; }
 
+        protected IHtmlEncoder HtmlEncoder { get; private set; }
+
         /// <summary>
         /// Provides the <see cref="AuthenticationHandler"/> object for processing authentication-related requests.
         /// </summary>
         /// <returns>An <see cref="AuthenticationHandler"/> configured with the <see cref="OpenIdConnectOptions"/> supplied to the constructor.</returns>
         protected override AuthenticationHandler<OpenIdConnectOptions> CreateHandler()
         {
-            return new OpenIdConnectHandler(Backchannel);
+            return new OpenIdConnectHandler(Backchannel, HtmlEncoder);
         }
 
         private class StringSerializer : IDataSerializer<string>

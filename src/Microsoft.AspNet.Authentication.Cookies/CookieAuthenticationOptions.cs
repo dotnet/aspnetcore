@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNet.Http;
 using Microsoft.Extensions.OptionsModel;
@@ -133,9 +134,9 @@ namespace Microsoft.AspNet.Authentication.Cookies
         public ISecureDataFormat<AuthenticationTicket> TicketDataFormat { get; set; }
 
         /// <summary>
-        /// The SystemClock provides access to the system's current time coordinates. If it is not provided a default instance is
-        /// used which calls DateTimeOffset.UtcNow. This is typically not replaced except for unit testing. 
+        /// For testing purposes only.
         /// </summary>
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public ISystemClock SystemClock { get; set; }
 
         /// <summary>

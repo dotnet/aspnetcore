@@ -62,18 +62,16 @@ namespace Microsoft.AspNet.Authentication
                 return false;
             }
 
-            if (context.Principal != null)
+            await Context.Authentication.SignInAsync(Options.SignInScheme, context.Principal, context.Properties);
+
+            // Default redirect path is the base path
+            if (string.IsNullOrEmpty(context.ReturnUri))
             {
-                await Context.Authentication.SignInAsync(Options.SignInScheme, context.Principal, context.Properties);
+                context.ReturnUri = "/";
             }
 
-            if (context.ReturnUri != null)
-            {
-                Response.Redirect(context.ReturnUri);
-                return true;
-            }
-
-            return false;
+            Response.Redirect(context.ReturnUri);
+            return true;
         }
 
         protected abstract Task<AuthenticateResult> HandleRemoteAuthenticateAsync();

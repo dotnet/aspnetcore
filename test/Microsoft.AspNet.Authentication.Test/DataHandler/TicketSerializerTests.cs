@@ -14,22 +14,6 @@ namespace Microsoft.AspNet.Authentication
     public class TicketSerializerTests
     {
         [Fact]
-        public void NullPrincipalThrows()
-        {
-            var serializer = new TicketSerializer();
-            var properties = new AuthenticationProperties();
-            properties.RedirectUri = "bye";
-            var ticket = new AuthenticationTicket(properties, "Hello");
-
-            using (var stream = new MemoryStream())
-            using (var writer = new BinaryWriter(stream))
-            using (var reader = new BinaryReader(stream))
-            {
-                Assert.Throws<ArgumentNullException>(() => serializer.Write(writer, ticket));
-            }
-        }
-
-        [Fact]
         public void CanRoundTripEmptyPrincipal()
         {
             var serializer = new TicketSerializer();

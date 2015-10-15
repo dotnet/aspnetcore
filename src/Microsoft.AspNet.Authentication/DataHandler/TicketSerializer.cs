@@ -53,13 +53,8 @@ namespace Microsoft.AspNet.Authentication
             writer.Write(FormatVersion);
             writer.Write(ticket.AuthenticationScheme);
 
-            var principal = ticket.Principal;
-            if (principal == null)
-            {
-                throw new ArgumentNullException("model.Principal");
-            }
-
             // Write the number of identities contained in the principal.
+            var principal = ticket.Principal;
             writer.Write(principal.Identities.Count());
 
             foreach (var identity in principal.Identities)

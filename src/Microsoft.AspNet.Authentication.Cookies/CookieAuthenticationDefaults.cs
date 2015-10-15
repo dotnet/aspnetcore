@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
         /// <summary>
         /// The prefix used to provide a default CookieAuthenticationOptions.CookieName
         /// </summary>
-        public const string CookiePrefix = ".AspNet.";
+        public static readonly string CookiePrefix = ".AspNet.";
 
         /// <summary>
         /// The default value used by CookieAuthenticationMiddleware for the
@@ -45,6 +45,6 @@ namespace Microsoft.AspNet.Authentication.Cookies
         /// <summary>
         /// The default value of the CookieAuthenticationOptions.ReturnUrlParameter
         /// </summary>
-        public const string ReturnUrlParameter = "ReturnUrl";
+        public static readonly string ReturnUrlParameter = "ReturnUrl";
     }
 }

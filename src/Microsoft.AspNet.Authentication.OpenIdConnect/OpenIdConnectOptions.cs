@@ -88,12 +88,6 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         public IConfigurationManager<OpenIdConnectConfiguration> ConfigurationManager { get; set; }
 
         /// <summary>
-        /// Gets or sets a value controlling if the 'CurrentUri' should be used as the 'local redirect' post authentication
-        /// if AuthenticationProperties.RedirectUri is null or empty.
-        /// </summary>
-        public bool DefaultToCurrentUriOnRedirect { get; set; }
-
-        /// <summary>
         /// Boolean to set whether the middleware should go to user info endpoint to retrieve additional claims or not after creating an identity from id_token received from token endpoint.
         /// </summary>
         public bool GetClaimsFromUserInfoEndpoint { get; set; }
@@ -202,10 +196,5 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         /// You can set this property to <c>false</c> to reduce the size of the final authentication cookie.
         /// </summary>
         public bool SaveTokensAsClaims { get; set; } = true;
-
-        /// <summary>
-        /// Gets or sets the <see cref="IHtmlEncoder"/> used to sanitize HTML outputs.
-        /// </summary>
-        public IHtmlEncoder HtmlEncoder { get; set; }
     }
 }

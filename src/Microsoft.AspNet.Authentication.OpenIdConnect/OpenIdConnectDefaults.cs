@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         /// <summary>
         /// Constant used to identify state in openIdConnect protocol message.
         /// </summary>
-        public const string AuthenticationPropertiesKey = "OpenIdConnect.AuthenticationProperties";
+        public static readonly string AuthenticationPropertiesKey = "OpenIdConnect.AuthenticationProperties";
 
         /// <summary>
         /// The default value used for OpenIdConnectOptions.AuthenticationScheme.
@@ -21,26 +21,26 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         /// <summary>
         /// The default value for OpenIdConnectOptions.Caption.
         /// </summary>
-        public const string Caption = "OpenIdConnect";
+        public static readonly string Caption = "OpenIdConnect";
 
         /// <summary>
         /// The prefix used to for the nonce in the cookie.
         /// </summary>
-        public const string CookieNoncePrefix = ".AspNet.OpenIdConnect.Nonce.";
+        public static readonly string CookieNoncePrefix = ".AspNet.OpenIdConnect.Nonce.";
 
         /// <summary>
         /// The prefix used for the state in the cookie.
         /// </summary>
-        public const string CookieStatePrefix = ".AspNet.OpenIdConnect.State.";
+        public static readonly string CookieStatePrefix = ".AspNet.OpenIdConnect.State.";
 
         /// <summary>
         /// The property for the RedirectUri that was used when asking for a 'authorizationCode'.
         /// </summary>
-        public const string RedirectUriForCodePropertiesKey = "OpenIdConnect.Code.RedirectUri";
+        public static readonly string RedirectUriForCodePropertiesKey = "OpenIdConnect.Code.RedirectUri";
 
         /// <summary>
         /// Constant used to identify userstate inside AuthenticationProperties that have been serialized in the 'state' parameter.
         /// </summary>
-        public const string UserstatePropertiesKey = "OpenIdConnect.Userstate";
+        public static readonly string UserstatePropertiesKey = "OpenIdConnect.Userstate";
     }
 }

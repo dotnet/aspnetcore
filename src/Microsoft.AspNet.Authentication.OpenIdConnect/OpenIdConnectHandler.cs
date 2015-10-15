@@ -17,6 +17,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Http.Features.Authentication;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.WebEncoders;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json.Linq;
@@ -52,9 +53,12 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
 
         protected HttpClient Backchannel { get; private set; }
 
-        public OpenIdConnectHandler(HttpClient backchannel)
+        protected IHtmlEncoder HtmlEncoder { get; private set; }
+
+        public OpenIdConnectHandler(HttpClient backchannel, IHtmlEncoder htmlEncoder)
         {
             Backchannel = backchannel;
+            HtmlEncoder = htmlEncoder;
         }
 
         /// <summary>
@@ -129,14 +133,14 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                     var inputs = new StringBuilder();
                     foreach (var parameter in message.Parameters)
                     {
-                        var name = Options.HtmlEncoder.HtmlEncode(parameter.Key);
-                        var value = Options.HtmlEncoder.HtmlEncode(parameter.Value);
+                        var name = HtmlEncoder.HtmlEncode(parameter.Key);
+                        var value = HtmlEncoder.HtmlEncode(parameter.Value);
 
                         var input = string.Format(CultureInfo.InvariantCulture, InputTagFormat, name, value);
                         inputs.AppendLine(input);
                     }
 
-                    var issuer = Options.HtmlEncoder.HtmlEncode(message.IssuerAddress);
+                    var issuer = HtmlEncoder.HtmlEncode(message.IssuerAddress);
 
                     var content = string.Format(CultureInfo.InvariantCulture, HtmlFormFormat, issuer, inputs);
                     var buffer = Encoding.UTF8.GetBytes(content);
@@ -170,18 +174,14 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
 
             // order for local RedirectUri
             // 1. challenge.Properties.RedirectUri
-            // 2. CurrentUri if Options.DefaultToCurrentUriOnRedirect is true)
+            // 2. CurrentUri if RedirectUri is not set)
             var properties = new AuthenticationProperties(context.Properties);
 
-            if (!string.IsNullOrEmpty(properties.RedirectUri))
+            if (string.IsNullOrEmpty(properties.RedirectUri))
             {
-                Logger.LogDebug(Resources.OIDCH_0030_Using_Properties_RedirectUri, properties.RedirectUri);
-            }
-            else if (Options.DefaultToCurrentUriOnRedirect)
-            {
-                Logger.LogDebug(Resources.OIDCH_0032_UsingCurrentUriRedirectUri, CurrentUri);
                 properties.RedirectUri = CurrentUri;
             }
+            Logger.LogDebug(Resources.OIDCH_0030_Using_Properties_RedirectUri, properties.RedirectUri);
 
             if (_configuration == null && Options.ConfigurationManager != null)
             {
@@ -270,14 +270,14 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 var inputs = new StringBuilder();
                 foreach (var parameter in message.Parameters)
                 {
-                    var name = Options.HtmlEncoder.HtmlEncode(parameter.Key);
-                    var value = Options.HtmlEncoder.HtmlEncode(parameter.Value);
+                    var name = HtmlEncoder.HtmlEncode(parameter.Key);
+                    var value = HtmlEncoder.HtmlEncode(parameter.Value);
 
                     var input = string.Format(CultureInfo.InvariantCulture, InputTagFormat, name, value);
                     inputs.AppendLine(input);
                 }
 
-                var issuer = Options.HtmlEncoder.HtmlEncode(message.IssuerAddress);
+                var issuer = HtmlEncoder.HtmlEncode(message.IssuerAddress);
 
                 var content = string.Format(CultureInfo.InvariantCulture, HtmlFormFormat, issuer, inputs);
                 var buffer = Encoding.UTF8.GetBytes(content);

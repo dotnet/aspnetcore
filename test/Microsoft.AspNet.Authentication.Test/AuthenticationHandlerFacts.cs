@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
@@ -98,7 +99,7 @@ namespace Microsoft.AspNet.Authentication
             protected override Task<AuthenticateResult> HandleAuthenticateAsync()
             {
                 AuthCount++;
-                return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(new Http.Authentication.AuthenticationProperties(), "whatever")));
+                return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(new ClaimsPrincipal(), new AuthenticationProperties(), "whatever")));
             }
 
         }
@@ -122,7 +123,7 @@ namespace Microsoft.AspNet.Authentication
 
             protected override Task<AuthenticateResult> HandleAuthenticateAsync()
             {
-                return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(new Http.Authentication.AuthenticationProperties(), "whatever")));
+                return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(new ClaimsPrincipal(), new AuthenticationProperties(), "whatever")));
             }
         }
 
@@ -156,7 +157,7 @@ namespace Microsoft.AspNet.Authentication
 
             protected override Task<AuthenticateResult> HandleAuthenticateAsync()
             {
-                return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(new Http.Authentication.AuthenticationProperties(), "whatever")));
+                return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(new ClaimsPrincipal(), new AuthenticationProperties(), "whatever")));
             }
         }
 

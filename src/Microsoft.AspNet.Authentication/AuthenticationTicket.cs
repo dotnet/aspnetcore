@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Security.Claims;
 using Microsoft.AspNet.Http.Authentication;
 
@@ -14,18 +15,15 @@ namespace Microsoft.AspNet.Authentication
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthenticationTicket"/> class
         /// </summary>
-        /// <param name="properties">additional properties that can be consumed by the user or runtime.</param>
-        /// <param name="authenticationScheme">the authentication middleware that was responsible for this ticket.</param>
-        public AuthenticationTicket(AuthenticationProperties properties, string authenticationScheme) : this(null, properties, authenticationScheme) { }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AuthenticationTicket"/> class
-        /// </summary>
         /// <param name="principal">the <see cref="ClaimsPrincipal"/> that represents the authenticated user.</param>
         /// <param name="properties">additional properties that can be consumed by the user or runtime.</param>
         /// <param name="authenticationScheme">the authentication middleware that was responsible for this ticket.</param>
         public AuthenticationTicket(ClaimsPrincipal principal, AuthenticationProperties properties, string authenticationScheme)
         {
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
             AuthenticationScheme = authenticationScheme;
             Principal = principal;
             Properties = properties ?? new AuthenticationProperties();

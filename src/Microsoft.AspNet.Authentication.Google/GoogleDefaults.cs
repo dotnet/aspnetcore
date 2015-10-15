@@ -7,10 +7,10 @@ namespace Microsoft.AspNet.Authentication.Google
     {
         public const string AuthenticationScheme = "Google";
 
-        public const string AuthorizationEndpoint = "https://accounts.google.com/o/oauth2/auth";
+        public static readonly string AuthorizationEndpoint = "https://accounts.google.com/o/oauth2/auth";
 
-        public const string TokenEndpoint = "https://accounts.google.com/o/oauth2/token";
+        public static readonly string TokenEndpoint = "https://accounts.google.com/o/oauth2/token";
 
-        public const string UserInformationEndpoint = "https://www.googleapis.com/plus/v1/people/me";
+        public static readonly string UserInformationEndpoint = "https://www.googleapis.com/plus/v1/people/me";
     }
 }
