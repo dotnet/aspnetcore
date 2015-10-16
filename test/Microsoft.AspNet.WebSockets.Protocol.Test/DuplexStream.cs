@@ -93,6 +93,7 @@ namespace Microsoft.AspNet.WebSockets.Protocol.Test
             return _readStream.Read(buffer, offset, count);
         }
 
+#if !DNXCORE50
         public override int ReadByte()
         {
             return _readStream.ReadByte();
@@ -117,6 +118,7 @@ namespace Microsoft.AspNet.WebSockets.Protocol.Test
         {
             return _readStream.CopyToAsync(destination, bufferSize, cancellationToken);
         }
+#endif
 
 #endregion Read
 
@@ -127,6 +129,7 @@ namespace Microsoft.AspNet.WebSockets.Protocol.Test
             _writeStream.Write(buffer, offset, count);
         }
 
+#if !DNXCORE50
         public override void WriteByte(byte value)
         {
             _writeStream.WriteByte(value);
@@ -147,14 +150,15 @@ namespace Microsoft.AspNet.WebSockets.Protocol.Test
             return _writeStream.WriteAsync(buffer, offset, count, cancellationToken);
         }
 
-        public override void Flush()
-        {
-            _writeStream.Flush();
-        }
-
         public override Task FlushAsync(CancellationToken cancellationToken)
         {
             return _writeStream.FlushAsync(cancellationToken);
+        }
+#endif
+
+        public override void Flush()
+        {
+            _writeStream.Flush();
         }
 
 #endregion Write

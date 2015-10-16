@@ -138,6 +138,7 @@ namespace Microsoft.AspNet.WebSockets.Protocol.Test
             }
         }
 
+#if !DNXCORE50
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             // TODO: This option doesn't preserve the state object.
@@ -197,6 +198,7 @@ namespace Microsoft.AspNet.WebSockets.Protocol.Test
                 _readLock.Release();
             }
         }
+#endif
 
         // Write with count 0 will still trigger OnFirstWrite
         public override void Write(byte[] buffer, int offset, int count)
@@ -224,6 +226,7 @@ namespace Microsoft.AspNet.WebSockets.Protocol.Test
             }
         }
 
+#if !DNXCORE50
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             Write(buffer, offset, count);
@@ -254,6 +257,7 @@ namespace Microsoft.AspNet.WebSockets.Protocol.Test
             Write(buffer, offset, count);
             return Task.FromResult<object>(null);
         }
+#endif
 
         private static void VerifyBuffer(byte[] buffer, int offset, int count, bool allowEmpty)
         {
