@@ -31,8 +31,12 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
 
             return sb.ToString();
         }
+        public string Protect(AuthenticationProperties data, string purpose)
+        {
+            return Protect(data);
+        }
 
-        AuthenticationProperties ISecureDataFormat<AuthenticationProperties>.Unprotect(string protectedText)
+        public AuthenticationProperties Unprotect(string protectedText)
         {
             if (string.IsNullOrEmpty(protectedText))
             {
@@ -57,6 +61,11 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             }
 
             return propeties;
+        }
+
+        public AuthenticationProperties Unprotect(string protectedText, string purpose)
+        {
+            return Unprotect(protectedText);
         }
     }
 }

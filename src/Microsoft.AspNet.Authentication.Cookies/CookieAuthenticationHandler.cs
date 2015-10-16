@@ -8,6 +8,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
+using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Features.Authentication;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
@@ -45,7 +46,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
                 return null;
             }
 
-            var ticket = Options.TicketDataFormat.Unprotect(cookie);
+            var ticket = Options.TicketDataFormat.Unprotect(cookie, GetTlsTokenBinding());
             if (ticket == null)
             {
                 Logger.LogWarning(@"Unprotect ticket failed");
@@ -175,7 +176,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
                     ticket = new AuthenticationTicket(principal, null, Options.AuthenticationScheme);
                 }
 
-                var cookieValue = Options.TicketDataFormat.Protect(ticket);
+                var cookieValue = Options.TicketDataFormat.Protect(ticket, GetTlsTokenBinding());
 
                 var cookieOptions = BuildCookieOptions();
                 if (ticket.Properties.IsPersistent && _renewExpiresUtc.HasValue)
@@ -244,7 +245,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
                         Options.ClaimsIssuer));
                 ticket = new AuthenticationTicket(principal, null, Options.AuthenticationScheme);
             }
-            var cookieValue = Options.TicketDataFormat.Protect(ticket);
+            var cookieValue = Options.TicketDataFormat.Protect(ticket, GetTlsTokenBinding());
 
             Options.CookieManager.AppendResponseCookie(
                 Context,
@@ -356,6 +357,12 @@ namespace Microsoft.AspNet.Authentication.Cookies
             await Options.Events.RedirectToLogin(redirectContext);
             return true;
 
+        }
+
+        private string GetTlsTokenBinding()
+        {
+            var binding = Context.Features.Get<ITlsTokenBindingFeature>()?.GetProvidedTokenBindingId();
+            return binding == null ? null : Convert.ToBase64String(binding);
         }
     }
 }
