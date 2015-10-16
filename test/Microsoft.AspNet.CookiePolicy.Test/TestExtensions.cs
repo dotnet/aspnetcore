@@ -61,14 +61,8 @@ namespace Microsoft.AspNet.CookiePolicy
                         new XAttribute("issuer", claim.Issuer))));
                 }
             }
-            using (var memory = new MemoryStream())
-            {
-                using (var writer = new XmlTextWriter(memory, Encoding.UTF8))
-                {
-                    xml.WriteTo(writer);
-                }
-                res.Body.Write(memory.ToArray(), 0, memory.ToArray().Length);
-            }
+            var xmlBytes = Encoding.UTF8.GetBytes(xml.ToString());
+            res.Body.Write(xmlBytes, 0, xmlBytes.Length);
         }
     }
 }

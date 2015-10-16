@@ -126,7 +126,7 @@ namespace Microsoft.AspNet.Authentication.Tests.MicrosoftAccount
                                     refresh_token = "Test Refresh Token"
                                 });
                             }
-                            else if (req.RequestUri.GetLeftPart(UriPartial.Path) == "https://apis.live.net/v5.0/me")
+                            else if (req.RequestUri.GetComponents(UriComponents.SchemeAndServer | UriComponents.Path, UriFormat.UriEscaped) == "https://apis.live.net/v5.0/me")
                             {
                                 return ReturnJsonResponse(new
                                 {

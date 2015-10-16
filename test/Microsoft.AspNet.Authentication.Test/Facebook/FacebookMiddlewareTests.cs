@@ -176,7 +176,7 @@ namespace Microsoft.AspNet.Authentication.Facebook
                         {
                             Sender = req =>
                             {
-                                if (req.RequestUri.GetLeftPart(UriPartial.Path) == FacebookDefaults.TokenEndpoint)
+                                if (req.RequestUri.GetComponents(UriComponents.SchemeAndServer | UriComponents.Path, UriFormat.UriEscaped) == FacebookDefaults.TokenEndpoint)
                                 {
                                     var res = new HttpResponseMessage(HttpStatusCode.OK);
                                     var tokenResponse = new Dictionary<string, string>
@@ -186,8 +186,8 @@ namespace Microsoft.AspNet.Authentication.Facebook
                                     res.Content = new FormUrlEncodedContent(tokenResponse);
                                     return res;
                                 }
-                                if (req.RequestUri.GetLeftPart(UriPartial.Path) ==
-                                    new Uri(customUserInfoEndpoint).GetLeftPart(UriPartial.Path))
+                                if (req.RequestUri.GetComponents(UriComponents.SchemeAndServer | UriComponents.Path, UriFormat.UriEscaped) ==
+                                    new Uri(customUserInfoEndpoint).GetComponents(UriComponents.SchemeAndServer | UriComponents.Path, UriFormat.UriEscaped))
                                 {
                                     finalUserInfoEndpoint = req.RequestUri.ToString();
                                     var res = new HttpResponseMessage(HttpStatusCode.OK);

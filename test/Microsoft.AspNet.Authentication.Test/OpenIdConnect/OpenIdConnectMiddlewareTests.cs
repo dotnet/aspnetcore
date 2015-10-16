@@ -19,7 +19,6 @@ using Microsoft.AspNet.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.WebEncoders;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
@@ -151,23 +150,42 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
 
         private static void SetProtocolMessageOptions(OpenIdConnectOptions options)
         {
-            var mockOpenIdConnectMessage = new Mock<OpenIdConnectMessage>();
-            mockOpenIdConnectMessage.Setup(m => m.CreateAuthenticationRequestUrl()).Returns(ExpectedAuthorizeRequest);
-            mockOpenIdConnectMessage.Setup(m => m.CreateLogoutRequestUrl()).Returns(ExpectedLogoutRequest);
+            var fakeOpenIdRequestMessage = new FakeOpenIdConnectMessage(ExpectedAuthorizeRequest, ExpectedLogoutRequest);
             options.AutomaticChallenge = true;
             options.Events = new OpenIdConnectEvents()
             {
                 OnRedirectToAuthenticationEndpoint = (context) =>
                 {
-                    context.ProtocolMessage = mockOpenIdConnectMessage.Object;
-                    return Task.FromResult<object>(null);
+                    context.ProtocolMessage = fakeOpenIdRequestMessage;
+                    return Task.FromResult(0);
                 },
                 OnRedirectToEndSessionEndpoint = (context) =>
                 {
-                    context.ProtocolMessage = mockOpenIdConnectMessage.Object;
-                    return Task.FromResult<object>(null);
+                    context.ProtocolMessage = fakeOpenIdRequestMessage;
+                    return Task.FromResult(0);
                 }
             };
+        }
+        private class FakeOpenIdConnectMessage : OpenIdConnectMessage
+        {
+            private readonly string _authorizeRequest;
+            private readonly string _logoutRequest;
+
+            public FakeOpenIdConnectMessage(string authorizeRequest, string logoutRequest)
+            {
+                _authorizeRequest = authorizeRequest;
+                _logoutRequest = logoutRequest;
+            }
+
+            public override string CreateAuthenticationRequestUrl()
+            {
+                return _authorizeRequest;
+            }
+
+            public override string CreateLogoutRequestUrl()
+            {
+                return _logoutRequest;
+            }
         }
 
         /// <summary>

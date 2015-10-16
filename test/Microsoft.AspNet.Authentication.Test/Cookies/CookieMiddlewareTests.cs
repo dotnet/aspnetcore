@@ -1020,14 +1020,8 @@ namespace Microsoft.AspNet.Authentication.Cookies
             {
                 xml.Add(result.Properties.Select(extra => new XElement("extra", new XAttribute("type", extra.Key), new XAttribute("value", extra.Value))));
             }
-            using (var memory = new MemoryStream())
-            {
-                using (var writer = new XmlTextWriter(memory, Encoding.UTF8))
-                {
-                    xml.WriteTo(writer);
-                }
-                res.Body.Write(memory.ToArray(), 0, memory.ToArray().Length);
-            }
+            var xmlBytes = Encoding.UTF8.GetBytes(xml.ToString());
+            res.Body.Write(xmlBytes, 0, xmlBytes.Length);
         }
 
         private static async Task<Transaction> SendAsync(TestServer server, string uri, string cookieHeader = null)
