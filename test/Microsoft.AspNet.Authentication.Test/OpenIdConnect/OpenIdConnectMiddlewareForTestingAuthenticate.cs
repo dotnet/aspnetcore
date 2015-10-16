@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
         OpenIdConnectHandler _handler;
 
         public OpenIdConnectMiddlewareForTestingAuthenticate(
-            RequestDelegate next,            
+            RequestDelegate next,
             IDataProtectionProvider dataProtectionProvider,
             ILoggerFactory loggerFactory,
             IUrlEncoder encoder,
@@ -34,9 +34,6 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
         : base(next, dataProtectionProvider, loggerFactory, encoder, services, sharedOptions, options, htmlEncoder)
         {
             _handler = handler;
-            var customFactory = loggerFactory as InMemoryLoggerFactory;
-            if (customFactory != null)
-                Logger = customFactory.Logger;
         }
 
         protected override AuthenticationHandler<OpenIdConnectOptions> CreateHandler()

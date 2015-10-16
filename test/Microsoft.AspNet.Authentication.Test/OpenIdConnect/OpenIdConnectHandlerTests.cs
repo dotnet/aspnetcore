@@ -14,7 +14,6 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.WebEncoders;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Xunit;
@@ -29,29 +28,6 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
         private const string nonceForOpenIdConnect = "abc";
         private static SecurityToken specCompliantOpenIdConnect = new JwtSecurityToken("issuer", "audience", new List<Claim> { new Claim("iat", EpochTime.GetIntDate(DateTime.UtcNow).ToString()), new Claim("nonce", nonceForOpenIdConnect) }, DateTime.UtcNow, DateTime.UtcNow + TimeSpan.FromDays(1));
         private const string ExpectedStateParameter = "expectedState";
-
-        /// <summary>
-        /// Sanity check that logging is filtering, hi / low water marks are checked
-        /// </summary>
-        [Fact]
-        public void LoggingLevel()
-        {
-            var logger = new InMemoryLogger(LogLevel.Debug);
-            Assert.True(logger.IsEnabled(LogLevel.Critical));
-            Assert.True(logger.IsEnabled(LogLevel.Debug));
-            Assert.True(logger.IsEnabled(LogLevel.Error));
-            Assert.True(logger.IsEnabled(LogLevel.Information));
-            Assert.True(logger.IsEnabled(LogLevel.Verbose));
-            Assert.True(logger.IsEnabled(LogLevel.Warning));
-
-            logger = new InMemoryLogger(LogLevel.Critical);
-            Assert.True(logger.IsEnabled(LogLevel.Critical));
-            Assert.False(logger.IsEnabled(LogLevel.Debug));
-            Assert.False(logger.IsEnabled(LogLevel.Error));
-            Assert.False(logger.IsEnabled(LogLevel.Information));
-            Assert.False(logger.IsEnabled(LogLevel.Verbose));
-            Assert.False(logger.IsEnabled(LogLevel.Warning));
-        }
 
         [Theory, MemberData(nameof(AuthenticateCoreStateDataSet))]
         public async Task AuthenticateCoreState(Action<OpenIdConnectOptions> action, OpenIdConnectMessage message)
