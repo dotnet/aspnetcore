@@ -274,9 +274,9 @@ namespace Microsoft.AspNet.Diagnostics.Tests
         }
 
         [Theory]
-        [InlineData(null)]
         [InlineData("")]
-        public async Task UpdatesTraceIdentifier_IfNullOrEmpty(string requestId)
+        // Note that HttpRequestIdentifierFeature now provides a default TraceIdentifier and will never return null.
+        public async Task UpdatesTraceIdentifier_IfEmpty(string requestId)
         {
             var context = new DefaultHttpContext();
             var requestIdentifierFeature = new HttpRequestIdentifierFeature() { TraceIdentifier = requestId };
