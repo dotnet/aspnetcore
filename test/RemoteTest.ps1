@@ -14,7 +14,7 @@ Write-Host "Test folder:  $serverFolder"
 $projectName = (get-item $projectFile).Directory.Name
 Write-Host "Test project: $projectName"
 
-Invoke-Expression "..\tools\BundleAndDeploy.ps1 -projectFile $projectFile -server $server -serverFolder $serverFolder -userName $userName -password $password"
+Invoke-Expression "..\tools\BundleAndDeploy.ps1 -projectFile $projectFile -server $server -serverFolder $serverFolder -userName $userName -password `"$password`""
 
 $pass = ConvertTo-SecureString $password -AsPlainText -Force
 $cred = New-Object System.Management.Automation.PSCredential ($userName, $pass);
@@ -28,7 +28,7 @@ $remoteScript = {
     dir 
     $env:DNX_TRACE=1
     
-    $output = & .\test.cmd 2>&1
+    $output = & .\approot\test.cmd 2>&1
     $output
     $lastexitcode
 }
@@ -38,8 +38,10 @@ $remoteJob = Invoke-Command -ComputerName $server -Credential $cred -ScriptBlock
 Wait-Job $remoteJob
 Write-Host "<<<< Remote execution code completed >>>>"
 
+Write-Host ">>>> Remote execution output <<<<"
 $remoteResult = Receive-Job $remoteJob
 $remoteResult
+Write-Host "<<<< End of remote execution output >>>>"
 
 $finalExitCode = $remoteResult[$remoteResult.Length-1]
 exit $finalExitCode
