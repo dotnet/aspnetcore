@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved. 
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
+using LocalizationWebsite.Models;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,7 +21,8 @@ namespace LocalizationWebsite
             IApplicationBuilder app,
             ILoggerFactory loggerFactory,
             IStringLocalizerFactory stringLocalizerFactory,
-            IStringLocalizer<StartupResourcesAtRootFolder> startupStringLocalizer)
+            IStringLocalizer<StartupResourcesAtRootFolder> startupStringLocalizer,
+            IStringLocalizer<Customer> customerStringLocalizer)
         {
             loggerFactory.AddConsole(minLevel: LogLevel.Warning);
 
@@ -33,6 +35,8 @@ namespace LocalizationWebsite
                 await context.Response.WriteAsync(startupStringLocalizer["Hello"]);
                 await context.Response.WriteAsync(" ");
                 await context.Response.WriteAsync(stringLocalizer["Hello"]);
+                await context.Response.WriteAsync(" ");
+                await context.Response.WriteAsync(customerStringLocalizer["Hello"]);
             });
         }
     }

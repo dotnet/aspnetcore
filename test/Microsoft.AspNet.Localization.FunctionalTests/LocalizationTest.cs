@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Localization.FunctionalTests
                 applicationBaseUrl,
                 "ResourcesInFolder",
                 "fr-FR",
-                "Bonjour from StartupResourcesInFolder Bonjour from Test in resources folder");
+                "Bonjour from StartupResourcesInFolder Bonjour from Test in resources folder Bonjour from Customer in resources folder");
         }
 
         [ConditionalTheory]
@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.Localization.FunctionalTests
                 applicationBaseUrl,
                 "ResourcesInFolder",
                 "fr-FR",
-                "Bonjour from StartupResourcesInFolder Bonjour from Test in resources folder");
+                "Bonjour from StartupResourcesInFolder Bonjour from Test in resources folder Bonjour from Customer in resources folder");
         }
 
         [ConditionalTheory]
@@ -66,7 +66,7 @@ namespace Microsoft.AspNet.Localization.FunctionalTests
                 applicationBaseUrl,
                 "ResourcesAtRootFolder",
                 "fr-FR",
-                "Bonjour from StartupResourcesAtRootFolder Bonjour from Test in root folder");
+                "Bonjour from StartupResourcesAtRootFolder Bonjour from Test in root folder Bonjour from Customer in root folder");
         }
 
         [ConditionalTheory]
@@ -85,7 +85,7 @@ namespace Microsoft.AspNet.Localization.FunctionalTests
                 applicationBaseUrl,
                 "ResourcesAtRootFolder",
                 "fr-FR",
-                "Bonjour from StartupResourcesAtRootFolder Bonjour from Test in root folder");
+                "Bonjour from StartupResourcesAtRootFolder Bonjour from Test in root folder Bonjour from Customer in root folder");
         }
     }
 }
