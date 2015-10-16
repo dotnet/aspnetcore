@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
         }
 
         [TestPriority(-1000)]
-        [ConditionalTheory]
+        [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void DropDatabaseStart()
         {
@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             return builder;
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task EnsureStartupUsageWorks()
         {
@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             IdentityResultAssert.IsSuccess(await userManager.DeleteAsync(user));
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task CanIncludeUserClaimsTest()
         {
@@ -107,7 +107,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             Assert.Equal(10, user.Claims.Count());
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task CanIncludeUserLoginsTest()
         {
@@ -135,7 +135,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             Assert.Equal(10, user.Logins.Count());
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task CanIncludeUserRolesTest()
         {
@@ -177,7 +177,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             }
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task CanIncludeRoleClaimsTest()
         {
@@ -206,7 +206,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
         }
 
         [TestPriority(10000)]
-        [ConditionalTheory]
+        [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void DropDatabaseDone()
         {

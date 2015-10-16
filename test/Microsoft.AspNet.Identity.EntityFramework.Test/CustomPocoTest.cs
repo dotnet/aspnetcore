@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
         }
 
         [TestPriority(-1000)]
-        [ConditionalTheory]
+        [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void DropDatabaseStart()
         {
@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
         }
 
         [TestPriority(10000)]
-        [ConditionalTheory]
+        [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void DropDatabaseDone()
         {
@@ -66,7 +66,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             db.Database.EnsureDeleted();
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task CanUpdateNameGuid()
         {
@@ -84,7 +84,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             }
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task CanUpdateNameString()
         {
@@ -102,7 +102,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             }
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task CanCreateUserInt()
         {
@@ -118,7 +118,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             }
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task CanCreateUserIntViaSet()
         {
@@ -135,7 +135,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             }
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task CanUpdateNameInt()
         {
@@ -153,7 +153,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             }
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task CanUpdateNameIntWithSet()
         {

@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
 
 
         [TestPriority(-1000)]
-        [ConditionalTheory]
+        [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void DropDatabaseStart()
         {
@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
         }
 
         [TestPriority(10000)]
-        [ConditionalTheory]
+        [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void DropDatabaseDone()
         {
@@ -111,7 +111,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             CreateContext();
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void EnsureDefaultSchema()
         {
@@ -180,7 +180,58 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             }
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        public async Task DeleteRoleNonEmptySucceedsTest()
+        {
+            // Need fail if not empty?
+            var context = CreateTestContext();
+            var userMgr = CreateManager(context);
+            var roleMgr = CreateRoleManager(context);
+            var roleName = "delete" + Guid.NewGuid().ToString();
+            var role = CreateTestRole(roleName, useRoleNamePrefixAsRoleName: true);
+            Assert.False(await roleMgr.RoleExistsAsync(roleName));
+            IdentityResultAssert.IsSuccess(await roleMgr.CreateAsync(role));
+            var user = CreateTestUser();
+            IdentityResultAssert.IsSuccess(await userMgr.CreateAsync(user));
+            IdentityResultAssert.IsSuccess(await userMgr.AddToRoleAsync(user, roleName));
+            var roles = await userMgr.GetRolesAsync(user);
+            Assert.Equal(1, roles.Count());
+            IdentityResultAssert.IsSuccess(await roleMgr.DeleteAsync(role));
+            Assert.Null(await roleMgr.FindByNameAsync(roleName));
+            Assert.False(await roleMgr.RoleExistsAsync(roleName));
+            // REVIEW: We should throw if deleteing a non empty role?
+            roles = await userMgr.GetRolesAsync(user);
+
+            Assert.Equal(0, roles.Count());
+        }
+
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        public async Task DeleteUserRemovesFromRoleTest()
+        {
+            // Need fail if not empty?
+            var userMgr = CreateManager();
+            var roleMgr = CreateRoleManager();
+            var roleName = "deleteUserRemove" + Guid.NewGuid().ToString();
+            var role = CreateTestRole(roleName, useRoleNamePrefixAsRoleName: true);
+            Assert.False(await roleMgr.RoleExistsAsync(roleName));
+            IdentityResultAssert.IsSuccess(await roleMgr.CreateAsync(role));
+            var user = CreateTestUser();
+            IdentityResultAssert.IsSuccess(await userMgr.CreateAsync(user));
+            IdentityResultAssert.IsSuccess(await userMgr.AddToRoleAsync(user, roleName));
+
+            var roles = await userMgr.GetRolesAsync(user);
+            Assert.Equal(1, roles.Count());
+
+            IdentityResultAssert.IsSuccess(await userMgr.DeleteAsync(user));
+
+            roles = await userMgr.GetRolesAsync(user);
+            Assert.Equal(0, roles.Count());
+        }
+
+
+        [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void CanCreateUserUsingEF()
         {
@@ -194,7 +245,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             }
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task CanCreateUsingManager()
         {
@@ -228,7 +279,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             }
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task LoadFromDbFindByIdTest()
         {
@@ -245,7 +296,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             Assert.Equal(2, (await manager.GetRolesAsync(userById)).Count);
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task LoadFromDbFindByNameTest()
         {
@@ -261,7 +312,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             Assert.Equal(2, (await manager.GetRolesAsync(userByName)).Count);
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task LoadFromDbFindByLoginTest()
         {
@@ -277,7 +328,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             Assert.Equal(2, (await manager.GetRolesAsync(userByLogin)).Count);
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task LoadFromDbFindByEmailTest()
         {
