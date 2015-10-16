@@ -360,7 +360,7 @@ var buildTarget = "compile"
 
                 if (IsMono)
                 {
-                    Exec("build.sh", buildTarget, repo);
+                    Exec(Path.Combine(repo, "build.sh"), buildTarget, repo);
                 }
                 else
                 {
@@ -419,7 +419,7 @@ var buildTarget = "compile"
         {
             if (IsMono)
             {
-                Exec("build.sh", "install", repo);
+                Exec(Path.Combine(repo, "build.sh"), "install", repo);
             }
             else
             {
