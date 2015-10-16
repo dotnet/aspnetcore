@@ -44,8 +44,7 @@ See the instructions on the ASP.NET 5 Documentation site: [Installing ASP.NET 5 
 
 ## Linux
 
-* [Debian, Ubuntu and derivatives see here](GettingStartedDeb.md)
-* **CentOS, Fedora and derivatives don't currently have a separate guide. We should have one soon. The commands are mostly the same, with some differences to account for the different package manager**
+See the instructions on the ASP.NET 5 Documentation site: [Installing ASP.NET 5 on Linux](https://docs.asp.net/en/latest/getting-started/installing-on-linux.html)
 
 # Running an application
 
@@ -71,7 +70,7 @@ You should also be able to run `dnx` and see the help text of the `dnx` command.
     - For the console app run  `dnx run`.
     - For the web apps run `dnx kestrel`.
 6. You should see the output of the console app or a message that says the site is now started.
-7. You can navigate to the web apps in a browser by navigating to `http://localhost:5001` or `http://localhost:5004` if running on OS X/Linux.
+7. You can navigate to the web apps in a browser by navigating to `http://localhost:5004`
 
 # Documentation and Further Learning
 
