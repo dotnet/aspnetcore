@@ -46,6 +46,16 @@ namespace Microsoft.AspNet.Diagnostics.Views
         protected IHtmlEncoder HtmlEncoder { get; set; }
 
         /// <summary>
+        /// Url encoder used to encode content.
+        /// </summary>
+        protected IUrlEncoder UrlEncoder { get; set; }
+
+        /// <summary>
+        /// JavaScript encoder used to encode content.
+        /// </summary>
+        protected IJavaScriptStringEncoder JavaScriptStringEncoder { get; set; }
+
+        /// <summary>
         /// Execute an individual request
         /// </summary>
         /// <param name="context"></param>
@@ -56,6 +66,8 @@ namespace Microsoft.AspNet.Diagnostics.Views
             Response = Context.Response;
             Output = new StreamWriter(Response.Body, Encoding.UTF8, 4096, leaveOpen: true);
             HtmlEncoder = context.ApplicationServices.GetHtmlEncoder();
+            UrlEncoder = context.ApplicationServices.GetUrlEncoder();
+            JavaScriptStringEncoder = context.ApplicationServices.GetJavaScriptStringEncoder();
             await ExecuteAsync();
             Output.Dispose();
         }

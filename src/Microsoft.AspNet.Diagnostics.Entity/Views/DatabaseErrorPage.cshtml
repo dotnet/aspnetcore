@@ -1,29 +1,24 @@
 ﻿@using System
 @using System.Linq
-@using JetBrains.Annotations;
 @using Microsoft.AspNet.Diagnostics.Entity
-@using Microsoft.AspNet.Diagnostics.Entity.Utilities;
 @using Microsoft.AspNet.Diagnostics.Entity.Views
 @{
     Response.StatusCode = 500;
-    // TODO: Response.ReasonPhrase = "Internal Server Error";
     Response.ContentType = "text/html";
     Response.ContentLength = null; // Clear any prior Content-Length
 }
 @functions
 {
-    private DatabaseErrorPageModel _model;
+    public DatabaseErrorPageModel Model { get; set; }
 
-    public virtual DatabaseErrorPageModel Model
+    public string UrlEncode(string content)
     {
-        get { return _model; }
-        [param: NotNull]
-        set
-        {
-            Check.NotNull(value, "value");
+        return UrlEncoder.UrlEncode(content);
+    }
 
-            _model = value;
-        }
+    public string JavaScriptEncode(string content)
+    {
+        return JavaScriptStringEncoder.JavaScriptStringEncode(content);
     }
 }
 <!DOCTYPE html>
@@ -34,7 +29,6 @@
     <title>Internal Server Error</title>
     <style>
             <%$ include: ErrorPage.css %>
-            @string.Empty
     </style>
 </head>
 <body>
@@ -74,6 +68,50 @@
                         <li>@migration</li>
                     }
                 </ul>
+            }
+
+            @if (Model.Options.EnableMigrationCommands)
+            {
+                <p>
+                    <button id="applyMigrations" onclick="ApplyMigrations()">@Strings.DatabaseErrorPage_ApplyMigrationsButton</button>
+                    <span id="applyMigrationsError" class="error"></span>
+                    <span id="applyMigrationsSuccess"></span>
+                </p>
+                <script>
+                    function ApplyMigrations() {
+                        applyMigrations.disabled = true;
+                        applyMigrationsError.innerHTML = "";
+                        applyMigrations.innerHTML = "@JavaScriptEncode(Strings.DatabaseErrorPage_ApplyMigrationsButtonRunning)";
+
+                        var req = new XMLHttpRequest();
+
+                        req.onload = function (e) {
+                            if (req.status === 204) {
+                                applyMigrations.innerHTML = "@JavaScriptEncode(Strings.DatabaseErrorPage_ApplyMigrationsButtonDone)";
+                                applyMigrationsSuccess.innerHTML = "@JavaScriptEncode(Strings.DatabaseErrorPage_MigrationsAppliedRefresh)";
+                            } else {
+                                ErrorApplyingMigrations();
+                            }
+                        };
+
+                        req.onerror = function (e) {
+                            ErrorApplyingMigrations();
+                        };
+
+                        var formBody = "context=@JavaScriptEncode(UrlEncode(Model.ContextType.AssemblyQualifiedName))";
+                        req.open("POST", "@JavaScriptEncode(Model.Options.MigrationsEndPointPath.Value)", true);
+                        req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                        req.setRequestHeader("Content-length", formBody.length);
+                        req.setRequestHeader("Connection", "close");
+                        req.send(formBody);
+                    }
+
+                    function ErrorApplyingMigrations() {
+                        applyMigrations.innerHTML = "@JavaScriptEncode(Strings.DatabaseErrorPage_ApplyMigrationsButton)";
+                        applyMigrationsError.innerHTML = "@JavaScriptEncode(Strings.DatabaseErrorPage_ApplyMigrationsFailed)";
+                        applyMigrations.disabled = false;
+                    }
+                </script>
             }
 
             <p>@Strings.DatabaseErrorPage_HowToApplyFromCmd</p>

@@ -132,8 +132,23 @@
   <data name="DatabaseErrorPage_AddMigrationCommand" xml:space="preserve">
     <value>&gt; dnx ef migrations add [migration name]</value>
   </data>
+  <data name="DatabaseErrorPage_ApplyMigrationsButton" xml:space="preserve">
+    <value>Apply Migrations</value>
+  </data>
+  <data name="DatabaseErrorPage_ApplyMigrationsButtonDone" xml:space="preserve">
+    <value>Migrations Applied</value>
+  </data>
+  <data name="DatabaseErrorPage_ApplyMigrationsButtonRunning" xml:space="preserve">
+    <value>Applying Migrations...</value>
+  </data>
+  <data name="DatabaseErrorPage_ApplyMigrationsFailed" xml:space="preserve">
+    <value>An error occurred applying migrations, try applying them from the command line</value>
+  </data>
   <data name="DatabaseErrorPage_HowToApplyFromCmd" xml:space="preserve">
     <value>You can also apply migrations from the command line:</value>
+  </data>
+  <data name="DatabaseErrorPage_MigrationsAppliedRefresh" xml:space="preserve">
+    <value>Try refreshing the page</value>
   </data>
   <data name="DatabaseErrorPage_NoDbOrMigrationsInfo" xml:space="preserve">
     <value>From the command line, scaffold a new migration and apply it to the database:</value>
@@ -158,6 +173,27 @@
   </data>
   <data name="InvalidEnumValue" xml:space="preserve">
     <value>The value provided for argument '{argumentName}' must be a valid value of enum type '{enumType}'.</value>
+  </data>
+  <data name="MigrationsEndPointMiddleware_Applied" xml:space="preserve">
+    <value>Migrations successfully applied for context '{0}'.</value>
+  </data>
+  <data name="MigrationsEndPointMiddleware_ApplyingMigrations" xml:space="preserve">
+    <value>Request is valid, applying migrations for context '{0}'.</value>
+  </data>
+  <data name="MigrationsEndPointMiddleware_ContextNotRegistered" xml:space="preserve">
+    <value>The context type '{0}' was not found in services. This usually means the context was not registered in services during startup. You probably want to call AddScoped&lt;{0}&gt;() inside the UseServices(...) call in your application startup code.</value>
+  </data>
+  <data name="MigrationsEndPointMiddleware_Exception" xml:space="preserve">
+    <value>An error occurred while applying the migrations for '{0}'. See InnerException for details.</value>
+  </data>
+  <data name="MigrationsEndPointMiddleware_InvalidContextType" xml:space="preserve">
+    <value>The context type '{0}' could not be loaded. Ensure this is the correct type name for the context you are trying to apply migrations for.</value>
+  </data>
+  <data name="MigrationsEndPointMiddleware_NoContextType" xml:space="preserve">
+    <value>No context type was specified. Ensure the form data from the request includes a contextTypeName value, specifying the context to apply migrations for.</value>
+  </data>
+  <data name="MigrationsEndPointMiddleware_RequestPathMatched" xml:space="preserve">
+    <value>Request path matched the path configured for this migrations endpoint ({0}). Attempting to process the migrations request.</value>
   </data>
   <data name="DatabaseErrorPage_Title" xml:space="preserve">
     <value>A database operation failed while processing the request.</value>

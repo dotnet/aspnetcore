@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Net;
@@ -17,6 +18,7 @@ using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.WebEncoders;
 using Xunit;
 
 namespace Microsoft.AspNet.Diagnostics.Entity.Tests
@@ -121,12 +123,10 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 
             public virtual Task Invoke(HttpContext context)
             {
-                using (var db = context.ApplicationServices.GetService<BloggingContext>())
-                {
-                    db.Blogs.Add(new Blog());
-                    db.SaveChanges();
-                    throw new Exception("SaveChanges should have thrown");
-                }
+                var db = context.ApplicationServices.GetService<BloggingContext>();
+                db.Blogs.Add(new Blog());
+                db.SaveChanges();
+                throw new Exception("SaveChanges should have thrown");
             }
         }
 
@@ -155,12 +155,10 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 
             public virtual Task Invoke(HttpContext context)
             {
-                using (var db = context.ApplicationServices.GetService<BloggingContextWithMigrations>())
-                {
-                    db.Blogs.Add(new Blog());
-                    db.SaveChanges();
-                    throw new Exception("SaveChanges should have thrown");
-                }
+                var db = context.ApplicationServices.GetService<BloggingContextWithMigrations>();
+                db.Blogs.Add(new Blog());
+                db.SaveChanges();
+                throw new Exception("SaveChanges should have thrown");
             }
         }
 
@@ -186,19 +184,104 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 
             public virtual Task Invoke(HttpContext context)
             {
-                using (var db = context.ApplicationServices.GetService<BloggingContextWithPendingModelChanges>())
-                {
+                var db = context.ApplicationServices.GetService<BloggingContextWithPendingModelChanges>();
                     db.Database.Migrate();
 
                     db.Blogs.Add(new Blog());
                     db.SaveChanges();
                     throw new Exception("SaveChanges should have thrown");
-                }
             }
         }
 
         [ConditionalTheory]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        public async Task Error_page_then_apply_migrations()
+        {
+            TestServer server = SetupTestServer<BloggingContextWithMigrations, ApplyMigrationsMiddleware>();
+            var client = server.CreateClient();
+
+            var expectedMigrationsEndpoint = "/ApplyDatabaseMigrations";
+            var expectedContextType = typeof(BloggingContextWithMigrations).AssemblyQualifiedName;
+
+            // Step One: Initial request with database failure
+            HttpResponseMessage response = await client.GetAsync("http://localhost/");
+            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+            var content = await response.Content.ReadAsStringAsync();
+
+            // Ensure the url we're going to test is what the page is using in it's JavaScript
+            var javaScriptEncoder = new JavaScriptStringEncoder();
+            Assert.Contains("req.open(\"POST\", \"" + JavaScriptEncode(expectedMigrationsEndpoint) + "\", true);", content);
+            Assert.Contains("var formBody = \"context=" + JavaScriptEncode(UrlEncode(expectedContextType)) + "\";", content);
+
+            // Step Two: Request to migrations endpoint
+            var formData = new FormUrlEncodedContent(new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>("context", expectedContextType)
+            });
+
+            response = await client.PostAsync("http://localhost" + expectedMigrationsEndpoint, formData);
+            content = await response.Content.ReadAsStringAsync();
+            Console.WriteLine(content);
+            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+
+            // Step Three: Successful request after migrations applied
+            response = await client.GetAsync("http://localhost/");
+            content = await response.Content.ReadAsStringAsync();
+            Assert.Equal("Saved a Blog", content);
+        }
+
+        class ApplyMigrationsMiddleware
+        {
+            public ApplyMigrationsMiddleware(RequestDelegate next)
+            { }
+
+            public virtual async Task Invoke(HttpContext context)
+            {
+                var db = context.ApplicationServices.GetService<BloggingContextWithMigrations>();
+                db.Blogs.Add(new Blog());
+                db.SaveChanges();
+                await context.Response.WriteAsync("Saved a Blog");
+            }
+        }
+
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        public async Task Customize_migrations_end_point()
+        {
+            var migrationsEndpoint = "/MyCustomEndPoints/ApplyMyMigrationsHere";
+
+            using (var database = SqlServerTestStore.CreateScratch())
+            {
+                var server = TestServer.Create(app =>
+                {
+                    app.UseDatabaseErrorPage(options =>
+                    {
+                        options.EnableAll();
+                        options.MigrationsEndPointPath = new PathString(migrationsEndpoint);
+                    });
+
+                    app.UseMiddleware<PendingMigrationsMiddleware>();
+                },
+                services =>
+                {
+                    services.AddEntityFramework().AddSqlServer();
+                    services.AddScoped<BloggingContextWithMigrations>();
+
+                    var optionsBuilder = new DbContextOptionsBuilder();
+                    optionsBuilder.UseSqlServer(database.ConnectionString);
+                    services.AddInstance<DbContextOptions>(optionsBuilder.Options);
+                });
+
+                HttpResponseMessage response = await server.CreateClient().GetAsync("http://localhost/");
+
+                Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+
+                var content = await response.Content.ReadAsStringAsync();
+                Assert.Contains("req.open(\"POST\", \"" + JavaScriptEncode(migrationsEndpoint) + "\", true);", content);
+            }
+        }
+
+        [Fact]
         public async Task Pass_thru_when_context_not_in_services()
         {
             using (var database = SqlServerTestStore.CreateScratch())
@@ -242,12 +325,10 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
             public virtual Task Invoke(HttpContext context)
             {
                 var options = context.ApplicationServices.GetService<DbContextOptions>();
-                using (var db = new BloggingContext(context.ApplicationServices, options))
-                {
-                    db.Blogs.Add(new Blog());
-                    db.SaveChanges();
-                    throw new Exception("SaveChanges should have thrown");
-                }
+                var db = new BloggingContext(context.ApplicationServices, options);
+                db.Blogs.Add(new Blog());
+                db.SaveChanges();
+                throw new Exception("SaveChanges should have thrown");
             }
         }
 
@@ -276,12 +357,10 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 
             public virtual Task Invoke(HttpContext context)
             {
-                using (var db = context.ApplicationServices.GetService<BloggingContextWithSnapshotThatThrows>())
-                {
-                    db.Blogs.Add(new Blog());
-                    db.SaveChanges();
-                    throw new Exception("SaveChanges should have thrown");
-                }
+                var db = context.ApplicationServices.GetService<BloggingContextWithSnapshotThatThrows>();
+                db.Blogs.Add(new Blog());
+                db.SaveChanges();
+                throw new Exception("SaveChanges should have thrown");
             }
         }
 
@@ -305,18 +384,16 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 
             public virtual Task Invoke(HttpContext context)
             {
-                using (var db = context.ApplicationServices.GetService<BloggingContext>())
+                var db = context.ApplicationServices.GetService<BloggingContext>();
+                db.Blogs.Add(new Blog());
+                try
                 {
-                    db.Blogs.Add(new Blog());
-                    try
-                    {
-                        db.SaveChanges();
-                        throw new Exception("SaveChanges should have thrown");
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new Exception("I wrapped your exception", ex);
-                    }
+                    db.SaveChanges();
+                    throw new Exception("SaveChanges should have thrown");
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("I wrapped your exception", ex);
                 }
             }
         }
@@ -356,6 +433,18 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
                     services.AddInstance(optionsBuilder.Options);
                 });
             }
+        }
+
+        private static UrlEncoder _urlEncoder = new UrlEncoder();
+        private static string UrlEncode(string content)
+        {
+            return _urlEncoder.UrlEncode(content);
+        }
+
+        private static JavaScriptStringEncoder _javaScriptEncoder = new JavaScriptStringEncoder();
+        private static string JavaScriptEncode(string content)
+        {
+            return _javaScriptEncoder.JavaScriptStringEncode(content);
         }
     }
 }
