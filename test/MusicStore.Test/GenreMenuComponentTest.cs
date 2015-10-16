@@ -46,7 +46,7 @@ namespace MusicStore.Components
 
         private static void PopulateData(MusicStoreContext context)
         {
-            var genres = Enumerable.Range(1, 10).Select(n => new Genre());
+            var genres = Enumerable.Range(1, 10).Select(n => new Genre { GenreId = n });
 
             context.AddRange(genres);
             context.SaveChanges();
