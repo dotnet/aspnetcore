@@ -103,12 +103,12 @@ namespace Microsoft.AspNet.Mvc
             if (ContentTypes == null || ContentTypes.Count == 0)
             {
                 // Check if we have enough information to do content-negotiation, otherwise get the first formatter
-                // which can write the type.
+                // which can write the type. Let the formatter choose the Content-Type.
                 if (!sortedAcceptHeaderMediaTypes.Any())
                 {
                     logger.LogVerbose("No information found on request to perform content negotiation.");
 
-                    return SelectFormatterBasedOnTypeMatch(formatterContext, formatters);
+                    return SelectFormatterNotUsingAcceptHeaders(formatterContext, formatters);
                 }
 
                 //
@@ -121,7 +121,8 @@ namespace Microsoft.AspNet.Mvc
                     formatters,
                     sortedAcceptHeaderMediaTypes);
 
-                // 2. No formatter was found based on Accept header. Fallback to type-based match.
+                // 2. No formatter was found based on Accept header. Fallback to the first formatter which can write
+                // the type. Let the formatter choose the Content-Type.
                 if (selectedFormatter == null)
                 {
                     logger.LogVerbose("Could not find an output formatter based on content negotiation.");
@@ -130,7 +131,7 @@ namespace Microsoft.AspNet.Mvc
                     // if they want to write the response or not.
                     formatterContext.FailedContentNegotiation = true;
 
-                    return SelectFormatterBasedOnTypeMatch(formatterContext, formatters);
+                    return SelectFormatterNotUsingAcceptHeaders(formatterContext, formatters);
                 }
             }
             else
@@ -167,7 +168,7 @@ namespace Microsoft.AspNet.Mvc
             return selectedFormatter;
         }
 
-        public virtual IOutputFormatter SelectFormatterBasedOnTypeMatch(
+        public virtual IOutputFormatter SelectFormatterNotUsingAcceptHeaders(
             OutputFormatterContext formatterContext,
             IEnumerable<IOutputFormatter> formatters)
         {

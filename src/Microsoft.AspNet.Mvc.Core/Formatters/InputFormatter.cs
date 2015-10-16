@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
 
             var contentType = context.HttpContext.Request.ContentType;
             MediaTypeHeaderValue requestContentType;
-            if (!MediaTypeHeaderValue.TryParse(contentType, out requestContentType) || requestContentType == null)
+            if (!MediaTypeHeaderValue.TryParse(contentType, out requestContentType))
             {
                 return false;
             }

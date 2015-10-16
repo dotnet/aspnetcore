@@ -203,7 +203,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
             // Copy the media type as we don't want it to affect the next request
             selectedMediaType = selectedMediaType.Copy();
 
-            // Note text-based media types will use an encoding/charset - binary formats just ignore it. We want to
+            // Note: Text-based media types will use an encoding/charset - binary formats just ignore it. We want to
             // make this class work with media types that use encodings, and those that don't.
             //
             // The default implementation of SelectCharacterEncoding will read from the list of SupportedEncodings
