@@ -74,6 +74,34 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 
         [ConditionalTheory]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        public async Task Existing_database_not_using_migrations_exception_passes_thru()
+        {
+            TestServer server = SetupTestServer<BloggingContext, DatabaseErrorButNoMigrationsMiddleware>();
+            var ex = await Assert.ThrowsAsync<DbUpdateException>(async () =>
+                await server.CreateClient().GetAsync("http://localhost/"));
+
+            Assert.Equal("Invalid column name 'Name'.", ex.InnerException.Message);
+        }
+
+        class DatabaseErrorButNoMigrationsMiddleware
+        {
+            public DatabaseErrorButNoMigrationsMiddleware(RequestDelegate next)
+            { }
+
+            public virtual Task Invoke(HttpContext context)
+            {
+                var db = context.ApplicationServices.GetService<BloggingContext>();
+                db.Database.EnsureCreated();
+                db.Database.ExecuteSqlCommand("ALTER TABLE dbo.Blog DROP COLUMN Name");
+
+                db.Blogs.Add(new Blog());
+                db.SaveChanges();
+                throw new Exception("SaveChanges should have thrown");
+            }
+        }
+
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task Error_page_displayed_no_migrations()
         {
             TestServer server = SetupTestServer<BloggingContext, NoMigrationsMiddleware>();

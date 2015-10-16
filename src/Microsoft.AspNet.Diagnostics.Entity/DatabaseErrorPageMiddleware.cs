@@ -92,7 +92,12 @@ namespace Microsoft.AspNet.Diagnostics.Entity
                                         select m.Key)
                                     .ToList();
 
-                                var pendingModelChanges = modelDiffer.HasDifferences(migrationsAssembly.ModelSnapshot?.Model, dbContext.Model);
+                                // HasDifferences will return true if there is no model snapshot, but if there is an existing database
+                                // and no model snapshot then we don't want to show the error page since they are most likely targeting
+                                // and existing database and have just misconfigured their model
+                                var pendingModelChanges = migrationsAssembly.ModelSnapshot == null && databaseExists
+                                    ? false
+                                    : modelDiffer.HasDifferences(migrationsAssembly.ModelSnapshot?.Model, dbContext.Model);
 
                                 if ((!databaseExists && pendingMigrations.Any()) || pendingMigrations.Any() || pendingModelChanges)
                                 {
