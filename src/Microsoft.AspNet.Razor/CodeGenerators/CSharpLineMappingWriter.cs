@@ -98,6 +98,7 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
                 {
                     documentMapping = new MappingLocation(
                         location: new SourceLocation(
+                            _documentMapping.FilePath,
                             _documentMapping.AbsoluteIndex,
                             _documentMapping.LineIndex,
                             _documentMapping.CharacterIndex),
