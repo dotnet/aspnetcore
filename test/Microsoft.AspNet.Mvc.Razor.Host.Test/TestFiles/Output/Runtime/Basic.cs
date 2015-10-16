@@ -33,7 +33,11 @@ namespace Asp
             WriteLiteral("<div");
             EndContext();
             BeginWriteAttribute("class", " class=\"", 4, "\"", 17, 1);
-            WriteAttributeValue("", 12, logo, 12, 5, false);
+#line 1 "TestFiles/Input/Basic.cshtml"
+WriteAttributeValue("", 12, logo, 12, 5, false);
+
+#line default
+#line hidden
             EndWriteAttribute();
             BeginContext(18, 24, true);
             WriteLiteral(">\r\n    Hello world\r\n    ");
