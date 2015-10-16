@@ -75,7 +75,7 @@ try
     $destDir = Join-Path $remoteDir -ChildPath $projectName
     if (Test-Path $destDir) {
       Write-Host "$destDir already exists. Removing it..."
-      rmdir -Recurse "$destDir"
+      cmd /c rmdir /S /Q "$destDir"
     }
 
     Write-Host "Copying bundled application to $destDir ..."
