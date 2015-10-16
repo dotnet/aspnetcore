@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Threading.Tasks;
+using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Xunit;
 
@@ -8,6 +10,29 @@ namespace Microsoft.AspNet.Razor.TagHelpers
 {
     public class TagHelperOutputTest
     {
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task GetChildContentAsync_PassesUseCachedResultAsExpected(bool expectedUseCachedResultValue)
+        {
+            // Arrange
+            bool? useCachedResultValue = null;
+            var output = new TagHelperOutput(
+                tagName: "p",
+                attributes: new TagHelperAttributeList(),
+                getChildContentAsync: useCachedResult =>
+                {
+                    useCachedResultValue = useCachedResult;
+                    return Task.FromResult<TagHelperContent>(new DefaultTagHelperContent());
+                });
+
+            // Act
+            await output.GetChildContentAsync(expectedUseCachedResultValue);
+
+            // Assert
+            Assert.Equal(expectedUseCachedResultValue, useCachedResultValue);
+        }
+
         [Fact]
         public void PreElement_SetContent_ChangesValue()
         {
@@ -156,7 +181,8 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 {
                     { "class", "btn" },
                     { "something", "   spaced    " }
-                });
+                },
+                (cachedResult) => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent()));
             tagHelperOutput.PreContent.Append("Pre Content");
             tagHelperOutput.Content.Append("Content");
             tagHelperOutput.PostContent.Append("Post Content");
@@ -188,7 +214,8 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 new TagHelperAttributeList
                 {
                     { originalName, "btn" },
-                });
+                },
+                (cachedResult) => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent()));
 
             // Act
             tagHelperOutput.Attributes[updateName] = "super button";

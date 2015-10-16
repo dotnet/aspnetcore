@@ -11,10 +11,23 @@ namespace Microsoft.AspNet.Razor.TagHelpers
     public interface ITagHelper
     {
         /// <summary>
-        /// Gets the execution order of this <see cref= "ITagHelper" /> relative to others targeting the same element.
-        /// <see cref="ITagHelper"/> instances with lower values are executed first.
+        /// When a set of<see cref= "ITagHelper" /> s are executed, their<see cref="Init(TagHelperContext)"/>'s
+        /// are first invoked in the specified <see cref="Order"/>; then their
+        /// <see cref="ProcessAsync(TagHelperContext, TagHelperOutput)"/>'s are invoked in the specified
+        /// <see cref="Order"/>. Lower values are executed first.
         /// </summary>
         int Order { get; }
+
+        /// <summary>
+        /// Initializes the <see cref="ITagHelper"/> with the given <paramref name="context"/>. Additions to
+        /// <see cref="TagHelperContext.Items"/> should be done within this method to ensure they're added prior to
+        /// executing the children.
+        /// </summary>
+        /// <param name="context">Contains information associated with the current HTML tag.</param>
+        /// <remarks>When more than one <see cref="ITagHelper"/> runs on the same element,
+        /// <see cref="TagHelperOutput.GetChildContentAsync"/> may be invoked prior to <see cref="ProcessAsync"/>.
+        /// </remarks>
+        void Init(TagHelperContext context);
 
         /// <summary>
         /// Asynchronously executes the <see cref="ITagHelper"/> with the given <paramref name="context"/> and

@@ -415,6 +415,10 @@ namespace Microsoft.AspNet.Razor.TagHelpers
     {
         public int Order { get; } = 0;
 
+        public void Init(TagHelperContext context)
+        {
+        }
+
         public Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
             throw new NotImplementedException();

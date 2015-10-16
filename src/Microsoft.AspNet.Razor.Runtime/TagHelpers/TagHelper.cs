@@ -14,6 +14,11 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// <remarks>Default order is <c>0</c>.</remarks>
         public virtual int Order { get; } = 0;
 
+        /// <inheritdoc />
+        public virtual void Init(TagHelperContext context)
+        {
+        }
+
         /// <summary>
         /// Synchronously executes the <see cref="TagHelper"/> with the given <paramref name="context"/> and
         /// <paramref name="output"/>.

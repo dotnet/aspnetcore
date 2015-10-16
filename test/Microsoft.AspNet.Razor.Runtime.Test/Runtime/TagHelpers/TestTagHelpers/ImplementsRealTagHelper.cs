@@ -17,6 +17,10 @@ namespace Microsoft.AspNet.Razor.Fake
             }
         }
 
+        public void Init(TagHelperContext context)
+        {
+        }
+
         public Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
             throw new NotImplementedException();

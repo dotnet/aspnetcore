@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -11,6 +12,35 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 {
     public class TagHelperRunnerTest
     {
+        [Fact]
+        public async Task RunAsync_CallsInitPriorToProcessAsync()
+        {
+            // Arrange
+            var runner = new TagHelperRunner();
+            var executionContext = new TagHelperExecutionContext("p", TagMode.StartTagAndEndTag);
+            var incrementer = 0;
+            var callbackTagHelper = new CallbackTagHelper(
+                initCallback: () =>
+                {
+                    Assert.Equal(0, incrementer);
+
+                    incrementer++;
+                },
+                processAsyncCallback: () =>
+                {
+                    Assert.Equal(1, incrementer);
+
+                    incrementer++;
+                });
+            executionContext.Add(callbackTagHelper);
+
+            // Act
+            await runner.RunAsync(executionContext);
+
+            // Assert
+            Assert.Equal(2, incrementer);
+        }
+
         public static TheoryData TagHelperOrderData
         {
             get
@@ -232,6 +262,30 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 Debug.Assert(ProcessOrderTracker != null);
 
                 ProcessOrderTracker.Add(Order);
+            }
+        }
+
+        private class CallbackTagHelper : TagHelper
+        {
+            private readonly Action _initCallback;
+            private readonly Action _processAsyncCallback;
+
+            public CallbackTagHelper(Action initCallback, Action processAsyncCallback)
+            {
+                _initCallback = initCallback;
+                _processAsyncCallback = processAsyncCallback;
+            }
+
+            public override void Init(TagHelperContext context)
+            {
+                _initCallback();
+            }
+
+            public override Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
+            {
+                _processAsyncCallback();
+
+                return base.ProcessAsync(context, output);
             }
         }
     }

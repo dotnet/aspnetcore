@@ -134,6 +134,10 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             public int Order { get { return 0; } }
 
+            public void Init(TagHelperContext context)
+            {
+            }
+
             public Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
             {
                 return Task.FromResult(result: true);
@@ -143,6 +147,10 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         internal class Invalid_NestedInternalTagHelper : ITagHelper
         {
             public int Order { get { return 0; } }
+
+            public void Init(TagHelperContext context)
+            {
+            }
 
             public Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
             {
@@ -154,6 +162,10 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             public int Order { get { return 0; } }
 
+            public void Init(TagHelperContext context)
+            {
+            }
+
             public Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
             {
                 return Task.FromResult(result: true);
@@ -163,6 +175,10 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         protected class Invalid_ProtectedTagHelper : ITagHelper
         {
             public int Order { get { return 0; } }
+
+            public void Init(TagHelperContext context)
+            {
+            }
 
             public Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
             {
@@ -177,6 +193,10 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
     {
         public int Order { get { return 0; } }
 
+        public void Init(TagHelperContext context)
+        {
+        }
+
         public Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
             return Task.FromResult(result: true);
@@ -187,6 +207,10 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
     {
         public int Order { get { return 0; } }
 
+        public void Init(TagHelperContext context)
+        {
+        }
+
         public Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
             return Task.FromResult(result: true);
@@ -196,6 +220,10 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
     internal class Invalid_InternalTagHelper : ITagHelper
     {
         public int Order { get { return 0; } }
+
+        public void Init(TagHelperContext context)
+        {
+        }
 
         public Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {

@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Razor.TagHelpers
 {
@@ -13,8 +12,6 @@ namespace Microsoft.AspNet.Razor.TagHelpers
     /// </summary>
     public class TagHelperContext
     {
-        private readonly Func<bool, Task<TagHelperContent>> _getChildContentAsync;
-
         /// <summary>
         /// Instantiates a new <see cref="TagHelperContext"/>.
         /// </summary>
@@ -22,13 +19,10 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// <param name="items">Collection of items used to communicate with other <see cref="ITagHelper"/>s.</param>
         /// <param name="uniqueId">The unique identifier for the source element this <see cref="TagHelperContext" />
         /// applies to.</param>
-        /// <param name="getChildContentAsync">A delegate used to execute and retrieve the rendered child content
-        /// asynchronously.</param>
         public TagHelperContext(
             IEnumerable<IReadOnlyTagHelperAttribute> allAttributes,
             IDictionary<object, object> items,
-            string uniqueId,
-            Func<bool, Task<TagHelperContent>> getChildContentAsync)
+            string uniqueId)
         {
             if (allAttributes == null)
             {
@@ -45,16 +39,10 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 throw new ArgumentNullException(nameof(uniqueId));
             }
 
-            if (getChildContentAsync == null)
-            {
-                throw new ArgumentNullException(nameof(getChildContentAsync));
-            }
-
             AllAttributes = new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
                 allAttributes.Select(attribute => new TagHelperAttribute(attribute.Name, attribute.Value)));
             Items = items;
             UniqueId = uniqueId;
-            _getChildContentAsync = getChildContentAsync;
         }
 
         /// <summary>
@@ -75,26 +63,5 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// An identifier unique to the HTML element this context is for.
         /// </summary>
         public string UniqueId { get; }
-
-        /// <summary>
-        /// A delegate used to execute and retrieve the rendered child content asynchronously.
-        /// </summary>
-        /// <returns>A <see cref="Task"/> that when executed returns content rendered by children.</returns>
-        /// <remarks>This method is memoized.</remarks>
-        public Task<TagHelperContent> GetChildContentAsync()
-        {
-            return GetChildContentAsync(useCachedResult: true);
-        }
-
-        /// <summary>
-        /// A delegate used to execute and retrieve the rendered child content asynchronously.
-        /// </summary>
-        /// <param name="useCachedResult">If <c>true</c> multiple calls to this method will not cause re-execution
-        /// of child content; cached content will be returned.</param>
-        /// <returns>A <see cref="Task"/> that when executed returns content rendered by children.</returns>
-        public Task<TagHelperContent> GetChildContentAsync(bool useCachedResult)
-        {
-            return _getChildContentAsync(useCachedResult);
-        }
     }
 }

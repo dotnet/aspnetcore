@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 
 namespace Microsoft.AspNet.Razor.TagHelpers
@@ -11,9 +12,14 @@ namespace Microsoft.AspNet.Razor.TagHelpers
     /// </summary>
     public class TagHelperOutput
     {
+        private readonly Func<bool, Task<TagHelperContent>> _getChildContentAsync;
+
         // Internal for testing
         internal TagHelperOutput(string tagName)
-            : this(tagName, new TagHelperAttributeList())
+            : this(
+                tagName,
+                new TagHelperAttributeList(),
+                (cachedResult) => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent()))
         {
         }
 
@@ -22,17 +28,26 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// </summary>
         /// <param name="tagName">The HTML element's tag name.</param>
         /// <param name="attributes">The HTML attributes.</param>
+        /// <param name="getChildContentAsync">A delegate used to execute and retrieve the rendered child content
+        /// asynchronously.</param>
         public TagHelperOutput(
             string tagName,
-            TagHelperAttributeList attributes)
+            TagHelperAttributeList attributes,
+            Func<bool, Task<TagHelperContent>> getChildContentAsync)
         {
             if (attributes == null)
             {
                 throw new ArgumentNullException(nameof(attributes));
             }
 
+            if (getChildContentAsync == null)
+            {
+                throw new ArgumentNullException(nameof(getChildContentAsync));
+            }
+
             TagName = tagName;
             Attributes = new TagHelperAttributeList(attributes);
+            _getChildContentAsync = getChildContentAsync;
         }
 
         /// <summary>
@@ -115,6 +130,27 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             Content.Clear();
             PostContent.Clear();
             PostElement.Clear();
+        }
+
+        /// <summary>
+        /// A delegate used to execute children asynchronously.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> that on completion returns content rendered by children.</returns>
+        /// <remarks>This method is memoized.</remarks>
+        public Task<TagHelperContent> GetChildContentAsync()
+        {
+            return GetChildContentAsync(useCachedResult: true);
+        }
+
+        /// <summary>
+        /// A delegate used to execute children asynchronously.
+        /// </summary>
+        /// <param name="useCachedResult">If <c>true</c> multiple calls to this method will not cause re-execution
+        /// of child content; cached content will be returned.</param>
+        /// <returns>A <see cref="Task"/> that on completion returns content rendered by children.</returns>
+        public Task<TagHelperContent> GetChildContentAsync(bool useCachedResult)
+        {
+            return _getChildContentAsync(useCachedResult);
         }
     }
 }
