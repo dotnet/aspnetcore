@@ -99,16 +99,31 @@ namespace Microsoft.AspNet.Server.Testing
 
         protected string PopulateChosenRuntimeInformation()
         {
-            // ex: runtimes/dnx-coreclr-win-x64.1.0.0-rc1-15844/bin
-            var currentRuntimeBinPath = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
+            string currentRuntimeBinPath = string.Empty;
+            if (TestPlatformHelper.IsMac && DeploymentParameters.RuntimeFlavor == RuntimeFlavor.CoreClr)
+            {
+                var path = Environment.GetEnvironmentVariable("PATH");
+                currentRuntimeBinPath = path.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries).
+                    Where(c => c.Contains("dnx-coreclr-darwin") || c.Contains("dnx-mono")).FirstOrDefault();
+
+                if (string.IsNullOrWhiteSpace(currentRuntimeBinPath))
+                {
+                    throw new Exception("Runtime not detected on the machine.");
+                }
+            }
+            else
+            {
+                // ex: runtimes/dnx-coreclr-win-x64.1.0.0-rc1-15844/bin
+                currentRuntimeBinPath = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
+            }
             Logger.LogInformation($"Current runtime path is : {currentRuntimeBinPath}");
 
             var targetRuntimeName = new StringBuilder()
-                .Append("dnx")
-                .Append((DeploymentParameters.RuntimeFlavor == RuntimeFlavor.CoreClr) ? "-coreclr" : "-clr")
-                .Append($"-{OSPrefix}")
-                .Append((DeploymentParameters.RuntimeArchitecture == RuntimeArchitecture.x86) ? "-x86" : "-x64")
-                .ToString();
+                    .Append("dnx")
+                    .Append((DeploymentParameters.RuntimeFlavor == RuntimeFlavor.CoreClr) ? "-coreclr" : "-clr")
+                    .Append($"-{OSPrefix}")
+                    .Append((DeploymentParameters.RuntimeArchitecture == RuntimeArchitecture.x86) ? "-x86" : "-x64")
+                    .ToString();
 
             string targetRuntimeBinPath;
             // Ex: When current runtime is Mono and the tests are being run for CoreClr
