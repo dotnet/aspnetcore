@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using Microsoft.AspNet.Razor.Chunks;
@@ -181,6 +182,17 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
             var currentRenderingMode = Context.ExpressionRenderingMode;
             var currentTargetWriterName = Context.TargetWriterName;
 
+            CSharpLineMappingWriter lineMappingWriter = null;
+            var code = chunk.Children.FirstOrDefault();
+            if (code is ExpressionChunk || code is ExpressionBlockChunk)
+            {
+                // We only want to render the #line pragma if the attribute value will be in-lined.
+                // Ex: WriteAttributeValue("", 0, DateTime.Now, 0, 0, false)
+                // For non-inlined scenarios: WriteAttributeValue("", 0, (_) => ..., 0, 0, false)
+                // the line pragma will be generated inside the lambda.
+                lineMappingWriter = new CSharpLineMappingWriter(Writer, chunk.Start, Context.SourceFile);
+            }
+
             if (!string.IsNullOrEmpty(currentTargetWriterName))
             {
                 Writer.WriteStartMethodInvocation(Context.Host.GeneratedClassContext.WriteAttributeValueToMethodName)
@@ -194,9 +206,10 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
 
             Context.TargetWriterName = ValueWriterName;
 
-            var code = chunk.Children.FirstOrDefault();
             if (code is ExpressionChunk || code is ExpressionBlockChunk)
             {
+                Debug.Assert(lineMappingWriter != null);
+
                 Writer
                     .WriteLocationTaggedString(chunk.Prefix)
                     .WriteParameterSeparator();
@@ -213,6 +226,8 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
                     .WriteParameterSeparator()
                     .WriteBooleanLiteral(value: false)
                     .WriteEndMethodInvocation();
+
+                lineMappingWriter.Dispose();
             }
             else
             {

@@ -34,7 +34,11 @@ namespace TestOutput
             __tagHelperExecutionContext.Add(__InputTagHelper);
             BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "unbound", 2);
             AddHtmlAttributeValue("", 51, "prefix", 51, 6, true);
-            AddHtmlAttributeValue(" ", 57, DateTime.Now, 58, 14, false);
+#line 3 "DynamicAttributeTagHelpers.cshtml"
+AddHtmlAttributeValue(" ", 57, DateTime.Now, 58, 14, false);
+
+#line default
+#line hidden
             EndAddHtmlAttributeValues(__tagHelperExecutionContext);
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             Instrumentation.BeginContext(35, 40, false);
@@ -113,7 +117,11 @@ WriteLiteral(DateTime.Now);
             __tagHelperExecutionContext.AddTagHelperAttribute("bound", __InputTagHelper.Bound);
             BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "unbound", 3);
             AddHtmlAttributeValue("", 206, "prefix", 206, 6, true);
-            AddHtmlAttributeValue(" ", 212, DateTime.Now, 213, 14, false);
+#line 7 "DynamicAttributeTagHelpers.cshtml"
+AddHtmlAttributeValue(" ", 212, DateTime.Now, 213, 14, false);
+
+#line default
+#line hidden
             AddHtmlAttributeValue(" ", 226, "suffix", 227, 7, true);
             EndAddHtmlAttributeValues(__tagHelperExecutionContext);
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
@@ -174,7 +182,11 @@ WriteLiteral(int.MaxValue);
             __InputTagHelper.Bound = __tagHelperStringValueBuffer.GetContent(HtmlEncoder);
             __tagHelperExecutionContext.AddTagHelperAttribute("bound", __InputTagHelper.Bound);
             BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "unbound", 3);
-            AddHtmlAttributeValue("", 347, long.MinValue, 347, 14, false);
+#line 10 "DynamicAttributeTagHelpers.cshtml"
+AddHtmlAttributeValue("", 347, long.MinValue, 347, 14, false);
+
+#line default
+#line hidden
             AddHtmlAttributeValue(" ", 361, new Template((__razor_attribute_value_writer) => {
 #line 10 "DynamicAttributeTagHelpers.cshtml"
 if (true) { 
@@ -210,7 +222,11 @@ WriteTo(__razor_attribute_value_writer, false);
 
             }
             ), 362, 45, false);
-            AddHtmlAttributeValue(" ", 406, int.MaxValue, 407, 14, false);
+#line 10 "DynamicAttributeTagHelpers.cshtml"
+AddHtmlAttributeValue(" ", 406, int.MaxValue, 407, 14, false);
+
+#line default
+#line hidden
             EndAddHtmlAttributeValues(__tagHelperExecutionContext);
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             Instrumentation.BeginContext(241, 183, false);
@@ -226,11 +242,23 @@ WriteTo(__razor_attribute_value_writer, false);
             __InputTagHelper = CreateTagHelper<InputTagHelper>();
             __tagHelperExecutionContext.Add(__InputTagHelper);
             BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "unbound", 5);
-            AddHtmlAttributeValue("", 444, long.MinValue, 444, 14, false);
-            AddHtmlAttributeValue(" ", 458, DateTime.Now, 459, 14, false);
+#line 12 "DynamicAttributeTagHelpers.cshtml"
+AddHtmlAttributeValue("", 444, long.MinValue, 444, 14, false);
+
+#line default
+#line hidden
+#line 12 "DynamicAttributeTagHelpers.cshtml"
+AddHtmlAttributeValue(" ", 458, DateTime.Now, 459, 14, false);
+
+#line default
+#line hidden
             AddHtmlAttributeValue(" ", 472, "static", 473, 7, true);
             AddHtmlAttributeValue("    ", 479, "content", 483, 11, true);
-            AddHtmlAttributeValue(" ", 490, int.MaxValue, 491, 14, false);
+#line 12 "DynamicAttributeTagHelpers.cshtml"
+AddHtmlAttributeValue(" ", 490, int.MaxValue, 491, 14, false);
+
+#line default
+#line hidden
             EndAddHtmlAttributeValues(__tagHelperExecutionContext);
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             Instrumentation.BeginContext(428, 80, false);

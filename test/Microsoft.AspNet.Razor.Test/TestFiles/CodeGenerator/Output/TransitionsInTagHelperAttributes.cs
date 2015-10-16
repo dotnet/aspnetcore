@@ -68,7 +68,11 @@ namespace TestOutput
             __PTagHelper = CreateTagHelper<PTagHelper>();
             __tagHelperExecutionContext.Add(__PTagHelper);
             BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "class", 1);
-            AddHtmlAttributeValue("", 155, @class, 155, 9, false);
+#line 8 "TransitionsInTagHelperAttributes.cshtml"
+AddHtmlAttributeValue("", 155, @class, 155, 9, false);
+
+#line default
+#line hidden
             EndAddHtmlAttributeValues(__tagHelperExecutionContext);
 #line 8 "TransitionsInTagHelperAttributes.cshtml"
        __PTagHelper.Age = 42;
@@ -151,7 +155,11 @@ namespace TestOutput
             __tagHelperExecutionContext.Add(__PTagHelper);
             BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "class", 2);
             AddHtmlAttributeValue("", 298, "custom-", 298, 7, true);
-            AddHtmlAttributeValue("", 305, @class, 305, 9, false);
+#line 12 "TransitionsInTagHelperAttributes.cshtml"
+AddHtmlAttributeValue("", 305, @class, 305, 9, false);
+
+#line default
+#line hidden
             EndAddHtmlAttributeValues(__tagHelperExecutionContext);
 #line 12 "TransitionsInTagHelperAttributes.cshtml"
               __PTagHelper.Age = 4 * @(@int + 2);

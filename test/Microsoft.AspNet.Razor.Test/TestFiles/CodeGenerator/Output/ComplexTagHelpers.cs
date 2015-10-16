@@ -242,7 +242,11 @@ if(true) {
             BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "time", 3);
             AddHtmlAttributeValue("", 148, "Current", 148, 7, true);
             AddHtmlAttributeValue(" ", 155, "Time:", 156, 6, true);
-            AddHtmlAttributeValue(" ", 161, DateTime.Now, 162, 14, false);
+#line 8 "ComplexTagHelpers.cshtml"
+AddHtmlAttributeValue(" ", 161, DateTime.Now, 162, 14, false);
+
+#line default
+#line hidden
             EndAddHtmlAttributeValues(__tagHelperExecutionContext);
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             Instrumentation.BeginContext(139, 529, false);

@@ -26,34 +26,54 @@ namespace TestOutput
             WriteLiteral("    <a href=\"Foo\" />\r\n    <p");
             Instrumentation.EndContext();
             BeginWriteAttribute("class", " class=\"", 74, "\"", 86, 1);
-            WriteAttributeValue("", 82, cls, 82, 4, false);
+#line 5 "ConditionalAttributes.cshtml"
+WriteAttributeValue("", 82, cls, 82, 4, false);
+
+#line default
+#line hidden
             EndWriteAttribute();
             Instrumentation.BeginContext(87, 11, true);
             WriteLiteral(" />\r\n    <p");
             Instrumentation.EndContext();
             BeginWriteAttribute("class", " class=\"", 98, "\"", 114, 2);
             WriteAttributeValue("", 106, "foo", 106, 3, true);
-            WriteAttributeValue(" ", 109, cls, 110, 5, false);
+#line 6 "ConditionalAttributes.cshtml"
+WriteAttributeValue(" ", 109, cls, 110, 5, false);
+
+#line default
+#line hidden
             EndWriteAttribute();
             Instrumentation.BeginContext(115, 11, true);
             WriteLiteral(" />\r\n    <p");
             Instrumentation.EndContext();
             BeginWriteAttribute("class", " class=\"", 126, "\"", 142, 2);
-            WriteAttributeValue("", 134, cls, 134, 4, false);
+#line 7 "ConditionalAttributes.cshtml"
+WriteAttributeValue("", 134, cls, 134, 4, false);
+
+#line default
+#line hidden
             WriteAttributeValue(" ", 138, "foo", 139, 4, true);
             EndWriteAttribute();
             Instrumentation.BeginContext(143, 31, true);
             WriteLiteral(" />\r\n    <input type=\"checkbox\"");
             Instrumentation.EndContext();
             BeginWriteAttribute("checked", " checked=\"", 174, "\"", 187, 1);
-            WriteAttributeValue("", 184, ch, 184, 3, false);
+#line 8 "ConditionalAttributes.cshtml"
+WriteAttributeValue("", 184, ch, 184, 3, false);
+
+#line default
+#line hidden
             EndWriteAttribute();
             Instrumentation.BeginContext(188, 31, true);
             WriteLiteral(" />\r\n    <input type=\"checkbox\"");
             Instrumentation.EndContext();
             BeginWriteAttribute("checked", " checked=\"", 219, "\"", 236, 2);
             WriteAttributeValue("", 229, "foo", 229, 3, true);
-            WriteAttributeValue(" ", 232, ch, 233, 4, false);
+#line 9 "ConditionalAttributes.cshtml"
+WriteAttributeValue(" ", 232, ch, 233, 4, false);
+
+#line default
+#line hidden
             EndWriteAttribute();
             Instrumentation.BeginContext(237, 11, true);
             WriteLiteral(" />\r\n    <p");
@@ -86,13 +106,21 @@ WriteTo(__razor_attribute_value_writer, cls);
             WriteLiteral(" />\r\n    <a href=\"~/Foo\" />\r\n    <script");
             Instrumentation.EndContext();
             BeginWriteAttribute("src", " src=\"", 322, "\"", 373, 1);
-            WriteAttributeValue("", 328, Url.Content("~/Scripts/jquery-1.6.2.min.js"), 328, 45, false);
+#line 12 "ConditionalAttributes.cshtml"
+WriteAttributeValue("", 328, Url.Content("~/Scripts/jquery-1.6.2.min.js"), 328, 45, false);
+
+#line default
+#line hidden
             EndWriteAttribute();
             Instrumentation.BeginContext(374, 46, true);
             WriteLiteral(" type=\"text/javascript\"></script>\r\n    <script");
             Instrumentation.EndContext();
             BeginWriteAttribute("src", " src=\"", 420, "\"", 487, 1);
-            WriteAttributeValue("", 426, Url.Content("~/Scripts/modernizr-2.0.6-development-only.js"), 426, 61, false);
+#line 13 "ConditionalAttributes.cshtml"
+WriteAttributeValue("", 426, Url.Content("~/Scripts/modernizr-2.0.6-development-only.js"), 426, 61, false);
+
+#line default
+#line hidden
             EndWriteAttribute();
             Instrumentation.BeginContext(488, 152, true);
             WriteLiteral(" type=\"text/javascript\"></script>\r\n    <script src=\"http://ajax.aspnetcdn.com/aja" +

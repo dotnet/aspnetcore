@@ -86,7 +86,11 @@ WriteLiteral(DateTime.Now);
                 BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "unboundproperty", 3);
                 AddHtmlAttributeValue("", 188, "Current", 188, 7, true);
                 AddHtmlAttributeValue(" ", 195, "Time:", 196, 6, true);
-                AddHtmlAttributeValue(" ", 201, DateTime.Now, 202, 14, false);
+#line 9 "TagHelpersInSection.cshtml"
+AddHtmlAttributeValue(" ", 201, DateTime.Now, 202, 14, false);
+
+#line default
+#line hidden
                 EndAddHtmlAttributeValues(__tagHelperExecutionContext);
                 __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
                 Instrumentation.BeginContext(114, 245, false);
