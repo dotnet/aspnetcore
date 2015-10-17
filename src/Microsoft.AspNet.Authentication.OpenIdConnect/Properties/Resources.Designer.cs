@@ -11,627 +11,99 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             = new ResourceManager("Microsoft.AspNet.Authentication.OpenIdConnect.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
-        /// OIDCH_0101: BackchannelTimeout cannot be less or equal to TimeSpan.Zero.
+        /// OpenIdConnectAuthenticationHandler: message.State is null or empty.
         /// </summary>
-        internal static string OIDCH_0101_BackChallnelLessThanZero
+        internal static string MessageStateIsNullOrEmpty
         {
-            get { return GetString("OIDCH_0101_BackChallnelLessThanZero"); }
+            get { return GetString("MessageStateIsNullOrEmpty"); }
         }
 
         /// <summary>
-        /// OIDCH_0101: BackchannelTimeout cannot be less or equal to TimeSpan.Zero.
+        /// OpenIdConnectAuthenticationHandler: message.State is null or empty.
         /// </summary>
-        internal static string FormatOIDCH_0101_BackChallnelLessThanZero()
+        internal static string FormatMessageStateIsNullOrEmpty()
         {
-            return GetString("OIDCH_0101_BackChallnelLessThanZero");
+            return GetString("MessageStateIsNullOrEmpty");
         }
 
         /// <summary>
-        /// OIDCH_0102: An ICertificateValidator cannot be specified at the same time as an HttpMessageHandler unless it is a WebRequestHandler.
+        /// Unable to unprotect the message.State.
         /// </summary>
-        internal static string OIDCH_0102_Exception_ValidatorHandlerMismatch
+        internal static string MessageStateIsInvalid
         {
-            get { return GetString("OIDCH_0102_Exception_ValidatorHandlerMismatch"); }
+            get { return GetString("MessageStateIsInvalid"); }
         }
 
         /// <summary>
-        /// OIDCH_0102: An ICertificateValidator cannot be specified at the same time as an HttpMessageHandler unless it is a WebRequestHandler.
+        /// Unable to unprotect the message.State.
         /// </summary>
-        internal static string FormatOIDCH_0102_Exception_ValidatorHandlerMismatch()
+        internal static string FormatMessageStateIsInvalid()
         {
-            return GetString("OIDCH_0102_Exception_ValidatorHandlerMismatch");
+            return GetString("MessageStateIsInvalid");
         }
 
         /// <summary>
-        /// OIDC_0051: The query string for Logout is not a well formed URI. The runtime cannot redirect. Redirect uri: '{0}'.
+        /// Message contains error: '{0}', error_description: '{1}', error_uri: '{2}'.
         /// </summary>
-        internal static string OIDCH_0051_RedirectUriLogoutIsNotWellFormed
+        internal static string MessageContainsError
         {
-            get { return GetString("OIDCH_0051_RedirectUriLogoutIsNotWellFormed"); }
+            get { return GetString("MessageContainsError"); }
         }
 
         /// <summary>
-        /// OIDC_0051: The query string for Logout is not a well formed URI. The runtime cannot redirect. Redirect uri: '{0}'.
+        /// Message contains error: '{0}', error_description: '{1}', error_uri: '{2}'.
         /// </summary>
-        internal static string FormatOIDCH_0051_RedirectUriLogoutIsNotWellFormed(object p0)
+        internal static string FormatMessageContainsError(object p0, object p1, object p2)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("OIDCH_0051_RedirectUriLogoutIsNotWellFormed"), p0);
+            return string.Format(CultureInfo.CurrentCulture, GetString("MessageContainsError"), p0, p1, p2);
         }
 
         /// <summary>
-        /// OIDCH_0026: Entering: '{0}'
+        /// The Validated Security Token must be of type JwtSecurityToken, but instead its type is: '{0}'.
         /// </summary>
-        internal static string OIDCH_0026_ApplyResponseChallengeAsync
+        internal static string ValidatedSecurityTokenNotJwt
         {
-            get { return GetString("OIDCH_0026_ApplyResponseChallengeAsync"); }
+            get { return GetString("ValidatedSecurityTokenNotJwt"); }
         }
 
         /// <summary>
-        /// OIDCH_0026: Entering: '{0}'
+        /// The Validated Security Token must be of type JwtSecurityToken, but instead its type is: '{0}'.
         /// </summary>
-        internal static string FormatOIDCH_0026_ApplyResponseChallengeAsync(object p0)
+        internal static string FormatValidatedSecurityTokenNotJwt(object p0)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("OIDCH_0026_ApplyResponseChallengeAsync"), p0);
+            return string.Format(CultureInfo.CurrentCulture, GetString("ValidatedSecurityTokenNotJwt"), p0);
         }
 
         /// <summary>
-        /// OIDCH_0027: Converted 401 to 403.
+        /// Unable to validate the 'id_token', no suitable ISecurityTokenValidator was found for: '{0}'."
         /// </summary>
-        internal static string OIDCH_0027_401_ConvertedTo_403
+        internal static string UnableToValidateToken
         {
-            get { return GetString("OIDCH_0027_401_ConvertedTo_403"); }
+            get { return GetString("UnableToValidateToken"); }
         }
 
         /// <summary>
-        /// OIDCH_0027: Converted 401 to 403.
+        /// Unable to validate the 'id_token', no suitable ISecurityTokenValidator was found for: '{0}'."
         /// </summary>
-        internal static string FormatOIDCH_0027_401_ConvertedTo_403()
+        internal static string FormatUnableToValidateToken(object p0)
         {
-            return GetString("OIDCH_0027_401_ConvertedTo_403");
+            return string.Format(CultureInfo.CurrentCulture, GetString("UnableToValidateToken"), p0);
         }
 
         /// <summary>
-        /// OIDCH_0028: Response.StatusCode != 401, StatusCode: '{0}'.
+        /// Cannot process the message. Both id_token and code are missing.
         /// </summary>
-        internal static string OIDCH_0028_StatusCodeNot401
+        internal static string IdTokenCodeMissing
         {
-            get { return GetString("OIDCH_0028_StatusCodeNot401"); }
+            get { return GetString("IdTokenCodeMissing"); }
         }
 
         /// <summary>
-        /// OIDCH_0028: Response.StatusCode != 401, StatusCode: '{0}'.
+        /// Cannot process the message. Both id_token and code are missing.
         /// </summary>
-        internal static string FormatOIDCH_0028_StatusCodeNot401(object p0)
+        internal static string FormatIdTokenCodeMissing()
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("OIDCH_0028_StatusCodeNot401"), p0);
-        }
-
-        /// <summary>
-        /// OIDCH_0029: ChallengeContext == null AND !Options.AutomaticAuthenticate
-        /// </summary>
-        internal static string OIDCH_0029_ChallengContextEqualsNull
-        {
-            get { return GetString("OIDCH_0029_ChallengContextEqualsNull"); }
-        }
-
-        /// <summary>
-        /// OIDCH_0029: ChallengeContext == null AND !Options.AutomaticAuthenticate
-        /// </summary>
-        internal static string FormatOIDCH_0029_ChallengContextEqualsNull()
-        {
-            return GetString("OIDCH_0029_ChallengContextEqualsNull");
-        }
-
-        /// <summary>
-        /// OIDCH_0030: Using properties.RedirectUri for 'local redirect' post authentication: '{0}'.
-        /// </summary>
-        internal static string OIDCH_0030_Using_Properties_RedirectUri
-        {
-            get { return GetString("OIDCH_0030_Using_Properties_RedirectUri"); }
-        }
-
-        /// <summary>
-        /// OIDCH_0030: Using properties.RedirectUri for 'local redirect' post authentication: '{0}'.
-        /// </summary>
-        internal static string FormatOIDCH_0030_Using_Properties_RedirectUri(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("OIDCH_0030_Using_Properties_RedirectUri"), p0);
-        }
-
-        /// <summary>
-        /// OIDCH_0031: Using Options.RedirectUri for 'redirect_uri': '{0}'.
-        /// </summary>
-        internal static string OIDCH_0031_Using_Options_RedirectUri
-        {
-            get { return GetString("OIDCH_0031_Using_Options_RedirectUri"); }
-        }
-
-        /// <summary>
-        /// OIDCH_0031: Using Options.RedirectUri for 'redirect_uri': '{0}'.
-        /// </summary>
-        internal static string FormatOIDCH_0031_Using_Options_RedirectUri(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("OIDCH_0031_Using_Options_RedirectUri"), p0);
-        }
-
-        /// <summary>
-        /// OIDCH_0032: using the CurrentUri for 'local redirect' post authentication: '{0}'.
-        /// </summary>
-        internal static string OIDCH_0032_UsingCurrentUriRedirectUri
-        {
-            get { return GetString("OIDCH_0032_UsingCurrentUriRedirectUri"); }
-        }
-
-        /// <summary>
-        /// OIDCH_0032: using the CurrentUri for 'local redirect' post authentication: '{0}'.
-        /// </summary>
-        internal static string FormatOIDCH_0032_UsingCurrentUriRedirectUri(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("OIDCH_0032_UsingCurrentUriRedirectUri"), p0);
-        }
-
-        /// <summary>
-        /// OIDCH_0033: ProtocolValidator.RequireNonce == true. The generated nonce already exists: this usually indicates the nonce is not unique or has been used. The nonce is: '{0}'.
-        /// </summary>
-        internal static string OIDCH_0033_NonceAlreadyExists
-        {
-            get { return GetString("OIDCH_0033_NonceAlreadyExists"); }
-        }
-
-        /// <summary>
-        /// OIDCH_0033: ProtocolValidator.RequireNonce == true. The generated nonce already exists: this usually indicates the nonce is not unique or has been used. The nonce is: '{0}'.
-        /// </summary>
-        internal static string FormatOIDCH_0033_NonceAlreadyExists(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("OIDCH_0033_NonceAlreadyExists"), p0);
-        }
-
-        /// <summary>
-        /// OIDCH_0036: Uri.IsWellFormedUriString(redirectUri, UriKind.Absolute) returned 'false', redirectUri is: '{0}'.
-        /// </summary>
-        internal static string OIDCH_0036_UriIsNotWellFormed
-        {
-            get { return GetString("OIDCH_0036_UriIsNotWellFormed"); }
-        }
-
-        /// <summary>
-        /// OIDCH_0036: Uri.IsWellFormedUriString(redirectUri, UriKind.Absolute) returned 'false', redirectUri is: '{0}'.
-        /// </summary>
-        internal static string FormatOIDCH_0036_UriIsNotWellFormed(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("OIDCH_0036_UriIsNotWellFormed"), p0);
-        }
-
-        /// <summary>
-        /// OIDCH_0037: RedirectUri is: '{0}'.
-        /// </summary>
-        internal static string OIDCH_0037_RedirectUri
-        {
-            get { return GetString("OIDCH_0037_RedirectUri"); }
-        }
-
-        /// <summary>
-        /// OIDCH_0037: RedirectUri is: '{0}'.
-        /// </summary>
-        internal static string FormatOIDCH_0037_RedirectUri(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("OIDCH_0037_RedirectUri"), p0);
-        }
-
-        /// <summary>
-        /// OIDCH_0038: Id Token is null. Redeeming code : {0} for tokens.
-        /// </summary>
-        internal static string OIDCH_0038_Redeeming_Auth_Code
-        {
-            get { return GetString("OIDCH_0038_Redeeming_Auth_Code"); }
-        }
-
-        /// <summary>
-        /// OIDCH_0038: Id Token is null. Redeeming code : {0} for tokens.
-        /// </summary>
-        internal static string FormatOIDCH_0038_Redeeming_Auth_Code(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("OIDCH_0038_Redeeming_Auth_Code"), p0);
-        }
-
-        /// <summary>
-        /// OIDCH_0039: Subject claim received from userinfo endpoint does not match the one in the id token.
-        /// </summary>
-        internal static string OIDCH_0039_Subject_Claim_Mismatch
-        {
-            get { return GetString("OIDCH_0039_Subject_Claim_Mismatch"); }
-        }
-
-        /// <summary>
-        /// OIDCH_0039: Subject claim received from userinfo endpoint does not match the one in the id token.
-        /// </summary>
-        internal static string FormatOIDCH_0039_Subject_Claim_Mismatch()
-        {
-            return GetString("OIDCH_0039_Subject_Claim_Mismatch");
-        }
-
-        /// <summary>
-        /// OIDCH_0040: Sending request to user info endpoint for retrieving claims.
-        /// </summary>
-        internal static string OIDCH_0040_Sending_Request_UIEndpoint
-        {
-            get { return GetString("OIDCH_0040_Sending_Request_UIEndpoint"); }
-        }
-
-        /// <summary>
-        /// OIDCH_0040: Sending request to user info endpoint for retrieving claims.
-        /// </summary>
-        internal static string FormatOIDCH_0040_Sending_Request_UIEndpoint()
-        {
-            return GetString("OIDCH_0040_Sending_Request_UIEndpoint");
-        }
-
-        /// <summary>
-        /// OIDCH_0000: Entering: '{0}'.
-        /// </summary>
-        internal static string OIDCH_0000_AuthenticateCoreAsync
-        {
-            get { return GetString("OIDCH_0000_AuthenticateCoreAsync"); }
-        }
-
-        /// <summary>
-        /// OIDCH_0000: Entering: '{0}'.
-        /// </summary>
-        internal static string FormatOIDCH_0000_AuthenticateCoreAsync(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("OIDCH_0000_AuthenticateCoreAsync"), p0);
-        }
-
-        /// <summary>
-        /// OIDCH_0001: MessageReceived: '{0}'.
-        /// </summary>
-        internal static string OIDCH_0001_MessageReceived
-        {
-            get { return GetString("OIDCH_0001_MessageReceived"); }
-        }
-
-        /// <summary>
-        /// OIDCH_0001: MessageReceived: '{0}'.
-        /// </summary>
-        internal static string FormatOIDCH_0001_MessageReceived(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("OIDCH_0001_MessageReceived"), p0);
-        }
-
-        /// <summary>
-        /// OIDCH_0002: MessageReceivedContext.HandledResponse
-        /// </summary>
-        internal static string OIDCH_0002_MessageReceivedContextHandledResponse
-        {
-            get { return GetString("OIDCH_0002_MessageReceivedContextHandledResponse"); }
-        }
-
-        /// <summary>
-        /// OIDCH_0002: MessageReceivedContext.HandledResponse
-        /// </summary>
-        internal static string FormatOIDCH_0002_MessageReceivedContextHandledResponse()
-        {
-            return GetString("OIDCH_0002_MessageReceivedContextHandledResponse");
-        }
-
-        /// <summary>
-        /// OIDCH_0003: MessageReceivedContext.Skipped
-        /// </summary>
-        internal static string OIDCH_0003_MessageReceivedContextSkipped
-        {
-            get { return GetString("OIDCH_0003_MessageReceivedContextSkipped"); }
-        }
-
-        /// <summary>
-        /// OIDCH_0003: MessageReceivedContext.Skipped
-        /// </summary>
-        internal static string FormatOIDCH_0003_MessageReceivedContextSkipped()
-        {
-            return GetString("OIDCH_0003_MessageReceivedContextSkipped");
-        }
-
-        /// <summary>
-        /// OIDCH_0004: OpenIdConnectAuthenticationHandler: message.State is null or empty.
-        /// </summary>
-        internal static string OIDCH_0004_MessageStateIsNullOrEmpty
-        {
-            get { return GetString("OIDCH_0004_MessageStateIsNullOrEmpty"); }
-        }
-
-        /// <summary>
-        /// OIDCH_0004: OpenIdConnectAuthenticationHandler: message.State is null or empty.
-        /// </summary>
-        internal static string FormatOIDCH_0004_MessageStateIsNullOrEmpty()
-        {
-            return GetString("OIDCH_0004_MessageStateIsNullOrEmpty");
-        }
-
-        /// <summary>
-        /// OIDCH_0005: Unable to unprotect the message.State.
-        /// </summary>
-        internal static string OIDCH_0005_MessageStateIsInvalid
-        {
-            get { return GetString("OIDCH_0005_MessageStateIsInvalid"); }
-        }
-
-        /// <summary>
-        /// OIDCH_0005: Unable to unprotect the message.State.
-        /// </summary>
-        internal static string FormatOIDCH_0005_MessageStateIsInvalid()
-        {
-            return GetString("OIDCH_0005_MessageStateIsInvalid");
-        }
-
-        /// <summary>
-        /// OIDCH_0006: Message contains error: '{0}', error_description: '{1}', error_uri: '{2}'.
-        /// </summary>
-        internal static string OIDCH_0006_MessageContainsError
-        {
-            get { return GetString("OIDCH_0006_MessageContainsError"); }
-        }
-
-        /// <summary>
-        /// OIDCH_0006: Message contains error: '{0}', error_description: '{1}', error_uri: '{2}'.
-        /// </summary>
-        internal static string FormatOIDCH_0006_MessageContainsError(object p0, object p1, object p2)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("OIDCH_0006_MessageContainsError"), p0, p1, p2);
-        }
-
-        /// <summary>
-        /// OIDCH_0007: Updating configuration
-        /// </summary>
-        internal static string OIDCH_0007_UpdatingConfiguration
-        {
-            get { return GetString("OIDCH_0007_UpdatingConfiguration"); }
-        }
-
-        /// <summary>
-        /// OIDCH_0007: Updating configuration
-        /// </summary>
-        internal static string FormatOIDCH_0007_UpdatingConfiguration()
-        {
-            return GetString("OIDCH_0007_UpdatingConfiguration");
-        }
-
-        /// <summary>
-        /// OIDCH_0010: Validated Security Token must be a JwtSecurityToken was: '{0}'.
-        /// </summary>
-        internal static string OIDCH_0010_ValidatedSecurityTokenNotJwt
-        {
-            get { return GetString("OIDCH_0010_ValidatedSecurityTokenNotJwt"); }
-        }
-
-        /// <summary>
-        /// OIDCH_0010: Validated Security Token must be a JwtSecurityToken was: '{0}'.
-        /// </summary>
-        internal static string FormatOIDCH_0010_ValidatedSecurityTokenNotJwt(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("OIDCH_0010_ValidatedSecurityTokenNotJwt"), p0);
-        }
-
-        /// <summary>
-        /// OIDCH_0011: Unable to validate the 'id_token', no suitable ISecurityTokenValidator was found for: '{0}'."
-        /// </summary>
-        internal static string OIDCH_0011_UnableToValidateToken
-        {
-            get { return GetString("OIDCH_0011_UnableToValidateToken"); }
-        }
-
-        /// <summary>
-        /// OIDCH_0011: Unable to validate the 'id_token', no suitable ISecurityTokenValidator was found for: '{0}'."
-        /// </summary>
-        internal static string FormatOIDCH_0011_UnableToValidateToken(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("OIDCH_0011_UnableToValidateToken"), p0);
-        }
-
-        /// <summary>
-        /// OIDCH_0014: AuthorizationCode received: '{0}'.
-        /// </summary>
-        internal static string OIDCH_0014_AuthorizationCodeReceived
-        {
-            get { return GetString("OIDCH_0014_AuthorizationCodeReceived"); }
-        }
-
-        /// <summary>
-        /// OIDCH_0014: AuthorizationCode received: '{0}'.
-        /// </summary>
-        internal static string FormatOIDCH_0014_AuthorizationCodeReceived(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("OIDCH_0014_AuthorizationCodeReceived"), p0);
-        }
-
-        /// <summary>
-        /// OIDCH_0015: AuthorizationCodeReceivedContext.HandledResponse
-        /// </summary>
-        internal static string OIDCH_0015_AuthorizationCodeReceivedContextHandledResponse
-        {
-            get { return GetString("OIDCH_0015_AuthorizationCodeReceivedContextHandledResponse"); }
-        }
-
-        /// <summary>
-        /// OIDCH_0015: AuthorizationCodeReceivedContext.HandledResponse
-        /// </summary>
-        internal static string FormatOIDCH_0015_AuthorizationCodeReceivedContextHandledResponse()
-        {
-            return GetString("OIDCH_0015_AuthorizationCodeReceivedContextHandledResponse");
-        }
-
-        /// <summary>
-        /// OIDCH_0016: AuthorizationCodeReceivedContext.Skipped
-        /// </summary>
-        internal static string OIDCH_0016_AuthorizationCodeReceivedContextSkipped
-        {
-            get { return GetString("OIDCH_0016_AuthorizationCodeReceivedContextSkipped"); }
-        }
-
-        /// <summary>
-        /// OIDCH_0016: AuthorizationCodeReceivedContext.Skipped
-        /// </summary>
-        internal static string FormatOIDCH_0016_AuthorizationCodeReceivedContextSkipped()
-        {
-            return GetString("OIDCH_0016_AuthorizationCodeReceivedContextSkipped");
-        }
-
-        /// <summary>
-        /// OIDCH_0017: Exception occurred while processing message.
-        /// </summary>
-        internal static string OIDCH_0017_ExceptionOccurredWhileProcessingMessage
-        {
-            get { return GetString("OIDCH_0017_ExceptionOccurredWhileProcessingMessage"); }
-        }
-
-        /// <summary>
-        /// OIDCH_0017: Exception occurred while processing message.
-        /// </summary>
-        internal static string FormatOIDCH_0017_ExceptionOccurredWhileProcessingMessage()
-        {
-            return GetString("OIDCH_0017_ExceptionOccurredWhileProcessingMessage");
-        }
-
-        /// <summary>
-        /// OIDCH_0018: AuthenticationFailedContext.HandledResponse
-        /// </summary>
-        internal static string OIDCH_0018_AuthenticationFailedContextHandledResponse
-        {
-            get { return GetString("OIDCH_0018_AuthenticationFailedContextHandledResponse"); }
-        }
-
-        /// <summary>
-        /// OIDCH_0018: AuthenticationFailedContext.HandledResponse
-        /// </summary>
-        internal static string FormatOIDCH_0018_AuthenticationFailedContextHandledResponse()
-        {
-            return GetString("OIDCH_0018_AuthenticationFailedContextHandledResponse");
-        }
-
-        /// <summary>
-        /// OIDCH_0019: AuthenticationFailedContext.Skipped
-        /// </summary>
-        internal static string OIDCH_0019_AuthenticationFailedContextSkipped
-        {
-            get { return GetString("OIDCH_0019_AuthenticationFailedContextSkipped"); }
-        }
-
-        /// <summary>
-        /// OIDCH_0019: AuthenticationFailedContext.Skipped
-        /// </summary>
-        internal static string FormatOIDCH_0019_AuthenticationFailedContextSkipped()
-        {
-            return GetString("OIDCH_0019_AuthenticationFailedContextSkipped");
-        }
-
-        /// <summary>
-        /// OIDCH_0020: 'id_token' received: '{0}'
-        /// </summary>
-        internal static string OIDCH_0020_IdTokenReceived
-        {
-            get { return GetString("OIDCH_0020_IdTokenReceived"); }
-        }
-
-        /// <summary>
-        /// OIDCH_0020: 'id_token' received: '{0}'
-        /// </summary>
-        internal static string FormatOIDCH_0020_IdTokenReceived(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("OIDCH_0020_IdTokenReceived"), p0);
-        }
-
-        /// <summary>
-        /// OIDCH_0021: exception of type 'SecurityTokenSignatureKeyNotFoundException' thrown, Options.ConfigurationManager.RequestRefresh() called.
-        /// </summary>
-        internal static string OIDCH_0021_AutomaticConfigurationRefresh
-        {
-            get { return GetString("OIDCH_0021_AutomaticConfigurationRefresh"); }
-        }
-
-        /// <summary>
-        /// OIDCH_0021: exception of type 'SecurityTokenSignatureKeyNotFoundException' thrown, Options.ConfigurationManager.RequestRefresh() called.
-        /// </summary>
-        internal static string FormatOIDCH_0021_AutomaticConfigurationRefresh()
-        {
-            return GetString("OIDCH_0021_AutomaticConfigurationRefresh");
-        }
-
-        /// <summary>
-        /// OIDCH_0041: Subject claim not found in {0}.
-        /// </summary>
-        internal static string OIDCH_0041_Subject_Claim_Not_Found
-        {
-            get { return GetString("OIDCH_0041_Subject_Claim_Not_Found"); }
-        }
-
-        /// <summary>
-        /// OIDCH_0041: Subject claim not found in {0}.
-        /// </summary>
-        internal static string FormatOIDCH_0041_Subject_Claim_Not_Found(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("OIDCH_0041_Subject_Claim_Not_Found"), p0);
-        }
-
-        /// <summary>
-        /// OIDCH_0043: AuthorizationCodeRedeemedContext.HandledResponse
-        /// </summary>
-        internal static string OIDCH_0043_AuthorizationCodeRedeemedContextHandledResponse
-        {
-            get { return GetString("OIDCH_0043_AuthorizationCodeRedeemedContextHandledResponse"); }
-        }
-
-        /// <summary>
-        /// OIDCH_0043: AuthorizationCodeRedeemedContext.HandledResponse
-        /// </summary>
-        internal static string FormatOIDCH_0043_AuthorizationCodeRedeemedContextHandledResponse()
-        {
-            return GetString("OIDCH_0043_AuthorizationCodeRedeemedContextHandledResponse");
-        }
-
-        /// <summary>
-        /// OIDCH_0044: AuthorizationCodeRedeemedContext.Skipped
-        /// </summary>
-        internal static string OIDCH_0044_AuthorizationCodeRedeemedContextSkipped
-        {
-            get { return GetString("OIDCH_0044_AuthorizationCodeRedeemedContextSkipped"); }
-        }
-
-        /// <summary>
-        /// OIDCH_0044: AuthorizationCodeRedeemedContext.Skipped
-        /// </summary>
-        internal static string FormatOIDCH_0044_AuthorizationCodeRedeemedContextSkipped()
-        {
-            return GetString("OIDCH_0044_AuthorizationCodeRedeemedContextSkipped");
-        }
-
-        /// <summary>
-        /// OIDCH_0045: Cannot process the message. Both id_token and code are missing.
-        /// </summary>
-        internal static string OIDCH_0045_Id_Token_Code_Missing
-        {
-            get { return GetString("OIDCH_0045_Id_Token_Code_Missing"); }
-        }
-
-        /// <summary>
-        /// OIDCH_0045: Cannot process the message. Both id_token and code are missing.
-        /// </summary>
-        internal static string FormatOIDCH_0045_Id_Token_Code_Missing()
-        {
-            return GetString("OIDCH_0045_Id_Token_Code_Missing");
-        }
-
-        /// <summary>
-        /// OIDCH_0046: UserInfo endpoint is not set. Request to retrieve claims from userinfo endpoint cannot be completed.
-        /// </summary>
-        internal static string OIDCH_0046_UserInfo_Endpoint_Not_Set
-        {
-            get { return GetString("OIDCH_0046_UserInfo_Endpoint_Not_Set"); }
-        }
-
-        /// <summary>
-        /// OIDCH_0046: UserInfo endpoint is not set. Request to retrieve claims from userinfo endpoint cannot be completed.
-        /// </summary>
-        internal static string FormatOIDCH_0046_UserInfo_Endpoint_Not_Set()
-        {
-            return GetString("OIDCH_0046_UserInfo_Endpoint_Not_Set");
+            return GetString("IdTokenCodeMissing");
         }
 
         private static string GetString(string name, params string[] formatterNames)

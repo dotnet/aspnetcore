@@ -117,121 +117,22 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="OIDCH_0101_BackChallnelLessThanZero" xml:space="preserve">
-    <value>OIDCH_0101: BackchannelTimeout cannot be less or equal to TimeSpan.Zero.</value>
+  <data name="MessageStateIsNullOrEmpty" xml:space="preserve">
+    <value>OpenIdConnectAuthenticationHandler: message.State is null or empty.</value>
   </data>
-  <data name="OIDCH_0102_Exception_ValidatorHandlerMismatch" xml:space="preserve">
-    <value>OIDCH_0102: An ICertificateValidator cannot be specified at the same time as an HttpMessageHandler unless it is a WebRequestHandler.</value>
+  <data name="MessageStateIsInvalid" xml:space="preserve">
+    <value>Unable to unprotect the message.State.</value>
   </data>
-  <data name="OIDCH_0051_RedirectUriLogoutIsNotWellFormed" xml:space="preserve">
-    <value>OIDC_0051: The query string for Logout is not a well formed URI. The runtime cannot redirect. Redirect uri: '{0}'.</value>
+  <data name="MessageContainsError" xml:space="preserve">
+    <value>Message contains error: '{0}', error_description: '{1}', error_uri: '{2}'.</value>
   </data>
-  <data name="OIDCH_0026_ApplyResponseChallengeAsync" xml:space="preserve">
-    <value>OIDCH_0026: Entering: '{0}'</value>
+  <data name="ValidatedSecurityTokenNotJwt" xml:space="preserve">
+    <value>The Validated Security Token must be of type JwtSecurityToken, but instead its type is: '{0}'.</value>
   </data>
-  <data name="OIDCH_0027_401_ConvertedTo_403" xml:space="preserve">
-    <value>OIDCH_0027: Converted 401 to 403.</value>
+  <data name="UnableToValidateToken" xml:space="preserve">
+    <value>Unable to validate the 'id_token', no suitable ISecurityTokenValidator was found for: '{0}'."</value>
   </data>
-  <data name="OIDCH_0028_StatusCodeNot401" xml:space="preserve">
-    <value>OIDCH_0028: Response.StatusCode != 401, StatusCode: '{0}'.</value>
-  </data>
-  <data name="OIDCH_0029_ChallengContextEqualsNull" xml:space="preserve">
-    <value>OIDCH_0029: ChallengeContext == null AND !Options.AutomaticAuthenticate</value>
-  </data>
-  <data name="OIDCH_0030_Using_Properties_RedirectUri" xml:space="preserve">
-    <value>OIDCH_0030: Using properties.RedirectUri for 'local redirect' post authentication: '{0}'.</value>
-  </data>
-  <data name="OIDCH_0031_Using_Options_RedirectUri" xml:space="preserve">
-    <value>OIDCH_0031: Using Options.RedirectUri for 'redirect_uri': '{0}'.</value>
-  </data>
-  <data name="OIDCH_0032_UsingCurrentUriRedirectUri" xml:space="preserve">
-    <value>OIDCH_0032: using the CurrentUri for 'local redirect' post authentication: '{0}'.</value>
-  </data>
-  <data name="OIDCH_0033_NonceAlreadyExists" xml:space="preserve">
-    <value>OIDCH_0033: ProtocolValidator.RequireNonce == true. The generated nonce already exists: this usually indicates the nonce is not unique or has been used. The nonce is: '{0}'.</value>
-  </data>
-  <data name="OIDCH_0036_UriIsNotWellFormed" xml:space="preserve">
-    <value>OIDCH_0036: Uri.IsWellFormedUriString(redirectUri, UriKind.Absolute) returned 'false', redirectUri is: '{0}'.</value>
-  </data>
-  <data name="OIDCH_0037_RedirectUri" xml:space="preserve">
-    <value>OIDCH_0037: RedirectUri is: '{0}'.</value>
-  </data>
-  <data name="OIDCH_0038_Redeeming_Auth_Code" xml:space="preserve">
-    <value>OIDCH_0038: Id Token is null. Redeeming code : {0} for tokens.</value>
-  </data>
-  <data name="OIDCH_0039_Subject_Claim_Mismatch" xml:space="preserve">
-    <value>OIDCH_0039: Subject claim received from userinfo endpoint does not match the one in the id token.</value>
-  </data>
-  <data name="OIDCH_0040_Sending_Request_UIEndpoint" xml:space="preserve">
-    <value>OIDCH_0040: Sending request to user info endpoint for retrieving claims.</value>
-  </data>
-  <data name="OIDCH_0000_AuthenticateCoreAsync" xml:space="preserve">
-    <value>OIDCH_0000: Entering: '{0}'.</value>
-  </data>
-  <data name="OIDCH_0001_MessageReceived" xml:space="preserve">
-    <value>OIDCH_0001: MessageReceived: '{0}'.</value>
-  </data>
-  <data name="OIDCH_0002_MessageReceivedContextHandledResponse" xml:space="preserve">
-    <value>OIDCH_0002: MessageReceivedContext.HandledResponse</value>
-  </data>
-  <data name="OIDCH_0003_MessageReceivedContextSkipped" xml:space="preserve">
-    <value>OIDCH_0003: MessageReceivedContext.Skipped</value>
-  </data>
-  <data name="OIDCH_0004_MessageStateIsNullOrEmpty" xml:space="preserve">
-    <value>OIDCH_0004: OpenIdConnectAuthenticationHandler: message.State is null or empty.</value>
-  </data>
-  <data name="OIDCH_0005_MessageStateIsInvalid" xml:space="preserve">
-    <value>OIDCH_0005: Unable to unprotect the message.State.</value>
-  </data>
-  <data name="OIDCH_0006_MessageContainsError" xml:space="preserve">
-    <value>OIDCH_0006: Message contains error: '{0}', error_description: '{1}', error_uri: '{2}'.</value>
-  </data>
-  <data name="OIDCH_0007_UpdatingConfiguration" xml:space="preserve">
-    <value>OIDCH_0007: Updating configuration</value>
-  </data>
-  <data name="OIDCH_0010_ValidatedSecurityTokenNotJwt" xml:space="preserve">
-    <value>OIDCH_0010: Validated Security Token must be a JwtSecurityToken was: '{0}'.</value>
-  </data>
-  <data name="OIDCH_0011_UnableToValidateToken" xml:space="preserve">
-    <value>OIDCH_0011: Unable to validate the 'id_token', no suitable ISecurityTokenValidator was found for: '{0}'."</value>
-  </data>
-  <data name="OIDCH_0014_AuthorizationCodeReceived" xml:space="preserve">
-    <value>OIDCH_0014: AuthorizationCode received: '{0}'.</value>
-  </data>
-  <data name="OIDCH_0015_AuthorizationCodeReceivedContextHandledResponse" xml:space="preserve">
-    <value>OIDCH_0015: AuthorizationCodeReceivedContext.HandledResponse</value>
-  </data>
-  <data name="OIDCH_0016_AuthorizationCodeReceivedContextSkipped" xml:space="preserve">
-    <value>OIDCH_0016: AuthorizationCodeReceivedContext.Skipped</value>
-  </data>
-  <data name="OIDCH_0017_ExceptionOccurredWhileProcessingMessage" xml:space="preserve">
-    <value>OIDCH_0017: Exception occurred while processing message.</value>
-  </data>
-  <data name="OIDCH_0018_AuthenticationFailedContextHandledResponse" xml:space="preserve">
-    <value>OIDCH_0018: AuthenticationFailedContext.HandledResponse</value>
-  </data>
-  <data name="OIDCH_0019_AuthenticationFailedContextSkipped" xml:space="preserve">
-    <value>OIDCH_0019: AuthenticationFailedContext.Skipped</value>
-  </data>
-  <data name="OIDCH_0020_IdTokenReceived" xml:space="preserve">
-    <value>OIDCH_0020: 'id_token' received: '{0}'</value>
-  </data>
-  <data name="OIDCH_0021_AutomaticConfigurationRefresh" xml:space="preserve">
-    <value>OIDCH_0021: exception of type 'SecurityTokenSignatureKeyNotFoundException' thrown, Options.ConfigurationManager.RequestRefresh() called.</value>
-  </data>
-  <data name="OIDCH_0041_Subject_Claim_Not_Found" xml:space="preserve">
-    <value>OIDCH_0041: Subject claim not found in {0}.</value>
-  </data>
-  <data name="OIDCH_0043_AuthorizationCodeRedeemedContextHandledResponse" xml:space="preserve">
-    <value>OIDCH_0043: AuthorizationCodeRedeemedContext.HandledResponse</value>
-  </data>
-  <data name="OIDCH_0044_AuthorizationCodeRedeemedContextSkipped" xml:space="preserve">
-    <value>OIDCH_0044: AuthorizationCodeRedeemedContext.Skipped</value>
-  </data>
-  <data name="OIDCH_0045_Id_Token_Code_Missing" xml:space="preserve">
-    <value>OIDCH_0045: Cannot process the message. Both id_token and code are missing.</value>
-  </data>
-  <data name="OIDCH_0046_UserInfo_Endpoint_Not_Set" xml:space="preserve">
-    <value>OIDCH_0046: UserInfo endpoint is not set. Request to retrieve claims from userinfo endpoint cannot be completed.</value>
+  <data name="IdTokenCodeMissing" xml:space="preserve">
+    <value>Cannot process the message. Both id_token and code are missing.</value>
   </data>
 </root>
