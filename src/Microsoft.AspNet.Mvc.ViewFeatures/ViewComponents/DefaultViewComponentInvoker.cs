@@ -2,10 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Controllers;
+using Microsoft.AspNet.Mvc.Diagnostics;
 using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewFeatures;
@@ -16,10 +18,12 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
     {
         private readonly ITypeActivatorCache _typeActivatorCache;
         private readonly IViewComponentActivator _viewComponentActivator;
+        private readonly DiagnosticSource _diagnosticSource;
 
         public DefaultViewComponentInvoker(
             ITypeActivatorCache typeActivatorCache,
-            IViewComponentActivator viewComponentActivator)
+            IViewComponentActivator viewComponentActivator,
+            DiagnosticSource diagnosticSource)
         {
             if (typeActivatorCache == null)
             {
@@ -31,8 +35,14 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
                 throw new ArgumentNullException(nameof(viewComponentActivator));
             }
 
+            if (diagnosticSource == null)
+            {
+                throw new ArgumentNullException(nameof(diagnosticSource));
+            }
+
             _typeActivatorCache = typeActivatorCache;
             _viewComponentActivator = viewComponentActivator;
+            _diagnosticSource = diagnosticSource;
         }
 
         public void Invoke(ViewComponentContext context)
@@ -52,6 +62,7 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
             }
 
             var result = InvokeSyncCore(method, context);
+
             result.Execute(context);
         }
 
@@ -124,9 +135,15 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
 
             var component = CreateComponent(context);
 
+            _diagnosticSource.BeforeViewComponent(context, component);
+
             var result = await ControllerActionExecutor.ExecuteAsync(method, component, context.Arguments);
 
-            return CoerceToViewComponentResult(result);
+            var viewComponentResult = CoerceToViewComponentResult(result);
+
+            _diagnosticSource.AfterViewComponent(context, viewComponentResult, component);
+
+            return viewComponentResult;
         }
 
         public IViewComponentResult InvokeSyncCore(MethodInfo method, ViewComponentContext context)
@@ -145,6 +162,8 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
 
             object result = null;
 
+            _diagnosticSource.BeforeViewComponent(context, component);
+
             try
             {
                 result = method.Invoke(component, context.Arguments);
@@ -156,7 +175,11 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
                 exceptionInfo.Throw();
             }
 
-            return CoerceToViewComponentResult(result);
+            var viewComponentResult = CoerceToViewComponentResult(result);
+
+            _diagnosticSource.AfterViewComponent(context, viewComponentResult, component);
+
+            return viewComponentResult;
         }
 
         private static IViewComponentResult CoerceToViewComponentResult(object value)

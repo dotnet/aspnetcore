@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Mvc.Diagnostics;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewEngines;
 using Microsoft.AspNet.Mvc.ViewFeatures;
@@ -19,6 +21,8 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
         // {0} is the component name, {1} is the view name.
         private const string ViewPathFormat = "Components/{0}/{1}";
         private const string DefaultViewName = "Default";
+
+        private DiagnosticSource _diagnosticSource;
 
         /// <summary>
         /// Gets or sets the view name.
@@ -115,7 +119,16 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
 
             using (view as IDisposable)
             {
+                if (_diagnosticSource == null)
+                {
+                    _diagnosticSource = context.ViewContext.HttpContext.RequestServices.GetRequiredService<DiagnosticSource>();
+                }
+
+                _diagnosticSource.ViewComponentBeforeViewExecute(context, view);
+
                 await view.RenderAsync(childViewContext);
+
+                _diagnosticSource.ViewComponentAfterViewExecute(context, view);
             }
         }
 

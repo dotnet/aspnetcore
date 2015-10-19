@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Mvc.Diagnostics;
 using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.AspNet.Mvc.ViewEngines;
@@ -70,37 +71,13 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             var result = viewEngine.FindPartialView(actionContext, viewName);
             if (result.Success)
             {
-                if (DiagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.ViewFound"))
-                {
-                    DiagnosticSource.Write(
-                        "Microsoft.AspNet.Mvc.ViewFound",
-                        new
-                        {
-                            actionContext = actionContext,
-                            isPartial = true,
-                            result = viewResult,
-                            viewName = viewName,
-                            view = result.View,
-                        });
-                }
+                DiagnosticSource.ViewFound(actionContext, true, viewResult, viewName, result.View);
 
                 Logger.LogVerbose("The partial view '{PartialViewName}' was found.", viewName);
             }
             else
             {
-                if (DiagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.ViewNotFound"))
-                {
-                    DiagnosticSource.Write(
-                        "Microsoft.AspNet.Mvc.ViewNotFound",
-                        new
-                        {
-                            actionContext = actionContext,
-                            isPartial = true,
-                            result = viewResult,
-                            viewName = viewName,
-                            searchedLocations = result.SearchedLocations
-                        });
-                }
+                DiagnosticSource.ViewNotFound(actionContext, true, viewResult, viewName, result.SearchedLocations);
 
                 Logger.LogError(
                     "The partial view '{PartialViewName}' was not found. Searched locations: {SearchedViewLocations}",

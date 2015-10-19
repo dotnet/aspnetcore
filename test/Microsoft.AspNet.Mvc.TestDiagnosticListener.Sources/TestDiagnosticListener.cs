@@ -220,5 +220,109 @@ namespace Microsoft.AspNet.Mvc
                 ViewContext = viewContext,
             };
         }
+
+        public class OnBeforeViewComponentEventData
+        {
+            public IProxyActionDescriptor ActionDescriptor { get; set; }
+
+            public IProxyViewComponentContext ViewComponentContext { get; set; }
+
+            public object ViewComponent { get; set; }
+        }
+
+        public OnBeforeViewComponentEventData BeforeViewComponent { get; set; }
+
+        [DiagnosticName("Microsoft.AspNet.Mvc.BeforeViewComponent")]
+        public virtual void OnBeforeViewComponent(
+            IProxyActionDescriptor actionDescriptor,
+            IProxyViewComponentContext viewComponentContext,
+            object viewComponent)
+        {
+            BeforeViewComponent = new OnBeforeViewComponentEventData()
+            {
+                ActionDescriptor = actionDescriptor,
+                ViewComponentContext = viewComponentContext,
+                ViewComponent = viewComponent
+            };
+        }
+
+        public class OnAfterViewComponentEventData
+        {
+            public IProxyActionDescriptor ActionDescriptor { get; set; }
+
+            public IProxyViewComponentContext ViewComponentContext { get; set; }
+
+            public IProxyViewComponentResult ViewComponentResult { get; set; }
+
+            public object ViewComponent { get; set; }
+        }
+
+        public OnAfterViewComponentEventData AfterViewComponent { get; set; }
+
+        [DiagnosticName("Microsoft.AspNet.Mvc.AfterViewComponent")]
+        public virtual void OnAfterViewComponent(
+            IProxyActionDescriptor actionDescriptor,
+            IProxyViewComponentContext viewComponentContext,
+            IProxyViewComponentResult viewComponentResult,
+            object viewComponent)
+        {
+            AfterViewComponent = new OnAfterViewComponentEventData()
+            {
+                ActionDescriptor = actionDescriptor,
+                ViewComponentContext = viewComponentContext,
+                ViewComponentResult = viewComponentResult,
+                ViewComponent = viewComponent
+            };
+        }
+
+        public class OnViewComponentBeforeViewExecuteEventData
+        {
+            public IProxyActionDescriptor ActionDescriptor { get; set; }
+
+            public IProxyViewComponentContext ViewComponentContext { get; set; }
+
+            public IProxyView View { get; set; }
+        }
+
+        public OnViewComponentBeforeViewExecuteEventData ViewComponentBeforeViewExecute { get; set; }
+
+        [DiagnosticName("Microsoft.AspNet.Mvc.ViewComponentBeforeViewExecute")]
+        public virtual void OnViewComponentBeforeViewExecute(
+            IProxyActionDescriptor actionDescriptor,
+            IProxyViewComponentContext viewComponentContext,
+            IProxyView view)
+        {
+            ViewComponentBeforeViewExecute = new OnViewComponentBeforeViewExecuteEventData()
+            {
+                ActionDescriptor = actionDescriptor,
+                ViewComponentContext = viewComponentContext,
+                View = view
+            };
+        }
+
+        public class OnViewComponentAfterViewExecuteEventData
+        {
+            public IProxyActionDescriptor ActionDescriptor { get; set; }
+
+            public IProxyViewComponentContext ViewComponentContext { get; set; }
+
+            public IProxyView View { get; set; }
+        }
+
+        public OnViewComponentAfterViewExecuteEventData ViewComponentAfterViewExecute { get; set; }
+
+        [DiagnosticName("Microsoft.AspNet.Mvc.ViewComponentAfterViewExecute")]
+        public virtual void OnViewComponentAfterViewExecute(
+            IProxyActionDescriptor actionDescriptor,
+            IProxyViewComponentContext viewComponentContext,
+            IProxyView view)
+        {
+            ViewComponentAfterViewExecute = new OnViewComponentAfterViewExecuteEventData()
+            {
+                ActionDescriptor = actionDescriptor,
+                ViewComponentContext = viewComponentContext,
+                View = view
+            };
+        }
     }
 }

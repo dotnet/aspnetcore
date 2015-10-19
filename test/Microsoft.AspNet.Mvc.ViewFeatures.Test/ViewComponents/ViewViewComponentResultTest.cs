@@ -3,6 +3,7 @@
 
 #if MOCK_SUPPORT
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Internal;
@@ -89,6 +90,48 @@ namespace Microsoft.AspNet.Mvc
             // Assert
             viewEngine.Verify();
             view.Verify();
+        }
+
+        [Fact]
+        public void Execute_ResolvesView_AndWritesDiagnosticSource()
+        {
+            // Arrange
+            var view = new Mock<IView>(MockBehavior.Strict);
+            view.Setup(v => v.RenderAsync(It.IsAny<ViewContext>()))
+                .Returns(Task.FromResult(result: true))
+                .Verifiable();
+
+            var viewEngine = new Mock<IViewEngine>(MockBehavior.Strict);
+            viewEngine.Setup(e => e.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
+                      .Returns(ViewEngineResult.Found("Default", view.Object))
+                      .Verifiable();
+
+            var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider());
+
+            var result = new ViewViewComponentResult
+            {
+                ViewEngine = viewEngine.Object,
+                ViewData = viewData,
+                TempData = _tempDataDictionary,
+            };
+
+            var adapter = new TestDiagnosticListener();
+
+            var viewComponentContext = GetViewComponentContext(view.Object, viewData, adapter);
+
+            // Act
+            result.Execute(viewComponentContext);
+
+            // Assert
+            viewEngine.Verify();
+            view.Verify();
+
+            Assert.NotNull(adapter.ViewComponentBeforeViewExecute?.ActionDescriptor);
+            Assert.NotNull(adapter.ViewComponentBeforeViewExecute?.ViewComponentContext);
+            Assert.NotNull(adapter.ViewComponentBeforeViewExecute?.View);
+            Assert.NotNull(adapter.ViewComponentAfterViewExecute?.ActionDescriptor);
+            Assert.NotNull(adapter.ViewComponentAfterViewExecute?.ViewComponentContext);
+            Assert.NotNull(adapter.ViewComponentAfterViewExecute?.View);
         }
 
         [Fact]
@@ -204,6 +247,8 @@ namespace Microsoft.AspNet.Mvc
             var serviceProvider = new Mock<IServiceProvider>();
             serviceProvider.Setup(p => p.GetService(typeof(ICompositeViewEngine)))
                 .Returns(viewEngine.Object);
+            serviceProvider.Setup(p => p.GetService(typeof(DiagnosticSource)))
+                .Returns(new DiagnosticListener("Test"));
 
             var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider());
 
@@ -345,9 +390,23 @@ namespace Microsoft.AspNet.Mvc
             viewEngine.Verify();
         }
 
-        private static ViewComponentContext GetViewComponentContext(IView view, ViewDataDictionary viewData)
+        private static ViewComponentContext GetViewComponentContext(IView view, ViewDataDictionary viewData, object diagnosticListener = null)
         {
-            var actionContext = new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
+            var diagnosticSource = new DiagnosticListener("Microsoft.AspNet");
+            if (diagnosticListener == null)
+            {
+                diagnosticListener = new TestDiagnosticListener();
+            }
+
+            diagnosticSource.SubscribeWithAdapter(diagnosticListener);
+
+            var serviceProvider = new Mock<IServiceProvider>();
+            serviceProvider.Setup(s => s.GetService(typeof(DiagnosticSource))).Returns(diagnosticSource);
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.RequestServices = serviceProvider.Object;
+
+            var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
             var viewContext = new ViewContext(
                 actionContext,
                 view,
