@@ -89,12 +89,12 @@ namespace Microsoft.AspNet.Identity
         {
             if (Options.SignIn.RequireConfirmedEmail && !(await UserManager.IsEmailConfirmedAsync(user)))
             {
-                Logger.LogWarning("User {userId} cannot sign in without a confirmed email.", await UserManager.GetUserIdAsync(user));
+                Logger.LogWarning(0, "User {userId} cannot sign in without a confirmed email.", await UserManager.GetUserIdAsync(user));
                 return false;
             }
             if (Options.SignIn.RequireConfirmedPhoneNumber && !(await UserManager.IsPhoneNumberConfirmedAsync(user)))
             {
-                Logger.LogWarning("User {userId} cannot sign in without a confirmed phone number.", await UserManager.GetUserIdAsync(user));
+                Logger.LogWarning(1, "User {userId} cannot sign in without a confirmed phone number.", await UserManager.GetUserIdAsync(user));
                 return false;
             }
 
@@ -212,7 +212,7 @@ namespace Microsoft.AspNet.Identity
                 await ResetLockout(user);
                 return await SignInOrTwoFactorAsync(user, isPersistent);
             }
-            Logger.LogWarning("User {userId} failed to provide the correct password.", await UserManager.GetUserIdAsync(user));
+            Logger.LogWarning(2, "User {userId} failed to provide the correct password.", await UserManager.GetUserIdAsync(user));
 
             if (UserManager.SupportsUserLockout && lockoutOnFailure)
             {
@@ -522,7 +522,7 @@ namespace Microsoft.AspNet.Identity
 
         private async Task<SignInResult> LockedOut(TUser user)
         {
-            Logger.LogWarning("User {userId} is currently locked out.", await UserManager.GetUserIdAsync(user));
+            Logger.LogWarning(3, "User {userId} is currently locked out.", await UserManager.GetUserIdAsync(user));
             return SignInResult.LockedOut;
         }
 
