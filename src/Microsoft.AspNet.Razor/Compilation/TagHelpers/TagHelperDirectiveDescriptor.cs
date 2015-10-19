@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Razor.TagHelpers
+namespace Microsoft.AspNet.Razor.Compilation.TagHelpers
 {
     /// <summary>
     /// Contains information needed to resolve <see cref="TagHelperDescriptor"/>s.

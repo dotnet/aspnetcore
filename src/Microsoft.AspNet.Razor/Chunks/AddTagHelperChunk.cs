@@ -4,12 +4,12 @@
 namespace Microsoft.AspNet.Razor.Chunks
 {
     /// <summary>
-    /// A <see cref="Chunk"/> used to look up <see cref="TagHelpers.TagHelperDescriptor"/>s.
+    /// A <see cref="Chunk"/> used to look up <see cref="Compilation.TagHelpers.TagHelperDescriptor"/>s.
     /// </summary>
     public class AddTagHelperChunk : Chunk
     {
         /// <summary>
-        /// Text used to look up <see cref="TagHelpers.TagHelperDescriptor"/>s.
+        /// Text used to look up <see cref="Compilation.TagHelpers.TagHelperDescriptor"/>s.
         /// </summary>
         public string LookupText { get; set; }
     }

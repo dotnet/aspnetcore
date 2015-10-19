@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Internal;
 
-namespace Microsoft.AspNet.Razor.TagHelpers
+namespace Microsoft.AspNet.Razor.Compilation.TagHelpers
 {
     /// <summary>
     /// An <see cref="IEqualityComparer{TagHelperDescriptor}"/> that checks equality between two

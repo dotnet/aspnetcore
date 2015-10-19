@@ -14,7 +14,7 @@ using Microsoft.AspNet.Razor.Test.TagHelpers;
 using Microsoft.AspNet.Razor.Text;
 using Xunit;
 
-namespace Microsoft.AspNet.Razor.TagHelpers
+namespace Microsoft.AspNet.Razor.Compilation.TagHelpers
 {
     public class TagHelperBlockRewriterTest : TagHelperRewritingTestBase
     {

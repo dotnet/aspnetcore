@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
-using Microsoft.AspNet.Razor.TagHelpers;
+using Microsoft.AspNet.Razor.Compilation.TagHelpers;
 
 namespace Microsoft.AspNet.Razor.Chunks
 {

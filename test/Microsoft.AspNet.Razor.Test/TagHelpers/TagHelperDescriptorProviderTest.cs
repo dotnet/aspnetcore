@@ -7,7 +7,7 @@ using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Razor.Test.Internal;
 using Xunit;
 
-namespace Microsoft.AspNet.Razor.TagHelpers
+namespace Microsoft.AspNet.Razor.Compilation.TagHelpers
 {
     public class TagHelperDescriptorProviderTest
     {

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Internal;
 
-namespace Microsoft.AspNet.Razor.TagHelpers
+namespace Microsoft.AspNet.Razor.Compilation.TagHelpers
 {
     /// <summary>
     /// An <see cref="IEqualityComparer{TagHelperDescriptor}"/> used to check equality between

@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
         private static readonly Assembly ExecutingAssembly = typeof(CompilationUtility).GetTypeInfo().Assembly;
         public static readonly string GeneratedAssemblyName = Path.GetRandomFileName() + "." + Path.GetRandomFileName();
 
-        public static Compilation GetCompilation(params string[] resourceFiles)
+        public static CodeAnalysis.Compilation GetCompilation(params string[] resourceFiles)
         {
             var assemblyVersion = ExecutingAssembly.GetName().Version;
 

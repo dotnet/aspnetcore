@@ -14,7 +14,7 @@ using Moq;
 #endif
 using Xunit;
 
-namespace Microsoft.AspNet.Razor.TagHelpers
+namespace Microsoft.AspNet.Razor.Compilation.TagHelpers
 {
     public class TagHelperDirectiveSpanVisitorTest
     {

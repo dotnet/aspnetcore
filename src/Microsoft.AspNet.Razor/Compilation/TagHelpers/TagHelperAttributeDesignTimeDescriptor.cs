@@ -1,12 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace Microsoft.AspNet.Razor.TagHelpers
+namespace Microsoft.AspNet.Razor.Compilation.TagHelpers
 {
     /// <summary>
-    /// A metadata class containing design time information about a tag helper.
+    /// A metadata class containing information about tag helper use.
     /// </summary>
-    public class TagHelperDesignTimeDescriptor
+    public class TagHelperAttributeDesignTimeDescriptor
     {
         /// <summary>
         /// A summary of how to use a tag helper.
@@ -17,13 +17,5 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// Remarks about how to use a tag helper.
         /// </summary>
         public string Remarks { get; set; }
-
-        /// <summary>
-        /// The HTML element a tag helper may output.
-        /// </summary>
-        /// <remarks>
-        /// In IDEs supporting IntelliSense, may override the HTML information provided at design time.
-        /// </remarks>
-        public string OutputElementHint { get; set; }
     }
 }

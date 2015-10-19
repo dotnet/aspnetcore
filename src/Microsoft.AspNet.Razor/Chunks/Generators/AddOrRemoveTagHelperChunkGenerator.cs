@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Razor.Chunks.Generators
         /// Instantiates a new <see cref="AddOrRemoveTagHelperChunkGenerator"/>.
         /// </summary>
         /// <param name="lookupText">
-        /// Text used to look up <see cref="TagHelpers.TagHelperDescriptor"/>s that should be added or removed.
+        /// Text used to look up <see cref="Compilation.TagHelpers.TagHelperDescriptor"/>s that should be added or removed.
         /// </param>
         public AddOrRemoveTagHelperChunkGenerator(bool removeTagHelperDescriptors, string lookupText)
         {
@@ -24,13 +24,13 @@ namespace Microsoft.AspNet.Razor.Chunks.Generators
         }
 
         /// <summary>
-        /// Gets the text used to look up <see cref="TagHelpers.TagHelperDescriptor"/>s that should be added to or
+        /// Gets the text used to look up <see cref="Compilation.TagHelpers.TagHelperDescriptor"/>s that should be added to or
         /// removed from the Razor page.
         /// </summary>
         public string LookupText { get; }
 
         /// <summary>
-        /// Whether we want to remove <see cref="TagHelpers.TagHelperDescriptor"/>s from the Razor page.
+        /// Whether we want to remove <see cref="Compilation.TagHelpers.TagHelperDescriptor"/>s from the Razor page.
         /// </summary>
         /// <remarks>If <c>true</c> <see cref="GenerateChunk"/> generates <see cref="AddTagHelperChunk"/>s,
         /// <see cref="RemoveTagHelperChunk"/>s otherwise.</remarks>

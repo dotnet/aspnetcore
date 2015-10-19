@@ -4,13 +4,13 @@
 namespace Microsoft.AspNet.Razor.Chunks
 {
     /// <summary>
-    /// A <see cref="Chunk"/> used to look up <see cref="TagHelpers.TagHelperDescriptor"/>s that should be ignored
+    /// A <see cref="Chunk"/> used to look up <see cref="Compilation.TagHelpers.TagHelperDescriptor"/>s that should be ignored
     /// within the Razor page.
     /// </summary>
     public class RemoveTagHelperChunk : Chunk
     {
         /// <summary>
-        /// Text used to look up <see cref="TagHelpers.TagHelperDescriptor"/>s that should be ignored within the Razor
+        /// Text used to look up <see cref="Compilation.TagHelpers.TagHelperDescriptor"/>s that should be ignored within the Razor
         /// page.
         /// </summary>
         public string LookupText { get; set; }

@@ -17,13 +17,13 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
         private readonly object _assemblyLookupLock = new object();
         private readonly Dictionary<string, IEnumerable<ITypeInfo>> _assemblyLookup
             = new Dictionary<string, IEnumerable<ITypeInfo>>(StringComparer.Ordinal);
-        private readonly Compilation _compilation;
+        private readonly CodeAnalysis.Compilation _compilation;
 
         /// <summary>
         /// Initializes a new instance of <see cref="PrecompilationTagHelperTypeResolver"/>.
         /// </summary>
-        /// <param name="compilation">The <see cref="Compilation"/>.</param>
-        public PrecompilationTagHelperTypeResolver(Compilation compilation)
+        /// <param name="compilation">The <see cref="CodeAnalysis.Compilation"/>.</param>
+        public PrecompilationTagHelperTypeResolver(CodeAnalysis.Compilation compilation)
         {
             if (compilation == null)
             {

@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <remarks>
         /// Indexers in this context refer to the CLR notion of an indexer (<c>this [string name]</c> 
         /// and does not overlap with the semantics of 
-        /// <see cref="Razor.TagHelpers.TagHelperAttributeDescriptor.IsIndexer"/>.
+        /// <see cref="Razor.Compilation.TagHelperAttributeDescriptor.IsIndexer"/>.
         /// </remarks>
         IEnumerable<IPropertyInfo> Properties { get; }
 
