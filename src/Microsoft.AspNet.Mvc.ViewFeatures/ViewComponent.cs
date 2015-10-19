@@ -27,9 +27,9 @@ namespace Microsoft.AspNet.Mvc
         private ICompositeViewEngine _viewEngine;
 
         /// <summary>
-        /// Gets the <see cref="HttpContext"/>.
+        /// Gets the <see cref="Http.HttpContext"/>.
         /// </summary>
-        public HttpContext Context
+        public HttpContext HttpContext
         {
             get
             {
