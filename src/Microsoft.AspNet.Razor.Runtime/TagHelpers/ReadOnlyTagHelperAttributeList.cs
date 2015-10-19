@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Internal;
 
-namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
+namespace Microsoft.AspNet.Razor.TagHelpers
 {
     /// <summary>
     /// A read-only collection of <typeparamref name="TAttribute"/>s.

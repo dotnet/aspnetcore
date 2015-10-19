@@ -1,6 +1,7 @@
 #pragma checksum "SymbolBoundAttributes.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "65ef0c8f673481f5ab85bd4936f91f31e84c490c"
 namespace TestOutput
 {
+    using Microsoft.AspNet.Razor.TagHelpers;
     using Microsoft.AspNet.Razor.Runtime.TagHelpers;
     using System;
     using System.Threading.Tasks;

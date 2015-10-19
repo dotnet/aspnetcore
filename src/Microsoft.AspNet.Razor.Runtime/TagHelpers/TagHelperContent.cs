@@ -6,7 +6,7 @@ using System.IO;
 using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.Extensions.WebEncoders;
 
-namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
+namespace Microsoft.AspNet.Razor.TagHelpers
 {
     /// <summary>
     /// Abstract class used to buffer content returned by <see cref="ITagHelper"/>s.

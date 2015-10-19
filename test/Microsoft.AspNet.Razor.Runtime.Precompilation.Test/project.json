@@ -15,7 +15,7 @@
     },
     "resource": [
         "../Microsoft.AspNet.Razor.Runtime.Precompilation.Files/*.cs",
-        "../Microsoft.AspNet.Razor.Runtime.Test/TagHelpers/TestTagHelpers/*.cs",
+        "../Microsoft.AspNet.Razor.Runtime.Test/Runtime/TagHelpers/TestTagHelpers/*.cs",
         "BadFiles/*.cs"
     ],
     "commands": {

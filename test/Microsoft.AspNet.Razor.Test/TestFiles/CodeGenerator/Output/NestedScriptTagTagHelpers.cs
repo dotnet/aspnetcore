@@ -1,6 +1,7 @@
 #pragma checksum "NestedScriptTagTagHelpers.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "9e6bc8d09df124eda650118b208b7c5e6e058f6b"
 namespace TestOutput
 {
+    using Microsoft.AspNet.Razor.TagHelpers;
     using Microsoft.AspNet.Razor.Runtime.TagHelpers;
     using System;
     using System.Threading.Tasks;

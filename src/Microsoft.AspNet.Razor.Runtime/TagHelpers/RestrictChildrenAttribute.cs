@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
+namespace Microsoft.AspNet.Razor.TagHelpers
 {
     /// <summary>
     /// Restricts children of the <see cref="ITagHelper"/>'s element.

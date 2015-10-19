@@ -11,7 +11,11 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
 {
     public class CSharpUsingVisitor : CodeVisitor<CSharpCodeWriter>
     {
-        private const string TagHelpersRuntimeNamespace = "Microsoft.AspNet.Razor.Runtime.TagHelpers";
+        private static readonly string[] TagHelpersRuntimeNamespaces = new[]
+        {
+            "Microsoft.AspNet.Razor.TagHelpers",
+            "Microsoft.AspNet.Razor.Runtime.TagHelpers"
+        };
 
         private bool _foundTagHelpers;
 
@@ -28,10 +32,10 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
                 throw new ArgumentNullException(nameof(context));
             }
 
-            ImportedUsings = new List<string>();
+            ImportedUsings = new HashSet<string>(StringComparer.Ordinal);
         }
 
-        public IList<string> ImportedUsings { get; set; }
+        public HashSet<string> ImportedUsings { get; set; }
 
         /// <inheritdoc />
         public override void Accept(Chunk chunk)
@@ -89,15 +93,23 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
 
         protected override void Visit(TagHelperChunk chunk)
         {
+            if (Context.Host.DesignTimeMode)
+            {
+                return;
+            }
+
             if (!_foundTagHelpers)
             {
                 _foundTagHelpers = true;
 
-                if (!ImportedUsings.Contains(TagHelpersRuntimeNamespace))
+                foreach (var tagHelperRuntimeNamespace in TagHelpersRuntimeNamespaces)
                 {
-                    // If we find TagHelpers then we need to add the TagHelper runtime namespace to our list of usings.
-                    Writer.WriteUsing(TagHelpersRuntimeNamespace);
-                    ImportedUsings.Add(TagHelpersRuntimeNamespace);
+                    if (ImportedUsings.Add(tagHelperRuntimeNamespace))
+                    {
+                        // If we find TagHelpers then we need to add the TagHelper runtime namespaces to our list of
+                        // usings.
+                        Writer.WriteUsing(tagHelperRuntimeNamespace);
+                    }
                 }
             }
         }

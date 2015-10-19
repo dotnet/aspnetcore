@@ -1,6 +1,7 @@
 #pragma checksum "DynamicAttributeTagHelpers.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "782463195265ee647cc2fc63fd5095a80090845b"
 namespace TestOutput
 {
+    using Microsoft.AspNet.Razor.TagHelpers;
     using Microsoft.AspNet.Razor.Runtime.TagHelpers;
     using System;
     using System.Threading.Tasks;

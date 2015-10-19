@@ -1,6 +1,7 @@
 #pragma checksum "TagHelpersInSection.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "b6492c68360b85d4993de94eeac547b7fb012a26"
 namespace TestOutput
 {
+    using Microsoft.AspNet.Razor.TagHelpers;
     using Microsoft.AspNet.Razor.Runtime.TagHelpers;
     using System;
     using System.Threading.Tasks;

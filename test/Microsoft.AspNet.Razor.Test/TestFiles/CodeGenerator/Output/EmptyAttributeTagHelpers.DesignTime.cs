@@ -1,6 +1,5 @@
 namespace TestOutput
 {
-    using Microsoft.AspNet.Razor.Runtime.TagHelpers;
     using System;
     using System.Threading.Tasks;
 

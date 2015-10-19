@@ -4,7 +4,7 @@
 using System;
 using Microsoft.AspNet.Razor.Compilation.TagHelpers;
 
-namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
+namespace Microsoft.AspNet.Razor.TagHelpers
 {
     /// <summary>
     /// Provides an <see cref="ITagHelper"/>'s target.

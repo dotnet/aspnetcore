@@ -4,30 +4,30 @@
     <name>Microsoft.AspNet.Razor.Runtime.Test</name>
   </assembly>
   <members>
-    <member name="T:Microsoft.AspNet.Razor.Runtime.TagHelpers.DocumentedTagHelper">
+    <member name="T:Microsoft.AspNet.Razor.TagHelpers.DocumentedTagHelper">
       <summary>
-        fr-FR: The summary for <see cref="T:Microsoft.AspNet.Razor.Runtime.TagHelpers.DocumentedTagHelper" />.
+        fr-FR: The summary for <see cref="T:Microsoft.AspNet.Razor.TagHelpers.DocumentedTagHelper" />.
       </summary>
       <remarks>
-        fr-FR: Inherits from <see cref="T:Microsoft.AspNet.Razor.Runtime.TagHelpers.TagHelper" />.
+        fr-FR: Inherits from <see cref="T:Microsoft.AspNet.Razor.TagHelpers.TagHelper" />.
       </remarks>
     </member>
-    <member name="P:Microsoft.AspNet.Razor.Runtime.TagHelpers.DocumentedTagHelper.SummaryProperty">
+    <member name="P:Microsoft.AspNet.Razor.TagHelpers.DocumentedTagHelper.SummaryProperty">
       <summary>
-        fr-FR: This <see cref="P:Microsoft.AspNet.Razor.Runtime.TagHelpers.DocumentedTagHelper.SummaryProperty" /> is of type <see cref="T:System.String" />.
+        fr-FR: This <see cref="P:Microsoft.AspNet.Razor.TagHelpers.DocumentedTagHelper.SummaryProperty" /> is of type <see cref="T:System.String" />.
       </summary>
     </member>
-    <member name="P:Microsoft.AspNet.Razor.Runtime.TagHelpers.DocumentedTagHelper.RemarksProperty">
+    <member name="P:Microsoft.AspNet.Razor.TagHelpers.DocumentedTagHelper.RemarksProperty">
       <remarks>
-        fr-FR: The <see cref="P:Microsoft.AspNet.Razor.Runtime.TagHelpers.DocumentedTagHelper.SummaryProperty" /> may be <c>null</c>.
+        fr-FR: The <see cref="P:Microsoft.AspNet.Razor.TagHelpers.DocumentedTagHelper.SummaryProperty" /> may be <c>null</c>.
       </remarks>
     </member>
-    <member name="P:Microsoft.AspNet.Razor.Runtime.TagHelpers.DocumentedTagHelper.RemarksAndSummaryProperty">
+    <member name="P:Microsoft.AspNet.Razor.TagHelpers.DocumentedTagHelper.RemarksAndSummaryProperty">
       <summary>
         fr-FR: This is a complex <see cref="T:System.Collections.Generic.IDictionary`2" />.
       </summary>
       <remarks>
-        fr-FR: <see cref="P:Microsoft.AspNet.Razor.Runtime.TagHelpers.DocumentedTagHelper.SummaryProperty" /><see cref="P:Microsoft.AspNet.Razor.Runtime.TagHelpers.DocumentedTagHelper.RemarksProperty" />
+        fr-FR: <see cref="P:Microsoft.AspNet.Razor.TagHelpers.DocumentedTagHelper.SummaryProperty" /><see cref="P:Microsoft.AspNet.Razor.TagHelpers.DocumentedTagHelper.RemarksProperty" />
       </remarks>
     </member>
   </members>

@@ -7,7 +7,7 @@ using System.Web.WebPages.TestUtils;
 using Microsoft.AspNet.Razor.Editor;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.AspNet.Razor.Runtime.TagHelpers;
+using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.AspNet.Razor.Test.Framework;
 using Microsoft.AspNet.Razor.Test.Generator;
 using Microsoft.AspNet.Razor.Test.Utils;
