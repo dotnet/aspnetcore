@@ -7,8 +7,14 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Http
 {
+    /// <summary>
+    /// Represents the incoming side of an individual HTTP request.
+    /// </summary>
     public abstract class HttpRequest
     {
+        /// <summary>
+        /// Gets the <see cref="HttpContext"/> this request;
+        /// </summary>
         public abstract HttpContext HttpContext { get; }
 
         /// <summary>

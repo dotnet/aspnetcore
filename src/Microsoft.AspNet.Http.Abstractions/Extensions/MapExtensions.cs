@@ -7,16 +7,19 @@ using Microsoft.AspNet.Builder.Extensions;
 
 namespace Microsoft.AspNet.Builder
 {
+    /// <summary>
+    /// Extension methods for the <see cref="MapMiddleware"/>.
+    /// </summary>
     public static class MapExtensions
     {
         /// <summary>
-        /// If the request path starts with the given pathMatch, execute the app configured via configuration parameter instead of
-        /// continuing to the next component in the pipeline.
+        /// Branches the request pipeline based on matches of the given request path. If the request path starts with
+        /// the given path, the branch is executed.
         /// </summary>
-        /// <param name="app"></param>
-        /// <param name="pathMatch">The path to match</param>
-        /// <param name="configuration">The branch to take for positive path matches</param>
-        /// <returns></returns>
+        /// <param name="app">The <see cref="IApplicationBuilder"/> instance.</param>
+        /// <param name="pathMatch">The request path to match.</param>
+        /// <param name="configuration">The branch to take for positive path matches.</param>
+        /// <returns>The <see cref="IApplicationBuilder"/> instance.</returns>
         public static IApplicationBuilder Map(this IApplicationBuilder app, PathString pathMatch, Action<IApplicationBuilder> configuration)
         {
             if (app == null)
@@ -39,7 +42,7 @@ namespace Microsoft.AspNet.Builder
             configuration(branchBuilder);
             var branch = branchBuilder.Build();
 
-            var options = new MapOptions()
+            var options = new MapOptions
             {
                 Branch = branch,
                 PathMatch = pathMatch,

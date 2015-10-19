@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Builder
     using Predicate = Func<HttpContext, bool>;
 
     /// <summary>
-    /// Extension methods for the MapWhenMiddleware
+    /// Extension methods for the <see cref="MapWhenMiddleware"/>.
     /// </summary>
     public static class MapWhenExtensions
     {

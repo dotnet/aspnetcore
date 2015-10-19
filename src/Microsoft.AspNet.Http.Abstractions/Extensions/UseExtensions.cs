@@ -7,14 +7,17 @@ using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Builder
 {
+    /// <summary>
+    /// Extension methods for adding middleware.
+    /// </summary>
     public static class UseExtensions
     {
         /// <summary>
-        /// Use middleware defined in-line.
+        /// Adds a middleware delagate defined in-line to the application's request pipeline.
         /// </summary>
-        /// <param name="app"></param>
+        /// <param name="app">The <see cref="IApplicationBuilder"/> instance.</param>
         /// <param name="middleware">A function that handles the request or calls the given next function.</param>
-        /// <returns></returns>
+        /// <returns>The <see cref="IApplicationBuilder"/> instance.</returns>
         public static IApplicationBuilder Use(this IApplicationBuilder app, Func<HttpContext, Func<Task>, Task> middleware)
         {
             return app.Use(next =>

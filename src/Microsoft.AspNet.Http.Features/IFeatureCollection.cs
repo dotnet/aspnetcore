@@ -6,6 +6,9 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNet.Http.Features
 {
+    /// <summary>
+    /// Represents a collection of HTTP features.
+    /// </summary>
     public interface IFeatureCollection : IEnumerable<KeyValuePair<Type, object>>
     {
         /// <summary>
@@ -14,7 +17,7 @@ namespace Microsoft.AspNet.Http.Features
         bool IsReadOnly { get; }
 
         /// <summary>
-        /// Incremented for each modification and can be used verify cached results.
+        /// Incremented for each modification and can be used to verify cached results.
         /// </summary>
         int Revision { get; }
 

@@ -7,11 +7,19 @@ using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Builder.Extensions
 {
+    /// <summary>
+    /// Respresents a middleware that runs a sub-request pipeline when a given predicate is matched.
+    /// </summary>
     public class MapWhenMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly MapWhenOptions _options;
 
+        /// <summary>
+        /// Creates a new instance of <see cref="MapWhenMiddleware"/>.
+        /// </summary>
+        /// <param name="next">The delegate representing the next middleware in the request pipeline.</param>
+        /// <param name="options">The middleware options.</param>
         public MapWhenMiddleware(RequestDelegate next, MapWhenOptions options)
         {
             if (next == null)
@@ -28,6 +36,11 @@ namespace Microsoft.AspNet.Builder.Extensions
             _options = options;
         }
 
+        /// <summary>
+        /// Executes the middleware.
+        /// </summary>
+        /// <param name="context">The <see cref="HttpContext"/> for the current request.</param>
+        /// <returns>A task that represents the execution of this middleware.</returns>
         public async Task Invoke(HttpContext context)
         {
             if (context == null)

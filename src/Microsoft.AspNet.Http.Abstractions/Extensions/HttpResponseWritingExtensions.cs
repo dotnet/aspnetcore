@@ -16,10 +16,10 @@ namespace Microsoft.AspNet.Http
         /// <summary>
         /// Writes the given text to the response body. UTF-8 encoding will be used.
         /// </summary>
-        /// <param name="response"></param>
-        /// <param name="text"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="response">The <see cref="HttpResponse"/>.</param>
+        /// <param name="text">The text to write to the response.</param>
+        /// <param name="cancellationToken">Notifies when request operations should be cancelled.</param>
+        /// <returns>A task that represents the completion of the write operation.</returns>
         public static Task WriteAsync(this HttpResponse response, string text, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (response == null)
@@ -38,11 +38,11 @@ namespace Microsoft.AspNet.Http
         /// <summary>
         /// Writes the given text to the response body using the given encoding.
         /// </summary>
-        /// <param name="response"></param>
-        /// <param name="text"></param>
-        /// <param name="encoding"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="response">The <see cref="HttpResponse"/>.</param>
+        /// <param name="text">The text to write to the response.</param>
+        /// <param name="encoding">The encoding to use.</param>
+        /// <param name="cancellationToken">Notifies when request operations should be cancelled.</param>
+        /// <returns>A task that represents the completion of the write operation.</returns>
         public static Task WriteAsync(this HttpResponse response, string text, Encoding encoding, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (response == null)

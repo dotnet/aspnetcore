@@ -6,17 +6,17 @@ using Microsoft.AspNet.Http;
 namespace Microsoft.AspNet.Builder.Extensions
 {
     /// <summary>
-    /// Options for the Map middleware
+    /// Options for the <see cref="MapMiddleware"/>.
     /// </summary>
     public class MapOptions
     {
         /// <summary>
-        /// The path to match
+        /// The path to match.
         /// </summary>
         public PathString PathMatch { get; set; }
 
         /// <summary>
-        /// The branch taken for a positive match
+        /// The branch taken for a positive match.
         /// </summary>
         public RequestDelegate Branch { get; set; }
     }
