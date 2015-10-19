@@ -9,10 +9,10 @@ namespace Microsoft.AspNet.Hosting
     public static class HostingEnvironmentExtensions
     {
         /// <summary>
-        /// Checks if the current hosting environment name is development.
+        /// Checks if the current hosting environment name is "Development".
         /// </summary>
-        /// <param name="hostingEnvironment">An instance of <see cref="IHostingEnvironment"/> service.</param>
-        /// <returns>True if the environment name is Development, otherwise false.</returns>
+        /// <param name="hostingEnvironment">An instance of <see cref="IHostingEnvironment"/>.</param>
+        /// <returns>True if the environment name is "Development", otherwise false.</returns>
         public static bool IsDevelopment(this IHostingEnvironment hostingEnvironment)
         {
             if (hostingEnvironment == null)
@@ -24,10 +24,25 @@ namespace Microsoft.AspNet.Hosting
         }
 
         /// <summary>
-        /// Checks if the current hosting environment name is Production.
+        /// Checks if the current hosting environment name is "Staging".
         /// </summary>
-        /// <param name="hostingEnvironment">An instance of <see cref="IHostingEnvironment"/> service.</param>
-        /// <returns>True if the environment name is Production, otherwise false.</returns>
+        /// <param name="hostingEnvironment">An instance of <see cref="IHostingEnvironment"/>.</param>
+        /// <returns>True if the environment name is "Staging", otherwise false.</returns>
+        public static bool IsStaging(this IHostingEnvironment hostingEnvironment)
+        {
+            if (hostingEnvironment == null)
+            {
+                throw new ArgumentNullException(nameof(hostingEnvironment));
+            }
+
+            return hostingEnvironment.IsEnvironment(EnvironmentName.Staging);
+        }
+
+        /// <summary>
+        /// Checks if the current hosting environment name is "Production".
+        /// </summary>
+        /// <param name="hostingEnvironment">An instance of <see cref="IHostingEnvironment"/>.</param>
+        /// <returns>True if the environment name is "Production", otherwise false.</returns>
         public static bool IsProduction(this IHostingEnvironment hostingEnvironment)
         {
             if (hostingEnvironment == null)
@@ -41,9 +56,9 @@ namespace Microsoft.AspNet.Hosting
         /// <summary>
         /// Compares the current hosting environment name against the specified value.
         /// </summary>
-        /// <param name="hostingEnvironment">An instance of <see cref="IHostingEnvironment"/> service.</param>
+        /// <param name="hostingEnvironment">An instance of <see cref="IHostingEnvironment"/>.</param>
         /// <param name="environmentName">Environment name to validate against.</param>
-        /// <returns>True if the specified name is same as the current environment.</returns>
+        /// <returns>True if the specified name is the same as the current environment, otherwise false.</returns>
         public static bool IsEnvironment(
             this IHostingEnvironment hostingEnvironment,
             string environmentName)
@@ -60,11 +75,11 @@ namespace Microsoft.AspNet.Hosting
         }
 
         /// <summary>
-        /// Gives the physical path corresponding to the given virtual path.
+        /// Determines the physical path corresponding to the given virtual path.
         /// </summary>
-        /// <param name="hostingEnvironment">An instance of <see cref="IHostingEnvironment"/> service.</param>
-        /// <param name="virtualPath">Path relative to the root.</param>
-        /// <returns>Physical path corresponding to virtual path.</returns>
+        /// <param name="hostingEnvironment">An instance of <see cref="IHostingEnvironment"/>.</param>
+        /// <param name="virtualPath">Path relative to the application root.</param>
+        /// <returns>Physical path corresponding to the virtual path.</returns>
         public static string MapPath(
             this IHostingEnvironment hostingEnvironment,
             string virtualPath)
