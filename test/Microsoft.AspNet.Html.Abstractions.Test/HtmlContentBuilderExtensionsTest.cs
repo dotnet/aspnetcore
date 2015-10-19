@@ -326,7 +326,7 @@ namespace Microsoft.AspNet.Html.Abstractions.Test
         }
 
         [Fact]
-        [ReplaceCulture]
+        [ReplaceCulture("de-DE", "de-DE")]
         public void Builder_AppendFormat_WithDifferentCurrentCulture()
         {
             // Arrange
@@ -337,7 +337,7 @@ namespace Microsoft.AspNet.Html.Abstractions.Test
 
             // Assert
             Assert.Equal(
-                "HtmlEncode[[01 February 2015]]",
+                "HtmlEncode[[Sonntag, 1. Februar 2015]]",
                 HtmlContentToString(builder));
         }
 
