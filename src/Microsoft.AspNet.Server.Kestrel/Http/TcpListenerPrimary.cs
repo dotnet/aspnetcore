@@ -25,6 +25,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             var socket = new UvTcpHandle(Log);
             socket.Init(Thread.Loop, Thread.QueueCloseHandle);
+            socket.NoDelay(NoDelay);
             socket.Bind(ServerAddress);
             socket.Listen(Constants.ListenBacklog, ConnectionCallback, this);
             return socket;
@@ -39,6 +40,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             var acceptSocket = new UvTcpHandle(Log);
             acceptSocket.Init(Thread.Loop, Thread.QueueCloseHandle);
+            acceptSocket.NoDelay(NoDelay);
 
             try
             {

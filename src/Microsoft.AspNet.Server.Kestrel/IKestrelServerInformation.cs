@@ -9,6 +9,8 @@ namespace Microsoft.AspNet.Server.Kestrel
     {
         int ThreadCount { get; set; }
 
+        bool NoDelay { get; set; }
+
         IConnectionFilter ConnectionFilter { get; set; }
     }
 }

@@ -21,6 +21,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             var acceptSocket = new UvTcpHandle(Log);
             acceptSocket.Init(Thread.Loop, Thread.QueueCloseHandle);
+            acceptSocket.NoDelay(NoDelay);
             return acceptSocket;
         }
     }

@@ -203,6 +203,15 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        protected delegate int uv_tcp_nodelay(UvTcpHandle handle, int enable);
+        protected uv_tcp_nodelay _uv_tcp_nodelay = default(uv_tcp_nodelay);
+        public void tcp_nodelay(UvTcpHandle handle, bool enable)
+        {
+            handle.Validate();
+            Check(_uv_tcp_nodelay(handle, enable ? 1 : 0));
+        }
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         protected delegate int uv_pipe_init(UvLoopHandle loop, UvPipeHandle handle, int ipc);
         protected uv_pipe_init _uv_pipe_init = default(uv_pipe_init);
         public void pipe_init(UvLoopHandle loop, UvPipeHandle handle, bool ipc)

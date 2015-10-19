@@ -22,6 +22,7 @@ namespace Microsoft.AspNet.Server.Kestrel
             Log = context.Log;
             DateHeaderValueManager = context.DateHeaderValueManager;
             ConnectionFilter = context.ConnectionFilter;
+            NoDelay = context.NoDelay;
         }
 
         public IApplicationLifetime AppLifetime { get; set; }
@@ -33,5 +34,7 @@ namespace Microsoft.AspNet.Server.Kestrel
         public DateHeaderValueManager DateHeaderValueManager { get; set; }
 
         public IConnectionFilter ConnectionFilter { get; set; }
+
+        public bool NoDelay { get; set; }
     }
 }

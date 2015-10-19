@@ -61,7 +61,8 @@ namespace Microsoft.AspNet.Server.Kestrel
                     AppLifetime = _appLifetime,
                     Log = new KestrelTrace(_logger),
                     DateHeaderValueManager = dateHeaderValueManager,
-                    ConnectionFilter = information.ConnectionFilter
+                    ConnectionFilter = information.ConnectionFilter,
+                    NoDelay = information.NoDelay
                 });
 
                 disposables.Push(engine);

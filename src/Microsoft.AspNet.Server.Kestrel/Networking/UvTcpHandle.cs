@@ -61,6 +61,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             _uv.tcp_open(this, hSocket);
         }
 
+        public void NoDelay(bool enable)
+        {
+            _uv.tcp_nodelay(this, enable);
+        }
+
         /// <summary>
         /// Returns an <see cref="IPEndPoint"/> for the given host an port.
         /// If the host parameter isn't "localhost" or an IP address, use IPAddress.Any.

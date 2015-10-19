@@ -15,6 +15,8 @@ namespace Microsoft.AspNet.Server.Kestrel
 
         public int ThreadCount { get; set; }
 
+        public bool NoDelay { get; set;  }
+
         public IConnectionFilter ConnectionFilter { get; set; }
 
         public void Initialize(IConfiguration configuration)
