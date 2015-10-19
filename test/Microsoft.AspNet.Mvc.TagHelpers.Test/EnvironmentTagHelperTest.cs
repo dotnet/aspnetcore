@@ -80,10 +80,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Test
         {
             // Arrange
             var content = "content";
-            var context = MakeTagHelperContext(
-                attributes: new TagHelperAttributeList { { "names", namesAttribute } },
-                content: content);
-            var output = MakeTagHelperOutput("environment");
+            var context = MakeTagHelperContext(attributes: new TagHelperAttributeList { { "names", namesAttribute } });
+            var output = MakeTagHelperOutput("environment", childContent: content);
             var hostingEnvironment = new Mock<IHostingEnvironment>();
             hostingEnvironment.SetupProperty(h => h.EnvironmentName);
             hostingEnvironment.Object.EnvironmentName = environmentName;
@@ -108,9 +106,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Test
             // Arrange
             var content = "content";
             var context = MakeTagHelperContext(
-                attributes: new TagHelperAttributeList { { "names", namesAttribute } },
-                content: content);
-            var output = MakeTagHelperOutput("environment");
+                attributes: new TagHelperAttributeList { { "names", namesAttribute } });
+            var output = MakeTagHelperOutput("environment", childContent: content);
             var hostingEnvironment = new Mock<IHostingEnvironment>();
             hostingEnvironment.SetupProperty(h => h.EnvironmentName);
             hostingEnvironment.Object.EnvironmentName = environmentName;
@@ -127,29 +124,32 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Test
             Assert.False(output.IsContentModified);
         }
 
-        private TagHelperContext MakeTagHelperContext(
-            TagHelperAttributeList attributes = null,
-            string content = null)
+        private TagHelperContext MakeTagHelperContext(TagHelperAttributeList attributes = null)
         {
             attributes = attributes ?? new TagHelperAttributeList();
 
             return new TagHelperContext(
                 attributes,
                 items: new Dictionary<object, object>(),
-                uniqueId: Guid.NewGuid().ToString("N"),
-                getChildContentAsync: useCachedResult =>
-                {
-                    var tagHelperContent = new DefaultTagHelperContent();
-                    tagHelperContent.SetContent(content);
-                    return Task.FromResult<TagHelperContent>(tagHelperContent);
-                });
+                uniqueId: Guid.NewGuid().ToString("N"));
         }
 
-        private TagHelperOutput MakeTagHelperOutput(string tagName, TagHelperAttributeList attributes = null)
+        private TagHelperOutput MakeTagHelperOutput(
+            string tagName,
+            TagHelperAttributeList attributes = null,
+            string childContent = null)
         {
             attributes = attributes ?? new TagHelperAttributeList();
 
-            return new TagHelperOutput(tagName, attributes);
+            return new TagHelperOutput(
+                tagName,
+                attributes,
+                getChildContentAsync: useCachedResult =>
+                {
+                    var tagHelperContent = new DefaultTagHelperContent();
+                    tagHelperContent.SetContent(childContent);
+                    return Task.FromResult<TagHelperContent>(tagHelperContent);
+                });
         }
     }
 }

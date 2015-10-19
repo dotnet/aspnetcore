@@ -398,15 +398,17 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var tagHelperContext = new TagHelperContext(
                 contextAttributes,
                 items: new Dictionary<object, object>(),
-                uniqueId: "test",
+                uniqueId: "test");
+
+            var output = new TagHelperOutput(
+                expectedTagHelperOutput.TagName,
+                originalAttributes,
                 getChildContentAsync: useCachedResult =>
                 {
                     // GetChildContentAsync should not be invoked since we are setting the content below.
                     Assert.True(false);
                     return Task.FromResult<TagHelperContent>(null);
-                });
-
-            var output = new TagHelperOutput(expectedTagHelperOutput.TagName, originalAttributes)
+                })
             {
                 TagMode = TagMode.StartTagAndEndTag
             };
@@ -467,14 +469,16 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var tagHelperContext = new TagHelperContext(
                 contextAttributes,
                 items: new Dictionary<object, object>(),
-                uniqueId: "test",
+                uniqueId: "test");
+            var output = new TagHelperOutput(
+                originalTagName,
+                originalAttributes,
                 getChildContentAsync: useCachedResult =>
                 {
                     var tagHelperContent = new DefaultTagHelperContent();
                     tagHelperContent.SetContent(originalContent);
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
-                });
-            var output = new TagHelperOutput(originalTagName, originalAttributes)
+                })
             {
                 TagMode = TagMode.StartTagAndEndTag,
             };
@@ -528,15 +532,17 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var tagHelperContext = new TagHelperContext(
                 contextAttributes,
                 items: new Dictionary<object, object>(),
-                uniqueId: "test",
+                uniqueId: "test");
+
+            var output = new TagHelperOutput(
+                originalTagName,
+                originalAttributes,
                 getChildContentAsync: useCachedResult =>
                 {
                     var tagHelperContent = new DefaultTagHelperContent();
                     tagHelperContent.SetContent(originalContent);
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
-                });
-
-            var output = new TagHelperOutput(originalTagName, originalAttributes)
+                })
             {
                 TagMode = TagMode.StartTagAndEndTag,
             };
@@ -560,7 +566,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         private static TagHelperOutput GetTagHelperOutput(
             string tagName, TagHelperAttributeList attributes, string content)
         {
-            var tagHelperOutput = new TagHelperOutput(tagName, attributes);
+            var tagHelperOutput = new TagHelperOutput(
+                tagName,
+                attributes,
+                getChildContentAsync: (_) => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent()));
             tagHelperOutput.Content.SetContent(content);
 
             return tagHelperOutput;

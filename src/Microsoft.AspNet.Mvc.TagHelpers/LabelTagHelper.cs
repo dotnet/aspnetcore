@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 // </label>
                 if (!output.IsContentModified)
                 {
-                    var childContent = await context.GetChildContentAsync();
+                    var childContent = await output.GetChildContentAsync();
 
                     if (childContent.IsWhiteSpace)
                     {

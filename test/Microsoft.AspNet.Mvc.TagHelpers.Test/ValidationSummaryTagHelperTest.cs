@@ -43,18 +43,18 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
                     Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
-                uniqueId: "test",
-                getChildContentAsync: useCachedResult =>
-                {
-                    var tagHelperContent = new DefaultTagHelperContent();
-                    tagHelperContent.SetContent("Something");
-                    return Task.FromResult<TagHelperContent>(tagHelperContent);
-                });
+                uniqueId: "test");
             var output = new TagHelperOutput(
                 expectedTagName,
                 attributes: new TagHelperAttributeList
                 {
                     { "class", "form-control" }
+                },
+                getChildContentAsync: useCachedResult =>
+                {
+                    var tagHelperContent = new DefaultTagHelperContent();
+                    tagHelperContent.SetContent("Something");
+                    return Task.FromResult<TagHelperContent>(tagHelperContent);
                 });
             output.PreContent.SetContent(expectedPreContent);
             output.Content.SetContent(expectedContent);
@@ -110,8 +110,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedContent = "original content";
             var expectedPostContent = "original post-content";
             var output = new TagHelperOutput(
-                "div",
-                attributes: new TagHelperAttributeList());
+                tagName: "div",
+                attributes: new TagHelperAttributeList(),
+                getChildContentAsync: (_) => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent()));
             output.PreContent.SetContent(expectedPreContent);
             output.Content.SetContent(expectedContent);
             output.PostContent.SetContent(expectedPostContent);
@@ -122,8 +123,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
                     Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
-                uniqueId: "test",
-                getChildContentAsync: _ => Task.FromResult<TagHelperContent>(null));
+                uniqueId: "test");
 
             // Act & Assert
             await validationSummaryTagHelper.ProcessAsync(context, output);
@@ -164,8 +164,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedPreContent = "original pre-content";
             var expectedContent = "original content";
             var output = new TagHelperOutput(
-                "div",
-                attributes: new TagHelperAttributeList());
+                tagName: "div",
+                attributes: new TagHelperAttributeList(),
+                getChildContentAsync: (_) => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent()));
             output.PreContent.SetContent(expectedPreContent);
             output.Content.SetContent(expectedContent);
             output.PostContent.SetContent("Content of validation summary");
@@ -177,8 +178,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
                     Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
-                uniqueId: "test",
-                getChildContentAsync: _ => Task.FromResult<TagHelperContent>(null));
+                uniqueId: "test");
 
             // Act
             await validationSummaryTagHelper.ProcessAsync(context, output);
@@ -212,8 +212,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedContent = "original content";
             var expectedPostContent = "original post-content";
             var output = new TagHelperOutput(
-                "div",
-                attributes: new TagHelperAttributeList());
+                tagName: "div",
+                attributes: new TagHelperAttributeList(),
+                getChildContentAsync: (_) => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent()));
             output.PreContent.SetContent(expectedPreContent);
             output.Content.SetContent(expectedContent);
             output.PostContent.SetContent(expectedPostContent);
@@ -225,8 +226,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
                     Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
-                uniqueId: "test",
-                getChildContentAsync: _ => Task.FromResult<TagHelperContent>(null));
+                uniqueId: "test");
 
             // Act
             await validationSummaryTagHelper.ProcessAsync(context, output);
@@ -267,8 +267,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedPreContent = "original pre-content";
             var expectedContent = "original content";
             var output = new TagHelperOutput(
-                "div",
-                attributes: new TagHelperAttributeList());
+                tagName: "div",
+                attributes: new TagHelperAttributeList(),
+                getChildContentAsync: (_) => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent()));
             output.PreContent.SetContent(expectedPreContent);
             output.Content.SetContent(expectedContent);
             output.PostContent.SetContent("Content of validation message");
@@ -280,8 +281,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
                     Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
-                uniqueId: "test",
-                getChildContentAsync: _ => Task.FromResult<TagHelperContent>(null));
+                uniqueId: "test");
 
             // Act
             await validationSummaryTagHelper.ProcessAsync(context, output);

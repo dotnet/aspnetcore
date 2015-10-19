@@ -194,18 +194,20 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
                     Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
-                uniqueId: "test",
+                uniqueId: "test");
+            var htmlAttributes = new TagHelperAttributeList
+            {
+                { "class", "form-control" },
+            };
+            var output = new TagHelperOutput(
+                expectedTagName,
+                htmlAttributes,
                 getChildContentAsync: useCachedResult =>
                 {
                     var tagHelperContent = new DefaultTagHelperContent();
                     tagHelperContent.AppendEncoded(tagHelperOutputContent.OriginalChildContent);
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
                 });
-            var htmlAttributes = new TagHelperAttributeList
-            {
-                { "class", "form-control" },
-            };
-            var output = new TagHelperOutput(expectedTagName, htmlAttributes);
             output.PreContent.AppendEncoded(expectedPreContent);
             output.PostContent.AppendEncoded(expectedPostContent);
 

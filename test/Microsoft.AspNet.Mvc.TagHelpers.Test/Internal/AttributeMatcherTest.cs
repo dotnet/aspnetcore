@@ -128,13 +128,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
             return new TagHelperContext(
                 attributes,
                 items: new Dictionary<object, object>(),
-                uniqueId: Guid.NewGuid().ToString("N"),
-                getChildContentAsync: useCachedResult =>
-                {
-                    var tagHelperContent = new DefaultTagHelperContent();
-                    tagHelperContent.Append(content);
-                    return Task.FromResult((TagHelperContent)tagHelperContent);
-                });
+                uniqueId: Guid.NewGuid().ToString("N"));
         }
     }
 }

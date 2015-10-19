@@ -334,12 +334,14 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             IEnumerable<TagHelperAttribute> expectedAttributes)
         {
             // Arrange
-            var output = new TagHelperOutput("p", attributes: new TagHelperAttributeList(outputAttributes));
+            var output = new TagHelperOutput(
+                tagName: "p",
+                attributes: new TagHelperAttributeList(outputAttributes),
+                getChildContentAsync: (_) => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent()));
             var context = new TagHelperContext(
                 allAttributes,
                 items: new Dictionary<object, object>(),
-                uniqueId: "test",
-                getChildContentAsync: useCachedResult => Task.FromResult<TagHelperContent>(result: null));
+                uniqueId: "test");
 
             // Act
             output.CopyHtmlAttribute(attributeNameToCopy, context);
@@ -432,12 +434,14 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             IEnumerable<TagHelperAttribute> expectedAttributes)
         {
             // Arrange
-            var output = new TagHelperOutput("p", attributes: new TagHelperAttributeList());
+            var output = new TagHelperOutput(
+                tagName: "p",
+                attributes: new TagHelperAttributeList(),
+                getChildContentAsync: (_) => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent()));
             var context = new TagHelperContext(
                 allAttributes,
                 items: new Dictionary<object, object>(),
-                uniqueId: "test",
-                getChildContentAsync: useCachedResult => Task.FromResult<TagHelperContent>(result: null));
+                uniqueId: "test");
 
             // Act
             output.CopyHtmlAttribute(attributeNameToCopy, context);
@@ -454,20 +458,20 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // Arrange
             var tagHelperOutput = new TagHelperOutput(
                 "p",
-                attributes: new TagHelperAttributeList());
-            var tagHelperContext = new TagHelperContext(
-                allAttributes: new TagHelperAttributeList
-                {
-                    { attributeName, attributeValue }
-                },
-                items: new Dictionary<object, object>(),
-                uniqueId: "test",
+                attributes: new TagHelperAttributeList(),
                 getChildContentAsync: useCachedResult =>
                 {
                     var tagHelperContent = new DefaultTagHelperContent();
                     tagHelperContent.Append("Something");
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
                 });
+            var tagHelperContext = new TagHelperContext(
+                allAttributes: new TagHelperAttributeList
+                {
+                    { attributeName, attributeValue }
+                },
+                items: new Dictionary<object, object>(),
+                uniqueId: "test");
             var expectedAttribute = new TagHelperAttribute(attributeName, attributeValue);
 
             // Act
@@ -488,6 +492,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 attributes: new TagHelperAttributeList()
                 {
                     { attributeName, "world2" }
+                },
+                getChildContentAsync: useCachedResult =>
+                {
+                    var tagHelperContent = new DefaultTagHelperContent();
+                    tagHelperContent.Append("Something Else");
+                    return Task.FromResult<TagHelperContent>(tagHelperContent);
                 });
             var expectedAttribute = new TagHelperAttribute(attributeName, "world2");
             var tagHelperContext = new TagHelperContext(
@@ -496,13 +506,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     { attributeName, "world" }
                 },
                 items: new Dictionary<object, object>(),
-                uniqueId: "test",
-                getChildContentAsync: useCachedResult =>
-                {
-                    var tagHelperContent = new DefaultTagHelperContent();
-                    tagHelperContent.Append("Something Else");
-                    return Task.FromResult<TagHelperContent>(tagHelperContent);
-                });
+                uniqueId: "test");
 
             // Act
             tagHelperOutput.CopyHtmlAttribute(attributeName, tagHelperContext);
@@ -519,20 +523,20 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var invalidAttributeName = "hello2";
             var tagHelperOutput = new TagHelperOutput(
                 "p",
-                attributes: new TagHelperAttributeList());
-            var tagHelperContext = new TagHelperContext(
-                allAttributes: new TagHelperAttributeList
-                {
-                    { "hello", "world" }
-                },
-                items: new Dictionary<object, object>(),
-                uniqueId: "test",
+                attributes: new TagHelperAttributeList(),
                 getChildContentAsync: useCachedResult =>
                 {
                     var tagHelperContent = new DefaultTagHelperContent();
                     tagHelperContent.Append("Something");
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
                 });
+            var tagHelperContext = new TagHelperContext(
+                allAttributes: new TagHelperAttributeList
+                {
+                    { "hello", "world" }
+                },
+                items: new Dictionary<object, object>(),
+                uniqueId: "test");
 
             // Act & Assert
             ExceptionAssert.ThrowsArgument(
@@ -546,12 +550,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             // Arrange
             var tagHelperOutput = new TagHelperOutput(
-                "p",
+                tagName: "p",
                 attributes: new TagHelperAttributeList()
                 {
                     { "route-Hello", "World" },
                     { "Route-I", "Am" }
-                });
+                },
+                getChildContentAsync: (_) => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent()));
             var expectedAttribute = new TagHelperAttribute("type", "btn");
             tagHelperOutput.Attributes.Add(expectedAttribute);
 
@@ -572,12 +577,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             // Arrange
             var tagHelperOutput = new TagHelperOutput(
-                "p",
+                tagName: "p",
                 attributes: new TagHelperAttributeList()
                 {
                     { "route-Hello", "World" },
                     { "Route-I", "Am" }
-                });
+                },
+                getChildContentAsync: (_) => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent()));
             var expectedAttribute = new TagHelperAttribute("type", "btn");
             tagHelperOutput.Attributes.Add(expectedAttribute);
             var attributes = tagHelperOutput.Attributes
@@ -596,12 +602,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             // Arrange
             var tagHelperOutput = new TagHelperOutput(
-                "p",
+                tagName: "p",
                 attributes: new TagHelperAttributeList()
                 {
                     { "route-Hello", "World" },
                     { "Route-I", "Am" }
-                });
+                },
+                getChildContentAsync: (_) => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent()));
             var expectedAttribute = new TagHelperAttribute("type", "btn");
             tagHelperOutput.Attributes.Add(expectedAttribute);
 
@@ -756,7 +763,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             TagHelperAttributeList expectedAttributes)
         {
             // Arrange
-            var tagHelperOutput = new TagHelperOutput("p", outputAttributes);
+            var tagHelperOutput = new TagHelperOutput(
+                "p",
+                outputAttributes,
+                getChildContentAsync: (_) => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent()));
 
             var tagBuilder = new TagBuilder("p");
             foreach (var attr in tagBuilderAttributes)
@@ -779,8 +789,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             // Arrange
             var tagHelperOutput = new TagHelperOutput(
-                "p",
-                attributes: new TagHelperAttributeList());
+                tagName: "p",
+                attributes: new TagHelperAttributeList(),
+                getChildContentAsync: (_) => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent()));
             var expectedAttribute = new TagHelperAttribute("type", "btn");
             tagHelperOutput.Attributes.Add(expectedAttribute);
 
@@ -800,8 +811,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             // Arrange
             var tagHelperOutput = new TagHelperOutput(
-                "p",
-                attributes: new TagHelperAttributeList());
+                tagName: "p",
+                attributes: new TagHelperAttributeList(),
+                getChildContentAsync: (_) => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent()));
             tagHelperOutput.Attributes.Add("class", "Hello");
 
             var tagBuilder = new TagBuilder("p");
@@ -826,8 +838,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             // Arrange
             var tagHelperOutput = new TagHelperOutput(
-                "p",
-                attributes: new TagHelperAttributeList());
+                tagName: "p",
+                attributes: new TagHelperAttributeList(),
+                getChildContentAsync: (_) => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent()));
             tagHelperOutput.Attributes.Add(originalName, "Hello");
 
             var tagBuilder = new TagBuilder("p");
@@ -846,8 +859,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             // Arrange
             var tagHelperOutput = new TagHelperOutput(
-                "p",
-                attributes: new TagHelperAttributeList());
+                tagName: "p",
+                attributes: new TagHelperAttributeList(),
+                getChildContentAsync: (_) => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent()));
 
             var tagBuilder = new TagBuilder("p");
             var expectedAttribute = new TagHelperAttribute("visible", "val < 3");
@@ -866,8 +880,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             // Arrange
             var tagHelperOutput = new TagHelperOutput(
-                "p",
-                attributes: new TagHelperAttributeList());
+                tagName: "p",
+                attributes: new TagHelperAttributeList(),
+                getChildContentAsync: (_) => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent()));
 
             var tagBuilder = new TagBuilder("p");
             var expectedAttribute1 = new TagHelperAttribute("class", "btn");
@@ -891,8 +906,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             // Arrange
             var tagHelperOutput = new TagHelperOutput(
-                "p",
-                attributes: new TagHelperAttributeList());
+                tagName: "p",
+                attributes: new TagHelperAttributeList(),
+                getChildContentAsync: (_) => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent()));
             var expectedAttribute = new TagHelperAttribute("class", "btn");
             tagHelperOutput.Attributes.Add(expectedAttribute);
 
@@ -911,8 +927,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             // Arrange
             var tagHelperOutput = new TagHelperOutput(
-                "p",
-                attributes: new TagHelperAttributeList());
+                tagName: "p",
+                attributes: new TagHelperAttributeList(),
+                getChildContentAsync: (_) => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent()));
             var expectedOutputAttribute = new TagHelperAttribute("class", "btn");
             tagHelperOutput.Attributes.Add(expectedOutputAttribute);
 

@@ -25,6 +25,16 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         public ViewContext ViewContext { get; set; }
 
         /// <inheritdoc />
+        public override void Init(TagHelperContext context)
+        {
+            // Push the new FormContext.
+            ViewContext.FormContext = new FormContext
+            {
+                CanRenderAtEndOfForm = true
+            };
+        }
+
+        /// <inheritdoc />
         public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
             if (context == null)
@@ -37,13 +47,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 throw new ArgumentNullException(nameof(output));
             }
 
-            // Push the new FormContext.
-            ViewContext.FormContext = new FormContext
-            {
-                CanRenderAtEndOfForm = true
-            };
-
-            await context.GetChildContentAsync();
+            await output.GetChildContentAsync();
 
             var formContext = ViewContext.FormContext;
             if (formContext.HasEndOfFormContent)

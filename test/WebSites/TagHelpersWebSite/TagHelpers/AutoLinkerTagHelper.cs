@@ -12,7 +12,7 @@ namespace TagHelpersWebSite.TagHelpers
     {
         public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
-            var childContent = await context.GetChildContentAsync();
+            var childContent = await output.GetChildContentAsync();
 
             // Find Urls in the content and replace them with their anchor tag equivalent.
             output.Content.AppendEncoded(Regex.Replace(

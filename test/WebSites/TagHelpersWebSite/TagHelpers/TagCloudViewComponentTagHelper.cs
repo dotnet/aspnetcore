@@ -33,6 +33,10 @@ namespace MvcSample.Web.Components
 
         public int Order { get; } = 0;
 
+        public void Init(TagHelperContext context)
+        {
+        }
+
         public async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
             var result = await InvokeAsync(Count);

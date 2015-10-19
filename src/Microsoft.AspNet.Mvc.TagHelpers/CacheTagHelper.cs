@@ -158,7 +158,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     // created within this scope get copied to this scope.
                     using (var link = MemoryCache.CreateLinkingScope())
                     {
-                        result = await context.GetChildContentAsync();
+                        result = await output.GetChildContentAsync();
 
                         MemoryCache.Set(key, result, GetMemoryCacheEntryOptions(link));
                     }
@@ -173,7 +173,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             }
             else
             {
-                result = await context.GetChildContentAsync();
+                result = await output.GetChildContentAsync();
                 output.Content.SetContent(result);
             }
         }

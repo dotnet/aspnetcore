@@ -52,7 +52,8 @@ namespace Microsoft.AspNet.Mvc.Razor.TagHelpers
                 attributes: new TagHelperAttributeList
                 {
                     { "href", url }
-                });
+                },
+                getChildContentAsync: _ => Task.FromResult<TagHelperContent>(null));
             var urlHelperMock = new Mock<IUrlHelper>();
             urlHelperMock
                 .Setup(urlHelper => urlHelper.Content(It.IsAny<string>()))
@@ -63,8 +64,7 @@ namespace Microsoft.AspNet.Mvc.Razor.TagHelpers
                 allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
                     Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
-                uniqueId: "test",
-                getChildContentAsync: _ => Task.FromResult<TagHelperContent>(null));
+                uniqueId: "test");
 
             // Act
             tagHelper.Process(context, tagHelperOutput);
@@ -108,7 +108,8 @@ namespace Microsoft.AspNet.Mvc.Razor.TagHelpers
                 attributes: new TagHelperAttributeList
                 {
                     { "href", url }
-                });
+                },
+                getChildContentAsync: _ => Task.FromResult<TagHelperContent>(null));
             var urlHelperMock = new Mock<IUrlHelper>();
             urlHelperMock
                 .Setup(urlHelper => urlHelper.Content(It.IsAny<string>()))
@@ -119,8 +120,7 @@ namespace Microsoft.AspNet.Mvc.Razor.TagHelpers
                 allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
                     Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
-                uniqueId: "test",
-                getChildContentAsync: _ => Task.FromResult<TagHelperContent>(null));
+                uniqueId: "test");
 
             // Act
             tagHelper.Process(context, tagHelperOutput);
@@ -141,15 +141,15 @@ namespace Microsoft.AspNet.Mvc.Razor.TagHelpers
                 attributes: new TagHelperAttributeList
                 {
                     { "href", true }
-                });
+                },
+                getChildContentAsync: _ => Task.FromResult<TagHelperContent>(null));
             var tagHelper = new UrlResolutionTagHelper(urlHelper: null, htmlEncoder: null);
 
             var context = new TagHelperContext(
                 allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
                     Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
-                uniqueId: "test",
-                getChildContentAsync: _ => Task.FromResult<TagHelperContent>(null));
+                uniqueId: "test");
 
             // Act
             tagHelper.Process(context, tagHelperOutput);
@@ -178,7 +178,8 @@ namespace Microsoft.AspNet.Mvc.Razor.TagHelpers
                 attributes: new TagHelperAttributeList
                 {
                     { "href", new HtmlString(relativeUrl) }
-                });
+                },
+                getChildContentAsync: _ => Task.FromResult<TagHelperContent>(null));
             var urlHelperMock = new Mock<IUrlHelper>();
             urlHelperMock
                 .Setup(urlHelper => urlHelper.Content(It.IsAny<string>()))
@@ -189,8 +190,7 @@ namespace Microsoft.AspNet.Mvc.Razor.TagHelpers
                 allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
                     Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
-                uniqueId: "test",
-                getChildContentAsync: _ => Task.FromResult<TagHelperContent>(null));
+                uniqueId: "test");
 
             // Act & Assert
             var exception = Assert.Throws<InvalidOperationException>(

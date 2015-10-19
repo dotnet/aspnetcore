@@ -33,7 +33,7 @@ namespace ActivatorWebSite.TagHelpers
         {
             (HtmlHelper as ICanHasViewContext)?.Contextualize(ViewContext);
 
-            var content = await context.GetChildContentAsync();
+            var content = await output.GetChildContentAsync();
             output.Content.SetContent(HtmlHelper.Hidden(Name, content.GetContent(HtmlEncoder)));
         }
     }

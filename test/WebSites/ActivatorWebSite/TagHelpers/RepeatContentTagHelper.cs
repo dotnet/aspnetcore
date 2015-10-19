@@ -31,7 +31,7 @@ namespace ActivatorWebSite.TagHelpers
         {
             (HtmlHelper as ICanHasViewContext)?.Contextualize(ViewContext);
 
-            var content = await context.GetChildContentAsync();
+            var content = await output.GetChildContentAsync();
             var repeatContent = HtmlHelper.Encode(Expression.Model.ToString());
 
             if (string.IsNullOrEmpty(repeatContent))

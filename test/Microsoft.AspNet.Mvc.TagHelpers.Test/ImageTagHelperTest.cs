@@ -51,7 +51,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     { "alt", new HtmlString("Testing") },
                     { "src", srcOutput },
                 };
-            var output = new TagHelperOutput("img", outputAttributes);
+            var output = new TagHelperOutput(
+                "img",
+                outputAttributes,
+                getChildContentAsync: (_) => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent()));
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
             var urlHelper = new Mock<IUrlHelper>();
@@ -273,20 +276,22 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             return new TagHelperContext(
                 attributes,
                 items: new Dictionary<object, object>(),
-                uniqueId: Guid.NewGuid().ToString("N"),
-                getChildContentAsync: useCachedResult =>
-                {
-                    var tagHelperContent = new DefaultTagHelperContent();
-                    tagHelperContent.SetContent(default(string));
-                    return Task.FromResult<TagHelperContent>(tagHelperContent);
-                });
+                uniqueId: Guid.NewGuid().ToString("N"));
         }
 
         private static TagHelperOutput MakeImageTagHelperOutput(TagHelperAttributeList attributes)
         {
             attributes = attributes ?? new TagHelperAttributeList();
 
-            return new TagHelperOutput("img", attributes);
+            return new TagHelperOutput(
+                "img",
+                attributes,
+                getChildContentAsync: useCachedResult =>
+                {
+                    var tagHelperContent = new DefaultTagHelperContent();
+                    tagHelperContent.SetContent(default(string));
+                    return Task.FromResult<TagHelperContent>(tagHelperContent);
+                });
         }
 
         private static IHostingEnvironment MakeHostingEnvironment()

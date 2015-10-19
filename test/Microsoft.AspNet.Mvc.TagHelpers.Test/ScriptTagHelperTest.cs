@@ -907,13 +907,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             return new TagHelperContext(
                 attributes,
                 items: new Dictionary<object, object>(),
-                uniqueId: Guid.NewGuid().ToString("N"),
-                getChildContentAsync: useCachedResult =>
-                {
-                    var tagHelperContent = new DefaultTagHelperContent();
-                    tagHelperContent.SetContent(content);
-                    return Task.FromResult<TagHelperContent>(tagHelperContent);
-                });
+                uniqueId: Guid.NewGuid().ToString("N"));
         }
 
         private static ViewContext MakeViewContext(string requestPathBase = null)
@@ -941,7 +935,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             attributes = attributes ?? new TagHelperAttributeList();
 
-            return new TagHelperOutput(tagName, attributes);
+            return new TagHelperOutput(
+                tagName,
+                attributes,
+                getChildContentAsync: (_) => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent()));
         }
 
         private TagHelperLogger<ScriptTagHelper> CreateLogger()
