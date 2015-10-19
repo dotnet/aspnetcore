@@ -3,6 +3,9 @@
 
 namespace Microsoft.AspNet.Hosting
 {
+    /// <summary>
+    /// Commonly used environment names.
+    /// </summary>
     public static class EnvironmentName
     {
         public static readonly string Development = "Development";

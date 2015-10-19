@@ -6,6 +6,9 @@ using System.IO;
 
 namespace Microsoft.AspNet.Hosting
 {
+    /// <summary>
+    /// Extension methods for <see cref="IHostingEnvironment"/>.
+    /// </summary>
     public static class HostingEnvironmentExtensions
     {
         /// <summary>
