@@ -71,14 +71,14 @@ namespace Microsoft.AspNet.HttpOverrides
                 app.UseOverrideHeaders(options);
                 app.Run(context =>
                 {
-                    Assert.Equal("testHost", context.Request.Host.ToString());
+                    Assert.Equal("testhost", context.Request.Host.ToString());
                     assertsExecuted = true;
                     return Task.FromResult(0);
                 });
             });
 
             var req = new HttpRequestMessage(HttpMethod.Get, "");
-            req.Headers.Add("X-Forwarded-Host", "testHost");
+            req.Headers.Add("X-Forwarded-Host", "testhost");
             await server.CreateClient().SendAsync(req);
             Assert.True(assertsExecuted);
         }
@@ -127,7 +127,7 @@ namespace Microsoft.AspNet.HttpOverrides
                 app.Run(context =>
                 {
                     Assert.Equal("11.111.111.11", context.Connection.RemoteIpAddress.ToString());
-                    Assert.Equal("testHost", context.Request.Host.ToString());
+                    Assert.Equal("testhost", context.Request.Host.ToString());
                     Assert.Equal("Protocol", context.Request.Scheme);
                     assertsExecuted = true;
                     return Task.FromResult(0);
@@ -136,7 +136,7 @@ namespace Microsoft.AspNet.HttpOverrides
 
             var req = new HttpRequestMessage(HttpMethod.Get, "");
             req.Headers.Add("X-Forwarded-For", "11.111.111.11");
-            req.Headers.Add("X-Forwarded-Host", "testHost");
+            req.Headers.Add("X-Forwarded-Host", "testhost");
             req.Headers.Add("X-Forwarded-Proto", "Protocol");
             await server.CreateClient().SendAsync(req);
             Assert.True(assertsExecuted);
