@@ -19,9 +19,19 @@ namespace MusicStore.Mocks.Twitter
             return "valid_oauth_token";
         }
 
+        public string Protect(RequestToken data, string purpose)
+        {
+            return Protect(data);
+        }
+
         public RequestToken Unprotect(string state)
         {
             return state == "valid_oauth_token" ? DeSerialize(_lastSavedRequestToken) : null;
+        }
+
+        public RequestToken Unprotect(string state, string purpose)
+        {
+            return Unprotect(state);
         }
 
         private string Serialize(RequestToken data)

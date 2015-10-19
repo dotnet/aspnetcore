@@ -9,10 +9,20 @@ namespace MusicStore.Mocks.Common
     {
         private static string _lastSavedAuthenticationProperties;
 
+        public string Protect(AuthenticationProperties data, string purose)
+        {
+            return Protect(data);
+        }
+
         public string Protect(AuthenticationProperties data)
         {
             _lastSavedAuthenticationProperties = Serialize(data);
             return "ValidStateData";
+        }
+
+        public AuthenticationProperties Unprotect(string state, string purpose)
+        {
+            return Unprotect(state);
         }
 
         public AuthenticationProperties Unprotect(string state)
