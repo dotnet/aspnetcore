@@ -9,57 +9,94 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNet.Builder
 {
+    /// <summary>
+    /// Provides extension methods for <see cref="IRouteBuilder"/> to add routes.
+    /// </summary>
     public static class RouteBuilderExtensions
     {
-        public static IRouteBuilder MapRoute(this IRouteBuilder routeCollectionBuilder,
+        /// <summary>
+        /// Adds a route to the <see cref="IRouteBuilder"/> with the specified name and template.
+        /// </summary>
+        /// <param name="routeBuilder">The <see cref="IRouteBuilder"/> to add the route to.</param>
+        /// <param name="name">The name of the route.</param>
+        /// <param name="template">The URL pattern of the route.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
+        public static IRouteBuilder MapRoute(this IRouteBuilder routeBuilder,
                                              string name,
                                              string template)
         {
-            MapRoute(routeCollectionBuilder, name, template, defaults: null);
-            return routeCollectionBuilder;
+            MapRoute(routeBuilder, name, template, defaults: null);
+            return routeBuilder;
         }
 
-        public static IRouteBuilder MapRoute(this IRouteBuilder routeCollectionBuilder,
+        /// <summary>
+        /// Adds a route to the <see cref="IRouteBuilder"/> with the specified name, template, and default values.
+        /// </summary>
+        /// <param name="routeBuilder">The <see cref="IRouteBuilder"/> to add the route to.</param>
+        /// <param name="name">The name of the route.</param>
+        /// <param name="template">The URL pattern of the route.</param>
+        /// <param name="defaults">An object that contains default values for route parameters. The object's properties represent the names and values of the default values.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
+        public static IRouteBuilder MapRoute(this IRouteBuilder routeBuilder,
                                              string name,
                                              string template,
                                              object defaults)
         {
-            return MapRoute(routeCollectionBuilder, name, template, defaults, constraints: null);
+            return MapRoute(routeBuilder, name, template, defaults, constraints: null);
         }
 
-        public static IRouteBuilder MapRoute(this IRouteBuilder routeCollectionBuilder,
+        /// <summary>
+        /// Adds a route to the <see cref="IRouteBuilder"/> with the specified name, template, default values, and constraints.
+        /// </summary>
+        /// <param name="routeBuilder">The <see cref="IRouteBuilder"/> to add the route to.</param>
+        /// <param name="name">The name of the route.</param>
+        /// <param name="template">The URL pattern of the route.</param>
+        /// <param name="defaults">An object that contains default values for route parameters. The object's properties represent the names and values of the default values.</param>
+        /// <param name="constraints">An object that contains constraints for the route. The object's properties represent the names and values of the constraints.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
+        public static IRouteBuilder MapRoute(this IRouteBuilder routeBuilder,
                                              string name,
                                              string template,
                                              object defaults,
                                              object constraints)
         {
-            return MapRoute(routeCollectionBuilder, name, template, defaults, constraints, dataTokens: null);
+            return MapRoute(routeBuilder, name, template, defaults, constraints, dataTokens: null);
         }
 
-        public static IRouteBuilder MapRoute(this IRouteBuilder routeCollectionBuilder,
+        /// <summary>
+        /// Adds a route to the <see cref="IRouteBuilder"/> with the specified name, template, default values, and data tokens.
+        /// </summary>
+        /// <param name="routeBuilder">The <see cref="IRouteBuilder"/> to add the route to.</param>
+        /// <param name="name">The name of the route.</param>
+        /// <param name="template">The URL pattern of the route.</param>
+        /// <param name="defaults">An object that contains default values for route parameters. The object's properties represent the names and values of the default values.</param>
+        /// <param name="constraints">An object that contains constraints for the route. The object's properties represent the names and values of the constraints.</param>
+        /// <param name="dataTokens">An object that contains data tokens for the route. The object's properties represent the names and values of the data tokens.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
+        public static IRouteBuilder MapRoute(this IRouteBuilder routeBuilder,
                                              string name,
                                              string template,
                                              object defaults,
                                              object constraints,
                                              object dataTokens)
         {
-            if (routeCollectionBuilder.DefaultHandler == null)
+            if (routeBuilder.DefaultHandler == null)
             {
                 throw new InvalidOperationException(Resources.DefaultHandler_MustBeSet);
             }
 
-            var inlineConstraintResolver = routeCollectionBuilder
-                                                        .ServiceProvider
-                                                        .GetRequiredService<IInlineConstraintResolver>();
-            routeCollectionBuilder.Routes.Add(new TemplateRoute(routeCollectionBuilder.DefaultHandler,
-                                                                name,
-                                                                template,
-                                                                ObjectToDictionary(defaults),
-                                                                ObjectToDictionary(constraints),
-                                                                ObjectToDictionary(dataTokens),
-                                                                inlineConstraintResolver));
+            var inlineConstraintResolver = routeBuilder
+                                           .ServiceProvider
+                                           .GetRequiredService<IInlineConstraintResolver>();
+            routeBuilder.Routes.Add(new TemplateRoute(routeBuilder.DefaultHandler,
+                                                      name,
+                                                      template,
+                                                      ObjectToDictionary(defaults),
+                                                      ObjectToDictionary(constraints),
+                                                      ObjectToDictionary(dataTokens),
+                                                      inlineConstraintResolver));
 
-            return routeCollectionBuilder;
+            return routeBuilder;
         }
 
         private static IDictionary<string, object> ObjectToDictionary(object value)
