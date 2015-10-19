@@ -7,16 +7,16 @@ using Microsoft.AspNet.Authentication.Google;
 namespace Microsoft.AspNet.Builder
 {
     /// <summary>
-    /// Extension methods for using <see cref="GoogleMiddleware"/>.
+    /// Extension methods to add Google authentication capabilities to an HTTP application pipeline.
     /// </summary>
     public static class GoogleAppBuilderExtensions
     {
         /// <summary>
-        /// Authenticate users using Google OAuth 2.0.
+        /// Adds the <see cref="GoogleMiddleware"/> middleware to the specified <see cref="IApplicationBuilder"/>, which enables Google authentication capabilities.
         /// </summary>
-        /// <param name="app">The <see cref="IApplicationBuilder"/> passed to the configure method.</param>
-        /// <param name="options">The Middleware options.</param>
-        /// <returns>The updated <see cref="IApplicationBuilder"/>.</returns>
+        /// <param name="app">The <see cref="IApplicationBuilder"/> to add the middleware to.</param>
+        /// <param name="options">A <see cref="GoogleOptions"/> that specifies options for the middleware.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
         public static IApplicationBuilder UseGoogleAuthentication(this IApplicationBuilder app, GoogleOptions options)
         {
             if (app == null)
@@ -33,12 +33,11 @@ namespace Microsoft.AspNet.Builder
         }
 
         /// <summary>
-        /// Authenticate users using Google OAuth 2.0.
+        /// Adds the <see cref="GoogleMiddleware"/> middleware to the specified <see cref="IApplicationBuilder"/>, which enables Google authentication capabilities.
         /// </summary>
-        /// <param name="app">The <see cref="IApplicationBuilder"/> passed to the configure method.</param>
-        /// <param name="configureOptions">Used to configure Middleware options.</param>
-        /// <param name="optionsName">Name of the options instance to be used</param>
-        /// <returns>The updated <see cref="IApplicationBuilder"/>.</returns>
+        /// <param name="app">The <see cref="IApplicationBuilder"/> to add the middleware to.</param>
+        /// <param name="configureOptions">An action delegate to configure the provided <see cref="GoogleOptions"/>.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
         public static IApplicationBuilder UseGoogleAuthentication(this IApplicationBuilder app, Action<GoogleOptions> configureOptions)
         {
             if (app == null)

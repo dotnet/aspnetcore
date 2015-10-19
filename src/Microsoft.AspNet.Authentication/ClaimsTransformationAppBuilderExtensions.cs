@@ -9,27 +9,27 @@ using Microsoft.AspNet.Authentication;
 namespace Microsoft.AspNet.Builder
 {
     /// <summary>
-    /// Extension methods provided by the claims transformation authentication middleware
+    /// Extension methods to add claims transformation capabilities to an HTTP application pipeline.
     /// </summary>
     public static class ClaimsTransformationAppBuilderExtensions
     {
         /// <summary>
-        /// Adds a claims transformation middleware to your web application pipeline.
+        /// Adds the <see cref="ClaimsTransformationMiddleware"/> middleware to the specified <see cref="IApplicationBuilder"/>, which enables claims transformation capabilities.
         /// </summary>
-        /// <param name="options">The options for the middleware</param>
-        /// <param name="app">The IApplicationBuilder passed to your configuration method</param>
-        /// <returns>The original app parameter</returns>
+        /// <param name="app">The <see cref="IApplicationBuilder"/> to add the middleware to.</param>
+        /// <param name="options">A <see cref="ClaimsTransformationOptions"/> that specifies options for the middleware.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
         public static IApplicationBuilder UseClaimsTransformation(this IApplicationBuilder app, ClaimsTransformationOptions options)
         {
             return app.UseMiddleware<ClaimsTransformationMiddleware>(options);
         }
 
         /// <summary>
-        /// Adds a claims transformation middleware to your web application pipeline.
+        /// Adds the <see cref="ClaimsTransformationMiddleware"/> middleware to the specified <see cref="IApplicationBuilder"/>, which enables claims transformation capabilities.
         /// </summary>
-        /// <param name="options">The options for the middleware</param>
-        /// <param name="app">The IApplicationBuilder passed to your configuration method</param>
-        /// <returns>The original app parameter</returns>
+        /// <param name="app">The <see cref="IApplicationBuilder"/> to add the middleware to.</param>
+        /// <param name="transform">A function that asynchronously transforms one <see cref="ClaimsPrincipal"/> to another.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
         public static IApplicationBuilder UseClaimsTransformation(this IApplicationBuilder app, Func<ClaimsPrincipal, Task<ClaimsPrincipal>> transform)
         {
             var options = new ClaimsTransformationOptions();
@@ -41,11 +41,11 @@ namespace Microsoft.AspNet.Builder
         }
 
         /// <summary>
-        /// Adds a claims transformation middleware to your web application pipeline.
+        /// Adds the <see cref="ClaimsTransformationMiddleware"/> middleware to the specified <see cref="IApplicationBuilder"/>, which enables claims transformation capabilities.
         /// </summary>
-        /// <param name="app">The IApplicationBuilder passed to your configuration method</param>
-        /// <param name="configureOptions">Used to configure the options for the middleware</param>
-        /// <returns>The original app parameter</returns>
+        /// <param name="app">The <see cref="IApplicationBuilder"/> to add the middleware to.</param>
+        /// <param name="configureOptions">An action delegate to configure the provided <see cref="ClaimsTransformationOptions"/>.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
         public static IApplicationBuilder UseClaimsTransformation(this IApplicationBuilder app, Action<ClaimsTransformationOptions> configureOptions)
         {
             var options = new ClaimsTransformationOptions();

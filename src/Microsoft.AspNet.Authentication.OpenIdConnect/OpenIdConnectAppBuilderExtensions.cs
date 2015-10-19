@@ -7,16 +7,16 @@ using Microsoft.AspNet.Authentication.OpenIdConnect;
 namespace Microsoft.AspNet.Builder
 {
     /// <summary>
-    /// Extension methods for using <see cref="OpenIdConnectMiddleware"/>
+    /// Extension methods to add OpenID Connect authentication capabilities to an HTTP application pipeline.
     /// </summary>
-    public static class OpenIdConnectExtensions
+    public static class OpenIdConnectAppBuilderExtensions
     {
         /// <summary>
-        /// Adds the <see cref="OpenIdConnectMiddleware"/> into the ASP.NET runtime.
+        /// Adds the <see cref="OpenIdConnectMiddleware"/> middleware to the specified <see cref="IApplicationBuilder"/>, which enables OpenID Connect authentication capabilities.
         /// </summary>
-        /// <param name="app">The application builder</param>
-        /// <param name="options">Options which control the processing of the OpenIdConnect protocol and token validation.</param>
-        /// <returns>The application builder</returns>
+        /// <param name="app">The <see cref="IApplicationBuilder"/> to add the middleware to.</param>
+        /// <param name="options">An action delegate to configure the provided <see cref="OpenIdConnectOptions"/>.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
         public static IApplicationBuilder UseOpenIdConnectAuthentication(this IApplicationBuilder app, Action<OpenIdConnectOptions> configureOptions)
         {
             if (app == null)
@@ -34,11 +34,11 @@ namespace Microsoft.AspNet.Builder
         }
 
         /// <summary>
-        /// Adds the <see cref="OpenIdConnectMiddleware"/> into the ASP.NET runtime.
+        /// Adds the <see cref="OpenIdConnectMiddleware"/> middleware to the specified <see cref="IApplicationBuilder"/>, which enables OpenID Connect authentication capabilities.
         /// </summary>
-        /// <param name="app">The application builder</param>
-        /// <param name="options">Options which control the processing of the OpenIdConnect protocol and token validation.</param>
-        /// <returns>The application builder</returns>
+        /// <param name="app">The <see cref="IApplicationBuilder"/> to add the middleware to.</param>
+        /// <param name="options">An <see cref="OpenIdConnectOptions"/> that specifies options for the middleware.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
         public static IApplicationBuilder UseOpenIdConnectAuthentication(this IApplicationBuilder app, OpenIdConnectOptions options)
         {
             if (app == null)

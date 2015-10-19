@@ -7,15 +7,16 @@ using Microsoft.AspNet.Authentication.Facebook;
 namespace Microsoft.AspNet.Builder
 {
     /// <summary>
-    /// Extension methods for using <see cref="FacebookMiddleware"/>.
+    /// Extension methods to add Facebook authentication capabilities to an HTTP application pipeline.
     /// </summary>
     public static class FacebookAppBuilderExtensions
     {
         /// <summary>
-        /// Authenticate users using Facebook.
+        /// Adds the <see cref="FacebookMiddleware"/> middleware to the specified <see cref="IApplicationBuilder"/>, which enables Facebook authentication capabilities.
         /// </summary>
-        /// <param name="app">The <see cref="IApplicationBuilder"/> passed to the configure method.</param>
-        /// <returns>The updated <see cref="IApplicationBuilder"/>.</returns>
+        /// <param name="app">The <see cref="IApplicationBuilder"/> to add the middleware to.</param>
+        /// <param name="options">A <see cref="FacebookOptions"/> that specifies options for the middleware.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
         public static IApplicationBuilder UseFacebookAuthentication(this IApplicationBuilder app, FacebookOptions options)
         {
             if (app == null)
@@ -32,11 +33,11 @@ namespace Microsoft.AspNet.Builder
         }
 
         /// <summary>
-        /// Authenticate users using Facebook.
+        /// Adds the <see cref="FacebookMiddleware"/> middleware to the specified <see cref="IApplicationBuilder"/>, which enables Facebook authentication capabilities.
         /// </summary>
-        /// <param name="app">The <see cref="IApplicationBuilder"/> passed to the configure method.</param>
-        /// <param name="configureOptions">Configures the options.</param>
-        /// <returns>The updated <see cref="IApplicationBuilder"/>.</returns>
+        /// <param name="app">The <see cref="IApplicationBuilder"/> to add the middleware to.</param>
+        /// <param name="configureOptions">An action delegate to configure the provided <see cref="FacebookOptions"/>.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
         public static IApplicationBuilder UseFacebookAuthentication(this IApplicationBuilder app, Action<FacebookOptions> configureOptions)
         {
             if (app == null)

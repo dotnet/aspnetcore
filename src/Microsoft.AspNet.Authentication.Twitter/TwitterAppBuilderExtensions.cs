@@ -7,10 +7,16 @@ using Microsoft.AspNet.Authentication.Twitter;
 namespace Microsoft.AspNet.Builder
 {
     /// <summary>
-    /// Extension methods for using <see cref="TwitterMiddleware"/>
+    /// Extension methods to add Twitter authentication capabilities to an HTTP application pipeline.
     /// </summary>
     public static class TwitterAppBuilderExtensions
     {
+        /// <summary>
+        /// Adds the <see cref="TwitterMiddleware"/> middleware to the specified <see cref="IApplicationBuilder"/>, which enables Twitter authentication capabilities.
+        /// </summary>
+        /// <param name="app">The <see cref="IApplicationBuilder"/> to add the middleware to.</param>
+        /// <param name="configureOptions">An action delegate to configure the provided <see cref="TwitterOptions"/>.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
         public static IApplicationBuilder UseTwitterAuthentication(this IApplicationBuilder app, Action<TwitterOptions> configureOptions = null)
         {
             if (app == null)
@@ -26,6 +32,12 @@ namespace Microsoft.AspNet.Builder
             return app.UseTwitterAuthentication(options);
         }
 
+        /// <summary>
+        /// Adds the <see cref="TwitterMiddleware"/> middleware to the specified <see cref="IApplicationBuilder"/>, which enables Twitter authentication capabilities.
+        /// </summary>
+        /// <param name="app">The <see cref="IApplicationBuilder"/> to add the middleware to.</param>
+        /// <param name="options">A <see cref="TwitterOptions"/> that specifies options for the middleware.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
         public static IApplicationBuilder UseTwitterAuthentication(this IApplicationBuilder app, TwitterOptions options)
         {
             if (app == null)
@@ -40,6 +52,5 @@ namespace Microsoft.AspNet.Builder
 
             return app.UseMiddleware<TwitterMiddleware>(options);
         }
-
     }
 }

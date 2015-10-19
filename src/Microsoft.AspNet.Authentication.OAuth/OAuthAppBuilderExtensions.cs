@@ -7,16 +7,16 @@ using Microsoft.AspNet.Authentication.OAuth;
 namespace Microsoft.AspNet.Builder
 {
     /// <summary>
-    /// Extension methods for using <see cref="OAuthMiddleware"/>
+    /// Extension methods to add OAuth 2.0 authentication capabilities to an HTTP application pipeline.
     /// </summary>
-    public static class OAuthExtensions
+    public static class OAuthAppBuilderExtensions
     {
         /// <summary>
-        /// Authenticate users using OAuth.
+        /// Adds the <see cref="OAuthMiddleware{TOptions}"/> middleware to the specified <see cref="IApplicationBuilder"/>, which enables OAuth 2.0 authentication capabilities.
         /// </summary>
-        /// <param name="app">The <see cref="IApplicationBuilder"/> passed to the configure method.</param>
-        /// <param name="configureOptions">Configures the middleware options.</param>
-        /// <returns>The updated <see cref="IApplicationBuilder"/>.</returns>
+        /// <param name="app">The <see cref="IApplicationBuilder"/> to add the middleware to.</param>
+        /// <param name="configureOptions">An action delegate to configure the provided <see cref="OAuthOptions"/>.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
         public static IApplicationBuilder UseOAuthAuthentication(this IApplicationBuilder app, Action<OAuthOptions> configureOptions)
         {
             if (app == null)
@@ -38,11 +38,11 @@ namespace Microsoft.AspNet.Builder
         }
 
         /// <summary>
-        /// Authenticate users using OAuth.
+        /// Adds the <see cref="OAuthMiddleware{TOptions}"/> middleware to the specified <see cref="IApplicationBuilder"/>, which enables OAuth 2.0 authentication capabilities.
         /// </summary>
-        /// <param name="app">The <see cref="IApplicationBuilder"/> passed to the configure method.</param>
-        /// <param name="options">The middleware configuration options.</param>
-        /// <returns>The updated <see cref="IApplicationBuilder"/>.</returns>
+        /// <param name="app">The <see cref="IApplicationBuilder"/> to add the middleware to.</param>
+        /// <param name="options">A <see cref="OAuthOptions"/> that specifies options for the middleware.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
         public static IApplicationBuilder UseOAuthAuthentication(this IApplicationBuilder app, OAuthOptions options)
         {
             if (app == null)

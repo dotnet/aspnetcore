@@ -7,15 +7,15 @@ using Microsoft.AspNet.Authentication.Cookies;
 namespace Microsoft.AspNet.Builder
 {
     /// <summary>
-    /// Extension methods provided by the cookies authentication middleware
+    /// Extension methods to add cookie authentication capabilities to an HTTP application pipeline.
     /// </summary>
     public static class CookieAppBuilderExtensions
     {
         /// <summary>
-        /// Adds a cookie-based authentication middleware to your web application pipeline.
+        /// Adds the <see cref="CookieAuthenticationMiddleware"/> middleware to the specified <see cref="IApplicationBuilder"/>, which enables cookie authentication capabilities.
         /// </summary>
-        /// <param name="app">The IApplicationBuilder passed to your configuration method</param>
-        /// <returns>The original app parameter</returns>
+        /// <param name="app">The <see cref="IApplicationBuilder"/> to add the middleware to.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
         public static IApplicationBuilder UseCookieAuthentication(this IApplicationBuilder app)
         {
             if (app == null)
@@ -27,11 +27,11 @@ namespace Microsoft.AspNet.Builder
         }
 
         /// <summary>
-        /// Adds a cookie-based authentication middleware to your web application pipeline.
+        /// Adds the <see cref="CookieAuthenticationMiddleware"/> middleware to the specified <see cref="IApplicationBuilder"/>, which enables cookie authentication capabilities.
         /// </summary>
-        /// <param name="app">The IApplicationBuilder passed to your configuration method</param>
-        /// <param name="configureOptions">Used to configure the options for the middleware</param>
-        /// <returns>The original app parameter</returns>
+        /// <param name="app">The <see cref="IApplicationBuilder"/> to add the middleware to.</param>
+        /// <param name="configureOptions">An action delegate to configure the provided <see cref="CookieAuthenticationOptions"/>.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
         public static IApplicationBuilder UseCookieAuthentication(this IApplicationBuilder app, Action<CookieAuthenticationOptions> configureOptions)
         {
             if (app == null)
@@ -48,11 +48,11 @@ namespace Microsoft.AspNet.Builder
         }
 
         /// <summary>
-        /// Adds a cookie-based authentication middleware to your web application pipeline.
+        /// Adds the <see cref="CookieAuthenticationMiddleware"/> middleware to the specified <see cref="IApplicationBuilder"/>, which enables cookie authentication capabilities.
         /// </summary>
-        /// <param name="app">The IApplicationBuilder passed to your configuration method</param>
-        /// <param name="options">Used to configure the middleware</param>
-        /// <returns>The original app parameter</returns>
+        /// <param name="app">The <see cref="IApplicationBuilder"/> to add the middleware to.</param>
+        /// <param name="options">A <see cref="JwtBearerOptions"/> that specifies options for the middleware.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
         public static IApplicationBuilder UseCookieAuthentication(this IApplicationBuilder app, CookieAuthenticationOptions options)
         {
             if (app == null)
