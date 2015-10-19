@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.24711.0
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{DAAE4C74-D06F-4874-A166-33305D2643CE}"
 EndProject
@@ -98,6 +98,8 @@ EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "LocalizationSample.Web", "samples\LocalizationSample.Web\LocalizationSample.Web.xproj", "{FCFE6024-2720-49B4-8257-9DBC6114F0F1}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ActionConstraintSample.Web", "samples\ActionConstraintSample.Web\ActionConstraintSample.Web.xproj", "{EE0BD773-4D47-4AA8-8472-5A938A3953BA}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MvcSubAreaSample.Web", "samples\MvcSubAreaSample.Web\MvcSubAreaSample.Web.xproj", "{E1D45BAF-3967-4D81-9217-22AA54941BF5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -591,6 +593,18 @@ Global
 		{EE0BD773-4D47-4AA8-8472-5A938A3953BA}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{EE0BD773-4D47-4AA8-8472-5A938A3953BA}.Release|x86.ActiveCfg = Release|Any CPU
 		{EE0BD773-4D47-4AA8-8472-5A938A3953BA}.Release|x86.Build.0 = Release|Any CPU
+		{E1D45BAF-3967-4D81-9217-22AA54941BF5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E1D45BAF-3967-4D81-9217-22AA54941BF5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E1D45BAF-3967-4D81-9217-22AA54941BF5}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{E1D45BAF-3967-4D81-9217-22AA54941BF5}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{E1D45BAF-3967-4D81-9217-22AA54941BF5}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E1D45BAF-3967-4D81-9217-22AA54941BF5}.Debug|x86.Build.0 = Debug|Any CPU
+		{E1D45BAF-3967-4D81-9217-22AA54941BF5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E1D45BAF-3967-4D81-9217-22AA54941BF5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E1D45BAF-3967-4D81-9217-22AA54941BF5}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{E1D45BAF-3967-4D81-9217-22AA54941BF5}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{E1D45BAF-3967-4D81-9217-22AA54941BF5}.Release|x86.ActiveCfg = Release|Any CPU
+		{E1D45BAF-3967-4D81-9217-22AA54941BF5}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -638,5 +652,6 @@ Global
 		{DAB1252D-577C-4912-98BE-1A812BF83F86} = {DAAE4C74-D06F-4874-A166-33305D2643CE}
 		{FCFE6024-2720-49B4-8257-9DBC6114F0F1} = {DAAE4C74-D06F-4874-A166-33305D2643CE}
 		{EE0BD773-4D47-4AA8-8472-5A938A3953BA} = {DAAE4C74-D06F-4874-A166-33305D2643CE}
+		{E1D45BAF-3967-4D81-9217-22AA54941BF5} = {DAAE4C74-D06F-4874-A166-33305D2643CE}
 	EndGlobalSection
 EndGlobal

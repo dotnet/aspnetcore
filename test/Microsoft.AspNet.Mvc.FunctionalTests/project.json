@@ -36,6 +36,7 @@
     "Microsoft.Extensions.Configuration.Json": "1.0.0-*",
     "Microsoft.Extensions.Logging.Testing": "1.0.0-*",
     "MvcSandbox": "1.0.0",
+    "MvcSubAreaSample.Web": "1.0.0",
     "PrecompilationWebSite": "1.0.0",
     "RazorPageExecutionInstrumentationWebSite": "1.0.0",
     "RazorWebSite": "1.0.0",

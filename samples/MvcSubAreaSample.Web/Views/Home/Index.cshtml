@@ -1,0 +1,15 @@
+﻿
+@addTagHelper *, Microsoft.AspNet.Mvc.TagHelpers
+@{
+    ViewData["Title"] = "Home Page";
+    Layout = "/Views/Shared/_Layout.cshtml";
+}
+
+<div class="row">
+    <div class="col-md-3">
+        <h2>Areas</h2>
+        <ul>
+            <li><a asp-route-area="Restaurant" asp-controller="Home" asp-action="Index">Restaurant</a></li>
+        </ul>
+    </div>
+</div>
