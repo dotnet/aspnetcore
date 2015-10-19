@@ -24,7 +24,7 @@
         "Microsoft.Dnx.Compilation.Abstractions": "1.0.0-*",
         "Microsoft.Dnx.Runtime.Abstractions": "1.0.0-*",
         "Newtonsoft.Json": "6.0.6",
-        "System.Diagnostics.Tracing.Telemetry": "4.0.0-beta-*"
+        "System.Diagnostics.DiagnosticSource": "4.0.0-beta-*"
     },
     "frameworks": {
         "dnx451": {

@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Tracing;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using Microsoft.AspNet.Builder;
@@ -88,9 +88,7 @@ namespace Microsoft.AspNet.Hosting.Internal
             var logger = _applicationServices.GetRequiredService<ILogger<HostingEngine>>();
             var contextFactory = _applicationServices.GetRequiredService<IHttpContextFactory>();
             var contextAccessor = _applicationServices.GetRequiredService<IHttpContextAccessor>();
-#pragma warning disable 0618
-            var telemetrySource = _applicationServices.GetRequiredService<TelemetrySource>();
-#pragma warning restore 0618
+            var diagnosticSource = _applicationServices.GetRequiredService<DiagnosticSource>();
             var server = ServerFactory.Start(_serverInstance,
                 async features =>
                 {
@@ -98,12 +96,10 @@ namespace Microsoft.AspNet.Hosting.Internal
                     httpContext.ApplicationServices = _applicationServices;
                     var requestIdentifier = GetRequestIdentifier(httpContext);
                     contextAccessor.HttpContext = httpContext;
-#pragma warning disable 0618
-                    if (telemetrySource.IsEnabled("Microsoft.AspNet.Hosting.BeginRequest"))
+                    if (diagnosticSource.IsEnabled("Microsoft.AspNet.Hosting.BeginRequest"))
                     {
-                        telemetrySource.WriteTelemetry("Microsoft.AspNet.Hosting.BeginRequest", new { httpContext = httpContext });
+                        diagnosticSource.Write("Microsoft.AspNet.Hosting.BeginRequest", new { httpContext = httpContext });
                     }
-#pragma warning restore 0618
                     try
                     {
                         using (logger.IsEnabled(LogLevel.Critical)
@@ -115,20 +111,16 @@ namespace Microsoft.AspNet.Hosting.Internal
                     }
                     catch (Exception ex)
                     {
-#pragma warning disable 0618
-                        if (telemetrySource.IsEnabled("Microsoft.AspNet.Hosting.UnhandledException"))
+                        if (diagnosticSource.IsEnabled("Microsoft.AspNet.Hosting.UnhandledException"))
                         {
-                            telemetrySource.WriteTelemetry("Microsoft.AspNet.Hosting.UnhandledException", new { httpContext = httpContext, exception = ex });
+                            diagnosticSource.Write("Microsoft.AspNet.Hosting.UnhandledException", new { httpContext = httpContext, exception = ex });
                         }
-#pragma warning restore 0618
                         throw;
                     }
-#pragma warning disable 0618
-                    if (telemetrySource.IsEnabled("Microsoft.AspNet.Hosting.EndRequest"))
+                    if (diagnosticSource.IsEnabled("Microsoft.AspNet.Hosting.EndRequest"))
                     {
-                        telemetrySource.WriteTelemetry("Microsoft.AspNet.Hosting.EndRequest", new { httpContext = httpContext });
+                        diagnosticSource.Write("Microsoft.AspNet.Hosting.EndRequest", new { httpContext = httpContext });
                     }
-#pragma warning restore 0618
                 });
 
             _applicationLifetime.NotifyStarted();

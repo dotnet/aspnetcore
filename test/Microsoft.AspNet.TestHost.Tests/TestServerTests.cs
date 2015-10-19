@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics.Tracing;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -16,7 +16,7 @@ using Microsoft.AspNet.Http.Features.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.TelemetryAdapter;
+using Microsoft.Extensions.DiagnosticAdapter;
 using Xunit;
 
 namespace Microsoft.AspNet.TestHost
@@ -436,22 +436,21 @@ namespace Microsoft.AspNet.TestHost
             Assert.Equal(HttpStatusCode.OK, result.StatusCode);
             Assert.Equal("FoundFoo:False", await result.Content.ReadAsStringAsync());
         }
-
-#pragma warning disable 0618
+        
         [Fact]
-        public async Task BeginEndTelemetryAvailable()
+        public async Task BeginEndDiagnosticAvailable()
         {
-            TelemetryListener telemetryListener = null;
+            DiagnosticListener diagnosticListener = null;
             var server = TestServer.Create(app =>
             {
-                telemetryListener = app.ApplicationServices.GetRequiredService<TelemetryListener>();
+                diagnosticListener = app.ApplicationServices.GetRequiredService<DiagnosticListener>();
                 app.Run(context =>
                 {
                     return context.Response.WriteAsync("Hello World");
                 });
             });
-            var listener = new TestTelemetryListener();
-            telemetryListener.SubscribeWithAdapter(listener);
+            var listener = new TestDiagnosticListener();
+            diagnosticListener.SubscribeWithAdapter(listener);
             var result = await server.CreateClient().GetStringAsync("/path");
 
             Assert.Equal("Hello World", result);
@@ -461,19 +460,19 @@ namespace Microsoft.AspNet.TestHost
         }
 
         [Fact]
-        public async Task ExceptionTelemetryAvailable()
+        public async Task ExceptionDiagnosticAvailable()
         {
-            TelemetryListener telemetryListener = null;
+            DiagnosticListener diagnosticListener = null;
             var server = TestServer.Create(app =>
             {
-                telemetryListener = app.ApplicationServices.GetRequiredService<TelemetryListener>();
+                diagnosticListener = app.ApplicationServices.GetRequiredService<DiagnosticListener>();
                 app.Run(context =>
                 {
                     throw new Exception("Test exception");
                 });
             });
-            var listener = new TestTelemetryListener();
-            telemetryListener.SubscribeWithAdapter(listener);
+            var listener = new TestDiagnosticListener();
+            diagnosticListener.SubscribeWithAdapter(listener);
             await Assert.ThrowsAsync<Exception>(() => server.CreateClient().GetAsync("/path"));
 
             Assert.NotNull(listener.BeginRequest?.HttpContext);
@@ -481,9 +480,8 @@ namespace Microsoft.AspNet.TestHost
             Assert.NotNull(listener.UnhandledException?.HttpContext);
             Assert.NotNull(listener.UnhandledException?.Exception);
         }
-#pragma warning restore 0618
 
-        public class TestTelemetryListener
+        public class TestDiagnosticListener
         {
             public class OnBeginRequestEventData
             {
@@ -492,7 +490,7 @@ namespace Microsoft.AspNet.TestHost
 
             public OnBeginRequestEventData BeginRequest { get; set; }
 
-            [TelemetryName("Microsoft.AspNet.Hosting.BeginRequest")]
+            [DiagnosticName("Microsoft.AspNet.Hosting.BeginRequest")]
             public virtual void OnBeginRequest(IProxyHttpContext httpContext)
             {
                 BeginRequest = new OnBeginRequestEventData()
@@ -508,7 +506,7 @@ namespace Microsoft.AspNet.TestHost
 
             public OnEndRequestEventData EndRequest { get; set; }
 
-            [TelemetryName("Microsoft.AspNet.Hosting.EndRequest")]
+            [DiagnosticName("Microsoft.AspNet.Hosting.EndRequest")]
             public virtual void OnEndRequest(IProxyHttpContext httpContext)
             {
                 EndRequest = new OnEndRequestEventData()
@@ -525,7 +523,7 @@ namespace Microsoft.AspNet.TestHost
 
             public OnUnhandledExceptionEventData UnhandledException { get; set; }
 
-            [TelemetryName("Microsoft.AspNet.Hosting.UnhandledException")]
+            [DiagnosticName("Microsoft.AspNet.Hosting.UnhandledException")]
             public virtual void OnUnhandledException(IProxyHttpContext httpContext, IProxyException exception)
             {
                 UnhandledException = new OnUnhandledExceptionEventData()
