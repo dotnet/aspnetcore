@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
@@ -21,14 +22,24 @@ namespace Microsoft.Extensions.Localization.Tests
         {
             using (var server = TestServer.Create(app =>
             {
-                var options = new RequestLocalizationOptions();
+                var options = new RequestLocalizationOptions()
+                {
+                    SupportedCultures = new List<CultureInfo>
+                    {
+                        new CultureInfo("ar")
+                    },
+                    SupportedUICultures = new List<CultureInfo>
+                    {
+                        new CultureInfo("ar")
+                    }
+                };
                 options.RequestCultureProviders.Insert(0, new CustomRequestCultureProvider(context =>
                 {
-                    var culture = GetCultureInfoFromUrl(context);
-                    var requestCulture = new RequestCulture(culture);
+                    var culture = GetCultureInfoFromUrl(context, options.SupportedCultures);
+                    var requestCulture = new ProviderCultureResult(culture);
                     return Task.FromResult(requestCulture);
                 }));
-                app.UseRequestLocalization(options);
+                app.UseRequestLocalization(options, defaultRequestCulture: new RequestCulture("en-US"));
                 app.Run(context =>
                 {
                     var requestCultureFeature = context.Features.Get<IRequestCultureFeature>();
@@ -43,18 +54,16 @@ namespace Microsoft.Extensions.Localization.Tests
             }
         }
 
-        private CultureInfo GetCultureInfoFromUrl(HttpContext context)
+        private string GetCultureInfoFromUrl(HttpContext context, IList<CultureInfo> supportedCultures)
         {
             var currentCulture = "en";
             var segments = context.Request.Path.Value.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
             if (segments.Length > 1 && segments[0].Length == 2)
             {
-                if (CultureInfoCache.KnownCultureNames.Contains(segments[0]))
-                    currentCulture = segments[0];
-                else
-                    throw new InvalidOperationException($"The '{segments[0]}' is invalid culture name.");
+                currentCulture = segments[0];
             }
-            return CultureInfoCache.GetCultureInfo(currentCulture);
+
+            return currentCulture;
         }
     }
 }

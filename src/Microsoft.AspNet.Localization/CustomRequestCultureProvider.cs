@@ -12,13 +12,13 @@ namespace Microsoft.AspNet.Localization
     /// </summary>
     public class CustomRequestCultureProvider : RequestCultureProvider
     {
-        private readonly Func<HttpContext, Task<RequestCulture>> _provider;
+        private readonly Func<HttpContext, Task<ProviderCultureResult>> _provider;
 
         /// <summary>
         /// Creates a new <see cref="CustomRequestCultureProvider"/> using the specified delegate.
         /// </summary>
         /// <param name="provider">The provider delegate.</param>
-        public CustomRequestCultureProvider(Func<HttpContext, Task<RequestCulture>> provider)
+        public CustomRequestCultureProvider(Func<HttpContext, Task<ProviderCultureResult>> provider)
         {
             if (provider == null)
             {
@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Localization
         }
 
         /// <inheritdoc />
-        public override Task<RequestCulture> DetermineRequestCulture(HttpContext httpContext)
+        public override Task<ProviderCultureResult> DetermineProviderCultureResult(HttpContext httpContext)
         {
             if (httpContext == null)
             {

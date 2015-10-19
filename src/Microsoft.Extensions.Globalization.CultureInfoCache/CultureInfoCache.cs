@@ -1,15 +1,18 @@
 // Copyright (c) .NET Foundation. All rights reserved. 
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
+using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 
 namespace Microsoft.Extensions.Globalization
 {
     /// <summary>
     /// Provides read-only cached instances of <see cref="CultureInfo"/>.
     /// </summary>
-    public static partial class CultureInfoCache
+    public static class CultureInfoCache
     {
         private static readonly ConcurrentDictionary<string, CacheEntry> _cache = new ConcurrentDictionary<string, CacheEntry>();
 
@@ -18,15 +21,17 @@ namespace Microsoft.Extensions.Globalization
         /// <see cref="KnownCultureNames"/> will be used.
         /// </summary>
         /// <param name="name">The culture name.</param>
+        /// <param name="supportedCultures">The cultures supported by the application.</param>
         /// <returns>
         /// A read-only cached <see cref="CultureInfo"/> or <c>null</c> a match wasn't found in
         /// <see cref="KnownCultureNames"/>.
         /// </returns>
-        public static CultureInfo GetCultureInfo(string name)
+        public static CultureInfo GetCultureInfo(string name, IList<CultureInfo> supportedCultures)
         {
             // Allow only known culture names as this API is called with input from users (HTTP requests) and
             // creating CultureInfo objects is expensive and we don't want it to throw either.
-            if (name == null || !KnownCultureNames.Contains(name))
+            if (name == null || supportedCultures == null ||
+                !supportedCultures.Any(supportedCulture => string.Equals(supportedCulture.Name, name, StringComparison.OrdinalIgnoreCase)))
             {
                 return null;
             }

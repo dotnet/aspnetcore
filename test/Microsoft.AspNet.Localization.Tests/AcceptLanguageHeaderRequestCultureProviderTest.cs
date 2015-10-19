@@ -12,7 +12,7 @@ using Xunit;
 
 namespace Microsoft.Extensions.Localization.Tests
 {
-    public class AccessLanguageHeaderRequestCultureProviderTest
+    public class AcceptLanguageHeaderRequestCultureProviderTest
     {
         [Fact]
         public async void GetFallbackLanguage_ReturnsFirstNonNullCultureFromSupportedCultureList()
@@ -27,7 +27,7 @@ namespace Microsoft.Extensions.Localization.Tests
                         new CultureInfo("en-US")
                     }
                 };
-                app.UseRequestLocalization(options);
+                app.UseRequestLocalization(options, defaultRequestCulture: new RequestCulture("en-US"));
                 app.Run(context =>
                 {
                     var requestCultureFeature = context.Features.Get<IRequestCultureFeature>();
@@ -52,14 +52,13 @@ namespace Microsoft.Extensions.Localization.Tests
             {
                 var options = new RequestLocalizationOptions
                 {
-                    DefaultRequestCulture = new RequestCulture(new CultureInfo("fr-FR")),
                     SupportedCultures = new List<CultureInfo>
                     {
                         new CultureInfo("ar-SA"),
                         new CultureInfo("en-US")
                     }
                 };
-                app.UseRequestLocalization(options);
+                app.UseRequestLocalization(options, defaultRequestCulture: new RequestCulture("fr-FR"));
                 app.Run(context =>
                 {
                     var requestCultureFeature = context.Features.Get<IRequestCultureFeature>();
@@ -83,14 +82,13 @@ namespace Microsoft.Extensions.Localization.Tests
             {
                 var options = new RequestLocalizationOptions
                 {
-                    DefaultRequestCulture = new RequestCulture(new CultureInfo("fr-FR")),
                     SupportedCultures = new List<CultureInfo>
                     {
                         new CultureInfo("ar-SA"),
                         new CultureInfo("af-ZA")
                     }
                 };
-                app.UseRequestLocalization(options);
+                app.UseRequestLocalization(options, defaultRequestCulture: new RequestCulture("fr-FR"));
                 app.Run(context =>
                 {
                     var requestCultureFeature = context.Features.Get<IRequestCultureFeature>();
@@ -124,7 +122,7 @@ namespace Microsoft.Extensions.Localization.Tests
                         new CultureInfo("ar-YE")
                     }
                 };
-                app.UseRequestLocalization(options);
+                app.UseRequestLocalization(options, defaultRequestCulture: new RequestCulture("en-US"));
                 app.Run(context =>
                 {
                     var requestCultureFeature = context.Features.Get<IRequestCultureFeature>();

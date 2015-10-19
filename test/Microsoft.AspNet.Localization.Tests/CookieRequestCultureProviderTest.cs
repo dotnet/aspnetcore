@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved. 
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
@@ -19,11 +20,21 @@ namespace Microsoft.Extensions.Localization.Tests
         {
             using (var server = TestServer.Create(app =>
             {
-                var options = new RequestLocalizationOptions();
+                var options = new RequestLocalizationOptions()
+                {
+                    SupportedCultures = new List<CultureInfo>
+                    {
+                        new CultureInfo("ar-SA")
+                    },
+                    SupportedUICultures = new List<CultureInfo>
+                    {
+                        new CultureInfo("ar-SA")
+                    }
+                };
                 var provider = new CookieRequestCultureProvider();
                 provider.CookieName = "Preferences";
                 options.RequestCultureProviders.Insert(0, provider);
-                app.UseRequestLocalization(options);
+                app.UseRequestLocalization(options, defaultRequestCulture: new RequestCulture("en-US"));
                 app.Run(context =>
                 {
                     var requestCultureFeature = context.Features.Get<IRequestCultureFeature>();
@@ -48,16 +59,26 @@ namespace Microsoft.Extensions.Localization.Tests
         {
             using (var server = TestServer.Create(app =>
             {
-                var options = new RequestLocalizationOptions();
+                var options = new RequestLocalizationOptions()
+                {
+                    SupportedCultures = new List<CultureInfo>
+                    {
+                        new CultureInfo("ar-SA")
+                    },
+                    SupportedUICultures = new List<CultureInfo>
+                    {
+                        new CultureInfo("ar-SA")
+                    }
+                };
                 var provider = new CookieRequestCultureProvider();
                 provider.CookieName = "Preferences";
                 options.RequestCultureProviders.Insert(0, provider);
-                app.UseRequestLocalization(options);
+                app.UseRequestLocalization(options, defaultRequestCulture: new RequestCulture("en-US"));
                 app.Run(context =>
                 {
                     var requestCultureFeature = context.Features.Get<IRequestCultureFeature>();
                     var requestCulture = requestCultureFeature.RequestCulture;
-                    Assert.Equal(options.DefaultRequestCulture.Culture.Name, requestCulture.Culture.Name);
+                    Assert.Equal("en-US", requestCulture.Culture.Name);
                     return Task.FromResult(0);
                 });
             }))
@@ -73,16 +94,26 @@ namespace Microsoft.Extensions.Localization.Tests
         {
             using (var server = TestServer.Create(app =>
             {
-                var options = new RequestLocalizationOptions();
+                var options = new RequestLocalizationOptions()
+                {
+                    SupportedCultures = new List<CultureInfo>
+                    {
+                        new CultureInfo("ar-SA")
+                    },
+                    SupportedUICultures = new List<CultureInfo>
+                    {
+                        new CultureInfo("ar-SA")
+                    }
+                };
                 var provider = new CookieRequestCultureProvider();
                 provider.CookieName = "Preferences";
                 options.RequestCultureProviders.Insert(0, provider);
-                app.UseRequestLocalization(options);
+                app.UseRequestLocalization(options, defaultRequestCulture: new RequestCulture("en-US"));
                 app.Run(context =>
                 {
                     var requestCultureFeature = context.Features.Get<IRequestCultureFeature>();
                     var requestCulture = requestCultureFeature.RequestCulture;
-                    Assert.Equal(options.DefaultRequestCulture.Culture.Name, requestCulture.Culture.Name);
+                    Assert.Equal("en-US", requestCulture.Culture.Name);
                     return Task.FromResult(0);
                 });
             }))

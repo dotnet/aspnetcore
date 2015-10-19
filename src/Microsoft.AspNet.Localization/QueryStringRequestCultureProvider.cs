@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Localization
         public string UIQueryStringKey { get; set; } = "ui-culture";
 
         /// <inheritdoc />
-        public override Task<RequestCulture> DetermineRequestCulture(HttpContext httpContext)
+        public override Task<ProviderCultureResult> DetermineProviderCultureResult(HttpContext httpContext)
         {
             if (httpContext == null)
             {
@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Localization
             var request = httpContext.Request;
             if (!request.QueryString.HasValue)
             {
-                return Task.FromResult((RequestCulture)null);
+                return Task.FromResult((ProviderCultureResult)null);
             }
 
             string queryCulture = null;
@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.Localization
             if (queryCulture == null && queryUICulture == null)
             {
                 // No values specified for either so no match
-                return Task.FromResult((RequestCulture)null);
+                return Task.FromResult((ProviderCultureResult)null);
             }
 
             if (queryCulture != null && queryUICulture == null)
@@ -71,19 +71,9 @@ namespace Microsoft.AspNet.Localization
                 queryCulture = queryUICulture;
             }
 
-            var culture = CultureInfoCache.GetCultureInfo(queryCulture);
-            var uiCulture = CultureInfoCache.GetCultureInfo(queryUICulture);
+            var providerResultCulture = new ProviderCultureResult(queryCulture, queryUICulture);
 
-            if (culture == null || uiCulture == null)
-            {
-                return Task.FromResult((RequestCulture)null);
-            }
-
-            var requestCulture = new RequestCulture(culture, uiCulture);
-
-            requestCulture = ValidateRequestCulture(requestCulture);
-
-            return Task.FromResult(requestCulture);
+            return Task.FromResult(providerResultCulture);
         }
     }
 }

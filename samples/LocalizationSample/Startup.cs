@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
@@ -24,16 +25,30 @@ namespace LocalizationSample
             var options = new RequestLocalizationOptions
             {
                 // Set options here to change middleware behavior
-                //SupportedCultures = new List<CultureInfo>
-                //{
-                //    new CultureInfo("en-US"),
-                //    new CultureInfo("en-AU")
-                //},
-                //SupportedUICultures = new List<CultureInfo>
-                //{
-                //    new CultureInfo("en-US"),
-                //    new CultureInfo("en-AU")
-                //}
+                SupportedCultures = new List<CultureInfo>
+                {
+                    new CultureInfo("en-US"),
+                    new CultureInfo("en-AU"),
+                    new CultureInfo("en-GB"),
+                    new CultureInfo("es-ES"),
+                    new CultureInfo("ja-JP"),
+                    new CultureInfo("fr-FR"),
+                    new CultureInfo("zh"),
+                    new CultureInfo("zh-CN"),
+                    new CultureInfo("zh-CHT")
+                },
+                SupportedUICultures = new List<CultureInfo>
+                {
+                    new CultureInfo("en-US"),
+                    new CultureInfo("en-AU"),
+                    new CultureInfo("en-GB"),
+                    new CultureInfo("es-ES"),
+                    new CultureInfo("ja-JP"),
+                    new CultureInfo("fr-FR"),
+                    new CultureInfo("zh"),
+                    new CultureInfo("zh-CN"),
+                    new CultureInfo("zh-CHT")
+                }
             };
 
             // Optionally create an app-specific provider with just a delegate, e.g. look up user preference from DB.
@@ -43,7 +58,7 @@ namespace LocalizationSample
                 
             //}));
 
-            app.UseRequestLocalization(options);
+            app.UseRequestLocalization(options, defaultRequestCulture: new RequestCulture("en-US"));
 
             app.Use(async (context, next) =>
             {

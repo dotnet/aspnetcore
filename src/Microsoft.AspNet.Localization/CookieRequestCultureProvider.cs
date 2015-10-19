@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.Extensions.Globalization;
@@ -29,7 +31,7 @@ namespace Microsoft.AspNet.Localization
         public string CookieName { get; set; } = DefaultCookieName;
 
         /// <inheritdoc />
-        public override Task<RequestCulture> DetermineRequestCulture(HttpContext httpContext)
+        public override Task<ProviderCultureResult> DetermineProviderCultureResult(HttpContext httpContext)
         {
             if (httpContext == null)
             {
@@ -40,14 +42,12 @@ namespace Microsoft.AspNet.Localization
 
             if (cookie == null)
             {
-                return Task.FromResult((RequestCulture)null);
+                return Task.FromResult((ProviderCultureResult)null);
             }
 
-            var requestCulture = ParseCookieValue(cookie);
+            var providerResultCulture = ParseCookieValue(cookie);
 
-            requestCulture = ValidateRequestCulture(requestCulture);
-
-            return Task.FromResult(requestCulture);
+            return Task.FromResult(providerResultCulture);
         }
 
         /// <summary>
@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.Localization
         /// </summary>
         /// <param name="value">The cookie value to parse.</param>
         /// <returns>The <see cref="RequestCulture"/> or <c>null</c> if parsing fails.</returns>
-        public static RequestCulture ParseCookieValue(string value)
+        public static ProviderCultureResult ParseCookieValue(string value)
         {
             if (string.IsNullOrWhiteSpace(value))
             {
@@ -100,15 +100,25 @@ namespace Microsoft.AspNet.Localization
             var cultureName = potentialCultureName.Substring(_culturePrefix.Length);
             var uiCultureName = potentialUICultureName.Substring(_uiCulturePrefix.Length);
 
-            var culture = CultureInfoCache.GetCultureInfo(cultureName);
-            var uiCulture = CultureInfoCache.GetCultureInfo(uiCultureName);
-
-            if (culture == null || uiCulture == null)
+            if (cultureName == null && uiCultureName == null)
             {
+                // No values specified for either so no match
                 return null;
             }
 
-            return new RequestCulture(culture, uiCulture);
+            if (cultureName != null && uiCultureName == null)
+            {
+                // Value for culture but not for UI culture so default to culture value for both
+                uiCultureName = cultureName;
+            }
+
+            if (cultureName == null && uiCultureName != null)
+            {
+                // Value for UI culture but not for culture so default to UI culture value for both
+                cultureName = uiCultureName;
+            }
+
+            return new ProviderCultureResult(cultureName, uiCultureName);
         }
     }
 }

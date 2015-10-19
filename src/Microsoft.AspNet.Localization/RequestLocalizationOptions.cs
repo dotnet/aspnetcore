@@ -17,8 +17,6 @@ namespace Microsoft.AspNet.Localization
         /// </summary>
         public RequestLocalizationOptions()
         {
-            DefaultRequestCulture = new RequestCulture(CultureInfo.CurrentCulture, CultureInfo.CurrentUICulture);
-
             RequestCultureProviders = new List<IRequestCultureProvider>
             {
                 new QueryStringRequestCultureProvider { Options = this },
@@ -26,14 +24,6 @@ namespace Microsoft.AspNet.Localization
                 new AcceptLanguageHeaderRequestCultureProvider { Options = this }
             };
         }
-
-        /// <summary>
-        /// The default <see cref="RequestCulture"/> to use. This value will be used if none of the configured
-        /// <see cref="IRequestCultureProvider"/> options result in a non-<c>null</c> result.
-        /// Defaults to <see cref="RequestCulture.Culture"/> set to <see cref="CultureInfo.DefaultThreadCurrentCulture"/>
-        /// and <see cref="RequestCulture.UICulture"/> set to <see cref="CultureInfo.DefaultThreadCurrentUICulture"/>.
-        /// </summary>
-        public RequestCulture DefaultRequestCulture { get; set; }
 
         /// <summary>
         /// The cultures supported by the application. If this value is non-<c>null</c>, the

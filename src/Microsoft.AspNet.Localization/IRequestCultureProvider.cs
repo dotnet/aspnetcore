@@ -1,6 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved. 
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
+using System.Collections.Generic;
+using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 
@@ -16,9 +18,9 @@ namespace Microsoft.AspNet.Localization
         /// </summary>
         /// <param name="httpContext">The <see cref="HttpContext"/> for the request.</param>
         /// <returns>
-        ///     The determined <see cref="RequestCulture"/>.
-        ///     Returns <c>null</c> if the provider couldn't determine a <see cref="RequestCulture"/>.
+        ///     The determined <see cref="ProviderCultureResult"/>.
+        ///     Returns <c>null</c> if the provider couldn't determine a <see cref="ProviderCultureResult"/>.
         /// </returns>
-        Task<RequestCulture> DetermineRequestCulture(HttpContext httpContext);
+        Task<ProviderCultureResult> DetermineProviderCultureResult(HttpContext httpContext);
     }
 }

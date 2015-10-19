@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
@@ -23,7 +25,7 @@ namespace Microsoft.AspNet.Localization
         public int MaximumAcceptLanguageHeaderValuesToTry { get; set; } = 3;
 
         /// <inheritdoc />
-        public override Task<RequestCulture> DetermineRequestCulture(HttpContext httpContext)
+        public override Task<ProviderCultureResult> DetermineProviderCultureResult(HttpContext httpContext)
         {
             if (httpContext == null)
             {
@@ -34,7 +36,7 @@ namespace Microsoft.AspNet.Localization
 
             if (acceptLanguageHeader == null || acceptLanguageHeader.Count == 0)
             {
-                return Task.FromResult((RequestCulture)null);
+                return Task.FromResult((ProviderCultureResult)null);
             }
 
             var languages = acceptLanguageHeader.AsEnumerable();
@@ -47,30 +49,14 @@ namespace Microsoft.AspNet.Localization
             }
 
             var orderedLanguages = languages.OrderByDescending(h => h, StringWithQualityHeaderValueComparer.QualityComparer)
-                .ToList();
+                .Select(x => x.Value).ToList();
 
-            foreach (var language in orderedLanguages)
+            if (orderedLanguages.Any())
             {
-                // Allow empty string values as they map to InvariantCulture, whereas null culture values will throw in
-                // the CultureInfo ctor
-                if (language.Value != null)
-                {
-                    var culture = CultureInfoCache.GetCultureInfo(language.Value);
-                    if (culture != null)
-                    {
-                        var requestCulture = new RequestCulture(culture);
-
-                        requestCulture = ValidateRequestCulture(requestCulture);
-
-                        if (requestCulture?.Culture == culture)
-                        {
-                            return Task.FromResult(requestCulture);
-                        }
-                    }
-                }
+                return Task.FromResult(new ProviderCultureResult(orderedLanguages));
             }
 
-            return Task.FromResult((RequestCulture)null);
+            return Task.FromResult((ProviderCultureResult)null);
         }
     }
 }
