@@ -5,7 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Diagnostics.Tracing;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -17,6 +17,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.Dnx.Compilation;
 using Microsoft.Dnx.Runtime;
 using Microsoft.Extensions.Logging;
+using StackFrame = Microsoft.AspNet.Diagnostics.Views.StackFrame;
 
 namespace Microsoft.AspNet.Diagnostics
 {
@@ -30,7 +31,7 @@ namespace Microsoft.AspNet.Diagnostics
         private static readonly bool IsMono = Type.GetType("Mono.Runtime") != null;
         private readonly ILogger _logger;
         private readonly IFileProvider _fileProvider;
-        private readonly TelemetrySource _telemetrySource;
+        private readonly DiagnosticSource _diagnosticSource;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeveloperExceptionPageMiddleware"/> class
@@ -42,7 +43,7 @@ namespace Microsoft.AspNet.Diagnostics
             ErrorPageOptions options,
             ILoggerFactory loggerFactory,
             IApplicationEnvironment appEnvironment,
-            TelemetrySource telemetrySource)
+            DiagnosticSource diagnosticSource)
         {
             if (next == null)
             {
@@ -58,7 +59,7 @@ namespace Microsoft.AspNet.Diagnostics
             _options = options;
             _logger = loggerFactory.CreateLogger<DeveloperExceptionPageMiddleware>();
             _fileProvider = options.FileProvider ?? new PhysicalFileProvider(appEnvironment.ApplicationBasePath);
-            _telemetrySource = telemetrySource;
+            _diagnosticSource = diagnosticSource;
         }
 
         /// <summary>
@@ -90,7 +91,10 @@ namespace Microsoft.AspNet.Diagnostics
 
                     await DisplayException(context, ex);
 
-                    _telemetrySource.WriteTelemetry("Microsoft.AspNet.Diagnostics.UnhandledException", new { httpContext = context, exception = ex });
+                    if (_diagnosticSource.IsEnabled("Microsoft.AspNet.Diagnostics.UnhandledException"))
+                    {
+                        _diagnosticSource.Write("Microsoft.AspNet.Diagnostics.UnhandledException", new { httpContext = context, exception = ex });
+                    }
 
                     return;
                 }

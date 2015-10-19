@@ -209,7 +209,11 @@ using Microsoft.Extensions.Logging
 
             WriteLiteral("                    <option");
             BeginWriteAttribute("value", " value=\"", 4908, "\"", 4928, 1);
-            WriteAttributeValue("", 4916, severityInt, 4916, 12, false);
+#line 138 "LogPage.cshtml"
+WriteAttributeValue("", 4916, severityInt, 4916, 12, false);
+
+#line default
+#line hidden
             EndWriteAttribute();
             WriteLiteral(" selected=\"selected\">");
 #line 138 "LogPage.cshtml"
@@ -228,7 +232,11 @@ using Microsoft.Extensions.Logging
 
             WriteLiteral("                    <option");
             BeginWriteAttribute("value", " value=\"", 5057, "\"", 5077, 1);
-            WriteAttributeValue("", 5065, severityInt, 5065, 12, false);
+#line 142 "LogPage.cshtml"
+WriteAttributeValue("", 5065, severityInt, 5065, 12, false);
+
+#line default
+#line hidden
             EndWriteAttribute();
             WriteLiteral(">");
 #line 142 "LogPage.cshtml"
@@ -246,7 +254,11 @@ using Microsoft.Extensions.Logging
 
             WriteLiteral("        </select>\r\n        <input type=\"text\" name=\"name\"");
             BeginWriteAttribute("value", " value=\"", 5190, "\"", 5223, 1);
-            WriteAttributeValue("", 5198, Model.Options.NamePrefix, 5198, 25, false);
+#line 146 "LogPage.cshtml"
+WriteAttributeValue("", 5198, Model.Options.NamePrefix, 5198, 25, false);
+
+#line default
+#line hidden
             EndWriteAttribute();
             WriteLiteral(@" />
         <input type=""submit"" value=""filter"" />
@@ -304,10 +316,18 @@ using Microsoft.Extensions.Logging
 
             WriteLiteral("                        \t<td><a");
             BeginWriteAttribute("href", " href=\"", 6287, "\"", 6307, 1);
-            WriteAttributeValue("", 6294, activityPath, 6294, 13, false);
+#line 178 "LogPage.cshtml"
+WriteAttributeValue("", 6294, activityPath, 6294, 13, false);
+
+#line default
+#line hidden
             EndWriteAttribute();
             BeginWriteAttribute("title", " title=\"", 6308, "\"", 6339, 1);
-            WriteAttributeValue("", 6316, activity.HttpInfo.Path, 6316, 23, false);
+#line 178 "LogPage.cshtml"
+WriteAttributeValue("", 6316, activity.HttpInfo.Path, 6316, 23, false);
+
+#line default
+#line hidden
             EndWriteAttribute();
             WriteLiteral(">");
 #line 178 "LogPage.cshtml"
@@ -344,10 +364,18 @@ using Microsoft.Extensions.Logging
 
             WriteLiteral("                            <td colspan=\"4\"><a");
             BeginWriteAttribute("href", " href=\"", 6729, "\"", 6749, 1);
-            WriteAttributeValue("", 6736, activityPath, 6736, 13, false);
+#line 185 "LogPage.cshtml"
+WriteAttributeValue("", 6736, activityPath, 6736, 13, false);
+
+#line default
+#line hidden
             EndWriteAttribute();
             BeginWriteAttribute("title", " title=\"", 6750, "\"", 6778, 1);
-            WriteAttributeValue("", 6758, activity.Root.State, 6758, 20, false);
+#line 185 "LogPage.cshtml"
+WriteAttributeValue("", 6758, activity.Root.State, 6758, 20, false);
+
+#line default
+#line hidden
             EndWriteAttribute();
             WriteLiteral(">");
 #line 185 "LogPage.cshtml"
@@ -366,7 +394,11 @@ using Microsoft.Extensions.Logging
 
             WriteLiteral("                            <td colspan=\"4\"><a");
             BeginWriteAttribute("href", " href=\"", 6941, "\"", 6961, 1);
-            WriteAttributeValue("", 6948, activityPath, 6948, 13, false);
+#line 189 "LogPage.cshtml"
+WriteAttributeValue("", 6948, activityPath, 6948, 13, false);
+
+#line default
+#line hidden
             EndWriteAttribute();
             WriteLiteral(">Non-scope Log</a></td>\r\n");
 #line 190 "LogPage.cshtml"

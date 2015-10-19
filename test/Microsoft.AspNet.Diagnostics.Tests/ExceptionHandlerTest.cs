@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Tracing;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -325,14 +325,14 @@ namespace Microsoft.AspNet.Diagnostics
         }
 
         [Fact]
-        public async Task HandledErrorsWriteToDiagnosticTelemetryWhenUsingExceptionHandler()
+        public async Task HandledErrorsWriteToDiagnosticWhenUsingExceptionHandler()
         {
             // Arrange
-            TelemetryListener telemetryListener = null;
+            DiagnosticListener diagnosticListener = null;
 
             var server = TestServer.Create(app =>
             {
-                telemetryListener = app.ApplicationServices.GetRequiredService<TelemetryListener>();
+                diagnosticListener = app.ApplicationServices.GetRequiredService<DiagnosticListener>();
 
                 app.UseExceptionHandler("/handle-errors");
                 app.Map("/handle-errors", (innerAppBuilder) =>
@@ -348,8 +348,8 @@ namespace Microsoft.AspNet.Diagnostics
                 });
             });
 
-            var listener = new TestTelemetryListener();
-            telemetryListener.SubscribeWithAdapter(listener);
+            var listener = new TestDiagnosticListener();
+            diagnosticListener.SubscribeWithAdapter(listener);
 
             // Act
             await server.CreateClient().GetAsync(string.Empty);

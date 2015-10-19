@@ -437,7 +437,11 @@ using Microsoft.Extensions.Logging
 
             WriteLiteral("                    <option");
             BeginWriteAttribute("value", " value=\"", 7693, "\"", 7713, 1);
-            WriteAttributeValue("", 7701, severityInt, 7701, 12, false);
+#line 226 "DetailsPage.cshtml"
+WriteAttributeValue("", 7701, severityInt, 7701, 12, false);
+
+#line default
+#line hidden
             EndWriteAttribute();
             WriteLiteral(" selected=\"selected\">");
 #line 226 "DetailsPage.cshtml"
@@ -456,7 +460,11 @@ using Microsoft.Extensions.Logging
 
             WriteLiteral("                    <option");
             BeginWriteAttribute("value", " value=\"", 7842, "\"", 7862, 1);
-            WriteAttributeValue("", 7850, severityInt, 7850, 12, false);
+#line 230 "DetailsPage.cshtml"
+WriteAttributeValue("", 7850, severityInt, 7850, 12, false);
+
+#line default
+#line hidden
             EndWriteAttribute();
             WriteLiteral(">");
 #line 230 "DetailsPage.cshtml"
@@ -474,7 +482,11 @@ using Microsoft.Extensions.Logging
 
             WriteLiteral("        </select>\r\n        <input type=\"text\" name=\"name\"");
             BeginWriteAttribute("value", " value=\"", 7975, "\"", 8008, 1);
-            WriteAttributeValue("", 7983, Model.Options.NamePrefix, 7983, 25, false);
+#line 234 "DetailsPage.cshtml"
+WriteAttributeValue("", 7983, Model.Options.NamePrefix, 7983, 25, false);
+
+#line default
+#line hidden
             EndWriteAttribute();
             WriteLiteral(@" />
         <input type=""submit"" value=""filter"" />

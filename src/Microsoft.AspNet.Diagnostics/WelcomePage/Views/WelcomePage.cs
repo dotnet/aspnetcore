@@ -33,7 +33,11 @@ using Microsoft.AspNet.Diagnostics
 
             WriteLiteral("<!DOCTYPE html>\r\n<html");
             BeginWriteAttribute("lang", " lang=\"", 122, "\"", 204, 1);
-            WriteAttributeValue("", 129, System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName, 129, 75, false);
+#line 7 "WelcomePage.cshtml"
+WriteAttributeValue("", 129, System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName, 129, 75, false);
+
+#line default
+#line hidden
             EndWriteAttribute();
             WriteLiteral(">\r\n<head>\r\n    <meta charset=\"utf-8\" />\r\n    <title>");
 #line 10 "WelcomePage.cshtml"
@@ -133,10 +137,18 @@ using Microsoft.AspNet.Diagnostics
 "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHL0rwADANq3ok68n5UR" +
 "AAAAAElFTkSuQmCC\"");
             BeginWriteAttribute("alt", "\r\n                    alt=\"", 7499, "\"", 7567, 1);
-            WriteAttributeValue("", 7526, Resources.WelcomePageImageText_LightBulb, 7526, 41, false);
+#line 169 "WelcomePage.cshtml"
+WriteAttributeValue("", 7526, Resources.WelcomePageImageText_LightBulb, 7526, 41, false);
+
+#line default
+#line hidden
             EndWriteAttribute();
             BeginWriteAttribute("title", " title=\"", 7568, "\"", 7617, 1);
-            WriteAttributeValue("", 7576, Resources.WelcomePageImageText_LightBulb, 7576, 41, false);
+#line 169 "WelcomePage.cshtml"
+WriteAttributeValue("", 7576, Resources.WelcomePageImageText_LightBulb, 7576, 41, false);
+
+#line default
+#line hidden
             EndWriteAttribute();
             WriteLiteral(" width=\"274\" height=\"274\" /></div>\r\n            <div class=\"browser\" style=\"opaci" +
 "ty: 1; visible: true;\">\r\n                <img src=\"data:image/png;base64,iVBORw0" +
@@ -253,10 +265,18 @@ using Microsoft.AspNet.Diagnostics
 "AAMALXokn/reOBeCwC/ij+HGLcwMAMFj+Kq73f3n0P6eP/nHj+k831tdf+F78z0n8uBI/znGuAAAGwbX" +
 "48c24+P9N+oP/L8AAx5G6SMzC+fMAAAAASUVORK5CYII=\"");
             BeginWriteAttribute("alt", "\r\n                     alt=\"", 16705, "\"", 16772, 1);
-            WriteAttributeValue("", 16733, Resources.WelcomePageImageText_Browser, 16733, 39, false);
+#line 172 "WelcomePage.cshtml"
+WriteAttributeValue("", 16733, Resources.WelcomePageImageText_Browser, 16733, 39, false);
+
+#line default
+#line hidden
             EndWriteAttribute();
             BeginWriteAttribute("title", " title=\"", 16773, "\"", 16820, 1);
-            WriteAttributeValue("", 16781, Resources.WelcomePageImageText_Browser, 16781, 39, false);
+#line 172 "WelcomePage.cshtml"
+WriteAttributeValue("", 16781, Resources.WelcomePageImageText_Browser, 16781, 39, false);
+
+#line default
+#line hidden
             EndWriteAttribute();
             WriteLiteral(" width=\"384\" height=\"305\" /><div>:-)</div>\r\n            </div>\r\n            <div " +
 "class=\"light second\">\r\n                <img src=\"data:image/png;base64,iVBORw0KG" +
@@ -340,10 +360,18 @@ using Microsoft.AspNet.Diagnostics
 "EwaQ6SBSCCOBLOiclnX/70xJpl1t/ykOZHC57E/X+nnTbZ9EoEgC4DE044mHoCJ/F+AAQAgl3zNeDGxu" +
 "QAAAABJRU5ErkJggg==\"");
             BeginWriteAttribute("alt", "\r\n                    alt=\"", 23242, "\"", 23310, 1);
-            WriteAttributeValue("", 23269, Resources.WelcomePageImageText_LightBulb, 23269, 41, false);
+#line 176 "WelcomePage.cshtml"
+WriteAttributeValue("", 23269, Resources.WelcomePageImageText_LightBulb, 23269, 41, false);
+
+#line default
+#line hidden
             EndWriteAttribute();
             BeginWriteAttribute("title", " title=\"", 23311, "\"", 23360, 1);
-            WriteAttributeValue("", 23319, Resources.WelcomePageImageText_LightBulb, 23319, 41, false);
+#line 176 "WelcomePage.cshtml"
+WriteAttributeValue("", 23319, Resources.WelcomePageImageText_LightBulb, 23319, 41, false);
+
+#line default
+#line hidden
             EndWriteAttribute();
             WriteLiteral(" width=\"274\" height=\"274\" /></div>\r\n            <div class=\"bulb\">\r\n             " +
 "   <img src=\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAVoAAAKSCAYAAACTAhMyA" +
@@ -445,10 +473,18 @@ using Microsoft.AspNet.Diagnostics
 "AIILYDQAiC0AEILgNACCC2A0AIgtABCCyC0AAgtgNACMCcvisIoACT0fwEGAL+BBlr+j4JHAAAAAElFT" +
 "kSuQmCC\"");
             BeginWriteAttribute("alt", "\r\n                     alt=\"", 31210, "\"", 31279, 1);
-            WriteAttributeValue("", 31238, Resources.WelcomePageImageText_LightBulb, 31238, 41, false);
+#line 179 "WelcomePage.cshtml"
+WriteAttributeValue("", 31238, Resources.WelcomePageImageText_LightBulb, 31238, 41, false);
+
+#line default
+#line hidden
             EndWriteAttribute();
             BeginWriteAttribute("title", " title=\"", 31280, "\"", 31329, 1);
-            WriteAttributeValue("", 31288, Resources.WelcomePageImageText_LightBulb, 31288, 41, false);
+#line 179 "WelcomePage.cshtml"
+WriteAttributeValue("", 31288, Resources.WelcomePageImageText_LightBulb, 31288, 41, false);
+
+#line default
+#line hidden
             EndWriteAttribute();
             WriteLiteral(" width=\"346\" height=\"658\" /></div>\r\n            <div class=\"bottom\">\r\n           " +
 "     <img src=\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABLwAAADKCAYAAACv61n" +
@@ -637,10 +673,18 @@ using Microsoft.AspNet.Diagnostics
 "643H3SgNOZ3kR8AIAAAAAoIWjGV7UBrLAnc1h1wS8omp1OKzVxqxavihcX60FHHltZ8MF29a16fxojRS" +
 "uBwAAAACghf8vwABfcA5F9k0oGQAAAABJRU5ErkJggg==\"");
             BeginWriteAttribute("alt", "\r\n                    alt=\"", 46177, "\"", 46243, 1);
-            WriteAttributeValue("", 46204, Resources.WelcomePageImageText_Skyline, 46204, 39, false);
+#line 182 "WelcomePage.cshtml"
+WriteAttributeValue("", 46204, Resources.WelcomePageImageText_Skyline, 46204, 39, false);
+
+#line default
+#line hidden
             EndWriteAttribute();
             BeginWriteAttribute("title", " title=\"", 46244, "\"", 46291, 1);
-            WriteAttributeValue("", 46252, Resources.WelcomePageImageText_Skyline, 46252, 39, false);
+#line 182 "WelcomePage.cshtml"
+WriteAttributeValue("", 46252, Resources.WelcomePageImageText_Skyline, 46252, 39, false);
+
+#line default
+#line hidden
             EndWriteAttribute();
             WriteLiteral(" width=\"1212\" height=\"202\" /></div>\r\n        </div>\r\n    </div>\r\n\r\n    <div class" +
 "=\"content\">\r\n        <div class=\"bodyHeadline\">");
@@ -694,10 +738,18 @@ using Microsoft.AspNet.Diagnostics
 "U1BLaYptsK4VktN9pRq0R9Y5/NMZL8slmC1ioSIu51ezNtkSACQ3HJckjXAX1v8nzsTxLwVBTT99OEiF" +
 "xkMsNIVpu/J6yjhBpEG5mhv7vI8l+AAQB7WiwH/DuungAAAABJRU5ErkJggg==\"");
             BeginWriteAttribute("alt", "\r\n                alt=\"", 49123, "\"", 49187, 1);
-            WriteAttributeValue("", 49146, Resources.WelcomePageImageText_LearnMore, 49146, 41, false);
+#line 191 "WelcomePage.cshtml"
+WriteAttributeValue("", 49146, Resources.WelcomePageImageText_LearnMore, 49146, 41, false);
+
+#line default
+#line hidden
             EndWriteAttribute();
             BeginWriteAttribute("title", " title=\"", 49188, "\"", 49237, 1);
-            WriteAttributeValue("", 49196, Resources.WelcomePageImageText_LearnMore, 49196, 41, false);
+#line 191 "WelcomePage.cshtml"
+WriteAttributeValue("", 49196, Resources.WelcomePageImageText_LearnMore, 49196, 41, false);
+
+#line default
+#line hidden
             EndWriteAttribute();
             WriteLiteral(" width=\"58\" height=\"29\" /></div>\r\n        </a>\r\n    </div>\r\n\r\n</body>\r\n</html>\r\n");
         }

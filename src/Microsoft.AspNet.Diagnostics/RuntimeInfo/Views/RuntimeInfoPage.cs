@@ -68,7 +68,11 @@ using Microsoft.Dnx.Runtime;
 
             WriteLiteral("<!DOCTYPE html>\r\n<html");
             BeginWriteAttribute("lang", " lang=\"", 429, "\"", 490, 1);
-            WriteAttributeValue("", 436, CultureInfo.CurrentUICulture.TwoLetterISOLanguageName, 436, 54, false);
+#line 21 "RuntimeInfoPage.cshtml"
+WriteAttributeValue("", 436, CultureInfo.CurrentUICulture.TwoLetterISOLanguageName, 436, 54, false);
+
+#line default
+#line hidden
             EndWriteAttribute();
             WriteLiteral(" xmlns=\"http://www.w3.org/1999/xhtml\">\r\n<head>\r\n    <meta charset=\"utf-8\" />\r\n   " +
 " <title>");
@@ -209,7 +213,11 @@ using Microsoft.Dnx.Runtime;
 
             WriteLiteral("                <tr");
             BeginWriteAttribute("class", " class=\"", 2209, "\"", 2237, 1);
-            WriteAttributeValue("", 2217, even?"even":"odd", 2217, 20, false);
+#line 58 "RuntimeInfoPage.cshtml"
+WriteAttributeValue("", 2217, even?"even":"odd", 2217, 20, false);
+
+#line default
+#line hidden
             EndWriteAttribute();
             WriteLiteral(">\r\n                    <td>");
 #line 59 "RuntimeInfoPage.cshtml"

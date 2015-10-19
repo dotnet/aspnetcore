@@ -138,7 +138,11 @@ using Microsoft.AspNet.Diagnostics
 
             WriteLiteral("                    <li class=\"frame\"");
             BeginWriteAttribute("tabindex", " tabindex=\"", 1269, "\"", 1289, 1);
-            WriteAttributeValue("", 1280, tabIndex, 1280, 9, false);
+#line 41 "CompilationErrorPage.cshtml"
+WriteAttributeValue("", 1280, tabIndex, 1280, 9, false);
+
+#line default
+#line hidden
             EndWriteAttribute();
             WriteLiteral(">\r\n");
 #line 42 "CompilationErrorPage.cshtml"
@@ -204,7 +208,11 @@ using Microsoft.AspNet.Diagnostics
 
             WriteLiteral("                                    <ol");
             BeginWriteAttribute("start", " start=\"", 1813, "\"", 1842, 1);
-            WriteAttributeValue("", 1821, frame.PreContextLine, 1821, 21, false);
+#line 53 "CompilationErrorPage.cshtml"
+WriteAttributeValue("", 1821, frame.PreContextLine, 1821, 21, false);
+
+#line default
+#line hidden
             EndWriteAttribute();
             WriteLiteral(" class=\"collapsible\">\r\n");
 #line 54 "CompilationErrorPage.cshtml"
@@ -242,7 +250,11 @@ using Microsoft.AspNet.Diagnostics
 
             WriteLiteral("                                <ol");
             BeginWriteAttribute("start", " start=\"", 2223, "\"", 2242, 1);
-            WriteAttributeValue("", 2231, frame.Line, 2231, 11, false);
+#line 60 "CompilationErrorPage.cshtml"
+WriteAttributeValue("", 2231, frame.Line, 2231, 11, false);
+
+#line default
+#line hidden
             EndWriteAttribute();
             WriteLiteral(" class=\"highlight\">\r\n");
 #line 61 "CompilationErrorPage.cshtml"
@@ -287,7 +299,11 @@ using Microsoft.AspNet.Diagnostics
 
             WriteLiteral("                                    <ol");
             BeginWriteAttribute("start", " start=\'", 2669, "\'", 2694, 1);
-            WriteAttributeValue("", 2677, frame.Line + 1, 2677, 17, false);
+#line 68 "CompilationErrorPage.cshtml"
+WriteAttributeValue("", 2677, frame.Line + 1, 2677, 17, false);
+
+#line default
+#line hidden
             EndWriteAttribute();
             WriteLiteral(" class=\"collapsible\">\r\n");
 #line 69 "CompilationErrorPage.cshtml"

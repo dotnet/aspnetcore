@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Tracing;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -11,7 +11,6 @@ using System.Runtime.Versioning;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Diagnostics.Views;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.TestHost;
 using Microsoft.AspNet.Testing;
@@ -20,6 +19,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Xunit;
+using StackFrame = Microsoft.AspNet.Diagnostics.Views.StackFrame;
 
 namespace Microsoft.AspNet.Diagnostics
 {
@@ -303,7 +303,7 @@ namespace Microsoft.AspNet.Diagnostics
                 errorPageOptions,
                 new LoggerFactory(),
                 new TestApplicationEnvironment(),
-                new TelemetryListener("Microsoft.Aspnet"));
+                new DiagnosticListener("Microsoft.Aspnet"));
 
             return middleware;
         }
@@ -478,21 +478,21 @@ namespace Microsoft.AspNet.Diagnostics
         }
 
         [Fact]
-        public async Task UnhandledErrorsWriteToDiagnosticTelemetryWhenUsingExceptionPage()
+        public async Task UnhandledErrorsWriteToDiagnosticWhenUsingExceptionPage()
         {
             // Arrange
-            TelemetryListener telemetryListener = null;
+            DiagnosticListener diagnosticListener = null;
             var server = TestServer.Create(app =>
             {
-                telemetryListener = app.ApplicationServices.GetRequiredService<TelemetryListener>();
+                diagnosticListener = app.ApplicationServices.GetRequiredService<DiagnosticListener>();
                 app.UseDeveloperExceptionPage();
                 app.Run(context =>
                 {
                     throw new Exception("Test exception");
                 });
             });
-            var listener = new TestTelemetryListener();
-            telemetryListener.SubscribeWithAdapter(listener);
+            var listener = new TestDiagnosticListener();
+            diagnosticListener.SubscribeWithAdapter(listener);
 
             // Act
             await server.CreateClient().GetAsync("/path");
