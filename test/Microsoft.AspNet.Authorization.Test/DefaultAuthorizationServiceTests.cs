@@ -813,6 +813,35 @@ namespace Microsoft.AspNet.Authorization.Test
             Assert.True(await authorizationService.AuthorizeAsync(user, null, Operations.Create));
         }
 
+        public class NotCalledHandler : AuthorizationHandler<OperationAuthorizationRequirement, string>
+        {
+            protected override void Handle(AuthorizationContext context, OperationAuthorizationRequirement requirement, string resource)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        [Fact]
+        public async Task DoesNotCallHandlerWithWrongResourceType()
+        {
+            // Arrange
+            var authorizationService = BuildAuthorizationService(services =>
+            {
+                services.AddTransient<IAuthorizationHandler, NotCalledHandler>();
+            });
+            var user = new ClaimsPrincipal(
+                new ClaimsIdentity(
+                    new Claim[] {
+                        new Claim("SuperUser", "yes")
+                    },
+                    "AuthType")
+                );
+
+            // Act
+            // Assert
+            Assert.False(await authorizationService.AuthorizeAsync(user, 1, Operations.Edit));
+        }
+
         [Fact]
         public async Task CanAuthorizeOnlyAllowedOperations()
         {
@@ -820,15 +849,29 @@ namespace Microsoft.AspNet.Authorization.Test
             var authorizationService = BuildAuthorizationService(services =>
             {
                 services.AddInstance<IAuthorizationHandler>(new ExpenseReportAuthorizationHandler(new OperationAuthorizationRequirement[] { Operations.Edit }));
-                services.AddTransient<IAuthorizationHandler, SuperUserHandler>();
             });
             var user = new ClaimsPrincipal();
 
             // Act
             // Assert
-            Assert.True(await authorizationService.AuthorizeAsync(user, null, Operations.Edit));
-            Assert.False(await authorizationService.AuthorizeAsync(user, null, Operations.Delete));
-            Assert.False(await authorizationService.AuthorizeAsync(user, null, Operations.Create));
+            Assert.True(await authorizationService.AuthorizeAsync(user, new ExpenseReport(), Operations.Edit));
+            Assert.False(await authorizationService.AuthorizeAsync(user, new ExpenseReport(), Operations.Delete));
+            Assert.False(await authorizationService.AuthorizeAsync(user, new ExpenseReport(), Operations.Create));
+        }
+
+        [Fact]
+        public async Task AuthorizeHandlerNotCalledWithNullResource()
+        {
+            // Arrange
+            var authorizationService = BuildAuthorizationService(services =>
+            {
+                services.AddInstance<IAuthorizationHandler>(new ExpenseReportAuthorizationHandler(new OperationAuthorizationRequirement[] { Operations.Edit }));
+            });
+            var user = new ClaimsPrincipal();
+
+            // Act
+            // Assert
+            Assert.False(await authorizationService.AuthorizeAsync(user, null, Operations.Edit));
         }
 
         [Fact]

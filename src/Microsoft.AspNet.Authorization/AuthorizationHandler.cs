@@ -40,10 +40,12 @@ namespace Microsoft.AspNet.Authorization
     {
         public virtual async Task HandleAsync(AuthorizationContext context)
         {
-            var resource = context.Resource as TResource;
-            foreach (var req in context.Requirements.OfType<TRequirement>())
+            if (context.Resource is TResource)
             {
-                await HandleAsync(context, req, resource);
+                foreach (var req in context.Requirements.OfType<TRequirement>())
+                {
+                    await HandleAsync(context, req, (TResource)context.Resource);
+                }
             }
         }
 
