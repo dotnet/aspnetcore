@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNet.TestHost
@@ -280,7 +281,8 @@ namespace Microsoft.AspNet.TestHost
             var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await tcs.Task);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR, SkipReason = "Hangs randomly (issue #422).")]
         public async Task ClientCancellationAbortsRequest()
         {
             // Arrange

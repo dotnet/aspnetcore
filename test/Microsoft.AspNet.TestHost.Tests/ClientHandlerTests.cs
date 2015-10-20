@@ -223,7 +223,7 @@ namespace Microsoft.AspNet.TestHost
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "Hangs randomly (issue #422).")]
         public async Task ExceptionAfterFirstWriteIsReported()
         {
             ManualResetEvent block = new ManualResetEvent(false);

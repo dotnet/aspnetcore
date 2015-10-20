@@ -13,6 +13,7 @@ using Microsoft.AspNet.Hosting.Startup;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Features.Internal;
+using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -388,7 +389,8 @@ namespace Microsoft.AspNet.TestHost
             await Assert.ThrowsAsync<ObjectDisposedException>(() => server.CreateClient().GetAsync("/"));
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR, SkipReason = "Hangs randomly (issue #422).")]
         public void CancelAborts()
         {
             TestServer server = TestServer.Create(app =>
