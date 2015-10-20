@@ -32,19 +32,6 @@ namespace Microsoft.AspNet.TestHost
         }
 
         [Fact]
-        public void ThrowsIfNoApplicationEnvironmentIsRegisteredWithTheProvider()
-        {
-            // Arrange
-            var services = new ServiceCollection().BuildServiceProvider();
-
-            // Act & Assert
-            Assert.Throws<InvalidOperationException>(
-                () => TestServer.Create(
-                    services,
-                    new ConfigurationBuilder().Build(), new Startup().Configure, configureServices: null));
-        }
-
-        [Fact]
         public async Task RequestServicesAutoCreated()
         {
             var server = TestServer.Create(app =>

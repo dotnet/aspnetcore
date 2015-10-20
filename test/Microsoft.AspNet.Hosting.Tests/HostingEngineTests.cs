@@ -405,9 +405,7 @@ namespace Microsoft.AspNet.Hosting
 
         private WebHostBuilder CreateBuilder(IConfiguration config = null)
         {
-            return new WebHostBuilder(
-                CallContextServiceLocator.Locator.ServiceProvider,
-                config ?? new ConfigurationBuilder().Build());
+            return new WebHostBuilder(config ?? new ConfigurationBuilder().Build());
         }
 
         public IFeatureCollection Initialize(IConfiguration configuration)

@@ -33,32 +33,32 @@ namespace Microsoft.AspNet.TestHost
 
         public static TestServer Create()
         {
-            return Create(services: null, config: null, configureApp: null, configureServices: null);
+            return Create(config: null, configureApp: null, configureServices: null);
         }
 
         public static TestServer Create(Action<IApplicationBuilder> configureApp)
         {
-            return Create(services: null, config: null, configureApp: configureApp, configureServices: null);
+            return Create(config: null, configureApp: configureApp, configureServices: null);
         }
 
         public static TestServer Create(Action<IApplicationBuilder> configureApp, Action<IServiceCollection> configureServices)
         {
-            return Create(services: null, config: null, configureApp: configureApp, configureServices: configureServices);
+            return Create(config: null, configureApp: configureApp, configureServices: configureServices);
         }
 
-        public static TestServer Create(IServiceProvider services, Action<IApplicationBuilder> configureApp, Func<IServiceCollection, IServiceProvider> configureServices)
+        public static TestServer Create(Action<IApplicationBuilder> configureApp, Func<IServiceCollection, IServiceProvider> configureServices)
         {
-            return new TestServer(CreateBuilder(services, config: null, configureApp: configureApp, configureServices: configureServices));
+            return new TestServer(CreateBuilder(config: null, configureApp: configureApp, configureServices: configureServices));
         }
 
-        public static TestServer Create(IServiceProvider services, IConfiguration config, Action<IApplicationBuilder> configureApp, Action<IServiceCollection> configureServices)
+        public static TestServer Create(IConfiguration config, Action<IApplicationBuilder> configureApp, Action<IServiceCollection> configureServices)
         {
-            return new TestServer(CreateBuilder(services, config, configureApp, configureServices));
+            return new TestServer(CreateBuilder(config, configureApp, configureServices));
         }
 
-        public static WebHostBuilder CreateBuilder(IServiceProvider services, IConfiguration config, Action<IApplicationBuilder> configureApp, Action<IServiceCollection> configureServices)
+        public static WebHostBuilder CreateBuilder(IConfiguration config, Action<IApplicationBuilder> configureApp, Action<IServiceCollection> configureServices)
         {
-            return CreateBuilder(services, config, configureApp,
+            return CreateBuilder(config, configureApp,
                 s =>
                 {
                     if (configureServices != null)
@@ -69,21 +69,20 @@ namespace Microsoft.AspNet.TestHost
                 });
         }
 
-        public static WebHostBuilder CreateBuilder(IServiceProvider services, IConfiguration config, Action<IApplicationBuilder> configureApp, Func<IServiceCollection, IServiceProvider> configureServices)
+        public static WebHostBuilder CreateBuilder(IConfiguration config, Action<IApplicationBuilder> configureApp, Func<IServiceCollection, IServiceProvider> configureServices)
         {
-            return CreateBuilder(services, config).UseStartup(configureApp, configureServices);
+            return CreateBuilder(config).UseStartup(configureApp, configureServices);
         }
 
-        public static WebHostBuilder CreateBuilder(IServiceProvider services, IConfiguration config)
+        public static WebHostBuilder CreateBuilder(IConfiguration config)
         {
             return new WebHostBuilder(
-                services ?? CallContextServiceLocator.Locator.ServiceProvider,
                 config ?? new ConfigurationBuilder().Build());
         }
 
         public static WebHostBuilder CreateBuilder()
         {
-            return CreateBuilder(services: null, config: null);
+            return CreateBuilder(config: null);
         }
 
         public HttpMessageHandler CreateHandler()

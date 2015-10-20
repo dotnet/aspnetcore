@@ -10,9 +10,11 @@ using Microsoft.AspNet.Hosting.Server;
 using Microsoft.AspNet.Hosting.Startup;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
+using Microsoft.Dnx.Compilation;
 using Microsoft.Dnx.Runtime;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.Hosting
@@ -27,8 +29,7 @@ namespace Microsoft.AspNet.Hosting
 
         public const string OldServerKey = "server";
         public const string ServerKey = "Hosting:Server";
-
-        private readonly IServiceProvider _services;
+        
         private readonly IHostingEnvironment _hostingEnvironment;
         private readonly ILoggerFactory _loggerFactory;
         private readonly IConfiguration _config;
@@ -45,23 +46,18 @@ namespace Microsoft.AspNet.Hosting
         private string _serverFactoryLocation;
         private IServerFactory _serverFactory;
 
-        public WebHostBuilder(IServiceProvider services)
-            : this(services, config: new ConfigurationBuilder().Build())
+        public WebHostBuilder()
+            : this(config: new ConfigurationBuilder().Build())
         {
         }
 
-        public WebHostBuilder(IServiceProvider services, IConfiguration config)
-            : this(services, config: config, captureStartupErrors: false)
+        public WebHostBuilder(IConfiguration config)
+            : this(config: config, captureStartupErrors: false)
         {
         }
 
-        public WebHostBuilder(IServiceProvider services, IConfiguration config, bool captureStartupErrors)
+        public WebHostBuilder(IConfiguration config, bool captureStartupErrors)
         {
-            if (services == null)
-            {
-                throw new ArgumentNullException(nameof(services));
-            }
-
             if (config == null)
             {
                 throw new ArgumentNullException(nameof(config));
@@ -69,7 +65,6 @@ namespace Microsoft.AspNet.Hosting
 
             _hostingEnvironment = new HostingEnvironment();
             _loggerFactory = new LoggerFactory();
-            _services = services;
             _config = config;
             _captureStartupErrors = captureStartupErrors;
         }
@@ -77,17 +72,6 @@ namespace Microsoft.AspNet.Hosting
         private IServiceCollection BuildHostingServices()
         {
             var services = new ServiceCollection();
-
-            // Import from manifest
-            var manifest = _services.GetService<IRuntimeServices>();
-            if (manifest != null)
-            {
-                foreach (var service in manifest.Services)
-                {
-                    services.AddTransient(service, sp => _services.GetService(service));
-                }
-            }
-
             services.AddInstance(_hostingEnvironment);
             services.AddInstance(_loggerFactory);
 
@@ -110,6 +94,13 @@ namespace Microsoft.AspNet.Hosting
             {
                 _configureServices(services);
             }
+
+            services.TryAdd(ServiceDescriptor.Instance(PlatformServices.Default.Application));
+            services.TryAdd(ServiceDescriptor.Instance(PlatformServices.Default.Runtime));
+            services.TryAdd(ServiceDescriptor.Instance(PlatformServices.Default.AssemblyLoadContextAccessor));
+            services.TryAdd(ServiceDescriptor.Instance(PlatformServices.Default.AssemblyLoaderContainer));
+            services.TryAdd(ServiceDescriptor.Instance(PlatformServices.Default.LibraryManager));
+            services.TryAdd(ServiceDescriptor.Instance(CompilationServices.Default.LibraryExporter));
 
             return services;
         }

@@ -4,9 +4,11 @@
 using System;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Server.Features;
+using Microsoft.Dnx.Compilation;
 using Microsoft.Dnx.Runtime;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.AspNet.Hosting
 {
@@ -15,21 +17,14 @@ namespace Microsoft.AspNet.Hosting
         private const string HostingJsonFile = "Microsoft.AspNet.Hosting.json";
         private const string ConfigFileKey = "config";
 
-        private readonly IServiceProvider _serviceProvider;
-
-        public Program(IServiceProvider serviceProvider)
-        {
-            _serviceProvider = serviceProvider;
-        }
-
-        public void Main(string[] args)
+        public static void Main(string[] args)
         {
             // Allow the location of the json file to be specified via a --config command line arg
             var tempBuilder = new ConfigurationBuilder().AddCommandLine(args);
             var tempConfig = tempBuilder.Build();
             var configFilePath = tempConfig[ConfigFileKey] ?? HostingJsonFile;
 
-            var appBasePath = _serviceProvider.GetRequiredService<IApplicationEnvironment>().ApplicationBasePath;
+            var appBasePath = PlatformServices.Default.Application.ApplicationBasePath;
             var config = new ConfigurationBuilder()
                 .SetBasePath(appBasePath)
                 .AddJsonFile(configFilePath, optional: true)
@@ -37,7 +32,7 @@ namespace Microsoft.AspNet.Hosting
                 .AddCommandLine(args)
                 .Build();
 
-            var host = new WebHostBuilder(_serviceProvider, config, captureStartupErrors: true).Build();
+            var host = new WebHostBuilder(config, captureStartupErrors: true).Build();
             using (var app = host.Start())
             {
                 var hostingEnv = app.Services.GetRequiredService<IHostingEnvironment>();

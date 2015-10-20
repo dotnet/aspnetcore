@@ -108,7 +108,7 @@ namespace Microsoft.AspNet.Hosting
             var builder = new ConfigurationBuilder()
                 .AddInMemoryCollection(vals);
             var config = builder.Build();
-            return new WebHostBuilder(CallContextServiceLocator.Locator.ServiceProvider, config, captureStartupErrors: true);
+            return new WebHostBuilder(config, captureStartupErrors: true);
         }
 
         private async Task AssertResponseContains(Func<IFeatureCollection, Task> app, string expectedText)
