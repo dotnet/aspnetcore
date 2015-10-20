@@ -9,7 +9,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Features;
 using Microsoft.Extensions.Internal;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;
@@ -73,10 +72,13 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                     tempDataDictionary = _jsonSerializer.Deserialize<Dictionary<string, object>>(writer);
                 }
 
-                var convertedDictionary = new Dictionary<string, object>(tempDataDictionary, StringComparer.OrdinalIgnoreCase);
+                var convertedDictionary = new Dictionary<string, object>(
+                    tempDataDictionary,
+                    StringComparer.OrdinalIgnoreCase);
                 foreach (var item in tempDataDictionary)
                 {
                     var jArrayValue = item.Value as JArray;
+                    var jObjectValue = item.Value as JObject;
                     if (jArrayValue != null && jArrayValue.Count > 0)
                     {
                         var arrayType = jArrayValue[0].Type;
@@ -85,7 +87,9 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                         {
                             var arrayConverter = _arrayConverters.GetOrAdd(returnType, type =>
                             {
-                                return (Func<JArray, object>)_convertArrayMethodInfo.MakeGenericMethod(type).CreateDelegate(typeof(Func<JArray, object>));
+                                return (Func<JArray, object>)_convertArrayMethodInfo
+                                    .MakeGenericMethod(type)
+                                    .CreateDelegate(typeof(Func<JArray, object>));
                             });
                             var result = arrayConverter(jArrayValue);
 
@@ -97,14 +101,9 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                             throw new InvalidOperationException(message);
                         }
                     }
-                    else
+                    else if (jObjectValue != null)
                     {
-                        var jObjectValue = item.Value as JObject;
-                        if (jObjectValue == null)
-                        {
-                            continue;
-                        }
-                        else if (!jObjectValue.HasValues)
+                        if (!jObjectValue.HasValues)
                         {
                             convertedDictionary[item.Key] = null;
                             continue;
@@ -116,7 +115,9 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                         {
                             var dictionaryConverter = _dictionaryConverters.GetOrAdd(valueType, type =>
                             {
-                                return (Func<JObject, object>)_convertDictMethodInfo.MakeGenericMethod(type).CreateDelegate(typeof(Func<JObject, object>));
+                                return (Func<JObject, object>)_convertDictMethodInfo
+                                    .MakeGenericMethod(type)
+                                    .CreateDelegate(typeof(Func<JObject, object>));
                             });
                             var result = dictionaryConverter(jObjectValue);
 
@@ -126,6 +127,16 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                         {
                             var message = Resources.FormatTempData_CannotDeserializeToken(nameof(JToken), jTokenType);
                             throw new InvalidOperationException(message);
+                        }
+                    }
+                    else if (item.Value is long)
+                    {
+                        var longValue = (long)item.Value;
+                        if (longValue < int.MaxValue)
+                        {
+                            // BsonReader casts all ints to longs. We'll attempt to work around this by force converting
+                            // longs to ints when there's no loss of precision.
+                            convertedDictionary[item.Key] = (int)longValue;
                         }
                     }
                 }
@@ -245,7 +256,10 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
         private static bool IsSimpleType(Type type)
         {
-            return type.GetTypeInfo().IsPrimitive ||
+            var typeInfo = type.GetTypeInfo();
+
+            return typeInfo.IsPrimitive ||
+                typeInfo.IsEnum ||
                 type.Equals(typeof(decimal)) ||
                 type.Equals(typeof(string)) ||
                 type.Equals(typeof(DateTime)) ||

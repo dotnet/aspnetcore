@@ -133,7 +133,8 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                     { new DateTimeOffset() },
                     { 100.1m },
                     { new Dictionary<string, int>() },
-                    { new Uri[] { new Uri("http://Foo"), new Uri("http://Bar") } }
+                    { new Uri[] { new Uri("http://Foo"), new Uri("http://Bar") } },
+                    { DayOfWeek.Sunday },
                 };
             }
         }
@@ -185,7 +186,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             var TempData = testProvider.LoadTempData(context);
 
             // Assert
-            var intVal = Convert.ToInt32(TempData["int"]);
+            var intVal = Assert.IsType<int>(TempData["int"]);
             Assert.Equal(10, intVal);
         }
 
@@ -251,6 +252,52 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             // Assert
             var guidVal = Assert.IsType<Guid>(TempData["Guid"]);
             Assert.Equal(inputGuid, guidVal);
+        }
+
+        [Fact]
+        public void SaveAndLoad_EnumCanBeSavedAndLoaded()
+        {
+            // Arrange
+            var key = "EnumValue";
+            var testProvider = new SessionStateTempDataProvider();
+            var expected = DayOfWeek.Friday;
+            var input = new Dictionary<string, object>
+            {
+                { key, expected }
+            };
+            var context = GetHttpContext();
+
+            // Act
+            testProvider.SaveTempData(context, input);
+            var TempData = testProvider.LoadTempData(context);
+            var result = TempData[key];
+
+            // Assert
+            var actual = (DayOfWeek)result;
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void SaveAndLoad_LongCanBeSavedAndLoaded()
+        {
+            // Arrange
+            var key = "LongValue";
+            var testProvider = new SessionStateTempDataProvider();
+            var expected = 3100000000L;
+            var input = new Dictionary<string, object>
+            {
+                { key, expected }
+            };
+            var context = GetHttpContext();
+
+            // Act
+            testProvider.SaveTempData(context, input);
+            var TempData = testProvider.LoadTempData(context);
+            var result = TempData[key];
+
+            // Assert
+            var actual = Assert.IsType<long>(result);
+            Assert.Equal(expected, actual);
         }
 
         [Fact]
