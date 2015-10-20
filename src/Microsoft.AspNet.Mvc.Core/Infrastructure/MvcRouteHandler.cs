@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.Core;
+using Microsoft.AspNet.Mvc.Diagnostics;
 using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.AspNet.Mvc.Routing;
@@ -85,12 +86,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             {
                 context.RouteData = newRouteData;
 
-                if (_diagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.BeforeAction"))
-                {
-                    _diagnosticSource.Write(
-                        "Microsoft.AspNet.Mvc.BeforeAction",
-                        new { actionDescriptor, httpContext = context.HttpContext, routeData = context.RouteData });
-                }
+                _diagnosticSource.BeforeAction(actionDescriptor, context.HttpContext, context.RouteData);
 
                 using (_logger.ActionScope(actionDescriptor))
                 {
@@ -102,12 +98,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             }
             finally
             {
-                if (_diagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.AfterAction"))
-                {
-                    _diagnosticSource.Write(
-                        "Microsoft.AspNet.Mvc.AfterAction",
-                        new { actionDescriptor, httpContext = context.HttpContext, routeData = context.RouteData });
-                }
+                _diagnosticSource.AfterAction(actionDescriptor, context.HttpContext, context.RouteData);
 
                 if (!context.IsHandled)
                 {
