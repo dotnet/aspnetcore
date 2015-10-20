@@ -103,7 +103,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
             }
         }
 
-        private static object[] PrepareArguments(
+        public static object[] PrepareArguments(
             IDictionary<string, object> actionParameters,
             ParameterInfo[] declaredParameterInfos)
         {

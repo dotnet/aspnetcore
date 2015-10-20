@@ -75,6 +75,11 @@ namespace Microsoft.AspNet.Mvc
                 .Setup(v => v.Dispose())
                 .Verifiable();
 
+            // Used by logging
+            view
+                .SetupGet(v => v.Path)
+                .Returns("myview.cshtml");
+
             var viewEngine = new Mock<IViewEngine>(MockBehavior.Strict);
             viewEngine
                 .Setup(e => e.FindPartialView(context, "myview"))

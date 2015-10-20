@@ -5,6 +5,9 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Routing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc
@@ -17,7 +20,7 @@ namespace Microsoft.AspNet.Mvc
             // Arrange
             var result = new HttpStatusCodeResult(StatusCodes.Status404NotFound);
 
-            var httpContext = new DefaultHttpContext();
+            var httpContext = GetHttpContext();
             var routeData = new RouteData();
             var actionDescriptor = new ActionDescriptor();
 
@@ -28,6 +31,23 @@ namespace Microsoft.AspNet.Mvc
 
             // Assert
             Assert.Equal(StatusCodes.Status404NotFound, httpContext.Response.StatusCode);
+        }
+
+        private static IServiceCollection CreateServices()
+        {
+            var services = new ServiceCollection();
+            services.AddInstance<ILoggerFactory>(NullLoggerFactory.Instance);
+            return services;
+        }
+
+        private static HttpContext GetHttpContext()
+        {
+            var services = CreateServices();
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.RequestServices = services.BuildServiceProvider();
+
+            return httpContext;
         }
     }
 }

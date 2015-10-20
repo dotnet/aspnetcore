@@ -6,6 +6,9 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Routing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc
@@ -26,7 +29,10 @@ namespace Microsoft.AspNet.Mvc
         public async Task HttpOkResult_SetsStatusCode()
         {
             // Arrange
-            var context = new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
+            var httpContext = new DefaultHttpContext();
+            httpContext.RequestServices = CreateServices().BuildServiceProvider();
+
+            var context = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
             var result = new HttpOkResult();
 
             // Act
@@ -34,6 +40,13 @@ namespace Microsoft.AspNet.Mvc
 
             // Assert
             Assert.Equal(StatusCodes.Status200OK, context.HttpContext.Response.StatusCode);
+        }
+
+        private static IServiceCollection CreateServices()
+        {
+            var services = new ServiceCollection();
+            services.AddInstance<ILoggerFactory>(NullLoggerFactory.Instance);
+            return services;
         }
     }
 }

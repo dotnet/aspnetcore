@@ -5,9 +5,11 @@ using System;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.OptionsModel;
 using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
+using Microsoft.AspNet.Mvc.Logging;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -72,6 +74,9 @@ namespace Microsoft.AspNet.Mvc
                 throw new ArgumentNullException(nameof(context));
             }
 
+            var loggerFactory = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>();
+            var logger = loggerFactory.CreateLogger<JsonResult>();
+
             var response = context.HttpContext.Response;
 
             var contentTypeHeader = ContentType;
@@ -106,6 +111,8 @@ namespace Microsoft.AspNet.Mvc
                     .Value
                     .SerializerSettings;
             }
+
+            logger.JsonResultExecuting(Value);
 
             using (var writer = new HttpResponseStreamWriter(response.Body, contentTypeHeader.Encoding))
             {

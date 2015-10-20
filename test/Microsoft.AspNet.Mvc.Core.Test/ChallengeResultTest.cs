@@ -6,6 +6,9 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Routing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Xunit;
 
@@ -18,7 +21,10 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var result = new ChallengeResult("", null);
+
             var httpContext = new Mock<HttpContext>();
+            httpContext.SetupGet(c => c.RequestServices).Returns(CreateServices().BuildServiceProvider());
+
             var auth = new Mock<AuthenticationManager>();
             httpContext.Setup(o => o.Authentication).Returns(auth.Object);
 
@@ -41,7 +47,10 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var result = new ChallengeResult(new string[] { }, null);
+
             var httpContext = new Mock<HttpContext>();
+            httpContext.SetupGet(c => c.RequestServices).Returns(CreateServices().BuildServiceProvider());
+
             var auth = new Mock<AuthenticationManager>();
             httpContext.Setup(o => o.Authentication).Returns(auth.Object);
 
@@ -57,6 +66,13 @@ namespace Microsoft.AspNet.Mvc
 
             // Assert
             auth.Verify(c => c.ChallengeAsync((AuthenticationProperties)null), Times.Exactly(1));
+        }
+
+        private static IServiceCollection CreateServices()
+        {
+            var services = new ServiceCollection();
+            services.AddInstance<ILoggerFactory>(NullLoggerFactory.Instance);
+            return services;
         }
     }
 }

@@ -11,6 +11,8 @@ using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
 using Xunit;
@@ -128,8 +130,10 @@ namespace Microsoft.AspNet.Mvc
         {
             var httpContext = new DefaultHttpContext();
             httpContext.Response.Body = new MemoryStream();
+
             var services = new ServiceCollection();
             services.AddOptions();
+            services.AddInstance<ILoggerFactory>(NullLoggerFactory.Instance);
             httpContext.RequestServices = services.BuildServiceProvider();
 
             return httpContext;

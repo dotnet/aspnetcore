@@ -18,6 +18,7 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.OptionsModel;
@@ -1976,13 +1977,17 @@ namespace Microsoft.AspNet.Mvc.Controllers
             }
 
             var httpContext = new Mock<HttpContext>(MockBehavior.Loose);
-            var httpRequest = new DefaultHttpContext().Request;
-            var httpResponse = new DefaultHttpContext().Response;
+
+            var http = GetHttpContext();
+
+            var httpRequest = http.Request;
+            var httpResponse = http.Response;
 
             httpContext.SetupGet(c => c.Request).Returns(httpRequest);
             httpContext.SetupGet(c => c.Response).Returns(httpResponse);
-            httpContext.Setup(o => o.RequestServices.GetService(typeof(ILogger<ObjectResult>)))
-                       .Returns(new Mock<ILogger<ObjectResult>>().Object);
+            httpContext
+                .Setup(o => o.RequestServices.GetService(typeof(ILoggerFactory)))
+                .Returns(NullLoggerFactory.Instance);
 
             httpResponse.Body = new MemoryStream();
 
@@ -2134,6 +2139,25 @@ namespace Microsoft.AspNet.Mvc.Controllers
         public ObjectResult ThrowingActionMethod()
         {
             throw _actionException;
+        }
+
+        private static IServiceCollection CreateServices()
+        {
+            var services = new ServiceCollection();
+
+            services.AddInstance<ILoggerFactory>(NullLoggerFactory.Instance);
+
+            return services;
+        }
+
+        private static HttpContext GetHttpContext()
+        {
+            var services = CreateServices();
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.RequestServices = services.BuildServiceProvider();
+
+            return httpContext;
         }
 
         public IActionResult ActionMethodWithBodyParameter([FromBody] Person bodyParam)

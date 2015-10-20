@@ -29,7 +29,6 @@ namespace Microsoft.AspNet.Mvc.Controllers
         private readonly IReadOnlyList<IModelValidatorProvider> _modelValidatorProviders;
         private readonly IReadOnlyList<IValueProviderFactory> _valueProviderFactories;
         private readonly IActionBindingContextAccessor _actionBindingContextAccessor;
-        private readonly ILogger _logger;
         private readonly DiagnosticSource _diagnosticSource;
         private readonly int _maxModelValidationErrors;
 
@@ -132,7 +131,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
             _modelValidatorProviders = modelValidatorProviders;
             _valueProviderFactories = valueProviderFactories;
             _actionBindingContextAccessor = actionBindingContextAccessor;
-            _logger = logger;
+            Logger = logger;
             _diagnosticSource = diagnosticSource;
             _maxModelValidationErrors = maxModelValidationErrors;
         }
@@ -152,6 +151,8 @@ namespace Microsoft.AspNet.Mvc.Controllers
         }
 
         protected object Instance { get; private set; }
+
+        protected ILogger Logger { get; }
 
         /// <summary>
         /// Called to create an instance of an object which will act as the reciever of the action invocation.
@@ -296,7 +297,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
                 }
                 else
                 {
-                    _logger.LogWarning(AuthorizationFailureLogMessage, current.FilterAsync.GetType().FullName);
+                    Logger.LogWarning(AuthorizationFailureLogMessage, current.FilterAsync.GetType().FullName);
                 }
             }
             else if (current.Filter != null)
@@ -310,7 +311,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
                 }
                 else
                 {
-                    _logger.LogWarning(AuthorizationFailureLogMessage, current.Filter.GetType().FullName);
+                    Logger.LogWarning(AuthorizationFailureLogMessage, current.Filter.GetType().FullName);
                 }
             }
             else
@@ -366,7 +367,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
                         // If we get here then the filter didn't call 'next' indicating a short circuit
                         if (_resourceExecutingContext.Result != null)
                         {
-                            _logger.LogVerbose(
+                            Logger.LogVerbose(
                                 ResourceFilterShortCircuitLogMessage,
                                 item.FilterAsync.GetType().FullName);
 
@@ -387,8 +388,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
                     if (_resourceExecutingContext.Result != null)
                     {
                         // Short-circuited by setting a result.
-
-                        _logger.LogVerbose(ResourceFilterShortCircuitLogMessage, item.Filter.GetType().FullName);
+                        Logger.LogVerbose(ResourceFilterShortCircuitLogMessage, item.Filter.GetType().FullName);
 
                         await InvokeResultAsync(_resourceExecutingContext.Result);
 
@@ -506,7 +506,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
 
                     if (_exceptionContext.Exception == null)
                     {
-                        _logger.LogVerbose(
+                        Logger.LogVerbose(
                             ExceptionFilterShortCircuitLogMessage,
                             current.FilterAsync.GetType().FullName);
                     }
@@ -527,7 +527,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
 
                     if (_exceptionContext.Exception == null)
                     {
-                        _logger.LogVerbose(
+                        Logger.LogVerbose(
                             ExceptionFilterShortCircuitLogMessage,
                             current.Filter.GetType().FullName);
                     }
@@ -608,7 +608,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
                     {
                         // If we get here then the filter didn't call 'next' indicating a short circuit
 
-                        _logger.LogVerbose(ActionFilterShortCircuitLogMessage, item.FilterAsync.GetType().FullName);
+                        Logger.LogVerbose(ActionFilterShortCircuitLogMessage, item.FilterAsync.GetType().FullName);
 
                         _actionExecutedContext = new ActionExecutedContext(
                             _actionExecutingContext,
@@ -628,7 +628,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
                     {
                         // Short-circuited by setting a result.
 
-                        _logger.LogVerbose(ActionFilterShortCircuitLogMessage, item.Filter.GetType().FullName);
+                        Logger.LogVerbose(ActionFilterShortCircuitLogMessage, item.Filter.GetType().FullName);
 
                         _actionExecutedContext = new ActionExecutedContext(
                             _actionExecutingContext,
@@ -752,8 +752,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
                     if (_resultExecutedContext == null || _resultExecutingContext.Cancel == true)
                     {
                         // Short-circuited by not calling next || Short-circuited by setting Cancel == true
-
-                        _logger.LogVerbose(ResourceFilterShortCircuitLogMessage, item.FilterAsync.GetType().FullName);
+                        Logger.LogVerbose(ResourceFilterShortCircuitLogMessage, item.FilterAsync.GetType().FullName);
 
                         _resultExecutedContext = new ResultExecutedContext(
                             _resultExecutingContext,
@@ -772,8 +771,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
                     if (_resultExecutingContext.Cancel == true)
                     {
                         // Short-circuited by setting Cancel == true
-
-                        _logger.LogVerbose(ResourceFilterShortCircuitLogMessage, item.Filter.GetType().FullName);
+                        Logger.LogVerbose(ResourceFilterShortCircuitLogMessage, item.Filter.GetType().FullName);
 
                         _resultExecutedContext = new ResultExecutedContext(
                             _resultExecutingContext,

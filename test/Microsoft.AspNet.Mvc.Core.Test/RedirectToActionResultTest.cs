@@ -8,6 +8,9 @@ using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Xunit;
 
@@ -21,13 +24,19 @@ namespace Microsoft.AspNet.Mvc
             // Arrange
             var expectedUrl = "SampleAction";
             var expectedPermanentFlag = false;
-            var httpContext = new Mock<HttpContext>();
-            var httpResponse = new Mock<HttpResponse>();
-            httpContext.Setup(o => o.Response).Returns(httpResponse.Object);
 
-            var actionContext = new ActionContext(httpContext.Object,
-                                                  new RouteData(),
-                                                  new ActionDescriptor());
+            var httpContext = new Mock<HttpContext>();
+            httpContext
+                .SetupGet(o => o.RequestServices)
+                .Returns(CreateServices().BuildServiceProvider());
+
+            var httpResponse = new Mock<HttpResponse>();
+            httpContext
+                .Setup(o => o.Response)
+                .Returns(httpResponse.Object);
+
+            var actionContext = new ActionContext(httpContext.Object, new RouteData(), new ActionDescriptor());
+
             var urlHelper = GetMockUrlHelper(expectedUrl);
             var result = new RedirectToActionResult("SampleAction", null, null)
             {
@@ -49,10 +58,14 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var httpContext = new Mock<HttpContext>();
-            httpContext.Setup(o => o.Response).Returns(new Mock<HttpResponse>().Object);
-            var actionContext = new ActionContext(httpContext.Object,
-                                                  new RouteData(),
-                                                  new ActionDescriptor());
+            httpContext
+                .Setup(o => o.Response)
+                .Returns(new Mock<HttpResponse>().Object);
+            httpContext
+                .SetupGet(o => o.RequestServices)
+                .Returns(CreateServices().BuildServiceProvider());
+
+            var actionContext = new ActionContext(httpContext.Object, new RouteData(), new ActionDescriptor());
 
             var urlHelper = GetMockUrlHelper(returnValue: null);
             var result = new RedirectToActionResult(null, null, null)
@@ -75,6 +88,13 @@ namespace Microsoft.AspNet.Mvc
             urlHelper.Setup(o => o.Action(It.IsAny<UrlActionContext>())).Returns(returnValue);
 
             return urlHelper.Object;
+        }
+
+        private static IServiceCollection CreateServices()
+        {
+            var services = new ServiceCollection();
+            services.AddInstance<ILoggerFactory>(NullLoggerFactory.Instance);
+            return services;
         }
     }
 }

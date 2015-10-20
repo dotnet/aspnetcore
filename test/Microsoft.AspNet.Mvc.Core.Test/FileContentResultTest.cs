@@ -3,10 +3,14 @@
 
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Routing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -33,7 +37,7 @@ namespace Microsoft.AspNet.Mvc
             // Arrange
             var buffer = new byte[] { 1, 2, 3, 4, 5 };
 
-            var httpContext = new DefaultHttpContext();
+            var httpContext = GetHttpContext();
 
             var outStream = new MemoryStream();
             httpContext.Response.Body = outStream;
@@ -56,7 +60,7 @@ namespace Microsoft.AspNet.Mvc
             var expectedContentType = "text/foo; charset=us-ascii";
             var buffer = new byte[] { 1, 2, 3, 4, 5 };
 
-            var httpContext = new DefaultHttpContext();
+            var httpContext = GetHttpContext();
 
             var outStream = new MemoryStream();
             httpContext.Response.Body = outStream;
@@ -80,7 +84,7 @@ namespace Microsoft.AspNet.Mvc
             var expectedContentType = "text/foo; charset=us-ascii";
             var buffer = new byte[] { 1, 2, 3, 4, 5 };
 
-            var httpContext = new DefaultHttpContext();
+            var httpContext = GetHttpContext();
             var bufferingFeature = new TestBufferingFeature();
             httpContext.Features.Set<IHttpBufferingFeature>(bufferingFeature);
             var outStream = new MemoryStream();
@@ -97,6 +101,25 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal(buffer, outStream.ToArray());
             Assert.Equal(expectedContentType, httpContext.Response.ContentType);
             Assert.True(bufferingFeature.DisableResponseBufferingInvoked);
+        }
+
+        private static IServiceCollection CreateServices()
+        {
+            var services = new ServiceCollection();
+
+            services.AddInstance<ILoggerFactory>(NullLoggerFactory.Instance);
+
+            return services;
+        }
+
+        private static HttpContext GetHttpContext()
+        {
+            var services = CreateServices();
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.RequestServices = services.BuildServiceProvider();
+
+            return httpContext;
         }
 
         private class TestBufferingFeature : IHttpBufferingFeature

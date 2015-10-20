@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Infrastructure;
+using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.AspNet.Mvc.ViewEngines;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.OptionsModel;
@@ -133,6 +134,9 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             {
                 throw new ArgumentNullException(nameof(viewResult));
             }
+
+
+            Logger.ViewResultExecuting(view);
 
             return ExecuteAsync(
                 actionContext,

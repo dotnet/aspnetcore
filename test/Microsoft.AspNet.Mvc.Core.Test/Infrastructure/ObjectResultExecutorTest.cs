@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Formatters;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.OptionsModel;
@@ -259,7 +260,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
 
             var actionContext = new ActionContext()
             {
-                HttpContext = new DefaultHttpContext(),
+                HttpContext = GetHttpContext(),
             };
 
             var result = new ObjectResult("someValue");
@@ -284,7 +285,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
 
             var actionContext = new ActionContext()
             {
-                HttpContext = new DefaultHttpContext(),
+                HttpContext = GetHttpContext(),
             };
 
             var result = new ObjectResult("someValue");
@@ -353,7 +354,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
 
             var actionContext = new ActionContext()
             {
-                HttpContext = new DefaultHttpContext(),
+                HttpContext = GetHttpContext(),
             };
             actionContext.HttpContext.Request.Headers[HeaderNames.Accept] = acceptHeader;
 
@@ -390,7 +391,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
 
             var actionContext = new ActionContext()
             {
-                HttpContext = new DefaultHttpContext(),
+                HttpContext = GetHttpContext(),
             };
             actionContext.HttpContext.Request.Headers[HeaderNames.Accept] = acceptHeader;
 
@@ -399,6 +400,25 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
 
             // Assert
             Assert.Equal(expectedContentType, actionContext.HttpContext.Response.Headers[HeaderNames.ContentType]);
+        }
+
+        private static IServiceCollection CreateServices()
+        {
+            var services = new ServiceCollection();
+
+            services.AddInstance<ILoggerFactory>(NullLoggerFactory.Instance);
+
+            return services;
+        }
+
+        private static HttpContext GetHttpContext()
+        {
+            var services = CreateServices();
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.RequestServices = services.BuildServiceProvider();
+
+            return httpContext;
         }
 
         private static TestObjectResultExecutor CreateExecutor(

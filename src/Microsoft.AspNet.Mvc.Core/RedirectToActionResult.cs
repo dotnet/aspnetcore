@@ -4,8 +4,10 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Mvc.Core;
+using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -48,6 +50,9 @@ namespace Microsoft.AspNet.Mvc
                 throw new ArgumentNullException(nameof(context));
             }
 
+            var loggerFactory = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>();
+            var logger = loggerFactory.CreateLogger<RedirectToActionResult>();
+
             var urlHelper = GetUrlHelper(context);
 
             var destinationUrl = urlHelper.Action(ActionName, ControllerName, RouteValues);
@@ -56,6 +61,7 @@ namespace Microsoft.AspNet.Mvc
                 throw new InvalidOperationException(Resources.NoRoutesMatched);
             }
 
+            logger.RedirectToActionResultExecuting(destinationUrl);
             context.HttpContext.Response.Redirect(destinationUrl, Permanent);
         }
 

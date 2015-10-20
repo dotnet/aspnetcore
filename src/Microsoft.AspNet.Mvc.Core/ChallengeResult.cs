@@ -5,6 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Authentication;
+using Microsoft.AspNet.Mvc.Logging;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -52,18 +55,23 @@ namespace Microsoft.AspNet.Mvc
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var auth = context.HttpContext.Authentication;
+            var loggerFactory = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>();
+            var logger = loggerFactory.CreateLogger<ChallengeResult>();
+
+            var authentication = context.HttpContext.Authentication;
             if (AuthenticationSchemes.Count > 0)
             {
                 foreach (var scheme in AuthenticationSchemes)
                 {
-                    await auth.ChallengeAsync(scheme, Properties);
+                    await authentication.ChallengeAsync(scheme, Properties);
                 }
             }
             else
             {
-                await auth.ChallengeAsync(Properties);
+                await authentication.ChallengeAsync(Properties);
             }
+            
+            logger.ChallengeResultExecuting(AuthenticationSchemes);
         }
     }
 }

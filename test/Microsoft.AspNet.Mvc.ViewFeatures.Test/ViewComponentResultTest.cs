@@ -16,6 +16,8 @@ using Microsoft.AspNet.Mvc.ViewComponents;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.OptionsModel;
 using Microsoft.Net.Http.Headers;
 using Xunit;
@@ -397,6 +399,7 @@ namespace Microsoft.AspNet.Mvc
             services.AddSingleton<IViewComponentActivator, DefaultViewComponentActivator>();
             services.AddInstance<IViewComponentDescriptorProvider>(new FixedSetViewComponentDescriptorProvider(descriptors));
             services.AddSingleton<IModelMetadataProvider, EmptyModelMetadataProvider>();
+            services.AddInstance<ILoggerFactory>(NullLoggerFactory.Instance);
 
             return services;
         }

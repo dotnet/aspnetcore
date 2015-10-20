@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Mvc.Internal;
+using Microsoft.AspNet.Mvc.Logging;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc
@@ -40,6 +43,9 @@ namespace Microsoft.AspNet.Mvc
                 throw new ArgumentNullException(nameof(context));
             }
 
+            var loggerFactory = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>();
+            var logger = loggerFactory.CreateLogger<ContentResult>();
+
             var response = context.HttpContext.Response;
             var contentTypeHeader = ContentType;
 
@@ -58,6 +64,8 @@ namespace Microsoft.AspNet.Mvc
             {
                 response.StatusCode = StatusCode.Value;
             }
+
+            logger.ContentResultExecuting(contentTypeHeader);
 
             if (Content != null)
             {

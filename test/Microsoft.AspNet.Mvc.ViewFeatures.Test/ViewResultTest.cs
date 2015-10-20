@@ -75,6 +75,10 @@ namespace Microsoft.AspNet.Mvc
                 .Setup(v => v.Dispose())
                 .Verifiable();
 
+            view
+                .Setup(v => v.Path)
+                .Returns("//location");
+
             var viewEngine = new Mock<IViewEngine>(MockBehavior.Strict);
             viewEngine
                 .Setup(e => e.FindView(context, "myview"))

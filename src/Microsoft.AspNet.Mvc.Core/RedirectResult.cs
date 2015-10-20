@@ -3,8 +3,10 @@
 
 using System;
 using Microsoft.AspNet.Mvc.Core;
+using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -65,6 +67,9 @@ namespace Microsoft.AspNet.Mvc
                 throw new ArgumentNullException(nameof(context));
             }
 
+            var loggerFactory = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>();
+            var logger = loggerFactory.CreateLogger<RedirectResult>();
+
             var urlHelper = GetUrlHelper(context);
 
             // IsLocalUrl is called to handle  Urls starting with '~/'.
@@ -74,6 +79,7 @@ namespace Microsoft.AspNet.Mvc
                 destinationUrl = urlHelper.Content(Url);
             }
 
+            logger.RedirectResultExecuting(destinationUrl);
             context.HttpContext.Response.Redirect(destinationUrl, Permanent);
         }
 

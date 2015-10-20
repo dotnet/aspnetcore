@@ -11,6 +11,9 @@ using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Routing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Xunit;
 
@@ -139,6 +142,10 @@ namespace Microsoft.AspNet.Mvc.Cors
                 httpContext.Request.Headers.Add(CorsConstants.AccessControlExposeHeaders, headers.ExposedHeaders.Split(','));
                 httpContext.Request.Headers.Add(CorsConstants.Origin, new[] { headers.Origin });
             }
+
+            var services = new ServiceCollection();
+            services.AddInstance<ILoggerFactory>(NullLoggerFactory.Instance);
+            httpContext.RequestServices = services.BuildServiceProvider();
 
             var method = isPreflight ? CorsConstants.PreflightHttpMethod : "GET";
             httpContext.Request.Method = method;

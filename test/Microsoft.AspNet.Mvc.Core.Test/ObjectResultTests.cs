@@ -8,6 +8,7 @@ using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Formatters;
 using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Net.Http.Headers;
 using Xunit;
@@ -68,6 +69,7 @@ namespace Microsoft.AspNet.Mvc
                 new TestOptionsManager<MvcOptions>(),
                 new ActionBindingContextAccessor(),
                 NullLoggerFactory.Instance));
+            services.AddInstance<ILoggerFactory>(NullLoggerFactory.Instance);
 
             return services.BuildServiceProvider();
         }

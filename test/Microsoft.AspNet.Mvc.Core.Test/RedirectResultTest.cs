@@ -8,6 +8,7 @@ using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -110,6 +111,7 @@ namespace Microsoft.AspNet.Mvc
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddInstance<IUrlHelper>(urlHelper);
+            serviceCollection.AddTransient<ILoggerFactory, LoggerFactory>();
             return serviceCollection.BuildServiceProvider();
         }
 

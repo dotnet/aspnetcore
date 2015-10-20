@@ -9,6 +9,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Formatters;
 using Microsoft.AspNet.Mvc.Internal;
+using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.OptionsModel;
 using Microsoft.Net.Http.Headers;
@@ -125,7 +126,9 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 "'{ContentType}' to write the response.",
                 selectedFormatter.GetType().FullName,
                 formatterContext.ContentType);
-
+            
+            Logger.ObjectResultExecuting(context);
+            
             result.OnFormatting(context);
             return selectedFormatter.WriteAsync(formatterContext);
         }

@@ -36,7 +36,9 @@ namespace Microsoft.AspNet.Mvc
         public override Task ExecuteResultAsync(ActionContext context)
         {
             var executor = context.HttpContext.RequestServices.GetRequiredService<ObjectResultExecutor>();
-            return executor.ExecuteAsync(context, this);
+            var result =  executor.ExecuteAsync(context, this);
+            
+            return result;
         }
 
         /// <summary>
