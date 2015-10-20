@@ -126,7 +126,7 @@ namespace Microsoft.AspNet.Hosting.Startup
             {
                 if (required)
                 {
-                    throw new InvalidOperationException(string.Format("A method named '{0}' or '{1}' in the type '{2}' could not be found.",
+                    throw new InvalidOperationException(string.Format("A public method named '{0}' or '{1}' could not be found in the '{2}' type.",
                         methodNameWithEnv,
                         methodNameWithNoEnv,
                         startupType.FullName));

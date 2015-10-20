@@ -80,7 +80,7 @@ namespace Microsoft.AspNet.Hosting.Tests
             var type = loader.FindStartupType("Microsoft.AspNet.Hosting.Tests", diagnosticMessages);
 
             var ex = Assert.Throws<InvalidOperationException>(() => loader.LoadMethods(type, diagnosticMessages));
-            Assert.Equal("A method named 'ConfigureBoom' or 'Configure' in the type 'Microsoft.AspNet.Hosting.Fakes.StartupBoom' could not be found.", ex.Message);
+            Assert.Equal("A public method named 'ConfigureBoom' or 'Configure' could not be found in the 'Microsoft.AspNet.Hosting.Fakes.StartupBoom' type.", ex.Message);
         }
 
         [Fact]
@@ -97,6 +97,22 @@ namespace Microsoft.AspNet.Hosting.Tests
 
             var ex = Assert.Throws<InvalidOperationException>(() => loader.LoadMethods(type, diagnosticMessages));
             Assert.Equal("Having multiple overloads of method 'Configure' is not supported.", ex.Message);
+        }
+        
+        [Fact]
+        public void StartupWithPrivateConfiguresThrows()
+        {
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddInstance<IFakeStartupCallback>(this);
+            var services = serviceCollection.BuildServiceProvider();
+
+            var diagnosticMessages = new List<string>();
+            var hostingEnv = new HostingEnvironment { EnvironmentName = "PrivateConfigure" };
+            var loader = new StartupLoader(services, hostingEnv);
+            var type = loader.FindStartupType("Microsoft.AspNet.Hosting.Tests", diagnosticMessages);
+
+            var ex = Assert.Throws<InvalidOperationException>(() => loader.LoadMethods(type, diagnosticMessages));
+            Assert.Equal("A public method named 'ConfigurePrivateConfigure' or 'Configure' could not be found in the 'Microsoft.AspNet.Hosting.Fakes.StartupPrivateConfigure' type.", ex.Message);
         }
 
         [Fact]
