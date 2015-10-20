@@ -2,15 +2,18 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Authentication.Cookies;
 using Microsoft.AspNet.Authentication.Google;
 using Microsoft.AspNet.Authentication.MicrosoftAccount;
 using Microsoft.AspNet.Authentication.OAuth;
+using Microsoft.AspNet.Authentication.Twitter;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.WebEncoders;
 using Newtonsoft.Json.Linq;
 
 namespace CookieSample
@@ -58,6 +61,17 @@ namespace CookieSample
             {
                 options.ClientId = "560027070069-37ldt4kfuohhu3m495hk2j4pjp92d382.apps.googleusercontent.com";
                 options.ClientSecret = "n2Q-GEw9RQjzcRbU3qhfTj8f";
+                options.Events = new OAuthEvents()
+                {
+                    OnRemoteError = ctx =>
+
+                    {
+                        ctx.Response.Redirect("/error?ErrorMessage=" + UrlEncoder.Default.UrlEncode(ctx.Error.Message));
+                        ctx.HandleResponse();
+                        return Task.FromResult(0);
+                    }
+                };
+
             });
 
             // https://apps.twitter.com/
@@ -65,6 +79,15 @@ namespace CookieSample
             {
                 options.ConsumerKey = "6XaCTaLbMqfj6ww3zvZ5g";
                 options.ConsumerSecret = "Il2eFzGIrYhz6BWjYhVXBPQSfZuS4xoHpSSyD9PI";
+                options.Events = new TwitterEvents()
+                {
+                    OnRemoteError = ctx =>
+                    {
+                        ctx.Response.Redirect("/error?ErrorMessage=" + UrlEncoder.Default.UrlEncode(ctx.Error.Message));
+                        ctx.HandleResponse();
+                        return Task.FromResult(0);
+                    }
+                };
             });
 
             /* https://account.live.com/developers/applications
@@ -212,6 +235,19 @@ namespace CookieSample
                     await context.Authentication.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                     await context.Response.WriteAsync("<html><body>");
                     await context.Response.WriteAsync("You have been logged out. Goodbye " + context.User.Identity.Name + "<br>");
+                    await context.Response.WriteAsync("<a href=\"/\">Home</a>");
+                    await context.Response.WriteAsync("</body></html>");
+                });
+            });
+
+            // Display the remote error
+            app.Map("/error", errorApp =>
+            {
+                errorApp.Run(async context =>
+                {
+                    context.Response.ContentType = "text/html";
+                    await context.Response.WriteAsync("<html><body>");
+                    await context.Response.WriteAsync("An remote error has occured: " + context.Request.Query["ErrorMessage"] + "<br>");
                     await context.Response.WriteAsync("<a href=\"/\">Home</a>");
                     await context.Response.WriteAsync("</body></html>");
                 });
