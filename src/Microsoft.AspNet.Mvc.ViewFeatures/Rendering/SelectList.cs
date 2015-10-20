@@ -6,6 +6,11 @@ using System.Collections;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
+    /// <summary>
+    /// Represents a list that lets users select a single item.
+    /// This class is typically rendered as an HTML <code>&lt;select&gt;</code> element with the specified collection
+    /// of <see cref="SelectListItem"/> objects.
+    /// </summary>
     public class SelectList : MultiSelectList
     {
         public SelectList(IEnumerable items)

@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.Mvc.Core.Rendering
             tagBuilder.Attributes.Add("ID", "something");
 
             // Act
-            tagBuilder.GenerateId("else", idAttributeDotReplacement: "-");
+            tagBuilder.GenerateId("else", invalidCharReplacement: "-");
 
             // Assert
             var attribute = Assert.Single(tagBuilder.Attributes);

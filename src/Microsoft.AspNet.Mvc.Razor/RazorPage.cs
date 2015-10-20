@@ -46,6 +46,9 @@ namespace Microsoft.AspNet.Mvc.Razor
             _writerScopes = new Stack<TextWriter>();
         }
 
+        /// <summary>
+        /// An <see cref="HttpContext"/> representing the current request execution.
+        /// </summary>
         public HttpContext Context
         {
             get
@@ -81,7 +84,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         public IPageExecutionContext PageExecutionContext { get; set; }
 
         /// <summary>
-        /// Gets the TextWriter that the page is writing output to.
+        /// Gets the <see cref="TextWriter"/> that the page is writing output to.
         /// </summary>
         public virtual TextWriter Output
         {
@@ -97,6 +100,9 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
         }
 
+        /// <summary>
+        /// Gets the <see cref="ClaimsPrincipal"/> of the current logged in user.
+        /// </summary>
         public virtual ClaimsPrincipal User
         {
             get
@@ -110,6 +116,9 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
         }
 
+        /// <summary>
+        /// Gets the dynamic view data dictionary.
+        /// </summary>
         public dynamic ViewBag
         {
             get
@@ -821,6 +830,10 @@ namespace Microsoft.AspNet.Mvc.Razor
             EndContext();
         }
 
+        /// <summary>
+        /// In a Razor layout page, renders the portion of a content page that is not within a named section.
+        /// </summary>
+        /// <returns>The HTML content to render.</returns>
         protected virtual HelperResult RenderBody()
         {
             if (RenderBodyDelegateAsync == null)
@@ -858,6 +871,11 @@ namespace Microsoft.AspNet.Mvc.Razor
             SectionWriters[name] = section;
         }
 
+        /// <summary>
+        /// Returns a value that indicates whether the specified section is defined in the content page.
+        /// </summary>
+        /// <param name="name">The section name to search for.</param>
+        /// <returns><c>true</c> if the specified section is defined in the content page; otherwise, <c>false</c>.</returns>
         public bool IsSectionDefined(string name)
         {
             if (name == null)

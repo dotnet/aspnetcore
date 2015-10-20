@@ -19,6 +19,9 @@ namespace Microsoft.AspNet.Mvc.Razor
     {
         private IModelMetadataProvider _provider;
 
+        /// <summary>
+        /// Gets the Model property of the <see cref="ViewData"/> property.
+        /// </summary>
         public TModel Model
         {
             get
@@ -27,6 +30,9 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
         }
 
+        /// <summary>
+        /// Gets or sets the dictionary for view data.
+        /// </summary>
         [RazorInject]
         public ViewDataDictionary<TModel> ViewData { get; set; }
 
