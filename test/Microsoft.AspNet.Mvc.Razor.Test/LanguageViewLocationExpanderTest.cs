@@ -131,7 +131,12 @@ namespace Microsoft.AspNet.Mvc.Razor
             IEnumerable<string> expectedViewLocations)
         {
             // Arrange
-            var viewLocationExpanderContext = new ViewLocationExpanderContext(new ActionContext(),"testView", false);
+            var viewLocationExpanderContext = new ViewLocationExpanderContext(
+                new ActionContext(), 
+                "testView", 
+                "test-controller",
+                "",
+                false);
             var languageViewLocationExpander = new LanguageViewLocationExpander(format);
             viewLocationExpanderContext.Values = new Dictionary<string, string>();
             viewLocationExpanderContext.Values["language"] = "en-GB";
@@ -150,7 +155,12 @@ namespace Microsoft.AspNet.Mvc.Razor
         public void ExpandViewLocations_NullContextValue(IEnumerable<string> viewLocations)
         {
             // Arrange
-            var viewLocationExpanderContext = new ViewLocationExpanderContext(new ActionContext(), "testView", false);
+            var viewLocationExpanderContext = new ViewLocationExpanderContext(
+                new ActionContext(), 
+                "testView", 
+                "test-controller",
+                "test-area",
+                false);
             var languageViewLocationExpander = new LanguageViewLocationExpander();
             viewLocationExpanderContext.Values = new Dictionary<string, string>();
 
@@ -168,7 +178,12 @@ namespace Microsoft.AspNet.Mvc.Razor
         public void ExpandViewLocations_IncorrectLocaleContextValue(IEnumerable<string> viewLocations)
         {
             // Arrange
-            var viewLocationExpanderContext = new ViewLocationExpanderContext(new ActionContext(), "testView", false);
+            var viewLocationExpanderContext = new ViewLocationExpanderContext(
+                new ActionContext(), 
+                "testView", 
+                "test-controller",
+                "test-area",
+                false);
             var languageViewLocationExpander = new LanguageViewLocationExpander();
             viewLocationExpanderContext.Values = new Dictionary<string, string>();
             viewLocationExpanderContext.Values["language"] = "!-invalid-culture-!";

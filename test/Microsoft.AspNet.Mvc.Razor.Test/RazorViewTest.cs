@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Internal;
@@ -14,6 +13,7 @@ using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.PageExecutionInstrumentation;
 using Microsoft.AspNet.Routing;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
 using Xunit;
@@ -39,12 +39,13 @@ namespace Microsoft.AspNet.Mvc.Razor
                 v.HtmlEncoder = new HtmlTestEncoder();
                 v.Write("Hello world");
             });
-            var view = new RazorView(Mock.Of<IRazorViewEngine>(),
-                                     Mock.Of<IRazorPageActivator>(),
-                                     CreateViewStartProvider(),
-                                     page,
-                                     new HtmlTestEncoder(),
-                                     isPartial: true);
+            var view = new RazorView(
+                Mock.Of<IRazorViewEngine>(),
+                Mock.Of<IRazorPageActivator>(),
+                new IRazorPage[0],
+                page,
+                new HtmlTestEncoder(),
+                isPartial: true);
             var viewContext = CreateViewContext(view);
             var expected = viewContext.Writer;
 
@@ -68,12 +69,13 @@ namespace Microsoft.AspNet.Mvc.Razor
                 Assert.Same(viewData, v.ViewContext.ViewData);
             });
             var activator = new Mock<IRazorPageActivator>();
-            var view = new RazorView(Mock.Of<IRazorViewEngine>(),
-                                     activator.Object,
-                                     CreateViewStartProvider(),
-                                     page,
-                                     new HtmlTestEncoder(),
-                                     isPartial: true);
+            var view = new RazorView(
+                Mock.Of<IRazorViewEngine>(),
+                activator.Object,
+                new IRazorPage[0],
+                page,
+                new HtmlTestEncoder(),
+                isPartial: true);
 
             var viewContext = CreateViewContext(view);
             var expectedWriter = viewContext.Writer;
@@ -132,12 +134,13 @@ namespace Microsoft.AspNet.Mvc.Razor
             var viewEngine = new Mock<IRazorViewEngine>();
             viewEngine.Setup(v => v.FindPage(It.IsAny<ActionContext>(), LayoutPath))
                       .Returns(new RazorPageResult(LayoutPath, layout));
-            var view = new RazorView(viewEngine.Object,
-                                     activator,
-                                     CreateViewStartProvider(viewStart),
-                                     page,
-                                     new HtmlTestEncoder(),
-                                     isPartial: false);
+            var view = new RazorView(
+                viewEngine.Object,
+                activator,
+                new[] { viewStart },
+                page,
+                new HtmlTestEncoder(),
+                isPartial: false);
 
             var viewContext = CreateViewContext(view);
             var expectedWriter = viewContext.Writer;
@@ -157,12 +160,13 @@ namespace Microsoft.AspNet.Mvc.Razor
             var activator = new Mock<IRazorPageActivator>();
             activator.Setup(a => a.Activate(page, It.IsAny<ViewContext>()))
                      .Verifiable();
-            var view = new RazorView(Mock.Of<IRazorViewEngine>(),
-                                     activator.Object,
-                                     CreateViewStartProvider(),
-                                     page,
-                                     new HtmlTestEncoder(),
-                                     isPartial: true);
+            var view = new RazorView(
+                Mock.Of<IRazorViewEngine>(),
+                activator.Object,
+                new IRazorPage[0],
+                page,
+                new HtmlTestEncoder(),
+                isPartial: true);
             var viewContext = CreateViewContext(view);
 
             // Act
@@ -193,29 +197,28 @@ namespace Microsoft.AspNet.Mvc.Razor
                 v.Write("layout-content" + Environment.NewLine);
                 v.RenderBodyPublic();
             });
-            var pageFactory = new Mock<IRazorPageFactory>();
-            pageFactory.Setup(p => p.CreateInstance(LayoutPath))
-                       .Returns(layout);
+            var pageFactory = new Mock<IRazorPageFactoryProvider>();
+            pageFactory
+                .Setup(p => p.CreateFactory(LayoutPath))
+                .Returns(new RazorPageFactoryResult(() => layout, new IChangeToken[0]));
 
             var viewEngine = new Mock<IRazorViewEngine>();
             viewEngine.Setup(v => v.FindPage(It.IsAny<ActionContext>(), LayoutPath))
                       .Returns(new RazorPageResult(LayoutPath, layout));
 
-            var viewStartProvider = CreateViewStartProvider();
-            var view = new RazorView(viewEngine.Object,
-                                     Mock.Of<IRazorPageActivator>(),
-                                     viewStartProvider,
-                                     page,
-                                     new HtmlTestEncoder(),
-                                     isPartial: true);
+            var view = new RazorView(
+                viewEngine.Object,
+                Mock.Of<IRazorPageActivator>(),
+                new IRazorPage[0],
+                page,
+                new HtmlTestEncoder(),
+                isPartial: true);
             var viewContext = CreateViewContext(view);
 
             // Act
             await view.RenderAsync(viewContext);
 
             // Assert
-            Mock.Get(viewStartProvider)
-                .Verify(v => v.GetViewStartPages(It.IsAny<string>()), Times.Never());
             Assert.Equal(expected, viewContext.Writer.ToString());
         }
 
@@ -228,12 +231,13 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
                 actual = v.Output;
             });
-            var view = new RazorView(Mock.Of<IRazorViewEngine>(),
-                                     Mock.Of<IRazorPageActivator>(),
-                                     CreateViewStartProvider(),
-                                     page,
-                                     new HtmlTestEncoder(),
-                                     isPartial: false);
+            var view = new RazorView(
+                Mock.Of<IRazorViewEngine>(),
+                Mock.Of<IRazorPageActivator>(),
+                new IRazorPage[0],
+                page,
+                new HtmlTestEncoder(),
+                isPartial: false);
             var viewContext = CreateViewContext(view);
             var original = viewContext.Writer;
 
@@ -253,12 +257,13 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
                 v.WriteLiteral("Hello world");
             });
-            var view = new RazorView(Mock.Of<IRazorViewEngine>(),
-                                     Mock.Of<IRazorPageActivator>(),
-                                     CreateViewStartProvider(),
-                                     page,
-                                     new HtmlTestEncoder(),
-                                     isPartial: false);
+            var view = new RazorView(
+                Mock.Of<IRazorViewEngine>(),
+                Mock.Of<IRazorPageActivator>(),
+                new IRazorPage[0],
+                page,
+                new HtmlTestEncoder(),
+                isPartial: false);
             var viewContext = CreateViewContext(view);
             var original = viewContext.Writer;
 
@@ -280,12 +285,13 @@ namespace Microsoft.AspNet.Mvc.Razor
             var activator = new Mock<IRazorPageActivator>();
             activator.Setup(a => a.Activate(page, It.IsAny<ViewContext>()))
                      .Verifiable();
-            var view = new RazorView(Mock.Of<IRazorViewEngine>(),
-                                     activator.Object,
-                                     CreateViewStartProvider(),
-                                     page,
-                                     new HtmlTestEncoder(),
-                                     isPartial: false);
+            var view = new RazorView(
+                Mock.Of<IRazorViewEngine>(),
+                activator.Object,
+                new IRazorPage[0],
+                page,
+                new HtmlTestEncoder(),
+                isPartial: false);
             var viewContext = CreateViewContext(view);
 
             // Act
@@ -323,12 +329,13 @@ namespace Microsoft.AspNet.Mvc.Razor
                      .Verifiable();
             activator.Setup(a => a.Activate(page, It.IsAny<ViewContext>()))
                      .Verifiable();
-            var view = new RazorView(Mock.Of<IRazorViewEngine>(),
-                                     activator.Object,
-                                     CreateViewStartProvider(viewStart1, viewStart2),
-                                     page,
-                                     new HtmlTestEncoder(),
-                                     isPartial: false);
+            var view = new RazorView(
+                Mock.Of<IRazorViewEngine>(),
+                activator.Object,
+                new[] { viewStart1, viewStart2 },
+                page,
+                new HtmlTestEncoder(),
+                isPartial: false);
             var viewContext = CreateViewContext(view);
 
             // Act
@@ -358,7 +365,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var activator = new Mock<IRazorPageActivator>();
             var view = new RazorView(viewEngine.Object,
                                      Mock.Of<IRazorPageActivator>(),
-                                     Mock.Of<IViewStartProvider>(),
+                                     new IRazorPage[0],
                                      page,
                                      new HtmlTestEncoder(),
                                      isPartial: false);
@@ -422,7 +429,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var view = new RazorView(viewEngine.Object,
                                      activator.Object,
-                                     CreateViewStartProvider(),
+                                     new IRazorPage[0],
                                      page,
                                      new HtmlTestEncoder(),
                                      isPartial: false);
@@ -464,7 +471,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var view = new RazorView(viewEngine.Object,
                                      Mock.Of<IRazorPageActivator>(),
-                                     CreateViewStartProvider(),
+                                     new IRazorPage[0],
                                      page,
                                      new HtmlTestEncoder(),
                                      isPartial: false);
@@ -527,7 +534,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var view = new RazorView(viewEngine.Object,
                                      Mock.Of<IRazorPageActivator>(),
-                                     CreateViewStartProvider(),
+                                     new IRazorPage[0],
                                      page,
                                      new HtmlTestEncoder(),
                                      isPartial: false);
@@ -587,7 +594,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var view = new RazorView(viewEngine.Object,
                                      Mock.Of<IRazorPageActivator>(),
-                                     CreateViewStartProvider(),
+                                     new IRazorPage[0],
                                      page,
                                      new HtmlTestEncoder(),
                                      isPartial: false);
@@ -647,7 +654,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var view = new RazorView(viewEngine.Object,
                                      Mock.Of<IRazorPageActivator>(),
-                                     CreateViewStartProvider(),
+                                     new IRazorPage[0],
                                      page,
                                      new HtmlTestEncoder(),
                                      isPartial: false);
@@ -712,7 +719,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var view = new RazorView(viewEngine.Object,
                                      Mock.Of<IRazorPageActivator>(),
-                                     CreateViewStartProvider(),
+                                     new IRazorPage[0],
                                      page,
                                      new HtmlTestEncoder(),
                                      isPartial: false);
@@ -744,7 +751,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var view = new RazorView(viewEngine.Object,
                                      Mock.Of<IRazorPageActivator>(),
-                                     CreateViewStartProvider(),
+                                     new IRazorPage[0],
                                      page,
                                      new HtmlTestEncoder(),
                                      isPartial: false);
@@ -808,7 +815,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var view = new RazorView(viewEngine.Object,
                                      Mock.Of<IRazorPageActivator>(),
-                                     CreateViewStartProvider(),
+                                     new IRazorPage[0],
                                      page,
                                      new HtmlTestEncoder(),
                                      isPartial: false);
@@ -844,7 +851,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var view = new RazorView(viewEngine.Object,
                                      Mock.Of<IRazorPageActivator>(),
-                                     CreateViewStartProvider(),
+                                     new IRazorPage[0],
                                      page,
                                      new HtmlTestEncoder(),
                                      isPartial: false);
@@ -889,7 +896,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var view = new RazorView(viewEngine.Object,
                                      Mock.Of<IRazorPageActivator>(),
-                                     CreateViewStartProvider(),
+                                     new IRazorPage[0],
                                      page,
                                      new HtmlTestEncoder(),
                                      isPartial: false);
@@ -956,7 +963,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var view = new RazorView(viewEngine.Object,
                                      Mock.Of<IRazorPageActivator>(),
-                                     CreateViewStartProvider(),
+                                     new IRazorPage[0],
                                      page,
                                      new HtmlTestEncoder(),
                                      isPartial: false);
@@ -1009,7 +1016,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var view = new RazorView(viewEngine.Object,
                                      Mock.Of<IRazorPageActivator>(),
-                                     CreateViewStartProvider(),
+                                     new IRazorPage[0],
                                      page,
                                      new HtmlTestEncoder(),
                                      isPartial: false);
@@ -1059,7 +1066,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var view = new RazorView(viewEngine.Object,
                                      Mock.Of<IRazorPageActivator>(),
-                                     CreateViewStartProvider(),
+                                     new IRazorPage[0],
                                      page,
                                      new HtmlTestEncoder(),
                                      isPartial: false);
@@ -1089,7 +1096,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var view = new RazorView(Mock.Of<IRazorViewEngine>(),
                                      Mock.Of<IRazorPageActivator>(),
-                                     CreateViewStartProvider(),
+                                     new IRazorPage[0],
                                      page,
                                      new HtmlTestEncoder(),
                                      isPartial: false);
@@ -1134,7 +1141,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var view = new RazorView(viewEngine.Object,
                                      Mock.Of<IRazorPageActivator>(),
-                                     CreateViewStartProvider(),
+                                     new IRazorPage[0],
                                      page,
                                      new HtmlTestEncoder(),
                                      isPartial: false);
@@ -1204,13 +1211,9 @@ namespace Microsoft.AspNet.Mvc.Razor
             var viewEngine = new Mock<IRazorViewEngine>();
             viewEngine.Setup(p => p.FindPage(It.IsAny<ActionContext>(), "Layout"))
                        .Returns(new RazorPageResult("Layout", layout));
-            var viewStartProvider = new Mock<IViewStartProvider>();
-            viewStartProvider.Setup(v => v.GetViewStartPages(It.IsAny<string>()))
-                             .Returns(Enumerable.Empty<IRazorPage>())
-                             .Verifiable();
             var view = new RazorView(viewEngine.Object,
                                      Mock.Of<IRazorPageActivator>(),
-                                     viewStartProvider.Object,
+                                     new IRazorPage[0],
                                      page,
                                      new HtmlTestEncoder(),
                                      isPartial: false);
@@ -1222,7 +1225,6 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             // Assert
             feature.Verify();
-            viewStartProvider.Verify();
             Assert.True(layoutExecuted);
         }
 
@@ -1256,7 +1258,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var view = new RazorView(Mock.Of<IRazorViewEngine>(),
                                      Mock.Of<IRazorPageActivator>(),
-                                     Mock.Of<IViewStartProvider>(),
+                                     new IRazorPage[0],
                                      page,
                                      new HtmlTestEncoder(),
                                      isPartial: true);
@@ -1288,7 +1290,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var view = new RazorView(Mock.Of<IRazorViewEngine>(),
                                      Mock.Of<IRazorPageActivator>(),
-                                     Mock.Of<IViewStartProvider>(),
+                                     new IRazorPage[0],
                                      page,
                                      new HtmlTestEncoder(),
                                      isPartial);
@@ -1328,7 +1330,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var view = new RazorView(viewEngine,
                                      Mock.Of<IRazorPageActivator>(),
-                                     CreateViewStartProvider(viewStart1, viewStart2),
+                                     new[] { viewStart1, viewStart2 },
                                      page,
                                      new HtmlTestEncoder(),
                                      isPartial: false);
@@ -1364,12 +1366,13 @@ namespace Microsoft.AspNet.Mvc.Razor
             });
             var viewEngine = Mock.Of<IRazorViewEngine>();
 
-            var view = new RazorView(viewEngine,
-                                     Mock.Of<IRazorPageActivator>(),
-                                     CreateViewStartProvider(viewStart1, viewStart2),
-                                     page,
-                                     new HtmlTestEncoder(),
-                                     isPartial: false);
+            var view = new RazorView(
+                viewEngine,
+                Mock.Of<IRazorPageActivator>(),
+                new[] { viewStart1, viewStart2 },
+                page,
+                new HtmlTestEncoder(),
+                isPartial: false);
             var viewContext = CreateViewContext(view);
 
             // Act
@@ -1402,13 +1405,14 @@ namespace Microsoft.AspNet.Mvc.Razor
                 v.RenderBodyPublic();
             });
             var viewEngine = new Mock<IRazorViewEngine>();
-            viewEngine.Setup(p => p.FindPage(It.IsAny<ActionContext>(), "/Layout.cshtml"))
-                       .Returns(new RazorPageResult("Layout", layout));
+            viewEngine
+                .Setup(p => p.FindPage(It.IsAny<ActionContext>(), "/Layout.cshtml"))
+                .Returns(new RazorPageResult("Layout", layout));
 
             var view = new RazorView(
                 viewEngine.Object,
                 Mock.Of<IRazorPageActivator>(),
-                CreateViewStartProvider(viewStart),
+                new[] { viewStart },
                 page,
                 new HtmlTestEncoder(),
                 isPartial: false);
@@ -1434,7 +1438,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             });
             var view = new RazorView(Mock.Of<IRazorViewEngine>(),
                                      Mock.Of<IRazorPageActivator>(),
-                                     CreateViewStartProvider(),
+                                     new IRazorPage[0],
                                      page,
                                      new HtmlTestEncoder(),
                                      isPartial: true);
@@ -1445,6 +1449,48 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             // Assert
             Assert.True(isPartialPage.Value);
+        }
+
+        [Fact]
+        public async Task RenderAsync_RendersViewStartsInOrderInWhichTheyAreSpecified()
+        {
+            // Arrange
+            var expected = string.Join(
+                Environment.NewLine,
+                new[]
+                {
+                    "ViewStart1",
+                    "ViewStart2",
+                    "Page",
+                });
+            var page = new TestableRazorPage(v =>
+            {
+                v.WriteLiteral("Page");
+            });
+            var viewStart1 = new TestableRazorPage(v =>
+            {
+                v.WriteLiteral("ViewStart1" + Environment.NewLine);
+            });
+            var viewStart2 = new TestableRazorPage(v =>
+            {
+                v.WriteLiteral("ViewStart2" + Environment.NewLine);
+            });
+            var viewEngine = Mock.Of<IRazorViewEngine>();
+
+            var view = new RazorView(
+                viewEngine,
+                Mock.Of<IRazorPageActivator>(),
+                new[] { viewStart1, viewStart2 },
+                page,
+                new HtmlTestEncoder(),
+                isPartial: false);
+            var viewContext = CreateViewContext(view);
+
+            // Act
+            await view.RenderAsync(viewContext);
+
+            // Assert
+            Assert.Equal(expected, viewContext.Writer.ToString());
         }
 
         private static TextWriter CreateBufferedWriter()
@@ -1467,17 +1513,6 @@ namespace Microsoft.AspNet.Mvc.Razor
                 Mock.Of<ITempDataDictionary>(),
                 new StringWriter(),
                 new HtmlHelperOptions());
-        }
-
-        private static IViewStartProvider CreateViewStartProvider(params IRazorPage[] viewStartPages)
-        {
-            viewStartPages = viewStartPages ?? new IRazorPage[0];
-            var viewStartProvider = new Mock<IViewStartProvider>();
-            viewStartProvider
-                .Setup(v => v.GetViewStartPages(It.IsAny<string>()))
-                .Returns(viewStartPages);
-
-            return viewStartProvider.Object;
         }
 
         private class TestableRazorPage : RazorPage

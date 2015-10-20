@@ -100,7 +100,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                 failures.Add(compilationFailure);
             }
 
-            return CompilationResult.Failed(failures);
+            return new CompilationResult(failures);
         }
 
         private DiagnosticMessage CreateDiagnosticMessage(RazorError error, string filePath)

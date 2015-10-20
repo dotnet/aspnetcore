@@ -7,9 +7,9 @@ using System.Collections.Generic;
 namespace Microsoft.AspNet.Mvc.Razor
 {
     /// <summary>
-    /// Represents the results of locating a <see cref="IRazorPage"/>.
+    /// Result of locating a <see cref="IRazorPage"/>.
     /// </summary>
-    public class RazorPageResult
+    public struct RazorPageResult
     {
         /// <summary>
         /// Initializes a new instance of <see cref="RazorPageResult"/> for a successful discovery.
@@ -30,6 +30,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             Name = name;
             Page = page;
+            SearchedLocations = null;
         }
 
         /// <summary>
@@ -50,6 +51,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
 
             Name = name;
+            Page = null;
             SearchedLocations = searchedLocations;
         }
 

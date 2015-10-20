@@ -7,10 +7,10 @@ using Microsoft.AspNet.Mvc.Razor.Compilation;
 namespace Microsoft.AspNet.Mvc.Razor
 {
     /// <summary>
-    /// Represents a <see cref="IRazorPageFactory"/> that creates <see cref="RazorPage"/> instances
+    /// Represents a <see cref="IRazorPageFactoryProvider"/> that creates <see cref="RazorPage"/> instances
     /// from razor files in the file system.
     /// </summary>
-    public class VirtualPathRazorPageFactory : IRazorPageFactory
+    public class DefaultRazorPageFactoryProvider : IRazorPageFactoryProvider
     {
         /// <remarks>
         /// This delegate holds on to an instance of <see cref="IRazorCompilationService"/>.
@@ -20,11 +20,11 @@ namespace Microsoft.AspNet.Mvc.Razor
         private ICompilerCache _compilerCache;
 
         /// <summary>
-        /// Initializes a new instance of <see cref="VirtualPathRazorPageFactory"/>.
+        /// Initializes a new instance of <see cref="DefaultRazorPageFactoryProvider"/>.
         /// </summary>
         /// <param name="razorCompilationService">The <see cref="IRazorCompilationService"/>.</param>
         /// <param name="compilerCacheProvider">The <see cref="ICompilerCacheProvider"/>.</param>
-        public VirtualPathRazorPageFactory(
+        public DefaultRazorPageFactoryProvider(
             IRazorCompilationService razorCompilationService,
             ICompilerCacheProvider compilerCacheProvider)
         {
@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <inheritdoc />
-        public IRazorPage CreateInstance(string relativePath)
+        public RazorPageFactoryResult CreateFactory(string relativePath)
         {
             if (relativePath == null)
             {
@@ -58,18 +58,33 @@ namespace Microsoft.AspNet.Mvc.Razor
                 // For tilde slash paths, drop the leading ~ to make it work with the underlying IFileProvider.
                 relativePath = relativePath.Substring(1);
             }
-
             var result = CompilerCache.GetOrAdd(relativePath, _compileDelegate);
-
-            if (result == CompilerCacheResult.FileNotFound)
+            if (result.Success)
             {
-                return null;
+                var pageFactory = GetPageFactory(result.CompilationResult.CompiledType, relativePath);
+                return new RazorPageFactoryResult(pageFactory, result.ExpirationTokens);
             }
+            else
+            {
+                return new RazorPageFactoryResult(result.ExpirationTokens);
+            }
+        }
 
-            var page = (IRazorPage)Activator.CreateInstance(result.CompilationResult.CompiledType);
-            page.Path = relativePath;
-
-            return page;
+        /// <summary>
+        /// Creates a factory for <see cref="IRazorPage"/>.
+        /// </summary>
+        /// <param name="compiledType">The <see cref="Type"/> to produce an instance of <see cref="IRazorPage"/>
+        /// from.</param>
+        /// <param name="relativePath">The application relative path of the page.</param>
+        /// <returns>A factory for <paramref name="compiledType"/>.</returns>
+        protected virtual Func<IRazorPage> GetPageFactory(Type compiledType, string relativePath)
+        {
+            return () =>
+            {
+                var page = (IRazorPage)Activator.CreateInstance(compiledType);
+                page.Path = relativePath;
+                return page;
+            };
         }
     }
 }

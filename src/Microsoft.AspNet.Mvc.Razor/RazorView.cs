@@ -22,7 +22,6 @@ namespace Microsoft.AspNet.Mvc.Razor
     {
         private readonly IRazorViewEngine _viewEngine;
         private readonly IRazorPageActivator _pageActivator;
-        private readonly IViewStartProvider _viewStartProvider;
         private readonly HtmlEncoder _htmlEncoder;
         private IPageExecutionListenerFeature _pageExecutionFeature;
 
@@ -31,22 +30,22 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// </summary>
         /// <param name="viewEngine">The <see cref="IRazorViewEngine"/> used to locate Layout pages.</param>
         /// <param name="pageActivator">The <see cref="IRazorPageActivator"/> used to activate pages.</param>
-        /// <param name="viewStartProvider">The <see cref="IViewStartProvider"/> used for discovery of _ViewStart
+        /// <param name="viewStartPages">The sequence of <see cref="IRazorPage" /> instances executed as _ViewStarts.
+        /// </param>
         /// <param name="razorPage">The <see cref="IRazorPage"/> instance to execute.</param>
         /// <param name="htmlEncoder">The HTML encoder.</param>
         /// <param name="isPartial">Determines if the view is to be executed as a partial.</param>
-        /// pages</param>
         public RazorView(
             IRazorViewEngine viewEngine,
             IRazorPageActivator pageActivator,
-            IViewStartProvider viewStartProvider,
+            IReadOnlyList<IRazorPage> viewStartPages,
             IRazorPage razorPage,
             HtmlEncoder htmlEncoder,
             bool isPartial)
         {
             _viewEngine = viewEngine;
             _pageActivator = pageActivator;
-            _viewStartProvider = viewStartProvider;
+            ViewStartPages = viewStartPages;
             RazorPage = razorPage;
             _htmlEncoder = htmlEncoder;
             IsPartial = isPartial;
@@ -67,6 +66,12 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// Gets a value that determines if the view is executed as a partial.
         /// </summary>
         public bool IsPartial { get; }
+
+        /// <summary>
+        /// Gets the sequence of _ViewStart <see cref="IRazorPage"/> instances
+        /// that are executed by this view if <see cref="IsPartial"/> is <c>false</c>.
+        /// </summary>
+        public IReadOnlyList<IRazorPage> ViewStartPages { get; }
 
         private bool EnableInstrumentation
         {
@@ -153,14 +158,13 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private async Task RenderViewStartAsync(ViewContext context)
         {
-            var viewStarts = _viewStartProvider.GetViewStartPages(RazorPage.Path);
-
             string layout = null;
             var oldFilePath = context.ExecutingFilePath;
             try
             {
-                foreach (var viewStart in viewStarts)
+                for (var i = 0; i < ViewStartPages.Count; i++)
                 {
+                    var viewStart = ViewStartPages[i];
                     context.ExecutingFilePath = viewStart.Path;
                     // Copy the layout value from the previous view start (if any) to the current.
                     viewStart.Layout = layout;

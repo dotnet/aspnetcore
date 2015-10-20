@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Text;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNet.Mvc.Razor.Compilation
 {
@@ -56,7 +57,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
 
             foreach (var item in precompiledViews)
             {
-                var cacheEntry = new CompilerCacheResult(CompilationResult.Successful(item.Value));
+                var cacheEntry = new CompilerCacheResult(new CompilationResult(item.Value));
                 _cache.Set(GetNormalizedPath(item.Key), cacheEntry);
             }
         }
@@ -95,33 +96,29 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             string normalizedPath,
             Func<RelativeFileInfo, CompilationResult> compile)
         {
-            CompilerCacheResult cacheResult;
             var fileInfo = _fileProvider.GetFileInfo(normalizedPath);
             MemoryCacheEntryOptions cacheEntryOptions;
-            CompilerCacheResult cacheResultToCache;
+            CompilerCacheResult cacheResult;
             if (!fileInfo.Exists)
             {
-                cacheResultToCache = CompilerCacheResult.FileNotFound;
-                cacheResult = CompilerCacheResult.FileNotFound;
+                var expirationToken = _fileProvider.Watch(normalizedPath);
+                cacheResult = new CompilerCacheResult(new[] { expirationToken });
 
                 cacheEntryOptions = new MemoryCacheEntryOptions();
-                cacheEntryOptions.AddExpirationToken(_fileProvider.Watch(normalizedPath));
+                cacheEntryOptions.AddExpirationToken(expirationToken);
             }
             else
             {
                 var relativeFileInfo = new RelativeFileInfo(fileInfo, normalizedPath);
-                var compilationResult = compile(relativeFileInfo).EnsureSuccessful();
+                var compilationResult = compile(relativeFileInfo);
+                compilationResult.EnsureSuccessful();
                 cacheEntryOptions = GetMemoryCacheEntryOptions(normalizedPath);
-
-                // By default the CompilationResult returned by IRoslynCompiler is an instance of
-                // UncachedCompilationResult. This type has the generated code as a string property and do not want
-                // to cache it. We'll instead cache the unwrapped result.
-                cacheResultToCache = new CompilerCacheResult(
-                    CompilationResult.Successful(compilationResult.CompiledType));
-                cacheResult = new CompilerCacheResult(compilationResult);
+                cacheResult = new CompilerCacheResult(
+                    compilationResult,
+                    cacheEntryOptions.ExpirationTokens);
             }
 
-            _cache.Set(normalizedPath, cacheResultToCache, cacheEntryOptions);
+            _cache.Set(normalizedPath, cacheResult, cacheEntryOptions);
             return cacheResult;
         }
 

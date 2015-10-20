@@ -36,8 +36,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             var result = cache.GetOrAdd("/some/path", ThrowsIfCalled);
 
             // Assert
-            Assert.Same(CompilerCacheResult.FileNotFound, result);
-            Assert.Null(result.CompilationResult);
+            Assert.False(result.Success);
         }
 
         [Fact]
@@ -48,18 +47,14 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             fileProvider.AddFile(ViewPath, "some content");
             var cache = new CompilerCache(fileProvider);
             var type = typeof(TestView);
-            var expected = UncachedCompilationResult.Successful(type, "hello world");
+            var expected = new CompilationResult(type);
 
             // Act
             var result = cache.GetOrAdd(ViewPath, _ => expected);
 
             // Assert
-            Assert.NotSame(CompilerCacheResult.FileNotFound, result);
-            var actual = Assert.IsType<UncachedCompilationResult>(result.CompilationResult);
-            Assert.NotNull(actual);
-            Assert.Same(expected, actual);
-            Assert.Equal("hello world", actual.CompiledContent);
-            Assert.Same(type, actual.CompiledType);
+            Assert.True(result.Success);
+            Assert.Same(type, result.CompilationResult.CompiledType);
         }
 
         [Theory]
@@ -75,15 +70,13 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             fileProvider.AddFile(viewPath, "some content");
             var cache = new CompilerCache(fileProvider);
             var type = typeof(TestView);
-            var expected = UncachedCompilationResult.Successful(type, "hello world");
+            var expected = new CompilationResult(type);
 
             // Act - 1
             var result1 = cache.GetOrAdd(@"Areas\Finances\Views\Home\Index.cshtml", _ => expected);
 
             // Assert - 1
-            var compilationResult = Assert.IsType<UncachedCompilationResult>(result1.CompilationResult);
-            Assert.Same(expected, compilationResult);
-            Assert.Same(type, compilationResult.CompiledType);
+            Assert.Same(type, result1.CompilationResult.CompiledType);
 
             // Act - 2
             var result2 = cache.GetOrAdd(relativePath, ThrowsIfCalled);
@@ -93,21 +86,21 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         }
 
         [Fact]
-        public void GetOrAdd_ReturnsFileNotFoundIfFileWasDeleted()
+        public void GetOrAdd_ReturnsFailedCompilationResult_IfFileWasRemovedFromFileSystem()
         {
             // Arrange
             var fileProvider = new TestFileProvider();
             fileProvider.AddFile(ViewPath, "some content");
             var cache = new CompilerCache(fileProvider);
             var type = typeof(TestView);
-            var expected = UncachedCompilationResult.Successful(type, "hello world");
+            var expected = new CompilationResult(type);
 
             // Act 1
             var result1 = cache.GetOrAdd(ViewPath, _ => expected);
 
             // Assert 1
-            Assert.NotSame(CompilerCacheResult.FileNotFound, result1);
-            Assert.Same(expected, result1.CompilationResult);
+            Assert.True(result1.Success);
+            Assert.Same(expected.CompiledType, result1.CompilationResult.CompiledType);
 
             // Act 2
             // Delete the file from the file system and set it's expiration token.
@@ -116,8 +109,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             var result2 = cache.GetOrAdd(ViewPath, ThrowsIfCalled);
 
             // Assert 2
-            Assert.Same(CompilerCacheResult.FileNotFound, result2);
-            Assert.Null(result2.CompilationResult);
+            Assert.False(result2.Success);
         }
 
         [Fact]
@@ -127,22 +119,22 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             var fileProvider = new TestFileProvider();
             fileProvider.AddFile(ViewPath, "some content");
             var cache = new CompilerCache(fileProvider);
-            var expected1 = UncachedCompilationResult.Successful(typeof(TestView), "hello world");
-            var expected2 = UncachedCompilationResult.Successful(typeof(DifferentView), "different content");
+            var expected1 = new CompilationResult(typeof(TestView));
+            var expected2 = new CompilationResult(typeof(DifferentView));
 
             // Act 1
             var result1 = cache.GetOrAdd(ViewPath, _ => expected1);
 
             // Assert 1
-            Assert.NotSame(CompilerCacheResult.FileNotFound, result1);
-            Assert.Same(expected1, result1.CompilationResult);
+            Assert.True(result1.Success);
+            Assert.Same(typeof(TestView), result1.CompilationResult.CompiledType);
 
             // Act 2
             // Verify we're getting cached results.
             var result2 = cache.GetOrAdd(ViewPath, ThrowsIfCalled);
 
             // Assert 2
-            Assert.NotSame(CompilerCacheResult.FileNotFound, result2);
+            Assert.True(result2.Success);
             Assert.Same(expected1.CompiledType, result2.CompilationResult.CompiledType);
 
             // Act 3
@@ -150,8 +142,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             var result3 = cache.GetOrAdd(ViewPath, _ => expected2);
 
             // Assert 3
-            Assert.NotSame(CompilerCacheResult.FileNotFound, result3);
-            Assert.Same(expected2, result3.CompilationResult);
+            Assert.True(result3.Success);
+            Assert.Same(expected2.CompiledType, result3.CompilationResult.CompiledType);
         }
 
         [Theory]
@@ -162,22 +154,22 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             var fileProvider = new TestFileProvider();
             fileProvider.AddFile(ViewPath, "some content");
             var cache = new CompilerCache(fileProvider);
-            var expected1 = UncachedCompilationResult.Successful(typeof(TestView), "hello world");
-            var expected2 = UncachedCompilationResult.Successful(typeof(DifferentView), "different content");
+            var expected1 = new CompilationResult(typeof(TestView));
+            var expected2 = new CompilationResult(typeof(DifferentView));
 
             // Act 1
             var result1 = cache.GetOrAdd(ViewPath, _ => expected1);
 
             // Assert 1
-            Assert.NotSame(CompilerCacheResult.FileNotFound, result1);
-            Assert.Same(expected1, result1.CompilationResult);
+            Assert.True(result1.Success);
+            Assert.Same(expected1.CompiledType, result1.CompilationResult.CompiledType);
 
             // Act 2
             // Verify we're getting cached results.
             var result2 = cache.GetOrAdd(ViewPath, ThrowsIfCalled);
 
             // Assert 2
-            Assert.NotSame(CompilerCacheResult.FileNotFound, result2);
+            Assert.True(result2.Success);
             Assert.Same(expected1.CompiledType, result2.CompilationResult.CompiledType);
 
             // Act 3
@@ -185,8 +177,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             var result3 = cache.GetOrAdd(ViewPath, _ => expected2);
 
             // Assert 2
-            Assert.NotSame(CompilerCacheResult.FileNotFound, result3);
-            Assert.Same(expected2, result3.CompilationResult);
+            Assert.True(result3.Success);
+            Assert.Same(expected2.CompiledType, result3.CompilationResult.CompiledType);
         }
 
         [Fact]
@@ -198,21 +190,20 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             fileProvider.AddFile(ViewPath, "some content");
             var cache = new CompilerCache(fileProvider);
             var type = typeof(TestView);
-            var expected = UncachedCompilationResult.Successful(type, "hello world");
+            var expected = new CompilationResult(type);
 
             // Act 1
             var result1 = cache.GetOrAdd(ViewPath, _ => expected);
 
             // Assert 1
-            Assert.NotSame(CompilerCacheResult.FileNotFound, result1);
-            Assert.Same(expected, result1.CompilationResult);
+            Assert.True(result1.Success);
+            Assert.Same(type, result1.CompilationResult.CompiledType);
 
             // Act 2
             var result2 = cache.GetOrAdd(ViewPath, ThrowsIfCalled);
 
             // Assert 2
-            Assert.NotSame(CompilerCacheResult.FileNotFound, result2);
-            Assert.IsType<CompilationResult>(result2.CompilationResult);
+            Assert.True(result2.Success);
             Assert.Same(type, result2.CompilationResult.CompiledType);
             mockFileProvider.Verify(v => v.GetFileInfo(ViewPath), Times.Once());
         }
@@ -228,7 +219,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             var result = cache.GetOrAdd(PrecompiledViewsPath, ThrowsIfCalled);
 
             // Assert
-            Assert.NotSame(CompilerCacheResult.FileNotFound, result);
+            Assert.True(result.Success);
             Assert.Same(typeof(PreCompile), result.CompilationResult.CompiledType);
         }
 
@@ -245,7 +236,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             var result = cache.GetOrAdd(PrecompiledViewsPath, ThrowsIfCalled);
 
             // Assert
-            Assert.NotSame(CompilerCacheResult.FileNotFound, result);
+            Assert.True(result.Success);
             Assert.Same(typeof(PreCompile), result.CompilationResult.CompiledType);
         }
 
@@ -263,7 +254,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             var result = cache.GetOrAdd(PrecompiledViewsPath, ThrowsIfCalled);
 
             // Assert
-            Assert.NotSame(CompilerCacheResult.FileNotFound, result);
+            Assert.True(result.Success);
             Assert.Same(typeof(PreCompile), result.CompilationResult.CompiledType);
         }
 
@@ -274,26 +265,26 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             var fileProvider = new TestFileProvider();
             fileProvider.AddFile(ViewPath, "some content");
             var cache = new CompilerCache(fileProvider, _precompiledViews);
-            var expected = CompilationResult.Successful(typeof(TestView));
+            var expected = new CompilationResult(typeof(TestView));
 
             // Act 1
             var result1 = cache.GetOrAdd(ViewPath, _ => expected);
 
             // Assert 1
-            Assert.Same(expected, result1.CompilationResult);
+            Assert.Same(typeof(TestView), result1.CompilationResult.CompiledType);
 
             // Act 2
             var result2 = cache.GetOrAdd(ViewPath, ThrowsIfCalled);
 
             // Assert 2
-            Assert.NotSame(CompilerCacheResult.FileNotFound, result2);
+            Assert.True(result2.Success);
             Assert.Same(typeof(TestView), result2.CompilationResult.CompiledType);
 
             // Act 3
             var result3 = cache.GetOrAdd(PrecompiledViewsPath, ThrowsIfCalled);
 
             // Assert 3
-            Assert.NotSame(CompilerCacheResult.FileNotFound, result2);
+            Assert.True(result2.Success);
             Assert.Same(typeof(PreCompile), result3.CompilationResult.CompiledType);
         }
 

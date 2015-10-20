@@ -131,8 +131,6 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.TryAddSingleton<IRazorViewEngine, RazorViewEngine>();
 
-            // Caches view locations that are valid for the lifetime of the application.
-            services.TryAddSingleton<IViewLocationCache, DefaultViewLocationCache>();
             services.TryAdd(ServiceDescriptor.Singleton<IChunkTreeCache>(serviceProvider =>
             {
                 var cachedFileProvider = serviceProvider.GetRequiredService<IOptions<RazorViewEngineOptions>>();
@@ -147,10 +145,8 @@ namespace Microsoft.Extensions.DependencyInjection
 
             // In the default scenario the following services are singleton by virtue of being initialized as part of
             // creating the singleton RazorViewEngine instance.
-            services.TryAddTransient<IRazorViewFactory, RazorViewFactory>();
-            services.TryAddTransient<IRazorPageFactory, VirtualPathRazorPageFactory>();
+            services.TryAddTransient<IRazorPageFactoryProvider, DefaultRazorPageFactoryProvider>();
             services.TryAddTransient<IRazorCompilationService, RazorCompilationService>();
-            services.TryAddTransient<IViewStartProvider, ViewStartProvider>();
             services.TryAddTransient<IMvcRazorHost, MvcRazorHost>();
 
             // This caches Razor page activation details that are valid for the lifetime of the application.

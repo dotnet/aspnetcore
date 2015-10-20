@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
 
             var compiler = new Mock<ICompilationService>();
             compiler.Setup(c => c.Compile(relativeFileInfo, It.IsAny<string>()))
-                    .Returns(CompilationResult.Successful(typeof(RazorCompilationServiceTest)));
+                    .Returns(new CompilationResult(typeof(RazorCompilationServiceTest)));
 
             var razorService = new RazorCompilationService(compiler.Object, host.Object, GetOptions());
 
@@ -106,7 +106,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                     .Returns(Stream.Null);
             var relativeFileInfo = new RelativeFileInfo(fileInfo.Object, @"Views\index\home.cshtml");
 
-            var compilationResult = CompilationResult.Successful(typeof(object));
+            var compilationResult = new CompilationResult(typeof(object));
             var compiler = new Mock<ICompilationService>();
             compiler.Setup(c => c.Compile(relativeFileInfo, code))
                     .Returns(compilationResult)
@@ -117,7 +117,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             var result = razorService.Compile(relativeFileInfo);
 
             // Assert
-            Assert.Same(compilationResult, result);
+            Assert.Same(compilationResult.CompiledType, result.CompiledType);
             compiler.Verify();
         }
 

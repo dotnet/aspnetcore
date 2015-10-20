@@ -6,13 +6,13 @@ namespace Microsoft.AspNet.Mvc.Razor
     /// <summary>
     /// Defines methods that are used for creating <see cref="IRazorPage"/> instances at a given path.
     /// </summary>
-    public interface IRazorPageFactory
+    public interface IRazorPageFactoryProvider
     {
         /// <summary>
-        /// Creates a <see cref="IRazorPage"/> for the specified path.
+        /// Creates a <see cref="IRazorPage"/> factory for the specified path.
         /// </summary>
         /// <param name="relativePath">The path to locate the page.</param>
-        /// <returns>The IRazorPage instance if it exists, null otherwise.</returns>
-        IRazorPage CreateInstance(string relativePath);
+        /// <returns>The <see cref="RazorPageFactoryResult"/> instance.</returns>
+        RazorPageFactoryResult CreateFactory(string relativePath);
     }
 }

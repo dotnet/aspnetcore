@@ -146,8 +146,9 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
                 return null;
             }
 
-            return GeneratePrecompiledAssembly(syntaxTrees.Where(tree => tree != null),
-                                               razorFiles.Where(file => file != null));
+            return GeneratePrecompiledAssembly(
+                syntaxTrees.Where(tree => tree != null),
+                razorFiles.Where(file => file != null));
         }
 
         protected virtual RazorFileInfoCollection GeneratePrecompiledAssembly(
@@ -174,13 +175,15 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
             var references = CompileContext.Compilation.References
                                                              .Concat(new[] { applicationReference });
 
-            var preCompilationOptions = CompilationSettings.CompilationOptions
-                                                           .WithOutputKind(OutputKind.DynamicallyLinkedLibrary);
+            var preCompilationOptions = CompilationSettings
+                .CompilationOptions
+                .WithOutputKind(OutputKind.DynamicallyLinkedLibrary);
 
-            var compilation = CSharpCompilation.Create(assemblyResourceName,
-                                                       options: preCompilationOptions,
-                                                       syntaxTrees: syntaxTrees,
-                                                       references: references);
+            var compilation = CSharpCompilation.Create(
+                assemblyResourceName,
+                options: preCompilationOptions,
+                syntaxTrees: syntaxTrees,
+                references: references);
 
             var generateSymbols = GenerateSymbols && SymbolsUtility.SupportsSymbolsGeneration();
             // These streams are returned to the runtime and consequently cannot be disposed.
@@ -279,9 +282,10 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
 
                 if (results.Success)
                 {
-                    var syntaxTree = SyntaxTreeGenerator.Generate(results.GeneratedCode,
-                                                                  fileInfo.FileInfo.PhysicalPath,
-                                                                  CompilationSettings);
+                    var syntaxTree = SyntaxTreeGenerator.Generate(
+                        results.GeneratedCode,
+                        fileInfo.FileInfo.PhysicalPath,
+                        CompilationSettings);
                     var fullTypeName = results.GetMainClassName(host, syntaxTree);
 
                     if (fullTypeName != null)
@@ -297,9 +301,10 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
                 }
                 else
                 {
-                    var diagnostics = results.ParserErrors
-                                             .Select(error => error.ToDiagnostics(fileInfo.FileInfo.PhysicalPath))
-                                             .ToList();
+                    var diagnostics = results
+                        .ParserErrors
+                        .Select(error => error.ToDiagnostics(fileInfo.FileInfo.PhysicalPath))
+                        .ToList();
 
                     return new PrecompilationCacheEntry(diagnostics);
                 }

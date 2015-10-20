@@ -149,7 +149,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                     var type = assembly.GetExportedTypes()
                                        .First(t => t.Name.StartsWith(_classPrefix, StringComparison.Ordinal));
 
-                    return UncachedCompilationResult.Successful(type, compilationContent);
+                    return new CompilationResult(type);
                 }
             }
         }
@@ -214,7 +214,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                 failures.Add(compilationFailure);
             }
 
-            return CompilationResult.Failed(failures);
+            return new CompilationResult(failures);
         }
 
         private static string GetFilePath(string relativePath, Diagnostic diagnostic)
