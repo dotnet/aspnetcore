@@ -8,25 +8,31 @@ using System.Net.WebSockets;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Internal;
 
 namespace Microsoft.AspNet.TestHost
 {
     public class WebSocketClient
     {
-        private readonly Func<IFeatureCollection, Task> _next;
+        private readonly RequestDelegate _next;
         private readonly PathString _pathBase;
+        private readonly IHttpContextFactory _httpContextFactory;
 
-        internal WebSocketClient(Func<IFeatureCollection, Task> next, PathString pathBase)
+        internal WebSocketClient(RequestDelegate next, PathString pathBase, IHttpContextFactory httpContextFactory)
         {
             if (next == null)
             {
                 throw new ArgumentNullException(nameof(next));
             }
+            if (httpContextFactory == null)
+            {
+                throw new ArgumentNullException(nameof(httpContextFactory));
+            }
 
             _next = next;
+            _httpContextFactory = httpContextFactory;
 
             // PathString.StartsWithSegments that we use below requires the base path to not end in a slash.
             if (pathBase.HasValue && pathBase.Value.EndsWith("/"))
@@ -52,7 +58,7 @@ namespace Microsoft.AspNet.TestHost
 
         public async Task<WebSocket> ConnectAsync(Uri uri, CancellationToken cancellationToken)
         {
-            var state = new RequestState(uri, _pathBase, cancellationToken);
+            var state = new RequestState(uri, _pathBase, cancellationToken, _httpContextFactory);
 
             if (ConfigureRequest != null)
             {
@@ -64,7 +70,7 @@ namespace Microsoft.AspNet.TestHost
             {
                 try
                 {
-                    await _next(state.FeatureCollection);
+                    await _next(state.HttpContext);
                     state.PipelineComplete();
                 }
                 catch (Exception ex)
@@ -84,18 +90,18 @@ namespace Microsoft.AspNet.TestHost
         {
             private TaskCompletionSource<WebSocket> _clientWebSocketTcs;
             private WebSocket _serverWebSocket;
+            private IHttpContextFactory _factory;
 
-            public IFeatureCollection FeatureCollection { get; private set; }
             public HttpContext HttpContext { get; private set; }
             public Task<WebSocket> WebSocketTask { get { return _clientWebSocketTcs.Task; } }
 
-            public RequestState(Uri uri, PathString pathBase, CancellationToken cancellationToken)
+            public RequestState(Uri uri, PathString pathBase, CancellationToken cancellationToken, IHttpContextFactory factory)
             {
+                _factory = factory;
                 _clientWebSocketTcs = new TaskCompletionSource<WebSocket>();
 
                 // HttpContext
-                FeatureCollection = new FeatureCollection();
-                HttpContext = new DefaultHttpContext(FeatureCollection);
+                HttpContext = _factory.Create(new FeatureCollection());
 
                 // Request
                 HttpContext.Features.Set<IHttpRequestFeature>(new RequestFeature());
@@ -147,6 +153,10 @@ namespace Microsoft.AspNet.TestHost
 
             public void Dispose()
             {
+                if (HttpContext != null)
+                {
+                    _factory.Dispose(HttpContext);
+                }
                 if (_serverWebSocket != null)
                 {
                     _serverWebSocket.Dispose();

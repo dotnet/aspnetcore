@@ -1,13 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Hosting.Fakes;
 using Microsoft.AspNet.Hosting.Internal;
 using Microsoft.AspNet.Hosting.Server;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.Extensions.Configuration;
@@ -42,11 +42,11 @@ namespace Microsoft.AspNet.Hosting
         public async Task StartupMissing_Fallback()
         {
             var builder = CreateWebHostBuilder();
-            var serverFactory = new TestServerFactory();
-            var engine = builder.UseServer(serverFactory).UseStartup("MissingStartupAssembly").Build();
+            var server = new TestServer();
+            var engine = builder.UseServer(server).UseStartup("MissingStartupAssembly").Build();
             using (engine.Start())
             {
-                await AssertResponseContains(serverFactory.Application, "MissingStartupAssembly");
+                await AssertResponseContains(server.RequestDelegate, "MissingStartupAssembly");
             }
         }
 
@@ -54,11 +54,11 @@ namespace Microsoft.AspNet.Hosting
         public async Task StartupStaticCtorThrows_Fallback()
         {
             var builder = CreateWebHostBuilder();
-            var serverFactory = new TestServerFactory();
-            var engine = builder.UseServer(serverFactory).UseStartup<StartupStaticCtorThrows>().Build();
+            var server = new TestServer();
+            var engine = builder.UseServer(server).UseStartup<StartupStaticCtorThrows>().Build();
             using (engine.Start())
             {
-                await AssertResponseContains(serverFactory.Application, "Exception from static constructor");
+                await AssertResponseContains(server.RequestDelegate, "Exception from static constructor");
             }
         }
 
@@ -66,11 +66,11 @@ namespace Microsoft.AspNet.Hosting
         public async Task StartupCtorThrows_Fallback()
         {
             var builder = CreateWebHostBuilder();
-            var serverFactory = new TestServerFactory();
-            var engine = builder.UseServer(serverFactory).UseStartup<StartupCtorThrows>().Build();
+            var server = new TestServer();
+            var engine = builder.UseServer(server).UseStartup<StartupCtorThrows>().Build();
             using (engine.Start())
             {
-                await AssertResponseContains(serverFactory.Application, "Exception from constructor");
+                await AssertResponseContains(server.RequestDelegate, "Exception from constructor");
             }
         }
 
@@ -78,11 +78,11 @@ namespace Microsoft.AspNet.Hosting
         public async Task StartupCtorThrows_TypeLoadException()
         {
             var builder = CreateWebHostBuilder();
-            var serverFactory = new TestServerFactory();
-            var engine = builder.UseServer(serverFactory).UseStartup<StartupThrowTypeLoadException>().Build();
+            var server = new TestServer();
+            var engine = builder.UseServer(server).UseStartup<StartupThrowTypeLoadException>().Build();
             using (engine.Start())
             {
-                await AssertResponseContains(serverFactory.Application, "Message from the LoaderException</span>");
+                await AssertResponseContains(server.RequestDelegate, "Message from the LoaderException</span>");
             }
         }
 
@@ -90,13 +90,13 @@ namespace Microsoft.AspNet.Hosting
         public async Task IApplicationLifetimeRegisteredEvenWhenStartupCtorThrows_Fallback()
         {
             var builder = CreateWebHostBuilder();
-            var serverFactory = new TestServerFactory();
-            var engine = builder.UseServer(serverFactory).UseStartup<StartupCtorThrows>().Build();
+            var server = new TestServer();
+            var engine = builder.UseServer(server).UseStartup<StartupCtorThrows>().Build();
             using (engine.Start())
             {
-                var service = engine.ApplicationServices.GetService<IApplicationLifetime>();
+                var service = engine.ApplicationServices.GetServices<IApplicationLifetime>();
                 Assert.NotNull(service);
-                await AssertResponseContains(serverFactory.Application, "Exception from constructor");
+                await AssertResponseContains(server.RequestDelegate, "Exception from constructor");
             }
         }
 
@@ -104,11 +104,11 @@ namespace Microsoft.AspNet.Hosting
         public async Task StartupConfigureServicesThrows_Fallback()
         {
             var builder = CreateWebHostBuilder();
-            var serverFactory = new TestServerFactory();
-            var engine = builder.UseServer(serverFactory).UseStartup<StartupConfigureServicesThrows>().Build();
+            var server = new TestServer();
+            var engine = builder.UseServer(server).UseStartup<StartupConfigureServicesThrows>().Build();
             using (engine.Start())
             {
-                await AssertResponseContains(serverFactory.Application, "Exception from ConfigureServices");
+                await AssertResponseContains(server.RequestDelegate, "Exception from ConfigureServices");
             }
         }
 
@@ -116,11 +116,11 @@ namespace Microsoft.AspNet.Hosting
         public async Task StartupConfigureThrows_Fallback()
         {
             var builder = CreateWebHostBuilder();
-            var serverFactory = new TestServerFactory();
-            var engine = builder.UseServer(serverFactory).UseStartup<StartupConfigureServicesThrows>().Build();
+            var server = new TestServer();
+            var engine = builder.UseServer(server).UseStartup<StartupConfigureServicesThrows>().Build();
             using (engine.Start())
             {
-                await AssertResponseContains(serverFactory.Application, "Exception from Configure");
+                await AssertResponseContains(server.RequestDelegate, "Exception from Configure");
             }
         }
 
@@ -137,36 +137,29 @@ namespace Microsoft.AspNet.Hosting
             return new WebHostBuilder(config, captureStartupErrors: true);
         }
 
-        private async Task AssertResponseContains(Func<IFeatureCollection, Task> app, string expectedText)
+        private async Task AssertResponseContains(RequestDelegate app, string expectedText)
         {
             var httpContext = new DefaultHttpContext();
             httpContext.Response.Body = new MemoryStream();
-            await app(httpContext.Features);
+            await app(httpContext);
             httpContext.Response.Body.Seek(0, SeekOrigin.Begin);
             var bodyText = new StreamReader(httpContext.Response.Body).ReadToEnd();
             Assert.Contains(expectedText, bodyText);
         }
 
-        private class TestServerFactory : IServerFactory
+        private class TestServer : IServer
         {
-            public Func<IFeatureCollection, Task> Application { get; set; }
+            IFeatureCollection IServer.Features { get; }
+            public RequestDelegate RequestDelegate { get; private set; }
 
-            public IFeatureCollection Initialize(IConfiguration configuration)
+            public void Dispose()
             {
-                return new FeatureCollection();
+
             }
 
-            public IDisposable Start(IFeatureCollection serverFeatures, Func<IFeatureCollection, Task> application)
+            public void Start(RequestDelegate requestDelegate)
             {
-                Application = application;
-                return new Disposable();
-            }
-
-            private class Disposable : IDisposable
-            {
-                public void Dispose()
-                {
-                }
+                RequestDelegate = requestDelegate;
             }
         }
     }

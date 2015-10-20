@@ -42,6 +42,7 @@ namespace Microsoft.AspNet.Hosting
         // Only one of these should be set
         private string _serverFactoryLocation;
         private IServerFactory _serverFactory;
+        private IServer _server;
 
         public WebHostBuilder()
             : this(config: new ConfigurationBuilder().Build())
@@ -133,6 +134,7 @@ namespace Microsoft.AspNet.Hosting
             var engine = new HostingEngine(hostingServices, startupLoader, _config, _captureStartupErrors);
 
             // Only one of these should be set, but they are used in priority
+            engine.Server = _server;
             engine.ServerFactory = _serverFactory;
             engine.ServerFactoryLocation = _config[ServerKey] ?? _config[OldServerKey] ?? _serverFactoryLocation;
 
@@ -161,7 +163,18 @@ namespace Microsoft.AspNet.Hosting
             return this;
         }
 
-        public WebHostBuilder UseServer(string assemblyName)
+        public WebHostBuilder UseServer(IServer server)
+        {
+            if (server == null)
+            {
+                throw new ArgumentNullException(nameof(server));
+            }
+
+            _server = server;
+            return this;
+        }
+
+        public WebHostBuilder UseServerFactory(string assemblyName)
         {
             if (assemblyName == null)
             {
@@ -172,8 +185,13 @@ namespace Microsoft.AspNet.Hosting
             return this;
         }
 
-        public WebHostBuilder UseServer(IServerFactory factory)
+        public WebHostBuilder UseServerFactory(IServerFactory factory)
         {
+            if (factory == null)
+            {
+                throw new ArgumentNullException(nameof(factory));
+            }
+
             _serverFactory = factory;
             return this;
         }

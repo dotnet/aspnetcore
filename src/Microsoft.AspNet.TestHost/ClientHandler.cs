@@ -23,21 +23,27 @@ namespace Microsoft.AspNet.TestHost
     /// </summary>
     public class ClientHandler : HttpMessageHandler
     {
-        private readonly Func<IFeatureCollection, Task> _next;
+        private readonly RequestDelegate _next;
         private readonly PathString _pathBase;
+        private readonly IHttpContextFactory _factory;
 
         /// <summary>
         /// Create a new handler.
         /// </summary>
         /// <param name="next">The pipeline entry point.</param>
-        public ClientHandler(Func<IFeatureCollection, Task> next, PathString pathBase)
+        public ClientHandler(RequestDelegate next, PathString pathBase, IHttpContextFactory httpContextFactory)
         {
             if (next == null)
             {
                 throw new ArgumentNullException(nameof(next));
             }
+            if (httpContextFactory == null)
+            {
+                throw new ArgumentNullException(nameof(httpContextFactory));
+            }
 
             _next = next;
+            _factory = httpContextFactory;
 
             // PathString.StartsWithSegments that we use below requires the base path to not end in a slash.
             if (pathBase.HasValue && pathBase.Value.EndsWith("/"))
@@ -63,7 +69,7 @@ namespace Microsoft.AspNet.TestHost
                 throw new ArgumentNullException(nameof(request));
             }
 
-            var state = new RequestState(request, _pathBase);
+            var state = new RequestState(request, _pathBase, _factory);
             var requestContent = request.Content ?? new StreamContent(Stream.Null);
             var body = await requestContent.ReadAsStreamAsync();
             if (body.CanSeek)
@@ -79,7 +85,7 @@ namespace Microsoft.AspNet.TestHost
                 {
                     try
                     {
-                        await _next(state.HttpContext.Features);
+                        await _next(state.HttpContext);
                         state.CompleteResponse();
                     }
                     catch (Exception ex)
@@ -88,6 +94,7 @@ namespace Microsoft.AspNet.TestHost
                     }
                     finally
                     {
+                        state.ServerCleanup();
                         registration.Dispose();
                     }
                 });
@@ -102,14 +109,16 @@ namespace Microsoft.AspNet.TestHost
             private ResponseStream _responseStream;
             private ResponseFeature _responseFeature;
             private CancellationTokenSource _requestAbortedSource;
+            private IHttpContextFactory _factory;
             private bool _pipelineFinished;
 
-            internal RequestState(HttpRequestMessage request, PathString pathBase)
+            internal RequestState(HttpRequestMessage request, PathString pathBase, IHttpContextFactory factory)
             {
                 _request = request;
                 _responseTcs = new TaskCompletionSource<HttpResponseMessage>();
                 _requestAbortedSource = new CancellationTokenSource();
                 _pipelineFinished = false;
+                _factory = factory;
 
                 if (request.RequestUri.IsDefaultPort)
                 {
@@ -120,7 +129,8 @@ namespace Microsoft.AspNet.TestHost
                     request.Headers.Host = request.RequestUri.GetComponents(UriComponents.HostAndPort, UriFormat.UriEscaped);
                 }
 
-                HttpContext = new DefaultHttpContext();
+                HttpContext = _factory.Create(new FeatureCollection());
+                
                 HttpContext.Features.Set<IHttpRequestFeature>(new RequestFeature());
                 _responseFeature = new ResponseFeature();
                 HttpContext.Features.Set<IHttpResponseFeature>(_responseFeature);
@@ -227,6 +237,14 @@ namespace Microsoft.AspNet.TestHost
                 _pipelineFinished = true;
                 _responseStream.Abort(exception);
                 _responseTcs.TrySetException(exception);
+            }
+
+            internal void ServerCleanup()
+            {
+                if (HttpContext != null)
+                {
+                    _factory.Dispose(HttpContext);
+                }
             }
         }
     }

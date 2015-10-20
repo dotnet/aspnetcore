@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Hosting.Internal
         // Only one of these should be set
         internal IServerFactory ServerFactory { get; set; }
         internal string ServerFactoryLocation { get; set; }
-        private IFeatureCollection _serverFeatures;
+        internal IServer Server { get; set; }
 
         public HostingEngine(
             IServiceCollection appServices,
@@ -87,15 +87,13 @@ namespace Microsoft.AspNet.Hosting.Internal
             var application = BuildApplication();
 
             var logger = _applicationServices.GetRequiredService<ILogger<HostingEngine>>();
-            var contextFactory = _applicationServices.GetRequiredService<IHttpContextFactory>();
             var diagnosticSource = _applicationServices.GetRequiredService<DiagnosticSource>();
 
             logger.Starting();
 
-            var server = ServerFactory.Start(_serverFeatures,
-                async features =>
+            Server.Start(
+                async httpContext =>
                 {
-                    var httpContext = contextFactory.Create(features);
                     httpContext.ApplicationServices = _applicationServices;
 
                     if (diagnosticSource.IsEnabled("Microsoft.AspNet.Hosting.BeginRequest"))
@@ -135,11 +133,11 @@ namespace Microsoft.AspNet.Hosting.Internal
             _applicationLifetime.NotifyStarted();
             logger.Started();
 
-            return new Application(ApplicationServices, _serverFeatures, new Disposable(() =>
+            return new Application(ApplicationServices, Server.Features, new Disposable(() =>
             {
                 logger.Shutdown();
                 _applicationLifetime.StopApplication();
-                server.Dispose();
+                Server.Dispose();
                 _applicationLifetime.NotifyStopped();
                 (_applicationServices as IDisposable)?.Dispose();
             }));
@@ -191,7 +189,7 @@ namespace Microsoft.AspNet.Hosting.Internal
                 EnsureServer();
 
                 var builderFactory = _applicationServices.GetRequiredService<IApplicationBuilderFactory>();
-                var builder = builderFactory.CreateBuilder(_serverFeatures);
+                var builder = builderFactory.CreateBuilder(Server.Features);
                 builder.ApplicationServices = _applicationServices;
 
                 var startupFilters = _applicationServices.GetService<IEnumerable<IStartupFilter>>();
@@ -246,21 +244,21 @@ namespace Microsoft.AspNet.Hosting.Internal
 
         private void EnsureServer()
         {
-            if (ServerFactory == null)
+            if (Server == null)
             {
-                // Blow up if we don't have a server set at this point
-                if (ServerFactoryLocation == null)
+                if (ServerFactory == null)
                 {
-                    throw new InvalidOperationException("IHostingBuilder.UseServer() is required for " + nameof(Start) + "()");
+                    // Blow up if we don't have a server set at this point
+                    if (ServerFactoryLocation == null)
+                    {
+                        throw new InvalidOperationException("IHostingBuilder.UseServer() is required for " + nameof(Start) + "()");
+                    }
+
+                    ServerFactory = _applicationServices.GetRequiredService<IServerLoader>().LoadServerFactory(ServerFactoryLocation);
                 }
 
-                ServerFactory = _applicationServices.GetRequiredService<IServerLoader>().LoadServerFactory(ServerFactoryLocation);
-            }
-
-            if (_serverFeatures == null)
-            {
-                _serverFeatures = ServerFactory.Initialize(_config);
-                var addresses = _serverFeatures?.Get<IServerAddressesFeature>()?.Addresses;
+                Server = ServerFactory.CreateServer(_config);
+                var addresses = Server.Features?.Get<IServerAddressesFeature>()?.Addresses;
                 if (addresses != null && !addresses.IsReadOnly)
                 {
                     var port = _config[ServerPort];

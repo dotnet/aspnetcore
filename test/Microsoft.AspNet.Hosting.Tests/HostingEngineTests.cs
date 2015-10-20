@@ -14,6 +14,7 @@ using Microsoft.AspNet.Hosting.Server;
 using Microsoft.AspNet.Hosting.Startup;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
+using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Server.Features;
 using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Extensions.Configuration;
@@ -26,10 +27,33 @@ using Xunit;
 
 namespace Microsoft.AspNet.Hosting
 {
-    public class HostingEngineTests : IServerFactory
+    public class HostingEngineTests : IServerFactory, IServer
     {
         private readonly IList<StartInstance> _startInstances = new List<StartInstance>();
         private IFeatureCollection _featuresSupportedByThisHost = NewFeatureCollection();
+        private IFeatureCollection _instanceFeaturesSupportedByThisHost;
+
+        public IFeatureCollection Features {
+            get
+            {
+                var features = new FeatureCollection();
+
+                foreach (var feature in _featuresSupportedByThisHost)
+                {
+                    features[feature.Key] = feature.Value;
+                }
+
+                if (_instanceFeaturesSupportedByThisHost != null)
+                {
+                    foreach (var feature in _instanceFeaturesSupportedByThisHost)
+                    {
+                        features[feature.Key] = feature.Value;
+                    }
+                }
+
+                return features;
+            }
+        }
 
         static IFeatureCollection NewFeatureCollection()
         {
@@ -431,26 +455,36 @@ namespace Microsoft.AspNet.Hosting
             return new WebHostBuilder(config ?? new ConfigurationBuilder().Build());
         }
 
-        public IFeatureCollection Initialize(IConfiguration configuration)
+        public void Start(RequestDelegate requestDelegate)
         {
-            var features = new FeatureCollection();
-            features.Set<IServerAddressesFeature>(new ServerAddressesFeature());
-            return features;
-        }
-
-        public IDisposable Start(IFeatureCollection serverFeatures, Func<IFeatureCollection, Task> application)
-        {
-            var startInstance = new StartInstance(application);
+            var startInstance = new StartInstance(requestDelegate);
             _startInstances.Add(startInstance);
-            application(_featuresSupportedByThisHost);
-            return startInstance;
+            requestDelegate(new DefaultHttpContext(Features));
         }
 
-        public class StartInstance : IDisposable
+        public void Dispose()
         {
-            private readonly Func<IFeatureCollection, Task> _application;
+            if (_startInstances != null)
+            {
+                foreach (var startInstance in _startInstances)
+                {
+                    startInstance.Dispose();
+                }
+            }
+        }
 
-            public StartInstance(Func<IFeatureCollection, Task> application)
+        public IServer CreateServer(IConfiguration configuration)
+        {
+            _instanceFeaturesSupportedByThisHost = new FeatureCollection();
+            _instanceFeaturesSupportedByThisHost.Set<IServerAddressesFeature>(new ServerAddressesFeature());
+            return this;
+        }
+
+        private class StartInstance : IDisposable
+        {
+            private readonly RequestDelegate _application;
+
+            public StartInstance(RequestDelegate application)
             {
                 _application = application;
             }

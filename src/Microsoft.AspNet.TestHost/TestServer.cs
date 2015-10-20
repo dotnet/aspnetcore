@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -14,21 +14,25 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNet.TestHost
 {
-    public class TestServer : IServerFactory, IDisposable
+    public class TestServer : IServer
     {
         private const string DefaultEnvironmentName = "Development";
         private const string ServerName = nameof(TestServer);
-        private static readonly IFeatureCollection ServerInfo = new FeatureCollection();
-        private Func<IFeatureCollection, Task> _appDelegate;
+        private RequestDelegate _appDelegate;
         private IDisposable _appInstance;
         private bool _disposed = false;
+        private IHttpContextFactory _httpContextFactory;
 
         public TestServer(WebHostBuilder builder)
         {
-            _appInstance = builder.UseServer(this).Build().Start();
+            var hostingEngine = builder.UseServer(this).Build();
+            _httpContextFactory = hostingEngine.ApplicationServices.GetService<IHttpContextFactory>();
+            _appInstance = hostingEngine.Start();
         }
 
         public Uri BaseAddress { get; set; } = new Uri("http://localhost/");
+
+        IFeatureCollection IServer.Features { get; }
 
         public static TestServer Create()
         {
@@ -95,7 +99,7 @@ namespace Microsoft.AspNet.TestHost
         public HttpMessageHandler CreateHandler()
         {
             var pathBase = BaseAddress == null ? PathString.Empty : PathString.FromUriComponent(BaseAddress);
-            return new ClientHandler(Invoke, pathBase);
+            return new ClientHandler(Invoke, pathBase, _httpContextFactory);
         }
 
         public HttpClient CreateClient()
@@ -106,7 +110,7 @@ namespace Microsoft.AspNet.TestHost
         public WebSocketClient CreateWebSocketClient()
         {
             var pathBase = BaseAddress == null ? PathString.Empty : PathString.FromUriComponent(BaseAddress);
-            return new WebSocketClient(Invoke, pathBase);
+            return new WebSocketClient(Invoke, pathBase, _httpContextFactory);
         }
 
         /// <summary>
@@ -119,31 +123,24 @@ namespace Microsoft.AspNet.TestHost
             return new RequestBuilder(this, path);
         }
 
-        public IFeatureCollection Initialize(IConfiguration configuration)
-        {
-            return ServerInfo;
-        }
-
-        public IDisposable Start(IFeatureCollection serverInformation, Func<IFeatureCollection, Task> application)
-        {
-            _appDelegate = application;
-
-            return this;
-        }
-
-        public Task Invoke(IFeatureCollection featureCollection)
+        public Task Invoke(HttpContext context)
         {
             if (_disposed)
             {
                 throw new ObjectDisposedException(GetType().FullName);
             }
-            return _appDelegate(featureCollection);
+            return _appDelegate(context);
         }
 
         public void Dispose()
         {
             _disposed = true;
             _appInstance.Dispose();
+        }
+
+        void IServer.Start(RequestDelegate requestDelegate)
+        {
+            _appDelegate = requestDelegate;
         }
     }
 }
