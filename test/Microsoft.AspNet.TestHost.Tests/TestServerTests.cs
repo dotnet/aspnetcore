@@ -344,7 +344,7 @@ namespace Microsoft.AspNet.TestHost
         }
 
         [Fact]
-        public void WebRootCanBeResolvedWhenNotInTheProjectJson()
+        public void WebRootCanBeResolvedWhenNotInTheConfig()
         {
             TestServer server = TestServer.Create(app =>
             {

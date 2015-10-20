@@ -248,9 +248,18 @@ namespace Microsoft.AspNet.Hosting
         }
 
         [Fact]
-        public void WebRootCanBeResolvedFromTheProjectJson()
+        public void WebRootCanBeResolvedFromTheConfig()
         {
-            var engine = CreateBuilder().UseServer(this).Build();
+            var vals = new Dictionary<string, string>
+            {
+                { "Hosting:WebRoot", "testroot" }
+            };
+
+            var builder = new ConfigurationBuilder()
+                .AddInMemoryCollection(vals);
+            var config = builder.Build();
+
+            var engine = CreateBuilder(config).UseServer(this).Build();
             var env = engine.ApplicationServices.GetRequiredService<IHostingEnvironment>();
             Assert.Equal(Path.GetFullPath("testroot"), env.WebRootPath);
             Assert.True(env.WebRootFileProvider.GetFileInfo("TextFile.txt").Exists);

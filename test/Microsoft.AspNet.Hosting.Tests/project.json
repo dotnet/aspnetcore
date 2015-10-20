@@ -13,6 +13,5 @@
     },
     "commands": {
         "test": "xunit.runner.aspnet"
-    },
-    "webroot": "testroot"
+    }
 }

@@ -21,9 +21,6 @@ namespace Microsoft.AspNet.Hosting
 {
     public class WebHostBuilder
     {
-        public const string OldEnvironmentKey = "ASPNET_ENV";
-        public const string EnvironmentKey = "Hosting:Environment";
-
         public const string OldApplicationKey = "app";
         public const string ApplicationKey = "Hosting:Application";
 
@@ -115,7 +112,7 @@ namespace Microsoft.AspNet.Hosting
             var appEnvironment = hostingContainer.GetRequiredService<IApplicationEnvironment>();
             var startupLoader = hostingContainer.GetRequiredService<IStartupLoader>();
 
-            _hostingEnvironment.Initialize(appEnvironment.ApplicationBasePath, _config?[EnvironmentKey] ?? _config?[OldEnvironmentKey]);
+            _hostingEnvironment.Initialize(appEnvironment.ApplicationBasePath, _config);
             var engine = new HostingEngine(hostingServices, startupLoader, _config, _captureStartupErrors);
 
             // Only one of these should be set, but they are used in priority
