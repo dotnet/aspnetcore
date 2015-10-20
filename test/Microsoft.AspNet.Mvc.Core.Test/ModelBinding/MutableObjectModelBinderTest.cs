@@ -809,9 +809,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.Single(modelStateDictionary);
 
             // Check Age error.
-            ModelState modelState;
-            Assert.True(modelStateDictionary.TryGetValue("theModel.Age", out modelState));
-            var modelError = Assert.Single(modelState.Errors);
+            ModelStateEntry entry;
+            Assert.True(modelStateDictionary.TryGetValue("theModel.Age", out entry));
+            var modelError = Assert.Single(entry.Errors);
             Assert.Null(modelError.Exception);
             Assert.NotNull(modelError.ErrorMessage);
             Assert.Equal("A value for the 'Age' property was not provided.", modelError.ErrorMessage);
@@ -859,9 +859,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.Single(modelStateDictionary);
 
             // Check Age error.
-            ModelState modelState;
-            Assert.True(modelStateDictionary.TryGetValue("theModel.Age", out modelState));
-            var modelError = Assert.Single(modelState.Errors);
+            ModelStateEntry entry;
+            Assert.True(modelStateDictionary.TryGetValue("theModel.Age", out entry));
+            var modelError = Assert.Single(entry.Errors);
             Assert.Null(modelError.Exception);
             Assert.NotNull(modelError.ErrorMessage);
             Assert.Equal("A value for the 'Age' property was not provided.", modelError.ErrorMessage);
@@ -914,11 +914,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.Equal(1, modelStateDictionary.Count);
 
             // Check Age error.
-            ModelState modelState;
-            Assert.True(modelStateDictionary.TryGetValue("theModel.Age", out modelState));
-            Assert.Equal(ModelValidationState.Invalid, modelState.ValidationState);
+            ModelStateEntry entry;
+            Assert.True(modelStateDictionary.TryGetValue("theModel.Age", out entry));
+            Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
 
-            var modelError = Assert.Single(modelState.Errors);
+            var modelError = Assert.Single(entry.Errors);
             Assert.Equal(string.Empty, modelError.ErrorMessage);
             Assert.IsType<NullReferenceException>(modelError.Exception);
         }

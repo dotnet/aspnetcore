@@ -260,7 +260,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             viewData["FieldPrefix.Name"] = "View data dictionary value";
             viewData.TemplateInfo.HtmlFieldPrefix = "FieldPrefix";
 
-            var modelState = new ModelState();
+            var modelState = new ModelStateEntry();
             modelState.RawValue = new string[] { "Attempted name value" };
             modelState.AttemptedValue = "Attempted name value";
             viewData.ModelState["FieldPrefix.Name"] = modelState;
@@ -285,7 +285,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             viewData["Name"] = "View data dictionary value";
             viewData.TemplateInfo.HtmlFieldPrefix = "FieldPrefix";
 
-            var modelState = new ModelState();
+            var modelState = new ModelStateEntry();
             modelState.RawValue = new string[] { "Attempted name value" };
             modelState.AttemptedValue = "Attempted name value";
             viewData.ModelState["FieldPrefix.Name"] = modelState;

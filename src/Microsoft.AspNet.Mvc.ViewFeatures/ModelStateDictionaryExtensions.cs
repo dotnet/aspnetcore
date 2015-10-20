@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     public static class ModelStateDictionaryExtensions
     {
         /// <summary>
-        /// Adds the specified <paramref name="errorMessage"/> to the <see cref="ModelState.Errors"/> instance
+        /// Adds the specified <paramref name="errorMessage"/> to the <see cref="ModelStateEntry.Errors"/> instance
         /// that is associated with the specified <paramref name="expression"/>.
         /// </summary>
         /// <typeparam name="TModel">The type of the model.</typeparam>
@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <summary>
-        /// Adds the specified <paramref name="exception"/> to the <see cref="ModelState.Errors"/> instance
+        /// Adds the specified <paramref name="exception"/> to the <see cref="ModelStateEntry.Errors"/> instance
         /// that is associated with the specified <paramref name="expression"/>.
         /// </summary>
         /// <typeparam name="TModel">The type of the model.</typeparam>

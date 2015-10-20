@@ -6,7 +6,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     /// <summary>
     /// An entry in a <see cref="ModelStateDictionary"/>.
     /// </summary>
-    public class ModelState
+    public class ModelStateEntry
     {
         /// <summary>
         /// Gets the raw value from the request associated with this entry.

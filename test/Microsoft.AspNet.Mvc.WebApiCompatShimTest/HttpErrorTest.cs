@@ -33,7 +33,12 @@ namespace System.Web.Http.Dispatcher
                 yield return new[] { new HttpError() };
                 yield return new[] { new HttpError("error") };
                 yield return new[] { new HttpError(new NotImplementedException(), true) };
-                yield return new[] { new HttpError(new ModelStateDictionary() { { "key", new ModelState() { Errors = { new ModelError("error") } } } }, true) };
+                yield return new[] { new HttpError(
+                    new ModelStateDictionary()
+                    {
+                        { "key", new ModelStateEntry { Errors = { new ModelError("error") } } }
+                    },
+                    true) };
             }
         }
 

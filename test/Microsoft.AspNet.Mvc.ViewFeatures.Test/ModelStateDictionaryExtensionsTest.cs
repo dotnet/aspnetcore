@@ -155,7 +155,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             // Arrange
             var dictionary = new ModelStateDictionary();
-            dictionary.Add("Text", new ModelState());
+            dictionary.Add("Text", new ModelStateEntry());
 
             // Act
             dictionary.Remove<TestModel>(model => model.Text);
@@ -169,7 +169,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             // Arrange
             var dictionary = new ModelStateDictionary();
-            dictionary.Add("Child.Text", new ModelState());
+            dictionary.Add("Child.Text", new ModelStateEntry());
 
             // Act
             dictionary.Remove<TestModel>(model => model.Child.Text);
@@ -183,7 +183,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             // Arrange
             var dictionary = new ModelStateDictionary();
-            dictionary.Add("Child.Value", new ModelState());
+            dictionary.Add("Child.Value", new ModelStateEntry());
 
             // Act
             dictionary.Remove<TestModel>(model => model.Child.Value);
@@ -198,7 +198,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Arrange
             var variable = "Test";
             var dictionary = new ModelStateDictionary();
-            dictionary.Add("variable", new ModelState());
+            dictionary.Add("variable", new ModelStateEntry());
 
             // Act
             dictionary.Remove<TestModel>(model => variable);
@@ -211,12 +211,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void RemoveAll_ForSingleExpression_RemovesModelStateKeys()
         {
             // Arrange
-            var state = new ModelState();
+            var state = new ModelStateEntry();
             var dictionary = new ModelStateDictionary();
 
             dictionary.Add("Key", state);
-            dictionary.Add("Text", new ModelState());
-            dictionary.Add("Text.Length", new ModelState());
+            dictionary.Add("Text", new ModelStateEntry());
+            dictionary.Add("Text.Length", new ModelStateEntry());
 
             // Act
             dictionary.RemoveAll<TestModel>(model => model.Text);
@@ -232,12 +232,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void RemoveAll_ForRelationExpression_RemovesModelStateKeys()
         {
             // Arrange
-            var state = new ModelState();
+            var state = new ModelStateEntry();
             var dictionary = new ModelStateDictionary();
 
             dictionary.Add("Key", state);
-            dictionary.Add("Child", new ModelState());
-            dictionary.Add("Child.Text", new ModelState());
+            dictionary.Add("Child", new ModelStateEntry());
+            dictionary.Add("Child.Text", new ModelStateEntry());
 
             // Act
             dictionary.RemoveAll<TestModel>(model => model.Child);
@@ -253,11 +253,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void RemoveAll_ForImplicitlyCastedToObjectExpression_RemovesModelStateKeys()
         {
             // Arrange
-            var state = new ModelState();
+            var state = new ModelStateEntry();
             var dictionary = new ModelStateDictionary();
 
             dictionary.Add("Child", state);
-            dictionary.Add("Child.Value", new ModelState());
+            dictionary.Add("Child.Value", new ModelStateEntry());
 
             // Act
             dictionary.RemoveAll<TestModel>(model => model.Child.Value);
@@ -274,13 +274,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             // Arrange
             var variable = "Test";
-            var state = new ModelState();
+            var state = new ModelStateEntry();
             var dictionary = new ModelStateDictionary();
 
             dictionary.Add("Key", state);
-            dictionary.Add("variable", new ModelState());
-            dictionary.Add("variable.Text", new ModelState());
-            dictionary.Add("variable.Value", new ModelState());
+            dictionary.Add("variable", new ModelStateEntry());
+            dictionary.Add("variable.Text", new ModelStateEntry());
+            dictionary.Add("variable.Value", new ModelStateEntry());
 
             // Act
             dictionary.RemoveAll<TestModel>(model => variable);
@@ -296,14 +296,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void RemoveAll_ForModelExpression_RemovesModelPropertyKeys()
         {
             // Arrange
-            var state = new ModelState();
+            var state = new ModelStateEntry();
             var dictionary = new ModelStateDictionary();
 
             dictionary.Add("Key", state);
-            dictionary.Add("Text", new ModelState());
-            dictionary.Add("Child", new ModelState());
-            dictionary.Add("Child.Text", new ModelState());
-            dictionary.Add("Child.NoValue", new ModelState());
+            dictionary.Add("Text", new ModelStateEntry());
+            dictionary.Add("Child", new ModelStateEntry());
+            dictionary.Add("Child.Text", new ModelStateEntry());
+            dictionary.Add("Child.NoValue", new ModelStateEntry());
 
             // Act
             dictionary.RemoveAll<TestModel>(model => model);

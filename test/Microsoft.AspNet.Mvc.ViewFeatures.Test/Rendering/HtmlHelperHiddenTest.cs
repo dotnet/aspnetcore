@@ -362,9 +362,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 idAttributeDotReplacement: "$");
             helper.ViewContext.ViewData.TemplateInfo.HtmlFieldPrefix = "MyPrefix";
             helper.ViewData.ModelState.Clear();
-            helper.ViewData.ModelState.Add("Property1", GetModelState("modelstate-without-prefix"));
-            helper.ViewData.ModelState.Add("MyPrefix.Property1", GetModelState("modelstate-with-prefix"));
-            helper.ViewData.ModelState.Add("MyPrefix$Property1", GetModelState("modelstate-with-iddotreplacement"));
+            helper.ViewData.ModelState.Add("Property1", GetModelStateEntry("modelstate-without-prefix"));
+            helper.ViewData.ModelState.Add("MyPrefix.Property1", GetModelStateEntry("modelstate-with-prefix"));
+            helper.ViewData.ModelState.Add("MyPrefix$Property1", GetModelStateEntry("modelstate-with-iddotreplacement"));
 
             // Act
             var result = helper.Hidden("Property1", "explicit-value", htmlAttributes: null);
@@ -661,9 +661,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
             helper.ViewData.Model.Property1 = "propValue";
             helper.ViewContext.ViewData.TemplateInfo.HtmlFieldPrefix = "MyPrefix";
             helper.ViewData.ModelState.Clear();
-            helper.ViewData.ModelState.Add("Property1", GetModelState("modelstate-without-prefix"));
-            helper.ViewData.ModelState.Add("MyPrefix.Property1", GetModelState("modelstate-with-prefix"));
-            helper.ViewData.ModelState.Add("MyPrefix$Property1", GetModelState("modelstate-with-iddotreplacement"));
+            helper.ViewData.ModelState.Add("Property1", GetModelStateEntry("modelstate-without-prefix"));
+            helper.ViewData.ModelState.Add("MyPrefix.Property1", GetModelStateEntry("modelstate-with-prefix"));
+            helper.ViewData.ModelState.Add("MyPrefix$Property1", GetModelStateEntry("modelstate-with-iddotreplacement"));
 
             // Act
             var result = helper.HiddenFor(m => m.Property1, htmlAttributes: null);
@@ -803,9 +803,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             // Arrange
             var viewData = GetViewDataWithNullModelAndNonNullViewData();
-            viewData.ModelState.Add("pre.Property3[key]", GetModelState("Prop3Val"));
-            viewData.ModelState.Add("pre.Property4.Property5", GetModelState("Prop5Val"));
-            viewData.ModelState.Add("pre.Property4.Property6[0]", GetModelState("Prop6Val"));
+            viewData.ModelState.Add("pre.Property3[key]", GetModelStateEntry("Prop3Val"));
+            viewData.ModelState.Add("pre.Property4.Property5", GetModelStateEntry("Prop5Val"));
+            viewData.ModelState.Add("pre.Property4.Property6[0]", GetModelStateEntry("Prop6Val"));
 
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(viewData);
             viewData.TemplateInfo.HtmlFieldPrefix = "pre";
@@ -858,7 +858,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             var viewData = GetViewDataWithNonNullModel();
             viewData["Property1"] = "view-data-val";
-            viewData.ModelState.Add("Property1", GetModelState("ModelStateValue"));
+            viewData.ModelState.Add("Property1", GetModelStateEntry("ModelStateValue"));
 
             return viewData;
         }
@@ -871,9 +871,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return viewData;
         }
 
-        private static ModelState GetModelState(string value)
+        private static ModelStateEntry GetModelStateEntry(string value)
         {
-            return new ModelState
+            return new ModelStateEntry
             {
                 RawValue = new string[] { value },
                 AttemptedValue = value,

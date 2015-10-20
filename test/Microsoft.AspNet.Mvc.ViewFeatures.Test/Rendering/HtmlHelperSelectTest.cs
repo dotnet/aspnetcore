@@ -414,12 +414,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             var modelState = new ModelStateDictionary
             {
-                ["Property1"] = new ModelState
+                ["Property1"] = new ModelStateEntry
                 {
                     RawValue = new string[] { SelectSources.ModelStateEntry.ToString() },
                     AttemptedValue = SelectSources.ModelStateEntry.ToString()
                 },
-                ["Prefix.Property1"] = new ModelState
+                ["Prefix.Property1"] = new ModelStateEntry
                 {
                     RawValue = new string[] { SelectSources.ModelStateEntryWithPrefix.ToString() },
                     AttemptedValue = SelectSources.ModelStateEntryWithPrefix.ToString()
@@ -455,12 +455,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             var modelState = new ModelStateDictionary
             {
-                ["Property1"] = new ModelState
+                ["Property1"] = new ModelStateEntry
                 {
                     RawValue = new string[] { SelectSources.ModelStateEntry.ToString() },
                     AttemptedValue = SelectSources.ModelStateEntry.ToString()
                 },
-                ["Prefix.Property1"] = new ModelState
+                ["Prefix.Property1"] = new ModelStateEntry
                 {
                     RawValue = new string[] { SelectSources.ModelStateEntryWithPrefix.ToString() },
                     AttemptedValue = SelectSources.ModelStateEntryWithPrefix.ToString()
@@ -825,12 +825,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             var modelState = new ModelStateDictionary
             {
-                ["Property1"] = new ModelState
+                ["Property1"] = new ModelStateEntry
                 {
                     RawValue = new string[] { SelectSources.ModelStateEntry.ToString() },
                     AttemptedValue = SelectSources.ModelStateEntry.ToString()
                 },
-                ["Prefix.Property1"] = new ModelState
+                ["Prefix.Property1"] = new ModelStateEntry
                 {
                     RawValue = new string[] { SelectSources.ModelStateEntryWithPrefix.ToString() },
                     AttemptedValue = SelectSources.ModelStateEntryWithPrefix.ToString()
@@ -866,12 +866,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             var modelState = new ModelStateDictionary
             {
-                ["Property1"] = new ModelState
+                ["Property1"] = new ModelStateEntry
                 {
                     RawValue = new string[] { SelectSources.ModelStateEntry.ToString() },
                     AttemptedValue = SelectSources.ModelStateEntry.ToString()
                 },
-                ["Prefix.Property1"] = new ModelState
+                ["Prefix.Property1"] = new ModelStateEntry
                 {
                     RawValue = new string[] { SelectSources.ModelStateEntryWithPrefix.ToString() },
                     AttemptedValue = SelectSources.ModelStateEntryWithPrefix.ToString()

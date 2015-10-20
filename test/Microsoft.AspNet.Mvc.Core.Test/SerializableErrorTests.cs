@@ -72,10 +72,10 @@ namespace Microsoft.AspNet.Mvc
             var modelState = new ModelStateDictionary();
             modelState.Add(
                 "key1",
-                new ModelState());
+                new ModelStateEntry());
             modelState.Add(
                 "key2",
-                new ModelState());
+                new ModelStateEntry());
 
             // Act
             var serializableError = new SerializableError(modelState);

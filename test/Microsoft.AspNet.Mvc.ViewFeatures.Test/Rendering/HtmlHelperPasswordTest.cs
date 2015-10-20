@@ -325,9 +325,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             // Arrange
             var viewData = GetViewDataWithModelStateAndModelAndViewDataValues();
-            viewData.ModelState.Add("pre.Property3[key]", GetModelState("Property3Val"));
-            viewData.ModelState.Add("pre.Property4.Property5", GetModelState("Property5Val"));
-            viewData.ModelState.Add("pre.Property4.Property6[0]", GetModelState("Property6Val"));
+            viewData.ModelState.Add("pre.Property3[key]", GetModelStateEntry("Property3Val"));
+            viewData.ModelState.Add("pre.Property4.Property5", GetModelStateEntry("Property5Val"));
+            viewData.ModelState.Add("pre.Property4.Property6[0]", GetModelStateEntry("Property6Val"));
             viewData["pre.Property3[key]"] = "vdd-value1";
             viewData["pre.Property4.Property5"] = "vdd-value2";
             viewData["pre.Property4.Property6[0]"] = "vdd-value3";
@@ -358,7 +358,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             var viewData = GetViewDataWithNullModelAndNonEmptyViewData();
             viewData.Model = new PasswordModel();
-            viewData.ModelState.Add("Property1", GetModelState("ModelStateValue"));
+            viewData.ModelState.Add("Property1", GetModelStateEntry("ModelStateValue"));
 
             return viewData;
         }
@@ -371,9 +371,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return viewData;
         }
 
-        private static ModelState GetModelState(string value)
+        private static ModelStateEntry GetModelStateEntry(string value)
         {
-            return new ModelState
+            return new ModelStateEntry
             {
                 RawValue = new string[] { value },
                 AttemptedValue = value,

@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     /// Represents the state of an attempt to bind values from an HTTP Request to an action method, which includes
     /// validation information.
     /// </summary>
-    public class ModelStateDictionary : IDictionary<string, ModelState>
+    public class ModelStateDictionary : IDictionary<string, ModelStateEntry>
     {
         // Make sure to update the doc headers if this value is changed.
         /// <summary>
@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// </summary>
         public static readonly int DefaultMaxAllowedErrors = 200;
 
-        private readonly Dictionary<string, ModelState> _innerDictionary;
+        private readonly Dictionary<string, ModelStateEntry> _innerDictionary;
         private int _maxAllowedErrors;
 
         /// <summary>
@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             MaxAllowedErrors = maxAllowedErrors;
 
-            _innerDictionary = new Dictionary<string, ModelState>(StringComparer.OrdinalIgnoreCase);
+            _innerDictionary = new Dictionary<string, ModelStateEntry>(StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 throw new ArgumentNullException(nameof(dictionary));
             }
 
-            _innerDictionary = new Dictionary<string, ModelState>(
+            _innerDictionary = new Dictionary<string, ModelStateEntry>(
                 dictionary,
                 StringComparer.OrdinalIgnoreCase);
 
@@ -74,7 +74,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// the error message will be ignored and a <see cref="TooManyModelErrorsException"/> will be added.
         /// </para>
         /// <para>
-        /// Errors added via modifying <see cref="ModelState"/> directly do not count towards this limit.
+        /// Errors added via modifying <see cref="ModelStateEntry"/> directly do not count towards this limit.
         /// </para>
         /// </remarks>
         public int MaxAllowedErrors
@@ -122,7 +122,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <inheritdoc />
         public bool IsReadOnly
         {
-            get { return ((ICollection<KeyValuePair<string, ModelState>>)_innerDictionary).IsReadOnly; }
+            get { return ((ICollection<KeyValuePair<string, ModelStateEntry>>)_innerDictionary).IsReadOnly; }
         }
 
         /// <inheritdoc />
@@ -132,7 +132,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <inheritdoc />
-        public ICollection<ModelState> Values
+        public ICollection<ModelStateEntry> Values
         {
             get { return _innerDictionary.Values; }
         }
@@ -159,7 +159,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <inheritdoc />
-        public ModelState this[string key]
+        public ModelStateEntry this[string key]
         {
             get
             {
@@ -168,7 +168,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     throw new ArgumentNullException(nameof(key));
                 }
 
-                ModelState value;
+                ModelStateEntry value;
                 _innerDictionary.TryGetValue(key, out value);
                 return value;
             }
@@ -188,7 +188,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         // For unit testing
-        internal IDictionary<string, ModelState> InnerDictionary
+        internal IDictionary<string, ModelStateEntry> InnerDictionary
         {
             get { return _innerDictionary; }
         }
@@ -197,10 +197,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private bool HasRecordedMaxModelError { get; set; }
 
         /// <summary>
-        /// Adds the specified <paramref name="exception"/> to the <see cref="ModelState.Errors"/> instance
+        /// Adds the specified <paramref name="exception"/> to the <see cref="ModelStateEntry.Errors"/> instance
         /// that is associated with the specified <paramref name="key"/>.
         /// </summary>
-        /// <param name="key">The key of the <see cref="ModelState"/> to add errors to.</param>
+        /// <param name="key">The key of the <see cref="ModelStateEntry"/> to add errors to.</param>
         /// <param name="exception">The <see cref="Exception"/> to add.</param>
         public void AddModelError(string key, Exception exception)
         {
@@ -218,11 +218,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <summary>
-        /// Attempts to add the specified <paramref name="exception"/> to the <see cref="ModelState.Errors"/>
+        /// Attempts to add the specified <paramref name="exception"/> to the <see cref="ModelStateEntry.Errors"/>
         /// instance that is associated with the specified <paramref name="key"/>. If the maximum number of allowed
         /// errors has already been recorded, records a <see cref="TooManyModelErrorsException"/> exception instead.
         /// </summary>
-        /// <param name="key">The key of the <see cref="ModelState"/> to add errors to.</param>
+        /// <param name="key">The key of the <see cref="ModelStateEntry"/> to add errors to.</param>
         /// <param name="exception">The <see cref="Exception"/> to add.</param>
         /// <returns>
         /// <c>True</c> if the given error was added, <c>false</c> if the error was ignored.
@@ -249,18 +249,18 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             if (exception is FormatException || exception is OverflowException)
             {
                 // Convert FormatExceptions and OverflowExceptions to Invalid value messages.
-                ModelState modelState;
-                TryGetValue(key, out modelState);
+                ModelStateEntry entry;
+                TryGetValue(key, out entry);
 
                 string errorMessage;
-                if (modelState == null)
+                if (entry == null)
                 {
                     errorMessage = Resources.FormatModelError_InvalidValue_GenericMessage(key);
                 }
                 else
                 {
                     errorMessage = Resources.FormatModelError_InvalidValue_MessageWithModelValue(
-                        modelState.AttemptedValue,
+                        entry.AttemptedValue,
                         key);
                 }
 
@@ -273,10 +273,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <summary>
-        /// Adds the specified <paramref name="errorMessage"/> to the <see cref="ModelState.Errors"/> instance
+        /// Adds the specified <paramref name="errorMessage"/> to the <see cref="ModelStateEntry.Errors"/> instance
         /// that is associated with the specified <paramref name="key"/>.
         /// </summary>
-        /// <param name="key">The key of the <see cref="ModelState"/> to add errors to.</param>
+        /// <param name="key">The key of the <see cref="ModelStateEntry"/> to add errors to.</param>
         /// <param name="errorMessage">The error message to add.</param>
         public void AddModelError(string key, string errorMessage)
         {
@@ -294,11 +294,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <summary>
-        /// Attempts to add the specified <paramref name="errorMessage"/> to the <see cref="ModelState.Errors"/>
+        /// Attempts to add the specified <paramref name="errorMessage"/> to the <see cref="ModelStateEntry.Errors"/>
         /// instance that is associated with the specified <paramref name="key"/>. If the maximum number of allowed
         /// errors has already been recorded, records a <see cref="TooManyModelErrorsException"/> exception instead.
         /// </summary>
-        /// <param name="key">The key of the <see cref="ModelState"/> to add errors to.</param>
+        /// <param name="key">The key of the <see cref="ModelStateEntry"/> to add errors to.</param>
         /// <param name="errorMessage">The error message to add.</param>
         /// <returns>
         /// <c>True</c> if the given error was added, <c>false</c> if the error was ignored.
@@ -363,7 +363,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 throw new ArgumentNullException(nameof(key));
             }
 
-            ModelState validationState;
+            ModelStateEntry validationState;
             if (TryGetValue(key, out validationState))
             {
                 return validationState.ValidationState;
@@ -373,10 +373,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <summary>
-        /// Marks the <see cref="ModelState.ValidationState"/> for the entry with the specified <paramref name="key"/>
-        /// as <see cref="ModelValidationState.Valid"/>.
+        /// Marks the <see cref="ModelStateEntry.ValidationState"/> for the entry with the specified
+        /// <paramref name="key"/> as <see cref="ModelValidationState.Valid"/>.
         /// </summary>
-        /// <param name="key">The key of the <see cref="ModelState"/> to mark as valid.</param>
+        /// <param name="key">The key of the <see cref="ModelStateEntry"/> to mark as valid.</param>
         public void MarkFieldValid(string key)
         {
             if (key == null)
@@ -394,10 +394,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <summary>
-        /// Marks the <see cref="ModelState.ValidationState"/> for the entry with the specified <paramref name="key"/>
+        /// Marks the <see cref="ModelStateEntry.ValidationState"/> for the entry with the specified <paramref name="key"/>
         /// as <see cref="ModelValidationState.Skipped"/>.
         /// </summary>
-        /// <param name="key">The key of the <see cref="ModelState"/> to mark as skipped.</param>
+        /// <param name="key">The key of the <see cref="ModelStateEntry"/> to mark as skipped.</param>
         public void MarkFieldSkipped(string key)
         {
             if (key == null)
@@ -433,11 +433,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <summary>
-        /// Sets the of <see cref="ModelState.RawValue"/> and <see cref="ModelState.AttemptedValue"/> for 
-        /// the <see cref="ModelState"/> with the specified <paramref name="key"/>.
+        /// Sets the of <see cref="ModelStateEntry.RawValue"/> and <see cref="ModelStateEntry.AttemptedValue"/> for
+        /// the <see cref="ModelStateEntry"/> with the specified <paramref name="key"/>.
         /// </summary>
-        /// <param name="key">The key for the <see cref="ModelState"/> entry.</param>
-        /// <param name="rawvalue">The raw value for the <see cref="ModelState"/> entry.</param>
+        /// <param name="key">The key for the <see cref="ModelStateEntry"/> entry.</param>
+        /// <param name="rawvalue">The raw value for the <see cref="ModelStateEntry"/> entry.</param>
         /// <param name="attemptedValue">
         /// The values of <param name="rawValue"/> in a comma-separated <see cref="string"/>.
         /// </param>
@@ -454,11 +454,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <summary>
-        /// Sets the value for the <see cref="ModelState"/> with the specified <paramref name="key"/>.
+        /// Sets the value for the <see cref="ModelStateEntry"/> with the specified <paramref name="key"/>.
         /// </summary>
-        /// <param name="key">The key for the <see cref="ModelState"/> entry</param>
+        /// <param name="key">The key for the <see cref="ModelStateEntry"/> entry</param>
         /// <param name="valueProviderResult">
-        /// A <see cref="ValueProviderResult"/> with data for the <see cref="ModelState"/> entry.
+        /// A <see cref="ValueProviderResult"/> with data for the <see cref="ModelStateEntry"/> entry.
         /// </param>
         public void SetModelValue(string key, ValueProviderResult valueProviderResult)
         {
@@ -501,21 +501,21 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
         }
 
-        private ModelState GetModelStateForKey(string key)
+        private ModelStateEntry GetModelStateForKey(string key)
         {
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
             }
 
-            ModelState modelState;
-            if (!TryGetValue(key, out modelState))
+            ModelStateEntry entry;
+            if (!TryGetValue(key, out entry))
             {
-                modelState = new ModelState();
-                this[key] = modelState;
+                entry = new ModelStateEntry();
+                this[key] = entry;
             }
 
-            return modelState;
+            return entry;
         }
 
         private static ModelValidationState GetValidity(PrefixEnumerable entries, ModelValidationState defaultState)
@@ -562,13 +562,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <inheritdoc />
-        public void Add(KeyValuePair<string, ModelState> item)
+        public void Add(KeyValuePair<string, ModelStateEntry> item)
         {
             Add(item.Key, item.Value);
         }
 
         /// <inheritdoc />
-        public void Add(string key, ModelState value)
+        public void Add(string key, ModelStateEntry value)
         {
             if (key == null)
             {
@@ -590,9 +590,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <inheritdoc />
-        public bool Contains(KeyValuePair<string, ModelState> item)
+        public bool Contains(KeyValuePair<string, ModelStateEntry> item)
         {
-            return ((ICollection<KeyValuePair<string, ModelState>>)_innerDictionary).Contains(item);
+            return ((ICollection<KeyValuePair<string, ModelStateEntry>>)_innerDictionary).Contains(item);
         }
 
         /// <inheritdoc />
@@ -607,20 +607,20 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <inheritdoc />
-        public void CopyTo(KeyValuePair<string, ModelState>[] array, int arrayIndex)
+        public void CopyTo(KeyValuePair<string, ModelStateEntry>[] array, int arrayIndex)
         {
             if (array == null)
             {
                 throw new ArgumentNullException(nameof(array));
             }
 
-            ((ICollection<KeyValuePair<string, ModelState>>)_innerDictionary).CopyTo(array, arrayIndex);
+            ((ICollection<KeyValuePair<string, ModelStateEntry>>)_innerDictionary).CopyTo(array, arrayIndex);
         }
 
         /// <inheritdoc />
-        public bool Remove(KeyValuePair<string, ModelState> item)
+        public bool Remove(KeyValuePair<string, ModelStateEntry> item)
         {
-            return ((ICollection<KeyValuePair<string, ModelState>>)_innerDictionary).Remove(item);
+            return ((ICollection<KeyValuePair<string, ModelStateEntry>>)_innerDictionary).Remove(item);
         }
 
         /// <inheritdoc />
@@ -635,7 +635,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <inheritdoc />
-        public bool TryGetValue(string key, out ModelState value)
+        public bool TryGetValue(string key, out ModelStateEntry value)
         {
             if (key == null)
             {
@@ -646,7 +646,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         /// <inheritdoc />
-        public IEnumerator<KeyValuePair<string, ModelState>> GetEnumerator()
+        public IEnumerator<KeyValuePair<string, ModelStateEntry>> GetEnumerator()
         {
             return _innerDictionary.GetEnumerator();
         }
@@ -732,7 +732,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return new PrefixEnumerable(this, prefix);
         }
 
-        public struct PrefixEnumerable : IEnumerable<KeyValuePair<string, ModelState>>
+        public struct PrefixEnumerable : IEnumerable<KeyValuePair<string, ModelStateEntry>>
         {
             private readonly ModelStateDictionary _dictionary;
             private readonly string _prefix;
@@ -758,7 +758,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 return _dictionary == null ? new PrefixEnumerator() : new PrefixEnumerator(_dictionary, _prefix);
             }
 
-            IEnumerator<KeyValuePair<string, ModelState>> IEnumerable<KeyValuePair<string, ModelState>>.GetEnumerator()
+            IEnumerator<KeyValuePair<string, ModelStateEntry>>
+                IEnumerable<KeyValuePair<string, ModelStateEntry>>.GetEnumerator()
             {
                 return GetEnumerator();
             }
@@ -769,13 +770,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
         }
 
-        public struct PrefixEnumerator : IEnumerator<KeyValuePair<string, ModelState>>
+        public struct PrefixEnumerator : IEnumerator<KeyValuePair<string, ModelStateEntry>>
         {
             private readonly ModelStateDictionary _dictionary;
             private readonly string _prefix;
 
             private bool _exactMatchUsed;
-            private Dictionary<string, ModelState>.Enumerator _enumerator;
+            private Dictionary<string, ModelStateEntry>.Enumerator _enumerator;
 
             public PrefixEnumerator(ModelStateDictionary dictionary, string prefix)
             {
@@ -793,11 +794,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 _prefix = prefix;
 
                 _exactMatchUsed = false;
-                _enumerator = default(Dictionary<string, ModelState>.Enumerator);
-                Current = default(KeyValuePair<string, ModelState>);
+                _enumerator = default(Dictionary<string, ModelStateEntry>.Enumerator);
+                Current = default(KeyValuePair<string, ModelStateEntry>);
             }
 
-            public KeyValuePair<string, ModelState> Current { get; private set; }
+            public KeyValuePair<string, ModelStateEntry> Current { get; private set; }
 
             object IEnumerator.Current
             {
@@ -826,10 +827,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     _exactMatchUsed = true;
                     _enumerator = _dictionary._innerDictionary.GetEnumerator();
 
-                    ModelState entry;
+                    ModelStateEntry entry;
                     if (_dictionary.TryGetValue(_prefix, out entry))
                     {
-                        Current = new KeyValuePair<string, ModelState>(_prefix, entry);
+                        Current = new KeyValuePair<string, ModelStateEntry>(_prefix, entry);
                         return true;
                     }
                 }
@@ -853,8 +854,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             public void Reset()
             {
                 _exactMatchUsed = false;
-                _enumerator = default(Dictionary<string, ModelState>.Enumerator);
-                Current = default(KeyValuePair<string, ModelState>);
+                _enumerator = default(Dictionary<string, ModelStateEntry>.Enumerator);
+                Current = default(KeyValuePair<string, ModelStateEntry>);
             }
         }
     }

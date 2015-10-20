@@ -651,9 +651,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 
             var validator = CreateValidator(new SimpleTypesExcludeFilter());
 
-            modelState.Add("items[0]", new ModelState());
-            modelState.Add("items[1]", new ModelState());
-            modelState.Add("items[2]", new ModelState());
+            modelState.Add("items[0]", new ModelStateEntry());
+            modelState.Add("items[1]", new ModelStateEntry());
+            modelState.Add("items[2]", new ModelStateEntry());
             validationState.Add(model, new ValidationStateEntry()
             {
                 Key = "items",
@@ -698,10 +698,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                 { "BarKey", "BarValue" }
             };
 
-            modelState.Add("items[0].Key", new ModelState());
-            modelState.Add("items[0].Value", new ModelState());
-            modelState.Add("items[1].Key", new ModelState());
-            modelState.Add("items[1].Value", new ModelState());
+            modelState.Add("items[0].Key", new ModelStateEntry());
+            modelState.Add("items[0].Value", new ModelStateEntry());
+            modelState.Add("items[1].Key", new ModelStateEntry());
+            modelState.Add("items[1].Value", new ModelStateEntry());
             validationState.Add(model, new ValidationStateEntry() { Key = "items" });
 
             // Act

@@ -10,30 +10,30 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures.Internal
 {
     internal static class ValidationHelpers
     {
-        public static string GetUserErrorMessageOrDefault(ModelError modelError, ModelState modelState)
+        public static string GetUserErrorMessageOrDefault(ModelError modelError, ModelStateEntry entry)
         {
             if (!string.IsNullOrEmpty(modelError.ErrorMessage))
             {
                 return modelError.ErrorMessage;
             }
 
-            if (modelState == null)
+            if (entry == null)
             {
                 return string.Empty;
             }
 
-            var attemptedValue = modelState.AttemptedValue ?? "null";
+            var attemptedValue = entry.AttemptedValue ?? "null";
             return Resources.FormatCommon_ValueNotValidForProperty(attemptedValue);
         }
 
         // Returns non-null list of model states, which caller will render in order provided.
-        public static IEnumerable<ModelState> GetModelStateList(
+        public static IEnumerable<ModelStateEntry> GetModelStateList(
             ViewDataDictionary viewData,
             bool excludePropertyErrors)
         {
             if (excludePropertyErrors)
             {
-                ModelState ms;
+                ModelStateEntry ms;
                 viewData.ModelState.TryGetValue(viewData.TemplateInfo.HtmlFieldPrefix, out ms);
 
                 if (ms != null)
@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures.Internal
                     return new[] { ms };
                 }
 
-                return Enumerable.Empty<ModelState>();
+                return Enumerable.Empty<ModelStateEntry>();
             }
             else
             {
@@ -58,7 +58,8 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures.Internal
         // ModelState doesn't refer to ModelMetadata, but we can correlate via the property name.
         private class ErrorsOrderer
         {
-            private Dictionary<string, int> _ordering = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            private readonly Dictionary<string, int> _ordering =
+                new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
             public ErrorsOrderer(ModelMetadata metadata)
             {

@@ -546,10 +546,10 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             }
 
             // If there are any errors for a named field, we add the css attribute.
-            ModelState modelState;
-            if (viewContext.ViewData.ModelState.TryGetValue(fullName, out modelState))
+            ModelStateEntry entry;
+            if (viewContext.ViewData.ModelState.TryGetValue(fullName, out entry))
             {
-                if (modelState.Errors.Count > 0)
+                if (entry.Errors.Count > 0)
                 {
                     tagBuilder.AddCssClass(HtmlHelper.ValidationInputCssClassName);
                 }
@@ -599,13 +599,13 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                     nameof(expression));
             }
 
-            ModelState modelState;
-            viewContext.ViewData.ModelState.TryGetValue(fullName, out modelState);
+            ModelStateEntry entry;
+            viewContext.ViewData.ModelState.TryGetValue(fullName, out entry);
 
             var value = string.Empty;
-            if (modelState != null && modelState.AttemptedValue != null)
+            if (entry != null && entry.AttemptedValue != null)
             {
-                value = modelState.AttemptedValue;
+                value = entry.AttemptedValue;
             }
             else if (modelExplorer.Model != null)
             {
@@ -629,7 +629,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             tagBuilder.MergeAttributes(GetValidationAttributes(viewContext, modelExplorer, expression));
 
             // If there are any errors for a named field, we add this CSS attribute.
-            if (modelState != null && modelState.Errors.Count > 0)
+            if (entry != null && entry.Errors.Count > 0)
             {
                 tagBuilder.AddCssClass(HtmlHelper.ValidationInputCssClassName);
             }
@@ -703,9 +703,9 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 return null;
             }
 
-            ModelState modelState;
-            var tryGetModelStateResult = viewContext.ViewData.ModelState.TryGetValue(fullName, out modelState);
-            var modelErrors = tryGetModelStateResult ? modelState.Errors : null;
+            ModelStateEntry entry;
+            var tryGetModelStateResult = viewContext.ViewData.ModelState.TryGetValue(fullName, out entry);
+            var modelErrors = tryGetModelStateResult ? entry.Errors : null;
 
             ModelError modelError = null;
             if (modelErrors != null && modelErrors.Count != 0)
@@ -741,7 +741,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             else if (modelError != null)
             {
                 tagBuilder.InnerHtml.SetContent(
-                    ValidationHelpers.GetUserErrorMessageOrDefault(modelError, modelState));
+                    ValidationHelpers.GetUserErrorMessageOrDefault(modelError, entry));
             }
 
             if (formContext != null)
@@ -804,7 +804,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 for (var i = 0; i < modelState.Errors.Count; i++)
                 {
                     var modelError = modelState.Errors[i];
-                    var errorText = ValidationHelpers.GetUserErrorMessageOrDefault(modelError, modelState: null);
+                    var errorText = ValidationHelpers.GetUserErrorMessageOrDefault(modelError, entry: null);
 
                     if (!string.IsNullOrEmpty(errorText))
                     {
@@ -1056,10 +1056,10 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
         internal static object GetModelStateValue(ViewContext viewContext, string key, Type destinationType)
         {
-            ModelState modelState;
-            if (viewContext.ViewData.ModelState.TryGetValue(key, out modelState) && modelState.RawValue != null)
+            ModelStateEntry entry;
+            if (viewContext.ViewData.ModelState.TryGetValue(key, out entry) && entry.RawValue != null)
             {
-                return ModelBindingHelper.ConvertTo(modelState.RawValue, destinationType, culture: null);
+                return ModelBindingHelper.ConvertTo(entry.RawValue, destinationType, culture: null);
             }
 
             return null;
@@ -1228,8 +1228,8 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             }
 
             // If there are any errors for a named field, we add the CSS attribute.
-            ModelState modelState;
-            if (viewContext.ViewData.ModelState.TryGetValue(fullName, out modelState) && modelState.Errors.Count > 0)
+            ModelStateEntry entry;
+            if (viewContext.ViewData.ModelState.TryGetValue(fullName, out entry) && entry.Errors.Count > 0)
             {
                 tagBuilder.AddCssClass(HtmlHelper.ValidationInputCssClassName);
             }

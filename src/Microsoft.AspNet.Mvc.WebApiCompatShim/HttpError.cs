@@ -95,7 +95,7 @@ namespace System.Web.Http
             Message = ShimResources.HttpError_BadRequest;
 
             var modelStateError = new HttpError();
-            foreach (KeyValuePair<string, ModelState> keyModelStatePair in modelState)
+            foreach (KeyValuePair<string, ModelStateEntry> keyModelStatePair in modelState)
             {
                 var key = keyModelStatePair.Key;
                 var errors = keyModelStatePair.Value.Errors;
