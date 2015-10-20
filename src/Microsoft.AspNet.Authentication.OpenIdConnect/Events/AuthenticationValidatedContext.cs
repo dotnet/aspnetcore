@@ -13,6 +13,6 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         {
         }
 
-        public OpenIdConnectTokenEndpointResponse TokenEndpointResponse { get; set; }
+        public OpenIdConnectMessage TokenEndpointResponse { get; set; }
     }
 }

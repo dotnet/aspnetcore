@@ -17,8 +17,8 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         }
 
         /// <summary>
-        /// Gets or sets the <see cref="OpenIdConnectTokenEndpointResponse"/> that contains the tokens and json response received after redeeming the code at the token endpoint.
+        /// Gets or sets the <see cref="OpenIdConnectMessage"/> that contains the tokens received after redeeming the code at the token endpoint.
         /// </summary>
-        public OpenIdConnectTokenEndpointResponse TokenEndpointResponse { get; set; }
+        public OpenIdConnectMessage TokenEndpointResponse { get; set; }
     }
 }

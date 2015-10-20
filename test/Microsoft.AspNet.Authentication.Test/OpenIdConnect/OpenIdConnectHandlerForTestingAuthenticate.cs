@@ -19,11 +19,11 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
         {
         }
 
-        protected override Task<OpenIdConnectTokenEndpointResponse> RedeemAuthorizationCodeAsync(string authorizationCode, string redirectUri)
+        protected override Task<OpenIdConnectMessage> RedeemAuthorizationCodeAsync(string authorizationCode, string redirectUri)
         {
             var jsonResponse = new JObject();
             jsonResponse.Add(OpenIdConnectParameterNames.IdToken, "test token");
-            return Task.FromResult(new OpenIdConnectTokenEndpointResponse(jsonResponse));
+            return Task.FromResult(new OpenIdConnectMessage(jsonResponse));
         }
 
         protected override Task<AuthenticationTicket> GetUserInformationAsync(OpenIdConnectMessage message, JwtSecurityToken jwt, AuthenticationTicket ticket)

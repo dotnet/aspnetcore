@@ -497,7 +497,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             var validationParameters = Options.TokenValidationParameters.Clone();
             validationParameters.ValidateSignature = false;
 
-            ticket = ValidateToken(tokenEndpointResponse.ProtocolMessage.IdToken, message, properties, validationParameters, out jwt);
+            ticket = ValidateToken(tokenEndpointResponse.IdToken, message, properties, validationParameters, out jwt);
 
             var nonce = jwt?.Payload.Nonce;
             if (!string.IsNullOrEmpty(nonce))
@@ -508,7 +508,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             Options.ProtocolValidator.ValidateTokenResponse(new OpenIdConnectProtocolValidationContext()
             {
                 ClientId = Options.ClientId,
-                ProtocolMessage = tokenEndpointResponse.ProtocolMessage,
+                ProtocolMessage = tokenEndpointResponse,
                 ValidatedIdToken = jwt,
                 Nonce = nonce
             });
@@ -527,13 +527,13 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             if (Options.SaveTokensAsClaims)
             {
                 // Persist the tokens extracted from the token response.
-                SaveTokens(ticket.Principal, tokenEndpointResponse.ProtocolMessage, saveRefreshToken: true);
+                SaveTokens(ticket.Principal, tokenEndpointResponse, saveRefreshToken: true);
             }
 
             if (Options.GetClaimsFromUserInfoEndpoint)
             {
                 Logger.LogDebug(22, "Sending request to user info endpoint for retrieving claims.");
-                ticket = await GetUserInformationAsync(tokenEndpointResponse.ProtocolMessage, jwt, ticket);
+                ticket = await GetUserInformationAsync(tokenEndpointResponse, jwt, ticket);
             }
 
             return AuthenticateResult.Success(ticket);
@@ -618,7 +618,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         /// <param name="authorizationCode">The authorization code to redeem.</param>
         /// <param name="redirectUri">Uri that was passed in the request sent for the authorization code.</param>
         /// <returns>OpenIdConnect message that has tokens inside it.</returns>
-        protected virtual async Task<OpenIdConnectTokenEndpointResponse> RedeemAuthorizationCodeAsync(string authorizationCode, string redirectUri)
+        protected virtual async Task<OpenIdConnectMessage> RedeemAuthorizationCodeAsync(string authorizationCode, string redirectUri)
         {
             var openIdMessage = new OpenIdConnectMessage()
             {
@@ -635,7 +635,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             responseMessage.EnsureSuccessStatusCode();
             var tokenResonse = await responseMessage.Content.ReadAsStringAsync();
             var jsonTokenResponse = JObject.Parse(tokenResonse);
-            return new OpenIdConnectTokenEndpointResponse(jsonTokenResponse);
+            return new OpenIdConnectMessage(jsonTokenResponse);
         }
 
         /// <summary>
@@ -984,7 +984,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             return authorizationCodeReceivedContext;
         }
 
-        private async Task<TokenResponseReceivedContext> RunTokenResponseReceivedEventAsync(OpenIdConnectMessage message, OpenIdConnectTokenEndpointResponse tokenEndpointResponse)
+        private async Task<TokenResponseReceivedContext> RunTokenResponseReceivedEventAsync(OpenIdConnectMessage message, OpenIdConnectMessage tokenEndpointResponse)
         {
             Logger.LogDebug(35, "Token response received.");
             var tokenResponseReceivedContext = new TokenResponseReceivedContext(Context, Options)
@@ -1005,7 +1005,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             return tokenResponseReceivedContext;
         }
 
-        private async Task<AuthenticationValidatedContext> RunAuthenticationValidatedEventAsync(OpenIdConnectMessage message, AuthenticationTicket ticket, OpenIdConnectTokenEndpointResponse tokenEndpointResponse)
+        private async Task<AuthenticationValidatedContext> RunAuthenticationValidatedEventAsync(OpenIdConnectMessage message, AuthenticationTicket ticket, OpenIdConnectMessage tokenEndpointResponse)
         {
             var authenticationValidatedContext = new AuthenticationValidatedContext(Context, Options)
             {
