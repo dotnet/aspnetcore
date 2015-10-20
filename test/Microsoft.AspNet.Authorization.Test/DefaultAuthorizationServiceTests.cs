@@ -17,6 +17,7 @@ namespace Microsoft.AspNet.Authorization.Test
         {
             var services = new ServiceCollection();
             services.AddAuthorization();
+            services.AddLogging();
             if (setupServices != null)
             {
                 setupServices(services);

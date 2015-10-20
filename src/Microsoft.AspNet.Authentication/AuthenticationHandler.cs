@@ -104,6 +104,7 @@ namespace Microsoft.AspNet.Authentication
                 if (ticket?.Principal != null)
                 {
                     Context.User = SecurityHelper.MergeUserPrincipal(Context.User, ticket.Principal);
+                    Logger.LogInformation(0, "HttContext.User merged via AutomaticAuthentication from authenticationScheme: {scheme}.", Options.AuthenticationScheme);
                 }
             }
         }
@@ -209,11 +210,13 @@ namespace Microsoft.AspNet.Authentication
                     if (ticket?.Principal != null)
                     {
                         context.Authenticated(ticket.Principal, ticket.Properties.Items, Options.Description.Items);
+                        Logger.LogInformation(1, "AuthenticationScheme: {scheme} was successfully authenticated.", Options.AuthenticationScheme);
                         handled = true;
                     }
                     else
                     {
                         context.NotAuthenticated();
+                        Logger.LogVerbose(2, "AuthenticationScheme: {scheme} was not authenticated.", Options.AuthenticationScheme);
                     }
                 }
             }
@@ -241,6 +244,7 @@ namespace Microsoft.AspNet.Authentication
             {
                 SignInAccepted = true;
                 await HandleSignInAsync(context);
+                Logger.LogInformation(3, "AuthenticationScheme: {scheme} signed in.", Options.AuthenticationScheme);
                 context.Accept();
             }
             else if (PriorHandler != null)
@@ -260,6 +264,7 @@ namespace Microsoft.AspNet.Authentication
             {
                 SignOutAccepted = true;
                 await HandleSignOutAsync(context);
+                Logger.LogInformation(4, "AuthenticationScheme: {scheme} signed out.", Options.AuthenticationScheme);
                 context.Accept();
             }
             else if (PriorHandler != null)
@@ -310,9 +315,11 @@ namespace Microsoft.AspNet.Authentication
                         goto case ChallengeBehavior.Unauthorized;
                     case ChallengeBehavior.Unauthorized:
                         handled = await HandleUnauthorizedAsync(context);
+                        Logger.LogInformation(5, "AuthenticationScheme: {scheme} was challenged.", Options.AuthenticationScheme);
                         break;
                     case ChallengeBehavior.Forbidden:
                         handled = await HandleForbiddenAsync(context);
+                        Logger.LogInformation(6, "AuthenticationScheme: {scheme} was forbidden.", Options.AuthenticationScheme);
                         break;
                 }
                 context.Accept();
