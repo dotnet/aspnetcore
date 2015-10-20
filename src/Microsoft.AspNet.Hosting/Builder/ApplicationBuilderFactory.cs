@@ -4,6 +4,7 @@
 using System;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Builder.Internal;
+using Microsoft.AspNet.Http.Features;
 
 namespace Microsoft.AspNet.Hosting.Builder
 {
@@ -16,9 +17,9 @@ namespace Microsoft.AspNet.Hosting.Builder
             _serviceProvider = serviceProvider;
         }
 
-        public IApplicationBuilder CreateBuilder(object server)
+        public IApplicationBuilder CreateBuilder(IFeatureCollection serverFeatures)
         {
-            return new ApplicationBuilder(_serviceProvider, server);
+            return new ApplicationBuilder(_serviceProvider, serverFeatures);
         }
     }
 }

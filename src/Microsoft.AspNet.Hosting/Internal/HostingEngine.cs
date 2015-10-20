@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Hosting.Internal
         // Only one of these should be set
         internal IServerFactory ServerFactory { get; set; }
         internal string ServerFactoryLocation { get; set; }
-        private IFeatureCollection _serverInstance;
+        private IFeatureCollection _serverFeatures;
 
         public HostingEngine(
             IServiceCollection appServices,
@@ -89,7 +89,7 @@ namespace Microsoft.AspNet.Hosting.Internal
             var contextFactory = _applicationServices.GetRequiredService<IHttpContextFactory>();
             var contextAccessor = _applicationServices.GetRequiredService<IHttpContextAccessor>();
             var diagnosticSource = _applicationServices.GetRequiredService<DiagnosticSource>();
-            var server = ServerFactory.Start(_serverInstance,
+            var server = ServerFactory.Start(_serverFeatures,
                 async features =>
                 {
                     var httpContext = contextFactory.CreateHttpContext(features);
@@ -125,7 +125,7 @@ namespace Microsoft.AspNet.Hosting.Internal
 
             _applicationLifetime.NotifyStarted();
 
-            return new Application(ApplicationServices, _serverInstance, new Disposable(() =>
+            return new Application(ApplicationServices, _serverFeatures, new Disposable(() =>
             {
                 _applicationLifetime.StopApplication();
                 server.Dispose();
@@ -181,7 +181,7 @@ namespace Microsoft.AspNet.Hosting.Internal
                 EnsureServer();
 
                 var builderFactory = _applicationServices.GetRequiredService<IApplicationBuilderFactory>();
-                var builder = builderFactory.CreateBuilder(_serverInstance);
+                var builder = builderFactory.CreateBuilder(_serverFeatures);
                 builder.ApplicationServices = _applicationServices;
 
                 var startupFilters = _applicationServices.GetService<IEnumerable<IStartupFilter>>();
@@ -247,10 +247,10 @@ namespace Microsoft.AspNet.Hosting.Internal
                 ServerFactory = _applicationServices.GetRequiredService<IServerLoader>().LoadServerFactory(ServerFactoryLocation);
             }
 
-            if (_serverInstance == null)
+            if (_serverFeatures == null)
             {
-                _serverInstance = ServerFactory.Initialize(_config);
-                var addresses = _serverInstance?.Get<IServerAddressesFeature>()?.Addresses;
+                _serverFeatures = ServerFactory.Initialize(_config);
+                var addresses = _serverFeatures?.Get<IServerAddressesFeature>()?.Addresses;
                 if (addresses != null && !addresses.IsReadOnly)
                 {
                     var port = _config[ServerPort];
