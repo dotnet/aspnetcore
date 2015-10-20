@@ -8,24 +8,38 @@ using Microsoft.AspNet.Diagnostics.Entity.Utilities;
 
 namespace Microsoft.AspNet.Builder
 {
+    /// <summary>
+    /// <see cref="IApplicationBuilder"/> extension methods for the <see cref="MigrationsEndPointMiddleware"/>.
+    /// </summary>
     public static class MigrationsEndPointExtensions
     {
-        public static IApplicationBuilder UseMigrationsEndPoint([NotNull] this IApplicationBuilder builder)
+        /// <summary>
+        /// Processes requests to execute migrations operations. The middleware will listen for requests made to <see cref="MigrationsEndPointOptions.DefaultPath"/>.
+        /// </summary>
+        /// <param name="app">The <see cref="IApplicationBuilder"/> to register the middleware with.</param>
+        /// <returns>The same <see cref="IApplicationBuilder"/> instance so that multiple calls can be chained.</returns>
+        public static IApplicationBuilder UseMigrationsEndPoint([NotNull] this IApplicationBuilder app)
         {
-            Check.NotNull(builder, "builder");
+            Check.NotNull(app, "builder");
 
-            return builder.UseMigrationsEndPoint(options => { });
+            return app.UseMigrationsEndPoint(options => { });
         }
 
-        public static IApplicationBuilder UseMigrationsEndPoint([NotNull] this IApplicationBuilder builder, [NotNull] Action<MigrationsEndPointOptions> optionsAction)
+        /// <summary>
+        /// Processes requests to execute migrations operations. The middleware will listen for requests to the path configured in <paramref name="optionsAction"/>.
+        /// </summary>
+        /// <param name="app">The <see cref="IApplicationBuilder"/> to register the middleware with.</param>
+        /// <param name="optionsAction">An action to set the options for the middleware.</param>
+        /// <returns>The same <see cref="IApplicationBuilder"/> instance so that multiple calls can be chained.</returns>
+        public static IApplicationBuilder UseMigrationsEndPoint([NotNull] this IApplicationBuilder app, [NotNull] Action<MigrationsEndPointOptions> optionsAction)
         {
-            Check.NotNull(builder, "builder");
+            Check.NotNull(app, "builder");
             Check.NotNull(optionsAction, "optionsAction");
 
             var options = new MigrationsEndPointOptions();
             optionsAction(options);
 
-            return builder.UseMiddleware<MigrationsEndPointMiddleware>(options);
+            return app.UseMiddleware<MigrationsEndPointMiddleware>(options);
         }
     }
 }

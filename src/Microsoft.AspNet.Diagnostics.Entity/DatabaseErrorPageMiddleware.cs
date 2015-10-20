@@ -17,6 +17,10 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.Diagnostics.Entity
 {
+    /// <summary>
+    /// Captures synchronous and asynchronous database related exceptions from the pipeline that may be resolved using Entity Framework
+    /// migrations. When these exceptions occur an HTML response with details of possible actions to resolve the issue is generated.
+    /// </summary>
     public class DatabaseErrorPageMiddleware
     {
         private readonly RequestDelegate _next;
@@ -25,6 +29,16 @@ namespace Microsoft.AspNet.Diagnostics.Entity
         private readonly ILogger _logger;
         private readonly DataStoreErrorLoggerProvider _loggerProvider;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DatabaseErrorPageMiddleware"/> class
+        /// </summary>
+        /// <param name="next">Delegate to execute the next piece of middleware in the request pipeline.</param>
+        /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to resolve services from.</param>
+        /// <param name="loggerFactory">
+        /// The <see cref="ILoggerFactory"/> for the application. This middleware both produces logging messages and 
+        /// consumes them to detect database related exception.
+        /// </param>
+        /// <param name="options">The options to control what information is displayed on the error page.</param>
         public DatabaseErrorPageMiddleware([NotNull] RequestDelegate next, [NotNull] IServiceProvider serviceProvider, [NotNull] ILoggerFactory loggerFactory, [NotNull] DatabaseErrorPageOptions options)
         {
             Check.NotNull(next, nameof(next));
@@ -41,6 +55,11 @@ namespace Microsoft.AspNet.Diagnostics.Entity
             loggerFactory.AddProvider(_loggerProvider);
         }
 
+        /// <summary>
+        /// Process an individual request.
+        /// </summary>
+        /// <param name="context">The context for the current request.</param>
+        /// <returns>A task that represents the asynchronous operation.</returns>
         public virtual async Task Invoke([NotNull] HttpContext context)
         {
             Check.NotNull(context, "context");

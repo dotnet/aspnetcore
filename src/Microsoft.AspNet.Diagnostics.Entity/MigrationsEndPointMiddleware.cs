@@ -13,6 +13,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.Diagnostics.Entity
 {
+    /// <summary>
+    /// Processes requests to execute migrations operations. The middleware will listen for requests to the path configured in the supplied options.
+    /// </summary>
     public class MigrationsEndPointMiddleware
     {
         private readonly RequestDelegate _next;
@@ -20,6 +23,13 @@ namespace Microsoft.AspNet.Diagnostics.Entity
         private readonly ILogger _logger;
         private readonly MigrationsEndPointOptions _options;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MigrationsEndPointMiddleware"/> class
+        /// </summary>
+        /// <param name="next">Delegate to execute the next piece of middleware in the request pipeline.</param>
+        /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to resolve services from.</param>
+        /// <param name="logger">The <see cref="Logger{T}"/> to write messages to.</param>
+        /// <param name="options">The options to control the behavior of the middleware.</param>
         public MigrationsEndPointMiddleware(
             [NotNull] RequestDelegate next, 
             [NotNull] IServiceProvider serviceProvider, 
@@ -37,6 +47,11 @@ namespace Microsoft.AspNet.Diagnostics.Entity
             _options = options;
         }
 
+        /// <summary>
+        /// Process an individual request.
+        /// </summary>
+        /// <param name="context">The context for the current request.</param>
+        /// <returns>A task that represents the asynchronous operation.</returns>
         public virtual async Task Invoke([NotNull] HttpContext context)
         {
             Check.NotNull(context, "context");
