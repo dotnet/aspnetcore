@@ -12,7 +12,9 @@ using Microsoft.AspNet.Mvc.Formatters;
 using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.Routing;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.OptionsModel;
+using Microsoft.Framework.DependencyInjection;
 using Moq;
 using Xunit;
 
@@ -65,29 +67,19 @@ namespace System.Web.Http
             }
         }
 
-
-        private IServiceProvider CreateServices()
+        private static IServiceProvider CreateServices()
         {
-            var services = new Mock<IServiceProvider>(MockBehavior.Strict);
+            var options = new OptionsManager<MvcOptions>(new IConfigureOptions<MvcOptions>[] { });
+            options.Value.OutputFormatters.Add(new StringOutputFormatter());
+            options.Value.OutputFormatters.Add(new JsonOutputFormatter());
 
-            var options = new MvcOptions();
-            options.OutputFormatters.Add(new JsonOutputFormatter());
+            var services = new ServiceCollection();
+            services.AddInstance(new ObjectResultExecutor(
+                options,
+                new ActionBindingContextAccessor(),
+                NullLoggerFactory.Instance));
 
-            var optionsAccessor = new Mock<IOptions<MvcOptions>>();
-            optionsAccessor.SetupGet(o => o.Value)
-                .Returns(options);
-
-            var actionBindingContext = new ActionBindingContext { OutputFormatters = options.OutputFormatters };
-            services.Setup(o => o.GetService(typeof(IActionBindingContextAccessor)))
-                    .Returns(new ActionBindingContextAccessor() { ActionBindingContext = actionBindingContext });
-
-            services.Setup(s => s.GetService(typeof(IOptions<MvcOptions>)))
-                .Returns(optionsAccessor.Object);
-
-            services.Setup(s => s.GetService(typeof(ILogger<ObjectResult>)))
-                .Returns(new Mock<ILogger<ObjectResult>>().Object);
-
-            return services.Object;
+            return services.BuildServiceProvider();
         }
 
         private class Product
