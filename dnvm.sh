@@ -2,7 +2,7 @@
 # Source this file from your .bash-profile or script to use
 
 # "Constants"
-_DNVM_BUILDNUMBER="rc1-15528"
+_DNVM_BUILDNUMBER="rc1-15530"
 _DNVM_AUTHORS="Microsoft Open Technologies, Inc."
 _DNVM_RUNTIME_PACKAGE_NAME="dnx"
 _DNVM_RUNTIME_FRIENDLY_NAME=".NET Execution Environment"
@@ -36,6 +36,10 @@ fi
 __dnvm_has() {
     type "$1" > /dev/null 2>&1
     return $?
+}
+
+__dnvm_to_lower() {
+    echo "$1" | tr '[:upper:]' '[:lower:]'
 }
 
 if __dnvm_has "unsetopt"; then
@@ -550,15 +554,15 @@ dnvm()
                 elif [[ $1 == "-u" || $1 == "-unstable" ]]; then
                     local unstable="-u"
                 elif [[ $1 == "-r" || $1 == "-runtime" ]]; then
-                    local runtime=$2
+                    local runtime=$(__dnvm_to_lower "$2")
                     shift
                 elif [[ $1 == "-OS" ]]; then
-                    local os=$2
+                    local os=$(__dnvm_to_lower "$2")
                     shift
                 elif [[ $1 == "-y" ]]; then
                     local acceptSudo=1
                 elif [[ $1 == "-a" || $1 == "-arch" ]]; then
-                    local arch=$2
+                    local arch=$(__dnvm_to_lower "$2")
                     shift
 
                     if [[ $arch != "x86" && $arch != "x64" ]]; then
@@ -697,13 +701,13 @@ dnvm()
             while [ $# -ne 0 ]
             do
                 if [[ $1 == "-r" || $1 == "-runtime" ]]; then
-                    local runtime=$2
+                    local runtime=$(__dnvm_to_lower "$2")
                     shift
                 elif [[ $1 == "-a" || $1 == "-arch" ]]; then
-                    local architecture=$2
+                    local architecture=$(__dnvm_to_lower "$2")
                     shift
                 elif [[ $1 == "-OS" ]]; then
-                    local os=$2
+                    local os=$(__dnvm_to_lower "$2")
                     shift
                 elif [[ $1 == "-y" ]]; then
                     local acceptSudo=1
@@ -774,10 +778,10 @@ dnvm()
                     if [[ $1 == "-p" || $1 == "-persistent" ]]; then
                         local persistent="true"
                     elif [[ $1 == "-a" || $1 == "-arch" ]]; then
-                        local arch=$2
+                        local arch=$(__dnvm_to_lower "$2")
                         shift
                     elif [[ $1 == "-r" || $1 == "-runtime" ]]; then
-                        local runtime=$2
+                        local runtime=$(__dnvm_to_lower "$2")
                         shift
                     elif [[ $1 == -* ]]; then
                         echo "Invalid option $1" && __dnvm_help && return 1
@@ -791,10 +795,10 @@ dnvm()
                 while [ $# -ne 0 ]
                 do
                     if [[ $1 == "-a" || $1 == "-arch" ]]; then
-                        local arch=$2
+                        local arch=$(__dnvm_to_lower "$2")
                         shift
                     elif [[ $1 == "-r" || $1 == "-runtime" ]]; then
-                        local runtime=$2
+                        local runtime=$(__dnvm_to_lower "$2")
                         shift
                     elif [[ -n $1 ]]; then
                         [[ -n $versionOrAlias ]] && break
@@ -857,7 +861,7 @@ dnvm()
         ;;
 
         "alias" )
-            [[ $# -gt 7 ]] && __dnvm_help && return
+            [[ $# -gt 9 ]] && __dnvm_help && return
 
             [[ ! -e "$_DNVM_ALIAS_DIR/" ]] && mkdir "$_DNVM_ALIAS_DIR/" > /dev/null
 
@@ -902,13 +906,13 @@ dnvm()
             while [ $# -ne 0 ]
                 do
                     if [[ $1 == "-a" || $1 == "-arch" ]]; then
-                        local arch=$2
+                        local arch=$(__dnvm_to_lower "$2")
                         shift
                     elif [[ $1 == "-r" || $1 == "-runtime" ]]; then
-                        local runtime=$2
+                        local runtime=$(__dnvm_to_lower "$2")
                         shift
                     elif [[ $1 == "-OS" ]]; then
-                        local os=$2
+                        local os=$(__dnvm_to_lower "$2")
                         shift
                     fi
                     shift
