@@ -175,6 +175,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
 
             var outputFormatterContext = new OutputFormatterWriteContext(
                 actionContext.HttpContext,
+                new TestHttpResponseStreamWriterFactory().CreateWriter,
                 typeof(string),
                 content)
             {
@@ -218,7 +219,11 @@ namespace Microsoft.AspNet.Mvc.Formatters
             var mediaTypeHeaderValue = MediaTypeHeaderValue.Parse(contentType);
 
             var actionContext = GetActionContext(mediaTypeHeaderValue, responseStream);
-            return new OutputFormatterWriteContext(actionContext.HttpContext, outputType, outputValue)
+            return new OutputFormatterWriteContext(
+                actionContext.HttpContext,
+                new TestHttpResponseStreamWriterFactory().CreateWriter,
+                outputType,
+                outputValue)
             {
                 ContentType = mediaTypeHeaderValue,
             };

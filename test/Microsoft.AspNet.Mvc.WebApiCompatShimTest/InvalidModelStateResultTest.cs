@@ -90,6 +90,7 @@ namespace System.Web.Http
             services.AddInstance(new ObjectResultExecutor(
                 options,
                 new ActionBindingContextAccessor(),
+                new TestHttpResponseStreamWriterFactory(),
                 NullLoggerFactory.Instance));
 
             return services.BuildServiceProvider();

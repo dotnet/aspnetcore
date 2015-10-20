@@ -23,7 +23,11 @@ namespace Microsoft.AspNet.Mvc.Formatters
             var formatter = new StreamOutputFormatter();
             var contentTypeHeader = contentType == null ? null : new MediaTypeHeaderValue(contentType);
 
-            var context = new OutputFormatterWriteContext(new DefaultHttpContext(), type, new MemoryStream())
+            var context = new OutputFormatterWriteContext(
+                new DefaultHttpContext(),
+                new TestHttpResponseStreamWriterFactory().CreateWriter,
+                type,
+                new MemoryStream())
             {
                 ContentType = contentTypeHeader,
             };
@@ -44,7 +48,11 @@ namespace Microsoft.AspNet.Mvc.Formatters
             var formatter = new StreamOutputFormatter();
             var contentTypeHeader = contentType == null ? null : new MediaTypeHeaderValue(contentType);
 
-            var context = new OutputFormatterWriteContext(new DefaultHttpContext(), type, new SimplePOCO())
+            var context = new OutputFormatterWriteContext(
+                new DefaultHttpContext(),
+                new TestHttpResponseStreamWriterFactory().CreateWriter,
+                type,
+                new SimplePOCO())
             {
                 ContentType = contentTypeHeader,
             };
@@ -66,7 +74,11 @@ namespace Microsoft.AspNet.Mvc.Formatters
             var formatter = new StreamOutputFormatter();
             var @object = type != null ? Activator.CreateInstance(type) : null;
 
-            var context = new OutputFormatterWriteContext(new DefaultHttpContext(), type, @object);
+            var context = new OutputFormatterWriteContext(
+                new DefaultHttpContext(),
+                new TestHttpResponseStreamWriterFactory().CreateWriter,
+                type,
+                @object);
 
             // Act
             var result = formatter.CanWriteResult(context);
@@ -90,7 +102,11 @@ namespace Microsoft.AspNet.Mvc.Formatters
             var bufferingFeature = new TestBufferingFeature();
             httpContext.Features.Set<IHttpBufferingFeature>(bufferingFeature);
 
-            var context = new OutputFormatterWriteContext(httpContext, typeof(Stream), new MemoryStream(expected));
+            var context = new OutputFormatterWriteContext(
+                httpContext,
+                new TestHttpResponseStreamWriterFactory().CreateWriter,
+                typeof(Stream),
+                new MemoryStream(expected));
 
             // Act
             await formatter.WriteAsync(context);

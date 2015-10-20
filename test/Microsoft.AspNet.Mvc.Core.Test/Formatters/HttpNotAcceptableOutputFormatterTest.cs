@@ -18,7 +18,11 @@ namespace Microsoft.AspNet.Mvc.Formatters
             // Arrange
             var formatter = new HttpNotAcceptableOutputFormatter();
 
-            var context = new OutputFormatterWriteContext(new DefaultHttpContext(), objectType: null, @object: null)
+            var context = new OutputFormatterWriteContext(
+                new DefaultHttpContext(),
+                new TestHttpResponseStreamWriterFactory().CreateWriter,
+                objectType: null,
+                @object: null)
             {
                 FailedContentNegotiation = failedContentNegotiation,
             };
@@ -36,7 +40,11 @@ namespace Microsoft.AspNet.Mvc.Formatters
             // Arrange
             var formatter = new HttpNotAcceptableOutputFormatter();
 
-            var context = new OutputFormatterWriteContext(new DefaultHttpContext(), objectType: null, @object: null)
+            var context = new OutputFormatterWriteContext(
+                new DefaultHttpContext(),
+                new TestHttpResponseStreamWriterFactory().CreateWriter,
+                objectType: null,
+                @object: null)
             {
                 FailedContentNegotiation = true,
             };
@@ -54,7 +62,11 @@ namespace Microsoft.AspNet.Mvc.Formatters
             // Arrange
             var formatter = new HttpNotAcceptableOutputFormatter();
 
-            var context = new OutputFormatterWriteContext(new DefaultHttpContext(), objectType: null, @object: null);
+            var context = new OutputFormatterWriteContext(
+                new DefaultHttpContext(),
+                new TestHttpResponseStreamWriterFactory().CreateWriter,
+                objectType: null,
+                @object: null);
 
             // Act
              await formatter.WriteAsync(context);

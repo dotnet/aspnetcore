@@ -53,7 +53,11 @@ namespace Microsoft.AspNet.Mvc.Formatters
                 formatter.SupportedEncodings.Add(Encoding.GetEncoding(supportedEncoding));
             }
 
-            var context = new OutputFormatterWriteContext(httpContext.Object, typeof(string), "someValue")
+            var context = new OutputFormatterWriteContext(
+                httpContext.Object,
+                new TestHttpResponseStreamWriterFactory().CreateWriter,
+                typeof(string),
+                "someValue")
             {
                 ContentType = MediaTypeHeaderValue.Parse(httpRequest.Headers[HeaderNames.Accept]),
             };
@@ -77,7 +81,11 @@ namespace Microsoft.AspNet.Mvc.Formatters
             formatter.SupportedMediaTypes.Clear();
             formatter.SupportedMediaTypes.Add(testContentType);
 
-            var context = new OutputFormatterWriteContext(new DefaultHttpContext(), objectType: null, @object: null)
+            var context = new OutputFormatterWriteContext(
+                new DefaultHttpContext(),
+                new TestHttpResponseStreamWriterFactory().CreateWriter,
+                objectType: null,
+                @object: null)
             {
                 ContentType = testContentType,
             };
@@ -102,7 +110,11 @@ namespace Microsoft.AspNet.Mvc.Formatters
             var mediaType = new MediaTypeHeaderValue("image/png");
             formatter.SupportedMediaTypes.Add(mediaType);
 
-            var context = new OutputFormatterWriteContext(new DefaultHttpContext(), objectType: null, @object: null);
+            var context = new OutputFormatterWriteContext(
+                new DefaultHttpContext(),
+                new TestHttpResponseStreamWriterFactory().CreateWriter,
+                objectType: null,
+                @object: null);
 
             // Act
             await formatter.WriteAsync(context);
@@ -117,7 +129,12 @@ namespace Microsoft.AspNet.Mvc.Formatters
         public void CanWriteResult_ForNullContentType_UsesFirstEntryInSupportedContentTypes()
         {
             // Arrange
-            var context = new OutputFormatterWriteContext(new DefaultHttpContext(), objectType: null, @object: null);
+            var context = new OutputFormatterWriteContext(
+                new DefaultHttpContext(),
+                new TestHttpResponseStreamWriterFactory().CreateWriter,
+                objectType: null,
+                @object: null);
+
             var formatter = new TestOutputFormatter();
 
             // Act
@@ -151,7 +168,11 @@ namespace Microsoft.AspNet.Mvc.Formatters
             formatter.SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/json"));
             formatter.SupportedTypes.Add(typeof(int));
 
-            var context = new OutputFormatterWriteContext(new DefaultHttpContext(),typeof(string), "Hello, world!")
+            var context = new OutputFormatterWriteContext(
+                new DefaultHttpContext(),
+                new TestHttpResponseStreamWriterFactory().CreateWriter,
+                typeof(string),
+                "Hello, world!")
             {
                 ContentType = formatter.SupportedMediaTypes[0],
             };

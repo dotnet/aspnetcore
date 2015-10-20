@@ -360,7 +360,11 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
             Type outputType,
             string contentType = "application/xml; charset=utf-8")
         {
-            return new OutputFormatterWriteContext(GetHttpContext(contentType), outputType, outputValue);
+            return new OutputFormatterWriteContext(
+                GetHttpContext(contentType),
+                new TestHttpResponseStreamWriterFactory().CreateWriter,
+                outputType,
+                outputValue);
         }
 
         private static HttpContext GetHttpContext(string contentType)

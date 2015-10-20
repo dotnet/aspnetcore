@@ -151,7 +151,11 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShimTest
             Type outputType,
             HttpContext httpContext)
         {
-            return new OutputFormatterWriteContext(httpContext, outputType, outputValue);
+            return new OutputFormatterWriteContext(
+                httpContext,
+                new TestHttpResponseStreamWriterFactory().CreateWriter,
+                outputType,
+                outputValue);
         }
     }
 }

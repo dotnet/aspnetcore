@@ -42,7 +42,11 @@ namespace Microsoft.AspNet.Mvc.Formatters
             var formatter = new StringOutputFormatter();
             var type = useDeclaredTypeAsString ? typeof(string) : typeof(object);
 
-            var context = new OutputFormatterWriteContext(new DefaultHttpContext(), type, value);
+            var context = new OutputFormatterWriteContext(
+                new DefaultHttpContext(),
+                new TestHttpResponseStreamWriterFactory().CreateWriter,
+                type,
+                value);
             context.ContentType = MediaTypeHeaderValue.Parse("application/json");
 
             // Act
@@ -66,7 +70,11 @@ namespace Microsoft.AspNet.Mvc.Formatters
             httpContext.Setup(o => o.Response).Returns(response.Object);
 
             var formatter = new StringOutputFormatter();
-            var context = new OutputFormatterWriteContext(httpContext.Object, typeof(string), @object: null);
+            var context = new OutputFormatterWriteContext(
+                httpContext.Object,
+                new TestHttpResponseStreamWriterFactory().CreateWriter,
+                typeof(string),
+                @object: null);
 
             // Act
             await formatter.WriteResponseBodyAsync(context);

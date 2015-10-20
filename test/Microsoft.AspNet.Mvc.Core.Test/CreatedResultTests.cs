@@ -99,6 +99,7 @@ namespace Microsoft.AspNet.Mvc
             services.AddInstance(new ObjectResultExecutor(
                 options,
                 new ActionBindingContextAccessor(),
+                new TestHttpResponseStreamWriterFactory(),
                 NullLoggerFactory.Instance));
 
             return services.BuildServiceProvider();

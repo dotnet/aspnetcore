@@ -108,7 +108,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
             var response = context.HttpContext.Response;
             var selectedEncoding = context.ContentType?.Encoding ?? Encoding.UTF8;
 
-            using (var writer = new HttpResponseStreamWriter(response.Body, selectedEncoding))
+            using (var writer = context.WriterFactory(response.Body, selectedEncoding))
             {
                 WriteObject(writer, context.Object);
             }

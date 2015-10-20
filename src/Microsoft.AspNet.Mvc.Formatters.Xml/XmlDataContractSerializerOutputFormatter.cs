@@ -148,17 +148,23 @@ namespace Microsoft.AspNet.Mvc.Formatters
         }
 
         /// <summary>
-        /// Creates a new instance of <see cref="XmlWriter"/> using the given stream and the <see cref="WriterSettings"/>.
+        /// Creates a new instance of <see cref="XmlWriter"/> using the given <see cref="TextWriter"/> and
+        /// <see cref="XmlWriterSettings"/>.
         /// </summary>
-        /// <param name="writeStream">The stream on which the XmlWriter should operate on.</param>
+        /// <param name="writer">
+        /// The underlying <see cref="TextWriter"/> which the <see cref="XmlWriter"/> should write to.
+        /// </param>
+        /// <param name="xmlWriterSettings">
+        /// The <see cref="XmlWriterSettings"/>.
+        /// </param>
         /// <returns>A new instance of <see cref="XmlWriter"/></returns>
         public virtual XmlWriter CreateXmlWriter(
-            Stream writeStream,
+            TextWriter writer,
             XmlWriterSettings xmlWriterSettings)
         {
-            if (writeStream == null)
+            if (writer == null)
             {
-                throw new ArgumentNullException(nameof(writeStream));
+                throw new ArgumentNullException(nameof(writer));
             }
 
             if (xmlWriterSettings == null)
@@ -166,9 +172,10 @@ namespace Microsoft.AspNet.Mvc.Formatters
                 throw new ArgumentNullException(nameof(xmlWriterSettings));
             }
 
-            return XmlWriter.Create(
-                new HttpResponseStreamWriter(writeStream, xmlWriterSettings.Encoding),
-                xmlWriterSettings);
+            // We always close the TextWriter, so the XmlWriter shouldn't.
+            xmlWriterSettings.CloseOutput = false;
+
+            return XmlWriter.Create(writer, xmlWriterSettings);
         }
 
         /// <inheritdoc />
@@ -182,24 +189,26 @@ namespace Microsoft.AspNet.Mvc.Formatters
             var writerSettings = WriterSettings.Clone();
             writerSettings.Encoding = context.ContentType?.Encoding ?? Encoding.UTF8;
 
+            // Wrap the object only if there is a wrapping type.
             var value = context.Object;
-
-            using (var xmlWriter = CreateXmlWriter(context.HttpContext.Response.Body, writerSettings))
+            var wrappingType = GetSerializableType(context.ObjectType);
+            if (wrappingType != null && wrappingType != context.ObjectType)
             {
-                var wrappingType = GetSerializableType(context.ObjectType);
+                var wrapperProvider = WrapperProviderFactories.GetWrapperProvider(new WrapperProviderContext(
+                    declaredType: context.ObjectType,
+                    isSerialization: true));
 
-                // Wrap the object only if there is a wrapping type.
-                if (wrappingType != null && wrappingType != context.ObjectType)
+                value = wrapperProvider.Wrap(value);
+            }
+
+            var dataContractSerializer = GetCachedSerializer(wrappingType);
+
+            using (var textWriter = context.WriterFactory(context.HttpContext.Response.Body, writerSettings.Encoding))
+            {
+                using (var xmlWriter = CreateXmlWriter(textWriter, writerSettings))
                 {
-                    var wrapperProvider = WrapperProviderFactories.GetWrapperProvider(new WrapperProviderContext(
-                        declaredType: context.ObjectType,
-                        isSerialization: true));
-
-                    value = wrapperProvider.Wrap(value);
+                    dataContractSerializer.WriteObject(xmlWriter, value);
                 }
-
-                var dataContractSerializer = GetCachedSerializer(wrappingType);
-                dataContractSerializer.WriteObject(xmlWriter, value);
             }
 
             return TaskCache.CompletedTask;

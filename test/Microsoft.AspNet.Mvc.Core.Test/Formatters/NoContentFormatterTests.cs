@@ -43,7 +43,11 @@ namespace Microsoft.AspNet.Mvc.Formatters
             var type = declaredTypeAsString ? typeof(string) : typeof(object);
             var contentType = useNonNullContentType ? MediaTypeHeaderValue.Parse("text/plain") : null;
 
-            var context = new OutputFormatterWriteContext(new DefaultHttpContext(), type, value)
+            var context = new OutputFormatterWriteContext(
+                new DefaultHttpContext(),
+                new TestHttpResponseStreamWriterFactory().CreateWriter,
+                type,
+                value)
             {
                 ContentType = contentType,
             };
@@ -65,6 +69,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
             // Arrange
             var context = new OutputFormatterWriteContext(
                 new DefaultHttpContext(),
+                new TestHttpResponseStreamWriterFactory().CreateWriter,
                 declaredType,
                 "Something non null.")
             {
@@ -92,6 +97,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
             // Arrange
             var context = new OutputFormatterWriteContext(
                 new DefaultHttpContext(),
+                new TestHttpResponseStreamWriterFactory().CreateWriter,
                 typeof(string),
                 value)
             {
@@ -114,7 +120,11 @@ namespace Microsoft.AspNet.Mvc.Formatters
         public async Task WriteAsync_WritesTheStatusCode204()
         {
             // Arrange
-            var context = new OutputFormatterWriteContext(new DefaultHttpContext(), typeof(string), @object: null);
+            var context = new OutputFormatterWriteContext(
+                new DefaultHttpContext(),
+                new TestHttpResponseStreamWriterFactory().CreateWriter,
+                typeof(string),
+                @object: null);
 
             var formatter = new HttpNoContentOutputFormatter();
 
@@ -132,7 +142,11 @@ namespace Microsoft.AspNet.Mvc.Formatters
             var httpContext = new DefaultHttpContext();
             httpContext.Response.StatusCode = StatusCodes.Status201Created;
 
-            var context = new OutputFormatterWriteContext(httpContext, typeof(string), @object: null);
+            var context = new OutputFormatterWriteContext(
+                httpContext,
+                new TestHttpResponseStreamWriterFactory().CreateWriter,
+                typeof(string),
+                @object: null);
 
             var formatter = new HttpNoContentOutputFormatter();
 
