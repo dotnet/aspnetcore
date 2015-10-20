@@ -32,7 +32,7 @@
       "version": "1.0.0-*",
       "type": "build"
     },
-    "System.Diagnostics.Tracing.Telemetry": "4.0.0-beta-*"
+    "System.Diagnostics.DiagnosticSource": "4.0.0-beta-*"
   },
   "frameworks": {
     "dnx451": {

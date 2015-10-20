@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.Tracing;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Abstractions;
@@ -31,9 +30,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
         private readonly IReadOnlyList<IValueProviderFactory> _valueProviderFactories;
         private readonly IActionBindingContextAccessor _actionBindingContextAccessor;
         private readonly ILogger _logger;
-#pragma warning disable 0618
-        private readonly TelemetrySource _telemetry;
-#pragma warning restore 0618
+        private readonly DiagnosticSource _diagnosticSource;
         private readonly int _maxModelValidationErrors;
 
         private IFilterMetadata[] _filters;
@@ -62,8 +59,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
             "Request was short circuited at exception filter '{ExceptionFilter}'.";
         private const string ResultFilterShortCircuitLogMessage =
             "Request was short circuited at result filter '{ResultFilter}'.";
-
-#pragma warning disable 0618
+        
         public FilterActionInvoker(
             ActionContext actionContext,
             IReadOnlyList<IFilterProvider> filterProviders,
@@ -74,7 +70,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
             IReadOnlyList<IValueProviderFactory> valueProviderFactories,
             IActionBindingContextAccessor actionBindingContextAccessor,
             ILogger logger,
-            TelemetrySource telemetry,
+            DiagnosticSource diagnosticSource,
             int maxModelValidationErrors)
         {
             if (actionContext == null)
@@ -122,9 +118,9 @@ namespace Microsoft.AspNet.Mvc.Controllers
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            if (telemetry == null)
+            if (diagnosticSource == null)
             {
-                throw new ArgumentNullException(nameof(telemetry));
+                throw new ArgumentNullException(nameof(diagnosticSource));
             }
 
             ActionContext = actionContext;
@@ -137,10 +133,9 @@ namespace Microsoft.AspNet.Mvc.Controllers
             _valueProviderFactories = valueProviderFactories;
             _actionBindingContextAccessor = actionBindingContextAccessor;
             _logger = logger;
-            _telemetry = telemetry;
+            _diagnosticSource = diagnosticSource;
             _maxModelValidationErrors = maxModelValidationErrors;
         }
-#pragma warning restore 0618
 
         protected ActionContext ActionContext { get; private set; }
 
@@ -656,10 +651,9 @@ namespace Microsoft.AspNet.Mvc.Controllers
 
                     try
                     {
-#pragma warning disable 0618
-                        if (_telemetry.IsEnabled("Microsoft.AspNet.Mvc.BeforeActionMethod"))
+                        if (_diagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.BeforeActionMethod"))
                         {
-                            _telemetry.WriteTelemetry(
+                            _diagnosticSource.Write(
                                 "Microsoft.AspNet.Mvc.BeforeActionMethod",
                                 new
                                 {
@@ -668,16 +662,14 @@ namespace Microsoft.AspNet.Mvc.Controllers
                                     controller = _actionExecutingContext.Controller
                                 });
                         }
-#pragma warning restore 0618
 
                         result = await InvokeActionAsync(_actionExecutingContext);
                     }
                     finally
                     {
-#pragma warning disable 0618
-                        if (_telemetry.IsEnabled("Microsoft.AspNet.Mvc.AfterActionMethod"))
+                        if (_diagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.AfterActionMethod"))
                         {
-                            _telemetry.WriteTelemetry(
+                            _diagnosticSource.Write(
                                 "Microsoft.AspNet.Mvc.AfterActionMethod",
                                 new
                                 {
@@ -687,7 +679,6 @@ namespace Microsoft.AspNet.Mvc.Controllers
                                     result = result
                                 });
                         }
-#pragma warning restore 0618
                     }
 
                     _actionExecutedContext = new ActionExecutedContext(
@@ -835,14 +826,12 @@ namespace Microsoft.AspNet.Mvc.Controllers
 
         private async Task InvokeResultAsync(IActionResult result)
         {
-#pragma warning disable 0618
-            if (_telemetry.IsEnabled("Microsoft.AspNet.Mvc.BeforeActionResult"))
+            if (_diagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.BeforeActionResult"))
             {
-                _telemetry.WriteTelemetry(
+                _diagnosticSource.Write(
                     "Microsoft.AspNet.Mvc.BeforeActionResult",
                     new { actionContext = ActionContext, result = result });
             }
-#pragma warning restore 0618
 
             try
             {
@@ -850,14 +839,12 @@ namespace Microsoft.AspNet.Mvc.Controllers
             }
             finally
             {
-#pragma warning disable 0618
-                if (_telemetry.IsEnabled("Microsoft.AspNet.Mvc.AfterActionResult"))
+                if (_diagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.AfterActionResult"))
                 {
-                    _telemetry.WriteTelemetry(
+                    _diagnosticSource.Write(
                         "Microsoft.AspNet.Mvc.AfterActionResult",
                         new { actionContext = ActionContext, result = result });
                 }
-#pragma warning restore 0618
             }
         }
 

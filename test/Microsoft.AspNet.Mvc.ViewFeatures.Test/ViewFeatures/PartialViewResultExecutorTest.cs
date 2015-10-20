@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 #if MOCK_SUPPORT
-using System.Diagnostics.Tracing;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
@@ -70,18 +70,17 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             // Assert
             Assert.Equal(viewName, viewEngineResult.ViewName);
         }
-
-#pragma warning disable 0618
+        
         [Fact]
-        public void FindView_Notifies_ViewFound()
+        public void FindView_WritesDiagnostic_ViewFound()
         {
             // Arrange
-            var telemetry = new TelemetryListener("Test");
-            var listener = new TestTelemetryListener();
-            telemetry.SubscribeWithAdapter(listener);
+            var diagnosticSource = new DiagnosticListener("Test");
+            var listener = new TestDiagnosticListener();
+            diagnosticSource.SubscribeWithAdapter(listener);
 
             var context = GetActionContext();
-            var executor = GetViewExecutor(telemetry);
+            var executor = GetViewExecutor(diagnosticSource);
 
             var viewName = "myview";
             var viewResult = new PartialViewResult
@@ -106,15 +105,15 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         }
 
         [Fact]
-        public void FindView_Notifies_ViewNotFound()
+        public void FindView_WritesDiagnostic_ViewNotFound()
         {
             // Arrange
-            var telemetry = new TelemetryListener("Test");
-            var listener = new TestTelemetryListener();
-            telemetry.SubscribeWithAdapter(listener);
+            var diagnosticSource = new DiagnosticListener("Test");
+            var listener = new TestDiagnosticListener();
+            diagnosticSource.SubscribeWithAdapter(listener);
 
             var context = GetActionContext();
-            var executor = GetViewExecutor(telemetry);
+            var executor = GetViewExecutor(diagnosticSource);
 
             var viewName = "myview";
             var viewEngine = new Mock<IViewEngine>(MockBehavior.Strict);
@@ -142,7 +141,6 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             Assert.Equal(new string[] { "location/myview" }, listener.ViewNotFound.SearchedLocations);
             Assert.Equal("myview", listener.ViewNotFound.ViewName);
         }
-#pragma warning restore 0618
 
         [Fact]
         public async Task ExecuteAsync_UsesContentType_FromPartialViewResult()
@@ -201,13 +199,12 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         {
             return new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
         }
-
-#pragma warning disable 0618
-        private PartialViewResultExecutor GetViewExecutor(TelemetrySource telemetry = null)
+        
+        private PartialViewResultExecutor GetViewExecutor(DiagnosticSource diagnosticSource = null)
         {
-            if (telemetry == null)
+            if (diagnosticSource == null)
             {
-                telemetry = new TelemetryListener("Test");
+                diagnosticSource = new DiagnosticListener("Test");
             }
 
             var viewEngine = new Mock<IViewEngine>(MockBehavior.Strict);
@@ -222,12 +219,11 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 options,
                 new TestHttpResponseStreamWriterFactory(),
                 new CompositeViewEngine(options),
-                telemetry,
+                diagnosticSource,
                 NullLoggerFactory.Instance);
 
             return viewExecutor;
         }
-#pragma warning restore 0618
     }
 }
 #endif

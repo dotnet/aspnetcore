@@ -3,7 +3,7 @@
 
 #if MOCK_SUPPORT
 using System;
-using System.Diagnostics.Tracing;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -146,9 +146,9 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             Assert.Equal(500, context.Response.StatusCode);
             Assert.Equal("abcd", Encoding.UTF8.GetString(memoryStream.ToArray()));
         }
-#pragma warning disable 0618
+
         [Fact]
-        public async Task ExecuteAsync_WritesTelemetry()
+        public async Task ExecuteAsync_WritesDiagnostic()
         {
             // Arrange
             var view = CreateView(async (v) =>
@@ -166,12 +166,12 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 new ActionDescriptor());
             var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider());
 
-            var adapter = new TestTelemetryListener();
+            var adapter = new TestDiagnosticListener();
 
-            var telemetryListener = new TelemetryListener("Test");
-            telemetryListener.SubscribeWithAdapter(adapter);
+            var diagnosticSource = new DiagnosticListener("Test");
+            diagnosticSource.SubscribeWithAdapter(adapter);
 
-            var viewExecutor = CreateViewExecutor(telemetryListener);
+            var viewExecutor = CreateViewExecutor(diagnosticSource);
 
             // Act
             await viewExecutor.ExecuteAsync(
@@ -190,7 +190,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             Assert.NotNull(adapter.AfterView?.View);
             Assert.NotNull(adapter.AfterView?.ViewContext);
         }
-#pragma warning restore 0618
+
         [Fact]
         public async Task ExecuteAsync_DoesNotWriteToResponse_OnceExceptionIsThrown()
         {
@@ -277,21 +277,20 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
             return view.Object;
         }
-#pragma warning disable 0618
-        private ViewExecutor CreateViewExecutor(TelemetryListener listener = null)
+
+        private ViewExecutor CreateViewExecutor(DiagnosticListener diagnosticSource = null)
         {
-            if (listener == null)
+            if (diagnosticSource == null)
             {
-                listener = new TelemetryListener("Test");
+                diagnosticSource = new DiagnosticListener("Test");
             }
 
             return new ViewExecutor(
                 new TestOptionsManager<MvcViewOptions>(),
                 new TestHttpResponseStreamWriterFactory(),
                 new Mock<ICompositeViewEngine>(MockBehavior.Strict).Object,
-                listener);
+                diagnosticSource);
         }
-#pragma warning restore 0618
     }
 }
 #endif

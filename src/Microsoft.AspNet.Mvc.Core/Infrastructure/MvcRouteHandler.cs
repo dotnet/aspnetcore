@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics.Tracing;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Abstractions;
@@ -21,9 +21,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
         private IActionInvokerFactory _actionInvokerFactory;
         private IActionSelector _actionSelector;
         private ILogger _logger;
-#pragma warning disable 0618
-        private TelemetrySource _telemetry;
-#pragma warning restore 0618
+        private DiagnosticSource _diagnosticSource;
 
         public VirtualPathData GetVirtualPath(VirtualPathContext context)
         {
@@ -86,14 +84,12 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             {
                 context.RouteData = newRouteData;
 
-#pragma warning disable 0618
-                if (_telemetry.IsEnabled("Microsoft.AspNet.Mvc.BeforeAction"))
+                if (_diagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.BeforeAction"))
                 {
-                    _telemetry.WriteTelemetry(
+                    _diagnosticSource.Write(
                         "Microsoft.AspNet.Mvc.BeforeAction",
                         new { actionDescriptor, httpContext = context.HttpContext, routeData = context.RouteData });
                 }
-#pragma warning restore 0618
 
                 using (_logger.BeginScope("ActionId: {ActionId}", actionDescriptor.Id))
                 {
@@ -105,14 +101,12 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             }
             finally
             {
-#pragma warning disable 0618
-                if (_telemetry.IsEnabled("Microsoft.AspNet.Mvc.AfterAction"))
+                if (_diagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.AfterAction"))
                 {
-                    _telemetry.WriteTelemetry(
+                    _diagnosticSource.Write(
                         "Microsoft.AspNet.Mvc.AfterAction",
                         new { actionDescriptor, httpContext = context.HttpContext, routeData = context.RouteData });
                 }
-#pragma warning restore 0618
 
                 if (!context.IsHandled)
                 {
@@ -159,13 +153,11 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 var factory = context.RequestServices.GetRequiredService<ILoggerFactory>();
                 _logger = factory.CreateLogger<MvcRouteHandler>();
             }
-
-#pragma warning disable 0618
-            if (_telemetry == null)
+            
+            if (_diagnosticSource == null)
             {
-                _telemetry = context.RequestServices.GetRequiredService<TelemetrySource>();
+                _diagnosticSource = context.RequestServices.GetRequiredService<DiagnosticSource>();
             }
-#pragma warning restore 0618
         }
     }
 }

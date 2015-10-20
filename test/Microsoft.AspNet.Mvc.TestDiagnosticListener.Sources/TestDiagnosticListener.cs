@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using Microsoft.Extensions.TelemetryAdapter;
+using Microsoft.Extensions.DiagnosticAdapter;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class TestTelemetryListener
+    public class TestDiagnosticListener
     {
         public class OnBeforeActionEventData
         {
@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Mvc
 
         public OnBeforeActionEventData BeforeAction { get; set; }
 
-        [TelemetryName("Microsoft.AspNet.Mvc.BeforeAction")]
+        [DiagnosticName("Microsoft.AspNet.Mvc.BeforeAction")]
         public virtual void OnBeforeAction(
             IProxyHttpContext httpContext,
             IProxyRouteData routeData,
@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Mvc
 
         public OnAfterActionEventData AfterAction { get; set; }
 
-        [TelemetryName("Microsoft.AspNet.Mvc.AfterAction")]
+        [DiagnosticName("Microsoft.AspNet.Mvc.AfterAction")]
         public virtual void OnAfterAction(
             IProxyHttpContext httpContext,
             IProxyActionDescriptor actionDescriptor)
@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.Mvc
 
         public OnBeforeActionMethodEventData BeforeActionMethod { get; set; }
 
-        [TelemetryName("Microsoft.AspNet.Mvc.BeforeActionMethod")]
+        [DiagnosticName("Microsoft.AspNet.Mvc.BeforeActionMethod")]
         public virtual void OnBeforeActionMethod(
             IProxyActionContext actionContext,
             IReadOnlyDictionary<string, object> arguments)
@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.Mvc
 
         public OnAfterActionMethodEventData AfterActionMethod { get; set; }
 
-        [TelemetryName("Microsoft.AspNet.Mvc.AfterActionMethod")]
+        [DiagnosticName("Microsoft.AspNet.Mvc.AfterActionMethod")]
         public virtual void OnAfterActionMethod(
             IProxyActionContext actionContext,
             IProxyActionResult result)
@@ -99,7 +99,7 @@ namespace Microsoft.AspNet.Mvc
 
         public OnBeforeActionResultEventData BeforeActionResult { get; set; }
 
-        [TelemetryName("Microsoft.AspNet.Mvc.BeforeActionResult")]
+        [DiagnosticName("Microsoft.AspNet.Mvc.BeforeActionResult")]
         public virtual void OnBeforeActionResult(IProxyActionContext actionContext, IProxyActionResult result)
         {
             BeforeActionResult = new OnBeforeActionResultEventData()
@@ -117,7 +117,7 @@ namespace Microsoft.AspNet.Mvc
 
         public OnAfterActionResultEventData AfterActionResult { get; set; }
 
-        [TelemetryName("Microsoft.AspNet.Mvc.AfterActionResult")]
+        [DiagnosticName("Microsoft.AspNet.Mvc.AfterActionResult")]
         public virtual void OnAfterActionResult(IProxyActionContext actionContext, IProxyActionResult result)
         {
             AfterActionResult = new OnAfterActionResultEventData()
@@ -138,7 +138,7 @@ namespace Microsoft.AspNet.Mvc
 
         public OnViewFoundEventData ViewFound { get; set; }
 
-        [TelemetryName("Microsoft.AspNet.Mvc.ViewFound")]
+        [DiagnosticName("Microsoft.AspNet.Mvc.ViewFound")]
         public virtual void OnViewFound(
             IProxyActionContext actionContext,
             bool isPartial,
@@ -167,7 +167,7 @@ namespace Microsoft.AspNet.Mvc
 
         public OnViewNotFoundEventData ViewNotFound { get; set; }
 
-        [TelemetryName("Microsoft.AspNet.Mvc.ViewNotFound")]
+        [DiagnosticName("Microsoft.AspNet.Mvc.ViewNotFound")]
         public virtual void OnViewNotFound(
             IProxyActionContext actionContext,
             bool isPartial,
@@ -193,7 +193,7 @@ namespace Microsoft.AspNet.Mvc
 
         public OnBeforeViewEventData BeforeView { get; set; }
 
-        [TelemetryName("Microsoft.AspNet.Mvc.BeforeView")]
+        [DiagnosticName("Microsoft.AspNet.Mvc.BeforeView")]
         public virtual void OnBeforeView(IProxyView view, IProxyViewContext viewContext)
         {
             BeforeView = new OnBeforeViewEventData()
@@ -211,7 +211,7 @@ namespace Microsoft.AspNet.Mvc
 
         public OnAfterViewEventData AfterView { get; set; }
 
-        [TelemetryName("Microsoft.AspNet.Mvc.AfterView")]
+        [DiagnosticName("Microsoft.AspNet.Mvc.AfterView")]
         public virtual void OnAfterView(IProxyView view, IProxyViewContext viewContext)
         {
             AfterView = new OnAfterViewEventData()

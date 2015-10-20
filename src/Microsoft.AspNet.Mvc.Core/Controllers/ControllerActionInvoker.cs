@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.Tracing;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
@@ -23,7 +22,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
         private readonly ControllerActionDescriptor _descriptor;
         private readonly IControllerFactory _controllerFactory;
         private readonly IControllerActionArgumentBinder _argumentBinder;
-#pragma warning disable 0618
+
         public ControllerActionInvoker(
             ActionContext actionContext,
             IReadOnlyList<IFilterProvider> filterProviders,
@@ -37,7 +36,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
             IReadOnlyList<IValueProviderFactory> valueProviderFactories,
             IActionBindingContextAccessor actionBindingContextAccessor,
             ILogger logger,
-            TelemetrySource telemetry,
+            DiagnosticSource diagnosticSource,
             int maxModelValidationErrors)
             : base(
                   actionContext,
@@ -49,7 +48,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
                   valueProviderFactories,
                   actionBindingContextAccessor,
                   logger,
-                  telemetry,
+                  diagnosticSource,
                   maxModelValidationErrors)
         {
             if (actionContext == null)
@@ -112,9 +111,9 @@ namespace Microsoft.AspNet.Mvc.Controllers
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            if (telemetry == null)
+            if (diagnosticSource == null)
             {
-                throw new ArgumentNullException(nameof(telemetry));
+                throw new ArgumentNullException(nameof(diagnosticSource));
             }
 
             _descriptor = descriptor;
@@ -129,7 +128,6 @@ namespace Microsoft.AspNet.Mvc.Controllers
                     "descriptor");
             }
         }
-#pragma warning disable 0618
 
         protected override object CreateInstance()
         {

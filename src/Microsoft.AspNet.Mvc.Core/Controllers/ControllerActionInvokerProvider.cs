@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Tracing;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.Filters;
@@ -18,7 +18,6 @@ namespace Microsoft.AspNet.Mvc.Controllers
 {
     public class ControllerActionInvokerProvider : IActionInvokerProvider
     {
-#pragma warning disable 0618
         private readonly IControllerActionArgumentBinder _argumentBinder;
         private readonly IControllerFactory _controllerFactory;
         private readonly IFilterProvider[] _filterProviders;
@@ -30,7 +29,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
         private readonly IActionBindingContextAccessor _actionBindingContextAccessor;
         private readonly int _maxModelValidationErrors;
         private readonly ILogger _logger;
-        private readonly TelemetrySource _telemetry;
+        private readonly DiagnosticSource _diagnosticSource;
 
         public ControllerActionInvokerProvider(
             IControllerFactory controllerFactory,
@@ -39,7 +38,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
             IOptions<MvcOptions> optionsAccessor,
             IActionBindingContextAccessor actionBindingContextAccessor,
             ILoggerFactory loggerFactory,
-            TelemetrySource telemetry)
+            DiagnosticSource diagnosticSource)
         {
             _controllerFactory = controllerFactory;
             _filterProviders = filterProviders.OrderBy(item => item.Order).ToArray();
@@ -52,9 +51,8 @@ namespace Microsoft.AspNet.Mvc.Controllers
             _actionBindingContextAccessor = actionBindingContextAccessor;
             _maxModelValidationErrors = optionsAccessor.Value.MaxModelValidationErrors;
             _logger = loggerFactory.CreateLogger<ControllerActionInvoker>();
-            _telemetry = telemetry;
+            _diagnosticSource = diagnosticSource;
         }
-#pragma warning restore 0618
 
         public int Order
         {
@@ -86,7 +84,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
                     _valueProviderFactories,
                     _actionBindingContextAccessor,
                     _logger,
-                    _telemetry,
+                    _diagnosticSource,
                     _maxModelValidationErrors);
             }
         }

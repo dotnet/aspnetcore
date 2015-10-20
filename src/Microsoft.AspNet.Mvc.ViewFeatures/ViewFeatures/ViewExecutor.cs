@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics.Tracing;
+using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Infrastructure;
@@ -26,19 +26,18 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             Encoding = Encoding.UTF8
         }.CopyAsReadOnly();
 
-#pragma warning disable 0618
         /// <summary>
         /// Creates a new <see cref="ViewExecutor"/>.
         /// </summary>
         /// <param name="viewOptions">The <see cref="IOptions{MvcViewOptions}"/>.</param>
         /// <param name="writerFactory">The <see cref="IHttpResponseStreamWriterFactory"/>.</param>
         /// <param name="viewEngine">The <see cref="ICompositeViewEngine"/>.</param>
-        /// <param name="telemetry">The <see cref="TelemetrySource"/>.</param>
+        /// <param name="diagnosticSource">The <see cref="DiagnosticSource"/>.</param>
         public ViewExecutor(
             IOptions<MvcViewOptions> viewOptions,
             IHttpResponseStreamWriterFactory writerFactory,
             ICompositeViewEngine viewEngine,
-            TelemetrySource telemetry)
+            DiagnosticSource diagnosticSource)
         {
             if (viewOptions == null)
             {
@@ -55,22 +54,21 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(viewEngine));
             }
 
-            if (telemetry == null)
+            if (diagnosticSource == null)
             {
-                throw new ArgumentNullException(nameof(telemetry));
+                throw new ArgumentNullException(nameof(diagnosticSource));
             }
 
             ViewOptions = viewOptions.Value;
             WriterFactory = writerFactory;
             ViewEngine = viewEngine;
-            Telemetry = telemetry;
+            DiagnosticSource = diagnosticSource;
         }
 
         /// <summary>
-        /// Gets the <see cref="TelemetrySource"/>.
+        /// Gets the <see cref="DiagnosticSource"/>.
         /// </summary>
-        protected TelemetrySource Telemetry { get; }
-#pragma warning restore 0618
+        protected DiagnosticSource DiagnosticSource { get; }
 
         /// <summary>
         /// Gets the default <see cref="IViewEngine"/>.
@@ -159,26 +157,22 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                     tempData,
                     writer,
                     ViewOptions.HtmlHelperOptions);
-
-#pragma warning disable 0618
-                if (Telemetry.IsEnabled("Microsoft.AspNet.Mvc.BeforeView"))
+                
+                if (DiagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.BeforeView"))
                 {
-                    Telemetry.WriteTelemetry(
+                    DiagnosticSource.Write(
                         "Microsoft.AspNet.Mvc.BeforeView",
                         new { view = view, viewContext = viewContext, });
                 }
-#pragma warning restore 0618
 
                 await view.RenderAsync(viewContext);
-
-#pragma warning disable 0618
-                if (Telemetry.IsEnabled("Microsoft.AspNet.Mvc.AfterView"))
+                
+                if (DiagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.AfterView"))
                 {
-                    Telemetry.WriteTelemetry(
+                    DiagnosticSource.Write(
                         "Microsoft.AspNet.Mvc.AfterView",
                         new { view = view, viewContext = viewContext, });
                 }
-#pragma warning restore 0618
 
                 // Perf: Invoke FlushAsync to ensure any buffered content is asynchronously written to the underlying
                 // response asynchronously. In the absence of this line, the buffer gets synchronously written to the

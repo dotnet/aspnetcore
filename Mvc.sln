@@ -180,7 +180,7 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Locali
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Localization.Test", "test\Microsoft.AspNet.Mvc.Localization.Test\Microsoft.AspNet.Mvc.Localization.Test.xproj", "{8FC726B5-E766-44E0-8B38-1313B6D8D9A7}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.TestTelemetryListener.Sources", "test\Microsoft.AspNet.Mvc.TestTelemetryListener.Sources\Microsoft.AspNet.Mvc.TestTelemetryListener.Sources.xproj", "{9879B5D5-2325-4A81-B4DF-F279FE8FEEB4}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.TestDiagnosticListener.Sources", "test\Microsoft.AspNet.Mvc.TestDiagnosticListener.Sources\Microsoft.AspNet.Mvc.TestDiagnosticListener.Sources.xproj", "{9879B5D5-2325-4A81-B4DF-F279FE8FEEB4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
