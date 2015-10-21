@@ -2,61 +2,104 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNet.Server.Kestrel.Networking
 {
     public class Libuv
     {
-        public bool IsWindows;
-        public bool IsDarwin;
-
-        public Func<string, IntPtr> LoadLibrary;
-        public Func<IntPtr, bool> FreeLibrary;
-        public Func<IntPtr, string, IntPtr> GetProcAddress;
-
         public Libuv()
         {
             IsWindows = PlatformApis.IsWindows();
-            if (!IsWindows)
+
+            var isDarwinMono =
+#if DNX451
+                IsWindows ? false : PlatformApis.IsDarwin();
+#else
+                false;
+#endif
+
+            if (isDarwinMono)
             {
-                IsDarwin = PlatformApis.IsDarwin();
+                _uv_loop_init = NativeDarwinMonoMethods.uv_loop_init;
+                _uv_loop_close = NativeDarwinMonoMethods.uv_loop_close;
+                _uv_run = NativeDarwinMonoMethods.uv_run;
+                _uv_stop = NativeDarwinMonoMethods.uv_stop;
+                _uv_ref = NativeDarwinMonoMethods.uv_ref;
+                _uv_unref = NativeDarwinMonoMethods.uv_unref;
+                _uv_close = NativeDarwinMonoMethods.uv_close;
+                _uv_async_init = NativeDarwinMonoMethods.uv_async_init;
+                _uv_async_send = NativeDarwinMonoMethods.uv_async_send;
+                _uv_tcp_init = NativeDarwinMonoMethods.uv_tcp_init;
+                _uv_tcp_bind = NativeDarwinMonoMethods.uv_tcp_bind;
+                _uv_tcp_open = NativeDarwinMonoMethods.uv_tcp_open;
+                _uv_tcp_nodelay = NativeDarwinMonoMethods.uv_tcp_nodelay;
+                _uv_pipe_init = NativeDarwinMonoMethods.uv_pipe_init;
+                _uv_pipe_bind = NativeDarwinMonoMethods.uv_pipe_bind;
+                _uv_listen = NativeDarwinMonoMethods.uv_listen;
+                _uv_accept = NativeDarwinMonoMethods.uv_accept;
+                _uv_pipe_connect = NativeDarwinMonoMethods.uv_pipe_connect;
+                _uv_pipe_pending_count = NativeDarwinMonoMethods.uv_pipe_pending_count;
+                _uv_read_start = NativeDarwinMonoMethods.uv_read_start;
+                _uv_read_stop = NativeDarwinMonoMethods.uv_read_stop;
+                _uv_try_write = NativeDarwinMonoMethods.uv_try_write;
+                unsafe
+                {
+                    _uv_write = NativeDarwinMonoMethods.uv_write;
+                    _uv_write2 = NativeDarwinMonoMethods.uv_write2;
+                }
+                _uv_shutdown = NativeDarwinMonoMethods.uv_shutdown;
+                _uv_err_name = NativeDarwinMonoMethods.uv_err_name;
+                _uv_strerror = NativeDarwinMonoMethods.uv_strerror;
+                _uv_loop_size = NativeDarwinMonoMethods.uv_loop_size;
+                _uv_handle_size = NativeDarwinMonoMethods.uv_handle_size;
+                _uv_req_size = NativeDarwinMonoMethods.uv_req_size;
+                _uv_ip4_addr = NativeDarwinMonoMethods.uv_ip4_addr;
+                _uv_ip6_addr = NativeDarwinMonoMethods.uv_ip6_addr;
+                _uv_walk = NativeDarwinMonoMethods.uv_walk;
+            }
+            else
+            {
+                _uv_loop_init = NativeMethods.uv_loop_init;
+                _uv_loop_close = NativeMethods.uv_loop_close;
+                _uv_run = NativeMethods.uv_run;
+                _uv_stop = NativeMethods.uv_stop;
+                _uv_ref = NativeMethods.uv_ref;
+                _uv_unref = NativeMethods.uv_unref;
+                _uv_close = NativeMethods.uv_close;
+                _uv_async_init = NativeMethods.uv_async_init;
+                _uv_async_send = NativeMethods.uv_async_send;
+                _uv_tcp_init = NativeMethods.uv_tcp_init;
+                _uv_tcp_bind = NativeMethods.uv_tcp_bind;
+                _uv_tcp_open = NativeMethods.uv_tcp_open;
+                _uv_tcp_nodelay = NativeMethods.uv_tcp_nodelay;
+                _uv_pipe_init = NativeMethods.uv_pipe_init;
+                _uv_pipe_bind = NativeMethods.uv_pipe_bind;
+                _uv_listen = NativeMethods.uv_listen;
+                _uv_accept = NativeMethods.uv_accept;
+                _uv_pipe_connect = NativeMethods.uv_pipe_connect;
+                _uv_pipe_pending_count = NativeMethods.uv_pipe_pending_count;
+                _uv_read_start = NativeMethods.uv_read_start;
+                _uv_read_stop = NativeMethods.uv_read_stop;
+                _uv_try_write = NativeMethods.uv_try_write;
+                unsafe
+                {
+                    _uv_write = NativeMethods.uv_write;
+                    _uv_write2 = NativeMethods.uv_write2;
+                }
+                _uv_shutdown = NativeMethods.uv_shutdown;
+                _uv_err_name = NativeMethods.uv_err_name;
+                _uv_strerror = NativeMethods.uv_strerror;
+                _uv_loop_size = NativeMethods.uv_loop_size;
+                _uv_handle_size = NativeMethods.uv_handle_size;
+                _uv_req_size = NativeMethods.uv_req_size;
+                _uv_ip4_addr = NativeMethods.uv_ip4_addr;
+                _uv_ip6_addr = NativeMethods.uv_ip6_addr;
+                _uv_walk = NativeMethods.uv_walk;
             }
         }
 
-        public void Load(string dllToLoad)
-        {
-            PlatformApis.Apply(this);
-
-            var module = LoadLibrary(dllToLoad);
-
-            if (module == IntPtr.Zero)
-            {
-                var message = "Unable to load libuv.";
-                if (!IsWindows && !IsDarwin)
-                {
-                    // *nix box, so libuv needs to be installed
-                    // TODO: fwlink?
-                    message += " Make sure libuv is installed and available as libuv.so.1";
-                }
-                
-                throw new InvalidOperationException(message);
-            }
-
-            foreach (var field in GetType().GetTypeInfo().DeclaredFields)
-            {
-                var procAddress = GetProcAddress(module, field.Name.TrimStart('_'));
-                if (procAddress == IntPtr.Zero)
-                {
-                    continue;
-                }
-#pragma warning disable CS0618
-                var value = Marshal.GetDelegateForFunctionPointer(procAddress, field.FieldType);
-#pragma warning restore CS0618
-                field.SetValue(this, value);
-            }
-        }
+        public bool IsWindows;
 
         public int Check(int statusCode)
         {
@@ -84,71 +127,56 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             return statusCode;
         }
 
-
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        protected delegate int uv_loop_init(UvLoopHandle a0);
-        protected uv_loop_init _uv_loop_init = default(uv_loop_init);
+        protected Func<UvLoopHandle, int> _uv_loop_init;
         public void loop_init(UvLoopHandle handle)
         {
             Check(_uv_loop_init(handle));
         }
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        protected delegate int uv_loop_close(IntPtr a0);
-        protected uv_loop_close _uv_loop_close = default(uv_loop_close);
+        protected Func<IntPtr, int> _uv_loop_close;
         public void loop_close(UvLoopHandle handle)
         {
             handle.Validate(closed: true);
             Check(_uv_loop_close(handle.InternalGetHandle()));
         }
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        protected delegate int uv_run(UvLoopHandle handle, int mode);
-        protected uv_run _uv_run = default(uv_run);
+        protected Func<UvLoopHandle, int, int> _uv_run;
         public int run(UvLoopHandle handle, int mode)
         {
             handle.Validate();
             return Check(_uv_run(handle, mode));
         }
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        protected delegate void uv_stop(UvLoopHandle handle);
-        protected uv_stop _uv_stop = default(uv_stop);
+        protected Action<UvLoopHandle> _uv_stop;
         public void stop(UvLoopHandle handle)
         {
             handle.Validate();
             _uv_stop(handle);
         }
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        protected delegate void uv_ref(UvHandle handle);
-        protected uv_ref _uv_ref = default(uv_ref);
+        protected Action<UvHandle> _uv_ref;
         public void @ref(UvHandle handle)
         {
             handle.Validate();
             _uv_ref(handle);
         }
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        protected delegate void uv_unref(UvHandle handle);
-        protected uv_unref _uv_unref = default(uv_unref);
+        protected Action<UvHandle> _uv_unref;
         public void unref(UvHandle handle)
         {
             handle.Validate();
             _uv_unref(handle);
         }
 
-
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void uv_close_cb(IntPtr handle);
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        protected delegate void uv_close(IntPtr handle, uv_close_cb close_cb);
-        protected uv_close _uv_close = default(uv_close);
+        protected Action<IntPtr, uv_close_cb> _uv_close;
         public void close(UvHandle handle, uv_close_cb close_cb)
         {
             handle.Validate(closed: true);
             _uv_close(handle.InternalGetHandle(), close_cb);
         }
+
         public void close(IntPtr handle, uv_close_cb close_cb)
         {
             _uv_close(handle, close_cb);
@@ -156,9 +184,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void uv_async_cb(IntPtr handle);
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        protected delegate int uv_async_init(UvLoopHandle loop, UvAsyncHandle handle, uv_async_cb cb);
-        protected uv_async_init _uv_async_init = default(uv_async_init);
+        protected Func<UvLoopHandle, UvAsyncHandle, uv_async_cb, int> _uv_async_init;
         public void async_init(UvLoopHandle loop, UvAsyncHandle handle, uv_async_cb cb)
         {
             loop.Validate();
@@ -166,17 +192,13 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             Check(_uv_async_init(loop, handle, cb));
         }
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        protected delegate int uv_async_send(UvAsyncHandle handle);
-        protected uv_async_send _uv_async_send = default(uv_async_send);
+        protected Func<UvAsyncHandle, int> _uv_async_send;
         public void async_send(UvAsyncHandle handle)
         {
             Check(_uv_async_send(handle));
         }
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        protected delegate int uv_tcp_init(UvLoopHandle loop, UvTcpHandle handle);
-        protected uv_tcp_init _uv_tcp_init = default(uv_tcp_init);
+        protected Func<UvLoopHandle, UvTcpHandle, int> _uv_tcp_init;
         public void tcp_init(UvLoopHandle loop, UvTcpHandle handle)
         {
             loop.Validate();
@@ -184,36 +206,29 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             Check(_uv_tcp_init(loop, handle));
         }
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        protected delegate int uv_tcp_bind(UvTcpHandle handle, ref sockaddr addr, int flags);
-        protected uv_tcp_bind _uv_tcp_bind = default(uv_tcp_bind);
+        protected delegate int uv_tcp_bind_func(UvTcpHandle handle, ref sockaddr addr, int flags);
+        protected uv_tcp_bind_func _uv_tcp_bind;
         public void tcp_bind(UvTcpHandle handle, ref sockaddr addr, int flags)
         {
             handle.Validate();
             Check(_uv_tcp_bind(handle, ref addr, flags));
         }
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        protected delegate int uv_tcp_open(UvTcpHandle handle, IntPtr hSocket);
-        protected uv_tcp_open _uv_tcp_open = default(uv_tcp_open);
+        protected Func<UvTcpHandle, IntPtr, int> _uv_tcp_open;
         public void tcp_open(UvTcpHandle handle, IntPtr hSocket)
         {
             handle.Validate();
             Check(_uv_tcp_open(handle, hSocket));
         }
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        protected delegate int uv_tcp_nodelay(UvTcpHandle handle, int enable);
-        protected uv_tcp_nodelay _uv_tcp_nodelay = default(uv_tcp_nodelay);
+        protected Func<UvTcpHandle, int, int> _uv_tcp_nodelay;
         public void tcp_nodelay(UvTcpHandle handle, bool enable)
         {
             handle.Validate();
             Check(_uv_tcp_nodelay(handle, enable ? 1 : 0));
         }
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        protected delegate int uv_pipe_init(UvLoopHandle loop, UvPipeHandle handle, int ipc);
-        protected uv_pipe_init _uv_pipe_init = default(uv_pipe_init);
+        protected Func<UvLoopHandle, UvPipeHandle, int, int> _uv_pipe_init;
         public void pipe_init(UvLoopHandle loop, UvPipeHandle handle, bool ipc)
         {
             loop.Validate();
@@ -221,9 +236,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             Check(_uv_pipe_init(loop, handle, ipc ? -1 : 0));
         }
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        protected delegate int uv_pipe_bind(UvPipeHandle loop, string name);
-        protected uv_pipe_bind _uv_pipe_bind = default(uv_pipe_bind);
+        protected Func<UvPipeHandle, string, int> _uv_pipe_bind;
         public void pipe_bind(UvPipeHandle handle, string name)
         {
             handle.Validate();
@@ -232,18 +245,14 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void uv_connection_cb(IntPtr server, int status);
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        protected delegate int uv_listen(UvStreamHandle handle, int backlog, uv_connection_cb cb);
-        protected uv_listen _uv_listen = default(uv_listen);
+        protected Func<UvStreamHandle, int, uv_connection_cb, int> _uv_listen;
         public void listen(UvStreamHandle handle, int backlog, uv_connection_cb cb)
         {
             handle.Validate();
             Check(_uv_listen(handle, backlog, cb));
         }
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        protected delegate int uv_accept(UvStreamHandle server, UvStreamHandle client);
-        protected uv_accept _uv_accept = default(uv_accept);
+        protected Func<UvStreamHandle, UvStreamHandle, int> _uv_accept;
         public void accept(UvStreamHandle server, UvStreamHandle client)
         {
             server.Validate();
@@ -253,9 +262,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void uv_connect_cb(IntPtr req, int status);
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        unsafe protected delegate void uv_pipe_connect(UvConnectRequest req, UvPipeHandle handle, string name, uv_connect_cb cb);
-        protected uv_pipe_connect _uv_pipe_connect = default(uv_pipe_connect);
+        protected Action<UvConnectRequest, UvPipeHandle, string, uv_connect_cb> _uv_pipe_connect;
         unsafe public void pipe_connect(UvConnectRequest req, UvPipeHandle handle, string name, uv_connect_cb cb)
         {
             req.Validate();
@@ -263,9 +270,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             _uv_pipe_connect(req, handle, name, cb);
         }
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        unsafe protected delegate int uv_pipe_pending_count(UvPipeHandle handle);
-        protected uv_pipe_pending_count _uv_pipe_pending_count = default(uv_pipe_pending_count);
+        protected Func<UvPipeHandle, int> _uv_pipe_pending_count;
         unsafe public int pipe_pending_count(UvPipeHandle handle)
         {
             handle.Validate();
@@ -276,28 +281,22 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         public delegate void uv_alloc_cb(IntPtr server, int suggested_size, out uv_buf_t buf);
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void uv_read_cb(IntPtr server, int nread, ref uv_buf_t buf);
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        protected delegate int uv_read_start(UvStreamHandle handle, uv_alloc_cb alloc_cb, uv_read_cb read_cb);
-        protected uv_read_start _uv_read_start = default(uv_read_start);
+        protected Func<UvStreamHandle, uv_alloc_cb, uv_read_cb, int> _uv_read_start;
         public void read_start(UvStreamHandle handle, uv_alloc_cb alloc_cb, uv_read_cb read_cb)
         {
             handle.Validate();
             Check(_uv_read_start(handle, alloc_cb, read_cb));
         }
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        protected delegate int uv_read_stop(UvStreamHandle handle);
-        protected uv_read_stop _uv_read_stop = default(uv_read_stop);
+        protected Func<UvStreamHandle, int> _uv_read_stop;
         public void read_stop(UvStreamHandle handle)
         {
             handle.Validate();
             Check(_uv_read_stop(handle));
         }
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        protected delegate int uv_try_write(UvStreamHandle handle, Libuv.uv_buf_t[] bufs, int nbufs);
-        protected uv_try_write _uv_try_write = default(uv_try_write);
-        public int try_write(UvStreamHandle handle, Libuv.uv_buf_t[] bufs, int nbufs)
+        protected Func<UvStreamHandle, uv_buf_t[], int, int> _uv_try_write;
+        public int try_write(UvStreamHandle handle, uv_buf_t[] bufs, int nbufs)
         {
             handle.Validate();
             return Check(_uv_try_write(handle, bufs, nbufs));
@@ -305,19 +304,18 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void uv_write_cb(IntPtr req, int status);
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        unsafe protected delegate int uv_write(UvRequest req, UvStreamHandle handle, Libuv.uv_buf_t* bufs, int nbufs, uv_write_cb cb);
-        protected uv_write _uv_write = default(uv_write);
-        unsafe public void write(UvRequest req, UvStreamHandle handle, Libuv.uv_buf_t* bufs, int nbufs, uv_write_cb cb)
+
+        unsafe protected delegate int uv_write_func(UvRequest req, UvStreamHandle handle, uv_buf_t* bufs, int nbufs, uv_write_cb cb);
+        unsafe protected uv_write_func _uv_write;
+        unsafe public void write(UvRequest req, UvStreamHandle handle, uv_buf_t* bufs, int nbufs, uv_write_cb cb)
         {
             req.Validate();
             handle.Validate();
             Check(_uv_write(req, handle, bufs, nbufs, cb));
         }
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        unsafe protected delegate int uv_write2(UvRequest req, UvStreamHandle handle, Libuv.uv_buf_t* bufs, int nbufs, UvStreamHandle sendHandle, uv_write_cb cb);
-        protected uv_write2 _uv_write2 = default(uv_write2);
+        unsafe protected delegate int uv_write2_func(UvRequest req, UvStreamHandle handle, uv_buf_t* bufs, int nbufs, UvStreamHandle sendHandle, uv_write_cb cb);
+        unsafe protected uv_write2_func _uv_write2;
         unsafe public void write2(UvRequest req, UvStreamHandle handle, Libuv.uv_buf_t* bufs, int nbufs, UvStreamHandle sendHandle, uv_write_cb cb)
         {
             req.Validate();
@@ -327,9 +325,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void uv_shutdown_cb(IntPtr req, int status);
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        protected delegate int uv_shutdown(UvShutdownReq req, UvStreamHandle handle, uv_shutdown_cb cb);
-        protected uv_shutdown _uv_shutdown = default(uv_shutdown);
+        protected Func<UvShutdownReq, UvStreamHandle, uv_shutdown_cb, int> _uv_shutdown;
         public void shutdown(UvShutdownReq req, UvStreamHandle handle, uv_shutdown_cb cb)
         {
             req.Validate();
@@ -337,61 +333,47 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             Check(_uv_shutdown(req, handle, cb));
         }
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        protected delegate IntPtr uv_err_name(int err);
-        protected uv_err_name _uv_err_name = default(uv_err_name);
-        public unsafe String err_name(int err)
+        protected Func<int, IntPtr> _uv_err_name;
+        public unsafe string err_name(int err)
         {
             IntPtr ptr = _uv_err_name(err);
             return ptr == IntPtr.Zero ? null : Marshal.PtrToStringAnsi(ptr);
         }
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        protected delegate IntPtr uv_strerror(int err);
-        protected uv_strerror _uv_strerror = default(uv_strerror);
-        public unsafe String strerror(int err)
+        protected Func<int, IntPtr> _uv_strerror;
+        public unsafe string strerror(int err)
         {
             IntPtr ptr = _uv_strerror(err);
             return ptr == IntPtr.Zero ? null : Marshal.PtrToStringAnsi(ptr);
         }
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        protected delegate int uv_loop_size();
-        protected uv_loop_size _uv_loop_size = default(uv_loop_size);
+        protected Func<int> _uv_loop_size;
         public int loop_size()
         {
             return _uv_loop_size();
         }
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        protected delegate int uv_handle_size(HandleType handleType);
-        protected uv_handle_size _uv_handle_size = default(uv_handle_size);
+        protected Func<HandleType, int> _uv_handle_size;
         public int handle_size(HandleType handleType)
         {
             return _uv_handle_size(handleType);
         }
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        protected delegate int uv_req_size(RequestType reqType);
-        protected uv_req_size _uv_req_size = default(uv_req_size);
+        protected Func<RequestType, int> _uv_req_size;
         public int req_size(RequestType reqType)
         {
             return _uv_req_size(reqType);
         }
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        protected delegate int uv_ip4_addr(string ip, int port, out sockaddr addr);
-
-        protected uv_ip4_addr _uv_ip4_addr = default(uv_ip4_addr);
+        protected delegate int uv_ip4_addr_func(string ip, int port, out sockaddr addr);
+        protected uv_ip4_addr_func _uv_ip4_addr;
         public int ip4_addr(string ip, int port, out sockaddr addr, out Exception error)
         {
             return Check(_uv_ip4_addr(ip, port, out addr), out error);
         }
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        protected delegate int uv_ip6_addr(string ip, int port, out sockaddr addr);
-
-        protected uv_ip6_addr _uv_ip6_addr = default(uv_ip6_addr);
+        protected delegate int uv_ip6_addr_func(string ip, int port, out sockaddr addr);
+        protected uv_ip6_addr_func _uv_ip6_addr;
         public int ip6_addr(string ip, int port, out sockaddr addr, out Exception error)
         {
             return Check(_uv_ip6_addr(ip, port, out addr), out error);
@@ -399,9 +381,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void uv_walk_cb(IntPtr handle, IntPtr arg);
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        unsafe protected delegate int uv_walk(UvLoopHandle loop, uv_walk_cb walk_cb, IntPtr arg);
-        protected uv_walk _uv_walk = default(uv_walk);
+        protected Func<UvLoopHandle, uv_walk_cb, IntPtr, int> _uv_walk;
         unsafe public void walk(UvLoopHandle loop, uv_walk_cb walk_cb, IntPtr arg)
         {
             loop.Validate();
@@ -430,7 +410,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
 
         public struct uv_buf_t
         {
-            // this type represents a WSABUF struct on Windows 
+            // this type represents a WSABUF struct on Windows
             // https://msdn.microsoft.com/en-us/library/windows/desktop/ms741542(v=vs.85).aspx
             // and an iovec struct on *nix
             // http://man7.org/linux/man-pages/man2/readv.2.html
@@ -489,6 +469,210 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             WORK,
             GETADDRINFO,
             GETNAMEINFO,
+        }
+
+        private static class NativeMethods
+        {
+            [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int uv_loop_init(UvLoopHandle handle);
+
+            [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int uv_loop_close(IntPtr a0);
+
+            [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int uv_run(UvLoopHandle handle, int mode);
+
+            [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void uv_stop(UvLoopHandle handle);
+
+            [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void uv_ref(UvHandle handle);
+
+            [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void uv_unref(UvHandle handle);
+
+            [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void uv_close(IntPtr handle, uv_close_cb close_cb);
+
+            [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int uv_async_init(UvLoopHandle loop, UvAsyncHandle handle, uv_async_cb cb);
+
+            [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
+            public extern static int uv_async_send(UvAsyncHandle handle);
+
+            [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int uv_tcp_init(UvLoopHandle loop, UvTcpHandle handle);
+
+            [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int uv_tcp_bind(UvTcpHandle handle, ref sockaddr addr, int flags);
+
+            [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int uv_tcp_open(UvTcpHandle handle, IntPtr hSocket);
+
+            [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int uv_tcp_nodelay(UvTcpHandle handle, int enable);
+
+            [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int uv_pipe_init(UvLoopHandle loop, UvPipeHandle handle, int ipc);
+
+            [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int uv_pipe_bind(UvPipeHandle loop, string name);
+
+            [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int uv_listen(UvStreamHandle handle, int backlog, uv_connection_cb cb);
+
+            [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int uv_accept(UvStreamHandle server, UvStreamHandle client);
+
+            [DllImport("libuv", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+            public static extern void uv_pipe_connect(UvConnectRequest req, UvPipeHandle handle, string name, uv_connect_cb cb);
+
+            [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
+            public extern static int uv_pipe_pending_count(UvPipeHandle handle);
+
+            [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
+            public extern static int uv_read_start(UvStreamHandle handle, uv_alloc_cb alloc_cb, uv_read_cb read_cb);
+
+            [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int uv_read_stop(UvStreamHandle handle);
+
+            [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int uv_try_write(UvStreamHandle handle, uv_buf_t[] bufs, int nbufs);
+
+            [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
+            unsafe public static extern int uv_write(UvRequest req, UvStreamHandle handle, uv_buf_t* bufs, int nbufs, uv_write_cb cb);
+
+            [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
+            unsafe public static extern int uv_write2(UvRequest req, UvStreamHandle handle, uv_buf_t* bufs, int nbufs, UvStreamHandle sendHandle, uv_write_cb cb);
+
+            [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int uv_shutdown(UvShutdownReq req, UvStreamHandle handle, uv_shutdown_cb cb);
+
+            [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
+            public extern static IntPtr uv_err_name(int err);
+
+            [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr uv_strerror(int err);
+
+            [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int uv_loop_size();
+
+            [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int uv_handle_size(HandleType handleType);
+
+            [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int uv_req_size(RequestType reqType);
+
+            [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int uv_ip4_addr(string ip, int port, out sockaddr addr);
+
+            [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int uv_ip6_addr(string ip, int port, out sockaddr addr);
+
+            [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
+            unsafe public static extern int uv_walk(UvLoopHandle loop, uv_walk_cb walk_cb, IntPtr arg);
+        }
+
+        private static class NativeDarwinMonoMethods
+        {
+            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int uv_loop_init(UvLoopHandle handle);
+
+            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int uv_loop_close(IntPtr a0);
+
+            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int uv_run(UvLoopHandle handle, int mode);
+
+            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void uv_stop(UvLoopHandle handle);
+
+            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void uv_ref(UvHandle handle);
+
+            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void uv_unref(UvHandle handle);
+
+            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void uv_close(IntPtr handle, uv_close_cb close_cb);
+
+            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int uv_async_init(UvLoopHandle loop, UvAsyncHandle handle, uv_async_cb cb);
+
+            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
+            public extern static int uv_async_send(UvAsyncHandle handle);
+
+            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int uv_tcp_init(UvLoopHandle loop, UvTcpHandle handle);
+
+            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int uv_tcp_bind(UvTcpHandle handle, ref sockaddr addr, int flags);
+
+            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int uv_tcp_open(UvTcpHandle handle, IntPtr hSocket);
+
+            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int uv_tcp_nodelay(UvTcpHandle handle, int enable);
+
+            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int uv_pipe_init(UvLoopHandle loop, UvPipeHandle handle, int ipc);
+
+            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int uv_pipe_bind(UvPipeHandle loop, string name);
+
+            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int uv_listen(UvStreamHandle handle, int backlog, uv_connection_cb cb);
+
+            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int uv_accept(UvStreamHandle server, UvStreamHandle client);
+
+            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+            public static extern void uv_pipe_connect(UvConnectRequest req, UvPipeHandle handle, string name, uv_connect_cb cb);
+
+            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
+            public extern static int uv_pipe_pending_count(UvPipeHandle handle);
+
+            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
+            public extern static int uv_read_start(UvStreamHandle handle, uv_alloc_cb alloc_cb, uv_read_cb read_cb);
+
+            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int uv_read_stop(UvStreamHandle handle);
+
+            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int uv_try_write(UvStreamHandle handle, uv_buf_t[] bufs, int nbufs);
+
+            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
+            unsafe public static extern int uv_write(UvRequest req, UvStreamHandle handle, uv_buf_t* bufs, int nbufs, uv_write_cb cb);
+
+            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
+            unsafe public static extern int uv_write2(UvRequest req, UvStreamHandle handle, uv_buf_t* bufs, int nbufs, UvStreamHandle sendHandle, uv_write_cb cb);
+
+            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int uv_shutdown(UvShutdownReq req, UvStreamHandle handle, uv_shutdown_cb cb);
+
+            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
+            public extern static IntPtr uv_err_name(int err);
+
+            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr uv_strerror(int err);
+
+            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int uv_loop_size();
+
+            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int uv_handle_size(HandleType handleType);
+
+            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int uv_req_size(RequestType reqType);
+
+            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int uv_ip4_addr(string ip, int port, out sockaddr addr);
+
+            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int uv_ip6_addr(string ip, int port, out sockaddr addr);
+
+            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
+            unsafe public static extern int uv_walk(UvLoopHandle loop, uv_walk_cb walk_cb, IntPtr arg);
         }
     }
 }

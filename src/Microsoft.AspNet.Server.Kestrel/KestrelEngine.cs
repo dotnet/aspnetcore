@@ -3,14 +3,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Server.Kestrel.Http;
-using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 using Microsoft.AspNet.Server.Kestrel.Networking;
-using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNet.Server.Kestrel
 {
@@ -20,45 +18,6 @@ namespace Microsoft.AspNet.Server.Kestrel
             : this(context)
         {
             Libuv = new Libuv();
-
-            var libraryPath = default(string);
-
-            if (libraryManager != null)
-            {
-                var library = libraryManager.GetLibrary("Microsoft.AspNet.Server.Kestrel");
-                libraryPath = library.Path;
-                if (library.Type == "Project")
-                {
-                    libraryPath = Path.GetDirectoryName(libraryPath);
-                }
-                if (Libuv.IsWindows)
-                {
-                    var architecture = IntPtr.Size == 4
-                        ? "x86"
-                        : "x64";
-
-                    libraryPath = Path.Combine(
-                        libraryPath,
-                        "runtimes",
-                        "win7-" + architecture,
-                        "native",
-                        "libuv.dll");
-                }
-                else if (Libuv.IsDarwin)
-                {
-                    libraryPath = Path.Combine(
-                        libraryPath,
-                        "runtimes",
-                        "osx",
-                        "native",
-                        "libuv.dylib");
-                }
-                else
-                {
-                    libraryPath = "libuv.so.1";
-                }
-            }
-            Libuv.Load(libraryPath);
         }
 
         // For testing
@@ -116,8 +75,8 @@ namespace Microsoft.AspNet.Server.Kestrel
                 {
                     if (single)
                     {
-                        var listener = usingPipes ? 
-                            (Listener) new PipeListener(this) : 
+                        var listener = usingPipes ?
+                            (Listener) new PipeListener(this) :
                             new TcpListener(this);
                         listeners.Add(listener);
                         listener.StartAsync(address, thread, application).Wait();

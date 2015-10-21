@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         public void Init(Libuv uv)
         {
             CreateMemory(
-                uv, 
+                uv,
                 Thread.CurrentThread.ManagedThreadId,
                 uv.loop_size());
 
