@@ -43,6 +43,9 @@ Html.BeginForm(actionName: "Submit", controllerName: "HtmlGeneration_Order"))
         <div>
             @Html.LabelFor(m => m.PaymentMethod, htmlAttributes: new { @class = "order" })
             @Html.ListBoxFor(m => m.PaymentMethod, selectList: new SelectList(new[] { new { value = "Credit" }, new { value = "Check" } }, dataValueField: "value", dataTextField: "value"))
+            <select>
+                <option value="Check">Check</option>
+            </select>
         </div>
         <div>
             @Html.LabelFor(m => m.Customer.Number, htmlAttributes: new { @class = "order" })

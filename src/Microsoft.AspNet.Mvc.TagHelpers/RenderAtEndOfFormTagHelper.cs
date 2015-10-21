@@ -27,6 +27,11 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// <inheritdoc />
         public override void Init(TagHelperContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             // Push the new FormContext.
             ViewContext.FormContext = new FormContext
             {

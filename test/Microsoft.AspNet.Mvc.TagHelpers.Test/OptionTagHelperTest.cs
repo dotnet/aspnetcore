@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 {
     public class OptionTagHelperTest
     {
-        // Original content, selected attribute, value attribute, selected values (to place in FormContext.FormData)
+        // Original content, selected attribute, value attribute, selected values (to place in TagHelperContext.Items)
         // and expected tag helper output.
         public static TheoryData<string, string, string, IEnumerable<string>, TagHelperOutput> GeneratesExpectedDataSet
         {
@@ -346,7 +346,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             }
         }
 
-        // Original content, selected attribute, value attribute, selected values (to place in FormContext.FormData)
+        // Original content, selected attribute, value attribute, selected values (to place in TagHelperContext.Items)
         // and expected output (concatenation of TagHelperOutput generations). Excludes non-null selected attribute,
         // null selected values, and empty selected values cases.
         public static IEnumerable<object[]> DoesNotUseGeneratorDataSet
@@ -358,7 +358,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             }
         }
 
-        // Original content, selected attribute, value attribute, selected values (to place in FormContext.FormData)
+        // Original content, selected attribute, value attribute, selected values (to place in TagHelperContext.Items)
         // and expected output (concatenation of TagHelperOutput generations). Excludes non-null selected attribute
         // cases.
         public static IEnumerable<object[]> DoesNotUseViewContextDataSet
@@ -420,7 +420,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 model: null,
                 htmlGenerator: htmlGenerator,
                 metadataProvider: metadataProvider);
-            viewContext.FormContext.FormData[SelectTagHelper.SelectedValuesFormDataKey] = selectedValues;
+            tagHelperContext.Items[typeof(SelectTagHelper)] = selectedValues;
             var tagHelper = new OptionTagHelper(htmlGenerator)
             {
                 Value = value,
@@ -491,7 +491,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 model: null,
                 htmlGenerator: htmlGenerator,
                 metadataProvider: metadataProvider);
-            viewContext.FormContext.FormData[SelectTagHelper.SelectedValuesFormDataKey] = selectedValues;
+            tagHelperContext.Items[typeof(SelectTagHelper)] = selectedValues;
             var tagHelper = new OptionTagHelper(htmlGenerator)
             {
                 Value = value,

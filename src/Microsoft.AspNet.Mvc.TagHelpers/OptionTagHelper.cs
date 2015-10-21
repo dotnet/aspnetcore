@@ -54,8 +54,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
         /// <inheritdoc />
         /// <remarks>
-        /// Does nothing unless <see cref="FormContext.FormData"/> contains a
-        /// <see cref="SelectTagHelper.SelectedValuesFormDataKey"/> entry and that entry is a non-empty
+        /// Does nothing unless <see cref="TagHelperContext.Items"/> contains a
+        /// <see cref="SelectTagHelper"/> <see cref="Type"/> entry and that entry is a non-empty
         /// <see cref="ICollection{string}"/> instance. Also does nothing if the associated &lt;option&gt; is already
         /// selected.
         /// </remarks>
@@ -82,9 +82,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             {
                 // Is this <option/> element a child of a <select/> element the SelectTagHelper targeted?
                 object formDataEntry;
-                ViewContext.FormContext.FormData.TryGetValue(
-                    SelectTagHelper.SelectedValuesFormDataKey,
-                    out formDataEntry);
+                context.Items.TryGetValue(typeof(SelectTagHelper), out formDataEntry);
 
                 // ... And did the SelectTagHelper determine any selected values?
                 var selectedValues = formDataEntry as ICollection<string>;

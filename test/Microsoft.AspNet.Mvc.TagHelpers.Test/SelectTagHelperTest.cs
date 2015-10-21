@@ -235,6 +235,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             };
 
             // Act
+            tagHelper.Init(tagHelperContext);
             await tagHelper.ProcessAsync(tagHelperContext, output);
 
             // Assert
@@ -245,10 +246,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             Assert.Equal(expectedPostContent, output.PostContent.GetContent());
             Assert.Equal(expectedTagName, output.TagName);
 
-            Assert.NotNull(viewContext.FormContext?.FormData);
             Assert.Single(
-                viewContext.FormContext.FormData,
-                entry => entry.Key == SelectTagHelper.SelectedValuesFormDataKey);
+                tagHelperContext.Items,
+                entry => (Type)entry.Key == typeof(SelectTagHelper));
         }
 
         [Theory]
@@ -333,6 +333,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             };
 
             // Act
+            tagHelper.Init(tagHelperContext);
             await tagHelper.ProcessAsync(tagHelperContext, output);
 
             // Assert
@@ -343,10 +344,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             Assert.Equal(expectedPostContent, HtmlContentUtilities.HtmlContentToString(output.PostContent));
             Assert.Equal(expectedTagName, output.TagName);
 
-            Assert.NotNull(viewContext.FormContext?.FormData);
             Assert.Single(
-                viewContext.FormContext.FormData,
-                entry => entry.Key == SelectTagHelper.SelectedValuesFormDataKey);
+                tagHelperContext.Items,
+                entry => (Type)entry.Key == typeof(SelectTagHelper));
 
             Assert.Equal(savedDisabled, items.Select(item => item.Disabled));
             Assert.Equal(savedGroup, items.Select(item => item.Group));
@@ -429,7 +429,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var savedSelected = items.Select(item => item.Selected).ToList();
             var savedText = items.Select(item => item.Text).ToList();
             var savedValue = items.Select(item => item.Value).ToList();
-
             var tagHelper = new SelectTagHelper(htmlGenerator)
             {
                 For = modelExpression,
@@ -438,6 +437,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             };
 
             // Act
+            tagHelper.Init(tagHelperContext);
             await tagHelper.ProcessAsync(tagHelperContext, output);
 
             // Assert
@@ -448,10 +448,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             Assert.Equal(expectedPostContent, HtmlContentUtilities.HtmlContentToString(output.PostContent));
             Assert.Equal(expectedTagName, output.TagName);
 
-            Assert.NotNull(viewContext.FormContext?.FormData);
             Assert.Single(
-                viewContext.FormContext.FormData,
-                entry => entry.Key == SelectTagHelper.SelectedValuesFormDataKey);
+                tagHelperContext.Items,
+                entry => (Type)entry.Key == typeof(SelectTagHelper));
 
             Assert.Equal(savedDisabled, items.Select(item => item.Disabled));
             Assert.Equal(savedGroup, items.Select(item => item.Group));
@@ -536,15 +535,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             };
 
             // Act
+            tagHelper.Init(tagHelperContext);
             await tagHelper.ProcessAsync(tagHelperContext, output);
 
             // Assert
             htmlGenerator.Verify();
 
-            Assert.NotNull(viewContext.FormContext?.FormData);
             var keyValuePair = Assert.Single(
-                viewContext.FormContext.FormData,
-                entry => entry.Key == SelectTagHelper.SelectedValuesFormDataKey);
+                tagHelperContext.Items,
+                entry => (Type)entry.Key == typeof(SelectTagHelper));
             Assert.Same(currentValues, keyValuePair.Value);
         }
 
@@ -610,15 +609,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             };
 
             // Act
+            tagHelper.Init(tagHelperContext);
             await tagHelper.ProcessAsync(tagHelperContext, output);
 
             // Assert
             htmlGenerator.Verify();
 
-            Assert.NotNull(viewContext.FormContext?.FormData);
             var keyValuePair = Assert.Single(
-                viewContext.FormContext.FormData,
-                entry => entry.Key == SelectTagHelper.SelectedValuesFormDataKey);
+                tagHelperContext.Items,
+                entry => (Type)entry.Key == typeof(SelectTagHelper));
             Assert.Same(currentValues, keyValuePair.Value);
         }
 
