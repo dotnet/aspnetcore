@@ -28,18 +28,10 @@ namespace Microsoft.AspNet.Server.WebListener
 {
     public class Program
     {
-        private readonly IServiceProvider _serviceProvider;
-
-        public Program(IServiceProvider serviceProvider)
+        public static void Main(string[] args)
         {
-            _serviceProvider = serviceProvider;
-        }
-
-        public void Main(string[] args)
-        {
-            var program = new Hosting.Program(_serviceProvider);
             var mergedArgs = new[] { "--server", "Microsoft.AspNet.Server.WebListener" }.Concat(args).ToArray();
-            program.Main(mergedArgs);
+            Hosting.Program.Main(mergedArgs);
         }
     }
 }
