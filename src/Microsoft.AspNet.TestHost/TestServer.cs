@@ -48,7 +48,11 @@ namespace Microsoft.AspNet.TestHost
 
         public static TestServer Create(Action<IApplicationBuilder> configureApp, Func<IServiceCollection, IServiceProvider> configureServices)
         {
-            return new TestServer(CreateBuilder(config: null, configureApp: configureApp, configureServices: configureServices));
+            return new TestServer(CreateBuilder(config: null, configureApp: configureApp, configureServices: configureServices, configureHostServices: null));
+        }
+        public static TestServer Create(Action<IApplicationBuilder> configureApp, Func<IServiceCollection, IServiceProvider> configureServices, Action<IServiceCollection> configureHostServices)
+        {
+            return new TestServer(CreateBuilder(config: null, configureApp: configureApp, configureServices: configureServices, configureHostServices: configureHostServices));
         }
 
         public static TestServer Create(IConfiguration config, Action<IApplicationBuilder> configureApp, Action<IServiceCollection> configureServices)
@@ -66,12 +70,16 @@ namespace Microsoft.AspNet.TestHost
                         configureServices(s);
                     }
                     return s.BuildServiceProvider();
-                });
+                }, null);
         }
-
         public static WebHostBuilder CreateBuilder(IConfiguration config, Action<IApplicationBuilder> configureApp, Func<IServiceCollection, IServiceProvider> configureServices)
         {
-            return CreateBuilder(config).UseStartup(configureApp, configureServices);
+            return CreateBuilder(config, configureApp, configureServices, null);
+        }
+
+        public static WebHostBuilder CreateBuilder(IConfiguration config, Action<IApplicationBuilder> configureApp, Func<IServiceCollection, IServiceProvider> configureServices, Action<IServiceCollection> configureHostServices)
+        {
+            return CreateBuilder(config).UseStartup(configureApp, configureServices).UseServices(configureHostServices);
         }
 
         public static WebHostBuilder CreateBuilder(IConfiguration config)

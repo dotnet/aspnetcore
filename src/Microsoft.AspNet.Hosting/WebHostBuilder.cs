@@ -101,6 +101,7 @@ namespace Microsoft.AspNet.Hosting
             services.TryAdd(ServiceDescriptor.Instance(PlatformServices.Default.AssemblyLoaderContainer));
             services.TryAdd(ServiceDescriptor.Instance(PlatformServices.Default.LibraryManager));
             services.TryAdd(ServiceDescriptor.Instance(CompilationServices.Default.LibraryExporter));
+            services.TryAdd(ServiceDescriptor.Instance(CompilationServices.Default.CompilerOptionsProvider));
 
             return services;
         }
