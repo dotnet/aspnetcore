@@ -650,11 +650,6 @@ namespace Microsoft.AspNet.Mvc.Core
             return string.Format(CultureInfo.CurrentCulture, GetString("FileResult_InvalidPath"), p0);
         }
 
-        internal static string FormatFileResult_PathNotRooted(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("FileResult_PathNotRooted"), p0);
-        }
-
         /// <summary>
         /// The input was not valid.
         /// </summary>
@@ -1021,6 +1016,38 @@ namespace Microsoft.AspNet.Mvc.Core
         internal static string FormatHttpResponseStreamWriter_InvalidBufferSize(object p0, object p1, object p2, object p3, object p4)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("HttpResponseStreamWriter_InvalidBufferSize"), p0, p1, p2, p3, p4);
+        }
+
+        /// <summary>
+        /// Path '{0}' was not rooted.
+        /// </summary>
+        internal static string FileResult_PathNotRooted
+        {
+            get { return GetString("FileResult_PathNotRooted"); }
+        }
+
+        /// <summary>
+        /// Path '{0}' was not rooted.
+        /// </summary>
+        internal static string FormatFileResult_PathNotRooted(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("FileResult_PathNotRooted"), p0);
+        }
+
+        /// <summary>
+        /// The supplied URL is not local. A URL with an absolute path is considered local if it does not have a host/authority part. URLs using virtual paths ('~/') are also local.
+        /// </summary>
+        internal static string UrlNotLocal
+        {
+            get { return GetString("UrlNotLocal"); }
+        }
+
+        /// <summary>
+        /// The supplied URL is not local. A URL with an absolute path is considered local if it does not have a host/authority part. URLs using virtual paths ('~/') are also local.
+        /// </summary>
+        internal static string FormatUrlNotLocal()
+        {
+            return GetString("UrlNotLocal");
         }
 
         private static string GetString(string name, params string[] formatterNames)

@@ -614,6 +614,40 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
+        /// Creates a <see cref="LocalRedirectResult"/> object that redirects to
+        /// the specified local <paramref name="localUrl"/>.
+        /// </summary>
+        /// <param name="localUrl">The local URL to redirect to.</param>
+        /// <returns>The created <see cref="LocalRedirectResult"/> for the response.</returns>
+        [NonAction]
+        public virtual LocalRedirectResult LocalRedirect(string localUrl)
+        {
+            if (string.IsNullOrEmpty(localUrl))
+            {
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(localUrl));
+            }
+
+            return new LocalRedirectResult(localUrl);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="LocalRedirectResult"/> object with <see cref="LocalRedirectResult.Permanent"/> 
+        /// set to true using the specified <paramref name="localUrl"/>.
+        /// </summary>
+        /// <param name="localUrl">The local URL to redirect to.</param>
+        /// <returns>The created <see cref="LocalRedirectResult"/> for the response.</returns>
+        [NonAction]
+        public virtual LocalRedirectResult LocalRedirectPermanent(string localUrl)
+        {
+            if (string.IsNullOrEmpty(localUrl))
+            {
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(localUrl));
+            }
+
+            return new LocalRedirectResult(localUrl, permanent: true);
+        }
+
+        /// <summary>
         /// Redirects to the specified action using the <paramref name="actionName"/>.
         /// </summary>
         /// <param name="actionName">The name of the action.</param>

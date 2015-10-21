@@ -319,4 +319,7 @@
     <value>Path '{0}' was not rooted.</value>
     <comment>{0} is the path which wasn't rooted</comment>
   </data>
+  <data name="UrlNotLocal" xml:space="preserve">
+    <value>The supplied URL is not local. A URL with an absolute path is considered local if it does not have a host/authority part. URLs using virtual paths ('~/') are also local.</value>
+  </data>
 </root>

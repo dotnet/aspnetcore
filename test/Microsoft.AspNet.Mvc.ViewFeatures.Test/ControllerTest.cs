@@ -107,6 +107,51 @@ namespace Microsoft.AspNet.Mvc.Test
                 () => controller.Redirect(url: url), "url");
         }
 
+        [Fact]
+        public void LocalRedirect_WithParameterUrl_SetsLocalRedirectResultWithSameUrl()
+        {
+            // Arrange
+            var controller = new TestableController();
+            var url = "/test/url";
+
+            // Act
+            var result = controller.LocalRedirect(url);
+
+            // Assert
+            Assert.IsType<LocalRedirectResult>(result);
+            Assert.False(result.Permanent);
+            Assert.Same(url, result.Url);
+        }
+
+        [Fact]
+        public void LocalRedirectPermanent_WithParameterUrl_SetsLocalRedirectResultPermanentWithSameUrl()
+        {
+            // Arrange
+            var controller = new TestableController();
+            var url = "/test/url";
+
+            // Act
+            var result = controller.LocalRedirectPermanent(url);
+
+            // Assert
+            Assert.IsType<LocalRedirectResult>(result);
+            Assert.True(result.Permanent);
+            Assert.Same(url, result.Url);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public void LocalRedirect_WithParameter_NullOrEmptyUrl_Throws(string url)
+        {
+            // Arrange
+            var controller = new TestableController();
+
+            // Act & Assert
+            ExceptionAssert.ThrowsArgumentNullOrEmpty(
+                () => controller.LocalRedirect(localUrl: url), "localUrl");
+        }
+
         [Theory]
         [InlineData(null)]
         [InlineData("")]
