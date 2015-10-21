@@ -39,6 +39,33 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             Assert.Equal(expected, tagHelperContent.GetContent(new CommonTestEncoder()));
         }
 
+        [Fact]
+        public void SetHtmlContent_TextIsNotFurtherEncoded()
+        {
+            // Arrange
+            var tagHelperContent = new DefaultTagHelperContent();
+
+            // Act
+            tagHelperContent.SetHtmlContent("Hi");
+
+            // Assert
+            Assert.Equal("Hi", tagHelperContent.GetContent(new CommonTestEncoder()));
+        }
+
+        [Fact]
+        public void SetHtmlContent_ClearsExistingContent()
+        {
+            // Arrange
+            var tagHelperContent = new DefaultTagHelperContent();
+            tagHelperContent.AppendHtml("Contoso");
+
+            // Act
+            tagHelperContent.SetHtmlContent("Hello World!");
+
+            // Assert
+            Assert.Equal("Hello World!", tagHelperContent.GetContent(new CommonTestEncoder()));
+        }
+
         [Theory]
         [InlineData("HelloWorld!", "HtmlEncode[[HelloWorld!]]")]
         [InlineData("  ", "HtmlEncode[[  ]]")]
@@ -473,11 +500,11 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         }
 
         [Fact]
-        public void AppendEncoded_DoesNotGetEncoded()
+        public void AppendHtml_DoesNotGetEncoded()
         {
             // Arrange
             var tagHelperContent = new DefaultTagHelperContent();
-            tagHelperContent.AppendEncoded("Hi");
+            tagHelperContent.AppendHtml("Hi");
 
             var writer = new StringWriter();
 
