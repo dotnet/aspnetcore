@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
+using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
 
@@ -20,7 +21,6 @@ namespace Microsoft.AspNet.Mvc.Formatters
             {
                 // object value, bool useDeclaredTypeAsString, bool expectedCanWriteResult
                 yield return new object[] { "valid value", true, true };
-                yield return new object[] { "valid value", false, true };
                 yield return new object[] { null, true, true };
                 yield return new object[] { null, false, false };
                 yield return new object[] { new object(), false, false };
@@ -35,15 +35,22 @@ namespace Microsoft.AspNet.Mvc.Formatters
             bool expectedCanWriteResult)
         {
             // Arrange
+            var expectedContentType = expectedCanWriteResult ? 
+                MediaTypeHeaderValue.Parse("text/plain") :
+                MediaTypeHeaderValue.Parse("application/json");
+
             var formatter = new StringOutputFormatter();
             var type = useDeclaredTypeAsString ? typeof(string) : typeof(object);
+
             var context = new OutputFormatterWriteContext(new DefaultHttpContext(), type, value);
+            context.ContentType = MediaTypeHeaderValue.Parse("application/json");
 
             // Act
             var result = formatter.CanWriteResult(context);
 
             // Assert
             Assert.Equal(expectedCanWriteResult, result);
+            Assert.Equal(expectedContentType, context.ContentType);
         }
 
         [Fact]

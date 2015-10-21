@@ -31,13 +31,9 @@ namespace Microsoft.AspNet.Mvc.Formatters
 
             // Ignore the passed in content type, if the object is string
             // always return it as a text/plain format.
-            if (context.ObjectType == typeof(string))
+            if (context.ObjectType == typeof(string) || context.Object is string)
             {
-                return true;
-            }
-
-            if (context.Object is string)
-            {
+                context.ContentType = SupportedMediaTypes[0];
                 return true;
             }
 
