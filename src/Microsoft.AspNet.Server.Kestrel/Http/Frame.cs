@@ -157,7 +157,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         }
                     }
 
-                    while (!terminated && !_requestProcessingStopping && !TakeMessageHeaders(SocketInput))
+                    while (!terminated && !_requestProcessingStopping && !TakeMessageHeaders(SocketInput, _requestHeaders))
                     {
                         terminated = SocketInput.RemoteIntakeFin;
                         if (!terminated)
@@ -654,7 +654,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             return Encoding.UTF8.GetString(range.Array, range.Offset + startIndex, endIndex - startIndex);
         }
 
-        private bool TakeMessageHeaders(SocketInput input)
+        public static bool TakeMessageHeaders(SocketInput input, FrameRequestHeaders requestHeaders)
         {
             var scan = input.ConsumingStart();
             var consumed = scan;
@@ -692,6 +692,22 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         chSecond == '\r' ||
                         chSecond == '\n')
                     {
+                        if (chSecond == '\r')
+                        {
+                            var scanAhead = scan;
+                            var chAhead = scanAhead.Take();
+                            if (chAhead == '\n')
+                            {
+                                chAhead = scanAhead.Take();
+                                // If the "\r\n" isn't part of "linear whitespace",
+                                // then this header has no value.
+                                if (chAhead != ' ' && chAhead != '\t')
+                                {
+                                    break;
+                                }
+                            }
+                        }
+
                         beginValue = scan;
                         chSecond = scan.Take();
                     }
@@ -729,9 +745,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         }
 
                         var name = beginName.GetArraySegment(endName);
-#if DEBUG
-                        var nameString = beginName.GetString(endName);
-#endif
                         var value = beginValue.GetString(endValue);
                         if (wrapping)
                         {
@@ -739,7 +752,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         }
 
                         consumed = scan;
-                        _requestHeaders.Append(name.Array, name.Offset, name.Count, value);
+                        requestHeaders.Append(name.Array, name.Offset, name.Count, value);
                         break;
                     }
                 }
