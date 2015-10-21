@@ -420,8 +420,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             if (_responseStarted) return;
 
             await FireOnStarting();
-           
-            if (_applicationException != null) 
+
+            if (_applicationException != null)
             {
                 throw new ObjectDisposedException(
                     "The response has been aborted due to an unhandled application exception.",
@@ -591,12 +591,17 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
                 scan.Take();
                 begin = scan;
-                var chFound = scan.Seek(' ', '?');
-                if (chFound == -1)
+
+                var needDecode = false;
+                var chFound = scan.Seek(' ', '?', '%');
+                if (chFound == '%')
                 {
-                    return false;
+                    needDecode = true;
+                    chFound = scan.Seek(' ', '?');
                 }
-                var requestUri = begin.GetString(scan);
+
+                var pathBegin = begin;
+                var pathEnd = scan;
 
                 var queryString = "";
                 if (chFound == '?')
@@ -623,9 +628,16 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     return false;
                 }
 
+                if (needDecode)
+                {
+                    pathEnd = UrlPathDecoder.Unescape(pathBegin, pathEnd);
+                }
+
+                var requestUrlPath = pathBegin.GetString(pathEnd);
+
                 consumed = scan;
                 Method = method;
-                RequestUri = requestUri;
+                RequestUri = requestUrlPath;
                 QueryString = queryString;
                 HttpVersion = httpVersion;
                 Path = RequestUri;

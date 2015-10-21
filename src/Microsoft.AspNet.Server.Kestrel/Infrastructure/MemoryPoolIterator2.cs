@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Linq;
 using System.Numerics;
 using System.Text;
@@ -9,9 +12,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
     {
         /// <summary>
         /// Array of "minus one" bytes of the length of SIMD operations on the current hardware. Used as an argument in the
-        /// vector dot product that counts matching character occurence.
+        /// vector dot product that counts matching character occurrence.
         /// </summary>
-        private static Vector<byte> _dotCount = new Vector<byte>(Byte.MaxValue); 
+        private static Vector<byte> _dotCount = new Vector<byte>(Byte.MaxValue);
 
         /// <summary>
         /// Array of negative numbers starting at 0 and continuing for the length of SIMD operations on the current hardware.
@@ -291,6 +294,167 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
                         following--;
                         index++;
                     }
+                }
+            }
+        }
+
+        public int Seek(int char0, int char1, int char2)
+        {
+            if (IsDefault)
+            {
+                return -1;
+            }
+
+            var byte0 = (byte)char0;
+            var byte1 = (byte)char1;
+            var byte2 = (byte)char2;
+            var vectorStride = Vector<byte>.Count;
+            var ch0Vector = new Vector<byte>(byte0);
+            var ch1Vector = new Vector<byte>(byte1);
+            var ch2Vector = new Vector<byte>(byte2);
+
+            var block = _block;
+            var index = _index;
+            var array = block.Array;
+            while (true)
+            {
+                while (block.End == index)
+                {
+                    if (block.Next == null)
+                    {
+                        _block = block;
+                        _index = index;
+                        return -1;
+                    }
+                    block = block.Next;
+                    index = block.Start;
+                    array = block.Array;
+                }
+                while (block.End != index)
+                {
+                    var following = block.End - index;
+                    if (following >= vectorStride)
+                    {
+                        var data = new Vector<byte>(array, index);
+                        var ch0Equals = Vector.Equals(data, ch0Vector);
+                        var ch0Count = Vector.Dot(ch0Equals, _dotCount);
+                        var ch1Equals = Vector.Equals(data, ch1Vector);
+                        var ch1Count = Vector.Dot(ch1Equals, _dotCount);
+                        var ch2Equals = Vector.Equals(data, ch2Vector);
+                        var ch2Count = Vector.Dot(ch2Equals, _dotCount);
+
+                        if (ch0Count == 0 && ch1Count == 0 && ch2Count == 0)
+                        {
+                            index += vectorStride;
+                            continue;
+                        }
+                        else if (ch0Count < 2 && ch1Count < 2 && ch2Count < 2)
+                        {
+                            var ch0Index = ch0Count == 1 ? Vector.Dot(ch0Equals, _dotIndex) : byte.MaxValue;
+                            var ch1Index = ch1Count == 1 ? Vector.Dot(ch1Equals, _dotIndex) : byte.MaxValue;
+                            var ch2Index = ch2Count == 1 ? Vector.Dot(ch2Equals, _dotIndex) : byte.MaxValue;
+
+                            int toReturn, toMove;
+                            if (ch0Index < ch1Index)
+                            {
+                                if (ch0Index < ch2Index)
+                                {
+                                    toReturn = char0;
+                                    toMove = ch0Index;
+                                }
+                                else
+                                {
+                                    toReturn = char2;
+                                    toMove = ch2Index;
+                                }
+                            }
+                            else
+                            {
+                                if (ch1Index < ch2Index)
+                                {
+                                    toReturn = char1;
+                                    toMove = ch1Index;
+                                }
+                                else
+                                {
+                                    toReturn = char2;
+                                    toMove = ch2Index;
+                                }
+                            }
+
+                            _block = block;
+                            _index = index + toMove;
+                            return toReturn;
+                        }
+                        else
+                        {
+                            following = vectorStride;
+                        }
+                    }
+                    while (following > 0)
+                    {
+                        var byteIndex = block.Array[index];
+                        if (byteIndex == byte0)
+                        {
+                            _block = block;
+                            _index = index;
+                            return char0;
+                        }
+                        else if (byteIndex == byte1)
+                        {
+                            _block = block;
+                            _index = index;
+                            return char1;
+                        }
+                        else if (byteIndex == byte2)
+                        {
+                            _block = block;
+                            _index = index;
+                            return char2;
+                        }
+                        following--;
+                        index++;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Save the data at the current location then move to the next available space.
+        /// </summary>
+        /// <param name="data">The byte to be saved.</param>
+        /// <returns>true if the operation successes. false if can't find available space.</returns>
+        public bool Put(byte data)
+        {
+            if (_block == null)
+            {
+                return false;
+            }
+            else if (_index < _block.End)
+            {
+                _block.Array[_index++] = data;
+                return true;
+            }
+
+            var block = _block;
+            var index = _index;
+            while (true)
+            {
+                if (index < block.End)
+                {
+                    _block = block;
+                    _index = index + 1;
+                    block.Array[index] = data;
+                    return true;
+                }
+                else if (block.Next == null)
+                {
+                    return false;
+                }
+                else
+                {
+                    block = block.Next;
+                    index = block.Start;
                 }
             }
         }
