@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             var bytePool = new Mock<IArraySegmentPool<byte>>(MockBehavior.Strict);
             bytePool
                 .Setup(p => p.Lease(It.IsAny<int>()))
-                .Returns(new LeasedArraySegment<byte>(new ArraySegment<byte>(new byte[0]), bytePool.Object));
+                .Returns(new LeasedArraySegment<byte>(new ArraySegment<byte>(new byte[4096]), bytePool.Object));
             bytePool
                 .Setup(p => p.Return(It.IsAny<LeasedArraySegment<byte>>()))
                 .Verifiable();
@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             var charPool = new Mock<IArraySegmentPool<char>>(MockBehavior.Strict);
             charPool
                 .Setup(p => p.Lease(MemoryPoolHttpResponseStreamWriterFactory.DefaultBufferSize))
-                .Returns(new LeasedArraySegment<char>(new ArraySegment<char>(new char[0]), charPool.Object));
+                .Returns(new LeasedArraySegment<char>(new ArraySegment<char>(new char[4096]), charPool.Object));
             charPool
                 .Setup(p => p.Return(It.IsAny<LeasedArraySegment<char>>()))
                 .Verifiable();

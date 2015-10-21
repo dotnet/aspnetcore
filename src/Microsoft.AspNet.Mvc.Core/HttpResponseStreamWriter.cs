@@ -16,6 +16,8 @@ namespace Microsoft.AspNet.Mvc
     /// </summary>
     public class HttpResponseStreamWriter : TextWriter
     {
+        private const int MinBufferSize = 128;
+
         /// <summary>
         /// Default buffer size.
         /// </summary>
@@ -42,6 +44,11 @@ namespace Microsoft.AspNet.Mvc
                 throw new ArgumentNullException(nameof(stream));
             }
 
+            if (!stream.CanWrite)
+            {
+                throw new ArgumentException(Resources.HttpResponseStreamWriter_StreamNotWritable, nameof(stream));
+            }
+
             if (encoding == null)
             {
                 throw new ArgumentNullException(nameof(encoding));
@@ -50,6 +57,11 @@ namespace Microsoft.AspNet.Mvc
             _stream = stream;
             Encoding = encoding;
             _charBufferSize = bufferSize;
+
+            if (bufferSize < MinBufferSize)
+            {
+                bufferSize = MinBufferSize;
+            }
 
             _encoder = encoding.GetEncoder();
             _byteBuffer = new ArraySegment<byte>(new byte[encoding.GetMaxByteCount(bufferSize)]);
@@ -68,6 +80,11 @@ namespace Microsoft.AspNet.Mvc
                 throw new ArgumentNullException(nameof(stream));
             }
 
+            if (!stream.CanWrite)
+            {
+                throw new ArgumentException(Resources.HttpResponseStreamWriter_StreamNotWritable, nameof(stream));
+            }
+
             if (encoding == null)
             {
                 throw new ArgumentNullException(nameof(encoding));
@@ -81,6 +98,11 @@ namespace Microsoft.AspNet.Mvc
             if (leasedCharBuffer == null)
             {
                 throw new ArgumentNullException(nameof(leasedCharBuffer));
+            }
+
+            if (bufferSize <= 0 || bufferSize > leasedCharBuffer.Data.Count)
+            {
+                throw new ArgumentOutOfRangeException(nameof(bufferSize));
             }
 
             var requiredLength = encoding.GetMaxByteCount(bufferSize);

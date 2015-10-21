@@ -31,7 +31,8 @@ namespace Microsoft.AspNet.Mvc.Formatters
                 httpContext,
                 modelName: string.Empty,
                 modelState: modelState,
-                metadata: metadata);
+                metadata: metadata,
+                readerFactory: new TestHttpRequestStreamReaderFactory().CreateReader);
 
             // Act
             var result = await formatter.ReadAsync(context);
@@ -61,7 +62,8 @@ namespace Microsoft.AspNet.Mvc.Formatters
                 httpContext,
                 modelName: string.Empty,
                 modelState: modelState,
-                metadata: metadata);
+                metadata: metadata,
+                readerFactory: new TestHttpRequestStreamReaderFactory().CreateReader);
 
             // Act
             var result = await formatter.ReadAsync(context);
@@ -96,7 +98,8 @@ namespace Microsoft.AspNet.Mvc.Formatters
                 httpContext,
                 modelName: string.Empty,
                 modelState: modelState,
-                metadata: metadata);
+                metadata: metadata,
+                readerFactory: new TestHttpRequestStreamReaderFactory().CreateReader);
 
             // Act
             var result = formatter.CanRead(formatterContext);
@@ -123,7 +126,8 @@ namespace Microsoft.AspNet.Mvc.Formatters
                 httpContext,
                 modelName: string.Empty,
                 modelState: modelState,
-                metadata: metadata);
+                metadata: metadata,
+                readerFactory: new TestHttpRequestStreamReaderFactory().CreateReader);
 
             // Act
             var result = formatter.CanRead(formatterContext);
@@ -151,7 +155,8 @@ namespace Microsoft.AspNet.Mvc.Formatters
                 httpContext,
                 modelName: string.Empty,
                 modelState: modelState,
-                metadata: metadata);
+                metadata: metadata,
+                readerFactory: new TestHttpRequestStreamReaderFactory().CreateReader);
 
             // Act
             var result = await formatter.ReadAsync(context);

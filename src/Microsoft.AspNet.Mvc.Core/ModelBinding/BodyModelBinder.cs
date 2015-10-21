@@ -2,10 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Formatters;
+using Microsoft.AspNet.Mvc.Infrastructure;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -15,6 +18,20 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     /// </summary>
     public class BodyModelBinder : IModelBinder
     {
+        private readonly Func<Stream, Encoding, TextReader> _readerFactory;
+
+        /// <summary>
+        /// Creates a new <see cref="BodyModelBinder"/>.
+        /// </summary>
+        /// <param name="readerFactory">
+        /// The <see cref="IHttpRequestStreamReaderFactory"/>, used to create <see cref="System.IO.TextReader"/>
+        /// instances for reading the request body.
+        /// </param>
+        public BodyModelBinder(IHttpRequestStreamReaderFactory readerFactory)
+        {
+            _readerFactory = readerFactory.CreateReader;
+        }
+
         /// <inheritdoc />
         public Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
         {
@@ -59,7 +76,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 httpContext,
                 modelBindingKey,
                 bindingContext.ModelState,
-                bindingContext.ModelMetadata);
+                bindingContext.ModelMetadata,
+                _readerFactory);
+
             var formatters = bindingContext.OperationBindingContext.InputFormatters;
             var formatter = formatters.FirstOrDefault(f => f.CanRead(formatterContext));
 

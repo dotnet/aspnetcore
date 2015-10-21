@@ -302,6 +302,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
             var context = new DefaultHttpContext();
             var stream = new Mock<Stream>();
+            stream.SetupGet(s => s.CanWrite).Returns(true);
             context.Response.Body = stream.Object;
 
             var actionContext = new ActionContext(

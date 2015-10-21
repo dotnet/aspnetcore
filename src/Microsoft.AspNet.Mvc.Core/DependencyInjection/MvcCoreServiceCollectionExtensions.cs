@@ -138,6 +138,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
             services.TryAddSingleton<IActionBindingContextAccessor, ActionBindingContextAccessor>();
             services.TryAddSingleton<IUrlHelper, UrlHelper>();
+            services.TryAddSingleton<IHttpRequestStreamReaderFactory, MemoryPoolHttpRequestStreamReaderFactory>();
             services.TryAddSingleton<IHttpResponseStreamWriterFactory, MemoryPoolHttpResponseStreamWriterFactory>();
             services.TryAddSingleton<IArraySegmentPool<byte>, DefaultArraySegmentPool<byte>>();
             services.TryAddSingleton<IArraySegmentPool<char>, DefaultArraySegmentPool<char>>();

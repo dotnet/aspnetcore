@@ -43,7 +43,8 @@ namespace Microsoft.AspNet.Mvc.Formatters
                 httpContext,
                 modelName: string.Empty,
                 modelState: new ModelStateDictionary(),
-                metadata: metadata);
+                metadata: metadata,
+                readerFactory: new TestHttpRequestStreamReaderFactory().CreateReader);
 
             // Act
             var result = formatter.CanRead(context);
@@ -76,7 +77,8 @@ namespace Microsoft.AspNet.Mvc.Formatters
                 httpContext,
                 modelName: string.Empty,
                 modelState: new ModelStateDictionary(),
-                metadata: metadata);
+                metadata: metadata,
+                readerFactory: new TestHttpRequestStreamReaderFactory().CreateReader);
 
             // Act
             var result = formatter.CanRead(context);
@@ -106,7 +108,8 @@ namespace Microsoft.AspNet.Mvc.Formatters
                 httpContext,
                 modelName: string.Empty,
                 modelState: new ModelStateDictionary(),
-                metadata: metadata);
+                metadata: metadata,
+                readerFactory: new TestHttpRequestStreamReaderFactory().CreateReader);
 
             // Act
             var result = formatter.CanRead(context);
@@ -139,7 +142,8 @@ namespace Microsoft.AspNet.Mvc.Formatters
                 httpContext,
                 modelName: string.Empty,
                 modelState: new ModelStateDictionary(),
-                metadata: metadata);
+                metadata: metadata,
+                readerFactory: new TestHttpRequestStreamReaderFactory().CreateReader);
 
             // Act
             var result = formatter.CanRead(context);
@@ -169,7 +173,8 @@ namespace Microsoft.AspNet.Mvc.Formatters
                 httpContext,
                 modelName: string.Empty,
                 modelState: new ModelStateDictionary(),
-                metadata: metadata);
+                metadata: metadata,
+                readerFactory: new TestHttpRequestStreamReaderFactory().CreateReader);
 
             // Act
             var result = formatter.CanRead(context);
@@ -205,7 +210,8 @@ namespace Microsoft.AspNet.Mvc.Formatters
                 httpContext,
                 modelName: string.Empty,
                 modelState: new ModelStateDictionary(),
-                metadata: metadata);
+                metadata: metadata,
+                readerFactory: new TestHttpRequestStreamReaderFactory().CreateReader);
 
             // Act
             var result = formatter.CanRead(context);
@@ -234,7 +240,8 @@ namespace Microsoft.AspNet.Mvc.Formatters
                 httpContext,
                 modelName: string.Empty,
                 modelState: new ModelStateDictionary(),
-                metadata: metadata);
+                metadata: metadata,
+                readerFactory: new TestHttpRequestStreamReaderFactory().CreateReader);
 
             // Act
             var result = formatter.CanRead(context);
@@ -268,7 +275,8 @@ namespace Microsoft.AspNet.Mvc.Formatters
                 httpContext,
                 modelName: string.Empty,
                 modelState: new ModelStateDictionary(),
-                metadata: metadata);
+                metadata: metadata,
+                readerFactory: new TestHttpRequestStreamReaderFactory().CreateReader);
 
             // Act
             var result = formatter.CanRead(context);
@@ -299,7 +307,8 @@ namespace Microsoft.AspNet.Mvc.Formatters
                 httpContext,
                 modelName: string.Empty,
                 modelState: new ModelStateDictionary(),
-                metadata: metadata);
+                metadata: metadata,
+                readerFactory: new TestHttpRequestStreamReaderFactory().CreateReader);
 
             // Act
             var result = formatter.CanRead(context);

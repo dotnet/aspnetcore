@@ -322,4 +322,13 @@
   <data name="UrlNotLocal" xml:space="preserve">
     <value>The supplied URL is not local. A URL with an absolute path is considered local if it does not have a host/authority part. URLs using virtual paths ('~/') are also local.</value>
   </data>
+  <data name="HttpRequestStreamReader_InvalidBufferSize" xml:space="preserve">
+    <value>The char buffer must have a length of at least '{0}' to be used with a byte buffer of size '{1}' and encoding '{2}'. Use '{3}.{4}' to compute the correct size for the char buffer.</value>
+  </data>
+  <data name="HttpRequestStreamReader_StreamNotReadable" xml:space="preserve">
+    <value>The stream must support reading.</value>
+  </data>
+  <data name="HttpResponseStreamWriter_StreamNotWritable" xml:space="preserve">
+    <value>The stream must support writing.</value>
+  </data>
 </root>

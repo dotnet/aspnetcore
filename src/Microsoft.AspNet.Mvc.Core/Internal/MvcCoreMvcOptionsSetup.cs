@@ -5,6 +5,7 @@ using System;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Formatters;
+using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
@@ -17,12 +18,12 @@ namespace Microsoft.AspNet.Mvc.Internal
     /// </summary>
     public class MvcCoreMvcOptionsSetup : ConfigureOptions<MvcOptions>
     {
-        public MvcCoreMvcOptionsSetup()
-            : base(ConfigureMvc)
+        public MvcCoreMvcOptionsSetup(IHttpRequestStreamReaderFactory readerFactory)
+            : base((options) => ConfigureMvc(options, readerFactory))
         {
         }
 
-        public static void ConfigureMvc(MvcOptions options)
+        public static void ConfigureMvc(MvcOptions options, IHttpRequestStreamReaderFactory readerFactory)
         {
             // Set up default error messages
             var messageProvider = options.ModelBindingMessageProvider;
@@ -33,7 +34,7 @@ namespace Microsoft.AspNet.Mvc.Internal
             // Set up ModelBinding
             options.ModelBinders.Add(new BinderTypeBasedModelBinder());
             options.ModelBinders.Add(new ServicesModelBinder());
-            options.ModelBinders.Add(new BodyModelBinder());
+            options.ModelBinders.Add(new BodyModelBinder(readerFactory));
             options.ModelBinders.Add(new HeaderModelBinder());
             options.ModelBinders.Add(new SimpleTypeModelBinder());
             options.ModelBinders.Add(new CancellationTokenModelBinder());

@@ -4,7 +4,6 @@
 using Microsoft.AspNet.Mvc.DataAnnotations.Internal;
 using Microsoft.AspNet.Mvc.Formatters.Json.Internal;
 using Microsoft.AspNet.Mvc.Internal;
-using Microsoft.AspNet.Mvc.TestCommon;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.OptionsModel;
 
@@ -15,7 +14,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
         public TestMvcOptions()
         {
             Value = new MvcOptions();
-            MvcCoreMvcOptionsSetup.ConfigureMvc(Value);
+            MvcCoreMvcOptionsSetup.ConfigureMvc(Value, new TestHttpRequestStreamReaderFactory());
             var collection = new ServiceCollection().AddOptions();
             MvcDataAnnotationsMvcOptionsSetup.ConfigureMvc(
                 Value,

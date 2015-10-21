@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Newtonsoft.Json;
@@ -72,96 +73,69 @@ namespace Microsoft.AspNet.Mvc.Formatters
             }
 
             var request = context.HttpContext.Request;
-            using (var jsonReader = CreateJsonReader(context, request.Body, effectiveEncoding))
+            using (var streamReader = context.ReaderFactory(request.Body, effectiveEncoding))
             {
-                jsonReader.CloseInput = false;
-
-                var successful = true;
-                EventHandler<Newtonsoft.Json.Serialization.ErrorEventArgs> errorHandler = (sender, eventArgs) =>
+                using (var jsonReader = new JsonTextReader(streamReader))
                 {
-                    successful = false;
+                    jsonReader.CloseInput = false;
 
-                    var exception = eventArgs.ErrorContext.Error;
-
-                    // Handle path combinations such as "" + "Property", "Parent" + "Property", or "Parent" + "[12]".
-                    var key = eventArgs.ErrorContext.Path;
-                    if (!string.IsNullOrEmpty(context.ModelName))
+                    var successful = true;
+                    EventHandler<Newtonsoft.Json.Serialization.ErrorEventArgs> errorHandler = (sender, eventArgs) =>
                     {
-                        if (string.IsNullOrEmpty(eventArgs.ErrorContext.Path))
+                        successful = false;
+
+                        var exception = eventArgs.ErrorContext.Error;
+
+                        // Handle path combinations such as "" + "Property", "Parent" + "Property", or "Parent" + "[12]".
+                        var key = eventArgs.ErrorContext.Path;
+                        if (!string.IsNullOrEmpty(context.ModelName))
                         {
-                            key = context.ModelName;
+                            if (string.IsNullOrEmpty(eventArgs.ErrorContext.Path))
+                            {
+                                key = context.ModelName;
+                            }
+                            else if (eventArgs.ErrorContext.Path[0] == '[')
+                            {
+                                key = context.ModelName + eventArgs.ErrorContext.Path;
+                            }
+                            else
+                            {
+                                key = context.ModelName + "." + eventArgs.ErrorContext.Path;
+                            }
                         }
-                        else if (eventArgs.ErrorContext.Path[0] == '[')
-                        {
-                            key = context.ModelName + eventArgs.ErrorContext.Path;
-                        }
-                        else
-                        {
-                            key = context.ModelName + "." + eventArgs.ErrorContext.Path;
-                        }
+
+                        var metadata = GetPathMetadata(context.Metadata, eventArgs.ErrorContext.Path);
+                        context.ModelState.TryAddModelError(key, eventArgs.ErrorContext.Error, metadata);
+
+                        // Error must always be marked as handled
+                        // Failure to do so can cause the exception to be rethrown at every recursive level and
+                        // overflow the stack for x64 CLR processes
+                        eventArgs.ErrorContext.Handled = true;
+                    };
+
+                    var type = context.ModelType;
+                    var jsonSerializer = CreateJsonSerializer();
+                    jsonSerializer.Error += errorHandler;
+
+                    object model;
+                    try
+                    {
+                        model = jsonSerializer.Deserialize(jsonReader, type);
+                    }
+                    finally
+                    {
+                        // Clean up the error handler in case CreateJsonSerializer() reuses a serializer
+                        jsonSerializer.Error -= errorHandler;
                     }
 
-                    var metadata = GetPathMetadata(context.Metadata, eventArgs.ErrorContext.Path);
-                    context.ModelState.TryAddModelError(key, eventArgs.ErrorContext.Error, metadata);
+                    if (successful)
+                    {
+                        return InputFormatterResult.SuccessAsync(model);
+                    }
 
-                    // Error must always be marked as handled
-                    // Failure to do so can cause the exception to be rethrown at every recursive level and
-                    // overflow the stack for x64 CLR processes
-                    eventArgs.ErrorContext.Handled = true;
-                };
-
-                var type = context.ModelType;
-                var jsonSerializer = CreateJsonSerializer();
-                jsonSerializer.Error += errorHandler;
-
-                object model;
-                try
-                {
-                    model = jsonSerializer.Deserialize(jsonReader, type);
+                    return InputFormatterResult.FailureAsync();
                 }
-                finally
-                {
-                    // Clean up the error handler in case CreateJsonSerializer() reuses a serializer
-                    jsonSerializer.Error -= errorHandler;
-                }
-
-                if (successful)
-                {
-                    return InputFormatterResult.SuccessAsync(model);
-                }
-
-                return InputFormatterResult.FailureAsync();
             }
-        }
-
-        /// <summary>
-        /// Called during deserialization to get the <see cref="JsonReader"/>.
-        /// </summary>
-        /// <param name="context">The <see cref="InputFormatterContext"/> for the read.</param>
-        /// <param name="readStream">The <see cref="Stream"/> from which to read.</param>
-        /// <param name="effectiveEncoding">The <see cref="Encoding"/> to use when reading.</param>
-        /// <returns>The <see cref="JsonReader"/> used during deserialization.</returns>
-        protected virtual JsonReader CreateJsonReader(
-            InputFormatterContext context,
-            Stream readStream,
-            Encoding effectiveEncoding)
-        {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            if (readStream == null)
-            {
-                throw new ArgumentNullException(nameof(readStream));
-            }
-
-            if (effectiveEncoding == null)
-            {
-                throw new ArgumentNullException(nameof(effectiveEncoding));
-            }
-
-            return new JsonTextReader(new StreamReader(readStream, effectiveEncoding));
         }
 
         /// <summary>

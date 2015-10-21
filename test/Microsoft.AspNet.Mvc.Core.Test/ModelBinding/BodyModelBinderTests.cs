@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 new[] { inputFormatter },
                 metadataProvider: provider);
 
-            var binder = new BodyModelBinder();
+            var binder = new BodyModelBinder(new TestHttpRequestStreamReaderFactory());
 
             // Act
             var binderResult = await binder.BindModelAsync(bindingContext);
@@ -257,7 +257,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var operationBindingContext = new OperationBindingContext
             {
                 InputFormatters = inputFormatters.ToList(),
-                ModelBinder = new BodyModelBinder(),
+                ModelBinder = new BodyModelBinder(new TestHttpRequestStreamReaderFactory()),
                 MetadataProvider = metadataProvider,
                 HttpContext = httpContext,
             };

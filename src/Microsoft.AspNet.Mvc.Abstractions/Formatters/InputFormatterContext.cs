@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
+using System.Text;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
 
@@ -22,14 +24,18 @@ namespace Microsoft.AspNet.Mvc.Formatters
         /// <param name="modelState">
         /// The <see cref="ModelStateDictionary"/> for recording errors.
         /// </param>
-        /// <param name="modelType">
-        /// The <see cref="Type"/> of the model to deserialize.
+        /// <param name="metadata">
+        /// The <see cref="ModelMetadata"/> of the model to deserialize.
+        /// </param>
+        /// <param name="readerFactory">
+        /// A delegate which can create a <see cref="TextReader"/> for the request body.
         /// </param>
         public InputFormatterContext(
             HttpContext httpContext,
             string modelName,
             ModelStateDictionary modelState,
-            ModelMetadata metadata)
+            ModelMetadata metadata,
+            Func<Stream, Encoding, TextReader> readerFactory)
         {
             if (httpContext == null)
             {
@@ -51,10 +57,16 @@ namespace Microsoft.AspNet.Mvc.Formatters
                 throw new ArgumentNullException(nameof(metadata));
             }
 
+            if (readerFactory == null)
+            {
+                throw new ArgumentNullException(nameof(readerFactory));
+            }
+
             HttpContext = httpContext;
             ModelName = modelName;
             ModelState = modelState;
             Metadata = metadata;
+            ReaderFactory = readerFactory;
             ModelType = metadata.ModelType;
         }
 
@@ -82,5 +94,10 @@ namespace Microsoft.AspNet.Mvc.Formatters
         /// Gets the requested <see cref="Type"/> of the request body deserialization.
         /// </summary>
         public Type ModelType { get; }
+
+        /// <summary>
+        /// Gets a delegate which can create a <see cref="TextReader"/> for the request body.
+        /// </summary>
+        public Func<Stream, Encoding, TextReader> ReaderFactory { get; }
     }
 }

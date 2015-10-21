@@ -1050,6 +1050,54 @@ namespace Microsoft.AspNet.Mvc.Core
             return GetString("UrlNotLocal");
         }
 
+        /// <summary>
+        /// The char buffer must have a length of at least '{0}' to be used with a byte buffer of size '{1}' and encoding '{2}'. Use '{3}.{4}' to compute the correct size for the char buffer.
+        /// </summary>
+        internal static string HttpRequestStreamReader_InvalidBufferSize
+        {
+            get { return GetString("HttpRequestStreamReader_InvalidBufferSize"); }
+        }
+
+        /// <summary>
+        /// The char buffer must have a length of at least '{0}' to be used with a byte buffer of size '{1}' and encoding '{2}'. Use '{3}.{4}' to compute the correct size for the char buffer.
+        /// </summary>
+        internal static string FormatHttpRequestStreamReader_InvalidBufferSize(object p0, object p1, object p2, object p3, object p4)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("HttpRequestStreamReader_InvalidBufferSize"), p0, p1, p2, p3, p4);
+        }
+
+        /// <summary>
+        /// The stream must support reading.
+        /// </summary>
+        internal static string HttpRequestStreamReader_StreamNotReadable
+        {
+            get { return GetString("HttpRequestStreamReader_StreamNotReadable"); }
+        }
+
+        /// <summary>
+        /// The stream must support reading.
+        /// </summary>
+        internal static string FormatHttpRequestStreamReader_StreamNotReadable()
+        {
+            return GetString("HttpRequestStreamReader_StreamNotReadable");
+        }
+
+        /// <summary>
+        /// The stream must support writing.
+        /// </summary>
+        internal static string HttpResponseStreamWriter_StreamNotWritable
+        {
+            get { return GetString("HttpResponseStreamWriter_StreamNotWritable"); }
+        }
+
+        /// <summary>
+        /// The stream must support writing.
+        /// </summary>
+        internal static string FormatHttpResponseStreamWriter_StreamNotWritable()
+        {
+            return GetString("HttpResponseStreamWriter_StreamNotWritable");
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
