@@ -11,21 +11,14 @@ namespace MusicStore
     /// </summary>
     public class Program
     {
-        private readonly IServiceProvider _serviceProvider;
-
-        public Program(IServiceProvider serviceProvider)
-        {
-            _serviceProvider = serviceProvider;
-        }
-
-        public Task<int> Main(string[] args)
+        public static void Main(string[] args)
         {
             //Add command line configuration source to read command line parameters.
             var builder = new ConfigurationBuilder();
             builder.AddCommandLine(args);
             var config = builder.Build();
 
-            using (new WebHostBuilder(_serviceProvider, config)
+            using (new WebHostBuilder(config)
                 .UseServer("Microsoft.AspNet.Server.WebListener")
                 .Build()
                 .Start())
@@ -34,7 +27,6 @@ namespace MusicStore
                 Console.WriteLine("Press any key to stop the server");
                 Console.ReadLine();
             }
-            return Task.FromResult(0);
         }
     }
 }
