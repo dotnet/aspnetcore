@@ -67,7 +67,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             using (new CultureReplacer())
             {
                 _server = TestServer.Create(
-                    CallContextServiceLocator.Locator.ServiceProvider,
                     configureApplication,
                     configureServices: InitializeServices(startupTypeInfo.Assembly, buildServices));
             }
