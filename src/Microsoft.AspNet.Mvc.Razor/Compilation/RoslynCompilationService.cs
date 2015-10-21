@@ -9,6 +9,9 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.PortableExecutable;
+#if DOTNET5_4
+using System.Runtime.Loader;
+#endif
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Mvc.Razor.Internal;
 using Microsoft.CodeAnalysis;
@@ -32,11 +35,14 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
 
         private readonly ILibraryExporter _libraryExporter;
         private readonly IApplicationEnvironment _environment;
-        private readonly IAssemblyLoadContext _loader;
         private readonly ICompilerOptionsProvider _compilerOptionsProvider;
         private readonly IFileProvider _fileProvider;
         private readonly Lazy<List<MetadataReference>> _applicationReferences;
         private readonly string _classPrefix;
+
+#if DOTNET5_4
+        private readonly RazorLoadContext _razorLoadContext;
+#endif
 
         /// <summary>
         /// Initalizes a new instance of the <see cref="RoslynCompilationService"/> class.
@@ -52,19 +58,21 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         /// <param name="host">The <see cref="IMvcRazorHost"/> that was used to generate the code.</param>
         public RoslynCompilationService(
             IApplicationEnvironment environment,
-            IAssemblyLoadContextAccessor loaderAccessor,
             ILibraryExporter libraryExporter,
             ICompilerOptionsProvider compilerOptionsProvider,
             IMvcRazorHost host,
             IOptions<RazorViewEngineOptions> optionsAccessor)
         {
             _environment = environment;
-            _loader = loaderAccessor.GetLoadContext(typeof(RoslynCompilationService).GetTypeInfo().Assembly);
             _libraryExporter = libraryExporter;
             _applicationReferences = new Lazy<List<MetadataReference>>(GetApplicationReferences);
             _compilerOptionsProvider = compilerOptionsProvider;
             _fileProvider = optionsAccessor.Value.FileProvider;
             _classPrefix = host.MainClassNamePrefix;
+
+#if DOTNET5_4
+            _razorLoadContext = new RazorLoadContext();
+#endif
         }
 
         /// <inheritdoc />
@@ -131,11 +139,11 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                     if (_supportsPdbGeneration.Value)
                     {
                         pdb.Seek(0, SeekOrigin.Begin);
-                        assembly = _loader.LoadStream(ms, pdb);
+                        assembly = LoadStream(ms, pdb);
                     }
                     else
                     {
-                        assembly = _loader.LoadStream(ms, assemblySymbols: null);
+                        assembly = LoadStream(ms, assemblySymbols: null);
                     }
 
                     var type = assembly.GetExportedTypes()
@@ -144,6 +152,15 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                     return UncachedCompilationResult.Successful(type, compilationContent);
                 }
             }
+        }
+
+        private Assembly LoadStream(MemoryStream ms, MemoryStream assemblySymbols)
+        {
+#if NET451
+            return Assembly.Load(ms.ToArray(), assemblySymbols?.ToArray());
+#else
+            return _razorLoadContext.Load(ms, assemblySymbols);
+#endif
         }
 
         private CSharpCompilation Rewrite(CSharpCompilation compilation)
@@ -321,5 +338,20 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
 
             return null;
         }
+
+#if DOTNET5_4
+        private class RazorLoadContext : AssemblyLoadContext
+        {
+            protected override Assembly Load(AssemblyName assemblyName)
+            {
+                return Default.LoadFromAssemblyName(assemblyName);
+            }
+
+            public Assembly Load(Stream assembly, Stream assemblySymbols)
+            {
+                return LoadFromStream(assembly, assemblySymbols);
+            }
+        }
+#endif
     }
 }
