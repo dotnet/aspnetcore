@@ -24,11 +24,11 @@ namespace Microsoft.Extensions.Internal
         /// <summary>
         /// Appends the <see cref="string"/> to the collection.
         /// </summary>
-        /// <param name="value">The <c>string</c> to be appended.</param>
+        /// <param name="unencoded">The <c>string</c> to be appended.</param>
         /// <returns>A reference to this instance after the Append operation has completed.</returns>
-        public IHtmlContentBuilder Append(string value)
+        public IHtmlContentBuilder Append(string unencoded)
         {
-            Entries.Add(value);
+            Entries.Add(unencoded);
             return this;
         }
 
@@ -46,11 +46,11 @@ namespace Microsoft.Extensions.Internal
         /// <summary>
         /// Appends the HTML encoded <see cref="string"/> to the collection.
         /// </summary>
-        /// <param name="value">The HTML encoded <c>string</c> to be appended.</param>
+        /// <param name="encoded">The HTML encoded <c>string</c> to be appended.</param>
         /// <returns>A reference to this instance after the Append operation has completed.</returns>
-        public IHtmlContentBuilder AppendEncoded(string value)
+        public IHtmlContentBuilder AppendHtml(string encoded)
         {
-            Entries.Add(new HtmlEncodedString(value));
+            Entries.Add(new HtmlEncodedString(encoded));
             return this;
         }
         /// <summary>
@@ -95,7 +95,7 @@ namespace Microsoft.Extensions.Internal
                 }
             }
         }
-        
+
         private string DebuggerToString()
         {
             using (var writer = new StringWriter())

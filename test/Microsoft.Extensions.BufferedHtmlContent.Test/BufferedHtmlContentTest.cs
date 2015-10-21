@@ -41,11 +41,11 @@ namespace Microsoft.Extensions.Internal
         }
 
         [Fact]
-        public void AppendEncoded_DoesNotGetWrittenAsEncoded()
+        public void AppendHtml_DoesNotGetWrittenAsEncoded()
         {
             // Arrange
             var content = new BufferedHtmlContent();
-            content.AppendEncoded("Hello");
+            content.AppendHtml("Hello");
 
             var writer = new StringWriter();
 

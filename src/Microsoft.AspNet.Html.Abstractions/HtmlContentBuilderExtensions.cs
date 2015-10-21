@@ -5,7 +5,6 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Text;
 using Microsoft.Extensions.WebEncoders;
 
 namespace Microsoft.AspNet.Html.Abstractions
@@ -20,6 +19,7 @@ namespace Microsoft.AspNet.Html.Abstractions
         /// item with the HTML encoded <see cref="string"/> representation of the corresponding item in the
         /// <paramref name="args"/> array.
         /// </summary>
+        /// <param name="builder">The <see cref="IHtmlContentBuilder"/>.</param>
         /// <param name="format">
         /// The composite format <see cref="string"/> (see http://msdn.microsoft.com/en-us/library/txafckwd.aspx).
         /// The format string is assumed to be HTML encoded as-provided, and no further encoding will be performed.
@@ -54,9 +54,10 @@ namespace Microsoft.AspNet.Html.Abstractions
 
         /// <summary>
         /// Appends the specified <paramref name="format"/> to the existing content with information from the
-        /// <paramref name="provider"/> after replacing each format item with the HTML encoded <see cref="string"/>
-        /// representation of the corresponding item in the <paramref name="args"/> array.
+        /// <paramref name="formatProvider"/> after replacing each format item with the HTML encoded
+        /// <see cref="string"/> representation of the corresponding item in the <paramref name="args"/> array.
         /// </summary>
+        /// <param name="builder">The <see cref="IHtmlContentBuilder"/>.</param>
         /// <param name="formatProvider">An object that supplies culture-specific formatting information.</param>
         /// <param name="format">
         /// The composite format <see cref="string"/> (see http://msdn.microsoft.com/en-us/library/txafckwd.aspx).
@@ -122,9 +123,9 @@ namespace Microsoft.AspNet.Html.Abstractions
         /// <param name="builder">The <see cref="IHtmlContentBuilder"/>.</param>
         /// <param name="content">The <see cref="IHtmlContent"/> to append.</param>
         /// <returns>The <see cref="IHtmlContentBuilder"/>.</returns>
-        public static IHtmlContentBuilder AppendLine(this IHtmlContentBuilder builder, IHtmlContent htmlContent)
+        public static IHtmlContentBuilder AppendLine(this IHtmlContentBuilder builder, IHtmlContent content)
         {
-            builder.Append(htmlContent);
+            builder.Append(content);
             builder.Append(HtmlEncodedString.NewLine);
             return builder;
         }
@@ -134,11 +135,11 @@ namespace Microsoft.AspNet.Html.Abstractions
         /// The value is treated as HTML encoded as-provided, and no further encoding will be performed.
         /// </summary>
         /// <param name="builder">The <see cref="IHtmlContentBuilder"/>.</param>
-        /// <param name="content">The HTML encoded <see cref="string"/> to append.</param>
+        /// <param name="encoded">The HTML encoded <see cref="string"/> to append.</param>
         /// <returns>The <see cref="IHtmlContentBuilder"/>.</returns>
-        public static IHtmlContentBuilder AppendLineEncoded(this IHtmlContentBuilder builder, string encoded)
+        public static IHtmlContentBuilder AppendHtmlLine(this IHtmlContentBuilder builder, string encoded)
         {
-            builder.AppendEncoded(encoded);
+            builder.AppendHtml(encoded);
             builder.Append(HtmlEncodedString.NewLine);
             return builder;
         }
@@ -148,7 +149,7 @@ namespace Microsoft.AspNet.Html.Abstractions
         /// and will be HTML encoded before writing to output.
         /// </summary>
         /// <param name="builder">The <see cref="IHtmlContentBuilder"/>.</param>
-        /// <param name="value">The <see cref="string"/> value that replaces the content.</param>
+        /// <param name="unencoded">The <see cref="string"/> value that replaces the content.</param>
         /// <returns>The <see cref="IHtmlContentBuilder"/>.</returns>
         public static IHtmlContentBuilder SetContent(this IHtmlContentBuilder builder, string unencoded)
         {
@@ -161,7 +162,7 @@ namespace Microsoft.AspNet.Html.Abstractions
         /// Sets the content to the <see cref="IHtmlContent"/> value.
         /// </summary>
         /// <param name="builder">The <see cref="IHtmlContentBuilder"/>.</param>
-        /// <param name="value">The <see cref="IHtmlContent"/> value that replaces the content.</param>
+        /// <param name="content">The <see cref="IHtmlContent"/> value that replaces the content.</param>
         /// <returns>The <see cref="IHtmlContentBuilder"/>.</returns>
         public static IHtmlContentBuilder SetContent(this IHtmlContentBuilder builder, IHtmlContent content)
         {
@@ -175,12 +176,12 @@ namespace Microsoft.AspNet.Html.Abstractions
         /// no further encoding will be performed.
         /// </summary>
         /// <param name="builder">The <see cref="IHtmlContentBuilder"/>.</param>
-        /// <param name="content">The HTML encoded <see cref="string"/> that replaces the content.</param>
+        /// <param name="encoded">The HTML encoded <see cref="string"/> that replaces the content.</param>
         /// <returns>The <see cref="IHtmlContentBuilder"/>.</returns>
-        public static IHtmlContentBuilder SetContentEncoded(this IHtmlContentBuilder builder, string encoded)
+        public static IHtmlContentBuilder SetHtmlContent(this IHtmlContentBuilder builder, string encoded)
         {
             builder.Clear();
-            builder.AppendEncoded(encoded);
+            builder.AppendHtml(encoded);
             return builder;
         }
 
