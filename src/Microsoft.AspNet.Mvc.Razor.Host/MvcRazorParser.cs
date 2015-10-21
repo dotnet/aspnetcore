@@ -7,10 +7,10 @@ using System.Linq;
 using Microsoft.AspNet.Mvc.Razor.Host;
 using Microsoft.AspNet.Razor;
 using Microsoft.AspNet.Razor.Chunks;
+using Microsoft.AspNet.Razor.Compilation.TagHelpers;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Parser.TagHelpers;
-using Microsoft.AspNet.Razor.TagHelpers;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {

@@ -7,9 +7,9 @@ using System.Linq;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor;
 using Microsoft.AspNet.Razor.Chunks;
+using Microsoft.AspNet.Razor.Compilation.TagHelpers;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.AspNet.Razor.TagHelpers;
 using Moq;
 using Xunit;
 

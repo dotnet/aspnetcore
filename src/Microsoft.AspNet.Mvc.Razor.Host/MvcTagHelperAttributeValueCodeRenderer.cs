@@ -3,7 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Razor.CodeGenerators;
-using Microsoft.AspNet.Razor.TagHelpers;
+using Microsoft.AspNet.Razor.Compilation.TagHelpers;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {

@@ -4,7 +4,7 @@
 using System;
 using System.Text;
 using Microsoft.AspNet.Mvc.Razor;
-using Microsoft.AspNet.Razor.Runtime.TagHelpers;
+using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.Extensions.WebEncoders;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers

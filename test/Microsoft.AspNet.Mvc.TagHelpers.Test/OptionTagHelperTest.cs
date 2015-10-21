@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
+using Microsoft.AspNet.Razor.TagHelpers;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers

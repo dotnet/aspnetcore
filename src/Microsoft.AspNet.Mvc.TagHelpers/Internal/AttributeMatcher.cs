@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNet.Razor.Runtime.TagHelpers;
+using Microsoft.AspNet.Razor.TagHelpers;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
 {

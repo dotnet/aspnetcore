@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.AspNet.Razor.Runtime.TagHelpers;
+using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.Extensions.WebEncoders;
 
 namespace Microsoft.AspNet.Mvc.Razor.TagHelpers

@@ -9,7 +9,7 @@ using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewComponents;
 using Microsoft.AspNet.Mvc.ViewFeatures;
-using Microsoft.AspNet.Razor.Runtime.TagHelpers;
+using Microsoft.AspNet.Razor.TagHelpers;
 
 namespace MvcSample.Web.Components
 {

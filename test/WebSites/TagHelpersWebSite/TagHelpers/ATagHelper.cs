@@ -4,7 +4,7 @@
 using System.Linq;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Routing;
-using Microsoft.AspNet.Razor.Runtime.TagHelpers;
+using Microsoft.AspNet.Razor.TagHelpers;
 
 namespace TagHelpersWebSite.TagHelpers
 {

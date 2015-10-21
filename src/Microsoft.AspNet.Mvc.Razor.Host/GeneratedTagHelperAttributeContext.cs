@@ -4,7 +4,7 @@
 namespace Microsoft.AspNet.Mvc.Razor
 {
     /// <summary>
-    /// Contains information for the <see cref="Microsoft.AspNet.Razor.Runtime.TagHelpers.ITagHelper"/> attribute code
+    /// Contains information for the <see cref="AspNet.Razor.TagHelpers.ITagHelper"/> attribute code
     /// generation process.
     /// </summary>
     public class GeneratedTagHelperAttributeContext

@@ -4,7 +4,7 @@
 using Microsoft.AspNet.Razor;
 using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.CodeGenerators;
-using Microsoft.AspNet.Razor.TagHelpers;
+using Microsoft.AspNet.Razor.Compilation.TagHelpers;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Razor

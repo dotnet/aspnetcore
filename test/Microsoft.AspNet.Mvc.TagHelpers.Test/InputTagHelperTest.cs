@@ -13,6 +13,7 @@ using Microsoft.AspNet.Mvc.TestCommon;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Mvc.ViewFeatures.Internal;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
+using Microsoft.AspNet.Razor.TagHelpers;
 using Moq;
 using Xunit;
 

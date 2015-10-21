@@ -11,7 +11,7 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewEngines;
 using Microsoft.AspNet.Mvc.ViewFeatures;
-using Microsoft.AspNet.Razor.Runtime.TagHelpers;
+using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.AspNet.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;

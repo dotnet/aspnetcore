@@ -13,6 +13,7 @@ using Microsoft.AspNet.Mvc.Razor.Internal;
 using Microsoft.AspNet.Razor;
 using Microsoft.AspNet.Razor.Chunks;
 using Microsoft.AspNet.Razor.CodeGenerators;
+using Microsoft.AspNet.Razor.Compilation.TagHelpers;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Razor.TagHelpers;

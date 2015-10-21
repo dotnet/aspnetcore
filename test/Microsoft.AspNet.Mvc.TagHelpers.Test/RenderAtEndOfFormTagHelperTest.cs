@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
+using Microsoft.AspNet.Razor.TagHelpers;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers
@@ -32,7 +33,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                             GetTagBuilder("input", "SomeName", "hidden", "false", TagRenderMode.SelfClosing),
                             GetTagBuilder("input", "SomeOtherName", "hidden", "false", TagRenderMode.SelfClosing)
                         },
-                        @"<input name=""SomeName"" type=""hidden"" value=""false"" />" + 
+                        @"<input name=""SomeName"" type=""hidden"" value=""false"" />" +
                         @"<input name=""SomeOtherName"" type=""hidden"" value=""false"" />"
                     }
                 };

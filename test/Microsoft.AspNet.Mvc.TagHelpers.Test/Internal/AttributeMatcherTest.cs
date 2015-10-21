@@ -3,9 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
+using Microsoft.AspNet.Razor.TagHelpers;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
