@@ -876,6 +876,52 @@ namespace Microsoft.AspNet.Server.KestrelTests
             }
         }
 
+        [Theory]
+        [MemberData(nameof(ConnectionFilterData))]
+        public async Task RequestBodyIsConsumedAutomaticallyIfAppDoesntConsumeItFully(ServiceContext testContext)
+        {
+            using (var server = new TestServer(async frame =>
+            {
+                var response = frame.Get<IHttpResponseFeature>();
+                var request = frame.Get<IHttpRequestFeature>();
+
+                Assert.Equal("POST", request.Method);
+
+                response.Headers.Clear();
+                response.Headers["Content-Length"] = new[] { "11" };
+
+                await response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello World"), 0, 11);
+            }, testContext))
+            {
+                using (var connection = new TestConnection())
+                {
+                    await connection.SendEnd(
+                        "POST / HTTP/1.1",
+                        "Content-Length: 5",
+                        "",
+                        "HelloPOST / HTTP/1.1",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "C", "HelloChunked", "0",
+                        "POST / HTTP/1.1",
+                        "Content-Length: 7",
+                        "",
+                        "Goodbye");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 200 OK",
+                        "Content-Length: 11",
+                        "",
+                        "Hello WorldHTTP/1.1 200 OK",
+                        "Content-Length: 11",
+                        "",
+                        "Hello WorldHTTP/1.1 200 OK",
+                        "Content-Length: 11",
+                        "",
+                        "Hello World");
+                }
+            }
+        }
+
         private class TestApplicationErrorLogger : ILogger
         {
             public int ApplicationErrorsLogged { get; set; }
