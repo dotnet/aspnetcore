@@ -4,6 +4,7 @@
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Authorization;
+using Microsoft.AspNet.Authorization.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace FiltersWebSite
