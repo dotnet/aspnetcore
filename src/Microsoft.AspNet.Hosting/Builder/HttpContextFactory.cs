@@ -9,9 +9,18 @@ namespace Microsoft.AspNet.Hosting.Builder
 {
     public class HttpContextFactory : IHttpContextFactory
     {
+        private IHttpContextAccessor _httpContextAccessor;
+
+        public HttpContextFactory(IHttpContextAccessor httpContextAccessor)
+        {
+            _httpContextAccessor = httpContextAccessor;
+        }
+
         public HttpContext CreateHttpContext(IFeatureCollection featureCollection)
         {
-            return new DefaultHttpContext(featureCollection);
+            var httpContext = new DefaultHttpContext(featureCollection);
+            _httpContextAccessor.HttpContext = httpContext;
+            return httpContext;
         }
     }
 }

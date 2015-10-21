@@ -87,7 +87,6 @@ namespace Microsoft.AspNet.Hosting.Internal
 
             var logger = _applicationServices.GetRequiredService<ILogger<HostingEngine>>();
             var contextFactory = _applicationServices.GetRequiredService<IHttpContextFactory>();
-            var contextAccessor = _applicationServices.GetRequiredService<IHttpContextAccessor>();
             var diagnosticSource = _applicationServices.GetRequiredService<DiagnosticSource>();
             var server = ServerFactory.Start(_serverFeatures,
                 async features =>
@@ -95,7 +94,6 @@ namespace Microsoft.AspNet.Hosting.Internal
                     var httpContext = contextFactory.CreateHttpContext(features);
                     httpContext.ApplicationServices = _applicationServices;
                     var requestIdentifier = GetRequestIdentifier(httpContext);
-                    contextAccessor.HttpContext = httpContext;
                     if (diagnosticSource.IsEnabled("Microsoft.AspNet.Hosting.BeginRequest"))
                     {
                         diagnosticSource.Write("Microsoft.AspNet.Hosting.BeginRequest", new { httpContext = httpContext });

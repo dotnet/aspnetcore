@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using Microsoft.AspNet.Hosting.Builder;
 using Microsoft.AspNet.Http.Features;
+using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Owin;
 using Xunit;
 
@@ -12,12 +13,26 @@ namespace Microsoft.AspNet.Hosting.Tests
     public class HttpContextFactoryFacts
     {
         [Fact]
+        public void CreateHttpContextSetsHttpContextAccessor()
+        {
+            // Arrange
+            var accessor = new HttpContextAccessor();
+            var contextFactory = new HttpContextFactory(accessor);
+
+            // Act
+            var context = contextFactory.CreateHttpContext(new FeatureCollection());
+            
+            // Assert
+            Assert.True(ReferenceEquals(context, accessor.HttpContext));
+        }
+
+        [Fact]
         public void Mutable_FeatureCollection_Wrapped_For_OwinFeatureCollection()
         {
             var env = new Dictionary<string, object>();
-            var contextFactory = new HttpContextFactory();
+            var contextFactory = new HttpContextFactory(new HttpContextAccessor());
             var context = contextFactory.CreateHttpContext(new FeatureCollection(new OwinFeatureCollection(env)));
-            
+
             // Setting a feature will throw if the above feature collection is not wrapped in a mutable feature collection.
             context.Features.Set<ICustomFeature>(new CustomFeature(100));
             Assert.Equal(100, context.Features.Get<ICustomFeature>().Value);
