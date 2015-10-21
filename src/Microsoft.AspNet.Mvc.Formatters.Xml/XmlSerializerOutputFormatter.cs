@@ -169,7 +169,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
                 if (wrappingType != null && wrappingType != context.ObjectType)
                 {
                     var wrapperProvider = WrapperProviderFactories.GetWrapperProvider(new WrapperProviderContext(
-                        declaredType: wrappingType,
+                        declaredType: context.ObjectType,
                         isSerialization: true));
 
                     value = wrapperProvider.Wrap(value);
