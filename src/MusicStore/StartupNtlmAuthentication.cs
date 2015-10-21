@@ -109,7 +109,7 @@ namespace MusicStore
                 listener.AuthenticationManager.AuthenticationSchemes = AuthenticationSchemes.NTLM;
             }
 
-            app.UseDatabaseErrorPage(DatabaseErrorPageOptions.ShowAll);
+            app.UseDatabaseErrorPage();
 
             // Add the runtime information page that can be used by developers
             // to see what packages are used by the application
