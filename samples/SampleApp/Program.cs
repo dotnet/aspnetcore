@@ -7,18 +7,10 @@ namespace SampleApp
 {
     public class Program
     {
-        private IServiceProvider _services;
-
-        public Program(IServiceProvider services)
+        public static void Main(string[] args)
         {
-            _services = services;
-        }
-
-        public void Main(string[] args)
-        {
-            new Microsoft.AspNet.Hosting.Program(_services).Main(new[] {
-                "--server", "Microsoft.AspNet.Server.Kestrel"
-            });
+            var mergedArgs = new[] { "--server", "Microsoft.AspNet.Server.Kestrel" }.Concat(args).ToArray();
+            Microsoft.AspNet.Hosting.Program.Main(mergedArgs);
         }
     }
 }

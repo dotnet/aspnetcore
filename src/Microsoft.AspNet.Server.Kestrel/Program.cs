@@ -8,18 +8,10 @@ namespace Microsoft.AspNet.Server.Kestrel
 {
     public class Program
     {
-        private readonly IServiceProvider _serviceProvider;
-
-        public Program(IServiceProvider serviceProvider)
+        public static void Main(string[] args)
         {
-            _serviceProvider = serviceProvider;
-        }
-
-        public void Main(string[] args)
-        {
-            var program = new Microsoft.AspNet.Hosting.Program(_serviceProvider);
             var mergedArgs = new[] { "--server", "Microsoft.AspNet.Server.Kestrel" }.Concat(args).ToArray();
-            program.Main(mergedArgs);
+            Microsoft.AspNet.Hosting.Program.Main(mergedArgs);
         }
     }
 }
