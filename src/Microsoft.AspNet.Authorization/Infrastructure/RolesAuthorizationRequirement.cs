@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.AspNet.Authorization
+namespace Microsoft.AspNet.Authorization.Infrastructure
 {
     // Must belong to with one of specified roles
     // If AllowedRoles is null or empty, that means any role is valid

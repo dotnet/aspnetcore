@@ -37,7 +37,6 @@ namespace Microsoft.AspNet.Authorization
             _logger = logger;
         }
 
-
         public async Task<bool> AuthorizeAsync(ClaimsPrincipal user, object resource, IEnumerable<IAuthorizationRequirement> requirements)
         {
             if (requirements == null)
@@ -71,9 +70,11 @@ namespace Microsoft.AspNet.Authorization
             }
 
             var policy = _options.GetPolicy(policyName);
-            return (policy == null)
-                ? Task.FromResult(false)
-                : this.AuthorizeAsync(user, resource, policy);
+            if (policy == null)
+            {
+                throw new InvalidOperationException($"No policy found: {policyName}.");
+            }
+            return this.AuthorizeAsync(user, resource, policy);
         }
     }
 }

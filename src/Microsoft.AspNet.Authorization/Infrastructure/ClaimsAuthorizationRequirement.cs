@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.AspNet.Authorization
+namespace Microsoft.AspNet.Authorization.Infrastructure
 {
     // Must contain a claim with the specified name, and at least one of the required values
     // If AllowedValues is null or empty, that means any claim is valid

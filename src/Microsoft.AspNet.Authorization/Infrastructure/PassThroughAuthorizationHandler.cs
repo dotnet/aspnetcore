@@ -4,7 +4,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.Authorization
+namespace Microsoft.AspNet.Authorization.Infrastructure
 {
     public class PassThroughAuthorizationHandler : IAuthorizationHandler
     {

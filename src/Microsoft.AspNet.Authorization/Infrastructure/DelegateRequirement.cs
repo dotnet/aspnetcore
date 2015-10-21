@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Authorization
+namespace Microsoft.AspNet.Authorization.Infrastructure
 {
     public class DelegateRequirement : AuthorizationHandler<DelegateRequirement>, IAuthorizationRequirement
     {

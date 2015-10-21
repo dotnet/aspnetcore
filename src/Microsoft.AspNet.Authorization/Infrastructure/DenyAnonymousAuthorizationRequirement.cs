@@ -3,7 +3,7 @@
 
 using System.Linq;
 
-namespace Microsoft.AspNet.Authorization
+namespace Microsoft.AspNet.Authorization.Infrastructure
 {
     public class DenyAnonymousAuthorizationRequirement : AuthorizationHandler<DenyAnonymousAuthorizationRequirement>, IAuthorizationRequirement
     {

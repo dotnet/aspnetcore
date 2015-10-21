@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNet.Authorization.Infrastructure;
 
 namespace Microsoft.AspNet.Authorization
 {

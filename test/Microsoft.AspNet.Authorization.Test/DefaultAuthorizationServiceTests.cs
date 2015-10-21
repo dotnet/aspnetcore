@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Authorization.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -268,23 +269,15 @@ namespace Microsoft.AspNet.Authorization.Test
         }
 
         [Fact]
-        public async Task Authorize_ShouldNotAllowIfUnknownPolicy()
+        public async Task Authorize_ThrowsWithUnknownPolicy()
         {
             // Arrange
             var authorizationService = BuildAuthorizationService();
-            var user = new ClaimsPrincipal(
-                new ClaimsIdentity(
-                    new Claim[] {
-                        new Claim("Permission", "CanViewComment"),
-                    },
-                    null)
-                );
 
             // Act
-            var allowed = await authorizationService.AuthorizeAsync(user, "Basic");
-
             // Assert
-            Assert.False(allowed);
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => authorizationService.AuthorizeAsync(new ClaimsPrincipal(), "whatever", "BogusPolicy"));
+            Assert.Equal("No policy found: BogusPolicy.", exception.Message);
         }
 
         [Fact]
@@ -459,7 +452,7 @@ namespace Microsoft.AspNet.Authorization.Test
                 );
 
             // Act
-            var allowed = await authorizationService.AuthorizeAsync(user, "Any");
+            var allowed = await authorizationService.AuthorizeAsync(user, "Hao");
 
             // Assert
             Assert.False(allowed);

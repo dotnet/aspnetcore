@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using Microsoft.AspNet.Authorization;
+using Microsoft.AspNet.Authorization.Infrastructure;
 using Xunit;
 
 namespace Microsoft.AspNet.Authroization.Test
