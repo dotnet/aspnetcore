@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -10,7 +9,6 @@ using System.Security.Claims;
 using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
-using System.Xml;
 using System.Xml.Linq;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.DataProtection;

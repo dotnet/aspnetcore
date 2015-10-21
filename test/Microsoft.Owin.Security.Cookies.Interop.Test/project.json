@@ -1,0 +1,18 @@
+{
+  "compilationOptions": {
+    "warningsAsErrors": true
+  },
+  "dependencies": {
+    "Microsoft.AspNet.Authentication.Cookies": "1.0.0-*",
+    "Microsoft.AspNet.TestHost": "1.0.0-*",
+    "Microsoft.Owin.Security.Cookies.Interop": "1.0.0-*",
+    "Microsoft.Owin.Testing": "3.0.1",
+    "xunit.runner.aspnet": "2.0.0-aspnet-*"
+  },
+  "commands": {
+    "test": "xunit.runner.aspnet"
+  },
+  "frameworks": {
+    "dnx451": { }
+  }
+}

@@ -1,15 +1,16 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
+using Microsoft.Owin.Security.DataHandler.Serializer;
 
-namespace Microsoft.AspNet.Authentication
+namespace Microsoft.Owin.Security.Cookies.Interop
 {
-    // This MUST be kept in sync with Microsoft.Owin.Security.Cookies.AspNetTicketSerializer
-    public class TicketSerializer : IDataSerializer<AuthenticationTicket>
+    // This MUST be kept in sync with Microsoft.AspNet.Authentication.DataHandler.TicketSerializer
+    public class AspNetTicketSerializer : IDataSerializer<AuthenticationTicket>
     {
         private const string DefaultStringPlaceholder = "\0";
         private const int FormatVersion = 5;
@@ -41,43 +42,23 @@ namespace Microsoft.AspNet.Authentication
 
         public virtual void Write(BinaryWriter writer, AuthenticationTicket ticket)
         {
-            if (writer == null)
-            {
-                throw new ArgumentNullException(nameof(writer));
-            }
-
-            if (ticket == null)
-            {
-                throw new ArgumentNullException(nameof(ticket));
-            }
-
             writer.Write(FormatVersion);
-            writer.Write(ticket.AuthenticationScheme);
+            writer.Write(ticket.Identity.AuthenticationType);
 
-            // Write the number of identities contained in the principal.
-            var principal = ticket.Principal;
-            writer.Write(principal.Identities.Count());
-
-            foreach (var identity in principal.Identities)
+            var identity = ticket.Identity;
+            if (identity == null)
             {
-                WriteIdentity(writer, identity);
+                throw new ArgumentNullException("ticket.Identity");
             }
 
-            PropertiesSerializer.Default.Write(writer, ticket.Properties);
+            // There is always a single identity
+            writer.Write(1);
+            WriteIdentity(writer, identity);
+            PropertiesSerializer.Write(writer, ticket.Properties);
         }
 
         protected virtual void WriteIdentity(BinaryWriter writer, ClaimsIdentity identity)
         {
-            if (writer == null)
-            {
-                throw new ArgumentNullException(nameof(writer));
-            }
-
-            if (identity == null)
-            {
-                throw new ArgumentNullException(nameof(identity));
-            }
-
             var authenticationType = identity.AuthenticationType ?? string.Empty;
 
             writer.Write(authenticationType);
@@ -116,16 +97,6 @@ namespace Microsoft.AspNet.Authentication
 
         protected virtual void WriteClaim(BinaryWriter writer, Claim claim)
         {
-            if (writer == null)
-            {
-                throw new ArgumentNullException(nameof(writer));
-            }
-
-            if (claim == null)
-            {
-                throw new ArgumentNullException(nameof(claim));
-            }
-
             WriteWithDefault(writer, claim.Type, claim.Subject?.NameClaimType ?? ClaimsIdentity.DefaultNameClaimType);
             writer.Write(claim.Value);
             WriteWithDefault(writer, claim.ValueType, ClaimValueTypes.String);
@@ -144,11 +115,6 @@ namespace Microsoft.AspNet.Authentication
 
         public virtual AuthenticationTicket Read(BinaryReader reader)
         {
-            if (reader == null)
-            {
-                throw new ArgumentNullException(nameof(reader));
-            }
-
             if (reader.ReadInt32() != FormatVersion)
             {
                 return null;
@@ -156,32 +122,21 @@ namespace Microsoft.AspNet.Authentication
 
             var scheme = reader.ReadString();
 
-            // Read the number of identities stored
-            // in the serialized payload.
+            // Any identities after the first will be ignored.
             var count = reader.ReadInt32();
             if (count < 0)
             {
                 return null;
             }
 
-            var identities = new ClaimsIdentity[count];
-            for (var index = 0; index != count; ++index)
-            {
-                identities[index] = ReadIdentity(reader);
-            }
+            var identity = ReadIdentity(reader);
+            var properties = PropertiesSerializer.Read(reader);
 
-            var properties = PropertiesSerializer.Default.Read(reader);
-
-            return new AuthenticationTicket(new ClaimsPrincipal(identities), properties, scheme);
+            return new AuthenticationTicket(identity, properties);
         }
 
         protected virtual ClaimsIdentity ReadIdentity(BinaryReader reader)
         {
-            if (reader == null)
-            {
-                throw new ArgumentNullException(nameof(reader));
-            }
-
             var authenticationType = reader.ReadString();
             var nameClaimType = ReadWithDefault(reader, ClaimsIdentity.DefaultNameClaimType);
             var roleClaimType = ReadWithDefault(reader, ClaimsIdentity.DefaultRoleClaimType);
@@ -218,16 +173,6 @@ namespace Microsoft.AspNet.Authentication
 
         protected virtual Claim ReadClaim(BinaryReader reader, ClaimsIdentity identity)
         {
-            if (reader == null)
-            {
-                throw new ArgumentNullException(nameof(reader));
-            }
-
-            if (identity == null)
-            {
-                throw new ArgumentNullException(nameof(identity));
-            }
-
             var type = ReadWithDefault(reader, identity.NameClaimType);
             var value = reader.ReadString();
             var valueType = ReadWithDefault(reader, ClaimValueTypes.String);
