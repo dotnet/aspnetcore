@@ -11,13 +11,13 @@ namespace Microsoft.AspNet.Mvc.ApiExplorer
     /// Provides metadata information about the response format to an <c>IApiDescriptionProvider</c>.
     /// </summary>
     /// <remarks>
-    /// An <see cref="IOutputFormatter"/> should implement this interface to expose metadata information
+    /// An <see cref="Formatters.IOutputFormatter"/> should implement this interface to expose metadata information
     /// to an <c>IApiDescriptionProvider</c>.
     /// </remarks>
     public interface IApiResponseFormatMetadataProvider
     {
         /// <summary>
-        /// Gets a filtered list of content types which are supported by the <see cref="IOutputFormatter"/>
+        /// Gets a filtered list of content types which are supported by the <see cref="Formatters.IOutputFormatter"/>
         /// for the <paramref name="declaredType"/> and <paramref name="contentType"/>.
         /// </summary>
         /// <param name="contentType">
@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.ApiExplorer
         /// <param name="objectType">
         /// The <see cref="Type"/> for which the supported content types are desired.
         /// </param>
-        /// <returns>Content types which are supported by the <see cref="IOutputFormatter"/>.</returns>
+        /// <returns>Content types which are supported by the <see cref="Formatters.IOutputFormatter"/>.</returns>
         IReadOnlyList<MediaTypeHeaderValue> GetSupportedContentTypes(
             MediaTypeHeaderValue contentType,
             Type objectType);
