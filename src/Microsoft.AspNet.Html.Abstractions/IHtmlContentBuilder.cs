@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Html.Abstractions
         /// </summary>
         /// <param name="encoded">The HTML encoded <see cref="string"/> to append.</param>
         /// <returns>The <see cref="IHtmlContentBuilder"/>.</returns>
-        IHtmlContentBuilder AppendHtml(string encoded);
+        IHtmlContentBuilder AppendEncoded(string encoded);
 
         /// <summary>
         /// Clears the content.

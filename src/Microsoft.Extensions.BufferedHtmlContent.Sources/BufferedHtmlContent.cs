@@ -48,7 +48,7 @@ namespace Microsoft.Extensions.Internal
         /// </summary>
         /// <param name="value">The HTML encoded <c>string</c> to be appended.</param>
         /// <returns>A reference to this instance after the Append operation has completed.</returns>
-        public IHtmlContentBuilder AppendHtml(string value)
+        public IHtmlContentBuilder AppendEncoded(string value)
         {
             Entries.Add(new HtmlEncodedString(value));
             return this;

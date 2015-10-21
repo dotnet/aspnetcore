@@ -62,13 +62,13 @@ namespace Microsoft.AspNet.Html.Abstractions.Test
         }
 
         [Fact]
-        public void Builder_AppendHtmlLine_String()
+        public void Builder_AppendLineEncoded_String()
         {
             // Arrange
             var builder = new TestHtmlContentBuilder();
 
             // Act
-            builder.AppendHtmlLine("Hi");
+            builder.AppendLineEncoded("Hi");
 
             // Assert
             Assert.Collection(
@@ -366,7 +366,7 @@ namespace Microsoft.AspNet.Html.Abstractions.Test
                 return this;
             }
 
-            public IHtmlContentBuilder AppendHtml(string encoded)
+            public IHtmlContentBuilder AppendEncoded(string encoded)
             {
                 Entries.Add(new EncodedString(encoded));
                 return this;
