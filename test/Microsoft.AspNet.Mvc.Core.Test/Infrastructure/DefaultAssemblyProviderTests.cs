@@ -253,8 +253,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
 
             private static ILibraryManager GetLibraryManager()
             {
-                return CallContextServiceLocator.Locator.ServiceProvider
-                    .GetRequiredService<ILibraryManager>();
+                return PlatformServices.Default.LibraryManager;
             }
         }
     }

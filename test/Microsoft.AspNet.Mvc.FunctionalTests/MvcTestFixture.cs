@@ -91,8 +91,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assembly startupAssembly,
             Func<IServiceCollection, IServiceProvider> buildServices)
         {
-            var applicationServices = CallContextServiceLocator.Locator.ServiceProvider;
-            var libraryManager = applicationServices.GetRequiredService<ILibraryManager>();
+            var libraryManager = PlatformServices.Default.LibraryManager;
 
             // When an application executes in a regular context, the application base path points to the root
             // directory where the application is located, for example .../samples/MvcSample.Web. However, when
@@ -104,7 +103,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var library = libraryManager.GetLibrary(applicationName);
             var applicationRoot = Path.GetDirectoryName(library.Path);
 
-            var applicationEnvironment = applicationServices.GetRequiredService<IApplicationEnvironment>();
+            var applicationEnvironment = PlatformServices.Default.Application;
 
             return (services) =>
             {
