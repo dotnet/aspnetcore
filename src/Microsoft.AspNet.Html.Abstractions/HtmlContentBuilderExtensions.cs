@@ -136,9 +136,9 @@ namespace Microsoft.AspNet.Html.Abstractions
         /// <param name="builder">The <see cref="IHtmlContentBuilder"/>.</param>
         /// <param name="content">The HTML encoded <see cref="string"/> to append.</param>
         /// <returns>The <see cref="IHtmlContentBuilder"/>.</returns>
-        public static IHtmlContentBuilder AppendLineEncoded(this IHtmlContentBuilder builder, string encoded)
+        public static IHtmlContentBuilder AppendHtmlLine(this IHtmlContentBuilder builder, string encoded)
         {
-            builder.AppendEncoded(encoded);
+            builder.AppendHtml(encoded);
             builder.Append(HtmlEncodedString.NewLine);
             return builder;
         }
@@ -180,7 +180,7 @@ namespace Microsoft.AspNet.Html.Abstractions
         public static IHtmlContentBuilder SetContentEncoded(this IHtmlContentBuilder builder, string encoded)
         {
             builder.Clear();
-            builder.AppendEncoded(encoded);
+            builder.AppendHtml(encoded);
             return builder;
         }
 
